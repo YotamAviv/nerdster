@@ -1,0 +1,14 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // [aviv]: I've modified the rules to allow {read, create}, no update, no delete.
+    // My plan is to (one of these days, if necessary):
+    // - sweep the data and delete statements deleted by its authors
+    // - sweep the data and delete data from authors not my in one-of-us.net network.
+    match /{document=**} {
+      allow read, create: if request.time < timestamp.date(2027, 6, 10);
+    }
+  }
+}

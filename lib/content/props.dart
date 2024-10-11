@@ -1,0 +1,176 @@
+import 'package:flutter/material.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/util.dart';
+
+/// compute aggregates
+/// - count(comments)
+/// - max(date) (recent activity)
+/// - ..
+/// 
+/// Recent (7/19/24) distinct changes made this different, and I haven't looked closely at what this 
+/// used to do and why other than it's no longer required to use the user's last rating 
+/// (they're distinct now; there is only one).
+/// 
+/// for
+/// - sort
+/// - display
+/// - filter
+///
+/// PERFOMANCE: cache?
+
+enum PropType {
+  recommend('recommend'),
+  recentActivity('recentActivity'),
+  numComments('numComments');
+
+  const PropType(this.label);
+  final String label;
+}
+
+// DEFER: There's probably a better way to do this (factories, enums, ...)
+Map<PropType, Prop> cloners = {
+  PropType.recommend: RecommendPropAggregator(),
+  PropType.recentActivity: RecentActivityAggregator(),
+  PropType.numComments: CommentsAggregator(),
+};
+
+abstract class Prop {
+  Prop clone();
+  void process(ContentStatement statement);
+
+  bool get recurse; /// selective: include children / don't include children
+
+  Comparable? getComparable();
+  Object? getValue();
+  Widget getWidget();
+}
+
+// Could be generalized to a general counter (for dissmiss, for example)
+// Note: [recommend, dis] together is supported (with no extra work). 
+// The disser no longer sees the subject, and so he won't see his recommend added to the count.
+// But others will see the recommend added to the count, diss notwithstanding.
+// Tested in 'rate and dis'
+class RecommendPropAggregator implements Prop {
+  int count = 0;
+
+  @override
+  clone() => RecommendPropAggregator();
+
+  @override
+  bool get recurse => false;
+
+  @override
+  void process(ContentStatement statement) {
+    bool? recommend = statement.recommend;
+    if (recommend != null && recommend) {
+      count++;
+    }
+  }
+
+  @override
+  Comparable? getComparable() {
+    return count;
+  }
+
+  @override
+  Object? getValue() {
+    return getComparable();
+  }
+
+  @override
+  Widget getWidget() {
+    String s = count == 0 ? '' : '+$count';
+    return Tooltip(
+        message: 'count(recommend) = $count',
+        child: SizedBox(
+            width: 26,
+            child: Text(
+              s,
+              style: const TextStyle(color: Colors.deepOrange),
+            )));
+  }
+}
+
+class RecentActivityAggregator implements Prop {
+  DateTime? recent;
+
+  @override
+  Prop clone() => RecentActivityAggregator();
+
+  @override
+  bool get recurse => true;
+
+  @override
+  void process(ContentStatement statement) {
+    DateTime datetime = statement.time;
+    if (recent == null || datetime.isAfter(recent!)) {
+      recent = datetime;
+    }
+  }
+
+  @override
+  Comparable? getComparable() {
+    return recent;
+  }
+
+  @override
+  Object? getValue() {
+    return getComparable();
+  }
+
+  @override
+  Widget getWidget() {
+    String s = recent != null ? formatUiDatetime(recent!) : '';
+    return Tooltip(
+        message: "recent activity",
+        child: SizedBox(
+            width: 100,
+            child: Text(
+              s,
+              style: const TextStyle(color: Colors.green),
+            )));
+  }
+}
+
+class CommentsAggregator implements Prop {
+  int numComments = 0;
+
+  @override
+  Prop clone() => CommentsAggregator();
+
+  // Should the computation include children of children and more or just children.
+  @override
+  bool get recurse => true;
+
+  // QUESTION: Could this be changed to take the SubjectNode, not just 
+  // its subject, so that we can decide to not process equivalents?
+  @override
+  void process(ContentStatement statement) {
+    if (statement.comment != null) {
+      numComments++;
+    }
+  }
+
+  @override
+  Comparable? getComparable() {
+    return numComments;
+  }
+
+  @override
+  Object? getValue() {
+    return numComments;
+  }
+
+  @override
+  Widget getWidget() {
+    return Tooltip(
+        message: "count(comments) = $numComments",
+        child: SizedBox(
+            width: 20,
+            child: Text(
+              numComments == 0 ? '' : '($numComments)',
+              style: const TextStyle(color: Color.fromARGB(255, 143, 53, 18)),
+              overflow: TextOverflow.ellipsis,
+            )));
+  }
+}
