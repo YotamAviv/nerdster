@@ -9,12 +9,10 @@ import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/js_widget.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/net/net_tree.dart';
-import 'package:nerdster/net/net_tree_model.dart';
-import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 class SubjectTile extends StatefulWidget {
@@ -90,13 +88,15 @@ class _SubjectState extends State<SubjectTile> {
       String comment = statement.comment!;
       // DEFER: The multi-line Tree Tile makes the branch not point to the icon.
       commentWidget = InputDecorator(
-          decoration: InputDecoration(
-            contentPadding: EdgeInsets.symmetric(horizontal: 3, vertical: 3),
-            labelText: 'Comment',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(1.0)),
-          ),
-          child: TextField(
-              readOnly: true, maxLines: null, controller: TextEditingController()..text = comment));
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+          labelText: 'Comment',
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(1.0)),
+        ),
+        child: Linky(comment),
+        // child: TextField(
+        //     readOnly: true, maxLines: null, controller: TextEditingController()..text = comment)
+      );
     }
 
     Widget titleWidget =
