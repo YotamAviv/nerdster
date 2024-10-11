@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "firebase-admin": "^12.3.1",
+    "firebase-functions": "^5.1.0",
+    "got": "^14.4.2",
+    "node-fetch": "^2.7.0",
+    "puppeteer": "^23.1.0"
+  }
+}
