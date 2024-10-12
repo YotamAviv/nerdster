@@ -1,5 +1,15 @@
 
-# ..
+# Nerd'ster!
+
+Check it at: http://nerdster.web.app
+Sign in with the phone app for http://one-of-us.net
+
+This won't compile as is as these files which contain API tokens are missing:
+./lib
+./lib/oneofus_fire.dart
+./lib/firebase_options.dart
+./firebase.json
+./oneofus-nerdster.firebase.json
 
 # Nice ones:
 ```
