@@ -16,7 +16,6 @@ import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in_state.dart';
-import 'package:nerdster/singletons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 /// Nerdster web client QR sign-in:
@@ -47,41 +46,44 @@ Future<void> qrSignin(BuildContext context) async {
   // ignore: unawaited_futures
   showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
         final String forPhoneString = encoder.convert(forPhone);
         return Dialog(
             child: Padding(
                 padding: const EdgeInsets.all(15),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Linky('QR code for signing in using the one-of-us.net phone app.'),
-                    QrImageView(
-                      data: forPhoneString,
-                      version: QrVersions.auto,
-                      size: 300.0,
-                    ),
-                    Stack(
-                      alignment: Alignment.bottomRight,
+                child: SizedBox(
+                    width: (MediaQuery.of(context).size).width / 2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextField(
-                            controller: TextEditingController()..text = forPhoneString,
-                            maxLines: 6,
-                            readOnly: true,
-                            style: GoogleFonts.courierPrime(
-                                fontWeight: FontWeight.w700, fontSize: 14, color: Colors.black)),
-                        FloatingActionButton(
-                            heroTag: 'Copy',
-                            tooltip: 'Copy',
-                            child: const Icon(Icons.copy),
-                            onPressed: () async {
-                              await Clipboard.setData(ClipboardData(text: forPhoneString));
-                            }),
+                        const Linky('QR code for signing in using the one-of-us.net phone app.'),
+                        QrImageView(
+                          data: forPhoneString,
+                          version: QrVersions.auto,
+                          size: 300.0,
+                        ),
+                        Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            TextField(
+                                controller: TextEditingController()..text = forPhoneString,
+                                maxLines: 6,
+                                readOnly: true,
+                                style: GoogleFonts.courierPrime(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                    color: Colors.black)),
+                            FloatingActionButton(
+                                heroTag: 'Copy',
+                                tooltip: 'Copy',
+                                child: const Icon(Icons.copy),
+                                onPressed: () async {
+                                  await Clipboard.setData(ClipboardData(text: forPhoneString));
+                                }),
+                          ],
+                        )
                       ],
-                    )
-                  ],
-                )));
+                    ))));
       });
 
   // Listen for encrypted keypair to arrive at collection
@@ -180,33 +182,34 @@ The text to copy/paste here should like like this:
   }
 
   await showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) => Dialog(
-        child: SingleChildScrollView(
-            // controller: scrollController,
-            child: Padding(
-                padding: const EdgeInsets.all(10),
-                // padding: EdgeInsets.symmetric(horizontal: 100),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      // scrollController: scrollController,
-                      decoration: const InputDecoration(
-                          hintText: hintText, hintStyle: hintStyle, border: OutlineInputBorder()),
-                      maxLines: 20,
-                      controller: controller,
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        OkCancel(okHandler, 'Sign in'),
-                        MyCheckbox(storeKeys, 'Store keys'),
-                      ],
-                    )
-                  ],
-                )))),
-  );
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => Dialog(
+          child: SingleChildScrollView(
+              child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: SizedBox(
+                      width: (MediaQuery.of(context).size).width / 2,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            // scrollController: scrollController,
+                            decoration: const InputDecoration(
+                                hintText: hintText,
+                                hintStyle: hintStyle,
+                                border: OutlineInputBorder()),
+                            maxLines: 20,
+                            controller: controller,
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              OkCancel(okHandler, 'Sign in'),
+                              MyCheckbox(storeKeys, 'Store keys'),
+                            ],
+                          )
+                        ],
+                      ))))));
 }
