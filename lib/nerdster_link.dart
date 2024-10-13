@@ -1,5 +1,6 @@
 // Use language features to build the url
 import 'package:nerdster/main.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -12,7 +13,9 @@ String generateLink() {
   params['type'] = contentBase.type.name;
   params['timeframe'] = contentBase.timeframe.name;
   params['censor'] = contentBase.censor.toString();
-  
+  if (b(followNet.fcontext)) {
+    params['follow'] = followNet.fcontext!;
+  }
   String url = buildUrlWithQueryParams(Uri.base, params);
   return url;
 }
