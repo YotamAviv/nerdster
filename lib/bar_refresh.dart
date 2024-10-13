@@ -4,6 +4,7 @@ import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/singletons.dart';
 
 class BarRefresh extends StatefulWidget {
   static Stopwatch? stopwatch;
@@ -36,9 +37,9 @@ class _BarRefreshState extends State<BarRefresh> {
           if (!b(BarRefresh.stopwatch)) {
             BarRefresh.stopwatch = Stopwatch();
             BarRefresh.stopwatch!.start();
-            SignInState().center = SignInState().center;
+            oneofusNet.listen();
             setState(() {});
-            await Comp.waitOnComps([OneofusEquiv(), FollowNet()]);
+            await Comp.waitOnComps([contentBase]);
             print('Refresh took: ${BarRefresh.stopwatch!.elapsed}');
             BarRefresh.stopwatch!.stop();
             BarRefresh.stopwatch = null;

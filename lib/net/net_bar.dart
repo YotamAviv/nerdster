@@ -22,7 +22,7 @@ class _NetBarState extends State<NetBar> {
 
   @override
   void dispose() {
-    NetTreeView.bOneofus.addListener(listen);
+    NetTreeView.bOneofus.removeListener(listen);
     super.dispose();
   }
 
@@ -129,25 +129,31 @@ class _FollowDropdownState extends State<FollowDropdown> {
 
   @override
   Widget build(BuildContext context) {
+    // The issue was that the Dropdown showed its label inside when initial wasn't one of the options.
+    String initial = b(followNet.fcontext) ? followNet.fcontext! : '<one-of-us>';
+    List<String> options = ['<one-of-us>', ...followNet.most];
+    if (!options.contains(initial)) {
+      options.add(initial);
+    }
+    List<DropdownMenuEntry<String?>> entries = options
+          .map<DropdownMenuEntry<String>>(
+              (String fcontext) => DropdownMenuEntry<String>(value: fcontext, label: fcontext))
+          .toList();
     return DropdownMenu<String?>(
-      initialSelection: b(followNet.fcontext) ? followNet.fcontext : '<one-of-us>',
+      initialSelection: initial,
       // requestFocusOnTap is enabled/disabled by platforms when it is null.
       // On mobile platforms, this is false by default. Setting this to true will
       // trigger focus request on the text field and virtual keyboard will appear
       // afterward. On desktop platforms however, this defaults to true.
-      requestFocusOnTap: true,
+      // requestFocusOnTap: true,
       label: const Text('Follow'),
       onSelected: (String? fcontext) {
-        setState(() {
-          if (fcontext != null) {
-            followNet.fcontext = fcontext != '<one-of-us>' ? fcontext : null;
-          }
-        });
+        if (fcontext != null) {
+          followNet.fcontext = fcontext != '<one-of-us>' ? fcontext : null;
+        }
+        setState(() {});
       },
-      dropdownMenuEntries: ['<one-of-us>', ...followNet.most]
-          .map<DropdownMenuEntry<String>>(
-              (String fcontext) => DropdownMenuEntry<String>(value: fcontext, label: fcontext))
-          .toList(),
+      dropdownMenuEntries: entries,
     );
   }
 }

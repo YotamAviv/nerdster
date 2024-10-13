@@ -85,7 +85,7 @@ abstract mixin class Comp {
                 continue;
               }
 
-              assert(supportersReady); // Questionable.
+              assert(supportersReady); // QUESTIONABLE
               _ready.value = true;
             }
           } catch (e) {
