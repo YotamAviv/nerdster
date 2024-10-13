@@ -28,6 +28,10 @@ class FollowNet with Comp, ChangeNotifier {
     oneofusNet.addListener(listen);
     addSupporter(oneofusEquiv);
     oneofusEquiv.addListener(listen);
+
+    // Map<String, String> params = Uri.base.queryParameters;
+    // String? follow = params['follow'];
+    // _context = b(follow) ? follow : null;
   }
 
   // vars

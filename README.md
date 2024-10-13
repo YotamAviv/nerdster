@@ -85,17 +85,9 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 - hosted with me at center by default somehow, kludgey, hard-coded okay.
 
 ** Firebase emulators
-- oneofus-nerdster.firebase.json
-This file seems to be for running the one-of-us-net Firebase project emulator form the 'nerdster' directory.
-The sequence seems to be:
-aviv@aviv-Venus-series:~/src/nerdster$ firebase --project=nerdster emulators:start
-aviv@aviv-Venus-series:~/src/nerdster$ firebase --project=one-of-us-net --config=oneofus-nerdster.firebase.json emulators:start
-TODO: probably rename nerdster:oneofus-nerdster.firebase.json to oneofus.firebase.json
-TODO: look into what oneofus:firebase.json is for; maybe change its emulator default to match the other.
-NOTE: The Android Firebase stuff seems to cache on the Android device
-(or emulator), and so even though deleting data or restarting the
-emulator do delete the data, the Android Firebase stuff still finds
-cached, deleted data.
+Run these from 'nerdster' base directory.
+$ firebase --project=nerdster emulators:start
+$ firebase --project=one-of-us-net --config=oneofus-nerdster.firebase.json emulators:start
 
 ## Doc
 ### All statements on this page
