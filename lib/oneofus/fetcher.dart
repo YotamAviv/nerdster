@@ -71,10 +71,8 @@ class Fetcher {
   void setRevokeAt(String revokeAt) {
     if (b(_revokeAt)) {
       // Changing revokeAt not supported
-      if (_revokeAt != revokeAt) {
-        print('$_revokeAt != $revokeAt');
-      }
       assert(_revokeAt == revokeAt, '$_revokeAt != $revokeAt');
+      return;
     }
     _revokeAt = revokeAt;
 
@@ -82,11 +80,12 @@ class Fetcher {
     // TODO: Use the same string for 'since always' (although I should be able to handle any string.)
     // TODO(2): Warn when it's not 'since always' or a valid past statement token.
     if (b(_cached)) {
+      _statements = null;
       Jsonish? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
       if (b(revokeAtStatement)) {
         _revokeAtTime = parseIso(revokeAtStatement!.json['time']);
         int index = _cached!.indexOf(revokeAtStatement);
-        _cached = _cached!.sublist(0, index);
+        _cached = _cached!.sublist(index);
       } else {
         _revokeAtTime = date0;
         _cached = [];
@@ -169,7 +168,7 @@ class Fetcher {
   }
 
   // For dump/load to preserver previous blockchain.
-  List<Jsonish> get cachedNotDistinct {
+  List<Jsonish> get cached {
     assert(b(_cached));
     return _cached!;
   }

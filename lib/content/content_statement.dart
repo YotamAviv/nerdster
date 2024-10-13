@@ -98,9 +98,11 @@ class ContentStatement extends Statement {
   // KLUDGEY'ish: The transformer is applied on
   // - iToken: always
   // - subjectToken: never
-  // The assumption is that transformer is delegate2oneofus.
+  // SUSPECT: The assumption is that transformer is delegate2oneofus.
+  // Note that ContentVerb.follow statements use a Nerdster token for 'I' and a Oneofus 
+  // token for 'subject'
   @override
-  String getDistinctSignature({String Function(String)? transformer}) {
+  String getDistinctSignature({Transformer? transformer}) {
     String tiToken = b(transformer) ? transformer!(iToken) : iToken;
     String tSubjectToken = subjectToken;
     if (b(other)) {

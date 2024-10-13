@@ -102,6 +102,10 @@ These are in flux, but I've been using
 - BUG
 - FIX
 - TODO
+--- bar --- 
+- TEST
+- CODE
+- QUESTIONABLE
 - CONSIDER
 - DEFER
 Maybe shift to TODO1 or TODO(1) through 5 

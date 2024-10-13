@@ -1,8 +1,6 @@
 import 'statement.dart';
 import 'util.dart';
 
-typedef Transformer = String Function(String);
-
 /// - merge statement streams (probably Fetcher.allStatements)
 class Merger extends Iterable implements Iterator {
   late final List<Iterator<Statement>> _iters;
