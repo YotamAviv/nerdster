@@ -51,7 +51,7 @@ class _ContentTreeViewState extends State<ContentTreeView> {
   }
 
   Future<void> listen() async {
-    await Comp.waitOnComps([contentBase, keyLabels]);
+    await Comp.waitOnComps([followNet, contentBase, keyLabels]);
     treeController.roots = contentBase.getRoots();
     treeController.rebuild();
     if (mounted) {

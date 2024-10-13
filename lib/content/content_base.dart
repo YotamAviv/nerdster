@@ -220,6 +220,7 @@ class ContentBase with Comp, ChangeNotifier {
   /// - (Gone: author of this censored it himself.. Gone because author can clear his own stuff anyway.)
   bool _isCensored(String subject) => _censor && _censored.contains(subject);
 
+  // CODE: 'get roots'
   Iterable<ContentTreeNode> getRoots() {
     if (b(_roots)) {
       return _roots!;

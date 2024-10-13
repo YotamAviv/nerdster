@@ -104,7 +104,7 @@ Future<Map<String, Map<String, List>>> dumpStatements() async {
     List list = [];
     map[token] = list;
     Fetcher fetcher = Fetcher(token, kOneofusDomain);
-    for (final Jsonish statement in fetcher.cachedNotDistinct) {
+    for (final Jsonish statement in fetcher.cached) {
       list.add(statement.json);
     }
   }
@@ -116,7 +116,7 @@ Future<Map<String, Map<String, List>>> dumpStatements() async {
     final Fetcher fetcher = e.value;
     List list = [];
     map2[token] = list;
-    for (final Jsonish statement in fetcher.cachedNotDistinct) {
+    for (final Jsonish statement in fetcher.cached) {
       list.add(statement.json);
     }
   }
