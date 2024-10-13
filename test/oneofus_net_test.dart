@@ -722,10 +722,10 @@ void main() async {
 
     await signIn(homer2.token, null);
     expect(toJson(labelKeyPathsX(homer.token)), [
-      [{'homer2 (0)': '(replaced)'}], 
+      [{'hubby2 (0)': '(replaced)'}], 
       [
         {'daughter': 'daughter'}, 
-        {'homer2 (0)': 'dad'}
+        {'hubby2 (0)': 'dad'}
       ]
     ]);
   });

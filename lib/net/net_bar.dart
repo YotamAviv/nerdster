@@ -22,7 +22,7 @@ class _NetBarState extends State<NetBar> {
 
   @override
   void dispose() {
-    NetTreeView.bOneofus.addListener(listen);
+    NetTreeView.bOneofus.removeListener(listen);
     super.dispose();
   }
 
@@ -138,11 +138,10 @@ class _FollowDropdownState extends State<FollowDropdown> {
       requestFocusOnTap: true,
       label: const Text('Follow'),
       onSelected: (String? fcontext) {
-        setState(() {
-          if (fcontext != null) {
-            followNet.fcontext = fcontext != '<one-of-us>' ? fcontext : null;
-          }
-        });
+        if (fcontext != null) {
+          followNet.fcontext = fcontext != '<one-of-us>' ? fcontext : null;
+        }
+        setState(() {});
       },
       dropdownMenuEntries: ['<one-of-us>', ...followNet.most]
           .map<DropdownMenuEntry<String>>(
