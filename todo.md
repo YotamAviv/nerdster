@@ -27,7 +27,6 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 # Plan:
 
 ## BUGS
-- Signed in as me viewing as Tina shows Me / Me.
 - I noticed that when Fetcher asserts false, it gets lost, not progpagated.
 - Revoked delegate says 'replaced'.
 

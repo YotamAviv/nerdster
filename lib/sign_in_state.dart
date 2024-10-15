@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/singletons.dart';
 
 /// NetBase tracks the signed in Oneofus key (signedInOneofus) specifically because DelegateNetwork
 /// might not know delegate2oneofus for that nerd when viewing as someone else.
@@ -35,28 +37,18 @@ class SignInState with ChangeNotifier {
   }
 
   Future<void> signIn(OouKeyPair nerdsterKeyPair) async {
-    _signedInOneofus = _center;
     _signedInDelegateKeyPair = nerdsterKeyPair;
     _signedInDelegatePublicKey = await nerdsterKeyPair.publicKey;
     _signedInDelegatePublicKeyJson = await _signedInDelegatePublicKey!.json;
     _signedInDelegate = getToken(await _signedInDelegatePublicKey!.json);
     _signer = await OouSigner.make(nerdsterKeyPair);
     notifyListeners();
-  }
 
-  Future<void> centerAndSignIn(String oneofusToken, OouKeyPair nerdsterKeyPair) async {
-    _center = oneofusToken;
-    // NOTE: Below would call notifyListeners() ahead of async gaps; should work, but used to cause deadlock.
-    // center = oneofusToken; 
-
-    _signedInOneofus = _center;
-    _signedInDelegateKeyPair = nerdsterKeyPair;
-    _signedInDelegatePublicKey = await nerdsterKeyPair.publicKey;
-    _signedInDelegatePublicKeyJson = await _signedInDelegatePublicKey!.json;
-    _signedInDelegate = getToken(await _signedInDelegatePublicKey!.json);
-    _signer = await OouSigner.make(nerdsterKeyPair);
-
-    notifyListeners();
+    // Check if delegate is delegate of Oneofus
+    await Comp.waitOnComps([followNet]);
+    if (followNet.delegate2oneofus[_signedInDelegate] == _center) {
+      _signedInOneofus = _center;
+    }
   }
 
   void signOut() {
