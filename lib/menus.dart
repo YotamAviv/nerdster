@@ -33,9 +33,8 @@ class Menus {
             if (!b(delegate)) {
               signInState.center = oneofus.token;
             } else {
-              await signInState.centerAndSignIn(oneofus.token, delegate!.keyPair);
-              // await _signInState.signIn(delegate!.keyPair);
-              // _signInState.center = oneofus.token;
+              await signInState.signIn(delegate!.keyPair);
+              signInState.center = oneofus.token;
             }
           },
           child: Text(e.key)));
