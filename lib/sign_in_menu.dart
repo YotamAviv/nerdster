@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/key_store.dart';
-import 'package:nerdster/main.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/singletons.dart';
 
 final KeyLabels _keyLabels = KeyLabels();
 final SignInState _sign = SignInState();
@@ -100,7 +100,7 @@ class _SignInMenuState extends State<SignInMenu> {
         MenuItemButton(
             onPressed: () async {
               await KeyStore.wipeKeys();
-              await defaultSignIn();
+              signInState.signOut();
             },
             child: const Text('Sign out')),
       ],

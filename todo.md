@@ -38,11 +38,8 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
   of fixing... A reaction (eg. comment) can be deleted, even if it's
   just changed, then the old one is deleted(replaced). A book or a movie
   can't be deleted ..
-- Sign in menu upgrade:
-  - bigger is okay, colors, bold, ...
-  - move copy/paste to DEV menu
-  - clean up 'data corruption' in Nerdster that dumps all entries by
-    order regardless of data corruption that Fetcher detects.
+? clean up 'data corruption' in Nerdster that dumps all entries by
+  order regardless of data corruption that Fetcher detects.
 - Embrace the key strikethrough icon (like replaced/blocked keys on phone). Use the red key for revoked maybe.
 - NerdTree solid
   - DO: test! (now that we have better than dump !minimalist)
