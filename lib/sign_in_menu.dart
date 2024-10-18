@@ -73,15 +73,6 @@ class _SignInMenuState extends State<SignInMenu> {
     }
     return SubmenuButton(
       menuChildren: [
-        MenuItemButton(
-            onPressed: () {},
-            child: Row(
-              children: [
-                const Icon(Icons.login),
-                Text(status.toString()),
-              ],
-            )),
-
         if (b(_sign.signedInOneofus) && _sign.signedInOneofus != _sign.center)
           MenuItemButton(
             onPressed: () {
@@ -96,10 +87,16 @@ class _SignInMenuState extends State<SignInMenu> {
               await qrSignin(context);
               // TODO: Store keys checkbox option
             },
-            child: const Text('QR sign-in')),
+            child: const Row(children: [
+              Icon(Icons.login),
+              Text('QR sign-in'),
+            ])),
         // copy/paste sign-in
         MenuItemButton(
-            onPressed: () => pasteSignin(context), child: const Text('copy/paste sign-in')),
+            onPressed: () => pasteSignin(context),
+            child: const Row(children: [
+              Icon(Icons.copy),
+              Text('paste sign-in')])),
         MenuItemButton(
             onPressed: () async {
               await KeyStore.wipeKeys();
@@ -107,7 +104,7 @@ class _SignInMenuState extends State<SignInMenu> {
             },
             child: const Text('Sign out')),
       ],
-      child: Text(title),
+      child: Text(status.toString()),
     );
   }
 }
