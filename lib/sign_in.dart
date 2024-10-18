@@ -43,6 +43,7 @@ Future<void> qrSignin(BuildContext context) async {
   // Name a "session"
   final String session = Jsonish(publicKeyJson).token;
   forPhone['session'] = session;
+  ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
   // ignore: unawaited_futures
   showDialog(
       context: context,
@@ -67,19 +68,25 @@ Future<void> qrSignin(BuildContext context) async {
                           children: [
                             TextField(
                                 controller: TextEditingController()..text = forPhoneString,
-                                maxLines: 6,
+                                maxLines: 10,
                                 readOnly: true,
                                 style: GoogleFonts.courierPrime(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 14,
                                     color: Colors.black)),
-                            FloatingActionButton(
-                                heroTag: 'Copy',
-                                tooltip: 'Copy',
-                                child: const Icon(Icons.copy),
-                                onPressed: () async {
-                                  await Clipboard.setData(ClipboardData(text: forPhoneString));
-                                }),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                MyCheckbox(storeKeys, 'Store keys'),
+                                FloatingActionButton(
+                                    heroTag: 'Copy',
+                                    tooltip: 'Copy',
+                                    child: const Icon(Icons.copy),
+                                    onPressed: () async {
+                                      await Clipboard.setData(ClipboardData(text: forPhoneString));
+                                    }),
+                              ],
+                            )
                           ],
                         )
                       ],
@@ -110,11 +117,14 @@ Future<void> qrSignin(BuildContext context) async {
         }
       }
 
-      // Center and optinally sign in
+      // Center and optionally sign in
       SignInState state = SignInState();
-      state.center = Jsonish(await oneofusPublicKey.json).token;
+      state.center = getToken(await oneofusPublicKey.json);
       if (b(nerdsterKeyPair)) {
         await state.signIn(nerdsterKeyPair!);
+        if (storeKeys.value) {
+          await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
+        }
       }
 
       // Stop listening
@@ -122,9 +132,7 @@ Future<void> qrSignin(BuildContext context) async {
       subscription!.cancel();
 
       // Dismiss dialog
-      if (context.mounted) {
-        Navigator.of(context).pop();
-      }
+      if (context.mounted) Navigator.of(context).pop();
     },
   );
   // DEFER: delete session
