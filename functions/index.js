@@ -88,9 +88,13 @@ exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
 // Enter this in browser: http://127.0.0.1:5001/nerdster/us-central1/export?token=<Nerdster delegate token>
 // Expect: JSON export
 // Deployed! Try at: https://us-central1-nerdster.cloudfunctions.net/export?token=f4e45451dd663b6c9caf90276e366f57e573841b
-exports.export = functions.https.onRequest(async (req, res) => {
+// Updates from 10/18/24:
+// - upgraded to v2 (in response to errors on command line)
+// - mapped to https://export.nerdster.org/?token=f4e45451dd663b6c9caf90276e366f57e573841b
+//   - https://console.cloud.google.com/run/domains?project=nerdster
+//   - https://console.firebase.google.com/project/nerdster/functions/list
+exports.export2 = onRequest(async (req, res) => {
   const token = req.query.token;
-
   if (!token) {
     return res.status(400).send('Missing collection name');
   }
