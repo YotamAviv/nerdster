@@ -17,7 +17,7 @@ class Linky extends StatelessWidget {
       onOpen: (LinkableElement link) async {
         Uri uri;
         if (link.text.startsWith('RTFM#')) {
-          String url = kRtfmAnchors[link.url] ?? kOneofusUserManualUrl;
+          String url = kRtfmAnchors[link.url] ?? kRtfm;
           uri = Uri.parse(url);
         } else {
           uri = Uri.parse(link.url);
