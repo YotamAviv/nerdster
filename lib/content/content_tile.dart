@@ -275,9 +275,7 @@ class _StatementTitle extends StatelessWidget {
           NetTreeView.show(context, highlightToken: token);
         },
         child: Row(children: [
-          Text(nerdName,
-              style:
-                  const TextStyle(color: Colors.blueAccent, decoration: TextDecoration.underline)),
+          Text(nerdName, style: linkStyle),
           Tooltip(
             message: formatUiDatetime(time),
             child: Text('@${formatUiDate(time)}'),

@@ -7,6 +7,7 @@ import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/util_ui.dart';
 
 /// Fetching URL title:
 /// CORS rules out fetching the HTML title ourselves.
@@ -24,7 +25,8 @@ Future<Jsonish?> establishSubjectDialog(BuildContext context) {
   return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) => const Dialog(child: SubjectFields()));
+      builder: (BuildContext context) => Dialog(
+          child: SizedBox(width: (MediaQuery.of(context).size).width / 2, child: SubjectFields())));
 }
 
 class SubjectFields extends StatefulWidget {
@@ -76,25 +78,33 @@ class _SubjectFieldsState extends State<SubjectFields> {
   Widget build(BuildContext context) {
     key2controller = LinkedHashMap<String, TextEditingController>();
     fields = <TextField>[];
-    String typeLabel = contentType.label;
-    List<Map<String, String>> listField2type = contentType2field2type[typeLabel]!;
-    for (Map<String, String> map in listField2type) {
-      for (MapEntry entry in map.entries) {
-        TextEditingController controller = TextEditingController();
-        key2controller[entry.key] = controller;
-        String hintText = entry.key;
-        fields.add(
-          TextField(
-            decoration: InputDecoration(
-                hintText: hintText, hintStyle: hintStyle, border: const OutlineInputBorder()),
-            controller: controller,
-          ),
-        );
-        // Special case kludge for auto-filling 'title' field from 'url' field.
-        if (entry.key == 'url') {
-          controller.addListener(listen);
-        }
+    for (MapEntry<String, String> entry in contentType.type2field2type.entries) {
+      TextEditingController controller = TextEditingController();
+      key2controller[entry.key] = controller;
+      String hintText = entry.key;
+      fields.add(
+        TextField(
+          decoration: InputDecoration(
+              hintText: hintText, hintStyle: hintStyle, border: const OutlineInputBorder()),
+          controller: controller,
+        ),
+      );
+      // Special case kludge for auto-filling 'title' field from 'url' field.
+      if (entry.key == 'url') {
+        controller.addListener(listen);
       }
+    }
+
+    Widget noUrl = const SizedBox(width: 80.0);
+    if (!contentType.type2field2type.keys.any((x) => x == 'url')) {
+      noUrl = SizedBox(
+        width: 80.0,
+        child: Tooltip(
+            message: '''A ${contentType.label} doesn't have a singular URL.
+In case multiple people rate a book, their ratings will be grouped correctly only if they all use the same fields and values.
+You can include a URL in a comment or relate or equate this book to an article with a URL.''',
+            child: Text('no URL?', style: linkStyle)),
+      );
     }
 
     return Padding(
@@ -103,21 +113,25 @@ class _SubjectFieldsState extends State<SubjectFields> {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            DropdownMenu<ContentType>(
-              initialSelection: ContentType.article,
-              requestFocusOnTap: true,
-              label: const Text('Type'),
-              onSelected: (ContentType? contentType) {
-                setState(() {
-                  this.contentType = contentType!;
-                });
-              },
-              dropdownMenuEntries:
-                  typesMinusAll.map<DropdownMenuEntry<ContentType>>((ContentType type) {
-                return DropdownMenuEntry<ContentType>(
-                    value: type, label: type.label, leadingIcon: type.icon);
-              }).toList(),
-            ),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              const SizedBox(width: 80.0),
+              DropdownMenu<ContentType>(
+                initialSelection: ContentType.article,
+                requestFocusOnTap: true,
+                label: const Text('Type'),
+                onSelected: (ContentType? contentType) {
+                  setState(() {
+                    this.contentType = contentType!;
+                  });
+                },
+                dropdownMenuEntries:
+                    typesMinusAll.map<DropdownMenuEntry<ContentType>>((ContentType type) {
+                  return DropdownMenuEntry<ContentType>(
+                      value: type, label: type.label, leadingIcon: type.icon);
+                }).toList(),
+              ),
+              noUrl,
+            ]),
             const SizedBox(height: 10),
             ...fields,
             const SizedBox(height: 10),
