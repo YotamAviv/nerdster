@@ -8,6 +8,7 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/util_ui.dart';
 
 /// TODO:
 /// - Linky, RTFM..
@@ -228,8 +229,19 @@ class RateBodyState extends State<RateBody> {
       callback: eraseCallback,
     );
 
-    ScrollController scrollController = ScrollController();
+    Widget warning = const SizedBox(width: 120.0);
+    print(widget.subject.ppJson);
+    if (widget.subject.json['statement'] == kNerdsterType) {
+      warning = SizedBox(
+        width: 120.0,
+        child: Tooltip(
+            message: '''Subjects (ex. {books, articles, or movies}) just exist, but Nerd'ster user reactions (ex. {rate, comment, dis}) are fleeting.
+A user can have one disposition on a subject, and so any newer reaction (including an edit to a comment) will overwrite his earlier one.''',
+            child: Text('reacting to a reaction?', style: linkStyle)),
+      );
+    }
 
+    ScrollController scrollController = ScrollController();
     return ListView(shrinkWrap: true, children: [
       InputDecorator(
           decoration: InputDecoration(
@@ -266,7 +278,14 @@ class RateBodyState extends State<RateBody> {
         controller: commentController,
       ),
       const SizedBox(height: 10),
-      OkCancel(okHandler, 'Okay', okEnabled: okEnabled),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const SizedBox(width: 120),
+          OkCancel(okHandler, 'Okay', okEnabled: okEnabled),
+          warning,
+        ],
+      ),
     ]);
   }
 }
