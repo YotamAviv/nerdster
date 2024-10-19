@@ -230,13 +230,13 @@ class RateBodyState extends State<RateBody> {
     );
 
     Widget warning = const SizedBox(width: 120.0);
-    print(widget.subject.ppJson);
     if (widget.subject.json['statement'] == kNerdsterType) {
       warning = SizedBox(
         width: 120.0,
         child: Tooltip(
             message: '''Subjects (ex. {books, articles, or movies}) just exist, but Nerd'ster user reactions (ex. {rate, comment, dis}) are fleeting.
-A user can have one disposition on a subject, and so any newer reaction (including an edit to a comment) will overwrite his earlier one.''',
+A user can have one disposition on a subject, and so any newer reaction by him (including an edit to a comment) will overwrite his earlier one,
+which will make your reaction to his reaction lost.''',
             child: Text('reacting to a reaction?', style: linkStyle)),
       );
     }
