@@ -29,6 +29,7 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 ## BUGS
 - I noticed that when Fetcher asserts false, it gets lost, not progpagated.
 - Revoked delegate says 'replaced'.
+- sign in without store keys should wipe keys
 
 ## TODO:
 - Take care to warn user if he signs in oneofus/delegate keys that aren't related, are revoked, etc...
