@@ -31,7 +31,6 @@ class FollowNet with Comp, ChangeNotifier {
 
     Map<String, String> params = Uri.base.queryParameters;
     String? follow = params['follow'];
-    print('follow=$follow');
     _context = b(follow) ? follow : null;
   }
 

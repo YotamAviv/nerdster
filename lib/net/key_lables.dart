@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/follow/follow_net.dart';
-import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -20,10 +18,10 @@ class KeyLabels with Comp, ChangeNotifier {
   factory KeyLabels() => _singleton;
   KeyLabels._internal() {
     // supporters
-    addSupporter(OneofusNet());
-    OneofusNet().addListener(listen);
-    addSupporter(FollowNet());
-    FollowNet().addListener(listen);
+    addSupporter(oneofusNet);
+    oneofusNet.addListener(listen);
+    addSupporter(followNet);
+    followNet.addListener(listen);
   }
 
   // vars
@@ -74,7 +72,7 @@ class KeyLabels with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    assert(OneofusNet().ready);
+    assert(oneofusNet.ready);
     _token2name.clear();
 
     _labelKeys();
@@ -86,7 +84,7 @@ class KeyLabels with Comp, ChangeNotifier {
   void _labelKeys() {
     _labelMe();
     String meLabel = labelKey(SignInState().center)!;
-    for (MapEntry<String, Node> e in OneofusNet().network.entries.skip(1)) {
+    for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
       String token = e.key;
       Path path = e.value.paths.first;
       // We walk the path because some of the edges are 'replace' which don't have a moniker.
@@ -107,7 +105,7 @@ class KeyLabels with Comp, ChangeNotifier {
   }
 
   void _labelDelegateKeys() {
-    for (MapEntry<String, String> e in FollowNet().delegate2oneofus.entries) {
+    for (MapEntry<String, String> e in followNet.delegate2oneofus.entries) {
       _labelKey(e.key, '${labelKey(e.value)}-nerdster');
     }
   }
@@ -127,7 +125,7 @@ class KeyLabels with Comp, ChangeNotifier {
   }
 
   String _labelMe() {
-    for (String t in OneofusNet().network.keys) {
+    for (String t in oneofusNet.network.keys) {
       Fetcher f = Fetcher(t, kOneofusDomain);
       for (TrustStatement ts in distinct(f.statements)
           .cast<TrustStatement>()

@@ -165,6 +165,7 @@ class Fetcher {
 
       _cached!.add(statement);
     }
+    // print('fetched: $fire, $token');
   }
 
   // For dump/load to preserver previous blockchain.

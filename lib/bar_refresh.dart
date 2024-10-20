@@ -1,21 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
-import 'package:nerdster/follow/follow_net.dart';
-import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 
 class BarRefresh extends StatefulWidget {
-  static Stopwatch? stopwatch;
+  static final ValueNotifier<Stopwatch?> stopwatch = ValueNotifier<Stopwatch?>(null);
 
   const BarRefresh({
     super.key,
   });
 
   static elapsed(String s) {
-    if (b(stopwatch)) {
-      print('$s: elapsed: ${BarRefresh.stopwatch!.elapsed}');
+    if (b(stopwatch.value)) {
+      print('$s: elapsed: ${BarRefresh.stopwatch.value!.elapsed}');
+    }
+  }
+
+  static Future<void> refresh() async {
+    // - The state is BarRefresh.stopwatch
+    // - ignore the click if we're already refreshing
+    if (!b(stopwatch.value)) {
+      stopwatch.value = Stopwatch();
+      stopwatch.value!.start();
+      oneofusNet.listen();
+      await Comp.waitOnComps([contentBase]);
+      print('Refresh took: ${stopwatch.value!.elapsed}');
+      stopwatch.value!.stop();
+      stopwatch.value = null;
     }
   }
 
@@ -25,26 +36,32 @@ class BarRefresh extends StatefulWidget {
 
 class _BarRefreshState extends State<BarRefresh> {
   @override
+  void initState() {
+    super.initState();
+    BarRefresh.stopwatch.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    BarRefresh.stopwatch.removeListener(listener);
+    super.dispose();
+  }
+
+  void listener() {
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    IconData icon = !b(BarRefresh.stopwatch) ? Icons.refresh : Icons.rotate_right_outlined;
+    IconData icon = !b(BarRefresh.stopwatch.value) ? Icons.refresh : Icons.rotate_right_outlined;
     return IconButton(
         icon: Icon(icon),
         tooltip: 'Refresh',
         // A little sloppy..
         // - The state is BarRefresh.stopwatch
         // - just ignore the click if we're already refreshing
-        onPressed: () async {
-          if (!b(BarRefresh.stopwatch)) {
-            BarRefresh.stopwatch = Stopwatch();
-            BarRefresh.stopwatch!.start();
-            oneofusNet.listen();
-            setState(() {});
-            await Comp.waitOnComps([contentBase]);
-            print('Refresh took: ${BarRefresh.stopwatch!.elapsed}');
-            BarRefresh.stopwatch!.stop();
-            BarRefresh.stopwatch = null;
-            setState(() {});
-          }
+        onPressed: () {
+          BarRefresh.refresh();
         });
   }
 }

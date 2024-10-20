@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree.dart';
@@ -106,6 +107,10 @@ Future<void> main() async {
   OneofusEquiv();
   FollowNet();
   KeyLabels();
+
+  // No await, maybe I should.
+  // This is here to show the loading loading and start the timer.
+  BarRefresh.refresh();
 
   // -------------- run app ---------------
   runApp(const MaterialApp(
