@@ -18,10 +18,10 @@ import 'package:nerdster/singletons.dart';
 Future<(DemoKey, DemoKey?)> blockOldKey() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
 
-  bool showEquivalentKeysBefore = Prefs.showEquivalentKeys.value;
-  bool showTrustStatementsBefore = Prefs.showTrustStatements.value;
-  Prefs.showEquivalentKeys.value = true;
-  Prefs.showTrustStatements.value = false;
+  bool showEquivalentKeysBefore = Prefs.showKeys.value;
+  bool showTrustStatementsBefore = Prefs.showStatements.value;
+  Prefs.showKeys.value = true;
+  Prefs.showStatements.value = false;
 
   DemoKey bart = await DemoKey.findOrCreate('bart');
   DemoKey bart2 = await DemoKey.findOrCreate('bart2');
@@ -136,8 +136,8 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   };
   jsonShowExpect(dump, expected);
 
-  Prefs.showEquivalentKeys.value = showEquivalentKeysBefore;
-  Prefs.showTrustStatements.value = showTrustStatementsBefore;
+  Prefs.showKeys.value = showEquivalentKeysBefore;
+  Prefs.showStatements.value = showTrustStatementsBefore;
   useClock(LiveClock());
   return (DemoKey.findByName('bart3')!, null);
 }

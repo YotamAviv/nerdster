@@ -13,8 +13,8 @@ import 'package:nerdster/prefs.dart';
 
 Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
-  Prefs.showEquivalentKeys.value = true;
-  Prefs.showTrustStatements.value = false;
+  Prefs.showKeys.value = true;
+  Prefs.showStatements.value = false;
 
   DemoKey bart = await DemoKey.findOrCreate('bart');
   DemoKey bart2 = await DemoKey.findOrCreate('bart2');

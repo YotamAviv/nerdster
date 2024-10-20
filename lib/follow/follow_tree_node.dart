@@ -55,7 +55,7 @@ class FollowTreeNode extends NetTreeModel {
     }
 
     List<FollowTreeNode> childStatements = <FollowTreeNode>[];
-    if (Prefs.showTrustStatements.value) {
+    if (Prefs.showStatements.value) {
       for (Trust trust in followNode.cachedTrusts) {
         FollowTreeNode child = FollowTreeNode(nextPath,
             statement: Statement.make(Jsonish.find(trust.statementToken)!), verbPastTense: 'followed');

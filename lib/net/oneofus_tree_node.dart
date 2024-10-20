@@ -85,7 +85,7 @@ class OneofusTreeNode extends NetTreeModel {
 
     // non-canonical children - delegates or replaced keys in the NerdTree.
     final Map<String, OneofusTreeNode> childKeys = <String, OneofusTreeNode>{};
-    if (Prefs.showEquivalentKeys.value && canonical) {
+    if (Prefs.showKeys.value && canonical) {
       for (String equiv in oneofusEquiv.getEquivalents(token).whereNot((s) => s == token)) {
         Node fetcherNode = oneofusNet.network[equiv]!;
         OneofusTreeNode child = OneofusTreeNode(nextPath,
@@ -104,7 +104,7 @@ class OneofusTreeNode extends NetTreeModel {
     }
 
     List<OneofusTreeNode> childStatements = <OneofusTreeNode>[];
-    if (Prefs.showTrustStatements.value) {
+    if (Prefs.showStatements.value) {
       // show trust statements made by this key
       for (TrustStatement statement
           in distinct(Fetcher(token!, kOneofusDomain).statements).cast<TrustStatement>()) {

@@ -20,6 +20,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus_fire.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_state.dart';
 
 import 'firebase_options.dart';
@@ -85,6 +86,7 @@ Future<void> main() async {
     FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore());
     FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
   }
+  Prefs.init();
   TrustStatement.init();
   ContentStatement.init();
 
