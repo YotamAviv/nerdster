@@ -49,6 +49,12 @@ class SignInState with ChangeNotifier {
     if (followNet.delegate2oneofus[_signedInDelegate] == _center) {
       _signedInOneofus = _center;
     }
+    // Was trying to speed up initial load..
+    // Comp.waitOnComps([followNet]).then((_) {
+    //   if (followNet.delegate2oneofus[_signedInDelegate] == _center) {
+    //     _signedInOneofus = _center;
+    //   }
+    // });
   }
 
   void signOut() {

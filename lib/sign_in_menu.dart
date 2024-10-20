@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/key_store.dart';
-import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
-
-final KeyLabels _keyLabels = KeyLabels();
-final SignInState _sign = SignInState();
 
 class SignInMenu extends StatefulWidget {
   static const SignInMenu _singleton = SignInMenu._internal();
@@ -22,49 +18,48 @@ class SignInMenu extends StatefulWidget {
 
 class _SignInMenuState extends State<SignInMenu> {
   _SignInMenuState() {
-    _sign.addListener(listen);
-    _keyLabels.addListener(listen);
+    signInState.addListener(listen);
+    keyLabels.addListener(listen);
     listen();
   }
 
   Future<void> listen() async {
-    await _keyLabels.waitUntilReady();
+    await keyLabels.waitUntilReady();
+    // bad, null: print('_SignInMenuState.listen(keyLabels): ${BarRefresh.stopwatch!.elapsed}');
     setState(() {});
   }
 
   @override
   void dispose() {
-    _sign.removeListener(listen);
-    _keyLabels.removeListener(listen);
+    signInState.removeListener(listen);
+    keyLabels.removeListener(listen);
     super.dispose();
   }
 
   String label(String token) {
-    String? netBaseLable = _keyLabels.labelKey(token);
+    String? netBaseLable = keyLabels.labelKey(token);
     return b(netBaseLable) ? netBaseLable! : ' ? ';
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!Comp.compsReady([_keyLabels])) {
+    if (!Comp.compsReady([keyLabels])) {
       return const Text('loading..');
     }
-    String? centerLabel = label(_sign.center);
+    String? centerLabel = label(signInState.center);
 
     String signedInLabel = ' - ';
-    if (b(_sign.signedInOneofus)) {
-      signedInLabel = label(_sign.signedInOneofus!);
+    if (b(signInState.signedInOneofus)) {
+      signedInLabel = label(signInState.signedInOneofus!);
     }
-
-    String title = '[[ $signedInLabel / $centerLabel ]]';
 
     final StringBuffer status = StringBuffer();
     String viewingAs = 'Viewing as: "$centerLabel"';
-    String? signedInAs = b(_sign.signedInOneofus) ? 'Signed in as: "$signedInLabel"' : null;
-    if (!b(_sign.signedInOneofus)) {
+    String? signedInAs = b(signInState.signedInOneofus) ? 'Signed in as: "$signedInLabel"' : null;
+    if (!b(signInState.signedInOneofus)) {
       // not signed in
       status.write(viewingAs);
-    } else if (_sign.signedInOneofus == _sign.center) {
+    } else if (signInState.signedInOneofus == signInState.center) {
       status.write('Signed in and viewing as: "$centerLabel"');
     } else {
       status.write(signedInAs);
@@ -73,10 +68,10 @@ class _SignInMenuState extends State<SignInMenu> {
     }
     return SubmenuButton(
       menuChildren: [
-        if (b(_sign.signedInOneofus) && _sign.signedInOneofus != _sign.center)
+        if (b(signInState.signedInOneofus) && signInState.signedInOneofus != signInState.center)
           MenuItemButton(
             onPressed: () {
-              _sign.center = _sign.signedInOneofus!;
+              signInState.center = signInState.signedInOneofus!;
             },
             child: const Text('Center as yourself again'),
           ),

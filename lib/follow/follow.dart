@@ -74,7 +74,6 @@ Future<Jsonish?> follow(String token, BuildContext context) async {
   }
   Json contextsIn;
   if (b(priorStatement)) {
-    print('priorStatement=${priorStatement!.jsonish.ppJson}');
     contextsIn = priorStatement!.contexts!;
   } else {
     contextsIn = {
@@ -139,7 +138,6 @@ class _FollowUiState extends State<FollowUi> {
       int i = e.value.followNotifier.value == Follow.follow ? 1 : -1;
       contexts[e.key] = i;
     }
-    print('contexts=$contexts');
     Navigator.pop(context, contexts);
   }
 
@@ -267,7 +265,6 @@ class _FollowWidgetState extends State<FollowWidget> {
         divisions: 1,
         label: widget.followNotifier.value.label,
         onChanged: (x) {
-          print(x);
           widget.followNotifier.value = FollowWidget.i2follow[x]!;
           setState(() {});
         });

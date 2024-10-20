@@ -62,6 +62,7 @@ class OneofusTreeNode extends NetTreeModel {
   /// - Don't show children that are already on the path.
   @override
   Iterable<OneofusTreeNode> get children {
+    // TODO: This fires, block the click somehow - async...
     assert(Comp.compsReady([followNet, oneofusEquiv, oneofusNet]));
     if (_children != null) return _children!;
     // Don't expand statements, !canoncial, or nodes already on path
