@@ -48,8 +48,8 @@ class OneofusEquiv with Comp, ChangeNotifier {
 
     // CODE: This class listens to these prefs, but that seems to be only to make something
     // that listens to us dirty when they change. TODO3: Clean up.
-    Prefs.showEquivalentKeys.addListener(listen);
-    Prefs.showTrustStatements.addListener(listen);
+    Prefs.showKeys.addListener(listen);
+    Prefs.showStatements.addListener(listen);
   }
 
   // vars

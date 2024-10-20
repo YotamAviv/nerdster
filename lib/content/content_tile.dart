@@ -36,7 +36,7 @@ class _SubjectState extends State<SubjectTile> {
 
   _SubjectState() {
     Prefs.nice.addListener(listener);
-    Prefs.js.addListener(listener);
+    Prefs.showStatements.addListener(listener);
   }
 
   listener() async {
@@ -129,7 +129,7 @@ class _SubjectState extends State<SubjectTile> {
     propWidgets.add(props[PropType.numComments]!.getWidget());
 
     Json? json;
-    if (Prefs.js.value) {
+    if (Prefs.showStatements.value) {
       json = subjectNode.subject.json;
     }
 
@@ -152,7 +152,7 @@ class _SubjectState extends State<SubjectTile> {
                 _ReactIcon(subjectNode.subject),
                 const SizedBox(width: 8),
                 ...propWidgets,
-                if (Prefs.js.value) JSWidget(json!),
+                if (Prefs.showStatements.value) JSWidget(json!),
                 titleWidget,
                 if (b(statementDesc)) statementDesc!,
               ]),

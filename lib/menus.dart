@@ -66,10 +66,9 @@ class Menus {
       // Prefs
       SubmenuButton(menuChildren: <Widget>[
         MyCheckbox(Prefs.nice, 'translate <JSON> and token gibberish'),
-        MyCheckbox(Prefs.js, 'show JSON (<JS>)'),
-        MyCheckbox(Prefs.showEquivalentKeys, 'show equivalent keys'),
-        MyCheckbox(Prefs.showTrustStatements, 'show trust statements'),
-        MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
+        MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
+        MyCheckbox(Prefs.showStatements, 'show trust statements'),
+        // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
       ], child: const Text('Preferences')),
 
       // Dev

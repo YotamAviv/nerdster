@@ -1,13 +1,15 @@
-// Use language features to build the url
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 
-// TODO: Add follow settings (and maybe other network settings)
+// DEFER: add other network settings: degrees? (statements?, numOneofus?, numFollow?, )
 String generateLink() {
   Map<String, String> params = <String, String>{};
-  params['oneofus'] = SignInState().center;
+  if (fireChoice != FireChoice.fake) {
+    params['oneofus'] = SignInState().center;
+  }
   params['fire'] = fireChoice.name;
   params['sort'] = contentBase.sort.name;
   params['type'] = contentBase.type.name;
@@ -16,6 +18,7 @@ String generateLink() {
   if (b(followNet.fcontext)) {
     params['follow'] = followNet.fcontext!;
   }
+  Prefs.generateLink(params);
   String url = buildUrlWithQueryParams(Uri.base, params);
   return url;
 }

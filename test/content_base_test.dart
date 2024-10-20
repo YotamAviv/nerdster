@@ -56,8 +56,8 @@ void main() async {
     contentBase.censor = true;
     followNet.fcontext = null;
     oneofusNet.numPaths = 1;
-    Prefs.showEquivalentKeys.value = false;
-    Prefs.showTrustStatements.value = false;
+    Prefs.showKeys.value = false;
+    Prefs.showStatements.value = false;
     for (final fire in FireFactory.domain2fire.values) {
       await fire.clearPersistence();
     }
@@ -96,8 +96,8 @@ void main() async {
   // Jock see's Poser's recommend and dis.
   // Accomplished manually using the UI and dumped.
   test('rate and dis', () async {
-    Prefs.showTrustStatements.value = true;
-    Prefs.showEquivalentKeys.value = true;
+    Prefs.showStatements.value = true;
+    Prefs.showKeys.value = true;
     Prefs.nice.value = false;
     await contentBase.waitUntilReady();
     await testByDump(rateAndDis);
@@ -105,8 +105,8 @@ void main() async {
 
   /// view as Jock using stock DemoKeys.egos.
   test('jock1', () async {
-    Prefs.showTrustStatements.value = true;
-    Prefs.showEquivalentKeys.value = true;
+    Prefs.showStatements.value = true;
+    Prefs.showKeys.value = true;
     Prefs.nice.value = false;
     await testByDump(jock1);
   });
@@ -229,8 +229,8 @@ void main() async {
   /// - submit article 'b'
   /// - equate article 'a' to 'b'
   test('equate1', () async {
-    Prefs.showTrustStatements.value = true;
-    Prefs.showEquivalentKeys.value = true;
+    Prefs.showStatements.value = true;
+    Prefs.showKeys.value = true;
     Prefs.nice.value = false;
     await testByDump(equate1);
   });

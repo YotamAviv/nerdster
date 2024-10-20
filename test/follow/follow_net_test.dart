@@ -55,8 +55,8 @@ void main() async {
     await signIn('dummy', null);
     oneofusNet.numPaths = 1;
     followNet.fcontext = null;
-    Prefs.showEquivalentKeys.value = false;
-    Prefs.showTrustStatements.value = false;
+    Prefs.showKeys.value = false;
+    Prefs.showStatements.value = false;
     for (final fire in FireFactory.domain2fire.values) {
       await fire.clearPersistence();
     }

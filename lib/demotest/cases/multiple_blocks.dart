@@ -10,7 +10,7 @@ import 'package:nerdster/prefs.dart';
 Future<(DemoKey, DemoKey?)> multipleBlocks() async {
   useClock(TestClock());
 
-  Prefs.showEquivalentKeys.value = true;
+  Prefs.showKeys.value = true;
 
   DemoKey bart = await DemoKey.findOrCreate('bart');
   DemoKey lisa = await DemoKey.findOrCreate('lisa');
