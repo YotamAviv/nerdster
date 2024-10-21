@@ -77,7 +77,9 @@ class _NetTreeViewState extends State<NetTreeView> {
       // if (!Prefs.showEquivalentKeys.value) {
       //   expandToToken = followNet.delegate2oneofus[expandToToken];
       // }
-      TreeSearchResult result = treeController.search((node) => (node.token == expandToToken));
+      String expandToOneofusToken = followNet.delegate2oneofus[expandToToken] ?? expandToToken!;
+      TreeSearchResult result =
+          treeController.search((node) => (node.token == expandToOneofusToken));
       Object? n = result.matches.keys.firstOrNull;
       if (b(n)) {
         NetTreeModel node = n as NetTreeModel;
