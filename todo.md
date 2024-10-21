@@ -30,6 +30,8 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 - I noticed that when Fetcher asserts false, it gets lost, not progpagated.
 - Revoked delegate says 'replaced'.
 - sign in without store keys should wipe keys
+- filter by book doesn filters Hillel's comment on the article he
+  submitted about a book which I equated to a book
 
 ## TODO:
 - Take care to warn user if he signs in oneofus/delegate keys that aren't related, are revoked, etc...
