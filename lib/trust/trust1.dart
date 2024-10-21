@@ -31,7 +31,8 @@ class Trust1 implements TrustAlgorithm {
   Map<String, String> get rejected => _rejected;
 
   @override
-  Future<LinkedHashMap<String, Node>> process(Node source, int numberOfPaths) async {
+  Future<LinkedHashMap<String, Node>> process(Node source,
+      {int numPaths = 1, int blockerBenefit = 1}) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
     network[source.token] = source;
     assert(source.paths.isEmpty);
@@ -64,11 +65,14 @@ class Trust1 implements TrustAlgorithm {
           }
 
           // Block the other node if allowed.
-          // Greedy block/replace rules:
-          // blockee path-length 0 (me): no one can block
-          // blockee path-length 1: blocker path-length <= 3 (1 + 2) can block.
-          // blockee path-length 2: blocker path-length <= 4 (2 + 2) can block.
-          // and so on...
+          /// CONSIDER: I used to think that it's a good idea to give blocks preference over trusts,
+          /// but I'm not sure. For now, I've replaced the hard coded [2] with [blockerBenefit].
+          /// This is in place: (blocker is the key trying to block blockee)
+          /// I'm not sure what to name
+          /// blockee path-length 0 (me): no one can block
+          /// blockee path-length 1: blocker path-length <= 3 (1 + 2) can block.
+          /// blockee path-length 2: blocker path-length <= 4 (2 + 2) can block.
+          /// and so on...
           if (other == source) {
             // Special case, no paths
             _rejected[block.statementToken] = 'Attempt to block your key.';
@@ -77,7 +81,7 @@ class Trust1 implements TrustAlgorithm {
           if (other.paths.isNotEmpty && !other.blocked) {
             int blockeePathLength = other.paths[0].length; // (Shortest paths should be first)
             int blockerPathLength = n.paths[0].length;
-            if (blockerPathLength > blockeePathLength + 2) {
+            if (blockerPathLength > blockeePathLength + blockerBenefit) {
               _rejected[block.statementToken] =
                   'a key $blockerPathLength degrees away attempted to block a key $blockeePathLength degrees away.';
               continue;
@@ -162,7 +166,7 @@ class Trust1 implements TrustAlgorithm {
 
       // ====== TRUSTS ====== //
       for (Path path in currentLayer) {
-        if (!isValidPath(path, network)) continue;        
+        if (!isValidPath(path, network)) continue;
         Node n = path.last.node;
         if (visited.contains(n)) continue;
         visited.add(n);
@@ -216,8 +220,7 @@ class Trust1 implements TrustAlgorithm {
         n.paths = List.of(n.paths.where((path) => isValidPath(path, network)));
       }
       // Restrict to numberOfPaths
-      network.removeWhere(
-          (token, node) => (token != source.token) && node.paths.length < numberOfPaths);
+      network.removeWhere((token, node) => (token != source.token) && node.paths.length < numPaths);
 
       // We're not removing, and so we're done.
       if (network.length == networkSizeBefore) {

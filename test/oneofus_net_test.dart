@@ -47,6 +47,7 @@ void main() async {
     signInState.signOut();
     await signIn('dummy', null);
     oneofusNet.numPaths = 1;
+    oneofusNet.blockerBenefit = 1;
     followNet.fcontext = null;
     Prefs.showKeys.value = false;
     Prefs.showStatements.value = false;
@@ -158,6 +159,8 @@ void main() async {
 
 
   test('3\'rd level block removes 1\'st level trust', () async {
+    oneofusNet.blockerBenefit = 2;
+
     await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
     await marge.doTrust(TrustVerb.trust, lisa);
@@ -256,6 +259,8 @@ void main() async {
   });
 
   test('3\'rd level block removes 1\'st level trust, redux', () async {
+    oneofusNet.blockerBenefit = 2;
+
     await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
     await marge.doTrust(TrustVerb.trust, lisa);
