@@ -5,10 +5,7 @@ import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/follow/follow_net.dart';
-import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
-import 'package:nerdster/net/oneofus_equiv.dart';
-import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -17,6 +14,7 @@ import 'package:nerdster/singletons.dart';
 
 Future<(DemoKey, DemoKey?)> blockOldKey() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
+  oneofusNet.blockerBenefit = 2;
 
   bool showEquivalentKeysBefore = Prefs.showKeys.value;
   bool showTrustStatementsBefore = Prefs.showStatements.value;
@@ -43,10 +41,10 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   // Lisa has not cleared trust in bart or ever trusted bart2
 
   signInState.center  = lisa.token;
-  await KeyLabels().waitUntilReady();
-  await OneofusEquiv().waitUntilReady();
+  await keyLabels.waitUntilReady();
+  await oneofusEquiv.waitUntilReady();
 
-  network = OneofusNet().network;
+  network = oneofusNet.network;
   expectedNetwork = {
     "Lisa": null,
     "Bart": null,
@@ -57,7 +55,7 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
   expectedEquivalents = {"Bart", "Bart (0)", "Bart (1)"};
-  jsonShowExpect(OneofusEquiv().getEquivalents(bart3.token), expectedEquivalents);
+  jsonShowExpect(oneofusEquiv.getEquivalents(bart3.token), expectedEquivalents);
 
   // ------------------------------------------------------------------------------------
   // Bart (currently 'bart3') now decides that 'bart' no longer represents him and blocks
@@ -65,10 +63,10 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   await bart3.doTrust(TrustVerb.block, bart);
 
   signInState.center  = lisa.token;
-  await KeyLabels().waitUntilReady();
-  await OneofusEquiv().waitUntilReady();
+  await keyLabels.waitUntilReady();
+  await oneofusEquiv.waitUntilReady();
 
-  network = OneofusNet().network;
+  network = oneofusNet.network;
   expectedNetwork = {
     "Me": null, // Note that I'm not labled "Lisa" any longer.
     "Bart": null,
@@ -77,8 +75,8 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   expectedEquivalents = {'Bart', 'Bart (0)'};
-  jsonShowExpect(OneofusEquiv().getEquivalents(bart3.token), expectedEquivalents);
-  myExpect(OneofusNet().rejected.containsKey(r2.token), true);
+  jsonShowExpect(oneofusEquiv.getEquivalents(bart3.token), expectedEquivalents);
+  myExpect(oneofusNet.rejected.containsKey(r2.token), true);
   await FollowNet().waitUntilReady();
   dump = await OneofusTreeNode.root.dump();
   expected = {
@@ -92,7 +90,7 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   jsonShowExpect(dump, expected);
 
   signInState.center  = bart3.token;
-  await KeyLabels().waitUntilReady();
+  await keyLabels.waitUntilReady();
 
   dump = await OneofusTreeNode.root.dump();
   expected = {
@@ -104,13 +102,13 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   jsonShowExpect(dump, expected);
 
   signInState.center = bart2.token;
-  await KeyLabels().waitUntilReady();
-  await OneofusEquiv().waitUntilReady();
+  await keyLabels.waitUntilReady();
+  await oneofusEquiv.waitUntilReady();
 
-  network = OneofusNet().network;
+  network = oneofusNet.network;
   expectedNetwork = {"Me": null, "homer": null};
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  jsonShowExpect(OneofusEquiv().getEquivalents(bart2.token), {bart2.token});
+  jsonShowExpect(oneofusEquiv.getEquivalents(bart2.token), {bart2.token});
   dump = await OneofusTreeNode.root.dump();
   expected = {
     "N:Me-true:": {
@@ -120,8 +118,8 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   jsonShowExpect(dump, expected);
 
   signInState.center  = bart.token;
-  await KeyLabels().waitUntilReady();
-  await OneofusEquiv().waitUntilReady();
+  await keyLabels.waitUntilReady();
+  await oneofusEquiv.waitUntilReady();
 
   dump = await OneofusTreeNode.root.dump();
   expected = {

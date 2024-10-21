@@ -62,7 +62,7 @@ abstract class Node {
 }
 
 abstract class TrustAlgorithm {
-  Future<Map<String, Node>> process(Node node, int numberOfPaths);
+  Future<Map<String, Node>> process(Node node, {int numPaths = 1});
 }
 
 class Trust {

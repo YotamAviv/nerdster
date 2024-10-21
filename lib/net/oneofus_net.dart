@@ -44,6 +44,7 @@ class OneofusNet with Comp, ChangeNotifier {
   }
 
   int _numPaths = 1;
+  int _blockerBenefit = 1;
   LinkedHashMap<String, Node> _network = LinkedHashMap<String, Node>();
   final Map<String, int> _token2keyCounter = <String, int>{};
   final Map<String, String> _rejected = <String, String>{};
@@ -53,6 +54,12 @@ class OneofusNet with Comp, ChangeNotifier {
   int get numPaths => _numPaths;
   set numPaths(int numPaths) {
     _numPaths = numPaths;
+    listen();
+  }
+
+  int get blockerBenefit => _blockerBenefit;
+  set blockerBenefit(int blockerBenefit) {
+    _blockerBenefit = blockerBenefit;
     listen();
   }
 
@@ -83,7 +90,8 @@ class OneofusNet with Comp, ChangeNotifier {
     // (Formerly TrustBridge)
     Trust1 trust1 = Trust1();
     _FetcherNode.clear();
-    _network = await trust1.process(_FetcherNode(signInState.center), _numPaths);
+    _network = await trust1.process(_FetcherNode(signInState.center),
+        numPaths: _numPaths, blockerBenefit: _blockerBenefit);
 
     _rejected.addAll(trust1.rejected);
     _token2keyCounter.clear();
@@ -102,6 +110,7 @@ class _FetcherNode extends Node {
   static void clear() {
     _factoryCache.clear();
   }
+
   factory _FetcherNode(String token) {
     if (!_factoryCache.containsKey(token)) {
       _factoryCache[token] = _FetcherNode._internal(token);
@@ -121,6 +130,7 @@ class _FetcherNode extends Node {
     assert(b(revokeAt)); // 'String' not allowed; had to use 'String?' to compile.
     _fetcher.setRevokeAt(revokeAt!);
   }
+
   @override
   String? get revokeAt => _fetcher.revokeAt;
   @override
