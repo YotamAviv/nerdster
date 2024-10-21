@@ -84,7 +84,8 @@ class _NetTileState extends State<NetTile> {
         iconTooltip = '$iconTooltip \nreplaced at: ${formatUiDatetime(node.revokeAt!)}';
       } else {
         // Newish, not sure...
-        if (widget.entry.node.canonical && followNet.oneofus2delegates.containsKey(widget.entry.node.token)) {
+        if (widget.entry.node.canonical &&
+            followNet.oneofus2delegates.containsKey(widget.entry.node.token)) {
           iconColor = Colors.lightGreen;
         }
       }
@@ -104,15 +105,25 @@ class _NetTileState extends State<NetTile> {
       }
     }
 
+    List<Shadow>? shadows;
     if (b(NetTreeView.highlightToken.value)) {
       if (node.token == NetTreeView.highlightToken.value ||
           node.token == FollowNet().delegate2oneofus[NetTreeView.highlightToken.value]) {
-        iconColor = Colors.green;
+        // iconColor = Colors.green.shade900;
+        shadows = const <Shadow>[Shadow(color: Colors.pink, blurRadius: 5.0)];
       }
     }
 
-    Icon openedIcon = Icon(iconDatas[0], color: iconColor);
-    Icon closedIcon = Icon(iconDatas[1], color: iconColor);
+    Icon openedIcon = Icon(
+      iconDatas[0],
+      color: iconColor,
+      shadows: shadows,
+    );
+    Icon closedIcon = Icon(
+      iconDatas[1],
+      color: iconColor,
+      shadows: shadows,
+    );
 
     Json json = isStatement ? node.statement!.json : (Jsonish.find(node.token!))!.json;
 
