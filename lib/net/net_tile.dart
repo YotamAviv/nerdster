@@ -3,11 +3,9 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/follow/follow.dart';
-import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/js_widget.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/net/net_tree_model.dart';
-import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -15,6 +13,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/util_ui.dart';
 
 class NetTile extends StatefulWidget {
   const NetTile({
@@ -39,7 +38,7 @@ class _NetTileState extends State<NetTile> {
   }
 
   Future<void> listen() async {
-    await Comp.waitOnComps([OneofusEquiv(), FollowNet()]);
+    await Comp.waitOnComps([oneofusEquiv, followNet]);
     if (mounted) {
       setState(() {});
     }
@@ -54,7 +53,7 @@ class _NetTileState extends State<NetTile> {
 
   @override
   Widget build(BuildContext context) {
-    assert(Comp.compsReady([OneofusEquiv(), FollowNet()]));
+    assert(Comp.compsReady([oneofusEquiv, followNet]));
 
     final NetTreeModel node = widget.entry.node;
     final bool isStatement = node.statement != null;
@@ -81,7 +80,8 @@ class _NetTileState extends State<NetTile> {
       iconTooltip = node.labelKeyPaths().join('\n');
       if (node.revokeAt != null) {
         iconColor = Colors.pink.shade100;
-        iconTooltip = '$iconTooltip \nreplaced at: ${formatUiDatetime(node.revokeAt!)}';
+        iconTooltip =
+            '$iconTooltip \nreplaced at: ${formatUiDatetime(node.revokeAt!)}';
       } else {
         // Newish, not sure...
         if (widget.entry.node.canonical &&
@@ -108,7 +108,8 @@ class _NetTileState extends State<NetTile> {
     List<Shadow>? shadows;
     if (b(NetTreeView.highlightToken.value)) {
       if (node.token == NetTreeView.highlightToken.value ||
-          node.token == FollowNet().delegate2oneofus[NetTreeView.highlightToken.value]) {
+          node.token ==
+              followNet.delegate2oneofus[NetTreeView.highlightToken.value]) {
         // iconColor = Colors.green.shade900;
         shadows = const <Shadow>[Shadow(color: Colors.pink, blurRadius: 5.0)];
       }
@@ -125,7 +126,8 @@ class _NetTileState extends State<NetTile> {
       shadows: shadows,
     );
 
-    Json json = isStatement ? node.statement!.json : (Jsonish.find(node.token!))!.json;
+    Json json =
+        isStatement ? node.statement!.json : (Jsonish.find(node.token!))!.json;
 
     return TreeIndentation(
         entry: widget.entry,
@@ -138,7 +140,8 @@ class _NetTileState extends State<NetTile> {
                   icon: closedIcon,
                   openedIcon: openedIcon,
                   closedIcon: closedIcon,
-                  isOpen: widget.entry.hasChildren ? widget.entry.isExpanded : null,
+                  isOpen:
+                      widget.entry.hasChildren ? widget.entry.isExpanded : null,
                   onPressed: widget.entry.hasChildren ? widget.onTap : null),
             ),
             if (Prefs.showStatements.value) JSWidget(json),
@@ -159,15 +162,20 @@ class _MonikerWidget extends StatelessWidget {
 
   const _MonikerWidget(this.node);
 
-  Future<void> showPopUpMenuAtTap(BuildContext context, TapDownDetails details) async {
+  Future<void> showPopUpMenuAtTap(
+      BuildContext context, TapDownDetails details) async {
     if (node.token == signInState.center) return;
     String? value = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(details.globalPosition.dx, details.globalPosition.dy,
-          details.globalPosition.dx, details.globalPosition.dy),
+      position: RelativeRect.fromLTRB(
+          details.globalPosition.dx,
+          details.globalPosition.dy,
+          details.globalPosition.dx,
+          details.globalPosition.dy),
       items: [
         const PopupMenuItem<String>(value: 'recenter', child: Text('recenter')),
-        const PopupMenuItem<String>(value: 'follow...', child: Text('follow...')),
+        const PopupMenuItem<String>(
+            value: 'follow...', child: Text('follow...')),
       ],
       elevation: 8.0,
     );
@@ -180,13 +188,15 @@ class _MonikerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool clickable = b(node.token) && OneofusNet().network.containsKey(node.token);
+    TextStyle? style = clickable ? linkStyle : null;
     return GestureDetector(
         onTapDown: (details) {
           // No signing in as delegates
-          if (b(node.token) && OneofusNet().network.containsKey(node.token)) {
+          if (clickable) {
             showPopUpMenuAtTap(context, details);
           }
         },
-        child: Text(node.moniker));
+        child: Text(style: style, node.moniker));
   }
 }
