@@ -4,7 +4,9 @@ import 'package:nerdster/oneofus/util.dart';
 /// easily make that work.
 
 class TestClock extends Clock {
-  DateTime _now = parseIso("2024-05-01T07:00:00Z");
+  // Tests failed when I moved PST to EST (were off by 3 hours).
+  // I think that I now both state and dump in local time.
+  DateTime _now = DateTime.parse("2024-05-01T00:00");
   Duration duration = const Duration(minutes: 1);
 
   DateTime get nowClean => _now;

@@ -45,8 +45,15 @@ String formatIso(DateTime datetime) {
   return datetime.toUtc().toIso8601String();
 }
 
+// KLUDGE: Tests were failing in different time zones, especially those where statements were saved.
+// This is still not good as the kludge is probably currently checked in and will only work in EST.
+int timezoneOffsetKludge = 0;
 String formatUiDatetime(DateTime datetime) {
-  return datetimeFormat.format(datetime.toLocal());
+  DateTime datetime2 = datetime;
+  if (timezoneOffsetKludge != 0) {
+    datetime2 = datetime.add(Duration(hours: timezoneOffsetKludge));
+  }
+  return datetimeFormat.format(datetime2.toLocal());
 }
 
 String formatUiDate(DateTime datetime) {

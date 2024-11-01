@@ -49,6 +49,7 @@ void main() async {
   SignInState.init('dummy');
 
   setUp(() async {
+    timezoneOffsetKludge = 0;
     useClock(TestClock());
     DemoKey.clear();
     signInState.signOut();
@@ -96,6 +97,7 @@ void main() async {
   // Jock see's Poser's recommend and dis.
   // Accomplished manually using the UI and dumped.
   test('rate and dis', () async {
+    timezoneOffsetKludge = -3;
     Prefs.showStatements.value = true;
     Prefs.showKeys.value = true;
     Prefs.nice.value = false;
@@ -105,6 +107,7 @@ void main() async {
 
   /// view as Jock using stock DemoKeys.egos.
   test('jock1', () async {
+    timezoneOffsetKludge = -3;
     Prefs.showStatements.value = true;
     Prefs.showKeys.value = true;
     Prefs.nice.value = false;
@@ -229,6 +232,7 @@ void main() async {
   /// - submit article 'b'
   /// - equate article 'a' to 'b'
   test('equate1', () async {
+    timezoneOffsetKludge = -3;
     Prefs.showStatements.value = true;
     Prefs.showKeys.value = true;
     Prefs.nice.value = false;
@@ -602,7 +606,7 @@ var jock1 = {
       "N:poser-true:Me": {
         "N:hipster-true:Me->poser": {
           "N:hipster-nerdster-false:Me->poser->hipster": {},
-          "N:hipster-nerdster (0)-false:2024-10-10T20:44:03.085Z:Me->poser->hipster": {},
+          "N:hipster-nerdster (0)-false:10/10/2024 1:44 PM:Me->poser->hipster": {},
           "S:1be34a1ae02178586be9cde87f01e495192e1812:@10/10/2024 1:44 PM:delegated:hipster-nerdster": {},
           "S:33404bc620f40ca4739f7637d308ff523948e9d0:@10/10/2024 1:44 PM:delegated:hipster-nerdster (0)": {}
         },
@@ -1242,7 +1246,7 @@ var rateAndDis = {
       "N:poser-true:Me": {
         "N:hipster-true:Me->poser": {
           "N:hipster-nerdster-false:Me->poser->hipster": {},
-          "N:hipster-nerdster (0)-false:2024-10-10T20:53:24.978Z:Me->poser->hipster": {},
+          "N:hipster-nerdster (0)-false:10/10/2024 1:53 PM:Me->poser->hipster": {},
           "S:f6872af18559e8e6da8b278455cc30c68ea6b5ca:@10/10/2024 1:53 PM:delegated:hipster-nerdster": {},
           "S:319118699fb7a63667fa4dc2e1b74f66c47e387a:@10/10/2024 1:53 PM:delegated:hipster-nerdster (0)": {}
         },

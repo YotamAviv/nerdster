@@ -42,6 +42,7 @@ void main() async {
   DemoKey sideshow = await DemoKey.findOrCreate('dummy');
 
   setUp(() async {
+    timezoneOffsetKludge = 0;
     useClock(TestClock());
     DemoKey.clear();
     signInState.signOut();
@@ -212,7 +213,7 @@ void main() async {
     dynamic dump = await OneofusTreeNode.root.dump();
     var expectedTree = {
       "N:Me-true:": {
-        "N:homer-true:2024-05-01T07:01:00.000Z:Me": {
+        "N:homer-true:5/1/2024 12:01 AM:Me": {
           "N:lenny-true:Me->homer": {}
         }
       }

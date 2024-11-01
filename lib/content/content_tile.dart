@@ -5,14 +5,13 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/content/props.dart';
-import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/js_widget.dart';
-import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 class SubjectTile extends StatefulWidget {
@@ -40,7 +39,7 @@ class _SubjectState extends State<SubjectTile> {
   }
 
   listener() async {
-    await ContentBase().waitUntilReady();
+    await contentBase.waitUntilReady();
     if (mounted) {
       setState(() {});
     }
@@ -48,7 +47,7 @@ class _SubjectState extends State<SubjectTile> {
 
   @override
   Widget build(BuildContext context) {
-    assert(ContentBase().ready);
+    assert(contentBase.ready);
 
     final ContentTreeNode subjectNode = widget.entry.node;
 
@@ -99,8 +98,9 @@ class _SubjectState extends State<SubjectTile> {
       );
     }
 
-    Widget titleWidget =
-        isStatement ? _StatementTitle(statement!) : SubjectTitle(subjectNode.subject);
+    Widget titleWidget = isStatement
+        ? _StatementTitle(statement!)
+        : SubjectTitle(subjectNode.subject);
 
     Widget? statementDesc;
     if (isStatement) {
@@ -116,9 +116,11 @@ class _SubjectState extends State<SubjectTile> {
       } else {
         buf.write('  ${verb.pastTense}: ');
       }
-      Color textColor =
-          !ContentBase().isRejected(subjectNode.subject.token) ? Colors.black : Colors.pink;
-      statementDesc = Text('  ${buf.toString()}', style: TextStyle(color: textColor));
+      Color textColor = !contentBase.isRejected(subjectNode.subject.token)
+          ? Colors.black
+          : Colors.pink;
+      statementDesc =
+          Text('  ${buf.toString()}', style: TextStyle(color: textColor));
     }
 
     // Computed but not displayed: PropType.recentActivity
@@ -138,7 +140,8 @@ class _SubjectState extends State<SubjectTile> {
         guide: const IndentGuide.connectingLines(indent: 48),
         child: Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 Tooltip(
                   message: subjectTooltip ?? '',
@@ -146,8 +149,11 @@ class _SubjectState extends State<SubjectTile> {
                       icon: closedIcon,
                       openedIcon: openedIcon,
                       closedIcon: closedIcon,
-                      isOpen: widget.entry.hasChildren ? widget.entry.isExpanded : null,
-                      onPressed: widget.entry.hasChildren ? widget.onTap : null),
+                      isOpen: widget.entry.hasChildren
+                          ? widget.entry.isExpanded
+                          : null,
+                      onPressed:
+                          widget.entry.hasChildren ? widget.onTap : null),
                 ),
                 _ReactIcon(subjectNode.subject),
                 const SizedBox(width: 8),
@@ -187,12 +193,15 @@ class _ReactIconState extends State<_ReactIcon> {
 
   @override
   Widget build(BuildContext context) {
-    assert(ContentBase().ready);
-    // same: assert(Comp.compsReady([ContentBase()]));
+    assert(contentBase.ready); // QUESTIONABLE
 
-    bool iReacted = ContentBase().findMyStatements(widget.subject.token).isNotEmpty;
-    Color color = (this == marked1 || this == marked2) ? Colors.lightBlue : Colors.black;
-    IconData iconData = iReacted ? Icons.mark_chat_read : Icons.mark_chat_read_outlined;
+    Color color;
+    IconData iconData;
+    bool iReacted =
+        contentBase.findMyStatements(widget.subject.token).isNotEmpty;
+    bool isMarked = this == marked1 || this == marked2;
+    color = !iReacted ? linkColor : linkColorAlready;
+    iconData = isMarked ? Icons.mark_chat_read : Icons.mark_chat_read_outlined;
     return GestureDetector(
       onTapDown: (details) {
         showPopUpMenuAtTap(context, details);
@@ -210,8 +219,11 @@ class _ReactIconState extends State<_ReactIcon> {
   void showPopUpMenuAtTap(BuildContext context, TapDownDetails details) {
     showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(details.globalPosition.dx, details.globalPosition.dy,
-          details.globalPosition.dx, details.globalPosition.dy),
+      position: RelativeRect.fromLTRB(
+          details.globalPosition.dx,
+          details.globalPosition.dy,
+          details.globalPosition.dx,
+          details.globalPosition.dy),
       items: [
         const PopupMenuItem<String>(value: 'react', child: Text('react')),
         const PopupMenuItem<String>(value: 'relate', child: Text('relate')),
@@ -268,14 +280,14 @@ class _StatementTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     Json jsonKey = statement.json['I'];
     String token = Jsonish(jsonKey).token;
-    String nerdName = KeyLabels().labelKey(FollowNet().delegate2oneofus[token]!)!;
+    String label = keyLabels.labelKey(followNet.delegate2oneofus[token]!)!;
     var time = statement.time;
     return InkWell(
         onTap: () {
           NetTreeView.show(context, highlightToken: token);
         },
         child: Row(children: [
-          Text(nerdName, style: linkStyle),
+          Text(label, style: linkStyle),
           Tooltip(
             message: formatUiDatetime(time),
             child: Text('@${formatUiDate(time)}'),
@@ -298,7 +310,8 @@ class SubjectTitle extends StatelessWidget {
     if (subject.json.containsKey('url')) {
       url = subject.json['url'];
     } else {
-      String out = 'https://www.google.com/search?q=${subject.json.values.join(' ')}';
+      String out =
+          'https://www.google.com/search?q=${subject.json.values.join(' ')}';
       url = out;
     }
 
@@ -310,7 +323,8 @@ class SubjectTitle extends StatelessWidget {
                 },
                 child: Text((subject.json['title']),
                     style: const TextStyle(
-                        color: Colors.blueAccent, decoration: TextDecoration.underline),
+                        color: Colors.blueAccent,
+                        decoration: TextDecoration.underline),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis))));
   }

@@ -71,7 +71,9 @@ abstract class NetTreeModel {
       items.add('N');
       items.add('${keyLabels.show(token)}-$canonical');
       if (b(revokeAt)) {
-        items.add(formatIso(revokeAt!));
+        // Timezone test issue: I think that I now use local time at both ends (state 
+        // and dump in local time).
+        items.add(formatUiDatetime(revokeAt!));
       }
       items.add(labelPath());
     } else {
