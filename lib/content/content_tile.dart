@@ -61,7 +61,7 @@ class _SubjectState extends State<SubjectTile> {
       tileType = subjectNode.subject.json['contentType'];
     }
 
-    String? subjectTooltip;
+    String? subjectTooltip = "Click to expand statements about this subject";
     Color? iconColor;
     if (subjectNode.equivalent) {
       iconColor = Colors.pink;
@@ -170,7 +170,7 @@ class _SubjectState extends State<SubjectTile> {
 class _ReactIcon extends StatefulWidget {
   final Jsonish subject;
 
-  const _ReactIcon(this.subject, {super.key});
+  const _ReactIcon(this.subject);
 
   @override
   State<StatefulWidget> createState() {
@@ -203,39 +203,20 @@ class _ReactIconState extends State<_ReactIcon> {
     color = !iReacted ? linkColor : linkColorAlready;
     iconData = isMarked ? Icons.mark_chat_read : Icons.mark_chat_read_outlined;
     return GestureDetector(
-      onTapDown: (details) {
-        showPopUpMenuAtTap(context, details);
+      onTap: () async {
+        await rate(widget.subject, context);
+      },
+      onDoubleTap: () async {
+        await handleRelateClick(context);
       },
       child: IconButton(
-          // splashRadius: 0.0001,
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 22, maxWidth: 22),
           icon: Icon(iconData, color: color),
-          tooltip: 'React to the subject of this row',
+          tooltip: '''Click to rate (recommend, comment, dis, censor, or clear rating)
+Double click to relate / equate''',
           onPressed: null),
     );
-  }
-
-  void showPopUpMenuAtTap(BuildContext context, TapDownDetails details) {
-    showMenu<String>(
-      context: context,
-      position: RelativeRect.fromLTRB(
-          details.globalPosition.dx,
-          details.globalPosition.dy,
-          details.globalPosition.dx,
-          details.globalPosition.dy),
-      items: [
-        const PopupMenuItem<String>(value: 'react', child: Text('react')),
-        const PopupMenuItem<String>(value: 'relate', child: Text('relate')),
-      ],
-      elevation: 8.0,
-    ).then((value) async {
-      if (value == 'react') {
-        await rate(widget.subject, context);
-      } else if (value == 'relate') {
-        handleRelateClick(context);
-      }
-    });
   }
 
   /// Relate 2 things.
@@ -244,7 +225,7 @@ class _ReactIconState extends State<_ReactIcon> {
   /// - Click on the second to bring up dialog to relate the two.
   /// - Dialog should come up, and the selection of both should be visible.
   /// - After dismissing the dialog (relate / equate or cancel), the selections should be cleared.
-  void handleRelateClick(BuildContext context) async {
+  Future<void> handleRelateClick(BuildContext context) async {
     if (marked1 == null) {
       assert(marked2 == null);
       marked1 = this;
