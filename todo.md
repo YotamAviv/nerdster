@@ -43,7 +43,8 @@ NetBar: follow screen / one-of-us screen is confusing
 - degrees
 
 Encourage clicking: 
-- DONE: link colors
+- link colors for nerd/key labels in tree view
+- DONE: content icon and folder link colors
 
 UI for clear relate/equate.
 

@@ -149,6 +149,7 @@ class _SubjectState extends State<SubjectTile> {
                       icon: closedIcon,
                       openedIcon: openedIcon,
                       closedIcon: closedIcon,
+                      color: linkColor,
                       isOpen: widget.entry.hasChildren
                           ? widget.entry.isExpanded
                           : null,
