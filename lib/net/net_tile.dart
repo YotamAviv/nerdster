@@ -6,7 +6,6 @@ import 'package:nerdster/follow/follow.dart';
 import 'package:nerdster/js_widget.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/net/net_tree_model.dart';
-import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -92,7 +91,7 @@ class _NetTileState extends State<NetTile> {
     } else {
       // Statement
       if (node.rejected) {
-        print(OneofusNet().rejected);
+        print(oneofusNet.rejected);
         iconColor = Colors.red;
       }
       if (node.trustsNonCanonical) {
@@ -164,7 +163,11 @@ class _MonikerWidget extends StatelessWidget {
 
   Future<void> showPopUpMenuAtTap(
       BuildContext context, TapDownDetails details) async {
-    if (node.token == signInState.center) return;
+    // TODO: Encourage clicking; maybe show options disabled when not signed in or centered appropriately.
+    // Do allow following center in case I'm centered on someone else
+    if (node.token == signInState.signedInOneofus) {
+      return;
+    }
     String? value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(
@@ -173,7 +176,10 @@ class _MonikerWidget extends StatelessWidget {
           details.globalPosition.dx,
           details.globalPosition.dy),
       items: [
-        const PopupMenuItem<String>(value: 'recenter', child: Text('recenter')),
+        if (node.token != signInState.center)
+          // TODO: Encourage clicking; maybe show options disabled when not signed in or centered appropriately.
+          const PopupMenuItem<String>(
+              value: 'recenter', child: Text('recenter')),
         const PopupMenuItem<String>(
             value: 'follow...', child: Text('follow...')),
       ],
@@ -188,11 +194,12 @@ class _MonikerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool clickable = b(node.token) && OneofusNet().network.containsKey(node.token);
+    // No signing in as delegates
+    bool clickable =
+        b(node.token) && oneofusNet.network.containsKey(node.token);
     TextStyle? style = clickable ? linkStyle : null;
     return GestureDetector(
         onTapDown: (details) {
-          // No signing in as delegates
           if (clickable) {
             showPopUpMenuAtTap(context, details);
           }
