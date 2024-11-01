@@ -26,13 +26,14 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 
 # Plan:
 
-React immediately
-- add one more button for relate/equate as well as an explanation dialog.
+Instruction:
+- show the statements as they're stated.
 
-NetBar:
+Default follow context
 - Hmm... I want a default follow context when folks view as me.
   - (don't generate a statement every time I just browse)
-- Hmm... the follow screen / one-of-us screen is confusing. Redo!
+
+NetBar: follow screen / one-of-us screen is confusing
   - follow view has tree branches for whomever you follow
   - oneofus view has tree branches for those you oneofus trust and highlights the context folks
   * maybe use a checkbox: tree structure one-of-us / follow network
@@ -43,6 +44,11 @@ NetBar:
 
 Encourage clicking: 
 - DONE: link colors
+
+UI for clear relate/equate.
+
+DONE: React immediately (click / double click + tooltip)
+
 
 ## BUGS
 - I noticed that when Fetcher asserts false, it gets lost, not progpagated.
