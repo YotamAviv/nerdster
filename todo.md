@@ -26,11 +26,29 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 
 # Plan:
 
+React immediately
+- add one more button for relate/equate as well as an explanation dialog.
+
+NetBar:
+- Hmm... I want a default follow context when folks view as me.
+  - (don't generate a statement every time I just browse)
+- Hmm... the follow screen / one-of-us screen is confusing. Redo!
+  - follow view has tree branches for whomever you follow
+  - oneofus view has tree branches for those you oneofus trust and highlights the context folks
+  * maybe use a checkbox: tree structure one-of-us / follow network
+- expland tree at least a little by default when just going right.
+- center dropdown
+- follow dropdown, default to my default
+- degrees
+
+Encourage clicking: 
+- DONE: link colors
+
 ## BUGS
 - I noticed that when Fetcher asserts false, it gets lost, not progpagated.
 - Revoked delegate says 'replaced'.
 - sign in without store keys should wipe keys
-- filter by book doesn filters Hillel's comment on the article he
+- Minor: filter by book doesn filters Hillel's comment on the article he
   submitted about a book which I equated to a book
 
 ## TODO:

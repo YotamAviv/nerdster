@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const linkStyle = TextStyle(color: Colors.blueAccent, decoration: TextDecoration.underline);
+const Color linkColor = Colors.blueAccent;
+final Color linkColorAlready = Colors.blue.shade900;
+const TextStyle linkStyle = TextStyle(color: linkColor, decoration: TextDecoration.underline);
 
+// TODO: Add param context, show alert if can't
 Future<void> myLaunchUrl(String url) async {
   final Uri uri = Uri.parse(url);
   /* BAD
