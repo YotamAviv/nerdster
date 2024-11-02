@@ -62,36 +62,39 @@ class _NetTileState extends State<NetTile> {
       text = '${node.displayStatementAtTime}: ${node.displayVerbPastTense} ';
     }
 
-    String iconTooltip = '';
-    Color? iconColor = Colors.black;
+    String iconTooltip;
+    Color iconColor = Colors.black;
+    Color statementTextColor = Colors.black;
     List<IconData> iconDatas;
-    Color? statementTextColor = Colors.black;
-
+    
     if (!isStatement) {
-      // Nerd
       if (node.canonical) {
+        // canonical
         iconDatas = tileType2icon['nerd']!;
       } else {
-        // delegate key, replaced key
+        // {delegate key, replaced key}
         iconDatas = tileType2icon['key']!;
       }
-
       iconTooltip = node.labelKeyPaths().join('\n');
-      if (node.revokeAt != null) {
+      bool replaced = b(node.revokeAt);
+      bool inFollowNet = followNet.oneofus2delegates.containsKey(node.token);
+      assert (!(!node.canonical && inFollowNet));
+      if (replaced && inFollowNet) {
+        // Lisa's network was confusing. Bart replaced and followed, but pink not green
+        iconColor = Colors.purple;
+        iconTooltip =
+            '$iconTooltip \nreplaced at: ${formatUiDatetime(node.revokeAt!)}';
+      } else if (replaced) {
         iconColor = Colors.pink.shade100;
         iconTooltip =
             '$iconTooltip \nreplaced at: ${formatUiDatetime(node.revokeAt!)}';
-      } else {
-        // Newish, not sure...
-        if (widget.entry.node.canonical &&
-            followNet.oneofus2delegates.containsKey(widget.entry.node.token)) {
+      } else if (inFollowNet) {
           iconColor = Colors.lightGreen;
-        }
       }
     } else {
+      iconTooltip = 'statement';
       // Statement
       if (node.rejected) {
-        print(oneofusNet.rejected);
         iconColor = Colors.red;
       }
       if (node.trustsNonCanonical) {
