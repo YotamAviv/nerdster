@@ -71,15 +71,15 @@ class _SubjectState extends State<SubjectTile> {
       subjectTooltip = 'related to parent';
     }
 
-    List<IconData> iconDatas = tileType2icon[tileType]!;
-    Icon openedIcon = Icon(iconDatas[0], color: iconColor);
-    Icon closedIcon = Icon(iconDatas[1], color: iconColor);
+    (IconData, IconData) iconPair = tileType2icon[tileType]!;
+    Icon openedIcon = Icon(iconPair.$1, color: iconColor);
+    Icon closedIcon = Icon(iconPair.$2, color: iconColor);
     if (iconColor != null) {
-      openedIcon = Icon(iconDatas[0], color: iconColor);
-      closedIcon = Icon(iconDatas[1], color: iconColor);
+      openedIcon = Icon(iconPair.$1, color: iconColor);
+      closedIcon = Icon(iconPair.$2, color: iconColor);
     } else {
-      openedIcon = Icon(iconDatas[0]);
-      closedIcon = Icon(iconDatas[1]);
+      openedIcon = Icon(iconPair.$1);
+      closedIcon = Icon(iconPair.$2);
     }
 
     Widget? commentWidget;
