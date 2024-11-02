@@ -5,6 +5,7 @@ import 'package:nerdster/content/content_bar.dart';
 import 'package:nerdster/content/content_tile.dart';
 import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/nerdster_menu.dart';
+import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/singletons.dart';
 
 /// StatefulWidget stuff...
@@ -81,6 +82,7 @@ class _ContentTreeViewState extends State<ContentTreeView> {
         ],
       ),
       // const NetBar(),
+      const NetBar(false),
       const ContentBar(),
       Expanded(
           child: SelectionArea(

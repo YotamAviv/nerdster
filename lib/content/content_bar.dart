@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/bar_refresh.dart';
-import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/content/props.dart';
-import 'package:nerdster/net/net_bar.dart';
-import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -67,9 +63,6 @@ class _ContentBarState extends State<ContentBar> {
               color: linkColor,
               tooltip: 'Submit',
               onPressed: () => submit(context)),
-          const BarRefresh(),
-          const CenterDropdown(),
-          const FollowDropdown(),
           DropdownMenu<Sort>(
             initialSelection: contentBase.sort,
             requestFocusOnTap: true,
@@ -149,14 +142,6 @@ class _ContentBarState extends State<ContentBar> {
                       }),
                 ),
               )),
-          IconButton(
-              icon: const Icon(Icons.arrow_forward),
-              color: linkColor,
-              tooltip: 'Follow network view',
-              onPressed: () async {
-                await Comp.waitOnComps([followNet, keyLabels]);
-                NetTreeView.show(context);
-              }),
         ],
       ),
     );
