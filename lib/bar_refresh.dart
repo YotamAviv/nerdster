@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/util_ui.dart';
 
 class BarRefresh extends StatefulWidget {
   static final ValueNotifier<Stopwatch?> stopwatch = ValueNotifier<Stopwatch?>(null);
@@ -56,6 +57,7 @@ class _BarRefreshState extends State<BarRefresh> {
     IconData icon = !b(BarRefresh.stopwatch.value) ? Icons.refresh : Icons.rotate_right_outlined;
     return IconButton(
         icon: Icon(icon),
+        color: linkColor,
         tooltip: 'Refresh',
         // A little sloppy..
         // - The state is BarRefresh.stopwatch
