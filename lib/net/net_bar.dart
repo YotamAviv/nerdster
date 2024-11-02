@@ -110,10 +110,6 @@ class _NetBarState extends State<NetBar> {
 ///
 /// Questions:
 /// - where's center as "Me" again?
-///
-/// TODO:
-/// - TODO: [SignInMenu]: disable Sign out when not signed in.
-/// - CONSIDER: [SignInMenu]: display not signed in.
 class CenterDropdown extends StatefulWidget {
   const CenterDropdown({super.key});
 
@@ -157,8 +153,6 @@ class CenterDropdownState extends State<CenterDropdown> {
       String label = keyLabels.labelKey(oneofus)!;
       label2oneofus[label] = oneofus;
     }
-
-    print(label2oneofus.keys);
 
     List<DropdownMenuEntry<String?>> entries = label2oneofus.keys
         .map<DropdownMenuEntry<String>>((String fcontext) =>
