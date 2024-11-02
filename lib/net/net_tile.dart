@@ -65,15 +65,15 @@ class _NetTileState extends State<NetTile> {
     String iconTooltip;
     Color iconColor = Colors.black;
     Color statementTextColor = Colors.black;
-    List<IconData> iconDatas;
+    (IconData, IconData) iconPair;
     
     if (!isStatement) {
       if (node.canonical) {
         // canonical
-        iconDatas = tileType2icon['nerd']!;
+        iconPair = tileType2icon['nerd']!;
       } else {
         // {delegate key, replaced key}
-        iconDatas = tileType2icon['key']!;
+        iconPair = tileType2icon['key']!;
       }
       iconTooltip = node.labelKeyPaths().join('\n');
       bool replaced = b(node.revokeAt);
@@ -100,7 +100,7 @@ class _NetTileState extends State<NetTile> {
       if (node.trustsNonCanonical) {
         iconColor = Colors.pink.shade100;
       }
-      iconDatas = tileType2icon[kOneofusType]!;
+      iconPair = tileType2icon[kOneofusType]!;
       if (!node.isCanonicalStatement) {
         // statements by non-canonical keys in gray.
         statementTextColor = Colors.black38;
@@ -118,12 +118,12 @@ class _NetTileState extends State<NetTile> {
     }
 
     Icon openedIcon = Icon(
-      iconDatas[0],
+      iconPair.$1,
       color: iconColor,
       shadows: shadows,
     );
     Icon closedIcon = Icon(
-      iconDatas[1],
+      iconPair.$2,
       color: iconColor,
       shadows: shadows,
     );

@@ -67,20 +67,19 @@ enum ContentType {
   final Map<String, String> type2field2type;
 }
 
-/// CONSIDER: Separate and move to the [SubjectTile], [NerdTile]
-/// Then again, it's good to have the various things related to types in one place.
-final Map<String, List<IconData>> tileType2icon = {
-  kOneofusType: [Icons.attachment_outlined, Icons.attachment],
-  kNerdsterType: [Icons.attachment_outlined, Icons.attachment],
-  'nerd': [Icons.sentiment_satisfied_outlined, Icons.sentiment_satisfied],
-  'key': [Icons.key_outlined, Icons.key],
-  'article': [Icons.article_outlined, Icons.article],
-  'book': [Icons.book_outlined, Icons.book],
-  'movie': [Icons.movie_outlined, Icons.movie],
-  'video': [Icons.video_library_outlined, Icons.video_library],
-  'podcast': [Icons.podcasts_outlined, Icons.podcasts],
-  'album': [Icons.library_music_outlined, Icons.library_music],
-  'event': [Icons.event_outlined, Icons.event],
-  'recipe': [Icons.restaurant_outlined, Icons.restaurant],
-  'resource': [Icons.rss_feed_outlined, Icons.rss_feed],
+/// CONSIDER: Separate and move to {[ContentTile], [NetTile]}. Or not.
+final Map<String, (IconData, IconData)> tileType2icon = {
+  kOneofusType: (Icons.attachment_outlined, Icons.attachment),
+  kNerdsterType: (Icons.attachment_outlined, Icons.attachment),
+  'nerd': (Icons.sentiment_satisfied_outlined, Icons.sentiment_satisfied),
+  'key': (Icons.key_outlined, Icons.key),
+  'article': (Icons.article_outlined, Icons.article),
+  'book': (Icons.book_outlined, Icons.book),
+  'movie': (Icons.movie_outlined, Icons.movie),
+  'video': (Icons.video_library_outlined, Icons.video_library),
+  'podcast': (Icons.podcasts_outlined, Icons.podcasts),
+  'album': (Icons.library_music_outlined, Icons.library_music),
+  'event': (Icons.event_outlined, Icons.event),
+  'recipe': (Icons.restaurant_outlined, Icons.restaurant),
+  'resource': (Icons.rss_feed_outlined, Icons.rss_feed),
 };
