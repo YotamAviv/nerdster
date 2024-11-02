@@ -82,6 +82,9 @@ class _NetTreeViewState extends State<NetTreeView> {
         }
         treeController.expand(node);
       }
+    } else {
+      // Expand a little by default.
+      treeController.expand(treeController.roots.first);
     }
   }
 

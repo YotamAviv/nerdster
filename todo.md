@@ -26,22 +26,8 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 
 # Plan:
 
-I'm a little confused looking at Lisa's network. Bart looks replaced, clown is not in, friend not in, clown not in.
-Seems to be a beheading maybe.
-CONSIDER: Bart is replaced and red but in the network and not green.. Confusing..
-
-NetBar: follow screen / one-of-us screen is confusing
-  - follow view has tree branches for whomever you follow
-  - oneofus view has tree branches for those you oneofus trust and highlights the context folks
-  * maybe use a checkbox / dropdown (checkbox with help link?): 
-    - tree structure: <one-of-us>
-    - tree structure: follow network: [context] disabled when !b(context) <one-of-us>
-- expland tree at least a little by default when just going right.
-- center dropdown
-- follow dropdown, default to my default
-- degrees implemented and in link (so just my books is easy)
-
-UI for clear relate/equate.
+TODO: degrees
+  - in generated link (so just my books is easy)
 
 Instruction:
 - show the statements as they're stated.
@@ -49,6 +35,8 @@ Instruction:
 Default follow context
 - Hmm... I want a default follow context when folks view as me.
   - (don't generate a statement every time I just browse)
+
+UI for clear relate/equate.
 
 Encourage clicking: 
 - expand tree a little by default
@@ -58,6 +46,7 @@ Encourage clicking:
 
 DONE: React immediately (click / double click + tooltip)
 
+DONE: NetBar: follow screen / one-of-us screen confusing
 
 ## BUGS
 - I noticed that when Fetcher asserts false, it gets lost, not progpagated.
