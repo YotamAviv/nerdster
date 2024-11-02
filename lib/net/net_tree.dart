@@ -12,15 +12,9 @@ import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
-/// 3 virtual screens or views (not full-on Flutter Routes):
-/// - Content view
-/// - Follow tree view
-/// - Oneofus tree view
-/// All 3 show the 'Follow' dropdown whichs shows and changes [FollowNet].fcontext
-///
-/// Follow tree view: uses a FollowNet node or a OneofusNetNode depending on [FollowNet].fcontext.
-/// Oneofus tree view: always uses a OneofusNetNode.
-///
+/// 2 structural views are supported: <oneofus> [NetTreeView].bOneofus or 'follow network'.
+/// bOneofus: always uses a OneofusNetNode.
+/// !bOneofus: use FollowNet or OneofusNet nodes depending on b([FollowNet].fcontext).
 /// Total state is captured by:
 /// - [FollowNet].fcontext
 /// - [NetTreeView].bOneofus
