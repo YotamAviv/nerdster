@@ -5,6 +5,7 @@ import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/util_ui.dart';
 
 class NetBar extends StatefulWidget {
   const NetBar({super.key});
@@ -43,12 +44,14 @@ class _NetBarState extends State<NetBar> {
           // <-- button
           if (NetTreeView.bOneofus.value) IconButton(
               icon: const Icon(Icons.arrow_back),
+              color: linkColor,
               tooltip: 'Follow network view',
               onPressed: () {
                 NetTreeView.bOneofus.value = false;
               }),
           if (!NetTreeView.bOneofus.value) IconButton(
               icon: const Icon(Icons.arrow_back),
+              color: linkColor,
               tooltip: 'Content view',
               onPressed: () {
                 Navigator.pop(context);
@@ -89,6 +92,7 @@ class _NetBarState extends State<NetBar> {
           // --> button
           if (!NetTreeView.bOneofus.value) IconButton(
               icon: const Icon(Icons.arrow_forward),
+              color: linkColor,
               tooltip: 'one-of-us network view',
               onPressed: () {
                 NetTreeView.bOneofus.value = true;

@@ -26,6 +26,19 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 
 # Plan:
 
+NetBar: follow screen / one-of-us screen is confusing
+  - follow view has tree branches for whomever you follow
+  - oneofus view has tree branches for those you oneofus trust and highlights the context folks
+  * maybe use a checkbox / dropdown (checkbox with help link?): 
+    - tree structure: <one-of-us>
+    - tree structure: follow network: [context] disabled when !b(context) <one-of-us>
+- expland tree at least a little by default when just going right.
+- center dropdown
+- follow dropdown, default to my default
+- degrees implemented and in link (so just my books is easy)
+
+UI for clear relate/equate.
+
 Instruction:
 - show the statements as they're stated.
 
@@ -33,22 +46,11 @@ Default follow context
 - Hmm... I want a default follow context when folks view as me.
   - (don't generate a statement every time I just browse)
 
-NetBar: follow screen / one-of-us screen is confusing
-  - follow view has tree branches for whomever you follow
-  - oneofus view has tree branches for those you oneofus trust and highlights the context folks
-  * maybe use a checkbox: tree structure one-of-us / follow network
-- expland tree at least a little by default when just going right.
-- center dropdown
-- follow dropdown, default to my default
-- degrees
-
 Encourage clicking: 
 - expand tree a little by default
 - link colors:
   - DONE: nerd/key labels in tree view
   - DONE: content icon and folder
-
-UI for clear relate/equate.
 
 DONE: React immediately (click / double click + tooltip)
 

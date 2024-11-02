@@ -7,6 +7,7 @@ import 'package:nerdster/content/props.dart';
 import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/util_ui.dart';
 
 enum Sort {
   // ratings('rating', PropType.rating),
@@ -62,7 +63,10 @@ class _ContentBarState extends State<ContentBar> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           IconButton(
-              icon: const Icon(Icons.add), tooltip: 'Submit', onPressed: () => submit(context)),
+              icon: const Icon(Icons.add),
+              color: linkColor,
+              tooltip: 'Submit',
+              onPressed: () => submit(context)),
           const BarRefresh(),
           const FollowDropdown(),
           DropdownMenu<Sort>(
@@ -77,8 +81,8 @@ class _ContentBarState extends State<ContentBar> {
               });
             },
             dropdownMenuEntries: Sort.values
-                .map<DropdownMenuEntry<Sort>>(
-                    (Sort sort) => DropdownMenuEntry<Sort>(value: sort, label: sort.label))
+                .map<DropdownMenuEntry<Sort>>((Sort sort) =>
+                    DropdownMenuEntry<Sort>(value: sort, label: sort.label))
                 .toList(),
           ),
           SizedBox(
@@ -97,7 +101,9 @@ class _ContentBarState extends State<ContentBar> {
                 dropdownMenuEntries: ContentType.values
                     .map<DropdownMenuEntry<ContentType>>((ContentType type) =>
                         DropdownMenuEntry<ContentType>(
-                            value: type, label: type.label, leadingIcon: type.icon))
+                            value: type,
+                            label: type.label,
+                            leadingIcon: type.icon))
                     .toList(),
               )),
           SizedBox(
@@ -125,9 +131,11 @@ class _ContentBarState extends State<ContentBar> {
               width: 100,
               child: InputDecorator(
                 decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   labelText: 'Censor',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0)),
                 ),
                 child: Tooltip(
                   message:
@@ -142,6 +150,7 @@ class _ContentBarState extends State<ContentBar> {
               )),
           IconButton(
               icon: const Icon(Icons.arrow_forward),
+              color: linkColor,
               tooltip: 'Follow network view',
               onPressed: () async {
                 await Comp.waitOnComps([followNet, keyLabels]);
