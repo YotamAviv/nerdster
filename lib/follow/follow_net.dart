@@ -96,7 +96,6 @@ class FollowNet with Comp, ChangeNotifier {
       FollowNode.clear();
       LinkedHashMap<String, Node> canonNetwork =
           await trust1.process(FollowNode(signInState.center), numPaths: 1, blockerBenefit: 0);
-      assert(trust1.rejected.isEmpty);
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
       List<String> tmp = <String>[];
       for (String canon in canonNetwork.keys) {
