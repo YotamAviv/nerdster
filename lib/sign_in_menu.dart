@@ -6,6 +6,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/singletons.dart';
 
+/// CONSIDER: Display (instead of imply) 'not signed in'.
 class SignInMenu extends StatefulWidget {
   static const SignInMenu _singleton = SignInMenu._internal();
   factory SignInMenu() => _singleton;
@@ -54,7 +55,9 @@ class _SignInMenuState extends State<SignInMenu> {
 
     final StringBuffer status = StringBuffer();
     String viewingAs = 'Viewing as: "$centerLabel"';
-    String? signedInAs = b(signInState.signedInOneofus) ? 'Signed in as: "$signedInLabel"' : null;
+    String? signedInAs = b(signInState.signedInOneofus)
+        ? 'Signed in as: "$signedInLabel"'
+        : null;
     if (!b(signInState.signedInOneofus)) {
       // not signed in
       status.write(viewingAs);
@@ -65,9 +68,18 @@ class _SignInMenuState extends State<SignInMenu> {
       status.write(', ');
       status.write(viewingAs);
     }
+
+    VoidCallback? signOut;
+    if (b(signInState.signedInDelegate)) {
+      signOut = () async {
+        await KeyStore.wipeKeys();
+        signInState.signOut();
+      };
+    }
     return SubmenuButton(
       menuChildren: [
-        if (b(signInState.signedInOneofus) && signInState.signedInOneofus != signInState.center)
+        if (b(signInState.signedInOneofus) &&
+            signInState.signedInOneofus != signInState.center)
           MenuItemButton(
             onPressed: () {
               signInState.center = signInState.signedInOneofus!;
@@ -88,15 +100,10 @@ class _SignInMenuState extends State<SignInMenu> {
         // copy/paste sign-in
         MenuItemButton(
             onPressed: () => pasteSignin(context),
-            child: const Row(children: [
-              Icon(Icons.copy),
-              Text('paste sign-in')])),
-        MenuItemButton(
-            onPressed: () async {
-              await KeyStore.wipeKeys();
-              signInState.signOut();
-            },
-            child: const Text('Sign out')),
+            child:
+                const Row(children: [Icon(Icons.copy), Text('paste sign-in')])),
+        // Sign out
+        MenuItemButton(onPressed: signOut, child: const Text('Sign out')),
       ],
       child: Text(status.toString()),
     );
