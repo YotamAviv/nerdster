@@ -31,6 +31,7 @@ TODO: degrees
 
 Instruction:
 - show the statements as they're stated.
+- add ? help to tree regarding Oneofus trust / Nerdster follow
 
 Default follow context
 - Hmm... I want a default follow context when folks view as me.
