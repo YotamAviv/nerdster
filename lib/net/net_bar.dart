@@ -41,22 +41,13 @@ class _NetBarState extends State<NetBar> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           // <-- button
-          if (NetTreeView.bOneofus.value)
-            IconButton(
-                icon: const Icon(Icons.arrow_back),
-                color: linkColor,
-                tooltip: 'Follow network view',
-                onPressed: () {
-                  NetTreeView.bOneofus.value = false;
-                }),
-          if (!NetTreeView.bOneofus.value)
-            IconButton(
-                icon: const Icon(Icons.arrow_back),
-                color: linkColor,
-                tooltip: 'Content view',
-                onPressed: () {
-                  Navigator.pop(context);
-                }),
+          IconButton(
+              icon: const Icon(Icons.arrow_back),
+              color: linkColor,
+              tooltip: 'Content view',
+              onPressed: () {
+                Navigator.pop(context);
+              }),
 
           const BarRefresh(),
           const CenterDropdown(),
@@ -75,16 +66,7 @@ class _NetBarState extends State<NetBar> {
                 .map((i) =>
                     DropdownMenuEntry<int>(value: i, label: i.toString()))),
           ),
-
-          // --> button
-          if (!NetTreeView.bOneofus.value)
-            IconButton(
-                icon: const Icon(Icons.arrow_forward),
-                color: linkColor,
-                tooltip: 'one-of-us network view',
-                onPressed: () {
-                  NetTreeView.bOneofus.value = true;
-                }),
+          const StructureDropdown(),
         ],
       ),
     );
@@ -115,6 +97,26 @@ class CenterDropdown extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => CenterDropdownState();
+}
+
+class StructureDropdown extends StatelessWidget {
+  const StructureDropdown({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    List<DropdownMenuEntry> entries = [
+      DropdownMenuEntry(value: true, label: '<oneofus>'),
+      DropdownMenuEntry(value: false, label: 'follow network'),
+    ];
+    return DropdownMenu(
+      label: const Text('Structure'),
+      initialSelection: entries.first.value,
+      dropdownMenuEntries: entries,
+      onSelected: (bOneofus) {
+        NetTreeView.bOneofus.value = bOneofus;
+      },
+    );
+  }
 }
 
 class CenterDropdownState extends State<CenterDropdown> {
