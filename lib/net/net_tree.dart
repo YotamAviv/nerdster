@@ -120,7 +120,7 @@ class _NetTreeViewState extends State<NetTreeView> {
           ),
         ],
       ),
-      const NetBar(),
+      const NetBar(true),
       Expanded(child: SelectionArea(child: NetTreeTree(treeController: treeController)))
     ])));
   }

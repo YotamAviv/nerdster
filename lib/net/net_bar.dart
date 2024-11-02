@@ -8,7 +8,8 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 class NetBar extends StatefulWidget {
-  const NetBar({super.key});
+  final bool bTreeView;
+  const NetBar(this.bTreeView, {super.key});
 
   @override
   State<NetBar> createState() => _NetBarState();
@@ -41,13 +42,14 @@ class _NetBarState extends State<NetBar> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           // <-- button
-          IconButton(
-              icon: const Icon(Icons.arrow_back),
-              color: linkColor,
-              tooltip: 'Content view',
-              onPressed: () {
-                Navigator.pop(context);
-              }),
+          if (widget.bTreeView)
+            IconButton(
+                icon: const Icon(Icons.arrow_back),
+                color: linkColor,
+                tooltip: 'Content view',
+                onPressed: () {
+                  Navigator.pop(context);
+                }),
 
           const BarRefresh(),
           const CenterDropdown(),
@@ -66,7 +68,16 @@ class _NetBarState extends State<NetBar> {
                 .map((i) =>
                     DropdownMenuEntry<int>(value: i, label: i.toString()))),
           ),
-          const StructureDropdown(),
+          StructureDropdown(widget.bTreeView),
+          if (!widget.bTreeView)
+            IconButton(
+                icon: const Icon(Icons.arrow_forward),
+                color: linkColor,
+                tooltip: 'Network view',
+                onPressed: () async {
+                  await Comp.waitOnComps([followNet, keyLabels]);
+                  NetTreeView.show(context);
+                }),
         ],
       ),
     );
@@ -99,8 +110,30 @@ class CenterDropdown extends StatefulWidget {
   State<StatefulWidget> createState() => CenterDropdownState();
 }
 
-class StructureDropdown extends StatelessWidget {
-  const StructureDropdown({super.key});
+class StructureDropdown extends StatefulWidget {
+  final bool bContent;
+  const StructureDropdown(this.bContent, {super.key});
+  
+  @override
+  State<StatefulWidget> createState() => StructureDropdownState();
+}
+
+class StructureDropdownState extends State<StructureDropdown> {
+  @override
+  void initState() {
+    super.initState();
+    NetTreeView.bOneofus.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    NetTreeView.bOneofus.removeListener(listener);
+    super.dispose();
+  }
+
+  void listener() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,8 +142,9 @@ class StructureDropdown extends StatelessWidget {
       DropdownMenuEntry(value: false, label: 'follow network'),
     ];
     return DropdownMenu(
+      enabled: widget.bContent,
       label: const Text('Structure'),
-      initialSelection: entries.first.value,
+      initialSelection: NetTreeView.bOneofus.value,
       dropdownMenuEntries: entries,
       onSelected: (bOneofus) {
         NetTreeView.bOneofus.value = bOneofus;
