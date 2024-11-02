@@ -201,7 +201,6 @@ void main() async {
     myExpect(contentBase.getRoots().length, 0);
   });
 
-  
   test('!canon follow !canon', () async {
     var expected;
     DemoKey somebodyElse = await DemoKey.findOrCreate('somebodyElse');
@@ -377,7 +376,7 @@ void main() async {
     jsonShowExpect(followNet.oneofus2delegates, expected);
   });
 
-test('canon and other follow varieties', () async {
+  test('canon and other follow varieties', () async {
     // This test is messier than the better, classic unit tests. It's here, could probably be removed.
     var expected;
     DemoKey somebodyElse = await DemoKey.findOrCreate('somebodyElse');
@@ -397,9 +396,13 @@ test('canon and other follow varieties', () async {
     Jsonish s2 = await bob.doTrust(TrustVerb.trust, steve2);
 
     signInState.center = bob.token;
-    await Comp.waitOnComps([oneofusNet, keyLabels, contentBase]); // 
+    await Comp.waitOnComps([oneofusNet, keyLabels, contentBase]); //
     var network = oneofusNet.network;
-    var expectedNetwork = {"Me": null, "steve2": null, "steve2 (0)": "5/1/2024 12:05 AM"};
+    var expectedNetwork = {
+      "Me": null,
+      "steve2": null,
+      "steve2 (0)": "5/1/2024 12:05 AM"
+    };
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     followNet.listen();
@@ -469,7 +472,7 @@ test('canon and other follow varieties', () async {
 
   /// This test is in response to a bug.
   /// Switching between context='social' and context=null was acting strangely.
-  test('poser social follow bug', () async{
+  test('poser social follow bug', () async {
     var (oneofus, delegate) = await DemoKey.demos['egos']();
     await signIn(oneofus.token, null);
 
@@ -479,28 +482,37 @@ test('canon and other follow varieties', () async {
 
     await contentBase.waitUntilReady();
     expect(contentBase.getRoots().length, 2);
-    Map<String, String?> delegate2revokedAt = followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));    
-    List<String> ss = List.of(followNet.getStatements(hipster.token).map((s) => s.token));
+    Map<String, String?> delegate2revokedAt =
+        followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
+    List<String> ss =
+        List.of(followNet.getStatements(hipster.token).map((s) => s.token));
     Set<String> hipDels = followNet.oneofus2delegates[hipster.token]!;
     String? hipDel0r = followNet.delegate2fetcher[hipDel0.token]!.revokeAt;
     String? hipDel1r = followNet.delegate2fetcher[hipDel1.token]!.revokeAt;
-    List<String> hipDel0rSs = List.of(followNet.delegate2fetcher[hipDel0.token]!.statements.map((s) => s.token));
-    List<String> hipDel1rSs = List.of(followNet.delegate2fetcher[hipDel1.token]!.statements.map((s) => s.token));
+    List<String> hipDel0rSs = List.of(followNet
+        .delegate2fetcher[hipDel0.token]!.statements
+        .map((s) => s.token));
+    List<String> hipDel1rSs = List.of(followNet
+        .delegate2fetcher[hipDel1.token]!.statements
+        .map((s) => s.token));
 
     followNet.fcontext = 'social';
     await contentBase.waitUntilReady();
     expect(contentBase.getRoots().length, 2);
-    Map<String, String?> delegate2revokedAt2 = followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
+    Map<String, String?> delegate2revokedAt2 =
+        followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
     expect(delegate2revokedAt2, delegate2revokedAt);
-    List<String> ss2 = List.of(followNet.getStatements(hipster.token).map((s) => s.token));
+    List<String> ss2 =
+        List.of(followNet.getStatements(hipster.token).map((s) => s.token));
     expect(ss2, ss);
     Set<String> hipDels2 = followNet.oneofus2delegates[hipster.token]!;
     expect(hipDels2, hipDels);
-    
+
     oneofusNet.listen();
     await contentBase.waitUntilReady();
     expect(contentBase.getRoots().length, 2);
-    Map<String, String?> delegate2revokedAt3 = followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
+    Map<String, String?> delegate2revokedAt3 =
+        followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
     expect(delegate2revokedAt3, delegate2revokedAt);
     Set<String> hipDels3 = followNet.oneofus2delegates[hipster.token]!;
     expect(hipDels3, hipDels);
@@ -508,11 +520,41 @@ test('canon and other follow varieties', () async {
     expect(hipDel0r3, hipDel0r);
     String? hipDel1r3 = followNet.delegate2fetcher[hipDel1.token]!.revokeAt;
     expect(hipDel1r3, hipDel1r);
-    List<String> hipDel1rSs3 = List.of(followNet.delegate2fetcher[hipDel1.token]!.statements.map((s) => s.token));
+    List<String> hipDel1rSs3 = List.of(followNet
+        .delegate2fetcher[hipDel1.token]!.statements
+        .map((s) => s.token));
     expect(hipDel1rSs3, hipDel1rSs);
-    List<String> hipDel0rSs3 = List.of(followNet.delegate2fetcher[hipDel0.token]!.statements.map((s) => s.token));
+    List<String> hipDel0rSs3 = List.of(followNet
+        .delegate2fetcher[hipDel0.token]!.statements
+        .map((s) => s.token));
     expect(hipDel0rSs3, hipDel0rSs);
-    List<String> ss3 = List.of(followNet.getStatements(hipster.token).map((s) => s.token));
+    List<String> ss3 =
+        List.of(followNet.getStatements(hipster.token).map((s) => s.token));
     expect(ss3, ss);
+  });
+
+  /// Test added due to bug where followNet asserted: trust1.rejected.isEmpty
+  /// But in fact, bart blocks lisa for social, and when cenetered as lisa, that's 
+  /// appropriately rejected.
+  test('lisa social', () async {
+    await DemoKey.demos['simpsons']();
+    loadSimpsons();
+    await signIn(lisa.token, null);
+
+    followNet.fcontext = 'family';
+    signInState.center = lisa.token;
+    await Comp.waitOnComps([followNet, keyLabels]);
+    jsonShowExpect(followNet.delegate2oneofus, {
+      "daughter-nerdster": "daughter",
+      "mom-nerdster": "mom",
+      "hubby2-nerdster": "hubby2",
+      "son-nerdster": "son"
+    });
+
+    followNet.fcontext = 'social';
+    signInState.center = lisa.token;
+    await Comp.waitOnComps([followNet, keyLabels]);
+    jsonShowExpect(followNet.delegate2oneofus,
+        {"daughter-nerdster": "daughter", "son-nerdster": "son"});
   });
 }

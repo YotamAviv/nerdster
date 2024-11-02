@@ -26,6 +26,10 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 
 # Plan:
 
+I'm a little confused looking at Lisa's network. Bart looks replaced, clown is not in, friend not in, clown not in.
+Seems to be a beheading maybe.
+CONSIDER: Bart is replaced and red but in the network and not green.. Confusing..
+
 NetBar: follow screen / one-of-us screen is confusing
   - follow view has tree branches for whomever you follow
   - oneofus view has tree branches for those you oneofus trust and highlights the context folks

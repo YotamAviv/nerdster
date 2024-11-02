@@ -4,7 +4,6 @@ import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in.dart';
-import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 
 class SignInMenu extends StatefulWidget {
@@ -126,7 +125,7 @@ or might not even know you exist...''');
                         children: [
                           w,
                           OkCancel(() async {
-                            SignInState().center = token;
+                            signInState.center = token;
                             Navigator.pop(context);
                           }, 'Okay'),
                         ]))));

@@ -68,6 +68,7 @@ class _ContentBarState extends State<ContentBar> {
               tooltip: 'Submit',
               onPressed: () => submit(context)),
           const BarRefresh(),
+          const CenterDropdown(),
           const FollowDropdown(),
           DropdownMenu<Sort>(
             initialSelection: contentBase.sort,
