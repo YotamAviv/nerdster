@@ -1,24 +1,21 @@
 import 'package:nerdster/main.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 
 // DEFER: add other network settings: degrees? (statements?, numOneofus?, numFollow?, )
 String generateLink() {
   Map<String, String> params = <String, String>{};
-  if (fireChoice != FireChoice.fake) {
-    params['oneofus'] = SignInState().center;
-  }
+
   params['fire'] = fireChoice.name;
-  params['sort'] = contentBase.sort.name;
-  params['type'] = contentBase.type.name;
-  params['timeframe'] = contentBase.timeframe.name;
-  params['censor'] = contentBase.censor.toString();
-  if (b(followNet.fcontext)) {
-    params['follow'] = followNet.fcontext!;
+  if (fireChoice != FireChoice.fake) {
+    params['oneofus'] = signInState.center;
   }
-  Prefs.generateLink(params);
+  
+  Prefs.setParams(params);
+  oneofusNet.setParams(params);
+  followNet.setParams(params);
+  contentBase.setParams(params);
+
   String url = buildUrlWithQueryParams(Uri.base, params);
   return url;
 }

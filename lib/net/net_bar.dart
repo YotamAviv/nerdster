@@ -54,19 +54,9 @@ class _NetBarState extends State<NetBar> {
           const BarRefresh(),
           const CenterDropdown(),
           const FollowDropdown(),
-          DropdownMenu<int>(
-            initialSelection: 6,
-            enabled: false,
-            requestFocusOnTap: true,
-            label: const Text('Degrees'),
-            onSelected: (int? degrees) {
-              setState(() {
-                if (degrees != null) {}
-              });
-            },
-            dropdownMenuEntries: List.of(List<int>.generate(6, (i) => i + 1)
-                .map((i) =>
-                    DropdownMenuEntry<int>(value: i, label: i.toString()))),
+          SizedBox(
+            width: 80,
+            child: DegreesDropdown(),
           ),
           StructureDropdown(widget.bTreeView),
           if (!widget.bTreeView)
@@ -113,7 +103,7 @@ class CenterDropdown extends StatefulWidget {
 class StructureDropdown extends StatefulWidget {
   final bool bContent;
   const StructureDropdown(this.bContent, {super.key});
-  
+
   @override
   State<StatefulWidget> createState() => StructureDropdownState();
 }
@@ -191,8 +181,8 @@ class CenterDropdownState extends State<CenterDropdown> {
     }
 
     List<DropdownMenuEntry<String?>> entries = label2oneofus.keys
-        .map<DropdownMenuEntry<String>>((String fcontext) =>
-            DropdownMenuEntry<String>(value: fcontext, label: fcontext))
+        .map<DropdownMenuEntry<String>>(
+            (String fcontext) => DropdownMenuEntry<String>(value: fcontext, label: fcontext))
         .toList();
     return DropdownMenu<String?>(
       dropdownMenuEntries: entries,
@@ -207,6 +197,48 @@ class CenterDropdownState extends State<CenterDropdown> {
       onSelected: (String? label) {
         signInState.center = label2oneofus[label]!;
       },
+    );
+  }
+}
+
+class DegreesDropdown extends StatefulWidget {
+  const DegreesDropdown({super.key});
+
+  @override
+  State<StatefulWidget> createState() => DegreesDropdownState();
+}
+
+class DegreesDropdownState extends State<DegreesDropdown> {
+  @override
+  void initState() {
+    super.initState();
+    oneofusNet.addListener(listen);
+    listen();
+  }
+
+  void listen() async {
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    oneofusNet.removeListener(listen);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownMenu<int>(
+      initialSelection: oneofusNet.degrees,
+      requestFocusOnTap: true,
+      label: const Text('Degrees'),
+      onSelected: (int? degrees) {
+        setState(() {
+          oneofusNet.degrees = degrees!;
+        });
+      },
+      dropdownMenuEntries: List.of(List<int>.generate(6, (i) => i + 1)
+          .map((i) => DropdownMenuEntry<int>(value: i, label: i.toString()))),
     );
   }
 }
@@ -241,15 +273,14 @@ class _FollowDropdownState extends State<FollowDropdown> {
   @override
   Widget build(BuildContext context) {
     // The issue was that the Dropdown showed its label inside when initial wasn't one of the options.
-    String initial =
-        b(followNet.fcontext) ? followNet.fcontext! : '<one-of-us>';
+    String initial = b(followNet.fcontext) ? followNet.fcontext! : '<one-of-us>';
     List<String> options = ['<one-of-us>', ...followNet.most];
     if (!options.contains(initial)) {
       options.add(initial);
     }
     List<DropdownMenuEntry<String?>> entries = options
-        .map<DropdownMenuEntry<String>>((String fcontext) =>
-            DropdownMenuEntry<String>(value: fcontext, label: fcontext))
+        .map<DropdownMenuEntry<String>>(
+            (String fcontext) => DropdownMenuEntry<String>(value: fcontext, label: fcontext))
         .toList();
     return DropdownMenu<String?>(
       initialSelection: initial,

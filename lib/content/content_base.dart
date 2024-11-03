@@ -240,8 +240,8 @@ class ContentBase with Comp, ChangeNotifier {
       }
 
       // Skip dismissed
-      if (_subject2statements[subjectToken]!.any(
-          (statement) => b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.center)) {
+      if (_subject2statements[subjectToken]!.any((statement) =>
+          b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.center)) {
         continue;
       }
 
@@ -411,8 +411,8 @@ class ContentBase with Comp, ChangeNotifier {
       // NOTE: These props can be different from the UI props (rating here, recommend there).
       // This makes it easy to pass the tests that were scripted and recorded before the change,
       // but it's not awesome.
-      Map<PropType, Prop> props = subjectNode.computeProps(
-          [PropType.recommend, PropType.numComments, PropType.recentActivity]);
+      Map<PropType, Prop> props = subjectNode
+          .computeProps([PropType.recommend, PropType.numComments, PropType.recentActivity]);
       Map<dynamic, dynamic> propsMap = {};
       for (var entry in props.entries) {
         propsMap[entry.key.label] = entry.value.getValue();
@@ -482,7 +482,7 @@ class ContentBase with Comp, ChangeNotifier {
   }
 
   ContentBase._internal() {
-    _initWindowQueryParams();
+    _readParams();
 
     // supporters
     addSupporter(followNet);
@@ -503,7 +503,14 @@ class ContentBase with Comp, ChangeNotifier {
     super.dispose();
   }
 
-  void _initWindowQueryParams() {
+  void setParams(Map<String, String> params) {
+    params['sort'] = sort.name;
+    params['type'] = type.name;
+    params['timeframe'] = timeframe.name;
+    params['censor'] = censor.toString();
+  }
+
+  void _readParams() {
     Map<String, String> params = Uri.base.queryParameters;
 
     String? sortParam = params['sort'];
@@ -615,7 +622,8 @@ Future<Jsonish?> relate(Jsonish subject, Jsonish otherSubject, BuildContext cont
   if (await checkSignedIn(context) != true) {
     return null;
   }
-  ContentStatement? priorStatement = contentBase._findMyStatement2(subject.token, otherSubject.token);
+  ContentStatement? priorStatement =
+      contentBase._findMyStatement2(subject.token, otherSubject.token);
   Json? json = await relateDialog(context, subject.json, otherSubject.json, priorStatement);
   if (json != null) {
     Jsonish statement = await contentBase.insert(json);

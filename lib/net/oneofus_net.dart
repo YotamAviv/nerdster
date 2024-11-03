@@ -40,6 +40,7 @@ class OneofusNet with Comp, ChangeNotifier {
   static final OneofusNet _singleton = OneofusNet._internal();
   factory OneofusNet() => _singleton;
   OneofusNet._internal() {
+    _readParams();
     signInState.addListener(listen);
   }
 
@@ -51,6 +52,24 @@ class OneofusNet with Comp, ChangeNotifier {
   final Map<String, String> _rejected = <String, String>{};
 
   int? getPosition(token) => _token2keyCounter[token];
+
+  void _readParams() {
+    Map<String, String> params = Uri.base.queryParameters;
+    String? degreesParam = params['degrees'];
+    if (b(degreesParam)) {
+      try {
+        degrees = int.parse(degreesParam!);
+        print('degrees=$degrees');
+      } catch (e) {
+        print(e);
+      }
+    }
+
+  }
+
+  void setParams(Map<String, String> params) {
+    params['degrees'] = degrees.toString();
+  }
 
   int get degrees => _degrees;
   set degrees(int degrees) {
