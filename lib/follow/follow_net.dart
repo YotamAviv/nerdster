@@ -23,15 +23,24 @@ class FollowNet with Comp, ChangeNotifier {
   static final FollowNet _singleton = FollowNet._internal();
   factory FollowNet() => _singleton;
   FollowNet._internal() {
+    _readParams();
     // supporters
     addSupporter(oneofusNet);
     oneofusNet.addListener(listen);
     addSupporter(oneofusEquiv);
     oneofusEquiv.addListener(listen);
+  }
 
+  void _readParams() {
     Map<String, String> params = Uri.base.queryParameters;
     String? follow = params['follow'];
     _context = b(follow) ? follow : null;
+  }
+
+  void setParams(Map<String, String> params) {
+    if (b(fcontext)) {
+      params['follow'] = followNet.fcontext!;
+    }
   }
 
   // vars

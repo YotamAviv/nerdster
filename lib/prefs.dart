@@ -17,7 +17,7 @@ class Prefs {
     showKeys.value = bs(params['showKeys']);
   }
 
-  static void generateLink(Map<String, String> params) {
+  static void setParams(Map<String, String> params) {
     if(showStatements.value) params['showStatements'] = true.toString();
     if(showKeys.value) params['showKeys'] = true.toString();
   }
