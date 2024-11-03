@@ -4,10 +4,8 @@ import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/trust/trust.dart';
 
-/// TODO: Make the '2' in 'blockeePathLength + 2' configurable (for follow)
-
-/// TODO: Max network size: 300.
-/// TODO: Max degrees: 6
+/// TODO: time limit
+/// TODO: network size max
 
 /// Trust1 algorithm: Layered, greedy BFS
 /// At each layer, process in this order
@@ -25,14 +23,17 @@ import 'package:nerdster/trust/trust.dart';
 /// DEFER: Consider network order/ranking. Right now their in the order we discover them in
 /// the BFS, not terrible.
 
-class Trust1 implements TrustAlgorithm {
+class Trust1 {
   final Map<String, String> _rejected = <String, String>{};
+  final int degrees; // 1 degree is just me.
+  final int numPaths;
+  final int blockerBenefit;
 
   Map<String, String> get rejected => _rejected;
 
-  @override
-  Future<LinkedHashMap<String, Node>> process(Node source,
-      {int numPaths = 1, int blockerBenefit = 1}) async {
+  Trust1({this.degrees = 6, this.numPaths = 1, this.blockerBenefit = 1});
+
+  Future<LinkedHashMap<String, Node>> process(Node source) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
     network[source.token] = source;
     assert(source.paths.isEmpty);
@@ -44,7 +45,7 @@ class Trust1 implements TrustAlgorithm {
 
     Queue<Path> nextLayer = Queue<Path>();
 
-    int pass = 1; // degrees away
+    int pass = 1; // degrees (plus/minus 1 ;)
     while (true) {
       Set<Path> removeAfterIteration = <Path>{};
 
@@ -165,51 +166,59 @@ class Trust1 implements TrustAlgorithm {
       currentLayer.removeWhere((p) => removeAfterIteration.contains(p));
 
       // ====== TRUSTS ====== //
-      for (Path path in currentLayer) {
-        if (!isValidPath(path, network)) continue;
-        Node n = path.last.node;
-        if (visited.contains(n)) continue;
-        visited.add(n);
+      // If pass > degrees, don't add more trusts, just blocks.
+      if (pass < degrees) {
+        for (Path path in currentLayer) {
+          if (!isValidPath(path, network)) continue;
+          Node n = path.last.node;
+          if (visited.contains(n)) continue;
+          visited.add(n);
 
-        for (Trust trust in await n.trusts) {
-          final Node other = trust.node;
-          if (other == n) {
-            _rejected[trust.statementToken] = '''Don't trust yourself''';
-            continue;
-          }
+          for (Trust trust in await n.trusts) {
+            final Node other = trust.node;
+            if (other == n) {
+              _rejected[trust.statementToken] = '''Don't trust yourself''';
+              continue;
+            }
 
-          if (path.where((pathEdge) => pathEdge.node == other).isNotEmpty) {
-            continue; // Don't let path cycle
-          }
+            if (path.where((pathEdge) => pathEdge.node == other).isNotEmpty) {
+              continue; // Don't let path cycle
+            }
 
-          // Trust / further trust other node as necessary, create path, enqueue
-          network.putIfAbsent(other.token, () => other);
-          final Path newPath = List.of(path)..add(trust);
-          other.paths.add(newPath);
-          assert(newPath.length == pass + 1); // Just checking
+            // Trust / further trust other node as necessary, create path, enqueue
+            network.putIfAbsent(other.token, () => other);
+            final Path newPath = List.of(path)..add(trust);
+            other.paths.add(newPath);
+            assert(newPath.length == pass + 1); // Just checking
 
-          // Add to queue if not already visited.
-          if (!visited.contains(other)) {
-            nextLayer.addLast(newPath);
+            // Add to queue if not already visited.
+            if (!visited.contains(other)) {
+              nextLayer.addLast(newPath);
+            }
           }
         }
       }
 
       if (nextLayer.isEmpty) {
         break;
-      } else {
-        pass++;
-        currentLayer = nextLayer;
-        nextLayer = Queue<Path>();
       }
+      if (pass >= degrees + blockerBenefit) {
+        break;
+      }
+      pass++;
+      currentLayer = nextLayer;
+      nextLayer = Queue<Path>();
     }
 
     // Remove nodes that were there just to remember that they're blocked.
     network.removeWhere((key, value) => value.blocked);
 
-    // ... performance.. print('now restricting to valid paths...');
+    // PERFORMANCE: print('now restricting...');
 
-    // Restrict to numberOfPaths, repeat until we're not removing more..
+    // Validate, prune/restrict. Repeat until we're not removing more..
+    // - validate: (we may have created paths using nodes that have later been blocked.)
+    // - numPaths
+    // - degrees
     int networkSizeBefore = network.length;
     while (true) {
       // Remove invalid paths (revoked nodes made edges, node no longer in network (not enough paths)),
@@ -219,7 +228,7 @@ class Trust1 implements TrustAlgorithm {
         }
         n.paths = List.of(n.paths.where((path) => isValidPath(path, network)));
       }
-      // Restrict to numberOfPaths
+      // Restrict to numPaths
       network.removeWhere((token, node) => (token != source.token) && node.paths.length < numPaths);
 
       // We're not removing, and so we're done.
@@ -236,6 +245,9 @@ class Trust1 implements TrustAlgorithm {
   // - each edge should have
   //  - statedAt before node was revoked (in case it was revoked)
   bool isValidPath(Path path, Map<String, Node> network) {
+    // The algorithm does consider replace statements to degrees + blockerBenefit.
+    if (path.length > degrees) return false;
+
     bool out = true;
     DateTime? fromRevokeAtTime; // (source)
     for (Trust edge in path.sublist(1)) {

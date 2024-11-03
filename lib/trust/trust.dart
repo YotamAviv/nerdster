@@ -61,10 +61,6 @@ abstract class Node {
   Future<Iterable<Block>> get blocks; // newest to oldest
 }
 
-abstract class TrustAlgorithm {
-  Future<Map<String, Node>> process(Node node, {int numPaths = 1});
-}
-
 class Trust {
   final String statementToken;
   final DateTime statedAt;

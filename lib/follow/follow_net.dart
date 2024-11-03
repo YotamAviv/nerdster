@@ -92,10 +92,10 @@ class FollowNet with Comp, ChangeNotifier {
 
     Iterable<String> network;
     if (b(fcontext)) {
-      Trust1 trust1 = Trust1();
+      Trust1 trust1 = Trust1(numPaths: 1, blockerBenefit: 0);
       FollowNode.clear();
       LinkedHashMap<String, Node> canonNetwork =
-          await trust1.process(FollowNode(signInState.center), numPaths: 1, blockerBenefit: 0);
+          await trust1.process(FollowNode(signInState.center));
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
       List<String> tmp = <String>[];
       for (String canon in canonNetwork.keys) {
@@ -192,12 +192,12 @@ class FollowNode extends Node {
       }
     }
     Merger merger = Merger(delegateStatementss);
-    // QUESTIONABLE: 
-    // Below is a distinct/merger combo with no transformer. 
+    // QUESTIONABLE:
+    // Below is a distinct/merger combo with no transformer.
     // The ContentStatements are presumably stated by ...
     //   the delegates of the equivalents of a single Oneofus key.
     // We're in the process of computing FollowNet, and so we can't use FollowNet.delegate2oneofus.
-    // I do think that issues will arise if delegates of the same Oneofus trust/block (in the 
+    // I do think that issues will arise if delegates of the same Oneofus trust/block (in the
     // follow sense) the same dude.
     // TEST: d1 follows x; d2 follows x; d3 blocks x; d4 blocks x. The desired result is probably
     //   just one block

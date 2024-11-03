@@ -10,6 +10,7 @@ import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/net/net_tree_model.dart';
+import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -18,6 +19,8 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/trust/trust.dart';
+import 'package:nerdster/trust/trust1.dart';
 import 'package:test/test.dart';
 
 void main() async {
@@ -47,6 +50,7 @@ void main() async {
     DemoKey.clear();
     signInState.signOut();
     await signIn('dummy', null);
+    oneofusNet.degrees = 6;
     oneofusNet.numPaths = 1;
     oneofusNet.blockerBenefit = 1;
     followNet.fcontext = null;
@@ -75,8 +79,7 @@ void main() async {
     int i = 0;
     await lisa.doTrust(TrustVerb.trust, marge);
     await lisa.doTrust(TrustVerb.trust, homer);
-    await homer.doTrust(TrustVerb.trust,
-        lisa); // This would let us know that we're lisa; wihtout this we're "Me".
+    await homer.doTrust(TrustVerb.trust, lisa); // wihtout this we're "Me".
 
     await signIn(lisa.token, null);
 
@@ -116,8 +119,7 @@ void main() async {
 
   test('revoke me rejected', () async {
     Jsonish s1 = await homer.doTrust(TrustVerb.trust, sideshow);
-    Jsonish replaceStatement =
-        await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s1.token);
+    Jsonish replaceStatement = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s1.token);
 
     await signIn(homer.token, null);
 
@@ -157,7 +159,6 @@ void main() async {
     };
     jsonShowExpect(dump, expectedTree);
   });
-
 
   test('3\'rd level block removes 1\'st level trust', () async {
     oneofusNet.blockerBenefit = 2;
@@ -349,8 +350,8 @@ void main() async {
   });
 
   test('diamond trust, 2 paths (not great)', () async {
-    // (Correct, works as intended, but not necessarily great: 
-    // Marge is trusted via 2 paths, but the nerds on those paths are not in the network, 
+    // (Correct, works as intended, but not necessarily great:
+    // Marge is trusted via 2 paths, but the nerds on those paths are not in the network,
     // and so Marge isn't trusted.)
     await homer.doTrust(TrustVerb.trust, lisa);
     await homer.doTrust(TrustVerb.trust, bart);
@@ -470,8 +471,7 @@ void main() async {
     await homer.doTrust(TrustVerb.trust, marge);
     Jsonish s2 = await homer.doTrust(TrustVerb.trust, lisa);
     await marge.doTrust(TrustVerb.trust, burns);
-    await homer2.doTrust(TrustVerb.replace, homer,
-        revokeAt: s2.token); // lisa trusted.
+    await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token); // lisa trusted.
     await bart.doTrust(TrustVerb.clear, homer);
     await bart.doTrust(TrustVerb.trust, homer2);
 
@@ -548,8 +548,7 @@ void main() async {
   test('Bad actor tries to replace key', () async {
     await homer.doTrust(TrustVerb.trust, bart);
     Jsonish s2 = await homer.doTrust(TrustVerb.trust, marge);
-    Jsonish s3 = await sideshow.doTrust(TrustVerb.replace, homer,
-        revokeAt: s2.token); // rejected
+    Jsonish s3 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s2.token); // rejected
     await bart.doTrust(TrustVerb.trust, sideshow);
 
     await signIn(homer.token, null);
@@ -570,8 +569,7 @@ void main() async {
     Jsonish s3 = await homer.doTrust(TrustVerb.trust, marge);
     await homer2.doTrust(TrustVerb.replace, homer,
         revokeAt: s2.token); // (marge not trusted, key already replaced.)
-    Jsonish s4 = await sideshow.doTrust(TrustVerb.replace, homer,
-        revokeAt: s3.token); // rejected
+    Jsonish s4 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s3.token); // rejected
     await bart.doTrust(TrustVerb.trust, sideshow);
 
     await signIn(homer2.token, null);
@@ -693,7 +691,113 @@ void main() async {
     dynamic treeDump = await OneofusTreeNode.root.dump();
 
     expect(oneofusEquiv.getCanonical(homer2.token), homer2.token);
+    expect(oneofusEquiv.getEquivalents(homer2.token), {homer.token, homer2.token});
     expect(keyLabels.show(oneofusEquiv.getCanonical(homer.token)), keyLabels.show(homer2.token));
+  });
+
+  /// This test does not use [OneofusNet] but does use its [FetcherNode].
+  /// Ideally, I would have unit tests for [Trust1].
+  test('degrees base', () async {
+    DemoKey d1 = await DemoKey.findOrCreate('1');
+    DemoKey d2 = await DemoKey.findOrCreate('2');
+    DemoKey d3 = await DemoKey.findOrCreate('3');
+    await d1.doTrust(TrustVerb.trust, d2);
+    await d2.doTrust(TrustVerb.trust, d3);
+
+    Trust1 trust1;
+    Map<String, Node> network;
+
+    trust1 = Trust1(degrees: 1);
+    network = await trust1.process(FetcherNode(d1.token));
+    expect(network.keys, [d1.token]);
+
+    trust1 = Trust1(degrees: 2);
+    network = await trust1.process(FetcherNode(d1.token));
+    expect(network.keys, [d1.token, d2.token]);
+
+    trust1 = Trust1(degrees: 3);
+    network = await trust1.process(FetcherNode(d1.token));
+    expect(network.keys, [d1.token, d2.token, d3.token]);
+  });
+
+  test('degrees base block, blockerBenefit: 0', () async {
+    DemoKey d1 = await DemoKey.findOrCreate('1');
+    DemoKey d21 = await DemoKey.findOrCreate('2.1');
+    DemoKey d22 = await DemoKey.findOrCreate('2.2');
+    DemoKey d3 = await DemoKey.findOrCreate('3');
+    await d1.doTrust(TrustVerb.trust, d21);
+    await d1.doTrust(TrustVerb.trust, d22);
+    await d21.doTrust(TrustVerb.block, d22);
+    await d21.doTrust(TrustVerb.trust, d3);
+
+    Trust1 trust1;
+    Map<String, Node> network;
+
+    trust1 = Trust1(degrees: 1, blockerBenefit: 0);
+    network = await trust1.process(FetcherNode(d1.token));
+    expect(network.keys, [d1.token]);
+
+    trust1 = Trust1(degrees: 2, blockerBenefit: 0);
+    network = await trust1.process(FetcherNode(d1.token));
+    expect(network.keys, [d1.token, d21.token]);
+
+    trust1 = Trust1(degrees: 3, blockerBenefit: 0);
+    network = await trust1.process(FetcherNode(d1.token));
+    expect(network.keys, [d1.token, d21.token, d3.token]);
+  });
+
+  test('degrees base block, blockerBenefit: 1', () async {
+    DemoKey d1 = await DemoKey.findOrCreate('1');
+    DemoKey d2 = await DemoKey.findOrCreate('2');
+    DemoKey d3 = await DemoKey.findOrCreate('3');
+    await d1.doTrust(TrustVerb.trust, d2);
+    await d2.doTrust(TrustVerb.trust, d3);
+    await d3.doTrust(TrustVerb.block, d2);
+
+    Trust1 trust1;
+    Map<String, Node> network;
+
+    trust1 = Trust1(degrees: 1, blockerBenefit: 1);
+    network = await trust1.process(FetcherNode(d1.token));
+    expect(network.keys, [d1.token]);
+
+    trust1 = Trust1(degrees: 2, blockerBenefit: 1);
+    network = await trust1.process(FetcherNode(d1.token));
+    expect(network.keys, [d1.token, d2.token]);
+
+    trust1 = Trust1(degrees: 3, blockerBenefit: 1);
+    network = await trust1.process(FetcherNode(d1.token));
+    expect(network.keys, [d1.token]);
+  });
+
+  test('simpsons, degrees=2', () async {
+    oneofusNet.degrees = 2;
+    var (n, d) = await DemoKey.demos['simpsons']();
+    await signIn(bart.token, null);
+
+    var network = oneofusNet.network;
+    var expectedNetwork = {"son": null, "friend": null, "sis": null, "homer2": null, "moms": null};
+    jsonShowExpect(dumpNetwork(network), expectedNetwork);
+  });
+
+  test('simpsons, degrees=3', () async {
+    oneofusNet.degrees = 3;
+    var (n, d) = await DemoKey.demos['simpsons']();
+    await signIn(bart.token, null);
+
+    var network = oneofusNet.network;
+    var expectedNetwork = {
+      "son": null,
+      "friend": null,
+      "sis": null,
+      "homer2": null,
+      "moms": null,
+      "homer2 (0)": "5/1/2024 12:09 AM",
+      "clown": null,
+      "mom": null,
+      "sister": null
+    };
+    jsonShowExpect(dumpNetwork(network), expectedNetwork);
   });
 
   test('simpsons label key edges', () async {
@@ -728,9 +832,11 @@ void main() async {
 
     await signIn(homer2.token, null);
     expect(toJson(labelKeyPathsX(homer.token)), [
-      [{'hubby2 (0)': '(replaced)'}], 
       [
-        {'daughter': 'daughter'}, 
+        {'hubby2 (0)': '(replaced)'}
+      ],
+      [
+        {'daughter': 'daughter'},
         {'hubby2 (0)': 'dad'}
       ]
     ]);

@@ -43,6 +43,7 @@ class OneofusNet with Comp, ChangeNotifier {
     signInState.addListener(listen);
   }
 
+  int _degrees = 6;
   int _numPaths = 1;
   int _blockerBenefit = 1;
   LinkedHashMap<String, Node> _network = LinkedHashMap<String, Node>();
@@ -50,6 +51,12 @@ class OneofusNet with Comp, ChangeNotifier {
   final Map<String, String> _rejected = <String, String>{};
 
   int? getPosition(token) => _token2keyCounter[token];
+
+  int get degrees => _degrees;
+  set degrees(int degrees) {
+    _degrees = degrees;
+    listen();
+  }
 
   int get numPaths => _numPaths;
   set numPaths(int numPaths) {
@@ -88,10 +95,9 @@ class OneofusNet with Comp, ChangeNotifier {
     _rejected.clear();
 
     // (Formerly TrustBridge)
-    Trust1 trust1 = Trust1();
-    _FetcherNode.clear();
-    _network = await trust1.process(_FetcherNode(signInState.center),
-        numPaths: _numPaths, blockerBenefit: _blockerBenefit);
+    Trust1 trust1 = Trust1(degrees: _degrees, numPaths: _numPaths, blockerBenefit: _blockerBenefit);
+    FetcherNode.clear();
+    _network = await trust1.process(FetcherNode(signInState.center));
 
     _rejected.addAll(trust1.rejected);
     _token2keyCounter.clear();
@@ -105,15 +111,15 @@ class OneofusNet with Comp, ChangeNotifier {
   }
 }
 
-class _FetcherNode extends Node {
-  static final Map<String, _FetcherNode> _factoryCache = {};
+class FetcherNode extends Node {
+  static final Map<String, FetcherNode> _factoryCache = {};
   static void clear() {
     _factoryCache.clear();
   }
 
-  factory _FetcherNode(String token) {
+  factory FetcherNode(String token) {
     if (!_factoryCache.containsKey(token)) {
-      _factoryCache[token] = _FetcherNode._internal(token);
+      _factoryCache[token] = FetcherNode._internal(token);
     }
     return _factoryCache[token]!;
   }
@@ -144,7 +150,7 @@ class _FetcherNode extends Node {
     return distinct(_fetcher.statements)
         .cast()
         .where((s) => s.verb == TrustVerb.trust)
-        .map((s) => Trust(_FetcherNode(s.subjectToken), s.time, s.token));
+        .map((s) => Trust(FetcherNode(s.subjectToken), s.time, s.token));
   }
 
   @override
@@ -153,7 +159,7 @@ class _FetcherNode extends Node {
     return distinct(_fetcher.statements)
         .cast()
         .where((s) => s.verb == TrustVerb.replace)
-        .map((s) => Replace(_FetcherNode(s.subjectToken), s.time, s.revokeAt, s.token));
+        .map((s) => Replace(FetcherNode(s.subjectToken), s.time, s.revokeAt, s.token));
   }
 
   @override
@@ -164,7 +170,7 @@ class _FetcherNode extends Node {
     return distinct(_fetcher.statements)
         .cast()
         .where((s) => s.verb == TrustVerb.block)
-        .map((s) => Block(_FetcherNode(s.subjectToken), s.time, s.token));
+        .map((s) => Block(FetcherNode(s.subjectToken), s.time, s.token));
     // List<Block> blocks = <Block>[];
     // for (TrustStatement statement
     //     in _fetcher.statements.cast().where((s) => s.verb == TrustVerb.block)) {
@@ -173,5 +179,5 @@ class _FetcherNode extends Node {
     // return blocks;
   }
 
-  _FetcherNode._internal(super.token) : _fetcher = Fetcher(token, kOneofusDomain);
+  FetcherNode._internal(super.token) : _fetcher = Fetcher(token, kOneofusDomain);
 }
