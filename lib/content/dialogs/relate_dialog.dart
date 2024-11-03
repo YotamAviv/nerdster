@@ -52,6 +52,7 @@ Future<Json?> relateDialog(
       child: Padding(
         padding: const EdgeInsets.all(15),
         child: ListView(
+          shrinkWrap: true,
           children: [
             TextField(
                 controller: top,

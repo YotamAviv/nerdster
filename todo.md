@@ -26,11 +26,7 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 
 # Plan:
 
-TODO: degrees
-  - in generated link (so just my books is easy)
-
 Instruction:
-- show the statements as they're stated.
 - add ? help to tree regarding Oneofus trust / Nerdster follow
 
 Default follow context
@@ -38,16 +34,6 @@ Default follow context
   - (don't generate a statement every time I just browse)
 
 UI for clear relate/equate.
-
-Encourage clicking: 
-- expand tree a little by default
-- link colors:
-  - DONE: nerd/key labels in tree view
-  - DONE: content icon and folder
-
-DONE: React immediately (click / double click + tooltip)
-
-DONE: NetBar: follow screen / one-of-us screen confusing
 
 ## BUGS
 - I noticed that when Fetcher asserts false, it gets lost, not progpagated.

@@ -68,6 +68,7 @@ class Menus {
         MyCheckbox(Prefs.nice, 'translate <JSON> and token gibberish'),
         MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
         MyCheckbox(Prefs.showStatements, 'show trust statements'),
+        MyCheckbox(Prefs.dontShowAgain, '''Skip statement reviews'''),
         // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
       ], child: const Text('Preferences')),
 

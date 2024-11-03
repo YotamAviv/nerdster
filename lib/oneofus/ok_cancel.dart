@@ -6,12 +6,13 @@ class OkCancel extends StatefulWidget {
   final VoidCallback okHandler;
   final String okText;
   final ValueNotifier<bool>? okEnabled;
+  final bool showCancel;
 
   final VoidCallback? otherHandler;
   final String? otherText;
 
   const OkCancel(this.okHandler, this.okText,
-      {super.key, this.otherHandler, this.otherText, this.okEnabled});
+      {super.key, this.otherHandler, this.otherText, this.okEnabled, this.showCancel = true});
 
   @override
   State<StatefulWidget> createState() => OkCancelState();
@@ -33,9 +34,6 @@ class OkCancelState extends State<OkCancel> {
   @override
   Widget build(BuildContext context) {
     bool enabled = !b(widget.okEnabled) || widget.okEnabled!.value;
-
-    
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -48,12 +46,13 @@ class OkCancelState extends State<OkCancel> {
             onPressed: widget.otherHandler,
             child: Text(widget.otherText!),
           ),
-        OutlinedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Cancel'),
-        ),
+        if (widget.showCancel)
+          OutlinedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Cancel'),
+          ),
       ],
     );
   }

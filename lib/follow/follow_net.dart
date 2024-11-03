@@ -1,15 +1,16 @@
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/follow/most_contexts.dart';
 import 'package:nerdster/oneofus/distincter.dart';
-import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -74,11 +75,18 @@ class FollowNet with Comp, ChangeNotifier {
   }
 
   // impl
-  Future<Jsonish> insert(Json json) async {
+  Future<Jsonish?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
     assert(signInState.signedInDelegate == iToken);
     Fetcher fetcher = Fetcher(iToken, kNerdsterDomain);
+    
+    bool? proceed = await Lgtm.check(json, context);
+    if (!bb(proceed)) return null;
+
     Jsonish statement = await fetcher.push(json, signInState.signer!);
+
+    await Lgtm.show(statement, context);
+    
     listen();
     return statement;
   }
