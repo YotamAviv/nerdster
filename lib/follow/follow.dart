@@ -86,7 +86,7 @@ Future<Jsonish?> follow(String token, BuildContext context) async {
     Json json = ContentStatement.make(
         signInState.signedInDelegatePublicKeyJson!, ContentVerb.follow, subjectPublicKey,
         contexts: contextsOut);
-    Jsonish statement = await followNet.insert(json);
+    Jsonish? statement = await followNet.insert(json, context);
     return statement;
   }
   return null;

@@ -10,6 +10,7 @@ import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/content/dialogs/establish_subject_dialog.dart';
+import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/content/dialogs/rate_dialog.dart';
 import 'package:nerdster/content/dialogs/relate_dialog.dart';
 import 'package:nerdster/follow/most_contexts.dart';
@@ -66,11 +67,18 @@ class ContentBase with Comp, ChangeNotifier {
   Timeframe _timeframe = Timeframe.all;
   bool _censor = true;
 
-  Future<Jsonish> insert(Json json) async {
+  Future<Jsonish?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
     assert(signInState.signedInDelegate == iToken);
     Fetcher fetcher = Fetcher(iToken, kNerdsterDomain);
+
+    bool? proceed = await Lgtm.check(json, context);
+    if (!bb(proceed)) return null;
+
     Jsonish statement = await fetcher.push(json, signInState.signer!);
+
+    await Lgtm.show(statement, context);
+
     listen();
     return statement;
   }
@@ -612,7 +620,7 @@ Future<Jsonish?> rate(Jsonish subject, BuildContext context) async {
   ContentStatement? priorStatement = contentBase._findMyStatement1(subject.token);
   Json? json = await rateDialog(context, subject, priorStatement);
   if (json != null) {
-    Jsonish statement = await contentBase.insert(json);
+    Jsonish? statement = await contentBase.insert(json, context);
     return statement;
   }
   return null;
@@ -626,7 +634,7 @@ Future<Jsonish?> relate(Jsonish subject, Jsonish otherSubject, BuildContext cont
       contentBase._findMyStatement2(subject.token, otherSubject.token);
   Json? json = await relateDialog(context, subject.json, otherSubject.json, priorStatement);
   if (json != null) {
-    Jsonish statement = await contentBase.insert(json);
+    Jsonish? statement = await contentBase.insert(json, context);
     return statement;
   }
   return null;
