@@ -10,7 +10,7 @@ class Prefs {
   static final ValueNotifier<bool> showStatements = ValueNotifier(bDev);
   static final ValueNotifier<bool> showKeys = ValueNotifier(bDev);
   static final ValueNotifier<bool> showDevMenu = ValueNotifier<bool>(bDev);
-  static final ValueNotifier<bool> dontShowAgain = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
 
   static void init() { // initWindowQueryParams
     Map<String, String> params = Uri.base.queryParameters;

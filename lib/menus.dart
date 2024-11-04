@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/my_checkbox.dart';
+import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/notifications.dart';
@@ -68,7 +68,7 @@ class Menus {
         MyCheckbox(Prefs.nice, 'translate <JSON> and token gibberish'),
         MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
         MyCheckbox(Prefs.showStatements, 'show trust statements'),
-        MyCheckbox(Prefs.dontShowAgain, '''Skip statement reviews'''),
+        MyCheckbox(Prefs.skipLgtm, '''Skip statement reviews'''),
         // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
       ], child: const Text('Preferences')),
 
