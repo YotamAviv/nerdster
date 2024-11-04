@@ -3,8 +3,8 @@
 tar -czf ~/backups/nerdster.git.`date2`.tgz .git
 git tag PROD-v`date2`
 code $(git diff --no-commit-id --name-only -r HEAD) -r
-diff -r lib/oneofus ~/AndroidStudioProjects/oneofus2/lib/oneofus
-diff -r ~/AndroidStudioProjects/oneofus2/lib/oneofus lib/oneofus
+diff -r lib/oneofus ../oneofus/lib/oneofus
+diff -r ../oneofus/lib/oneofus lib/oneofus
 git reflog expire --all --expire=now
 git gc --prune=now --aggressive
 flutter clean
