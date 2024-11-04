@@ -40,7 +40,7 @@ class Lgtm {
                               () {
                                 Navigator.pop(context, true);
                               },
-                              'LGTM',
+                              'Looks Good To Me',
                             ),
                             DontCheckbox(),
                           ],
