@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/my_checkbox.dart';
+import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
@@ -10,7 +10,7 @@ import 'package:nerdster/singletons.dart';
 
 class Lgtm {
   static Future<bool?> check(Json json, BuildContext context) async {
-    if (Prefs.dontShowAgain.value) return true;
+    if (Prefs.skipLgtm.value) return true;
     return showDialog<bool?>(
         context: context,
         barrierDismissible: false,
@@ -50,7 +50,7 @@ class Lgtm {
   }
 
   static Future<void> show(Jsonish jsonish, BuildContext context) async {
-    if (Prefs.dontShowAgain.value) return;
+    if (Prefs.skipLgtm.value) return;
     return showDialog(
         context: context,
         barrierDismissible: false,
@@ -94,7 +94,7 @@ class DontCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(width: 200.0, child: MyCheckbox(Prefs.dontShowAgain, '''Don't show again'''));
+    return SizedBox(width: 200.0, child: MyCheckbox(Prefs.skipLgtm, '''Don't show again'''));
   }
 }
 
