@@ -180,6 +180,7 @@ class CenterDropdownState extends State<CenterDropdown> {
       label2oneofus[label] = oneofus;
     }
 
+    // TODO: TEST: Sign in without delegate, make sure we don't crash.
     List<DropdownMenuEntry<String?>> entries = label2oneofus.keys
         .map<DropdownMenuEntry<String>>(
             (String fcontext) => DropdownMenuEntry<String>(value: fcontext, label: fcontext))

@@ -127,6 +127,8 @@ class FollowNet with Comp, ChangeNotifier {
     for (String oneofusKey in network) {
       Fetcher oneofusFetcher = Fetcher(oneofusKey, kOneofusDomain);
       assert(oneofusFetcher.isCached);
+      String oneofus = oneofusEquiv.getCanonical(oneofusKey);
+      _oneofus2delegates.putIfAbsent(oneofus, () => <String>{});
       for (TrustStatement s in distinct(oneofusFetcher.statements)
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
@@ -138,7 +140,7 @@ class FollowNet with Comp, ChangeNotifier {
         if (!_delegate2oneofus.containsKey(delegateToken)) {
           _delegate2oneofus[delegateToken] = oneofus;
         }
-        _oneofus2delegates.putIfAbsent(oneofus, () => <String>{}).add(delegateToken);
+        _oneofus2delegates[oneofus]!.add(delegateToken);
       }
     }
     for (MapEntry<String, String?> e in delegate2revokeAt.entries) {

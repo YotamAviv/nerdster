@@ -101,7 +101,8 @@ void main() async {
       "son": ["son-nerdster"],
       "homer2": ["homer2-nerdster"],
       "sis": ["sis-nerdster"],
-      "moms": ["moms-nerdster"]
+      "moms": ["moms-nerdster"],
+      "sister": []
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -114,7 +115,11 @@ void main() async {
       "friend": ["friend-nerdster"],
       "sis": ["sis-nerdster"],
       "homer2": ["homer2-nerdster"],
-      "moms": ["moms-nerdster"]
+      "moms": ["moms-nerdster"],
+      "clown": [],
+      "mom": [],
+      "sister": [],
+      "mel": []
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -132,6 +137,23 @@ void main() async {
     expected = {
       "son": ["son-nerdster"],
       "friend": ["friend-nerdster"]
+    };
+    jsonShowExpect(followNet.oneofus2delegates, expected);
+  });
+
+  test('base follow Oneofus without delegate', () async {
+    DemoKey nerd1 = await DemoKey.findOrCreate('nerd1');
+    DemoKey nerd1N = await nerd1.makeDelegate();
+    DemoKey nerd2 = await DemoKey.findOrCreate('nerd2');
+    // TEMP: Should not be needed. DemoKey nerd2N = await nerd2.makeDelegate();
+    await nerd1.doTrust(TrustVerb.trust, nerd2);
+    await nerd1N.doFollow(nerd2, {'nerd': 1});
+    followNet.fcontext = 'nerd';
+    signInState.center = nerd1.token;
+    await Comp.waitOnComps([followNet, keyLabels]);
+    Json expected = {
+      "Me": ["Me-nerdster"],
+      "nerd2": [],
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
   });
