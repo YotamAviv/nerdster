@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/tokenize.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
@@ -97,6 +98,18 @@ class Menus {
               child: const Text('Fetcher crash in... 3'),
               onPressed: () {
                 Fetcher.testingCrashIn = 3;
+              }),
+          MenuItemButton(
+              child: const Text('Tokenize'),
+              onPressed: () async {
+                (String, String)? tokenNpp = (await Tokenize.make(context));
+                if (b(tokenNpp)) {
+                  await alert('formatted, hashed', '''token (sha1 hash of formatted JSON):
+${tokenNpp!.$1}
+
+formatted JSON:
+${tokenNpp.$2}''', ['okay'], context);
+                }
               }),
         ], child: const Text('Dev')),
 
