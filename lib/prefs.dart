@@ -7,6 +7,7 @@ bool bDev = fireChoice != FireChoice.prod;
 
 class Prefs {
   static final ValueNotifier<bool> nice = ValueNotifier(true);
+  static final ValueNotifier<bool> showJson = ValueNotifier(bDev);
   static final ValueNotifier<bool> showStatements = ValueNotifier(bDev);
   static final ValueNotifier<bool> showKeys = ValueNotifier(bDev);
   static final ValueNotifier<bool> showDevMenu = ValueNotifier<bool>(bDev);
@@ -14,11 +15,13 @@ class Prefs {
 
   static void init() { // initWindowQueryParams
     Map<String, String> params = Uri.base.queryParameters;
+    showJson.value = bs(params['showJson']);
     showStatements.value = bs(params['showStatements']);
     showKeys.value = bs(params['showKeys']);
   }
 
   static void setParams(Map<String, String> params) {
+    if(showJson.value) params['showJson'] = true.toString();
     if(showStatements.value) params['showStatements'] = true.toString();
     if(showKeys.value) params['showKeys'] = true.toString();
   }

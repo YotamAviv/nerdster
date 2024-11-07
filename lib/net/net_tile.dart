@@ -31,9 +31,20 @@ class NetTile extends StatefulWidget {
 }
 
 class _NetTileState extends State<NetTile> {
-  _NetTileState() {
+  @override
+  initState() {
+    super.initState();
     Prefs.nice.addListener(listen);
     Prefs.showStatements.addListener(listen);
+    Prefs.showJson.addListener(listen);
+  }
+
+  @override
+  dispose() {
+    Prefs.nice.removeListener(listen);
+    Prefs.showStatements.removeListener(listen);
+    Prefs.showJson.removeListener(listen);
+    super.dispose();
   }
 
   Future<void> listen() async {
@@ -41,13 +52,6 @@ class _NetTileState extends State<NetTile> {
     if (mounted) {
       setState(() {});
     }
-  }
-
-  @override
-  void dispose() {
-    Prefs.nice.removeListener(listen);
-    Prefs.showStatements.removeListener(listen);
-    super.dispose();
   }
 
   @override
@@ -146,7 +150,7 @@ class _NetTileState extends State<NetTile> {
                       widget.entry.hasChildren ? widget.entry.isExpanded : null,
                   onPressed: widget.entry.hasChildren ? widget.onTap : null),
             ),
-            if (Prefs.showStatements.value) JSWidget(json),
+            if (Prefs.showJson.value) JSWidget(json),
             if (b(text))
               Text(
                 text!,

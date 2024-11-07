@@ -1,6 +1,5 @@
 # Nice ones:
 ```
-tar -czf ~/backups/nerdster.git.`date2`.tgz .git
 git tag PROD-v`date2`
 code $(git diff --no-commit-id --name-only -r HEAD) -r
 diff -r lib/oneofus ../oneofus/lib/oneofus
@@ -12,6 +11,7 @@ flutter pub get
 flutter pub upgrade --major-versions
 flutter test
 flutter run -d chrome
+tar -czf ~/backups/nerdster.git.`date2`.tgz .git
 ```
 
 ```

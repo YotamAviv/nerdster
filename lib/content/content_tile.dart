@@ -33,9 +33,20 @@ class SubjectTile extends StatefulWidget {
 class _SubjectState extends State<SubjectTile> {
   Icon relateIcon = const Icon(Icons.balance);
 
-  _SubjectState() {
+  @override
+  initState() {
+    super.initState();
     Prefs.nice.addListener(listener);
     Prefs.showStatements.addListener(listener);
+    Prefs.showJson.addListener(listener);
+  }
+
+  @override
+  dispose() {
+    Prefs.nice.removeListener(listener);
+    Prefs.showStatements.removeListener(listener);
+    Prefs.showJson.removeListener(listener);
+    super.dispose();
   }
 
   listener() async {
@@ -130,11 +141,6 @@ class _SubjectState extends State<SubjectTile> {
     propWidgets.add(props[PropType.recommend]!.getWidget());
     propWidgets.add(props[PropType.numComments]!.getWidget());
 
-    Json? json;
-    if (Prefs.showStatements.value) {
-      json = subjectNode.subject.json;
-    }
-
     return TreeIndentation(
         entry: widget.entry,
         guide: const IndentGuide.connectingLines(indent: 48),
@@ -159,7 +165,7 @@ class _SubjectState extends State<SubjectTile> {
                 _ReactIcon(subjectNode.subject),
                 const SizedBox(width: 8),
                 ...propWidgets,
-                if (Prefs.showStatements.value) JSWidget(json!),
+                if (Prefs.showJson.value) JSWidget(subjectNode.subject.json),
                 titleWidget,
                 if (b(statementDesc)) statementDesc!,
               ]),
