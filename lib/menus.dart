@@ -67,6 +67,7 @@ class Menus {
       // Prefs
       SubmenuButton(menuChildren: <Widget>[
         MyCheckbox(Prefs.nice, 'translate <JSON> and token gibberish'),
+        MyCheckbox(Prefs.showJson, 'show JSON'),
         MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
         MyCheckbox(Prefs.showStatements, 'show trust statements'),
         MyCheckbox(Prefs.skipLgtm, '''Skip statement reviews'''),
@@ -99,18 +100,6 @@ class Menus {
               onPressed: () {
                 Fetcher.testingCrashIn = 3;
               }),
-          MenuItemButton(
-              child: const Text('Tokenize'),
-              onPressed: () async {
-                (String, String)? tokenNpp = (await Tokenize.make(context));
-                if (b(tokenNpp)) {
-                  await alert('formatted, hashed', '''token (sha1 hash of formatted JSON):
-${tokenNpp!.$1}
-
-formatted JSON:
-${tokenNpp.$2}''', ['okay'], context);
-                }
-              }),
         ], child: const Text('Dev')),
 
       NotificationsMenu(key: UniqueKey()), // just guessing with UniqueKey()
@@ -129,7 +118,23 @@ $link''',
                   context);
             },
             child: const Text('generate link with current settings..')),
-      ], child: const Text('Etc')),
+        MenuItemButton(
+            child: const Text('Tokenize'),
+            onPressed: () async {
+              (String, String)? tokenNpp = (await Tokenize.make(context));
+              if (b(tokenNpp)) {
+                await alert(
+                    'formatted, hashed',
+                    '''token (sha1 hash of formatted JSON):
+${tokenNpp!.$1}
+
+formatted JSON:
+${tokenNpp.$2}''',
+                    ['okay'],
+                    context);
+              }
+            }),
+      ], child: const Text('/etc')),
 
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
     ];
