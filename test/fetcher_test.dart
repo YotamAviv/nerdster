@@ -88,28 +88,28 @@ void main() async {
       'statement': _type,
       'time': formatIso(now),
       'I': await bartPublicKey.json,
-      'subject': 'Bart!',
+      TrustVerb.trust.label: 'Bart!',
     };
 
     /// Jsonish j = await Jsonish.makeSign(map, signer);
 
     fetcher = Fetcher(bartToken, _domain);
 
-    Jsonish pushed = await fetcher.push(map, signer);
+    Statement pushed = Statement.make(await fetcher.push(map, signer));
     Json map2 = Map.of(pushed.json)
       ..remove('signature')
       ..remove('previous');
     expect(map2, map);
 
-    List<Jsonish> js;
+    List<Statement> js;
 
     await fetcher.fetch();
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 1);
     expect(js[0], pushed);
 
     await fetcher.fetch();
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 1);
     expect(js[0], pushed);
 
@@ -119,7 +119,7 @@ void main() async {
     fetcher = Fetcher(bartToken, _domain);
 
     await fetcher.fetch();
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 1);
     expect(js[0], pushed);
 
@@ -130,7 +130,7 @@ void main() async {
     fetcher = Fetcher(bartToken, _domain);
 
     await fetcher.fetch();
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 0);
   });
 
@@ -159,12 +159,12 @@ void main() async {
   test('2', () async {
     Fetcher fetcher = Fetcher(getToken(kI), _domain);
 
-    List<Jsonish> js;
+    List<Statement> js;
     await fetcher.fetch();
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 0);
 
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 0);
   });
 
@@ -180,12 +180,12 @@ void main() async {
     expect(statement.json.containsKey('signature'), true);
     expect(statement.json.containsKey('previous'), false);
 
-    List<Jsonish> js;
+    List<Statement> js;
     await fetcher.fetch();
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 1);
 
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 1);
   });
 
@@ -195,7 +195,7 @@ void main() async {
       TestSigner signer = TestSigner();
       Fetcher fetcher;
 
-      List<Jsonish> js;
+      List<Statement> js;
       fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
 
       await fetcher
@@ -207,11 +207,12 @@ void main() async {
       await fetcher
           .push({'statement': _type, 'I': kI, 'block': 'sub4', 'time': clock.nowIso}, signer);
 
-      fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
-      Fetcher.clear();
+      if (doClear) {
+        Fetcher.clear();
+        await fetcher.fetch();
+      }
 
-      if (doClear) await fetcher.fetch();
-      js = fetcher.cached;
+      js = fetcher.statements;
       expect(js.length, 4);
       expect(fetcher.statements.length, 4);
 
@@ -220,10 +221,9 @@ void main() async {
       List subjects = List.of(fetcher.statements.map((s) => s.subject));
       // expect(subjects, ['sub4', 'sub3', 'sub2']);
       expect(subjects, ['sub2', 'sub1']);
-      
 
       await fetcher.fetch();
-      js = fetcher.cached;
+      js = fetcher.statements;
       expect(js.length, 2);
     }
   });
@@ -232,18 +232,18 @@ void main() async {
     TestSigner signer = TestSigner();
     Fetcher fetcher;
 
-    List<Jsonish> js;
+    List<Statement> js;
     fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
 
     await fetcher
-        .push({'statement': _type, 'I': kI, 'subject': 'sub1', 'time': clock.nowIso}, signer);
+        .push({'statement': _type, 'I': kI, 'trust': 'sub1', 'time': clock.nowIso}, signer);
     await fetcher
-        .push({'statement': _type, 'I': kI, 'subject': 'sub2', 'time': clock.nowIso}, signer);
+        .push({'statement': _type, 'I': kI, 'trust': 'sub2', 'time': clock.nowIso}, signer);
     DateTime t1 = testClock.nowClean;
     await fetcher
-        .push({'statement': _type, 'I': kI, 'subject': 'sub3', 'time': clock.nowIso}, signer);
+        .push({'statement': _type, 'I': kI, 'trust': 'sub3', 'time': clock.nowIso}, signer);
     await fetcher
-        .push({'statement': _type, 'I': kI, 'subject': 'sub4', 'time': clock.nowIso}, signer);
+        .push({'statement': _type, 'I': kI, 'trust': 'sub4', 'time': clock.nowIso}, signer);
 
     Fetcher.clear();
 
@@ -261,9 +261,9 @@ void main() async {
     fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
 
     await fetcher.fetch();
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 4);
-    js = fetcher.cached;
+    js = fetcher.statements;
     expect(js.length, 4);
   });
 
@@ -289,7 +289,6 @@ void main() async {
       'comment': '2',
       'time': clock.nowIso
     }, signer);
-    await fetcher.fetch();
     js = distinct(fetcher.statements);
     expect(js.length, 2);
 
@@ -307,7 +306,7 @@ void main() async {
       'comment': '4',
       'time': clock.nowIso
     }, signer);
-    await fetcher.fetch();
+
     js = distinct(fetcher.statements);
     expect(js.length, 3);
   });
@@ -360,6 +359,7 @@ void main() async {
       },
       'time': clock.nowIso
     }, signer);
+
     await fetcher.fetch();
     js = distinct(fetcher.statements);
     expect(js.length, 3);
@@ -382,6 +382,7 @@ void main() async {
       },
       'time': clock.nowIso
     }, signer);
+
     await fetcher.fetch();
     js = distinct(fetcher.statements);
     expect(js.length, 4);
@@ -423,11 +424,38 @@ void main() async {
 
   test('sublist', () {
     List l = [0, 1, 2, 3, 4, 5];
-    expect(l.firstWhereOrNull((element) => element == 2,), 2);
-    
-    
+    expect(
+        l.firstWhereOrNull(
+          (element) => element == 2,
+        ),
+        2);
     List s = l.sublist(0, 2);
     expect(s.length, 2);
     expect(s, [0, 1]);
+  });
+
+  // This is to confirm that if Distincter caches Fetcher's list of statements, then a bug will
+  // occur after Fetcher.push(..).
+  test('list retains identity as key even after change (re: Distincter cache)', () {
+    List l = [1];
+    l.add(1);
+    Map<List, String> map = <List, String>{};
+
+    map[l] = 'x';
+    l.add(2);
+
+    expect(map[l], 'x');
+  });
+
+  test('consume iterator)', () {
+    // I'm pretty sure that I've witnessed iteration of an Interable (not an interator) affect its contents.
+    // I'm trying (but failing) to demostrate that phenomenom.
+    List l = [];
+    l.add(1);
+    l.add(2);
+    l.add(3);
+    Iterable i = l.where((x) => x != 2);
+    print(i.length);
+    print(i.length);
   });
 }
