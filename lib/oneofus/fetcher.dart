@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
+import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/distincter.dart';
 
 import 'fire_factory.dart';
 import 'jsonish.dart';
@@ -16,16 +18,26 @@ import 'util.dart';
 /// Blockchain:
 /// Each signed statement (other than first) includes the token of the previous statement.
 /// Revoking a key requires identifying its last, valid statement token. Without this, it doesn't work.
-
+/// 
+/// revokeAt: before and current:
+/// before:
+/// - OneofusNet and its FetcherNode have been responsible for setting revokeAt
+/// - Fetcher.fetch() only fetches up to revokedAt; setRevokedAt trims the cache.
+/// - refershing OneofusNet requires re-fetching.
+/// current:
+/// - (OneofusNet and its FetcherNode remain responsible for setting revokeAt)
+/// - Fetcher.fetch() fetches everything so that we can change revokedAt without re-fetching
+///   - Fetcher.statements respects revokedAt (doesn't serve everything)
+/// - (refershing OneofusNet no longer requires re-fetching.)
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 
 class Fetcher {
   static int? testingCrashIn;
 
   static final OouVerifier _verifier = OouVerifier();
+  static final VoidCallback changeNotify = clearDistinct;
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
-  static void clear() => _fetchers.clear();
 
   final FirebaseFirestore fire;
   final String domain;
@@ -39,8 +51,17 @@ class Fetcher {
   String? _revokeAt; // set by others to let me know
   DateTime? _revokeAtTime; // set by me after querying the db
 
-  List<Jsonish>? _cached;
-  Iterable<Statement>? _statements;
+  List<Statement>? _cached;
+
+  static void clear() => _fetchers.clear();
+
+  static resetRevokedAt() {
+    for (Fetcher f in _fetchers.values) {
+      f._revokeAt = null;
+      f._revokeAtTime = null;
+    }
+    changeNotify();
+  }
 
   factory Fetcher(String token, String domain, {bool testingNoVerify = false}) {
     String key = '$token$domain';
@@ -74,21 +95,18 @@ class Fetcher {
       assert(_revokeAt == revokeAt, '$_revokeAt != $revokeAt');
       return;
     }
+    changeNotify();
     _revokeAt = revokeAt;
 
     // If I can't find revokeAtStatement, then something strage is going on unless it's 'since always'
     // TODO: Use the same string for 'since always' (although I should be able to handle any string.)
     // TODO(2): Warn when it's not 'since always' or a valid past statement token.
     if (b(_cached)) {
-      _statements = null;
-      Jsonish? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
+      Statement? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
       if (b(revokeAtStatement)) {
         _revokeAtTime = parseIso(revokeAtStatement!.json['time']);
-        int index = _cached!.indexOf(revokeAtStatement);
-        _cached = _cached!.sublist(index);
       } else {
         _revokeAtTime = date0;
-        _cached = [];
       }
     }
   }
@@ -109,7 +127,7 @@ class Fetcher {
     }
 
     if (b(_cached)) return;
-    _cached = <Jsonish>[];
+    _cached = <Statement>[];
 
     final fireStatements = fire.collection(token).doc('statements').collection('statements');
 
@@ -128,9 +146,6 @@ class Fetcher {
     }
 
     Query<Json> query = fireStatements.orderBy('time', descending: true); // newest to oldest
-    if (_revokeAtTime != null) {
-      query = query.where('time', isLessThanOrEqualTo: formatIso(_revokeAtTime!));
-    }
     QuerySnapshot<Json> snapshots = await query.get();
     // DEFER: Something with the error.
     // .catchError((e) => print("Error completing: $e"));
@@ -138,11 +153,11 @@ class Fetcher {
     String? previousToken;
     for (final docSnapshot in snapshots.docs) {
       final Json data = docSnapshot.data();
-      Jsonish statement;
+      Jsonish jsonish;
       if (testingNoVerify) {
-        statement = Jsonish(data);
+        jsonish = Jsonish(data);
       } else {
-        statement = await Jsonish.makeVerify(data, _verifier);
+        jsonish = await Jsonish.makeVerify(data, _verifier);
       }
 
       // newest to oldest
@@ -153,45 +168,48 @@ class Fetcher {
         // no check
         first = false;
       } else {
-        if (statement.token != previousToken) {
+        if (jsonish.token != previousToken) {
           // TODO: Something.
           // TODO: Log instead of print
           print(
-              'Blockchain notarization violation detected ($domain/$token): ${statement.token} != $previousToken');
+              'Blockchain notarization violation detected ($domain/$token): ${jsonish.token} != $previousToken');
           continue;
         }
       }
       previousToken = data['previous'];
 
-      _cached!.add(statement);
+      _cached!.add(Statement.make(jsonish));
     }
     // print('fetched: $fire, $token');
   }
 
-  // For dump/load to preserver previous blockchain.
-  List<Jsonish> get cached {
-    assert(b(_cached));
-    return _cached!;
+  List<Statement> get statements {
+    if(b(_revokeAt)) {
+      Statement? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
+      if (b(revokeAtStatement)) {
+        return _cached!.sublist(_cached!.indexOf(revokeAtStatement!));
+      } else {
+        return [];
+      }
+    } else {
+      return _cached!;
+    }
   }
 
-  Iterable<Statement> get statements {
-    assert(b(_cached));
-    if (b(_statements)) return _statements!;
-    _statements = _cached!.map((j) => Statement.make(j));
-    return _statements!;
-  }
-
+  // TODO: Why return value Jsonish and not Statement?
   // Side effects: add 'previous', 'signature'
   Future<Jsonish> push(Json json, StatementSigner? signer) async {
     // (I've had this commented out in the past for persistDemo)
     assert(_revokeAt == null);
+    changeNotify();
 
+    // TODO: Why not assert
     if (_cached == null) {
       await fetch(); // Was green.
     }
 
     // add 'previous', verify time is later than last statement
-    Jsonish? previous;
+    Statement? previous;
     if (_cached!.isNotEmpty) {
       previous = _cached!.first;
 
@@ -209,24 +227,23 @@ class Fetcher {
 
     // sign (or verify) statement
     String? signature = json['signature'];
-    Jsonish statement;
+    Jsonish jsonish;
     if (signer != null) {
       assert(signature == null);
-      statement = await Jsonish.makeSign(json, signer);
+      jsonish = await Jsonish.makeSign(json, signer);
     } else {
       assert(signature != null);
-      statement = await Jsonish.makeVerify(json, _verifier);
+      jsonish = await Jsonish.makeVerify(json, _verifier);
     }
 
-    _cached!.insert(0, statement);
-    _statements = null;
-
+    _cached!.insert(0, Statement.make(jsonish));
+    
     final fireStatements = fire.collection(token).doc('statements').collection('statements');
     // NOTE: We don't 'await'.. Ajax!.. Bad idea now that others call this, like tests.
     // DEFER: In case this seems slow, try Ajax after all.
     await fireStatements
-        .doc(statement.token)
-        .set(statement.json)
+        .doc(jsonish.token)
+        .set(jsonish.json)
         .then((doc) {}, onError: (e) => print("Error: $e"));
     // CONSIDER: Handle in case asynch DB write succeeds or fails.
 
@@ -234,10 +251,10 @@ class Fetcher {
     Query<Json> query = fireStatements.orderBy('time', descending: true);
     QuerySnapshot<Json> snapshots = await query.get();
     final docSnapshot0 = snapshots.docs.elementAt(0);
-    if (docSnapshot0.id != statement.token) {
-      print('${docSnapshot0.id} != ${statement.token}');
+    if (docSnapshot0.id != jsonish.token) {
+      print('${docSnapshot0.id} != ${jsonish.token}');
       // TODO: Make this exception reach the user, not just in the stack trace in Developer Tools
-      throw Exception('${docSnapshot0.id} != ${statement.token}');
+      throw Exception('${docSnapshot0.id} != ${jsonish.token}');
     }
     if (previous != null) {
       final docSnapshot1 = snapshots.docs.elementAt(1);
@@ -248,7 +265,7 @@ class Fetcher {
       }
     }
 
-    return statement;
+    return jsonish;
   }
 
   Future<Iterable<Statement>> fetchAllNoVerify() async {

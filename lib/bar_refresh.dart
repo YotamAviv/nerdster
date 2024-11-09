@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/oneofus/distincter.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
@@ -23,8 +25,13 @@ class BarRefresh extends StatefulWidget {
     if (!b(stopwatch.value)) {
       stopwatch.value = Stopwatch();
       stopwatch.value!.start();
+
+      // This could probably be captured in an Observable Comp instance      
+      Fetcher.clear();
+      clearDistinct(); // redundant
       oneofusNet.listen();
-      await Comp.waitOnComps([contentBase]);
+      
+      await Comp.waitOnComps([contentBase, keyLabels]);
       print('Refresh took: ${stopwatch.value!.elapsed}');
       stopwatch.value!.stop();
       stopwatch.value = null;

@@ -145,7 +145,7 @@ void main() async {
     DemoKey nerd1 = await DemoKey.findOrCreate('nerd1');
     DemoKey nerd1N = await nerd1.makeDelegate();
     DemoKey nerd2 = await DemoKey.findOrCreate('nerd2');
-    // TEMP: Should not be needed. DemoKey nerd2N = await nerd2.makeDelegate();
+    // Should not be needed. DemoKey nerd2N = await nerd2.makeDelegate();
     await nerd1.doTrust(TrustVerb.trust, nerd2);
     await nerd1N.doFollow(nerd2, {'nerd': 1});
     followNet.fcontext = 'nerd';

@@ -108,9 +108,12 @@ class OneofusNet with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    Fetcher.clear();
-    clearDistinct();
+
+    // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
+    Fetcher.resetRevokedAt();
     NetNode.clear();
+
+    // TODO: Make rejected be a return value of the algorithm.
     _rejected.clear();
 
     // (Formerly TrustBridge)
@@ -166,6 +169,7 @@ class FetcherNode extends Node {
   // DEFER: MINOR: Listen to _fetcher and cache, minor becuase Fetcher caches.
   Future<Iterable<Trust>> get trusts async {
     assert(!blocked);
+    await _fetcher.fetch(); // (redundant, but okay; should already be fetched at get blocks)
     return distinct(_fetcher.statements)
         .cast()
         .where((s) => s.verb == TrustVerb.trust)
@@ -175,6 +179,7 @@ class FetcherNode extends Node {
   @override
   Future<Iterable<Replace>> get replaces async {
     assert(!blocked);
+    await _fetcher.fetch(); // (redundant, but okay; should already be fetched at get blocks)
     return distinct(_fetcher.statements)
         .cast()
         .where((s) => s.verb == TrustVerb.replace)
@@ -192,8 +197,8 @@ class FetcherNode extends Node {
         .map((s) => Block(FetcherNode(s.subjectToken), s.time, s.token));
     // List<Block> blocks = <Block>[];
     // for (TrustStatement statement
-    //     in _fetcher.statements.cast().where((s) => s.verb == TrustVerb.block)) {
-    //   blocks.add(Block(_FetcherNode(statement.subjectToken), statement.time, statement.token));
+    //     in distinct(_fetcher.statements).cast<TrustStatement>().where((s) => s.verb == TrustVerb.block)) {
+    //   blocks.add(Block(FetcherNode(statement.subjectToken), statement.time, statement.token));
     // }
     // return blocks;
   }

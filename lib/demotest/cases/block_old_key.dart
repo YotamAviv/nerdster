@@ -1,10 +1,10 @@
 import 'dart:async';
 
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -41,8 +41,7 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   // Lisa has not cleared trust in bart or ever trusted bart2
 
   signInState.center  = lisa.token;
-  await keyLabels.waitUntilReady();
-  await oneofusEquiv.waitUntilReady();
+  await Comp.waitOnComps([keyLabels, oneofusEquiv]);
 
   network = oneofusNet.network;
   expectedNetwork = {
@@ -63,8 +62,7 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   await bart3.doTrust(TrustVerb.block, bart);
 
   signInState.center  = lisa.token;
-  await keyLabels.waitUntilReady();
-  await oneofusEquiv.waitUntilReady();
+  await Comp.waitOnComps([keyLabels, oneofusEquiv]);
 
   network = oneofusNet.network;
   expectedNetwork = {
@@ -77,7 +75,7 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   expectedEquivalents = {'Bart', 'Bart (0)'};
   jsonShowExpect(oneofusEquiv.getEquivalents(bart3.token), expectedEquivalents);
   myExpect(oneofusNet.rejected.containsKey(r2.token), true);
-  await FollowNet().waitUntilReady();
+  await Comp.waitOnComps([followNet]);
   dump = await OneofusTreeNode.root.dump();
   expected = {
     "N:Me-true:": {
@@ -90,7 +88,7 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   jsonShowExpect(dump, expected);
 
   signInState.center  = bart3.token;
-  await keyLabels.waitUntilReady();
+  await Comp.waitOnComps([keyLabels]);
 
   dump = await OneofusTreeNode.root.dump();
   expected = {
@@ -102,8 +100,7 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   jsonShowExpect(dump, expected);
 
   signInState.center = bart2.token;
-  await keyLabels.waitUntilReady();
-  await oneofusEquiv.waitUntilReady();
+  await Comp.waitOnComps([keyLabels, oneofusEquiv]);
 
   network = oneofusNet.network;
   expectedNetwork = {"Me": null, "homer": null};
@@ -118,8 +115,7 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   jsonShowExpect(dump, expected);
 
   signInState.center  = bart.token;
-  await keyLabels.waitUntilReady();
-  await oneofusEquiv.waitUntilReady();
+  await Comp.waitOnComps([keyLabels, oneofusEquiv]);
 
   dump = await OneofusTreeNode.root.dump();
   expected = {

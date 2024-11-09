@@ -12,6 +12,7 @@ import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -104,7 +105,7 @@ Future<Map<String, Map<String, List>>> dumpStatements() async {
     List list = [];
     map[token] = list;
     Fetcher fetcher = Fetcher(token, kOneofusDomain);
-    for (final Jsonish statement in fetcher.cached) {
+    for (final Statement statement in fetcher.statements) {
       list.add(statement.json);
     }
   }
@@ -116,7 +117,7 @@ Future<Map<String, Map<String, List>>> dumpStatements() async {
     final Fetcher fetcher = e.value;
     List list = [];
     map2[token] = list;
-    for (final Jsonish statement in fetcher.cached) {
+    for (final Statement statement in fetcher.statements) {
       list.add(statement.json);
     }
   }
