@@ -101,7 +101,7 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
   await lisaN.doFollow(maggie, {'family': 1});
   await lisaN.doFollow(homer, {'family': 1});
   await lisaN.doFollow(marge, {'family': 1});
-  await homer2N.doFollow(marge, {'family': 1});
+  await homer2N.doFollow(marge, {'famigly': 1}); // homer mispells family. (for testing no follows)
   await margeN.doFollow(lisa, {'family': 1});
   await margeN.doFollow(maggie, {'family': 1});
 

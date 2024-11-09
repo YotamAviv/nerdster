@@ -105,8 +105,8 @@ void main() async {
       "sister": []
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
-
-    expect(followNet.most, ['family', 'social', 'nerd']);
+    expect(followNet.most, ['family', 'social', 'nerd', 'famigly']);
+    expect(followNet.centerContexts, {'family', 'social', 'nerd'});
 
     followNet.fcontext = null;
     await followNet.waitUntilReady();
