@@ -280,8 +280,10 @@ class _FollowDropdownState extends State<FollowDropdown> {
       options.add(initial);
     }
     List<DropdownMenuEntry<String?>> entries = options
-        .map<DropdownMenuEntry<String>>(
-            (String fcontext) => DropdownMenuEntry<String>(value: fcontext, label: fcontext))
+        .map<DropdownMenuEntry<String>>((String fcontext) => DropdownMenuEntry<String>(
+            value: fcontext,
+            label: fcontext,
+            enabled: followNet.centerContexts.contains(fcontext) || fcontext == '<one-of-us>'))
         .toList();
     return DropdownMenu<String?>(
       initialSelection: initial,

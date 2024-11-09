@@ -47,6 +47,7 @@ class FollowNet with Comp, ChangeNotifier {
   // vars
   String? _context;
   final MostContexts _mostContexts = MostContexts();
+  final Set<String> _centerContexts = <String>{};
   final Map<String, Set<String>> _oneofus2delegates = <String, Set<String>>{};
   final Map<String, String> _delegate2oneofus = <String, String>{};
   final Map<String, Fetcher> _delegate2fetcher = <String, Fetcher>{};
@@ -59,6 +60,7 @@ class FollowNet with Comp, ChangeNotifier {
   }
 
   Iterable<String> get most => _mostContexts.most();
+  Set<String> get centerContexts => _centerContexts;
 
   Map<String, Set<String>> get oneofus2delegates => UnmodifiableMapView(_oneofus2delegates);
   Map<String, String> get delegate2oneofus => UnmodifiableMapView(_delegate2oneofus);
@@ -79,14 +81,14 @@ class FollowNet with Comp, ChangeNotifier {
     String iToken = getToken(json['I']);
     assert(signInState.signedInDelegate == iToken);
     Fetcher fetcher = Fetcher(iToken, kNerdsterDomain);
-    
+
     bool? proceed = await Lgtm.check(json, context);
     if (!bb(proceed)) return null;
 
     Jsonish statement = await fetcher.push(json, signInState.signer!);
 
     await Lgtm.show(statement, context);
-    
+
     listen();
     return statement;
   }
@@ -101,6 +103,7 @@ class FollowNet with Comp, ChangeNotifier {
   Future<void> process() async {
     assert(supportersReady); // QUESTIONABLE:
     _mostContexts.clear();
+    _centerContexts.clear();
     FollowNode.clear();
     // clearDistinct(); // redundant?
     _delegate2oneofus.clear();
@@ -153,7 +156,7 @@ class FollowNet with Comp, ChangeNotifier {
       _delegate2fetcher[delegateToken] = fetcher;
     }
 
-    // load up Most in case we didn't run our search that does it.
+    // Load up _mostContexts if we didn't run our search that does that.
     if (!b(fcontext)) {
       for (ContentStatement s in (_delegate2fetcher.values)
           .map((f) => distinct(f.statements))
@@ -162,6 +165,20 @@ class FollowNet with Comp, ChangeNotifier {
           .where((s) => s.verb == ContentVerb.follow)) {
         _mostContexts.process(s.contexts!.keys);
       }
+    }
+
+    // Load up _centerContexts.
+    Iterable<Iterable<Statement>> delegateStatementss = oneofus2delegates[signInState.center]!
+        .map((d) => delegate2fetcher[d]!)
+        .map((f) => f.statements);
+    Merger merger = Merger(delegateStatementss);
+    Iterable<ContentStatement> dis =
+        distinct(merger.cast<ContentStatement>()).cast<ContentStatement>();
+    for (ContentStatement followStatement in dis.where((s) => s.verb == ContentVerb.follow)) {
+      Json followContextsJ = followStatement.contexts!;
+      Iterable<String> contexts =
+          followContextsJ.entries.where((e) => e.value > 0).map((e) => e.key);
+      _centerContexts.addAll(contexts);
     }
 
     BarRefresh.elapsed(runtimeType.toString());
