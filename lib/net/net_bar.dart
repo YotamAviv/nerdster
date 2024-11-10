@@ -131,9 +131,25 @@ class StructureDropdownState extends State<StructureDropdown> {
       DropdownMenuEntry(value: true, label: '<oneofus>'),
       DropdownMenuEntry(value: false, label: 'follow network'),
     ];
+
+    const String message =
+        '''"<one-of-us>" structure will build tree accoring to who one-of-us trusts whom.
+If a follow context is selected, those included in the follow network will be green.
+
+"follow network" structure will build the tee accoring to who follows whom for the selected context.''';
+
+    bool enabled = widget.bContent;
+
     return DropdownMenu(
-      enabled: widget.bContent,
-      label: const Text('Structure'),
+      enabled: enabled,
+      leadingIcon: Tooltip(
+        message: message,
+        child: Icon(
+          Icons.help,
+          color: enabled ? linkColor : linkColorDisabled,
+        ),
+      ),
+      label: const Text('Tree structure'),
       initialSelection: NetTreeView.bOneofus.value,
       dropdownMenuEntries: entries,
       onSelected: (bOneofus) {
@@ -285,14 +301,26 @@ class _FollowDropdownState extends State<FollowDropdown> {
             label: fcontext,
             enabled: followNet.centerContexts.contains(fcontext) || fcontext == '<one-of-us>'))
         .toList();
+
+    bool error = !(followNet.centerContexts.contains(initial) || initial == '<one-of-us>');
+
+    String message = error
+        ? '''Center ("${keyLabels.labelKey(signInState.center)}") does not use the selected follow context ("$initial")}).
+Select an enabled follow context or <one-of-us> (everyone).'''
+        : '''Choose a follow context or <one-of-us> (everyone).''';
+
     return DropdownMenu<String?>(
       initialSelection: initial,
-      // requestFocusOnTap is enabled/disabled by platforms when it is null.
-      // On mobile platforms, this is false by default. Setting this to true will
-      // trigger focus request on the text field and virtual keyboard will appear
-      // afterward. On desktop platforms however, this defaults to true.
-      // requestFocusOnTap: true,
+      // CONSIDER: https://pub.dev/packages/info_popup/example
+      leadingIcon: Tooltip(
+        message: message,
+        child: Icon(
+          Icons.help,
+          color: error ? Colors.red : linkColor,
+        ),
+      ),
       label: const Text('Follow'),
+      textStyle: error ? TextStyle(color: Colors.red) : null,
       onSelected: (String? fcontext) {
         if (fcontext != null) {
           followNet.fcontext = fcontext != '<one-of-us>' ? fcontext : null;
