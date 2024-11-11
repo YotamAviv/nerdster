@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/distincter.dart';
 
+import 'distincter.dart';
 import 'fire_factory.dart';
 import 'jsonish.dart';
 import 'oou_verifier.dart';
@@ -23,12 +23,12 @@ import 'util.dart';
 /// before:
 /// - OneofusNet and its FetcherNode have been responsible for setting revokeAt
 /// - Fetcher.fetch() only fetches up to revokedAt; setRevokedAt trims the cache.
-/// - refershing OneofusNet requires re-fetching.
+/// - refreshing OneofusNet requires re-fetching.
 /// current:
 /// - (OneofusNet and its FetcherNode remain responsible for setting revokeAt)
 /// - Fetcher.fetch() fetches everything so that we can change revokedAt without re-fetching
 ///   - Fetcher.statements respects revokedAt (doesn't serve everything)
-/// - (refershing OneofusNet no longer requires re-fetching.)
+/// - (refreshing OneofusNet no longer requires re-fetching.)
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 
 class Fetcher {
@@ -98,7 +98,7 @@ class Fetcher {
     changeNotify();
     _revokeAt = revokeAt;
 
-    // If I can't find revokeAtStatement, then something strage is going on unless it's 'since always'
+    // If I can't find revokeAtStatement, then something strange is going on unless it's 'since always'
     // TODO: Use the same string for 'since always' (although I should be able to handle any string.)
     // TODO(2): Warn when it's not 'since always' or a valid past statement token.
     if (b(_cached)) {
@@ -245,7 +245,7 @@ class Fetcher {
         .doc(jsonish.token)
         .set(jsonish.json)
         .then((doc) {}, onError: (e) => print("Error: $e"));
-    // CONSIDER: Handle in case asynch DB write succeeds or fails.
+    // CONSIDER: Handle in case async DB write succeeds or fails.
 
     // Now fetch to check our optimistic concurrency.
     Query<Json> query = fireStatements.orderBy('time', descending: true);
