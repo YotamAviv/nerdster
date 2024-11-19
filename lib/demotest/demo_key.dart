@@ -10,7 +10,6 @@ import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
-import 'package:nerdster/demotest/cases/yotam.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
@@ -54,7 +53,6 @@ class DemoKey {
     'decap2': decap2,
     'decap': decap,
     'stress': stress,
-    'yotam': yotam,
   };
 
   static clear() {
