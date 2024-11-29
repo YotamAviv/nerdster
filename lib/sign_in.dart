@@ -7,15 +7,15 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/key_store.dart';
-import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
+import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 /// Nerdster web client QR sign-in:
@@ -117,19 +117,11 @@ Future<void> qrSignin(BuildContext context) async {
         }
       }
 
-      // Center and optionally sign in
-      SignInState state = SignInState();
-      state.center = getToken(await oneofusPublicKey.json);
-      if (b(nerdsterKeyPair)) {
-        await state.signIn(nerdsterKeyPair!);
-        if (storeKeys.value) {
-          await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
-        }
-      }
-
       // Stop listening
       // ignore: unawaited_futures
       subscription!.cancel();
+
+      await make(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       // Dismiss dialog
       if (context.mounted) Navigator.of(context).pop();
@@ -143,12 +135,12 @@ Future<void> pasteSignin(BuildContext context) async {
   final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
 
   const String hintText = '''
-Those without the phone app can sign by copy/pasting their keys in here.
+Those without the phone app can sign by copy/pasting their keys here.
 Nerd'ster will need:
-- nerdster.org delegate key pair for signing statements.
-- one-of-us.org public key for centering the network around you.
+- one-of-us.org public key for centering the network around you
+- nerdster.org delegate key pair for signing statements (optional)
 (In case you only include the one-of-us.net public key, you'll be centered but not signed in.)
-The text to copy/paste here should like like this:
+The text to copy/paste here should look like this:
 {
   "one-of-us.net": {
     "crv": "Ed25519",
@@ -166,22 +158,13 @@ The text to copy/paste here should like like this:
   Future<void> okHandler() async {
     try {
       Map<String, dynamic> json = jsonDecode(controller.text);
+      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(json[kOneofusDomain]!);
       OouKeyPair? nerdsterKeyPair;
       if (json[kNerdsterDomain] != null) {
         nerdsterKeyPair = await crypto.parseKeyPair(json[kNerdsterDomain]!);
       }
-      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(json[kOneofusDomain]!);
 
-      if (storeKeys.value) {
-        await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
-      }
-
-      // Center and optinally sign in
-      SignInState state = SignInState();
-      state.center = Jsonish(await oneofusPublicKey.json).token;
-      if (b(nerdsterKeyPair)) {
-        await state.signIn(nerdsterKeyPair!);
-      }
+      await make(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       Navigator.pop(context);
     } catch (exception) {
@@ -220,4 +203,19 @@ The text to copy/paste here should like like this:
                           )
                         ],
                       ))))));
+}
+
+Future<void> make(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool storeKeys) async {
+      if (storeKeys) {
+        await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
+      } else {
+        await KeyStore.wipeKeys();
+      }
+
+      // Center and optionally sign in
+      signInState.center = Jsonish(await oneofusPublicKey.json).token;
+      if (b(nerdsterKeyPair)) {
+        await signInState.signIn(nerdsterKeyPair!);
+      }
+
 }
