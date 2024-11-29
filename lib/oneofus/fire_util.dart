@@ -3,28 +3,32 @@ import 'jsonish.dart';
 
 import 'util.dart';
 
-Future<void> checkWrite(String collection, FirebaseFirestore fire) async {
-  final fireStatements = fire.collection(collection);
+Future<List<String>> checkWrite(FirebaseFirestore fire, String collection) async {
+  List<String> out = <String>[];
+  final CollectionReference<Json> fireStatements = fire.collection(collection);
   final now = DateTime.now();
-  final Json json = {'time': formatUiDatetime(now)};
-  await fireStatements.doc('id-${formatIso(now)}').set(json).then(
-      (doc) => print("Wrote to:$collection: $json"),
-      onError: (e) => print("Error: $e"));
+  final Json json = {'isoDatetime': formatIso(now)};
+  await fireStatements
+      .doc('id-${formatIso(now)}')
+      .set(json)
+      .then((doc) => out.add('Wrote to:$collection: $json'), onError: (e) {
+    out.add('checkWrite error: $e');
+  });
+  print(out);
+  return out;
 }
 
-Future<void> checkRead(String collection, FirebaseFirestore fire) async {
+Future<List<String>> checkRead(FirebaseFirestore fire, String collection) async {
+  List<String> out = <String>[];
   final CollectionReference<Json> fireStatements = fire.collection(collection);
-  QuerySnapshot<Map<String, dynamic>> snapshots = await fireStatements
-      .limit(2)
-      .get()
-      .catchError((e) => print("Error completing: $e"));
+  QuerySnapshot<Map<String, dynamic>> snapshots =
+  await fireStatements.orderBy('isoDatetime', descending: true).limit(2).get().catchError((e) {
+    out.add('checkRead error: $e');
+  });
   for (var docSnapshot in snapshots.docs) {
     var data = docSnapshot.data();
-    print('Read from:$collection: $data');
+    out.add('Read from:$collection: $data');
   }
-}
-
-/// write then read and report success
-Future<bool> fireCheck(FirebaseFirestore fire) async {
-  throw ('unimplemented');
+  print(out);
+  return out;
 }

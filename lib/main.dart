@@ -92,12 +92,12 @@ Future<void> main() async {
   ContentStatement.init();
 
   if (_fireCheckWrite) {
-    await checkWrite('firecheck:Nerdster-nerdster.org', FireFactory.find(kNerdsterDomain));
-    await checkWrite('firecheck:Nerdster-one-of-us.net', FireFactory.find(kOneofusDomain));
+    await checkWrite(FireFactory.find(kNerdsterDomain), 'firecheck: web:nerdster');
+    await checkWrite(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
   }
   if (_fireCheckRead) {
-    await checkRead('firecheck:Nerdster-nerdster.org', FireFactory.find(kNerdsterDomain));
-    await checkRead('firecheck:Nerdster-one-of-us.net', FireFactory.find(kOneofusDomain));
+    await checkRead(FireFactory.find(kNerdsterDomain), 'firecheck: web:nerdster');
+    await checkRead(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
   }
 
   // ------------ sign in credentials ------------
