@@ -33,7 +33,7 @@ Future<void> alertException(BuildContext context, Object exception, {StackTrace?
   );
 }
 
-Future<String?> alert(String title, String body, List<String> options, BuildContext context) {
+Future<String?> alert(String? title, String body, List<String> options, BuildContext context) {
   List<TextButton> buttons = <TextButton>[];
   for (String option in options) {
     buttons.add(TextButton(
@@ -50,13 +50,8 @@ Future<String?> alert(String title, String body, List<String> options, BuildCont
     barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text(title),
+        title: b(title) ? Text(title!) : null,
         content: Linky(body),
-        // OLD:
-        // content: SizedBox(
-        //   width: double.maxFinite,
-        //   child: Linky(body),
-        // ),
         actions: buttons,
       );
     },

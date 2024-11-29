@@ -18,7 +18,7 @@ import 'util.dart';
 /// Blockchain:
 /// Each signed statement (other than first) includes the token of the previous statement.
 /// Revoking a key requires identifying its last, valid statement token. Without this, it doesn't work.
-/// 
+///
 /// revokeAt: before and current:
 /// before:
 /// - OneofusNet and its FetcherNode have been responsible for setting revokeAt
@@ -184,7 +184,7 @@ class Fetcher {
   }
 
   List<Statement> get statements {
-    if(b(_revokeAt)) {
+    if (b(_revokeAt)) {
       Statement? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
       if (b(revokeAtStatement)) {
         return _cached!.sublist(_cached!.indexOf(revokeAtStatement!));
@@ -237,7 +237,7 @@ class Fetcher {
     }
 
     _cached!.insert(0, Statement.make(jsonish));
-    
+
     final fireStatements = fire.collection(token).doc('statements').collection('statements');
     // NOTE: We don't 'await'.. Ajax!.. Bad idea now that others call this, like tests.
     // DEFER: In case this seems slow, try Ajax after all.

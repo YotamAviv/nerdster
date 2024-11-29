@@ -157,7 +157,10 @@ class Jsonish {
     Json orderedWithoutSig =
         orderMap(Map.from(json)..removeWhere((k, v) => k == 'signature'));
     String ppJsonWithoutSig = encoder.convert(orderedWithoutSig);
-    assert(await verifier.verify(json, ppJsonWithoutSig, signature));
+    bool verified = await verifier.verify(json, ppJsonWithoutSig, signature);
+    if (!verified) {
+      throw Exception('!verified');
+    }
 
     Jsonish fresh = Jsonish._internal(Map.unmodifiable(ordered), token);
 
