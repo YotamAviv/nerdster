@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/tokenize.dart';
+import 'package:nerdster/about.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
-import 'package:nerdster/oneofus/menu_title.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
+import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/tokenize.dart';
 
 // SchedulerBinding.instance.addPostFrameCallback((_) async {
 // });
@@ -71,6 +71,7 @@ class Menus {
         MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
         MyCheckbox(Prefs.showStatements, 'show trust statements'),
         MyCheckbox(Prefs.skipLgtm, '''Skip statement reviews'''),
+        MyCheckbox(Prefs.skipVerify, '''Skip verifying signatures (goes quicker;)'''),
         // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
       ], child: const Text('Preferences')),
 
@@ -117,7 +118,7 @@ $link''',
                   ['Okay'],
                   context);
             },
-            child: const Text('generate link with current settings..')),
+            child: const Text('Generate link for current view..')),
         MenuItemButton(
             child: const Text('Tokenize'),
             onPressed: () async {
@@ -134,6 +135,11 @@ ${tokenNpp.$2}''',
                     context);
               }
             }),
+        MenuItemButton(
+            onPressed: () async {
+              await About.show(context);
+            },
+            child: const Text('About')),
       ], child: const Text('/etc')),
 
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
