@@ -19,14 +19,16 @@ class Prefs {
     showJson.value = bs(params['showJson']);
     showStatements.value = bs(params['showStatements']);
     showKeys.value = bs(params['showKeys']);
-    skipVerify.value = bs(params['skipVerify']);
+    if (b(params['skipVerify'])) {
+      skipVerify.value = bs(params['skipVerify']);
+    }
   }
 
   static void setParams(Map<String, String> params) {
     if(showJson.value) params['showJson'] = true.toString();
     if(showStatements.value) params['showStatements'] = true.toString();
     if(showKeys.value) params['showKeys'] = true.toString();
-    if(skipVerify.value) params['skipVerify'] = true.toString();
+    params['skipVerify'] = skipVerify.value.toString();
   }
 
   Prefs._();
