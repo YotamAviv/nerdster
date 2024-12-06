@@ -12,18 +12,21 @@ class Prefs {
   static final ValueNotifier<bool> showKeys = ValueNotifier(bDev);
   static final ValueNotifier<bool> showDevMenu = ValueNotifier<bool>(bDev);
   static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
 
   static void init() { // initWindowQueryParams
     Map<String, String> params = Uri.base.queryParameters;
     showJson.value = bs(params['showJson']);
     showStatements.value = bs(params['showStatements']);
     showKeys.value = bs(params['showKeys']);
+    skipVerify.value = bs(params['skipVerify']);
   }
 
   static void setParams(Map<String, String> params) {
     if(showJson.value) params['showJson'] = true.toString();
     if(showStatements.value) params['showStatements'] = true.toString();
     if(showKeys.value) params['showKeys'] = true.toString();
+    if(skipVerify.value) params['skipVerify'] = true.toString();
   }
 
   Prefs._();

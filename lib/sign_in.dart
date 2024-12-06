@@ -106,7 +106,7 @@ Future<void> qrSignin(BuildContext context) async {
       // Unpack Oneofus public key
       OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(data[kOneofusDomain]);
 
-      // optionally unpack and decrypt Nerdster private key
+      // Optionally unpack and decrypt Nerdster private key
       OouKeyPair? nerdsterKeyPair;
       if (b(data['publicKey'])) {
         PkePublicKey phonePkePublicKey = await crypto.parsePkePublicKey(data['publicKey']);
@@ -158,7 +158,9 @@ The text to copy/paste here should look like this:
   Future<void> okHandler() async {
     try {
       Map<String, dynamic> json = jsonDecode(controller.text);
+      // Unpack Oneofus public key
       OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(json[kOneofusDomain]!);
+      // Optionally unpack and decrypt Nerdster private key
       OouKeyPair? nerdsterKeyPair;
       if (json[kNerdsterDomain] != null) {
         nerdsterKeyPair = await crypto.parseKeyPair(json[kNerdsterDomain]!);
@@ -205,17 +207,16 @@ The text to copy/paste here should look like this:
                       ))))));
 }
 
-Future<void> make(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool storeKeys) async {
-      if (storeKeys) {
-        await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
-      } else {
-        await KeyStore.wipeKeys();
-      }
+Future<void> make(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
+  if (store) {
+    await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
+  } else {
+    await KeyStore.wipeKeys();
+  }
 
-      // Center and optionally sign in
-      signInState.center = Jsonish(await oneofusPublicKey.json).token;
-      if (b(nerdsterKeyPair)) {
-        await signInState.signIn(nerdsterKeyPair!);
-      }
-
+  // Center and optionally sign in
+  signInState.center = Jsonish(await oneofusPublicKey.json).token;
+  if (b(nerdsterKeyPair)) {
+    await signInState.signIn(nerdsterKeyPair!);
+  }
 }

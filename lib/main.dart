@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -90,6 +91,7 @@ Future<void> main() async {
   Prefs.init();
   TrustStatement.init();
   ContentStatement.init();
+  await About.init();
 
   if (_fireCheckWrite) {
     await checkWrite(FireFactory.find(kNerdsterDomain), 'firecheck: web:nerdster');

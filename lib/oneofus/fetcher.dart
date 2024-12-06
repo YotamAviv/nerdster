@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:flutter/material.dart';
+import '../prefs.dart'; // CODE: Kludgey way to include, but might work for phone codebase.
 
 import 'distincter.dart';
 import 'fire_factory.dart';
@@ -154,7 +155,8 @@ class Fetcher {
     for (final docSnapshot in snapshots.docs) {
       final Json data = docSnapshot.data();
       Jsonish jsonish;
-      if (testingNoVerify) {
+
+      if (Prefs.skipVerify.value || testingNoVerify) {
         jsonish = Jsonish(data);
       } else {
         jsonish = await Jsonish.makeVerify(data, _verifier);
