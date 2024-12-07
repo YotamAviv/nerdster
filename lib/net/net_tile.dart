@@ -80,19 +80,19 @@ class _NetTileState extends State<NetTile> {
         iconPair = tileType2icon['key']!;
       }
       iconTooltip = node.labelKeyPaths().join('\n');
-      bool replaced = b(node.revokeAt);
-      bool inFollowNet = followNet.oneofus2delegates.containsKey(node.token);
-      assert (!(!node.canonical && inFollowNet));
-      if (replaced && inFollowNet) {
+      bool revoked = b(node.revokeAt);
+      bool isDelegate = followNet.oneofus2delegates.containsKey(node.token);
+      assert (!(!node.canonical && isDelegate));
+      if (revoked && isDelegate) {
         // Lisa's network was confusing. Bart replaced and followed, but pink not green
         iconColor = Colors.purple;
         iconTooltip =
-            '$iconTooltip \nreplaced at: ${formatUiDatetime(node.revokeAt!)}';
-      } else if (replaced) {
+            '$iconTooltip \nrevoked at: ${formatUiDatetime(node.revokeAt!)}';
+      } else if (revoked) {
         iconColor = Colors.pink.shade100;
         iconTooltip =
             '$iconTooltip \nreplaced at: ${formatUiDatetime(node.revokeAt!)}';
-      } else if (inFollowNet) {
+      } else if (isDelegate) {
           iconColor = Colors.lightGreen;
       }
     } else {

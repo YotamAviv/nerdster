@@ -192,7 +192,7 @@ void main() async {
     Map<String, Fetcher> delegateNetwork = followNet.delegate2fetcher;
     Map<String, DateTime?> network3 =
         delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
-    expect(keyLabels.show(network3), {'Me-nerdster': '5/1/2024 12:02 AM'});
+    expect(keyLabels.show(network3), {'Me-delegate': '5/1/2024 12:02 AM'});
     roots = contentBase.getRoots();
     expect(roots.length, 1);
 
@@ -605,17 +605,17 @@ var jock1 = {
     "N:Me-true:": {
       "N:poser-true:Me": {
         "N:hipster-true:Me->poser": {
-          "N:hipster-nerdster-false:Me->poser->hipster": {},
-          "N:hipster-nerdster (0)-false:10/10/2024 1:44 PM:Me->poser->hipster": {},
-          "S:1be34a1ae02178586be9cde87f01e495192e1812:@10/10/2024 1:44 PM:delegated:hipster-nerdster": {},
-          "S:33404bc620f40ca4739f7637d308ff523948e9d0:@10/10/2024 1:44 PM:delegated:hipster-nerdster (0)": {}
+          "N:hipster-delegate-false:Me->poser->hipster": {},
+          "N:hipster-delegate (0)-false:10/10/2024 1:44 PM:Me->poser->hipster": {},
+          "S:1be34a1ae02178586be9cde87f01e495192e1812:@10/10/2024 1:44 PM:delegated:hipster-delegate": {},
+          "S:33404bc620f40ca4739f7637d308ff523948e9d0:@10/10/2024 1:44 PM:delegated:hipster-delegate (0)": {}
         },
-        "N:poser-nerdster-false:Me->poser": {},
-        "S:16ced061c9251a7d1458350aca55d97886b620a8:@10/10/2024 1:44 PM:delegated:poser-nerdster": {},
+        "N:poser-delegate-false:Me->poser": {},
+        "S:16ced061c9251a7d1458350aca55d97886b620a8:@10/10/2024 1:44 PM:delegated:poser-delegate": {},
         "S:71ab5928a2070d6e521780712a86606ee64b4a12:@10/10/2024 1:44 PM:trusted:hipster": {}
       },
-      "N:Me-nerdster-false:Me": {},
-      "S:ca9007da20fddb2574651b9a711efccd3b9a8f89:@10/10/2024 1:44 PM:delegated:Me-nerdster": {},
+      "N:Me-delegate-false:Me": {},
+      "S:ca9007da20fddb2574651b9a711efccd3b9a8f89:@10/10/2024 1:44 PM:delegated:Me-delegate": {},
       "S:328b0c8559e33df8b21af1e7a2f1219e08ee6477:@10/10/2024 1:44 PM:trusted:poser": {}
     }
   },
@@ -826,8 +826,8 @@ var equate1 = {
   },
   "nerds": {
     "N:Me-true:": {
-      "N:Me-nerdster-false:Me": {},
-      "S:75605fa84501f7a97731514f24569bfe7475015c:@10/10/2024 1:54 PM:delegated:Me-nerdster": {}
+      "N:Me-delegate-false:Me": {},
+      "S:75605fa84501f7a97731514f24569bfe7475015c:@10/10/2024 1:54 PM:delegated:Me-delegate": {}
     }
   },
   "content": [
@@ -1245,17 +1245,17 @@ var rateAndDis = {
     "N:Me-true:": {
       "N:poser-true:Me": {
         "N:hipster-true:Me->poser": {
-          "N:hipster-nerdster-false:Me->poser->hipster": {},
-          "N:hipster-nerdster (0)-false:10/10/2024 1:53 PM:Me->poser->hipster": {},
-          "S:f6872af18559e8e6da8b278455cc30c68ea6b5ca:@10/10/2024 1:53 PM:delegated:hipster-nerdster": {},
-          "S:319118699fb7a63667fa4dc2e1b74f66c47e387a:@10/10/2024 1:53 PM:delegated:hipster-nerdster (0)": {}
+          "N:hipster-delegate-false:Me->poser->hipster": {},
+          "N:hipster-delegate (0)-false:10/10/2024 1:53 PM:Me->poser->hipster": {},
+          "S:f6872af18559e8e6da8b278455cc30c68ea6b5ca:@10/10/2024 1:53 PM:delegated:hipster-delegate": {},
+          "S:319118699fb7a63667fa4dc2e1b74f66c47e387a:@10/10/2024 1:53 PM:delegated:hipster-delegate (0)": {}
         },
-        "N:poser-nerdster-false:Me->poser": {},
-        "S:5780285c98235c834fa316ece86b1fcb26ed0c9b:@10/10/2024 1:53 PM:delegated:poser-nerdster": {},
+        "N:poser-delegate-false:Me->poser": {},
+        "S:5780285c98235c834fa316ece86b1fcb26ed0c9b:@10/10/2024 1:53 PM:delegated:poser-delegate": {},
         "S:3db77a56ba6ff6e21a5b0d45905779a71935ecd4:@10/10/2024 1:53 PM:trusted:hipster": {}
       },
-      "N:Me-nerdster-false:Me": {},
-      "S:29f02d57dc1278d46e36dccf63f46ecacdf8c4b8:@10/10/2024 1:53 PM:delegated:Me-nerdster": {},
+      "N:Me-delegate-false:Me": {},
+      "S:29f02d57dc1278d46e36dccf63f46ecacdf8c4b8:@10/10/2024 1:53 PM:delegated:Me-delegate": {},
       "S:2e37900e39773a84655584c3c8754a0c39039de0:@10/10/2024 1:53 PM:trusted:poser": {}
     }
   },

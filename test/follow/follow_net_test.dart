@@ -98,10 +98,10 @@ void main() async {
     followNet.fcontext = 'family';
     await followNet.waitUntilReady();
     Json expected = {
-      "son": ["son-nerdster"],
-      "homer2": ["homer2-nerdster"],
-      "sis": ["sis-nerdster"],
-      "moms": ["moms-nerdster"],
+      "son": ["son-delegate"],
+      "homer2": ["homer2-delegate"],
+      "sis": ["sis-delegate"],
+      "moms": ["moms-delegate"],
       "sister": []
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
@@ -111,11 +111,11 @@ void main() async {
     followNet.fcontext = null;
     await followNet.waitUntilReady();
     expected = {
-      "son": ["son-nerdster"],
-      "friend": ["friend-nerdster"],
-      "sis": ["sis-nerdster"],
-      "homer2": ["homer2-nerdster"],
-      "moms": ["moms-nerdster"],
+      "son": ["son-delegate"],
+      "friend": ["friend-delegate"],
+      "sis": ["sis-delegate"],
+      "homer2": ["homer2-delegate"],
+      "moms": ["moms-delegate"],
       "clown": [],
       "mom": [],
       "sister": [],
@@ -126,17 +126,17 @@ void main() async {
     followNet.fcontext = 'nerd';
     await followNet.waitUntilReady();
     expected = {
-      "son": ["son-nerdster"],
-      "friend": ["friend-nerdster"],
-      "sis": ["sis-nerdster"]
+      "son": ["son-delegate"],
+      "friend": ["friend-delegate"],
+      "sis": ["sis-delegate"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     followNet.fcontext = 'social';
     await followNet.waitUntilReady();
     expected = {
-      "son": ["son-nerdster"],
-      "friend": ["friend-nerdster"]
+      "son": ["son-delegate"],
+      "friend": ["friend-delegate"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
   });
@@ -152,7 +152,7 @@ void main() async {
     signInState.center = nerd1.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     Json expected = {
-      "Me": ["Me-nerdster"],
+      "Me": ["Me-delegate"],
       "nerd2": [],
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
@@ -255,7 +255,7 @@ void main() async {
     signInState.center = steve2.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster"]
+      "Me": ["Me-delegate"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -264,8 +264,8 @@ void main() async {
     followNet.fcontext = null;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster"],
-      "steve2": ["steve2-nerdster"]
+      "Me": ["Me-delegate"],
+      "steve2": ["steve2-delegate"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -275,8 +275,8 @@ void main() async {
     await bobN.doFollow(steve, {'social': 1});
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster"],
-      "steve2": ["steve2-nerdster"]
+      "Me": ["Me-delegate"],
+      "steve2": ["steve2-delegate"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
   });
@@ -315,7 +315,7 @@ void main() async {
     signInState.center = steve2.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster", "Me-nerdster (0)"],
+      "Me": ["Me-delegate", "Me-delegate (0)"],
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -324,8 +324,8 @@ void main() async {
     followNet.fcontext = null;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster", "Me-nerdster (0)"],
-      "steve2": ["steve2-nerdster", "steve2-nerdster (0)"]
+      "Me": ["Me-delegate", "Me-delegate (0)"],
+      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -335,8 +335,8 @@ void main() async {
     await bobN.doFollow(steve, {'social': 1});
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster", "Me-nerdster (0)"],
-      "steve2": ["steve2-nerdster", "steve2-nerdster (0)"]
+      "Me": ["Me-delegate", "Me-delegate (0)"],
+      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -347,8 +347,8 @@ void main() async {
     followNet.fcontext = null;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster", "Me-nerdster (0)"],
-      "steve2": ["steve2-nerdster", "steve2-nerdster (0)"]
+      "Me": ["Me-delegate", "Me-delegate (0)"],
+      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -357,8 +357,8 @@ void main() async {
     await bobN.doFollow(steve, {'social': 1});
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster", "Me-nerdster (0)"],
-      "steve2": ["steve2-nerdster", "steve2-nerdster (0)"]
+      "Me": ["Me-delegate", "Me-delegate (0)"],
+      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
   });
@@ -384,7 +384,7 @@ void main() async {
     contentBase.listen();
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster"],
+      "Me": ["Me-delegate"],
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -393,7 +393,7 @@ void main() async {
     followNet.fcontext = 'social';
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-nerdster"],
+      "Me": ["Me-delegate"],
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
   });
@@ -431,8 +431,8 @@ void main() async {
     contentBase.listen();
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
-      "Me": ["Me-nerdster"],
-      "steve2": ["steve2-nerdster", "steve2-nerdster (0)"]
+      "Me": ["Me-delegate"],
+      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -440,8 +440,8 @@ void main() async {
     followNet.fcontext = 'social';
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
-      "Me": ["Me-nerdster"],
-      "steve2": ["steve2-nerdster", "steve2-nerdster (0)"]
+      "Me": ["Me-delegate"],
+      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -450,8 +450,8 @@ void main() async {
     followNet.fcontext = 'social';
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
-      "Me": ["Me-nerdster"],
-      "steve2": ["steve2-nerdster", "steve2-nerdster (0)"]
+      "Me": ["Me-delegate"],
+      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -459,7 +459,7 @@ void main() async {
     followNet.fcontext = 'social';
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
-      "Me": ["Me-nerdster"]
+      "Me": ["Me-delegate"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -479,15 +479,15 @@ void main() async {
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
-      "Me": ["Me-nerdster"],
+      "Me": ["Me-delegate"],
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     followNet.fcontext = null;
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
-      "Me": ["Me-nerdster"],
-      "steve2": ["steve2-nerdster", "steve2-nerdster (0)"]
+      "Me": ["Me-delegate"],
+      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
   });
@@ -567,16 +567,16 @@ void main() async {
     signInState.center = lisa.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus, {
-      "daughter-nerdster": "daughter",
-      "mom-nerdster": "mom",
-      "hubby2-nerdster": "hubby2",
-      "son-nerdster": "son"
+      "daughter-delegate": "daughter",
+      "mom-delegate": "mom",
+      "hubby2-delegate": "hubby2",
+      "son-delegate": "son"
     });
 
     followNet.fcontext = 'social';
     signInState.center = lisa.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus,
-        {"daughter-nerdster": "daughter", "son-nerdster": "son"});
+        {"daughter-delegate": "daughter", "son-delegate": "son"});
   });
 }
