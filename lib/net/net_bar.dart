@@ -8,23 +8,40 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 class NetBar extends StatefulWidget {
-  final bool bTreeView;
-  const NetBar(this.bTreeView, {super.key});
+  static ValueNotifier<bool> bNetView = ValueNotifier<bool>(false);
+  static final NetBar _singleton = NetBar._internal();
+  factory NetBar() => _singleton;
+  const NetBar._internal();
 
   @override
   State<NetBar> createState() => _NetBarState();
+
+
+  static Future<void> showTree(BuildContext context) async {
+    await Comp.waitOnComps([followNet, keyLabels]);
+    NetBar.bNetView.value = true;
+    NetTreeView.show(context);
+  }
+
+  static void setParams(Map<String, String> params) {
+    if (bNetView.value) {
+      params['netView'] = true.toString();
+    }
+  }
 }
 
 class _NetBarState extends State<NetBar> {
   @override
   void initState() {
     NetTreeView.bOneofus.addListener(listen);
+    NetBar.bNetView.addListener(listen);
     super.initState();
   }
 
   @override
   void dispose() {
     NetTreeView.bOneofus.removeListener(listen);
+    NetBar.bNetView.removeListener(listen);
     super.dispose();
   }
 
@@ -42,12 +59,13 @@ class _NetBarState extends State<NetBar> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           // <-- button
-          if (widget.bTreeView)
+          if (NetBar.bNetView.value)
             IconButton(
                 icon: const Icon(Icons.arrow_back),
                 color: linkColor,
                 tooltip: 'Content view',
                 onPressed: () {
+                  NetBar.bNetView.value = false;
                   Navigator.pop(context);
                 }),
 
@@ -58,15 +76,15 @@ class _NetBarState extends State<NetBar> {
             width: 80,
             child: DegreesDropdown(),
           ),
-          StructureDropdown(widget.bTreeView),
-          if (!widget.bTreeView)
+          StructureDropdown(NetBar.bNetView.value),
+          if (!NetBar.bNetView.value)
             IconButton(
                 icon: const Icon(Icons.arrow_forward),
                 color: linkColor,
                 tooltip: 'Network view',
                 onPressed: () async {
-                  await Comp.waitOnComps([followNet, keyLabels]);
-                  NetTreeView.show(context);
+                  NetBar.bNetView.value = true;
+                  NetBar.showTree(context);
                 }),
         ],
       ),
