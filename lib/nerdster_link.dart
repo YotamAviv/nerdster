@@ -1,4 +1,5 @@
 import 'package:nerdster/main.dart';
+import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -15,6 +16,7 @@ String generateLink() {
   oneofusNet.setParams(params);
   followNet.setParams(params);
   contentBase.setParams(params);
+  NetBar.setParams(params);
 
   String url = buildUrlWithQueryParams(Uri.base, params);
   return url;

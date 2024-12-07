@@ -6,6 +6,7 @@ import 'package:nerdster/content/content_tile.dart';
 import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/net/net_bar.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
 /// StatefulWidget stuff...
@@ -48,6 +49,16 @@ class _ContentTreeViewState extends State<ContentTreeView> {
 
     contentBase.addListener(listen);
     keyLabels.addListener(listen);
+
+    // Check start with network view
+    // I don't like how I've done this.
+    // - content shows up briefly before disappearing
+    // - params are dealt with both here and in NetBar
+    Map<String, String> params = Uri.base.queryParameters;
+    if (bs(params['netView'])) {
+      NetBar.showTree(context);
+    }
+
     listen();
   }
 
@@ -81,8 +92,7 @@ class _ContentTreeViewState extends State<ContentTreeView> {
           ),
         ],
       ),
-      // const NetBar(),
-      const NetBar(false),
+      NetBar(),
       const ContentBar(),
       Expanded(
           child: SelectionArea(
