@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
@@ -28,6 +29,7 @@ class BarRefresh extends StatefulWidget {
 
       // This could probably be captured in an Observable Comp instance      
       Fetcher.clear();
+      Jsonish.wipeCache(); // TEMP
       clearDistinct(); // redundant
       oneofusNet.listen();
       
@@ -35,6 +37,7 @@ class BarRefresh extends StatefulWidget {
       print('Refresh took: ${stopwatch.value!.elapsed}');
       stopwatch.value!.stop();
       stopwatch.value = null;
+      Fetcher.measure.dump(); // TEMP
     }
   }
 

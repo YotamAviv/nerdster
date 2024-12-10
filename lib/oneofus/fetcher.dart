@@ -32,6 +32,38 @@ import 'util.dart';
 /// - (refreshing OneofusNet no longer requires re-fetching.)
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 
+/// 12/10/24, ran some measurements on full refresh, mostly my data and some from Amotz.
+/// NOTE: this is in debug mode which seems much slower than PROD, release, not sure why.
+/// - fully trusted including tokens: stopwatch.elapsed=0:00:00.000805
+/// - no verify, compute tokens: stopwatch.elapsed=0:00:00.072600
+/// - verify signatures, compute tokens: stopwatch.elapsed=0:00:26.012685
+/// So: 
+/// Big advantage for not verifying
+/// Negligable advantange for not computing tokens
+/// Computing tokens requires sorting, and sorting is nice and is required for showing the JS.
+/// Teaching the code to not sort unless required is probably not super hard, but not super helpful either.
+/// DEFER:
+/// 
+class Measure {
+  final stopwatch = Stopwatch();
+
+  void start() {
+    stopwatch.start();
+  }
+
+  void stop() {
+    stopwatch.stop();
+  }
+
+  void dump() {
+    print('stopwatch.elapsed=${stopwatch.elapsed}');
+  }
+
+  void reset() {
+    stopwatch.reset();
+  }
+}
+
 class Fetcher {
   static int? testingCrashIn;
 
@@ -39,6 +71,7 @@ class Fetcher {
   static final VoidCallback changeNotify = clearDistinct;
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
+  static Measure measure = Measure();
 
   final FirebaseFirestore fire;
   final String domain;
@@ -54,7 +87,10 @@ class Fetcher {
 
   List<Statement>? _cached;
 
-  static void clear() => _fetchers.clear();
+  static void clear() {
+    _fetchers.clear();
+    measure.reset();
+  }
 
   static resetRevokedAt() {
     for (Fetcher f in _fetchers.values) {
@@ -156,11 +192,15 @@ class Fetcher {
       final Json data = docSnapshot.data();
       Jsonish jsonish;
 
+      measure.start();
       if (Prefs.skipVerify.value || testingNoVerify) {
-        jsonish = Jsonish(data);
+        jsonish = Jsonish.makeTrusted(data, docSnapshot.id);
+        // jsonish = Jsonish(data);
       } else {
         jsonish = await Jsonish.makeVerify(data, _verifier);
       }
+      assert(docSnapshot.id == jsonish.token);
+      measure.stop();
 
       // newest to oldest
       // First: previousToken is null

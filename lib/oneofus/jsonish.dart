@@ -65,8 +65,12 @@ class Jsonish {
     'statement',
     'time',
     'I',
+
+    // verb
     ...TrustVerb.values.map((e) => e.label),
     ...ContentVerb.values.map((e) => e.label),
+
+    // with
     'with',
     'other',
     'moniker',
@@ -76,26 +80,28 @@ class Jsonish {
     'recommend',
     'dismiss',
     'stars', // gone but may exist in old statements
+    'comment',
 
-    'comment', // CONSIDER: map of comments, both from the user and from the tech, invitation, etc..
-
+    // contentType above fields. Fields just alphabetical (author, year, title, etc...)
     'contentType', // for subjects like book, movie..
 
+    // bottom
     'previous', 
     'signature',
   ];
+  
   static const JsonEncoder encoder = JsonEncoder.withIndent('  ');
-  static final Map<String, int> key2order =
+  
+  static final Map<String, int> _key2order =
       Map.unmodifiable({for (var e in keysInOrder) e: keysInOrder.indexOf(e)});
-
-  static int compareKeys(String key1, String key2) {
+  static int _compareKeys(String key1, String key2) {
     // Keys we know and like have an order.
     // Keys we don't know are to be listed below most stuff (but above signature) in alphabetical order.
-    if (key2order.containsKey(key1) && key2order.containsKey(key2)) {
-      return key2order[key1]! - key2order[key2]!;
-    } else if (!key2order.containsKey(key1) && !key2order.containsKey(key2)) {
+    if (_key2order.containsKey(key1) && _key2order.containsKey(key2)) {
+      return _key2order[key1]! - _key2order[key2]!;
+    } else if (!_key2order.containsKey(key1) && !_key2order.containsKey(key2)) {
       return key1.compareTo(key2);
-    } else if (key2order.containsKey(key1)) {
+    } else if (_key2order.containsKey(key1)) {
       return -1;
     } else {
       return 1;
@@ -104,6 +110,7 @@ class Jsonish {
 
   // The cache of all Jsonish objects to be retrieved by token.
   static final Map<String, Jsonish> _cache = <String, Jsonish>{};
+
   static Jsonish? find(String token) => _cache[token];
 
   // probably for testing
@@ -122,7 +129,7 @@ class Jsonish {
     // assert(!jsonMap.containsKey('signature'), 'should be verifying');
 
     // Check cache.
-    Json ordered = orderMap(json);
+    Json ordered = _orderMap(json);
     String ppJson = encoder.convert(ordered);
     String token = sha1.convert(utf8.encode(ppJson)).toString();
     if (_cache.containsKey(token)) {
@@ -138,12 +145,27 @@ class Jsonish {
     return fresh;
   }
 
+  static Jsonish makeTrusted(Json json, String token) {
+    if (_cache.containsKey(token)) {
+      Jsonish cached = _cache[token]!;
+      return cached;
+    }
+
+    Jsonish fresh = Jsonish._internal(Map.unmodifiable(json), token); // TEMP: json is not ordered
+
+    // Update cache
+    _cache[token] = fresh;
+
+    return fresh;
+  }
+
+
   // Same as factory constructor, but can't be a constructor because async (due to crypto).
   static Future<Jsonish> makeVerify(Json json, StatementVerifier verifier) async {
     String signature = json['signature']!;
 
     // Check cache.
-    Json ordered = orderMap(json);
+    Json ordered = _orderMap(json);
     String ppJson = encoder.convert(ordered);
     String token = sha1.convert(utf8.encode(ppJson)).toString();
     if (_cache.containsKey(token)) {
@@ -155,7 +177,7 @@ class Jsonish {
 
     // Verify
     Json orderedWithoutSig =
-        orderMap(Map.from(json)..removeWhere((k, v) => k == 'signature'));
+        _orderMap(Map.from(json)..removeWhere((k, v) => k == 'signature'));
     String ppJsonWithoutSig = encoder.convert(orderedWithoutSig);
     bool verified = await verifier.verify(json, ppJsonWithoutSig, signature);
     if (!verified) {
@@ -177,7 +199,7 @@ class Jsonish {
     }
     assert(!json.containsKey('signature'));
 
-    Json ordered = orderMap(json);
+    Json ordered = _orderMap(json);
     String ppJson = encoder.convert(ordered); // (no signature yet)
     // Sign
     String signature = await signer.sign(json, ppJson);
@@ -207,11 +229,11 @@ class Jsonish {
 
   Jsonish._internal(this._json, this._token);
 
-  static LinkedHashMap<String, dynamic> orderMap(Json jsonMap) {
+  static LinkedHashMap<String, dynamic> _orderMap(Json jsonMap) {
     String? signature;
     List<MapEntry<String, dynamic>> list = [];
     list.addAll(jsonMap.entries);
-    list.sort((x, y) => compareKeys(x.key, y.key));
+    list.sort((x, y) => _compareKeys(x.key, y.key));
     LinkedHashMap<String, dynamic> orderedMap =
         LinkedHashMap<String, dynamic>();
     for (MapEntry<String, dynamic> entry in list) {
@@ -221,7 +243,7 @@ class Jsonish {
         signature = value;
         continue;
       } else {
-        value = orderDynamic(value);
+        value = _orderDynamic(value);
       }
       orderedMap[entry.key] = value;
     }
@@ -232,11 +254,11 @@ class Jsonish {
     return orderedMap;
   }
 
-  static dynamic orderDynamic(dynamic value) {
+  static dynamic _orderDynamic(dynamic value) {
     if (value is Map) {
-      return orderMap(value as Json);
+      return _orderMap(value as Json);
     } else if (value is List) {
-      return List.of(value.map(orderDynamic));
+      return List.of(value.map(_orderDynamic));
     } else if (value is String) {
     } else if (value is num) {
     } else if (value is bool) {
