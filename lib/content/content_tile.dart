@@ -72,14 +72,14 @@ class _SubjectState extends State<SubjectTile> {
       tileType = subjectNode.subject.json['contentType'];
     }
 
-    String? subjectTooltip = "Click to expand statements about this subject";
+    String rowTooltip = "Click to expand statements about this subject";
     Color? iconColor;
     if (subjectNode.equivalent) {
       iconColor = Colors.pink;
-      subjectTooltip = 'equivalent of parent';
+      rowTooltip = 'equivalent of parent';
     } else if (subjectNode.related) {
       iconColor = Colors.lightBlue;
-      subjectTooltip = 'related to parent';
+      rowTooltip = 'related to parent';
     }
 
     (IconData, IconData) iconPair = tileType2icon[tileType]!;
@@ -109,9 +109,8 @@ class _SubjectState extends State<SubjectTile> {
       );
     }
 
-    Widget titleWidget = isStatement
-        ? _StatementTitle(statement!)
-        : SubjectTitle(subjectNode.subject);
+    Widget titleWidget =
+        isStatement ? _StatementTitle(statement!) : SubjectTitle(subjectNode.subject);
 
     Widget? statementDesc;
     if (isStatement) {
@@ -127,11 +126,9 @@ class _SubjectState extends State<SubjectTile> {
       } else {
         buf.write('  ${verb.pastTense}: ');
       }
-      Color textColor = !contentBase.isRejected(subjectNode.subject.token)
-          ? Colors.black
-          : Colors.pink;
-      statementDesc =
-          Text('  ${buf.toString()}', style: TextStyle(color: textColor));
+      Color textColor =
+          !contentBase.isRejected(subjectNode.subject.token) ? Colors.black : Colors.pink;
+      statementDesc = Text('  ${buf.toString()}', style: TextStyle(color: textColor));
     }
 
     // Computed but not displayed: PropType.recentActivity
@@ -143,26 +140,22 @@ class _SubjectState extends State<SubjectTile> {
 
     return TreeIndentation(
         entry: widget.entry,
-        guide: const IndentGuide.connectingLines(indent: 48),
+        guide: const IndentGuide.connectingLines(indent: 80),
         child: Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
+                _ReactIcon(subjectNode.subject),
                 Tooltip(
-                  message: subjectTooltip ?? '',
+                  message: rowTooltip,
                   child: FolderButton(
                       icon: closedIcon,
                       openedIcon: openedIcon,
                       closedIcon: closedIcon,
                       color: linkColor,
-                      isOpen: widget.entry.hasChildren
-                          ? widget.entry.isExpanded
-                          : null,
-                      onPressed:
-                          widget.entry.hasChildren ? widget.onTap : null),
+                      isOpen: widget.entry.hasChildren ? widget.entry.isExpanded : null,
+                      onPressed: widget.entry.hasChildren ? widget.onTap : null),
                 ),
-                _ReactIcon(subjectNode.subject),
                 const SizedBox(width: 8),
                 ...propWidgets,
                 if (Prefs.showJson.value) JSWidget(subjectNode.subject.json),
@@ -204,8 +197,7 @@ class _ReactIconState extends State<_ReactIcon> {
 
     Color color;
     IconData iconData;
-    bool iReacted =
-        contentBase.findMyStatements(widget.subject.token).isNotEmpty;
+    bool iReacted = contentBase.findMyStatements(widget.subject.token).isNotEmpty;
     bool isMarked = this == marked1 || this == marked2;
     color = !iReacted ? linkColor : linkColorAlready;
     iconData = isMarked ? Icons.mark_chat_read : Icons.mark_chat_read_outlined;
@@ -298,8 +290,7 @@ class SubjectTitle extends StatelessWidget {
     if (subject.json.containsKey('url')) {
       url = subject.json['url'];
     } else {
-      String out =
-          'https://www.google.com/search?q=${subject.json.values.join(' ')}';
+      String out = 'https://www.google.com/search?q=${subject.json.values.join(' ')}';
       url = out;
     }
 
@@ -311,8 +302,7 @@ class SubjectTitle extends StatelessWidget {
                 },
                 child: Text((subject.json['title']),
                     style: const TextStyle(
-                        color: Colors.blueAccent,
-                        decoration: TextDecoration.underline),
+                        color: Colors.blueAccent, decoration: TextDecoration.underline),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis))));
   }
