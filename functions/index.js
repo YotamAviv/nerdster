@@ -1,7 +1,15 @@
-// [aviv] prototype works on emulator.
-// I've lost track, but some code snippets came from a tutorial and others from Google AI.
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+// I've lost track... 
+// - some code snippets came from a tutorial: https://firebase.google.com/docs/functions/get-started
+// - some code came from Google AI.
+// 
+// It used to be v1, then there may have been an upgrade, and some of the prototyping was 
+// broken for a while.
+//
+// I often forget and then see it in the logs.. 
+// .. something about running "npm install" in the functions directory.
+// 
+// TODO: Look into this warning about running "npm audit fix"
+// 
 
 const { logger } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
@@ -15,13 +23,22 @@ const cheerio = require('cheerio'); // For HTML parsing
 
 admin.initializeApp();
 
+// These 2 functions are strictly for prototyping.
+// To see it:
+// - run the nerdster emulator
+// - (the Nerdster app does not need to be running)
+// Access this in a browser:
+//   http://127.0.0.1:5001/nerdster/us-central1/addmessage/?text=foo
+// You should see a document {original: foo, uppercase: FOO} in the "messages" collection in the
+// Firestore emulator, maybe here:
+//   http://127.0.0.1:4000/firestore/ 
+
 // Take the text parameter passed to this HTTP endpoint and insert it into
 // Firestore under the path /messages/:documentId/original
 exports.addmessage = onRequest(async (req, res) => {
-  // Grab the text parameter.
   const original = req.query.text;
-  // Push the new message into Firestore using the Firebase Admin SDK.
-  const writeResult = await getFirestore()
+  const db = admin.firestore();
+  const writeResult = await db
       .collection("messages")
       .add({original: original});
   // Send back a message that we've successfully written the message
@@ -47,19 +64,20 @@ exports.makeuppercase = onDocumentCreated("/messages/{documentId}", (event) => {
   return event.data.ref.set({uppercase}, {merge: true});
 });
 
+// This works and is used to develop fetchtitle below.
 // Take the url parameter passed to this HTTP endpoint and insert it into
 // Firestore under the path /urls/:documentId/url
 exports.addurl = onRequest(async (req, res) => {
-  // Grab the url parameter.
   const url = req.query.url;
-  // Push the new message into Firestore using the Firebase Admin SDK.
-  const writeResult = await getFirestore()
+  const db = admin.firestore();
+  const writeResult = db
     .collection("urls")
     .add({ url: url });
   // Send back a message that we've successfully written the message
   res.json({ result: `Message with ID: ${writeResult.id} added.` });
 });
 
+// This is live and actively used by Nerdster to fetch HTML titles from URLs.
 // Listens for new urls added to /urls/:documentId/url
 // and saves the fetched title to /urls/:documentId/uppercase
 exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
@@ -85,9 +103,9 @@ exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
 
 
 // from: Google AI: https://www.google.com/search?q=Firebase+function+HTTP+GET+export+collection&oq=Firebase+function+HTTP+GET+export+collection&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRhA0gEIOTYzMmowajSoAgCwAgE&sourceid=chrome&ie=UTF-8
-// Enter this in browser: http://127.0.0.1:5001/nerdster/us-central1/export?token=<Nerdster delegate token>
+// Enter this in browser: http://127.0.0.1:5001/nerdster/us-central1/export2?token=<Nerdster delegate token>
 // Expect: JSON export
-// Deployed! Try at: https://us-central1-nerdster.cloudfunctions.net/export?token=f4e45451dd663b6c9caf90276e366f57e573841b
+// Deployed! Try at: https://us-central1-nerdster.cloudfunctions.net/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
 // Updates from 10/18/24:
 // - upgraded to v2 (in response to errors on command line)
 // - mapped to https://export.nerdster.org/?token=f4e45451dd663b6c9caf90276e366f57e573841b
@@ -112,3 +130,21 @@ exports.export2 = onRequest(async (req, res) => {
     res.status(500).send('Error exporting collection');
   }
 });
+
+
+// TODO: Use HTTP POST for QR sign-in.
+
+// - Nerdster functions:
+//   - Implement an onRequest function that inserts into /sessions/doc/<session>/doc
+//   - (JSON, not a string like the URL or message functions.)
+// - Optional: Nerdster Google Cloud hosting:
+//   - Map that function (see export2) to a URL like https://signin.nerdster.org
+// - Nerdster code:
+//   - Change to QR to include that URL
+//     - will be different based on emulator / prod.
+//   - DEFER: clean up Firebase / POST options and code.
+
+// - Oneofus:
+//   - Change code to POST to Nerdster functions instead of writing directly to Nerdster Firebase: 
+//     - (Keep location the same: /sessions/doc/<session>/doc)
+//   - Get the URL to write to from the Nerdster QR code.
