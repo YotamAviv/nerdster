@@ -121,7 +121,7 @@ Future<void> qrSignin(BuildContext context) async {
       // ignore: unawaited_futures
       subscription!.cancel();
 
-      await make(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       // Dismiss dialog
       if (context.mounted) Navigator.of(context).pop();
@@ -166,7 +166,7 @@ The text to copy/paste here should look like this:
         nerdsterKeyPair = await crypto.parseKeyPair(json[kNerdsterDomain]!);
       }
 
-      await make(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       Navigator.pop(context);
     } catch (exception) {
@@ -207,7 +207,7 @@ The text to copy/paste here should look like this:
                       ))))));
 }
 
-Future<void> make(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
+Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
   if (store) {
     await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
   } else {
@@ -215,8 +215,10 @@ Future<void> make(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bo
   }
 
   // Center and optionally sign in
-  signInState.center = Jsonish(await oneofusPublicKey.json).token;
-  if (b(nerdsterKeyPair)) {
-    await signInState.signIn(nerdsterKeyPair!);
+  String center = getToken(await oneofusPublicKey.json);
+  if (!b(nerdsterKeyPair)) {
+    signInState.center = center;
+  } else {
+    await signInState.signIn(nerdsterKeyPair!, center);
   }
 }

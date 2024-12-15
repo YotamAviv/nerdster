@@ -170,9 +170,11 @@ class _MonikerWidget extends StatelessWidget {
 
   Future<void> showPopUpMenuAtTap(
       BuildContext context, TapDownDetails details) async {
-    // TODO: Encourage clicking; maybe show options disabled when not signed in or centered appropriately.
+    // Don't allow following yourself.
     // Do allow following center in case I'm centered on someone else
-    if (node.token == signInState.signedInOneofus) {
+    // All that said, we should survive statements that follow ourselves as that can happen with 
+    // claiming/clearing delegate statements, equivalence, etc...
+    if (node.token == signInState.centerReset) {
       return;
     }
     String? value = await showMenu<String>(

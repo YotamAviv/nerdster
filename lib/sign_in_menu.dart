@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/comp.dart';
 import 'package:nerdster/key_store.dart';
+import 'package:nerdster/menus.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in.dart';
@@ -43,70 +43,49 @@ class _SignInMenuState extends State<SignInMenu> {
 
   @override
   Widget build(BuildContext context) {
-    if (!Comp.compsReady([keyLabels])) {
-      return const Text('loading..');
-    }
-    String? centerLabel = label(signInState.center);
+    bool signedIn = b(signInState.signedInDelegate);
 
-    String signedInLabel = ' - ';
-    if (b(signInState.signedInOneofus)) {
-      signedInLabel = label(signInState.signedInOneofus!);
-    }
-
-    final StringBuffer status = StringBuffer();
-    String viewingAs = 'Viewing as: "$centerLabel"';
-    String? signedInAs = b(signInState.signedInOneofus)
-        ? 'Signed in as: "$signedInLabel"'
-        : null;
-    if (!b(signInState.signedInOneofus)) {
-      // not signed in
-      status.write(viewingAs);
-    } else if (signInState.signedInOneofus == signInState.center) {
-      status.write('Signed in and viewing as: "$centerLabel"');
+    if (signedIn) {
+      return MenuItemButton(
+          onPressed: () async {
+            await KeyStore.wipeKeys();
+            signInState.signOut();
+          },
+          child: const Row(
+            children: [
+              Icon(Icons.logout),
+              iconSpacer,
+              Text('Sign out'),
+            ],
+          ));
     } else {
-      status.write(signedInAs);
-      status.write(', ');
-      status.write(viewingAs);
-    }
-
-    VoidCallback? signOut;
-    if (b(signInState.signedInDelegate)) {
-      signOut = () async {
-        await KeyStore.wipeKeys();
-        signInState.signOut();
-      };
-    }
-    return SubmenuButton(
-      menuChildren: [
-        if (b(signInState.signedInOneofus) &&
-            signInState.signedInOneofus != signInState.center)
-          MenuItemButton(
-            onPressed: () {
-              signInState.center = signInState.signedInOneofus!;
-            },
-            child: const Text('Center as yourself again'),
-          ),
-
-        // QR sign-in
-        MenuItemButton(
-            onPressed: () async {
-              await qrSignin(context);
-              // TODO: Store keys checkbox option
-            },
-            child: const Row(children: [
+      return SubmenuButton(
+          menuChildren: [
+            // QR sign-in
+            MenuItemButton(
+                onPressed: () => qrSignin(context),
+                child: const Row(children: [
+                  Icon(Icons.qr_code),
+                  iconSpacer,
+                  Text('QR sign-in'),
+                ])),
+            // copy/paste sign-in
+            MenuItemButton(
+                onPressed: () => pasteSignin(context),
+                child: const Row(children: [
+                  Icon(Icons.copy),
+                  iconSpacer,
+                  Text('paste sign-in'),
+                ])),
+          ],
+          child: const Row(
+            children: [
               Icon(Icons.login),
-              Text('QR sign-in'),
-            ])),
-        // copy/paste sign-in
-        MenuItemButton(
-            onPressed: () => pasteSignin(context),
-            child:
-                const Row(children: [Icon(Icons.copy), Text('paste sign-in')])),
-        // Sign out
-        MenuItemButton(onPressed: signOut, child: const Text('Sign out')),
-      ],
-      child: Text(status.toString()),
-    );
+              iconSpacer,
+              Text('Sign in'),
+            ],
+          ));
+    }
   }
 }
 
