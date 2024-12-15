@@ -70,13 +70,13 @@ class _NetBarState extends State<NetBar> {
                 }),
 
           const BarRefresh(),
-          const CenterDropdown(),
-          const FollowDropdown(),
+          const _CenterDropdown(),
+          const _FollowDropdown(),
           SizedBox(
             width: 80,
             child: DegreesDropdown(),
           ),
-          StructureDropdown(NetBar.bNetView.value),
+          _StructureDropdown(NetBar.bNetView.value),
           if (!NetBar.bNetView.value)
             IconButton(
                 icon: const Icon(Icons.arrow_forward),
@@ -92,41 +92,15 @@ class _NetBarState extends State<NetBar> {
   }
 }
 
-/// Current:
-/// [SignInMenu]
-/// - listen to [SignInState]
-/// - show:
-///   - who's signed in (if applicable)
-///   - who's center
-/// - control:
-///   - sign out
-///   - center as me again (if applicable)
-///
-/// Planned changes:
-/// - show:
-///   - who's center (#1 in network)
-///   - rest of network
-/// - control:
-///   - center as someone else in network dropdown (may not necessarily include "Me")
-///
-/// Questions:
-/// - where's center as "Me" again?
-class CenterDropdown extends StatefulWidget {
-  const CenterDropdown({super.key});
-
-  @override
-  State<StatefulWidget> createState() => CenterDropdownState();
-}
-
-class StructureDropdown extends StatefulWidget {
+class _StructureDropdown extends StatefulWidget {
   final bool bContent;
-  const StructureDropdown(this.bContent, {super.key});
+  const _StructureDropdown(this.bContent, {super.key});
 
   @override
-  State<StatefulWidget> createState() => StructureDropdownState();
+  State<StatefulWidget> createState() => _StructureDropdownState();
 }
 
-class StructureDropdownState extends State<StructureDropdown> {
+class _StructureDropdownState extends State<_StructureDropdown> {
   @override
   void initState() {
     super.initState();
@@ -177,7 +151,14 @@ If a follow context is selected, those included in the follow network will be gr
   }
 }
 
-class CenterDropdownState extends State<CenterDropdown> {
+class _CenterDropdown extends StatefulWidget {
+  const _CenterDropdown({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _CenterDropdownState();
+}
+
+class _CenterDropdownState extends State<_CenterDropdown> {
   @override
   initState() {
     super.initState();
@@ -214,11 +195,17 @@ class CenterDropdownState extends State<CenterDropdown> {
       label2oneofus[label] = oneofus;
     }
 
-    // TODO: TEST: Sign in without delegate, make sure we don't crash.
     List<DropdownMenuEntry<String?>> entries = label2oneofus.keys
-        .map<DropdownMenuEntry<String>>(
-            (String fcontext) => DropdownMenuEntry<String>(value: fcontext, label: fcontext))
+        .map<DropdownMenuEntry<String?>>(
+            (String fcontext) => DropdownMenuEntry<String?>(value: fcontext, label: fcontext))
         .toList();
+
+    // Special null reset marker
+    if (signInState.center != signInState.centerReset) {
+      DropdownMenuEntry<String?> reset = DropdownMenuEntry<String?>(value: null, label: '<reset>');
+      entries.add(reset);
+    }
+    
     return DropdownMenu<String?>(
       dropdownMenuEntries: entries,
       // Kudos: https://stackoverflow.com/questions/77123848/flutter-dart-dropdownmenu-doesnt-update-when-i-call-a-setstate-and-modify-my-lo
@@ -229,8 +216,12 @@ class CenterDropdownState extends State<CenterDropdown> {
       enableSearch: false,
       initialSelection: entries.first.label,
       label: const Text('Center'),
-      onSelected: (String? label) {
-        signInState.center = label2oneofus[label]!;
+      onSelected: (String? value) {
+        if (b(value)) {
+          signInState.center = label2oneofus[value]!;
+        } else {
+          signInState.center = signInState.centerReset!;
+        }
       },
     );
   }
@@ -279,14 +270,14 @@ class DegreesDropdownState extends State<DegreesDropdown> {
 }
 
 // DEFER: singleton
-class FollowDropdown extends StatefulWidget {
-  const FollowDropdown({super.key});
+class _FollowDropdown extends StatefulWidget {
+  const _FollowDropdown({super.key});
 
   @override
   State<StatefulWidget> createState() => _FollowDropdownState();
 }
 
-class _FollowDropdownState extends State<FollowDropdown> {
+class _FollowDropdownState extends State<_FollowDropdown> {
   @override
   void initState() {
     super.initState();

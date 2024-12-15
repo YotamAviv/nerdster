@@ -6,16 +6,14 @@ import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
-/// NetBase tracks the signed in Oneofus key (signedInOneofus) specifically because DelegateNetwork
-/// might not know delegate2oneofus for that nerd when viewing as someone else.
-/// If you started off centered on me (Yotam) by default, then you were never signed in as yourself, and
-/// you probably shouldn't be able to go back to Yotam other than just reloading.
-/// But if you signed in with a delegate and Oneofus key (that matched), then you were signed in, and we
-/// should remember that Oneofus key which you should be able to return to.
-
+/// This has changed much over time, and so some docs, variable names, or worse might be misleading.
+/// This class may not even be necessary.
+/// The idea is:
+/// - center and signedIn are not always the same; viewing with a different center is a feature.
+/// - in case you get far from home, we want to help you get back (currently, "<reset>")
 class SignInState with ChangeNotifier {
   String _center;
-  String? _signedInOneofus; // only set if you 'signed in' using a delegate key
+  late String _centerReset;
   OouKeyPair? _signedInDelegateKeyPair;
   OouPublicKey? _signedInDelegatePublicKey;
   Json? _signedInDelegatePublicKeyJson;
@@ -26,6 +24,7 @@ class SignInState with ChangeNotifier {
 
   SignInState.init(this._center) {
     assert(!b(_singleton));
+    _centerReset = _center;
     _singleton = this;
   }
 
@@ -36,29 +35,26 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signIn(OouKeyPair nerdsterKeyPair) async {
+  Future<void> signIn(OouKeyPair nerdsterKeyPair, String center) async {
     _signedInDelegateKeyPair = nerdsterKeyPair;
     _signedInDelegatePublicKey = await nerdsterKeyPair.publicKey;
     _signedInDelegatePublicKeyJson = await _signedInDelegatePublicKey!.json;
     _signedInDelegate = getToken(await _signedInDelegatePublicKey!.json);
     _signer = await OouSigner.make(nerdsterKeyPair);
+
+    _center = center;
+    _centerReset = center;
+
     notifyListeners();
 
     // Check if delegate is delegate of Oneofus
     await Comp.waitOnComps([followNet]);
-    if (followNet.delegate2oneofus[_signedInDelegate] == _center) {
-      _signedInOneofus = _center;
+    if (followNet.delegate2oneofus[_signedInDelegate] != _center) {
+      print('************ followNet.delegate2oneofus[_signedInDelegate] != _center ************');
     }
-    // Was trying to speed up initial load..
-    // Comp.waitOnComps([followNet]).then((_) {
-    //   if (followNet.delegate2oneofus[_signedInDelegate] == _center) {
-    //     _signedInOneofus = _center;
-    //   }
-    // });
   }
 
   void signOut() {
-    _signedInOneofus = null;
     _signedInDelegateKeyPair = null;
     _signedInDelegatePublicKey = null;
     _signedInDelegatePublicKeyJson = null;
@@ -68,7 +64,7 @@ class SignInState with ChangeNotifier {
   }
 
   String get center => _center;
-  String? get signedInOneofus => _signedInOneofus;
+  String? get centerReset => _centerReset;
   OouKeyPair? get signedInDelegateKeyPair => _signedInDelegateKeyPair;
   OouPublicKey? get signedInDelegatePublicKey => _signedInDelegatePublicKey;
   Json? get signedInDelegatePublicKeyJson => _signedInDelegatePublicKeyJson;

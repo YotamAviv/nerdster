@@ -16,9 +16,7 @@ Future<void> signIn(center, delegateKeyPair) async {
   if (!b(delegateKeyPair)) {
     signInState.center = center;
   } else {
-    // await _sign.centerAndSignIn(center, delegateKeyPair);
-    signInState.center = center;
-    await signInState.signIn(delegateKeyPair);
+    await signInState.signIn(delegateKeyPair, center);
   }
   // When I remove this and change the tests, might be nice to have the things that need ready 
   // wait for it.

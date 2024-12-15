@@ -161,7 +161,7 @@ Future<void> defaultSignIn() async {
   // SignInState.init
   SignInState.init(oneofusToken!);
   if (b(nerdsterKeyPair)) {
-    await SignInState().signIn(nerdsterKeyPair!);
+    await SignInState().signIn(nerdsterKeyPair!, oneofusToken);
   }
 }
 

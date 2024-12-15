@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/menus.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -53,7 +54,15 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
       notifications.add(n);
     }
 
-    return SubmenuButton(menuChildren: notifications, child: const Text('Notifications'));
+    return SubmenuButton(
+        menuChildren: notifications,
+        child: const Row(
+          children: [
+            Icon(Icons.notifications),
+            iconSpacer,
+            Text('Notifications'),
+          ],
+        ));
   }
 }
 

@@ -3,6 +3,7 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 // bool bDev = true;
+// bool bDev = false;
 bool bDev = fireChoice != FireChoice.prod;
 
 class Prefs {

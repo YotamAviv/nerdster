@@ -21,6 +21,8 @@ import 'package:nerdster/tokenize.dart';
 // Future.delayed(const Duration(seconds: 1), () async {
 // });
 
+const iconSpacer = SizedBox(width: 3);
+
 class Menus {
   static List<Widget> build(context) {
     List<Widget> demos = <Widget>[];
@@ -34,8 +36,7 @@ class Menus {
             if (!b(delegate)) {
               signInState.center = oneofus.token;
             } else {
-              await signInState.signIn(delegate!.keyPair);
-              signInState.center = oneofus.token;
+              await signInState.signIn(delegate!.keyPair, oneofus.token);
             }
           },
           child: Text(e.key)));
@@ -52,9 +53,10 @@ class Menus {
       demoSignins.add(MenuItemButton(
           onPressed: () async {
             await printDemoCredentials(key, delegateKey);
-            signInState.center = key.token;
             if (b(nerdsterKeyPair)) {
-              await signInState.signIn(nerdsterKeyPair!);
+              await signInState.signIn(nerdsterKeyPair!, key.token);
+            } else {
+              signInState.center = key.token;
             }
             await OneofusEquiv().waitUntilReady();
           },
@@ -65,47 +67,26 @@ class Menus {
       SignInMenu(),
 
       // Prefs
-      SubmenuButton(menuChildren: <Widget>[
-        MyCheckbox(Prefs.nice, 'translate <JSON> and token gibberish'),
-        MyCheckbox(Prefs.showJson, 'show JSON'),
-        MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
-        MyCheckbox(Prefs.showStatements, 'show trust statements'),
-        MyCheckbox(Prefs.skipLgtm, '''Skip statement reviews'''),
-        MyCheckbox(Prefs.skipVerify, '''Skip verifying signatures (goes quicker;)'''),
-        // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
-      ], child: const Text('Preferences')),
-
-      // Dev
-      if (Prefs.showDevMenu.value)
-        SubmenuButton(menuChildren: <Widget>[
-          MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
-          MenuItemButton(
-              child: const Text('Load JSON statements'),
-              onPressed: () async {
-                await loadDumpDialog(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
-              }),
-          SubmenuButton(menuChildren: <Widget>[
-            ...demos,
-          ], child: const Text('Load demo')),
-          SubmenuButton(menuChildren: <Widget>[
-            ...demoSignins,
-          ], child: const Text('Demo sign-in')),
-          MenuItemButton(
-              child: const Text('dump all statements'),
-              onPressed: () async {
-                await DumpAllStatements.show(context);
-              }),
-          MenuItemButton(
-              child: const Text('Fetcher crash in... 3'),
-              onPressed: () {
-                Fetcher.testingCrashIn = 3;
-              }),
-        ], child: const Text('Dev')),
+      SubmenuButton(
+          menuChildren: <Widget>[
+            MyCheckbox(Prefs.nice, 'translate <JSON> and token gibberish'),
+            MyCheckbox(Prefs.showJson, 'show JSON'),
+            MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
+            MyCheckbox(Prefs.showStatements, 'show trust statements'),
+            MyCheckbox(Prefs.skipLgtm, '''Skip statement reviews'''),
+            MyCheckbox(Prefs.skipVerify, '''Skip verifying signatures (goes quicker;)'''),
+            // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
+          ],
+          child: const Row(
+            children: [
+              Icon(Icons.settings),
+              iconSpacer,
+              Text('Settings'),
+            ],
+          )),
 
       NotificationsMenu(key: UniqueKey()), // just guessing with UniqueKey()
 
-      // Dev
       SubmenuButton(menuChildren: <Widget>[
         MenuItemButton(
             onPressed: () async {
@@ -142,6 +123,34 @@ ${tokenNpp.$2}''',
             child: const Text('About')),
       ], child: const Text('/etc')),
 
+
+      // Dev
+      if (Prefs.showDevMenu.value)
+        SubmenuButton(menuChildren: <Widget>[
+          MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
+          MenuItemButton(
+              child: const Text('Load JSON statements'),
+              onPressed: () async {
+                await loadDumpDialog(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
+              }),
+          SubmenuButton(menuChildren: <Widget>[
+            ...demos,
+          ], child: const Text('Load demo')),
+          SubmenuButton(menuChildren: <Widget>[
+            ...demoSignins,
+          ], child: const Text('Demo sign-in')),
+          MenuItemButton(
+              child: const Text('dump all statements'),
+              onPressed: () async {
+                await DumpAllStatements.show(context);
+              }),
+          MenuItemButton(
+              child: const Text('Fetcher crash in... 3'),
+              onPressed: () {
+                Fetcher.testingCrashIn = 3;
+              }),
+        ], child: const Text('Dev')),
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
     ];
   }
