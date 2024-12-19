@@ -29,6 +29,7 @@ admin.initializeApp();
 // - (the Nerdster app does not need to be running)
 // Access this in a browser:
 //   http://127.0.0.1:5001/nerdster/us-central1/addmessage/?text=foo
+//   http://us-central1-nerdster.cloudfunctions.net/?text=foo
 // You should see a document {original: foo, uppercase: FOO} in the "messages" collection in the
 // Firestore emulator, maybe here:
 //   http://127.0.0.1:4000/firestore/ 
@@ -39,10 +40,10 @@ exports.addmessage = onRequest(async (req, res) => {
   const original = req.query.text;
   const db = admin.firestore();
   const writeResult = await db
-      .collection("messages")
-      .add({original: original});
+    .collection("messages")
+    .add({ original: original });
   // Send back a message that we've successfully written the message
-  res.json({result: `Message with ID: ${writeResult.id} added.`});
+  res.json({ result: `Message with ID: ${writeResult.id} added.` });
 });
 
 // Listens for new messages added to /messages/:documentId/original
@@ -61,7 +62,7 @@ exports.makeuppercase = onDocumentCreated("/messages/{documentId}", (event) => {
   // asynchronous tasks inside a function
   // such as writing to Firestore.
   // Setting an 'uppercase' field in Firestore document returns a Promise.
-  return event.data.ref.set({uppercase}, {merge: true});
+  return event.data.ref.set({ uppercase }, { merge: true });
 });
 
 // This works and is used to develop fetchtitle below.
@@ -132,19 +133,22 @@ exports.export2 = onRequest(async (req, res) => {
 });
 
 
-// TODO: Use HTTP POST for QR sign-in.
+// HTTP POST for QR signin (not 'signIn' - that breaks things).
+// The Nerdster should be listening for a new doc at collection /sessions/doc/<session>/
+// The phone app should POST to this function (it used to write directly to the Nerdster Firebase collection.)
+exports.signin = onRequest((req, res) => {
+  logger.log('signin');
+  logger.log('req.body=' + req.body);
+  logger.log('req.body.session=' + req.body.session);
 
-// - Nerdster functions:
-//   - Implement an onRequest function that inserts into /sessions/doc/<session>/doc
-//   - (JSON, not a string like the URL or message functions.)
-// - Optional: Nerdster Google Cloud hosting:
-//   - Map that function (see export2) to a URL like https://signin.nerdster.org
-// - Nerdster code:
-//   - Change to QR to include that URL
-//     - will be different based on emulator / prod.
-//   - DEFER: clean up Firebase / POST options and code.
+  const session = req.body.session;
+  const db = admin.firestore();
 
-// - Oneofus:
-//   - Change code to POST to Nerdster functions instead of writing directly to Nerdster Firebase: 
-//     - (Keep location the same: /sessions/doc/<session>/doc)
-//   - Get the URL to write to from the Nerdster QR code.
+  return db
+    .collection("sessions")
+    .doc("doc")
+    .collection(session)
+    .add(req.body).then(() => {
+      res.status(201).json({});
+    });
+});
