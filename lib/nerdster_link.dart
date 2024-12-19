@@ -24,14 +24,14 @@ String generateLink() {
 
 // Kudos: https://gist.github.com/danielgomezrico/f0af61d40f37360e051e7bedde273541
 String buildUrlWithQueryParams(Uri uri, Map<String, dynamic> queryParams) {
-  final fullUri = uri.replace(
+  final Uri fullUri = uri.replace(
     queryParameters: {
       ...uri.queryParameters,
       ...queryParams,
     },
   );
 
-  final parsedUrl = fullUri.toString();
+  final String parsedUrl = fullUri.toString();
 
   if (parsedUrl[parsedUrl.length - 1] == '?') {
     return parsedUrl.substring(0, parsedUrl.length - 1);

@@ -15,6 +15,7 @@ import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -33,7 +34,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 Future<void> qrSignin(BuildContext context) async {
   Map<String, dynamic> forPhone = <String, dynamic>{};
   forPhone['domain'] = kNerdsterDomain;
-  forPhone['method'] = 'Firestore';
 
   // Create a disposable PKE key pair for having phone encrypt stuff to this running web app.
   final PkeKeyPair keyPair = await crypto.createPke();
@@ -43,6 +43,22 @@ Future<void> qrSignin(BuildContext context) async {
   // Name a "session"
   final String session = Jsonish(publicKeyJson).token;
   forPhone['session'] = session;
+  if (Prefs.postSignin.value) {
+    // What a mess!
+    // Getting this to work deployed at Google Cloud functions proved as fustrating as I had anticipated.
+    // Stuff worked on the emulator fairly easily, but not once deployed.
+    // The utility 'postman' didn't help, as it somehow did work there. I'm still confused.
+    // I finally noticed that this URL is spit out after deploy, and ideed it works 
+    //   (see: https://stackoverflow.com/questions/76306434/unpredictable-urls-with-firebase-cloud-functions-2nd-gen)
+    // forPhone['uri'] = 'https://signin-tj5ghgc22q-uc.a.run.app';
+    // That stackoverflow post mentioned that predictable URL's still do work, but mine didn't, not 
+    // in camelCase, but yes in notcamelcase, and so it's 'signin', not 'signIn'.
+    forPhone['method'] = 'POST';
+    forPhone['uri'] = 'https://us-central1-nerdster.cloudfunctions.net/signin';
+  } else {
+    forPhone['method'] = 'Firestore';
+  }
+
   ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
   // ignore: unawaited_futures
   showDialog(

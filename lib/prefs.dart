@@ -14,6 +14,7 @@ class Prefs {
   static final ValueNotifier<bool> showDevMenu = ValueNotifier<bool>(bDev);
   static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> postSignin = ValueNotifier<bool>(false);
 
   static void init() { // initWindowQueryParams
     Map<String, String> params = Uri.base.queryParameters;

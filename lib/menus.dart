@@ -75,6 +75,7 @@ class Menus {
             MyCheckbox(Prefs.showStatements, 'show trust statements'),
             MyCheckbox(Prefs.skipLgtm, '''Skip statement reviews'''),
             MyCheckbox(Prefs.skipVerify, '''Skip verifying signatures (goes quicker;)'''),
+            MyCheckbox(Prefs.postSignin, '''(requires new phone version) HTTP Post sign in'''),
             // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
           ],
           child: const Row(
