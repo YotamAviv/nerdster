@@ -36,14 +36,42 @@ import 'package:nerdster/trust/trust1.dart';
 ///   - depends on:
 ///     - DelegateNet
 
-/// Conflict plan (WIP)
+/// Notifications plan (WIP)
+/// 
+/// Conflicts, I think these are all "rejections"
+/// Trivial: Show them to the user making them. He should clear these mistakes
+/// - don't block yourself
+/// - don't replace yourself
+/// - don't trust yourself
+/// 
+/// Trivial'ish: Show you the other key
+/// - attempt to block your key
+/// - attempt to replace your key
+/// 
+/// Trust / block conflict: pure conflict, user should figure it out and fix.
+/// - rejected trust (trust blocked key) (NEW)
+/// - rejected block (blocker farther than trustee)
+/// 
+/// - rejected replace (already replaced key)
+///   (this is rejected, but it's not necessarily a conflict; it could be that
+///    1) your 2'nd key replaces your 1'st
+///    2) your 3'rd key replacing your 1'st and 2'nd
+///   It is sort of a conflict. Your 2'nd key is not a replacement of your 1'st, now your 3'rd is.
+///   It could also be an absolute conflict, someone else (not EG) claims your old key.
+/// 
+/// - rejected replace (replacer farther than trustee) TODO: CONSIDER: Why reject this?
+/// - rejected replace (key already blocked). TODO: Think...
+/// 
+/// WOT trust non-canonical key directly (note that these are not conflicts or rejections)
+/// 
 /// - List all types (attempt to block you, etc...)
 ///   - maybe there are severities associated with these
 ///   - write descriptions and remedies
 /// 
 /// 
-/// - Dialog showing the key making the statement about another key
-///   - show distinct trust paths to both keys
+/// - Dialog showing both keys invovled. 
+///   (No special case for 'Me'. Anyone should be able to view conflicts centered as anyone)
+///   - show distinct trust paths to both keys (Okay, 'Me' is special)
 ///     - maybe that's 2 different popup dialogs
 ///     - allow similar popup dialogs along the way of the path, and so maybe show both keys, clicking on key brings up the path and shows the keys along the path
 

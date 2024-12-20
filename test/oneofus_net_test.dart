@@ -736,14 +736,17 @@ void main() async {
     trust1 = Trust1(degrees: 1, blockerBenefit: 0);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token]);
+    expect(oneofusNet.rejected.length, 0);
 
     trust1 = Trust1(degrees: 2, blockerBenefit: 0);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token, d21.token]);
+    expect(oneofusNet.rejected.length, 0);
 
     trust1 = Trust1(degrees: 3, blockerBenefit: 0);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token, d21.token, d3.token]);
+    expect(oneofusNet.rejected.length, 0);
   });
 
   test('degrees base block, blockerBenefit: 1', () async {

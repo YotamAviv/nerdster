@@ -182,7 +182,7 @@ class _CenterDropdownState extends State<_CenterDropdown> {
   Widget build(BuildContext context) {
     if (!Comp.compsReady([oneofusNet, keyLabels, followNet])) {
       // I'm not confident about this.
-      print('loading..');
+      // print('loading..');
       SchedulerBinding.instance.addPostFrameCallback((_) {
         listen();
       });
