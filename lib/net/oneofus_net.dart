@@ -36,6 +36,17 @@ import 'package:nerdster/trust/trust1.dart';
 ///   - depends on:
 ///     - DelegateNet
 
+/// Conflict plan (WIP)
+/// - List all types (attempt to block you, etc...)
+///   - maybe there are severities associated with these
+///   - write descriptions and remedies
+/// 
+/// 
+/// - Dialog showing the key making the statement about another key
+///   - show distinct trust paths to both keys
+///     - maybe that's 2 different popup dialogs
+///     - allow similar popup dialogs along the way of the path, and so maybe show both keys, clicking on key brings up the path and shows the keys along the path
+
 class OneofusNet with Comp, ChangeNotifier {
   static final OneofusNet _singleton = OneofusNet._internal();
   factory OneofusNet() => _singleton;

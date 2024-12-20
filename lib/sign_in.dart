@@ -47,14 +47,16 @@ Future<void> qrSignin(BuildContext context) async {
     // What a mess!
     // Getting this to work deployed at Google Cloud functions proved as fustrating as I had anticipated.
     // Stuff worked on the emulator fairly easily, but not once deployed.
-    // The utility 'postman' didn't help, as it somehow did work there. I'm still confused.
-    // I finally noticed that this URL is spit out after deploy, and ideed it works 
-    //   (see: https://stackoverflow.com/questions/76306434/unpredictable-urls-with-firebase-cloud-functions-2nd-gen)
-    // forPhone['uri'] = 'https://signin-tj5ghgc22q-uc.a.run.app';
-    // That stackoverflow post mentioned that predictable URL's still do work, but mine didn't, not 
-    // in camelCase, but yes in notcamelcase, and so it's 'signin', not 'signIn'.
+    // The utility 'postman' didn't help, as it somehow did work there, maybe. I'm still confused.
+    // I finally noticed that this URL, https://signin-tj5ghgc22q-uc.a.run.app, is spit out after
+    // deploy, and ideed it works .
+    // 
+    // Stackoverflow (https://stackoverflow.com/questions/76306434/unpredictable-urls-with-firebase-cloud-functions-2nd-gen)
+    // notes that predictable URLs still do work, but mine didn't, not in camelCase, but yes in
+    // notcamelcase, and so 'signin' (not 'signIn').
     forPhone['method'] = 'POST';
-    forPhone['uri'] = 'https://us-central1-nerdster.cloudfunctions.net/signin';
+    forPhone['uri'] = 'https://us-central1-nerdster.cloudfunctions.net/signin'; // TEMP:
+    // TODO: forPhone['uri'] = 'https://signin.nerdster.org/signin';
   } else {
     forPhone['method'] = 'Firestore';
   }

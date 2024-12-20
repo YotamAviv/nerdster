@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/net/key_lables.dart';
-import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/net/oneofus_equiv.dart';
+import 'package:nerdster/singletons.dart';
 
 enum NotificationType {
   youTrustEquivalentKeyDirectly,
@@ -28,31 +29,51 @@ class NotificationsMenu extends StatefulWidget {
 }
 
 class _NotificationsMenuState extends State<NotificationsMenu> {
-  _NotificationsMenuState() {
-    OneofusEquiv().addListener(listen);
+  @override
+  void initState() {
+    print('notifications.initState(..)');
+    oneofusNet.addListener(listen);
+    oneofusEquiv.addListener(listen);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    oneofusNet.removeListener(listen);
+    oneofusEquiv.removeListener(listen);
+    super.dispose();
   }
 
   void listen() {
-    if (mounted) {
-      setState(() {});
-    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!Comp.compsReady([oneofusNet, oneofusEquiv])) {
+      // I'm not confident about this.
+      print('loading..');
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        listen();
+      });
+      return const Text('Loading..');
+    }
+    print('notifications.build(${Comp.compsReady([oneofusNet, oneofusEquiv])})');
     List<Widget> notifications = <Widget>[];
-    for (MapEntry<String, String> e in OneofusNet().rejected.entries) {
+    for (MapEntry<String, String> e in oneofusNet.rejected.entries) {
       Jsonish statement = Jsonish.find(e.key)!;
       String reason = e.value;
       RejectedNotification n = RejectedNotification(statement, reason);
       notifications.add(n);
     }
-    for (MapEntry<String, String> e in OneofusEquiv().trustNonCanonical.entries) {
+    for (MapEntry<String, String> e in oneofusEquiv.trustNonCanonical.entries) {
       Jsonish statement = Jsonish.find(e.key)!;
       String reason = e.value;
       TrustNonCanonicalNotification n = TrustNonCanonicalNotification(statement, reason);
       notifications.add(n);
     }
+
+    print('notifications.length=${notifications.length}');
 
     return SubmenuButton(
         menuChildren: notifications,
@@ -95,7 +116,7 @@ class RejectedNotification extends StatelessWidget {
 
     // Text(reason);
 
-    // Text(Jsonish.encoder.convert(OneofusEquiv().show(json)));
+    // Text(Jsonish.encoder.convert(oneofusEquiv.show(json)));
   }
 }
 
@@ -127,6 +148,6 @@ class TrustNonCanonicalNotification extends StatelessWidget {
 
     // Text(reason);
 
-    // Text(Jsonish.encoder.convert(OneofusEquiv().show(json)));
+    // Text(Jsonish.encoder.convert(oneofusEquiv.show(json)));
   }
 }

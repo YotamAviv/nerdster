@@ -34,7 +34,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -167,16 +167,14 @@ Future<void> defaultSignIn() async {
 
 dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'},
-  FireChoice.emulator: null,
 // simpsons
-//   FireChoice.emulator: {
-//   "one-of-us.net": "1bb5e280c0cf2d336c99c515e7d2b2eb97c091b5",
-//   "nerdster.org": {
-//     "crv": "Ed25519",
-//     "d": "CztxZ4fms_cAaZ-I6tblayVtOrh8zx_LSgwrn5S0Nfk",
-//     "kty": "OKP",
-//     "x": "VMBRQj3Rk-4dUOF9TejgCF_75o6JzJed9BN7WzhOvmY"
-//   }
-// },
-//   FireChoice.fake: null,
+  FireChoice.emulator: {
+    "one-of-us.net": "ee05f57684276bc6752ebfb589ad37cbc8d48939",
+    "nerdster.org": {
+      "crv": "Ed25519",
+      "d": "Pgz7gC3mh9TBwy8JlZ1nYfQecVm2ilIBb5IUCNh9DOw",
+      "kty": "OKP",
+      "x": "mharz4eMqe3FfGBAGwkhoIVmjrRFEjxdkds8xAkKpq8"
+    }
+  },
 };
