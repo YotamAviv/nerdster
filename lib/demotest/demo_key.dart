@@ -40,9 +40,9 @@ class DemoKey {
   static final Map<String, DemoKey> _token2key = <String, DemoKey>{};
 
   static final dynamic demos = {
+    'simpsons': simpsons,
     'loner': loner,
     'egos': egos,
-    'simpsons': simpsons,
     'delegateMerge': delegateMerge,
     'delete3': deletions3,
     'blockOldKey': blockOldKey,
