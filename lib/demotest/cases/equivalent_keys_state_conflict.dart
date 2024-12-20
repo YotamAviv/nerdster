@@ -3,13 +3,12 @@ import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/net/key_lables.dart';
-import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
-import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
+import 'package:nerdster/singletons.dart';
 
 Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
@@ -28,13 +27,13 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   Jsonish s1 = await bart.doTrust(TrustVerb.trust, milhouse);
-  Jsonish r1 = await bart2.doTrust(TrustVerb.replace, bart, revokeAt: s1.token);
+  await bart2.doTrust(TrustVerb.replace, bart, revokeAt: s1.token);
   await bart2.doTrust(TrustVerb.block, milhouse);
   await lisa.doTrust(TrustVerb.trust, bart2, moniker: 'Bart');
   
   await signIn(lisa.token, null);
   await KeyLabels().waitUntilReady();
-  network = OneofusNet().network;
+  network = oneofusNet.network;
   expectedNetwork = {
     "Lisa": null,
     "Bart": null,
@@ -42,21 +41,21 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   expectedEquivalents = { 'Bart', 'Bart (0)' };
-  jsonShowExpect(OneofusEquiv().getEquivalents(bart2.token), expectedEquivalents);
-  myExpect(OneofusNet().rejected.isEmpty, true);
+  jsonShowExpect(oneofusEquiv.getEquivalents(bart2.token), expectedEquivalents);
+  myExpect(oneofusNet.rejected.length, 1);
   
   // bart now decides that 'bart' no longer represents him and blocks
   Jsonish b1 = await bart2.doTrust(TrustVerb.block, bart);
   
   await signIn(lisa.token, null);  
-  network = OneofusNet().network;
+  network = oneofusNet.network;
   expectedNetwork = {
     "Me": null,
     "Bart": null
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   expectedEquivalents = { 'Bart' };
-  jsonShowExpect(OneofusEquiv().getEquivalents(bart2.token), expectedEquivalents);
+  jsonShowExpect(oneofusEquiv.getEquivalents(bart2.token), expectedEquivalents);
   dynamic dump = await OneofusTreeNode.root.dump();
   var expected = {
     "N:Me-true:": {
@@ -64,7 +63,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     }
   };
   jsonShowExpect(dump, expected);
-  myExpect(OneofusNet().rejected.isEmpty, true);
+  myExpect(oneofusNet.rejected.isEmpty, true);
 
   await signIn(bart2.token, null);
   dump = await OneofusTreeNode.root.dump();
@@ -72,7 +71,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     "N:Me-true:": {}  
   };
   jsonShowExpect(dump, expected);
-  myExpect(OneofusNet().rejected.isEmpty, true);
+  myExpect(oneofusNet.rejected.isEmpty, true);
 
   await signIn(bart.token, null);
   dump = await OneofusTreeNode.root.dump();
@@ -84,8 +83,8 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     }
   };
   jsonShowExpect(dump, expected);
-  myExpect(OneofusNet().rejected.keys.length, 1);
-  myExpect(OneofusNet().rejected.keys.first, b1.token);
+  myExpect(oneofusNet.rejected.keys.length, 1);
+  myExpect(oneofusNet.rejected.keys.first, b1.token);
   
   useClock(LiveClock());
   return (DemoKey.findByName('bart2')!, null);

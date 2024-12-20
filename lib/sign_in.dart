@@ -55,8 +55,8 @@ Future<void> qrSignin(BuildContext context) async {
     // notes that predictable URLs still do work, but mine didn't, not in camelCase, but yes in
     // notcamelcase, and so 'signin' (not 'signIn').
     forPhone['method'] = 'POST';
-    forPhone['uri'] = 'https://us-central1-nerdster.cloudfunctions.net/signin'; // TEMP:
-    // TODO: forPhone['uri'] = 'https://signin.nerdster.org/signin';
+    // OLD: forPhone['uri'] = 'https://us-central1-nerdster.cloudfunctions.net/signin';
+    forPhone['uri'] = 'https://signin.nerdster.org/signin';
   } else {
     forPhone['method'] = 'Firestore';
   }

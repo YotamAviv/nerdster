@@ -13,12 +13,7 @@ enum NotificationType {
   farKeyBlockCloseKeyAttempt,
 }
 
-/// TODO: a lot...
-/// - Get these right, consider all the cases, currently listed in NerdBase
-/// - Describe the condition, the options for dealing with the condition,
-///   and enable a way to do it, probably QR code to phone app.
-///
-/// Make it easier: If the bad guy is already not in network, then skip the notification. Do this in early, like in Trust1.
+/// TODO: a lot, see [OneofusNet]
 class NotificationsMenu extends StatefulWidget {
   const NotificationsMenu({super.key});
 
@@ -52,7 +47,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
   Widget build(BuildContext context) {
     if (!Comp.compsReady([oneofusNet, oneofusEquiv])) {
       // I'm not confident about this.
-      print('loading..');
+      // print('loading..');
       SchedulerBinding.instance.addPostFrameCallback((_) {
         listen();
       });
