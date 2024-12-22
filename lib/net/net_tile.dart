@@ -193,7 +193,6 @@ class _MonikerWidget extends StatelessWidget {
           details.globalPosition.dx, details.globalPosition.dy),
       items: [
         if (node.token != signInState.center)
-          // TODO: Encourage clicking; maybe show options disabled when not signed in or centered appropriately.
           const PopupMenuItem<String>(value: 'recenter', child: Text('recenter')),
         const PopupMenuItem<String>(value: 'follow...', child: Text('follow...')),
       ],

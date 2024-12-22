@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/demotest/cases/delegate_merge.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
@@ -187,6 +188,33 @@ void main() async {
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(followNet.getStatements(loner.token).length, 0);
     myExpect(contentBase.getRoots().length, 0);
+  });
+
+  test('''bo and luke rate; bo claims luke's delegate; should see 1 rating''', () async {
+    DemoKey bo = await DemoKey.findOrCreate('bo');
+    DemoKey luke = await DemoKey.findOrCreate('luke');
+    await bo.doTrust(TrustVerb.trust, luke);
+    await luke.doTrust(TrustVerb.trust, bo);
+    DemoKey boN = await bo.makeDelegate();
+    DemoKey lukeN = await luke.makeDelegate();
+    await boN.doRate(title: 't', recommend: true);
+    await lukeN.doRate(title: 't', recommend: true);
+
+    signInState.center = bo.token;
+    contentBase.listen();
+    await Comp.waitOnComps([contentBase, keyLabels]);
+    myExpect(contentBase.getRoots().length, 1);
+    ContentTreeNode cn = contentBase.getRoots().first;
+
+    await bo.doTrust(TrustVerb.delegate, lukeN);
+    oneofusNet.listen();
+    await Comp.waitOnComps([contentBase, keyLabels]);
+    myExpect(contentBase.getRoots().length, 1);
+    cn = contentBase.getRoots().first;
+    // print(cn.getChildren().length);
+    // print('followNet.delegate2oneofus=${keyLabels.show(followNet.delegate2oneofus)}');
+    // print('followNet.oneofus2delegates=${keyLabels.show(followNet.oneofus2delegates)}');
+    expect(cn.getChildren().length, 1);
   });
 
   test('clear, 2 equivs', () async {
@@ -420,11 +448,7 @@ void main() async {
     signInState.center = bob.token;
     await Comp.waitOnComps([oneofusNet, keyLabels, contentBase]); //
     var network = oneofusNet.network;
-    var expectedNetwork = {
-      "Me": null,
-      "steve2": null,
-      "steve2 (0)": "5/1/2024 12:05 AM"
-    };
+    var expectedNetwork = {"Me": null, "steve2": null, "steve2 (0)": "5/1/2024 12:05 AM"};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     followNet.listen();
@@ -506,17 +530,14 @@ void main() async {
     expect(contentBase.getRoots().length, 2);
     Map<String, String?> delegate2revokedAt =
         followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
-    List<String> ss =
-        List.of(followNet.getStatements(hipster.token).map((s) => s.token));
+    List<String> ss = List.of(followNet.getStatements(hipster.token).map((s) => s.token));
     Set<String> hipDels = followNet.oneofus2delegates[hipster.token]!;
     String? hipDel0r = followNet.delegate2fetcher[hipDel0.token]!.revokeAt;
     String? hipDel1r = followNet.delegate2fetcher[hipDel1.token]!.revokeAt;
-    List<String> hipDel0rSs = List.of(followNet
-        .delegate2fetcher[hipDel0.token]!.statements
-        .map((s) => s.token));
-    List<String> hipDel1rSs = List.of(followNet
-        .delegate2fetcher[hipDel1.token]!.statements
-        .map((s) => s.token));
+    List<String> hipDel0rSs =
+        List.of(followNet.delegate2fetcher[hipDel0.token]!.statements.map((s) => s.token));
+    List<String> hipDel1rSs =
+        List.of(followNet.delegate2fetcher[hipDel1.token]!.statements.map((s) => s.token));
 
     followNet.fcontext = 'social';
     await contentBase.waitUntilReady();
@@ -524,8 +545,7 @@ void main() async {
     Map<String, String?> delegate2revokedAt2 =
         followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
     expect(delegate2revokedAt2, delegate2revokedAt);
-    List<String> ss2 =
-        List.of(followNet.getStatements(hipster.token).map((s) => s.token));
+    List<String> ss2 = List.of(followNet.getStatements(hipster.token).map((s) => s.token));
     expect(ss2, ss);
     Set<String> hipDels2 = followNet.oneofus2delegates[hipster.token]!;
     expect(hipDels2, hipDels);
@@ -542,21 +562,18 @@ void main() async {
     expect(hipDel0r3, hipDel0r);
     String? hipDel1r3 = followNet.delegate2fetcher[hipDel1.token]!.revokeAt;
     expect(hipDel1r3, hipDel1r);
-    List<String> hipDel1rSs3 = List.of(followNet
-        .delegate2fetcher[hipDel1.token]!.statements
-        .map((s) => s.token));
+    List<String> hipDel1rSs3 =
+        List.of(followNet.delegate2fetcher[hipDel1.token]!.statements.map((s) => s.token));
     expect(hipDel1rSs3, hipDel1rSs);
-    List<String> hipDel0rSs3 = List.of(followNet
-        .delegate2fetcher[hipDel0.token]!.statements
-        .map((s) => s.token));
+    List<String> hipDel0rSs3 =
+        List.of(followNet.delegate2fetcher[hipDel0.token]!.statements.map((s) => s.token));
     expect(hipDel0rSs3, hipDel0rSs);
-    List<String> ss3 =
-        List.of(followNet.getStatements(hipster.token).map((s) => s.token));
+    List<String> ss3 = List.of(followNet.getStatements(hipster.token).map((s) => s.token));
     expect(ss3, ss);
   });
 
   /// Test added due to bug where followNet asserted: trust1.rejected.isEmpty
-  /// But in fact, bart blocks lisa for social, and when cenetered as lisa, that's 
+  /// But in fact, bart blocks lisa for social, and when cenetered as lisa, that's
   /// appropriately rejected.
   test('lisa social', () async {
     await DemoKey.demos['simpsons']();
@@ -576,7 +593,7 @@ void main() async {
     followNet.fcontext = 'social';
     signInState.center = lisa.token;
     await Comp.waitOnComps([followNet, keyLabels]);
-    jsonShowExpect(followNet.delegate2oneofus,
-        {"daughter-delegate": "daughter", "son-delegate": "son"});
+    jsonShowExpect(
+        followNet.delegate2oneofus, {"daughter-delegate": "daughter", "son-delegate": "son"});
   });
 }
