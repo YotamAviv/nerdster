@@ -13,8 +13,8 @@ abstract class NetTreeModel {
   final List<NetTreeModel> path;
   // Node
   final String? token;
-  // Statement
-  final Statement? statement; // TODO: Why is this not a TrustStatement?
+   // Statement (not a TrustStatement because this class is a parent of [FollowTreeNode])
+  final Statement? statement;
 
   NetTreeModel(this.path, {this.token, this.statement});
 
