@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
@@ -239,4 +240,8 @@ Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, 
   } else {
     await signInState.signIn(nerdsterKeyPair!, center);
   }
+
+  // Common it is for a new user to create a delegate key (and issue the delegate statement) as he's
+  // signinig in for his first time. We should refresh so that he knows about his delegate.
+  BarRefresh.refresh();
 }
