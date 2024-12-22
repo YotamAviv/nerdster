@@ -86,11 +86,7 @@ class DemoKey {
   DemoKey._internal(this.name, this.keyPair, this.publicKey, this.token);
 
   Future<Jsonish> doRate(
-      {Json? subject,
-      String? title,
-      String? comment,
-      bool? recommend,
-      ContentVerb? verb}) async {
+      {Json? subject, String? title, String? comment, bool? recommend, ContentVerb? verb}) async {
     assert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
@@ -150,8 +146,10 @@ class DemoKey {
       case TrustVerb.trust:
         moniker ??= other.name;
       case TrustVerb.block:
+        assert(!b(moniker));
         comment ??= 'blocking demo ${other.name}';
       case TrustVerb.replace:
+        assert(!b(moniker));
         comment ??= 'replacing demo ${other.name}';
       case TrustVerb.delegate:
         assert(!b(moniker));

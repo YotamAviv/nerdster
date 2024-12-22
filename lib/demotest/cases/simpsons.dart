@@ -42,7 +42,7 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
   await bart.doTrust(TrustVerb.trust, marge, moniker: 'moms');
   Jsonish s3 = await bart.doTrust(TrustVerb.trust, homer, moniker: 'homer');
   await sideshow.doTrust(TrustVerb.replace, bart,
-      moniker: 'sideshow', revokeAt: s3.token); // Sideshow tries to thieve bart's key
+      revokeAt: s3.token); // Sideshow tries to thieve bart's key
   await bart.doTrust(TrustVerb.trust, homer2, moniker: 'homer2'); // bart trusts homer2
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'sis');
   await homer2.doTrust(TrustVerb.trust, lisa, moniker: 'daughter');
