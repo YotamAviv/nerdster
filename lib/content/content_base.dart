@@ -17,6 +17,7 @@ import 'package:nerdster/follow/most_contexts.dart';
 import 'package:nerdster/content/props.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/equivalence_bridge.dart';
+import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
@@ -197,6 +198,14 @@ class ContentBase with Comp, ChangeNotifier {
       _related.process(statement);
     }
     _related.make();
+
+    // Distinct statements, 1 per author per subject
+    // CODE: This is new'ish, and it may be that it's sleaker and more elegant than what I did with
+    // a bunch of complicated code related to [censor, clear].
+    List<ContentStatement> distinctStatements =
+        distinct(statements, transformer: (t) => followNet.delegate2oneofus[t]!)
+            .cast<ContentStatement>();
+    statements = distinctStatements;
 
     // _subject2statements
     for (ContentStatement statement in statements) {

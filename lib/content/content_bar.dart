@@ -97,7 +97,7 @@ class _ContentBarState extends State<ContentBar> {
                         DropdownMenuEntry<ContentType>(
                             value: type,
                             label: type.label,
-                            leadingIcon: type.icon))
+                              leadingIcon: Icon(type.iconDatas.$1)))
                     .toList(),
               )),
           SizedBox(

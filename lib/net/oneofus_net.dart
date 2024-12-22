@@ -37,7 +37,6 @@ import 'package:nerdster/trust/trust1.dart';
 ///     - DelegateNet
 
 /// BUGS:
-/// - test_plan: new key repalces both Tom and Andrew, sees recommended 2 times. Make unit test.
 /// - I don't see WOT notifications in Simpsons (I should). Clean up the rejected collection business.
 
 

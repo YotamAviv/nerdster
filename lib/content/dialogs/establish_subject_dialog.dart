@@ -127,7 +127,7 @@ You can include a URL in a comment or relate or equate this book to an article w
                 dropdownMenuEntries:
                     typesMinusAll.map<DropdownMenuEntry<ContentType>>((ContentType type) {
                   return DropdownMenuEntry<ContentType>(
-                      value: type, label: type.label, leadingIcon: type.icon);
+                      value: type, label: type.label, leadingIcon: Icon (type.iconDatas.$1));
                 }).toList(),
               ),
               noUrl,

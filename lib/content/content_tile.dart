@@ -3,9 +3,9 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree_node.dart';
-import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/content/props.dart';
 import 'package:nerdster/js_widget.dart';
+import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
@@ -13,6 +13,8 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
+
+const (IconData, IconData) statementIconPair = (Icons.attachment_outlined, Icons.attachment);
 
 class SubjectTile extends StatefulWidget {
   const SubjectTile({
@@ -64,12 +66,12 @@ class _SubjectState extends State<SubjectTile> {
 
     final bool isStatement = subjectNode.subject.json.containsKey('statement');
     ContentStatement? statement;
-    final String tileType;
+    (IconData, IconData) iconPair;
     if (isStatement) {
-      tileType = subjectNode.subject.json['statement'];
       statement = ContentStatement(subjectNode.subject);
+      iconPair = statementIconPair;
     } else {
-      tileType = subjectNode.subject.json['contentType'];
+      iconPair = ContentType.values.byName(subjectNode.subject.json['contentType']).iconDatas;
     }
 
     String rowTooltip = "Click to expand statements about this subject";
@@ -82,7 +84,6 @@ class _SubjectState extends State<SubjectTile> {
       rowTooltip = 'related to parent';
     }
 
-    (IconData, IconData) iconPair = tileType2icon[tileType]!;
     Icon openedIcon = Icon(iconPair.$1, color: iconColor);
     Icon closedIcon = Icon(iconPair.$2, color: iconColor);
     if (iconColor != null) {
