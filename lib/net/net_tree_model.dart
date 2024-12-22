@@ -14,7 +14,7 @@ abstract class NetTreeModel {
   // Node
   final String? token;
   // Statement
-  final Statement? statement;
+  final Statement? statement; // TODO: Why is this not a TrustStatement?
 
   NetTreeModel(this.path, {this.token, this.statement});
 
@@ -43,11 +43,11 @@ abstract class NetTreeModel {
 
   String get moniker {
     if (b(statement)) {
-      // DEFER: '<!trusted>' is not good enough. Yes, if someone is blocked, then
-      // they're not trusted, not in the network.
+      // DEFER: Is '<!trusted>' good enough?
+      // Yes, if someone is blocked, then they're not trusted, not in the network.
       // But it would be nice to know who it is; if there are are others paths of trust to
       // them, then we attempt to name them.
-      return (statement as TrustStatement).moniker ?? keyLabels.labelKey(statement!.subjectToken) ?? '<!trusted>';
+      return keyLabels.labelKey((statement as TrustStatement).subjectToken) ?? '<!trusted>';
     } else {
       return keyLabels.labelKey(token!)!;
     }

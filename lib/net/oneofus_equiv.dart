@@ -1,16 +1,15 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/wot_equivalence.dart';
-import 'package:nerdster/bar_refresh.dart';
-import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/singletons.dart';
 
 /// Notifications: Conflicts, Rejected statements, oh my..
 /// All possible examples:
@@ -43,8 +42,8 @@ class OneofusEquiv with Comp, ChangeNotifier {
   factory OneofusEquiv() => _singleton;
   OneofusEquiv._internal() {
     // supporters
-    addSupporter(OneofusNet());
-    OneofusNet().addListener(listen);
+    addSupporter(oneofusNet);
+    oneofusNet.addListener(listen);
 
     // CODE: This class listens to these prefs, but that seems to be only to make something
     // that listens to us dirty when they change. TODO3: Clean up.
@@ -68,36 +67,35 @@ class OneofusEquiv with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    assert(Comp.compsReady([OneofusNet()]));
-    _equivalence = WotEquivalence(Set.of(OneofusNet().network.keys));
+    assert(Comp.compsReady([oneofusNet]));
+    _equivalence = WotEquivalence(Set.of(oneofusNet.network.keys));
     NerdEquateParser equateParser = NerdEquateParser();
-    for (String token in OneofusNet().network.keys) {
-      for (TrustStatement statement
-          in distinct(Fetcher(token, kOneofusDomain).statements).cast()) {
-        if (OneofusNet().rejected.containsKey(statement.token)) {
+    for (String token in oneofusNet.network.keys) {
+      for (TrustStatement statement in distinct(Fetcher(token, kOneofusDomain).statements).cast()) {
+        if (oneofusNet.rejected.containsKey(statement.token)) {
           continue;
         }
         EquateStatement? es = equateParser.parse(statement);
         if (es != null) {
           bool accepted = _equivalence!.process(es);
           if (!accepted) {
-            OneofusNet()
-                .addWotEquivRejected(statement.token, 'web-of-trust key equivalence rejected');
+            oneofusNet.addWotEquivRejected(
+                statement.token, 'web-of-trust key equivalence rejected');
           }
         }
       }
     }
     _equivalence!.make();
-    assert(_equivalence!.getCanonical(SignInState().center) == SignInState().center);
+    assert(_equivalence!.getCanonical(signInState.center) == signInState.center);
 
     _trustNonCanonical.clear();
     for (TrustStatement trustStatement
-        in distinct(Fetcher(SignInState().center, kOneofusDomain).statements)
+        in distinct(Fetcher(signInState.center, kOneofusDomain).statements)
             .cast<TrustStatement>()) {
       if (trustStatement.verb == TrustVerb.trust) {
         String subjectToken = trustStatement.subjectToken;
         if (getCanonical(subjectToken) != subjectToken) {
-          assert(!OneofusNet().rejected.containsKey(subjectToken), 'might need multiple');
+          assert(!oneofusNet.rejected.containsKey(subjectToken), 'might need multiple');
           _trustNonCanonical[trustStatement.token] = 'You trust a non-canonical key directly.';
         }
       }

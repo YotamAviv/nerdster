@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
 
 enum ContentType {
   all(
@@ -69,10 +67,6 @@ enum ContentType {
 
 /// CONSIDER: Separate and move to {[ContentTile], [NetTile]}. Or not.
 final Map<String, (IconData, IconData)> tileType2icon = {
-  kOneofusType: (Icons.attachment_outlined, Icons.attachment),
-  kNerdsterType: (Icons.attachment_outlined, Icons.attachment),
-  'nerd': (Icons.sentiment_satisfied_outlined, Icons.sentiment_satisfied),
-  'key': (Icons.key_outlined, Icons.key),
   'article': (Icons.article_outlined, Icons.article),
   'book': (Icons.book_outlined, Icons.book),
   'movie': (Icons.movie_outlined, Icons.movie),
