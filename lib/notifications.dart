@@ -13,14 +13,14 @@ import 'package:nerdster/singletons.dart';
 
 
 // Goal: Test every kind of rejection / notification
-// - TODO: Attempt to block your key.
-// - A trusted key was blocked. (3'rd level block removes 1'st level trust)
-// - TODO: A key $blockerPathLength degrees away attempted to block a key $blockeePathLength degrees away.
-// - Attempt to replace your key. ('simpsons, degrees=3')
-// - TODO: A key $replacerPathLength degrees away attempted to replace a key $replaceePathLength degrees away.
-// - TODO: Attempt to replace a replaced key.
+// - Attempt to block your key.
+// - A trusted key was blocked.
+// - A key $blockerPathLength degrees away attempted to block a key $blockeePathLength degrees away.
+// - Attempt to replace your key.
+// - A key $replacerPathLength degrees away attempted to replace a key $replaceePathLength degrees away.
+// - Attempt to replace a replaced key.
 // - TODO: Attempt to replace a blocked key.
-// - TODO: Attempt to trust blocked key.
+// - Attempt to trust blocked key.
 // - Web-of-trust key equivalence rejected: Replaced key not in network. ('simpsons, degrees=2')
 // - TODO: Web-of-trust key equivalence rejected: Replacing key not in network.
 // - TODO: Web-of-trust key equivalence rejected: Equivalent key already replaced.

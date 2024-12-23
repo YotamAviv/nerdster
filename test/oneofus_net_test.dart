@@ -15,7 +15,6 @@ import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -188,6 +187,38 @@ void main() async {
     expect(e.value, 'A trusted key was blocked.');
   });
 
+  test('''3'rd level block rejected on 1'st level trust''', () async {
+    oneofusNet.blockerBenefit = 1;
+
+    await bart.doTrust(TrustVerb.trust, homer);
+    await homer.doTrust(TrustVerb.trust, marge);
+    await marge.doTrust(TrustVerb.trust, lisa);
+    Jsonish lisaBlocksHomer = await lisa.doTrust(TrustVerb.block, homer);
+
+    await signIn(bart.token, null);
+
+    expect(oneofusNet.rejected.length, 1);
+    MapEntry e = oneofusNet.rejected.entries.first;
+    expect(e.key, lisaBlocksHomer.token);
+    expect(e.value, 'A key 4 degrees away attempted to block a key 2 degrees away.');
+  });
+
+  test('''3'rd level replace rejected on 1'st level trust''', () async {
+    oneofusNet.blockerBenefit = 1;
+
+    await bart.doTrust(TrustVerb.trust, homer);
+    Jsonish s = await homer.doTrust(TrustVerb.trust, marge);
+    await marge.doTrust(TrustVerb.trust, lisa);
+    Jsonish lisaReplacesHomer = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
+
+    await signIn(bart.token, null);
+
+    expect(oneofusNet.rejected.length, 1);
+    MapEntry e = oneofusNet.rejected.entries.first;
+    expect(e.key, lisaReplacesHomer.token);
+    expect(e.value, 'A key 4 degrees away attempted to replace a key 2 degrees away.');
+  });
+
   /// Self be-heading
   /// This one is unusual and challenging to understand.
   ///
@@ -197,6 +228,7 @@ void main() async {
   ///
   /// See some related nonsense in decapitate.dart
   test('3\'rd level replaces 1\'st level trust', () async {
+    oneofusNet.blockerBenefit = 2;
     // await marge.doTrust(TrustVerb.trust, bart); // added for bart's name.
     Jsonish s2 = await homer.doTrust(TrustVerb.trust,
         lenny); // I added this because I need a statement. I could block, but that's above.
@@ -224,6 +256,7 @@ void main() async {
   });
 
   test('3\'rd level replaces 1\'st level trust, homer better', () async {
+    oneofusNet.blockerBenefit = 2;
     await homer.doTrust(TrustVerb.trust, lenny);
     await bart.doTrust(TrustVerb.trust, homer);
     Jsonish s2 = await homer.doTrust(TrustVerb.trust, marge);
@@ -753,7 +786,7 @@ void main() async {
     var network = oneofusNet.network;
     var expectedNetwork = {"son": null, "friend": null, "sis": null, "homer2": null, "moms": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
-    
+
     expect(oneofusNet.rejected.length, 1);
     MapEntry e = oneofusNet.rejected.entries.first;
     String rejectedStatementToken = e.key;
@@ -786,7 +819,7 @@ void main() async {
       "sister": null
     };
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
-    
+
     expect(oneofusNet.rejected.length, 1);
     MapEntry e = oneofusNet.rejected.entries.first;
     String rejectedStatementToken = e.key;
@@ -799,7 +832,39 @@ void main() async {
     expect(reason, 'Attempt to replace your key.');
   });
 
+  test('Attempt to block your key.', () async {
+    oneofusNet.degrees = 3;
+    await DemoKey.demos['simpsons']();
+
+    Jsonish lisaBlocksMarge = await lisa.doTrust(TrustVerb.block, marge);
+
+    await signIn(marge.token, null);
+    expect(oneofusNet.rejected.length, 1);
+    MapEntry e = oneofusNet.rejected.entries.first;
+    String rejectedStatementToken = e.key;
+    String reason = e.value;
+    expect(lisaBlocksMarge.token, rejectedStatementToken);
+    expect(reason, 'Attempt to block your key.');
+  });
+
+  test('Attempt to replace replaced key rejected.', () async {
+    oneofusNet.degrees = 3;
+    await DemoKey.demos['simpsons']();
+
+    Jsonish s = await bart.doTrust(TrustVerb.trust, lisa);
+    Jsonish rejected = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
+
+    await signIn(homer2.token, null);
+    expect(oneofusNet.rejected.length, 1);
+    MapEntry e = oneofusNet.rejected.entries.first;
+    String rejectedStatementToken = e.key;
+    String reason = e.value;
+    expect(rejected.token, rejectedStatementToken);
+    expect(reason, 'Attempt to replace a replaced key.');
+  });
+
   test('simpsons label key edges', () async {
+    oneofusNet.blockerBenefit = 2;
     await DemoKey.demos['simpsons']();
 
     await signIn(bart.token, null);
