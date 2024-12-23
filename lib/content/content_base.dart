@@ -25,22 +25,7 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
-/// In preparation for NerdsterFollow:
-/// - code sync with phone app
-///
-/// - cleaner, tighter, better...
-///
-/// - Teach TrustBridge that replace is different from block / revoke.
-///   This may make trust1 be the algorithm for NerdsterFollow.
-///
-/// - Move functionality to smaller, isolated Comps
-///   - ContentBase
-///     - Censored: likely (a.k.a. uncensored)
-///     - equivalent / related subjects? - unlikely
-///   - NetNode: (is this a Comps?)
-///   - NetTreeNode: (is this a Comps?)
-/// - Find/fix bugs:
-///   - censor and/or dis combined with equivalent and/or related
+/// An old comment from back during preparation for NerdsterFollow, not sure if it's still relevant:
 /// - Stop using statement.iToken and instead rely on token2statements,
 ///   - FollowNet().token2statements
 ///   - Censored().token2statements
@@ -199,7 +184,7 @@ class ContentBase with Comp, ChangeNotifier {
     }
     _related.make();
 
-    // Distinct statements, 1 per author per subject
+    // distinct.. (1 per author per subject)
     // CODE: This is new'ish, and it may be that it's sleaker and more elegant than what I did with
     // a bunch of complicated code related to [censor, clear].
     List<ContentStatement> distinctStatements =
