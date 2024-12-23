@@ -27,7 +27,7 @@ class Trust1 {
   final Map<String, String> _rejected = <String, String>{};
   final int degrees; // 1 degree is just me.
   final int numPaths;
-  final int blockerBenefit;
+  final int blockerBenefit; // also for replace
 
   Map<String, String> get rejected => _rejected;
 
@@ -137,7 +137,7 @@ class Trust1 {
           if (other.paths.isNotEmpty && !other.blocked) {
             int replaceePathLength = other.paths[0].length; // (Shortest paths should be first)
             int replacerPathLength = n.paths[0].length;
-            if (replacerPathLength > replaceePathLength + 2) {
+            if (replacerPathLength > replaceePathLength + blockerBenefit) {
               // Is there actually a problem here? Should we not allow a far replacer to replace a close replacee?
               // TODO: add a test.
               _rejected[replace.statementToken] =
