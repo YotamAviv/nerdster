@@ -8,6 +8,7 @@ import 'package:nerdster/equivalence/wot_equivalence.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -77,10 +78,10 @@ class OneofusEquiv with Comp, ChangeNotifier {
         }
         EquateStatement? es = equateParser.parse(statement);
         if (es != null) {
-          bool accepted = _equivalence!.process(es);
-          if (!accepted) {
+          String? rejection = _equivalence!.process(es);
+          if (b(rejection)) {
             oneofusNet.addWotEquivRejected(
-                statement.token, 'web-of-trust key equivalence rejected');
+                statement.token, 'Web-of-trust key equivalence rejected: $rejection');
           }
         }
       }

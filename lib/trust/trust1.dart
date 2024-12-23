@@ -61,7 +61,7 @@ class Trust1 {
           Node other = block.node;
           if (other.blocked) continue;
           if (other == n) {
-            _rejected[block.statementToken] = '''Don't block yourself''';
+            _rejected[block.statementToken] = '''Don't block yourself.''';
             continue;
           }
 
@@ -84,12 +84,21 @@ class Trust1 {
             int blockerPathLength = n.paths[0].length;
             if (blockerPathLength > blockeePathLength + blockerBenefit) {
               _rejected[block.statementToken] =
-                  'a key $blockerPathLength degrees away attempted to block a key $blockeePathLength degrees away.';
+                  'A key $blockerPathLength degrees away attempted to block a key $blockeePathLength degrees away.';
               continue;
             }
           }
 
           // block allowed
+          // TODO: reject all trust statements to other if block allowed
+          if (network.containsKey(other.token)) {
+            Node otherNode = network[other.token]!;
+            for (Path path in otherNode.paths) {
+              _rejected[path.last.statementToken] = "A trusted key was blocked.";
+            }
+          }
+
+
           network.putIfAbsent(other.token, () => other);
           other.paths.clear(); // (gratuitous)
           other.blocked = true;
@@ -132,7 +141,7 @@ class Trust1 {
               // Is there actually a problem here? Should we not allow a far replacer to replace a close replacee?
               // TODO: add a test.
               _rejected[replace.statementToken] =
-                  'a key $replacerPathLength degrees away attempted to replace a key $replaceePathLength degrees away.';
+                  'A key $replacerPathLength degrees away attempted to replace a key $replaceePathLength degrees away.';
               continue;
             }
           }
@@ -143,14 +152,14 @@ class Trust1 {
             // web-of-trust equivalence [WotEquivalence], not this class.
             // That said: I don't want to implement revoking at different tokens in Fetcher,
             // and so I do enforce it here.
-            _rejected[replace.statementToken] = 'an attempt was made to replace a replaced key';
+            _rejected[replace.statementToken] = 'Attempt to replace a replaced key.';
             continue;
           }
           if (other.blocked) {
             // TODO: Probably decide if this should or should not be rejected and test accordingly.
             // Hmm.. if someone blocks your old key, you should probably be informed about it. This might be that rejected replace (otherwise, it'd be a rejected block)
             // FYI: This fires: assert(false); in test 'blockOldKey'.
-            _rejected[replace.statementToken] = 'an attempt was made to replace a blocked key';
+            _rejected[replace.statementToken] = 'Attempt to replace a blocked key.';
             // FYI: The test blockOldKey passes whether or not we continue below or not.
             continue;
           }
@@ -181,7 +190,7 @@ class Trust1 {
           for (Trust trust in await n.trusts) {
             final Node other = trust.node;
             if (other == n) {
-              _rejected[trust.statementToken] = '''Don't trust yourself''';
+              _rejected[trust.statementToken] = '''Don't trust yourself.''';
               continue;
             }
 
@@ -190,7 +199,7 @@ class Trust1 {
             }
 
             if (other.blocked) {
-              _rejected[trust.statementToken] = '''Attempt to trust blocked key''';
+              _rejected[trust.statementToken] = '''Attempt to trust blocked key.''';
               continue;
             }
 
