@@ -4,6 +4,7 @@ import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -24,10 +25,10 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   var expectedNetwork;
   var expectedEquivalents;
 
-  await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
+  Jsonish lisaTrustsMilhouse = await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
-  Jsonish s1 = await bart.doTrust(TrustVerb.trust, milhouse);
-  await bart2.doTrust(TrustVerb.replace, bart, revokeAt: s1.token);
+  Jsonish bartTrustsMilhouse = await bart.doTrust(TrustVerb.trust, milhouse);
+  await bart2.doTrust(TrustVerb.replace, bart, revokeAt: bartTrustsMilhouse.token);
   await bart2.doTrust(TrustVerb.block, milhouse);
   await lisa.doTrust(TrustVerb.trust, bart2, moniker: 'Bart');
   
@@ -42,7 +43,9 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   expectedEquivalents = { 'Bart', 'Bart (0)' };
   jsonShowExpect(oneofusEquiv.getEquivalents(bart2.token), expectedEquivalents);
-  myExpect(oneofusNet.rejected.length, 1);
+  myExpect(oneofusNet.rejected.length, 2);
+  myExpect(oneofusNet.rejected[lisaTrustsMilhouse.token], 'A trusted key was blocked.');
+  myExpect(oneofusNet.rejected[bartTrustsMilhouse.token], 'Attempt to trust blocked key.');
   
   // bart now decides that 'bart' no longer represents him and blocks
   Jsonish b1 = await bart2.doTrust(TrustVerb.block, bart);
@@ -63,7 +66,9 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     }
   };
   jsonShowExpect(dump, expected);
-  myExpect(oneofusNet.rejected.isEmpty, true);
+  myExpect(oneofusNet.rejected.length, 1);
+  dumpStatement(oneofusNet.rejected.keys.first);
+  myExpect(oneofusNet.rejected[lisaTrustsMilhouse.token], 'A trusted key was blocked.');
 
   await signIn(bart2.token, null);
   dump = await OneofusTreeNode.root.dump();
@@ -83,7 +88,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     }
   };
   jsonShowExpect(dump, expected);
-  myExpect(oneofusNet.rejected.keys.length, 1);
+  myExpect(oneofusNet.rejected.keys.length, 3);
   myExpect(oneofusNet.rejected.keys.first, b1.token);
   
   useClock(LiveClock());

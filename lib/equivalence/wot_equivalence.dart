@@ -50,19 +50,22 @@ class WotEquivalence {
   // Case 2: It's one of your equivalent keys:
   //   You should have claimed it first.
   // 
-  // returns false if rejected (conflict).
-  bool process(final EquateStatement es) {
+  // returns rejection reason in case of conflict.
+  String? process(final EquateStatement es) {
     assert(!es.dont);
     assert(es.canonical != es.equivalent);
-    if (!network.contains(es.canonical) || !network.contains(es.equivalent)) {
-      return false;
+    if (!network.contains(es.equivalent)) {
+      return '''Replaced key not in network.''';
+    }
+    if (!network.contains(es.canonical)) {
+      return '''Replacing key not in network.''';
     }
     if (equiv2canon.containsKey(es.equivalent)) {
       assert(equiv2canon[es.equivalent] != es.canonical, 'repeat');
-      return false;
+      return '''Equivalent key already replaced''';
     }
     equiv2canon[es.equivalent] = es.canonical;
-    return true;
+    return null;
   }
 
   String _climbFindCanon(String equiv) {

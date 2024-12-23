@@ -7,8 +7,8 @@ void main() {
     Set<String> network = {'homer2', 'homer', 'sideshow'};
 
     WotEquivalence wot = WotEquivalence(network);
-    expect(wot.process(EquateStatement('homer2', 'homer')), true);
-    expect(wot.process(EquateStatement('sideshow', 'homer')), false);
+    expect(wot.process(EquateStatement('homer2', 'homer')), null);
+    expect(wot.process(EquateStatement('sideshow', 'homer')), 'Equivalent key already replaced');
 
     wot.make();
 
@@ -24,9 +24,9 @@ void main() {
     Set<String> network = {'homer2', 'homer', 'sideshow', 'homer3'};
 
     WotEquivalence wot = WotEquivalence(network);
-    expect(wot.process(EquateStatement('homer2', 'homer')), true);
-    expect(wot.process(EquateStatement('sideshow', 'homer')), false);
-    expect(wot.process(EquateStatement('homer3', 'homer2')), true);
+    expect(wot.process(EquateStatement('homer2', 'homer')), null);
+    expect(wot.process(EquateStatement('sideshow', 'homer')), 'Equivalent key already replaced');
+    expect(wot.process(EquateStatement('homer3', 'homer2')), null);
 
     wot.make();
 

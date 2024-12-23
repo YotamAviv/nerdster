@@ -12,8 +12,10 @@ import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -154,16 +156,16 @@ void main() async {
     expect(oneofusNet.rejected.length, 1);
 
     dynamic dump = await OneofusTreeNode.root.dump();
-    var expectedTree = {
-      "N:Me-true:": {}
-    };
+    var expectedTree = {"N:Me-true:": {}};
     jsonShowExpect(dump, expectedTree);
   });
 
-  test('3\'rd level block removes 1\'st level trust', () async {
+  // Notification:
+  // - A trusted key was blocked.
+  test('''3'rd level block removes 1'st level trust''', () async {
     oneofusNet.blockerBenefit = 2;
 
-    await bart.doTrust(TrustVerb.trust, homer);
+    Jsonish bartTrustHomer = await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
     await marge.doTrust(TrustVerb.trust, lisa);
     await lisa.doTrust(TrustVerb.block, homer);
@@ -179,6 +181,11 @@ void main() async {
     jsonShowExpect(dump, expectedTree);
 
     await compareNetworkToTree(bart.token);
+
+    expect(oneofusNet.rejected.length, 1);
+    MapEntry e = oneofusNet.rejected.entries.first;
+    expect(e.key, bartTrustHomer.token);
+    expect(e.value, 'A trusted key was blocked.');
   });
 
   /// Self be-heading
@@ -202,11 +209,7 @@ void main() async {
     await signIn(bart.token, null);
 
     var network = oneofusNet.network;
-    var expectedNetwork = {
-      "Me": null,
-      "homer": "5/1/2024 12:01 AM",
-      "lenny": null
-    };
+    var expectedNetwork = {"Me": null, "homer": "5/1/2024 12:01 AM", "lenny": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     await compareNetworkToTree(bart.token);
@@ -214,9 +217,7 @@ void main() async {
     dynamic dump = await OneofusTreeNode.root.dump();
     var expectedTree = {
       "N:Me-true:": {
-        "N:homer-true:5/1/2024 12:01 AM:Me": {
-          "N:lenny-true:Me->homer": {}
-        }
+        "N:homer-true:5/1/2024 12:01 AM:Me": {"N:lenny-true:Me->homer": {}}
       }
     };
     jsonShowExpect(dump, expectedTree);
@@ -273,12 +274,7 @@ void main() async {
     await signIn(bart.token, null);
 
     var network = oneofusNet.network;
-    var expectedNetwork = {
-      "Me": null,
-      "maggie": null,
-      "marge": null,
-      "lisa": null
-    };
+    var expectedNetwork = {"Me": null, "maggie": null, "marge": null, "lisa": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     dynamic dump = await OneofusTreeNode.root.dump();
@@ -304,13 +300,7 @@ void main() async {
     await signIn(bart.token, null);
 
     var network = oneofusNet.network;
-    var expectedNetwork = {
-      "Me": null,
-      "homer": null,
-      "marge": null,
-      "lisa": null,
-      "maggie": null
-    };
+    var expectedNetwork = {"Me": null, "homer": null, "marge": null, "lisa": null, "maggie": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     // expect a rejected statement.
@@ -329,12 +319,7 @@ void main() async {
     await signIn(homer.token, null);
 
     var network = oneofusNet.network;
-    var expectedNetwork = {
-      "Me": null,
-      "bart": null,
-      "lisa": null,
-      "marge": null
-    };
+    var expectedNetwork = {"Me": null, "bart": null, "lisa": null, "marge": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     dynamic dump = await OneofusTreeNode.root.dump();
@@ -386,12 +371,7 @@ void main() async {
     await signIn(homer.token, null);
 
     var network = oneofusNet.network;
-    var expectedNetwork = {
-      "Me": null,
-      "bart": null,
-      "lisa": null,
-      "marge": null
-    };
+    var expectedNetwork = {"Me": null, "bart": null, "lisa": null, "marge": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     dynamic dump = await OneofusTreeNode.root.dump();
@@ -494,9 +474,7 @@ void main() async {
         "N:homer2-true:Me": {
           "N:lisa-true:Me->homer2": {
             "N:homer2-true:Me->homer2->lisa": {},
-            "N:marge-true:Me->homer2->lisa": {
-              "N:burns-true:Me->homer2->lisa->marge": {}
-            }
+            "N:marge-true:Me->homer2->lisa": {"N:burns-true:Me->homer2->lisa->marge": {}}
           },
           "N:marge-true:Me->homer2": {"N:burns-true:Me->homer2->marge": {}}
         }
@@ -514,11 +492,7 @@ void main() async {
     await signIn(maggie.token, null);
     dynamic dump = await OneofusTreeNode.root.dump();
     var expected = {
-      "N:Me-true:": {
-        "N:bart-true:Me": {},
-        "N:marge-true:Me": {},
-        "N:homer-true:Me": {}
-      }
+      "N:Me-true:": {"N:bart-true:Me": {}, "N:marge-true:Me": {}, "N:homer-true:Me": {}}
     };
     jsonShowExpect(dump, expected);
   });
@@ -536,11 +510,7 @@ void main() async {
     await signIn(maggie.token, null);
     dynamic dump = await OneofusTreeNode.root.dump();
     var expected = {
-      "N:Me-true:": {
-        "N:bart-true:Me": {},
-        "N:marge-true:Me": {},
-        "N:homer-true:Me": {}
-      }
+      "N:Me-true:": {"N:bart-true:Me": {}, "N:marge-true:Me": {}, "N:homer-true:Me": {}}
     };
     jsonShowExpect(dump, expected);
   });
@@ -773,19 +743,34 @@ void main() async {
     expect(network.keys, [d1.token]);
   });
 
+  // Notification:
+  // - Web-of-trust key equivalence rejected: Replaced key not in network.
   test('simpsons, degrees=2', () async {
     oneofusNet.degrees = 2;
-    var (n, d) = await DemoKey.demos['simpsons']();
+    await DemoKey.demos['simpsons']();
     await signIn(bart.token, null);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"son": null, "friend": null, "sis": null, "homer2": null, "moms": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
+    
+    expect(oneofusNet.rejected.length, 1);
+    MapEntry e = oneofusNet.rejected.entries.first;
+    String rejectedStatementToken = e.key;
+    String reason = e.value;
+    dumpStatement(rejectedStatementToken);
+    TrustStatement rejectedStatement = TrustStatement.find(rejectedStatementToken)!;
+    expect(keyLabels.labelKey(rejectedStatement.iToken), 'homer2');
+    expect(rejectedStatement.verb, TrustVerb.replace);
+    expect(rejectedStatement.subjectToken, homer.token); // no label (homer not in network)
+    expect(reason, 'Web-of-trust key equivalence rejected: Replaced key not in network.');
   });
 
+  // Notification:
+  // - Attempt to replace your key.
   test('simpsons, degrees=3', () async {
     oneofusNet.degrees = 3;
-    var (n, d) = await DemoKey.demos['simpsons']();
+    await DemoKey.demos['simpsons']();
     await signIn(bart.token, null);
 
     var network = oneofusNet.network;
@@ -801,6 +786,17 @@ void main() async {
       "sister": null
     };
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
+    
+    expect(oneofusNet.rejected.length, 1);
+    MapEntry e = oneofusNet.rejected.entries.first;
+    String rejectedStatementToken = e.key;
+    String reason = e.value;
+    dumpStatement(rejectedStatementToken);
+    TrustStatement rejectedStatement = TrustStatement.find(rejectedStatementToken)!;
+    expect(keyLabels.labelKey(rejectedStatement.iToken), 'clown');
+    expect(rejectedStatement.verb, TrustVerb.replace);
+    expect(keyLabels.labelKey(rejectedStatement.subjectToken), 'son');
+    expect(reason, 'Attempt to replace your key.');
   });
 
   test('simpsons label key edges', () async {

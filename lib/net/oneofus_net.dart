@@ -6,6 +6,8 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -141,6 +143,11 @@ class OneofusNet with Comp, ChangeNotifier {
 
   Map<String, String> get rejected => UnmodifiableMapView(_rejected);
   void addWotEquivRejected(String statementToken, String reason) {
+    // var jsonish = Jsonish.find(statementToken)!;
+    // print('${keyLabels.show(jsonish.ppJson)}, $reason');
+    // Statement statement = Statement.make(jsonish);
+    // print(keyLabels.labelKey(statement.iToken));
+    // print(keyLabels.labelKey(statement.subjectToken));
     if (!_rejected.containsKey(statementToken)) {
       _rejected[statementToken] = reason;
     }
