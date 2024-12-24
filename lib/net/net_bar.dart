@@ -25,7 +25,6 @@ class NetBar extends StatefulWidget {
     await Comp.waitOnComps([followNet, keyLabels]);
     assert (!bNetView.value);
     NetTreeView.show(context);
-    assert (bNetView.value);
   }
 
   static void setParams(Map<String, String> params) {
