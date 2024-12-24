@@ -32,6 +32,7 @@ class NetTreeView extends StatefulWidget {
     NetTreeView tree = NetTreeView(makeRoot());
     NetTreeView.highlightToken.value = highlightToken;
     Navigator.push(context, MaterialPageRoute(builder: (context) => tree));
+    NetBar.bNetView.value = true;
   }
 
   static makeRoot() {

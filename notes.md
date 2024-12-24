@@ -1,6 +1,7 @@
 # Nice ones:
 ```
 git tag PROD-v`date2`
+git tag PROD-11
 code $(git diff --no-commit-id --name-only -r HEAD) -r
 diff -r lib/oneofus ../oneofus/lib/oneofus
 diff -r ../oneofus/lib/oneofus lib/oneofus
@@ -36,23 +37,29 @@ Default follow context
 UI for clear relate/equate.
 
 ## BUGS
+
+- net/content.. I've gotten into a state where I see net with wrong controls.
+
 - I noticed that when Fetcher asserts false, it gets lost, not progpagated.
+
 - Revoked delegate says 'replaced'.
-- sign in without store keys should wipe keys
+
+- Make keys match Oneofus colors: only active Nerdster delegate should
+  be dark colored.
+
 - Minor: filter by book doesn filters Hillel's comment on the article he
   submitted about a book which I equated to a book
 
 ## TODO:
-- Take care to warn user if he signs in oneofus/delegate keys that aren't related, are revoked, etc...
+
+- Take care to warn user if he signs in oneofus/delegate keys that
+  aren't related, are revoked, etc...
+
 - Look into if we verify 'nerdster.org'
-- Warn about comments on comments
-  Re: comment on comment bug, it's actually a feature, educate instead
-  of fixing... A reaction (eg. comment) can be deleted, even if it's
-  just changed, then the old one is deleted(replaced). A book or a movie
-  can't be deleted ..
+
 ? clean up 'data corruption' in Nerdster that dumps all entries by
   order regardless of data corruption that Fetcher detects.
-- Embrace the key strikethrough icon (like replaced/blocked keys on phone). Use the red key for revoked maybe.
+
 - NerdTree solid
   - DO: test! (now that we have better than dump !minimalist)
   - paths
@@ -68,8 +75,6 @@ UI for clear relate/equate.
 
 - Firebase clarity: Nerdster/Oneofus 
 
-- notifications...
-
 - stress, performance.. more nerds, more trusts and blocks.
   - check where I'm spending time
     - reducing network at end?
@@ -77,18 +82,12 @@ UI for clear relate/equate.
   - limit path length?
   - limit time?
 
-- hosted with me at center by default somehow, kludgey, hard-coded okay.
-
 ** Firebase emulators
 Run these from 'nerdster' base directory.
 $ firebase --project=nerdster emulators:start
 $ firebase --project=one-of-us-net --config=oneofus-nerdster.firebase.json emulators:start
 
 ## Doc
-### All statements on this page
-They're completely portable and trusted.
-Each one is digitally signed using the private key of its author.
-Authors (people) distribute their public keys (the ones that match their private keys) using the network. Folks sign each others' public keys using their private keys to create a distributed, heterogeneous web of trust.
 
 ## code labels:
 These are in flux, but I've been using
