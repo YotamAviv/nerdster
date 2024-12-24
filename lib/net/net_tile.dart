@@ -107,7 +107,13 @@ class _NetTileState extends State<NetTile> {
           iconPair = revokedKeyIconPair;
           iconTooltip = '$iconTooltip \nrevoked at: ${formatUiDatetime(node.revokeAt!)}';
         }
-        if (isDelegate) iconColor = Colors.blue;
+        if (isDelegate) {
+          // From Oneofus KeyWidget: color = local ? Colors.blue.shade700 : Colors.blue.shade100;
+          assert(b(widget.entry.node.token));
+          iconColor = (widget.entry.node.token == signInState.signedInDelegate)
+              ? Colors.blue.shade700
+              : iconColor = Colors.blue.shade100;
+        }
       }
     } else {
       // Statement
