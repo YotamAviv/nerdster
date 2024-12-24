@@ -89,7 +89,6 @@ class _NetBarState extends State<NetBar> {
                 tooltip: 'Network view',
                 onPressed: () async {
                   NetBar.showTree(context);
-                  assert (NetBar.bNetView.value);
                 }),
         ],
       ),
