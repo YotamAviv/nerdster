@@ -8,7 +8,11 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 class NetBar extends StatefulWidget {
-  static ValueNotifier<bool> bNetView = ValueNotifier<bool>(false);
+  // Rep invariant:
+  // bNetView true: the NetTreeView MaterialPageRoute is pushed
+  // bNetView false: not the above.
+  // see NetTreeView.show()
+  static final ValueNotifier<bool> bNetView = ValueNotifier<bool>(false);
   static final NetBar _singleton = NetBar._internal();
   factory NetBar() => _singleton;
   const NetBar._internal();
@@ -19,8 +23,9 @@ class NetBar extends StatefulWidget {
 
   static Future<void> showTree(BuildContext context) async {
     await Comp.waitOnComps([followNet, keyLabels]);
-    NetBar.bNetView.value = true;
+    assert (!bNetView.value);
     NetTreeView.show(context);
+    assert (bNetView.value);
   }
 
   static void setParams(Map<String, String> params) {
@@ -65,8 +70,8 @@ class _NetBarState extends State<NetBar> {
                 color: linkColor,
                 tooltip: 'Content view',
                 onPressed: () {
-                  NetBar.bNetView.value = false;
                   Navigator.pop(context);
+                  NetBar.bNetView.value = false;
                 }),
 
           const BarRefresh(),
@@ -83,8 +88,8 @@ class _NetBarState extends State<NetBar> {
                 color: linkColor,
                 tooltip: 'Network view',
                 onPressed: () async {
-                  NetBar.bNetView.value = true;
                   NetBar.showTree(context);
+                  assert (NetBar.bNetView.value);
                 }),
         ],
       ),
