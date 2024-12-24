@@ -67,7 +67,7 @@ class _NetTileState extends State<NetTile> {
 
     String? text;
     if (isStatement) {
-      text = '${node.displayStatementAtTime}: ${node.displayVerbPastTense} ';
+      text = '${node.displayStatementAtTime}: ${node.displayVerbPastTense} ${node.moniker}';
     }
 
     String iconTooltip;
@@ -82,8 +82,7 @@ class _NetTileState extends State<NetTile> {
       // A key is never followed, only EGs are followed
 
       iconTooltip = node.labelKeyPaths().join('\n');
-      bool replaced = b(node.revokeAt);
-
+      bool revoked = b(node.revokeAt);
       bool isFollowed = followNet.oneofus2delegates.containsKey(node.token);
       assert(!(!node.canonical && isFollowed));
       if (node.canonical) {
@@ -92,7 +91,7 @@ class _NetTileState extends State<NetTile> {
 
         if (isFollowed) iconColor = Colors.lightGreen;
 
-        if (replaced) {
+        if (revoked) {
           // Can an EG (smiley) be revoked/replaced?
           // Bart trusts Milhouse trusts Sideshow replaces Bart before Bart's trust in Milhouse.
           // When center is Marge, Bart is decapitated, (a revoked EG with no valid replacement).
@@ -101,11 +100,12 @@ class _NetTileState extends State<NetTile> {
       } else {
         // Key (delegate or equivalent)
         bool isDelegate = followNet.delegate2oneofus.containsKey(node.token);
-        if (!replaced) {
+        if (!revoked) {
           iconPair = keyIconPair;
         } else {
           iconPair = revokedKeyIconPair;
-          iconTooltip = '$iconTooltip \nrevoked at: ${formatUiDatetime(node.revokeAt!)}';
+          String replacedOrRevoked = isDelegate ? 'revoked' : 'replaced';
+          iconTooltip = '$iconTooltip \n$replacedOrRevoked at: ${formatUiDatetime(node.revokeAt!)}';
         }
         if (isDelegate) {
           // From Oneofus KeyWidget: color = local ? Colors.blue.shade700 : Colors.blue.shade100;
@@ -127,7 +127,7 @@ class _NetTileState extends State<NetTile> {
       }
       if (!node.isCanonicalStatement) {
         // statements by non-canonical keys in gray.
-        statementTextColor = Colors.black38;
+        statementTextColor = Colors.black54;
       }
     }
 
@@ -168,12 +168,13 @@ class _NetTileState extends State<NetTile> {
                   onPressed: widget.entry.hasChildren ? widget.onTap : null),
             ),
             if (Prefs.showJson.value) JSWidget(json),
-            if (b(text))
+            if (isStatement)
               Text(
                 text!,
                 style: TextStyle(color: statementTextColor),
               ),
-            _MonikerWidget(node),
+            if (!isStatement)
+              _MonikerWidget(node)
           ])
         ]));
   }
@@ -213,8 +214,9 @@ class _MonikerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // No signing in as delegates
-    bool clickable = b(node.token) && oneofusNet.network.containsKey(node.token);
+    assert(b(node.token));
+    // No centering as delegates
+    bool clickable = oneofusNet.network.containsKey(node.token);
     TextStyle? style = clickable ? linkStyle : null;
     return GestureDetector(
         onTapDown: (details) {
