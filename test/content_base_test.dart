@@ -72,7 +72,7 @@ void main() async {
 
     await signInState.signIn(oneofus!.token, delegate.keyPair);
     await contentBase.waitUntilReady();
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 0);
 
     Jsonish statement = await lonerD.doRate(title: "t1");
@@ -80,7 +80,7 @@ void main() async {
     contentBase.listen();
     await signInState.signIn(oneofus.token, delegate.keyPair);
     await contentBase.waitUntilReady();
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 1);
 
     Jsonish statement2 = await lonerD.doRate(title: "t2");
@@ -88,7 +88,7 @@ void main() async {
     expect(statement2.json.containsKey('previous'), true);
     await signInState.signIn(oneofus.token, delegate.keyPair);
     await contentBase.waitUntilReady();
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 2);
   });
 
@@ -122,13 +122,13 @@ void main() async {
 
     await signInState.signIn(oneofus.token, null);
     await contentBase.waitUntilReady();
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 0);
 
     ContentStatement rateStatement = ContentStatement(await lonerD.doRate(title: "t1"));
     contentBase.listen();
     await contentBase.waitUntilReady();
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 1);
     ContentTreeNode t1Node = roots.first;
     expect(t1Node.getChildren().length, 1);
@@ -139,7 +139,7 @@ void main() async {
     expect(relateStatement.subject, rateStatement.subject);
     expect(relateStatement.other, rateStatement.json);
     await contentBase.waitUntilReady();
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 1);
     ContentTreeNode t1Node1 = roots.first;
     expect(t1Node1.toString(), t1Node.toString());
@@ -155,7 +155,7 @@ void main() async {
 
     await signInState.signIn(loner.token, lonerD.keyPair);
     await Comp.waitOnComps([contentBase, keyLabels]);
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 0);
 
     Jsonish statement = await lonerD.doRate(title: "t1");
@@ -164,7 +164,7 @@ void main() async {
     await signInState.signIn(loner.token, lonerD.keyPair);
     contentBase.listen();
     await contentBase.waitUntilReady();
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 1);
 
     Jsonish statement2 = await lonerD.doRate(title: "t2");
@@ -172,7 +172,7 @@ void main() async {
     expect(statement2.json.containsKey('previous'), true);
     contentBase.listen();
     await contentBase.waitUntilReady();
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 2);
 
     // Revoke existing delegate at statement
@@ -189,7 +189,7 @@ void main() async {
     delegateNetwork = followNet.delegate2fetcher;
     dn = delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
     expect(keyLabels.show(dn), {'Me-delegate': '5/1/2024 12:02 AM'});
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 1);
 
     // Make new delegate
@@ -208,7 +208,7 @@ void main() async {
     expect(!statement3.json.containsKey('previous'), true);
     await signInState.signIn(loner.token, lonerD2.keyPair);
     await contentBase.waitUntilReady();
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     expect(roots.length, 2);
 
     // say something as revoked delegate
@@ -225,7 +225,7 @@ void main() async {
     (nerd, delegate) = await DemoKey.demos['lonerEquate']();
     await signInState.signIn(nerd!.token, (delegate != null) ? delegate.keyPair : null);
     await contentBase.waitUntilReady();
-    expect(contentBase.getRoots().length, 1);
+    expect(contentBase.roots.length, 1);
   });
 
   /// As Loner:

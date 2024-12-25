@@ -2,13 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/follow/follow_net.dart';
-import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
-import 'package:nerdster/net/oneofus_equiv.dart';
-import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
@@ -24,25 +20,25 @@ Map<String, String?> dumpNetwork(Map<String, Node> network) => network.map((toke
     MapEntry(token, b(node.revokeAtTime) ? formatUiDatetime(node.revokeAtTime!) : null));
 
 Future<dynamic> dumpDump(BuildContext? context) async {
-  await OneofusEquiv().waitUntilReady();
-  await KeyLabels().waitUntilReady();
+  await oneofusEquiv.waitUntilReady();
+  await keyLabels.waitUntilReady();
 
   dynamic out = {
     'center': Jsonish.find(signInState.center)!.json,
     'domain2token2statements': await dumpStatements(),
     // Above is required for importing.
     // Below is for strictly for testing / viewing.
-    'network': dumpNetwork(OneofusNet().network),
+    'network': dumpNetwork(oneofusNet.network),
     'nerds': await OneofusTreeNode.root.dump(),
-    'content': ContentBase().dump(),
+    'content': contentBase.dump(),
     // 'netTree': NetTreeNode.root.dump(),
-    // 'contentTree': ContentBase().dump(),
+    // 'contentTree': contentBase.dump(),
   };
 
   // MAYBE: Figure out where and whether or not I use show().
   // dumpStatements() already calls it.
   if (Prefs.nice.value) {
-    out = KeyLabels().show(out);
+    out = keyLabels.show(out);
   }
 
   if (context != null) {
@@ -101,7 +97,7 @@ Future<Map<String, Map<String, List>>> dumpStatements() async {
   Map<String, Map<String, List>> out = <String, Map<String, List>>{};
   Map<String, List> map = <String, List>{};
   out[kOneofusDomain] = map;
-  for (String token in OneofusNet().network.keys) {
+  for (String token in oneofusNet.network.keys) {
     List list = [];
     map[token] = list;
     Fetcher fetcher = Fetcher(token, kOneofusDomain);

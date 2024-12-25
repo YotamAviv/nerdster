@@ -15,12 +15,12 @@ Future<(DemoKey, DemoKey?)> testDeletion1() async {
   await lonerN.doRate(title: 'title');
   await signInState.signIn(loner.token, null);
   await contentBase.waitUntilReady();
-  expect(contentBase.getRoots().length, 1);
+  expect(contentBase.roots.length, 1);
 
   await lonerN.doCensor(title: 'title');
   contentBase.listen();
   await contentBase.waitUntilReady();
-  expect(contentBase.getRoots().length, 0);
+  expect(contentBase.roots.length, 0);
 
   return (loner, lonerN);
 }
@@ -84,14 +84,14 @@ Future<(DemoKey, DemoKey?)> deletions3() async {
   await contentBase.waitUntilReady();
   // Using 'assert', not 'expect' from test. Not sure why it's probablematic here outside the
   // context of a test but not for the one above.
-  assert(contentBase.getRoots().length == 0, contentBase.getRoots().length); 
+  assert(contentBase.roots.length == 0, contentBase.roots.length); 
 
   // observer2 should not be censored as per deleter2's desire to delete deleter1's deletion.
   assert(contentBase.ready);
   await signInState.signIn(observer2.token, null);
   await contentBase.waitUntilReady();
-  assert(contentBase.getRoots().length == 1, contentBase.getRoots().length);
-  assert(contentBase.getRoots().first.getChildren().length == 1);
+  assert(contentBase.roots.length == 1, contentBase.roots.length);
+  assert(contentBase.roots.first.getChildren().length == 1);
 
   useClock(LiveClock());
 

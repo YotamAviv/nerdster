@@ -222,8 +222,7 @@ class ContentBase with Comp, ChangeNotifier {
   /// - (Gone: author of this censored it himself.. Gone because author can clear his own stuff anyway.)
   bool _isCensored(String subject) => _censor && _censored.contains(subject);
 
-  // CODE: 'get roots'
-  Iterable<ContentTreeNode> getRoots() {
+  Iterable<ContentTreeNode> get roots {
     if (b(_roots)) {
       return _roots!;
     }
@@ -414,10 +413,10 @@ class ContentBase with Comp, ChangeNotifier {
   }
 
   dynamic dump() {
-    List roots = [];
-    for (ContentTreeNode subjectNode in getRoots()) {
-      Map<dynamic, dynamic> map = {};
-      roots.add(map);
+    List out = [];
+    for (ContentTreeNode subjectNode in roots) {
+      Map map = {};
+      out.add(map);
       map['subject'] = subjectNode.subject.json;
       // NOTE: These props can be different from the UI props (rating here, recommend there).
       // This makes it easy to pass the tests that were scripted and recorded before the change,
@@ -437,7 +436,7 @@ class ContentBase with Comp, ChangeNotifier {
         childMap['subject'] = child.subject.json;
       }
     }
-    return roots;
+    return out;
   }
 
   bool isRejected(String token) {

@@ -43,7 +43,7 @@ class _ContentTreeViewState extends State<ContentTreeView> {
   void initState() {
     super.initState();
     treeController = TreeController<ContentTreeNode>(
-      roots: contentBase.getRoots(),
+      roots: contentBase.roots,
       childrenProvider: (ContentTreeNode node) => node.getChildren(),
     );
 
@@ -64,7 +64,7 @@ class _ContentTreeViewState extends State<ContentTreeView> {
 
   Future<void> listen() async {
     await Comp.waitOnComps([followNet, contentBase, keyLabels]);
-    treeController.roots = contentBase.getRoots();
+    treeController.roots = contentBase.roots;
     treeController.rebuild();
     if (mounted) {
       setState(() {});
