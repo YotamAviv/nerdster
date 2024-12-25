@@ -6,11 +6,11 @@ import 'package:nerdster/oneofus/util.dart';
 /// - count(comments)
 /// - max(date) (recent activity)
 /// - ..
-/// 
-/// Recent (7/19/24) distinct changes made this different, and I haven't looked closely at what this 
-/// used to do and why other than it's no longer required to use the user's last rating 
+///
+/// Recent (7/19/24) distinct changes made this different, and I haven't looked closely at what this
+/// used to do and why other than it's no longer required to use the user's last rating
 /// (they're distinct now; there is only one).
-/// 
+///
 /// for
 /// - sort
 /// - display
@@ -38,15 +38,16 @@ abstract class Prop {
   Prop clone();
   void process(ContentStatement statement);
 
-  bool get recurse; /// selective: include children / don't include children
+  bool get recurse;
 
-  Comparable? getComparable();
-  Object? getValue();
+  /// selective: include children / don't include children
+
+  Comparable? get value;
   Widget getWidget();
 }
 
 // Could be generalized to a general counter (for dissmiss, for example)
-// Note: [recommend, dis] together is supported (with no extra work). 
+// Note: [recommend, dis] together is supported (with no extra work).
 // The disser no longer sees the subject, and so he won't see his recommend added to the count.
 // But others will see the recommend added to the count, diss notwithstanding.
 // Tested in 'rate and dis'
@@ -61,25 +62,23 @@ class RecommendPropAggregator implements Prop {
 
   @override
   void process(ContentStatement statement) {
-    bool? recommend = statement.recommend;
-    if (recommend != null && recommend) {
-      count++;
-    }
+    if (bb(statement.recommend)) count++;
+    if (bb(statement.dismiss)) count--;
   }
 
   @override
-  Comparable? getComparable() {
-    return count;
-  }
-
-  @override
-  Object? getValue() {
-    return getComparable();
-  }
+  Comparable? get value => count;
 
   @override
   Widget getWidget() {
-    String s = count == 0 ? '' : '+$count';
+    String s;
+    if (count == 0) {
+      s = '';
+    } else if (count > 0) {
+      s = '+$count';
+    } else {
+      s = count.toString();
+    }
     return Tooltip(
         message: 'count(recommend) = $count',
         child: SizedBox(
@@ -109,14 +108,7 @@ class RecentActivityAggregator implements Prop {
   }
 
   @override
-  Comparable? getComparable() {
-    return recent;
-  }
-
-  @override
-  Object? getValue() {
-    return getComparable();
-  }
+  Comparable? get value => recent;
 
   @override
   Widget getWidget() {
@@ -142,24 +134,15 @@ class CommentsAggregator implements Prop {
   @override
   bool get recurse => true;
 
-  // QUESTION: Could this be changed to take the SubjectNode, not just 
+  // QUESTION: Could this be changed to take the SubjectNode, not just
   // its subject, so that we can decide to not process equivalents?
   @override
   void process(ContentStatement statement) {
-    if (statement.comment != null) {
-      numComments++;
-    }
+    if (b(statement.comment)) numComments++;
   }
 
   @override
-  Comparable? getComparable() {
-    return numComments;
-  }
-
-  @override
-  Object? getValue() {
-    return numComments;
-  }
+  Comparable? get value => numComments;
 
   @override
   Widget getWidget() {

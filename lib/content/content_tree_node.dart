@@ -11,7 +11,7 @@ class ContentTreeNode {
   final List<String> path;
 
   final Jsonish subject;
-  
+
   final bool related;
   final bool equivalent;
 
@@ -60,11 +60,11 @@ class ContentTreeNode {
     String p = path.join(':');
     String s = [p, subject.token, related, equivalent].join(':');
     return s;
-  } 
+  }
 
   @override
-  bool operator==(other) => toString() == other.toString();
-  
+  bool operator ==(other) => toString() == other.toString();
+
   @override
   int get hashCode => toString().hashCode;
 }
