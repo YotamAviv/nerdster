@@ -253,6 +253,7 @@ class ContentBase with Comp, ChangeNotifier {
       // CONSIDER...
       // - make this optional in settings
       // - count a single dis as 1/2 a recommend
+      // TODO: Update React dialog to not allow both recommend and dis. Or not.
       if (subjectNode.computeProps([PropType.recommend])[PropType.recommend]!.value! as int < 0) {
         continue;
       }
