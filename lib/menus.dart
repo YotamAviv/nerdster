@@ -69,9 +69,10 @@ class Menus {
             MyCheckbox(Prefs.showJson, 'show JSON'),
             MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
             MyCheckbox(Prefs.showStatements, 'show trust statements'),
-            MyCheckbox(Prefs.skipLgtm, '''Skip statement reviews'''),
-            MyCheckbox(Prefs.skipVerify, '''Skip verifying signatures (goes quicker;)'''),
+            MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
+            MyCheckbox(Prefs.skipVerify, '''skip verifying signatures (goes quicker;)'''),
             MyCheckbox(Prefs.postSignin, '''(requires new phone version) HTTP Post sign in'''),
+            MyCheckbox(Prefs.hideDismissed, '''hide content where count(dis) > count(recommend)'''),
             // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
           ],
           child: const Row(
