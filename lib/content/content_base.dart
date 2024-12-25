@@ -23,6 +23,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 
 /// An old comment from back during preparation for NerdsterFollow, not sure if it's still relevant:
@@ -249,12 +250,14 @@ class ContentBase with Comp, ChangeNotifier {
       ContentTreeNode subjectNode = ContentTreeNode([], subject);
 
       // Skip recommend < 0
-      // CONSIDER...
-      // - make this optional in settings
-      // - count a single dis as 1/2 a recommend
-      // TODO: Update React dialog to not allow both recommend and dis. Or not.
-      if (subjectNode.computeProps([PropType.recommend])[PropType.recommend]!.value! as int < 0) {
-        continue;
+      if (Prefs.hideDismissed.value) {
+        // CONSIDER...
+        // - make this optional in settings
+        // - count a single dis as 1/2 a recommend
+        // TODO: Update React dialog to not allow both recommend and dis. Or not.
+        if (subjectNode.computeProps([PropType.recommend])[PropType.recommend]!.value! as int < 0) {
+          continue;
+        }
       }
 
       _roots!.add(subjectNode);
@@ -499,6 +502,8 @@ class ContentBase with Comp, ChangeNotifier {
     followNet.addListener(listen);
     addSupporter(oneofusEquiv);
     oneofusEquiv.addListener(listen);
+
+    Prefs.hideDismissed.addListener(listen);
   }
 
   void listen() {
@@ -510,6 +515,7 @@ class ContentBase with Comp, ChangeNotifier {
   void dispose() {
     followNet.removeListener(listen);
     oneofusEquiv.removeListener(listen);
+    Prefs.hideDismissed.removeListener(listen);
     super.dispose();
   }
 

@@ -13,6 +13,7 @@ class Prefs {
   static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> postSignin = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> hideDismissed = ValueNotifier<bool>(true);
 
   static void init() {
     // initWindowQueryParams
