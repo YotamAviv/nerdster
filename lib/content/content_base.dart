@@ -249,6 +249,14 @@ class ContentBase with Comp, ChangeNotifier {
 
       ContentTreeNode subjectNode = ContentTreeNode([], subject);
 
+      // Skip recommend < 0
+      // CONSIDER...
+      // - make this optional in settings
+      // - count a single dis as 1/2 a recommend
+      if (subjectNode.computeProps([PropType.recommend])[PropType.recommend]!.value! as int < 0) {
+        continue;
+      }
+
       _roots!.add(subjectNode);
     }
 
@@ -262,8 +270,8 @@ class ContentBase with Comp, ChangeNotifier {
       PropType sort = _sort.propType;
       return b
           .computeProps([sort])[_sort.propType]!
-          .getComparable()!
-          .compareTo(a.computeProps([_sort.propType])[_sort.propType]!.getComparable());
+          .value!
+          .compareTo(a.computeProps([_sort.propType])[_sort.propType]!.value);
     });
 
     return _roots!;
@@ -417,7 +425,7 @@ class ContentBase with Comp, ChangeNotifier {
           .computeProps([PropType.recommend, PropType.numComments, PropType.recentActivity]);
       Map<dynamic, dynamic> propsMap = {};
       for (var entry in props.entries) {
-        propsMap[entry.key.label] = entry.value.getValue();
+        propsMap[entry.key.label] = entry.value.value;
       }
       map['props'] = propsMap.map((k, v) => MapEntry(k, (v is DateTime) ? formatUiDatetime(v) : v));
       List children = [];

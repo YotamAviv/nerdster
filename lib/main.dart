@@ -167,5 +167,13 @@ Future<void> defaultSignIn() async {
 
 dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'},
-  FireChoice.emulator: {"one-of-us.net": 'ae504deb5ce3f40d82d04be170c3091e020534f3'}
+  FireChoice.emulator: {
+    "one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431',
+    "nerdster.org": {
+      "crv": "Ed25519",
+      "d": "QxJzCqiaoqTRC_7_SJaQqH4xIWZdXTlPgupG4V6s4dE",
+      "kty": "OKP",
+      "x": "qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI"
+    }
+  }
 };

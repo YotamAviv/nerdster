@@ -1267,7 +1267,7 @@ var rateAndDis = {
         "url": "https://thebeardclub.com/blogs/beard-culture/how-to-overcome-the-challenges-of-a-big-beard"
       },
       "props": {
-        "recommend": 2,
+        "recommend": 1,
         "numComments": 3,
         "recentActivity": "10/10/2024 1:53 PM"
       },
