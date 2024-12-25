@@ -12,46 +12,45 @@ import 'package:nerdster/singletons.dart';
 /// - center and signedIn are not always the same; viewing with a different center is a feature.
 /// - in case you get far from home, we want to help you get back (currently, "<reset>")
 class SignInState with ChangeNotifier {
-  String _center;
-  late String _centerReset;
+  static final String _dummy = Jsonish({}).token;
+  String _center = _dummy;
+  String _centerReset = _dummy;
   OouKeyPair? _signedInDelegateKeyPair;
   OouPublicKey? _signedInDelegatePublicKey;
   Json? _signedInDelegatePublicKeyJson;
   String? _signedInDelegate;
   StatementSigner? _signer;
 
-  static SignInState? _singleton;
+  static final SignInState _singleton = SignInState._internal();
 
-  SignInState.init(this._center) {
-    assert(!b(_singleton));
-    _centerReset = _center;
-    _singleton = this;
-  }
-
-  factory SignInState() => _singleton!;
+  SignInState._internal();
+  factory SignInState() => _singleton;
 
   set center(String oneofusToken) {
     _center = oneofusToken;
+    if (_centerReset == _dummy) _centerReset = _center;
     notifyListeners();
   }
 
-  Future<void> signIn(OouKeyPair nerdsterKeyPair, String center) async {
-    _signedInDelegateKeyPair = nerdsterKeyPair;
-    _signedInDelegatePublicKey = await nerdsterKeyPair.publicKey;
-    _signedInDelegatePublicKeyJson = await _signedInDelegatePublicKey!.json;
-    _signedInDelegate = getToken(await _signedInDelegatePublicKey!.json);
-    _signer = await OouSigner.make(nerdsterKeyPair);
-
+  Future<void> signIn(String center, OouKeyPair? nerdsterKeyPair) async {
     _center = center;
     _centerReset = center;
+    if (b(nerdsterKeyPair)) {
+      _signedInDelegateKeyPair = nerdsterKeyPair;
+      _signedInDelegatePublicKey = await nerdsterKeyPair!.publicKey;
+      _signedInDelegatePublicKeyJson = await _signedInDelegatePublicKey!.json;
+      _signedInDelegate = getToken(await _signedInDelegatePublicKey!.json);
+      _signer = await OouSigner.make(nerdsterKeyPair);
+      
+      // Check if delegate is delegate of Oneofus
+      await Comp.waitOnComps([followNet]);
+      if (followNet.delegate2oneofus[_signedInDelegate] != _center) {
+        print('************ ${followNet.delegate2oneofus[_signedInDelegate]} != $_center ************');
+        print('************ followNet.delegate2oneofus[_signedInDelegate] != _center ************');
+      }
+    }
 
     notifyListeners();
-
-    // Check if delegate is delegate of Oneofus
-    await Comp.waitOnComps([followNet]);
-    if (followNet.delegate2oneofus[_signedInDelegate] != _center) {
-      print('************ followNet.delegate2oneofus[_signedInDelegate] != _center ************');
-    }
   }
 
   void signOut() {

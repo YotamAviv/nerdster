@@ -36,7 +36,7 @@ class Menus {
             if (!b(delegate)) {
               signInState.center = oneofus.token;
             } else {
-              await signInState.signIn(delegate!.keyPair, oneofus.token);
+              await signInState.signIn(oneofus.token, delegate!.keyPair);
             }
           },
           child: Text(e.key)));
@@ -53,11 +53,7 @@ class Menus {
       demoSignins.add(MenuItemButton(
           onPressed: () async {
             await printDemoCredentials(key, delegateKey);
-            if (b(nerdsterKeyPair)) {
-              await signInState.signIn(nerdsterKeyPair!, key.token);
-            } else {
-              signInState.center = key.token;
-            }
+            await signInState.signIn(key.token, nerdsterKeyPair);
             await OneofusEquiv().waitUntilReady();
           },
           child: Text(name)));

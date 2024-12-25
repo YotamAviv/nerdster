@@ -1,7 +1,5 @@
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -15,7 +13,7 @@ Future<(DemoKey, DemoKey?)> testDeletion1() async {
   DemoKey lonerN = await loner.makeDelegate();
 
   await lonerN.doRate(title: 'title');
-  await signIn(loner.token, null);
+  await signInState.signIn(loner.token, null);
   await contentBase.waitUntilReady();
   expect(contentBase.getRoots().length, 1);
 
@@ -82,7 +80,7 @@ Future<(DemoKey, DemoKey?)> deletions3() async {
   Jsonish deletion2 = await deleter2N.doCensor(subject: deletion1.json);
 
   // observer1 should be censored as per deleter1's desire.
-  await signIn(observer1.token, null);
+  await signInState.signIn(observer1.token, null);
   await contentBase.waitUntilReady();
   // Using 'assert', not 'expect' from test. Not sure why it's probablematic here outside the
   // context of a test but not for the one above.
@@ -90,7 +88,7 @@ Future<(DemoKey, DemoKey?)> deletions3() async {
 
   // observer2 should not be censored as per deleter2's desire to delete deleter1's deletion.
   assert(contentBase.ready);
-  await signIn(observer2.token, null);
+  await signInState.signIn(observer2.token, null);
   await contentBase.waitUntilReady();
   assert(contentBase.getRoots().length == 1, contentBase.getRoots().length);
   assert(contentBase.getRoots().first.getChildren().length == 1);

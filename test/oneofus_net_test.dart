@@ -1,4 +1,5 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/block_old_key.dart';
 import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
@@ -18,7 +19,6 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 import 'package:nerdster/trust/trust1.dart';
@@ -29,7 +29,6 @@ void main() async {
   FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
   TrustStatement.init();
   ContentStatement.init();
-  SignInState.init('dummy');
 
   DemoKey homer = await DemoKey.findOrCreate('dummy');
   DemoKey homer2 = await DemoKey.findOrCreate('dummy');
@@ -50,7 +49,7 @@ void main() async {
     useClock(TestClock());
     DemoKey.clear();
     signInState.signOut();
-    await signIn('dummy', null);
+    await signInState.signIn(Jsonish({}).token, null); // unnecessary.
     oneofusNet.degrees = 6;
     oneofusNet.numPaths = 1;
     oneofusNet.blockerBenefit = 1;
@@ -82,7 +81,8 @@ void main() async {
     await lisa.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, lisa); // wihtout this we're "Me".
 
-    await signIn(lisa.token, null);
+    await signInState.signIn(lisa.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     await keyLabels.waitUntilReady();
     var network = oneofusNet.network;
@@ -122,7 +122,8 @@ void main() async {
     Jsonish s1 = await homer.doTrust(TrustVerb.trust, sideshow);
     Jsonish replaceStatement = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s1.token);
 
-    await signIn(homer.token, null);
+    await signInState.signIn(homer.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null, "sideshow": null};
@@ -145,7 +146,8 @@ void main() async {
   test('''don't trust myself''', () async {
     Jsonish s1 = await bart.doTrust(TrustVerb.trust, bart);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null};
@@ -169,7 +171,8 @@ void main() async {
     await marge.doTrust(TrustVerb.trust, lisa);
     await lisa.doTrust(TrustVerb.block, homer);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null};
@@ -195,7 +198,8 @@ void main() async {
     await marge.doTrust(TrustVerb.trust, lisa);
     Jsonish lisaBlocksHomer = await lisa.doTrust(TrustVerb.block, homer);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     expect(oneofusNet.rejected.length, 1);
     MapEntry e = oneofusNet.rejected.entries.first;
@@ -211,7 +215,8 @@ void main() async {
     await marge.doTrust(TrustVerb.trust, lisa);
     Jsonish lisaReplacesHomer = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     expect(oneofusNet.rejected.length, 1);
     MapEntry e = oneofusNet.rejected.entries.first;
@@ -238,7 +243,8 @@ void main() async {
     await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
     await marge.doTrust(TrustVerb.trust, homer2);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null, "homer": "5/1/2024 12:01 AM", "lenny": null};
@@ -264,7 +270,8 @@ void main() async {
     await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
     await marge.doTrust(TrustVerb.trust, homer2);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {
@@ -304,7 +311,8 @@ void main() async {
     await bart.doTrust(TrustVerb.trust, maggie);
     await maggie.doTrust(TrustVerb.trust, marge);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null, "maggie": null, "marge": null, "lisa": null};
@@ -330,7 +338,8 @@ void main() async {
     await lisa.doTrust(TrustVerb.trust, maggie);
     Jsonish blockStatement = await maggie.doTrust(TrustVerb.block, homer);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null, "homer": null, "marge": null, "lisa": null, "maggie": null};
@@ -349,7 +358,8 @@ void main() async {
     await bart.doTrust(TrustVerb.trust, marge);
     await lisa.doTrust(TrustVerb.trust, marge);
 
-    await signIn(homer.token, null);
+    await signInState.signIn(homer.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null, "bart": null, "lisa": null, "marge": null};
@@ -376,7 +386,8 @@ void main() async {
     await bart.doTrust(TrustVerb.trust, marge);
     await lisa.doTrust(TrustVerb.trust, marge);
 
-    await signIn(homer.token, null);
+    await signInState.signIn(homer.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
     oneofusNet.numPaths = 2;
     assert(!oneofusEquiv.ready);
 
@@ -401,7 +412,8 @@ void main() async {
     await lisa.doTrust(TrustVerb.trust, bart);
 
     oneofusNet.numPaths = 2;
-    await signIn(homer.token, null);
+    await signInState.signIn(homer.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null, "bart": null, "lisa": null, "marge": null};
@@ -438,7 +450,8 @@ void main() async {
 
     // There used to be a problem here: Bart doesn't know homer's name.
     // homer is in the network because bart =>(trust) homer2 =>(replace) homer.
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
     expect(keyLabels.labelKey(homer2.token), 'homer2');
     expect(keyLabels.labelKey(homer.token), 'homer2 (0)');
   });
@@ -454,7 +467,8 @@ void main() async {
     await bart.doTrust(TrustVerb.clear, homer);
     await bart.doTrust(TrustVerb.trust, homer2);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {
@@ -488,7 +502,8 @@ void main() async {
     await bart.doTrust(TrustVerb.clear, homer);
     await bart.doTrust(TrustVerb.trust, homer2);
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {
@@ -522,7 +537,8 @@ void main() async {
     await maggie.doTrust(TrustVerb.trust, marge);
     await maggie.doTrust(TrustVerb.trust, bart); // overrides the earlier block.
 
-    await signIn(maggie.token, null);
+    await signInState.signIn(maggie.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
     dynamic dump = await OneofusTreeNode.root.dump();
     var expected = {
       "N:Me-true:": {"N:bart-true:Me": {}, "N:marge-true:Me": {}, "N:homer-true:Me": {}}
@@ -540,7 +556,8 @@ void main() async {
     await maggie.doTrust(TrustVerb.trust, marge); // repeat
     await maggie.doTrust(TrustVerb.trust, bart); // overrides the earlier block.
 
-    await signIn(maggie.token, null);
+    await signInState.signIn(maggie.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
     dynamic dump = await OneofusTreeNode.root.dump();
     var expected = {
       "N:Me-true:": {"N:bart-true:Me": {}, "N:marge-true:Me": {}, "N:homer-true:Me": {}}
@@ -554,7 +571,8 @@ void main() async {
     Jsonish s3 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s2.token); // rejected
     await bart.doTrust(TrustVerb.trust, sideshow);
 
-    await signIn(homer.token, null);
+    await signInState.signIn(homer.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     expect(oneofusNet.rejected.keys, {s3.token});
     dynamic dump = await OneofusTreeNode.root.dump();
@@ -575,7 +593,8 @@ void main() async {
     Jsonish s4 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s3.token); // rejected
     await bart.doTrust(TrustVerb.trust, sideshow);
 
-    await signIn(homer2.token, null);
+    await signInState.signIn(homer2.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     expect(oneofusNet.rejected.containsKey(s4.token), true);
     expect(oneofusEquiv.getCanonical(homer.token), homer2.token);
@@ -619,7 +638,8 @@ void main() async {
     await key5.doTrust(TrustVerb.trust, key2);
     await key6.doTrust(TrustVerb.trust, key2);
 
-    await signIn(key2.token, null);
+    await signInState.signIn(key2.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     dynamic network = oneofusNet.network;
     dynamic dump = await OneofusTreeNode.root.dump();
@@ -644,7 +664,8 @@ void main() async {
   test('egos', () async {
     var (oneofus, delegate) = await DemoKey.demos['egos']();
     // TODO(2): dump statements. Currently, the different statement tokens are preventing me.
-    await signIn(oneofus.token, null);
+    await signInState.signIn(oneofus.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null, "hipster": null};
@@ -664,7 +685,8 @@ void main() async {
     var (n, d) = await DemoKey.demos['simpsons']();
     expect(n, bart);
     expect(d, DemoKey.findByName('bart-nerdster0'));
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {
@@ -739,17 +761,17 @@ void main() async {
     trust1 = Trust1(degrees: 1, blockerBenefit: 0);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token]);
-    expect(oneofusNet.rejected.length, 0);
+    expect(trust1.rejected.length, 0);
 
     trust1 = Trust1(degrees: 2, blockerBenefit: 0);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token, d21.token]);
-    expect(oneofusNet.rejected.length, 0);
+    expect(trust1.rejected.length, 1);
 
     trust1 = Trust1(degrees: 3, blockerBenefit: 0);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token, d21.token, d3.token]);
-    expect(oneofusNet.rejected.length, 0);
+    expect(trust1.rejected.length, 1);
   });
 
   test('degrees base block, blockerBenefit: 1', () async {
@@ -781,7 +803,8 @@ void main() async {
   test('simpsons, degrees=2', () async {
     oneofusNet.degrees = 2;
     await DemoKey.demos['simpsons']();
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {"son": null, "friend": null, "sis": null, "homer2": null, "moms": null};
@@ -804,7 +827,8 @@ void main() async {
   test('simpsons, degrees=3', () async {
     oneofusNet.degrees = 3;
     await DemoKey.demos['simpsons']();
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
     var expectedNetwork = {
@@ -838,7 +862,8 @@ void main() async {
 
     Jsonish lisaBlocksMarge = await lisa.doTrust(TrustVerb.block, marge);
 
-    await signIn(marge.token, null);
+    await signInState.signIn(marge.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
     expect(oneofusNet.rejected.length, 1);
     MapEntry e = oneofusNet.rejected.entries.first;
     String rejectedStatementToken = e.key;
@@ -854,7 +879,8 @@ void main() async {
     Jsonish s = await bart.doTrust(TrustVerb.trust, lisa);
     Jsonish rejected = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
 
-    await signIn(homer2.token, null);
+    await signInState.signIn(homer2.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
     expect(oneofusNet.rejected.length, 1);
     MapEntry e = oneofusNet.rejected.entries.first;
     String rejectedStatementToken = e.key;
@@ -867,7 +893,8 @@ void main() async {
     oneofusNet.blockerBenefit = 2;
     await DemoKey.demos['simpsons']();
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
     expect(toJson(labelKeyPathsX(lisa.token)), [
       [
         {'sis': 'sis'}
@@ -886,7 +913,8 @@ void main() async {
       ]
     ]);
 
-    await signIn(homer.token, null);
+    await signInState.signIn(homer.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
     expect(toJson(labelKeyPathsX(homer2.token)), [
       [
         {'wife': 'wife'},
@@ -894,7 +922,8 @@ void main() async {
       ]
     ]);
 
-    await signIn(homer2.token, null);
+    await signInState.signIn(homer2.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
     expect(toJson(labelKeyPathsX(homer.token)), [
       [
         {'hubby2 (0)': '(replaced)'}
@@ -909,7 +938,8 @@ void main() async {
   test('NerdNode', () async {
     await DemoKey.demos['simpsons']();
 
-    await signIn(bart.token, null);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     // CONSIDER: Test something beyond just this.
     await compareNetworkToTree(bart.token);
@@ -924,7 +954,8 @@ void main() async {
 
     final stopwatch = Stopwatch()..start();
 
-    await signIn(o.token, null);
+    await signInState.signIn(o.token, null);
+    await Comp.waitOnComps([contentBase, keyLabels]);
 
     print('executed in ${stopwatch.elapsed}');
   });

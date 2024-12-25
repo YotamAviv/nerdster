@@ -1,28 +1,14 @@
 import 'dart:convert';
 
 import 'package:json_diff/json_diff.dart';
-import 'package:nerdster/comp.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/singletons.dart';
 
 // CODE: Rename to test_util
 
 /// I admit that I'm confused as to why I need this.
 dynamic toJson(dynamic d) => jsonDecode(jsonEncode(d));
-
-Future<void> signIn(center, delegateKeyPair) async {
-  if (!b(delegateKeyPair)) {
-    signInState.center = center;
-  } else {
-    await signInState.signIn(delegateKeyPair, center);
-  }
-  // When I remove this and change the tests, might be nice to have the things that need ready 
-  // wait for it.
-  
-  await Comp.waitOnComps([oneofusEquiv, keyLabels]);
-}
 
 /// Weak!
 /// I moved code from tests to demos so that I can use the UI on the cases.

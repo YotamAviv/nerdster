@@ -233,13 +233,7 @@ Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, 
     await KeyStore.wipeKeys();
   }
 
-  // Center and optionally sign in
-  String center = getToken(await oneofusPublicKey.json);
-  if (!b(nerdsterKeyPair)) {
-    signInState.center = center;
-  } else {
-    await signInState.signIn(nerdsterKeyPair!, center);
-  }
+  await signInState.signIn(getToken(await oneofusPublicKey.json), nerdsterKeyPair);
 
   // Common it is for a new user to create a delegate key (and issue the delegate statement) as he's
   // signinig in for his first time. We should refresh so that he knows about his delegate.

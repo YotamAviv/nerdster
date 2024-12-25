@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -23,7 +24,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/singletons.dart';
 
 import 'firebase_options.dart';
 
@@ -110,8 +111,7 @@ Future<void> main() async {
   FollowNet();
   KeyLabels();
 
-  // No await, maybe I should.
-  // This is here to show the loading loading and start the timer.
+  // Show 'loading', start the timer.
   BarRefresh.refresh();
 
   // -------------- run app ---------------
@@ -123,57 +123,75 @@ Future<void> main() async {
 }
 
 Future<void> defaultSignIn() async {
-  String? oneofusToken;
-  OouKeyPair? nerdsterKeyPair;
-
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
-  oneofusToken = params['oneofus'];
+  if (b(params['oneofus'])) {
+    await signInState.signIn(params['oneofus']!, null);
+    return;
+  }
 
   // Check secure browswer storage
-  if (!b(oneofusToken) && fireChoice == FireChoice.prod) {
+  if (fireChoice == FireChoice.prod) {
     OouPublicKey? oneofusPublicKey;
+    OouKeyPair? nerdsterKeyPair;
     (oneofusPublicKey, nerdsterKeyPair) = await KeyStore.readKeys();
     if (b(oneofusPublicKey)) {
-      oneofusToken = Jsonish(await oneofusPublicKey!.json).token;
+      await signInState.signIn(getToken(await oneofusPublicKey!.json), nerdsterKeyPair);
+      return;
     }
   }
 
   // Check for hard coded values
-  if (!b(oneofusToken) && b(hardCodedSignin[fireChoice])) {
-    nerdsterKeyPair = b(hardCodedSignin[fireChoice]![kNerdsterDomain])
+  if (b(hardCodedSignin[fireChoice])) {
+    String? hardOneofus = hardCodedSignin[fireChoice]![kOneofusDomain]!;
+    OouKeyPair? hardDelegate = b(hardCodedSignin[fireChoice]![kNerdsterDomain])
         ? await crypto.parseKeyPair(hardCodedSignin[fireChoice]![kNerdsterDomain]!)
         : null;
-    oneofusToken = hardCodedSignin[fireChoice]![kOneofusDomain]!;
+
+    // Random if yes hardcoded and no delegate
+    // TODO: pick a follow context
+    if (b(hardOneofus) && !b(hardDelegate)) {
+      signInState.center = hardOneofus!;
+      await oneofusNet.waitUntilReady();
+      List<String> n = List.of(oneofusNet.network.keys);
+      n.shuffle(Random(DateTime.now().millisecondsSinceEpoch));
+      while (n.isNotEmpty) {
+        signInState.center = n.first;
+        await oneofusNet.waitUntilReady();
+        if (oneofusNet.network.keys.contains(hardOneofus)) {
+          await signInState.signIn(n.first, null);
+          break;
+        } else {
+          n.removeAt(0);
+        }
+      }
+    } else {
+      await signInState.signIn(hardOneofus!, hardDelegate);
+    }
+    return;
   }
 
   // Init the first demo
-  if (!b(oneofusToken)) {
-    DemoKey oneofusDemoKey;
-    DemoKey? delegateDemoKey;
-    (oneofusDemoKey, delegateDemoKey) = await DemoKey.demos.values.first();
-    print('Loaded demo: ${DemoKey.demos.keys.first}');
-    await printDemoCredentials(oneofusDemoKey, delegateDemoKey);
-    oneofusToken = oneofusDemoKey.token;
-    nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
-  }
-
-  // SignInState.init
-  SignInState.init(oneofusToken!);
-  if (b(nerdsterKeyPair)) {
-    await SignInState().signIn(nerdsterKeyPair!, oneofusToken);
-  }
+  DemoKey oneofusDemoKey;
+  DemoKey? delegateDemoKey;
+  (oneofusDemoKey, delegateDemoKey) = await DemoKey.demos.values.first();
+  print('Loaded demo: ${DemoKey.demos.keys.first}');
+  await printDemoCredentials(oneofusDemoKey, delegateDemoKey);
+  String oneofusToken = oneofusDemoKey.token;
+  OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
+  await signInState.signIn(oneofusToken, nerdsterKeyPair);
 }
 
 dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'},
-  FireChoice.emulator: {
-    "one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431',
-    "nerdster.org": {
-      "crv": "Ed25519",
-      "d": "QxJzCqiaoqTRC_7_SJaQqH4xIWZdXTlPgupG4V6s4dE",
-      "kty": "OKP",
-      "x": "qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI"
-    }
-  }
+  FireChoice.emulator: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'}
+  // FireChoice.emulator: {
+  //   "one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431',
+  //   "nerdster.org": {
+  //     "crv": "Ed25519",
+  //     "d": "QxJzCqiaoqTRC_7_SJaQqH4xIWZdXTlPgupG4V6s4dE",
+  //     "kty": "OKP",
+  //     "x": "qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI"
+  //   }
+  // }
 };
