@@ -89,16 +89,14 @@ class Trust1 {
             }
           }
 
-          // block allowed
-          // TODO: reject all trust statements to other if block allowed
+          // Block allowed
+          // Reject all trust statements to other if block allowed
           if (network.containsKey(other.token)) {
             Node otherNode = network[other.token]!;
             for (Path path in otherNode.paths) {
               _rejected[path.last.statementToken] = "A trusted key was blocked.";
             }
           }
-
-
           network.putIfAbsent(other.token, () => other);
           other.paths.clear(); // (gratuitous)
           other.blocked = true;
