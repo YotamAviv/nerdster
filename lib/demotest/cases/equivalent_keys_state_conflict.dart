@@ -1,8 +1,8 @@
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -32,8 +32,8 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   await bart2.doTrust(TrustVerb.block, milhouse);
   await lisa.doTrust(TrustVerb.trust, bart2, moniker: 'Bart');
   
-  await signIn(lisa.token, null);
-  await KeyLabels().waitUntilReady();
+  await signInState.signIn(lisa.token, null);
+  await Comp.waitOnComps([oneofusEquiv, keyLabels]);
   network = oneofusNet.network;
   expectedNetwork = {
     "Lisa": null,
@@ -50,7 +50,8 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   // bart now decides that 'bart' no longer represents him and blocks
   Jsonish b1 = await bart2.doTrust(TrustVerb.block, bart);
   
-  await signIn(lisa.token, null);  
+  await signInState.signIn(lisa.token, null);  
+  await Comp.waitOnComps([oneofusEquiv, keyLabels]);
   network = oneofusNet.network;
   expectedNetwork = {
     "Me": null,
@@ -70,7 +71,8 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   dumpStatement(oneofusNet.rejected.keys.first);
   myExpect(oneofusNet.rejected[lisaTrustsMilhouse.token], 'A trusted key was blocked.');
 
-  await signIn(bart2.token, null);
+  await signInState.signIn(bart2.token, null);
+  await Comp.waitOnComps([oneofusEquiv, keyLabels]);
   dump = await OneofusTreeNode.root.dump();
   expected = {
     "N:Me-true:": {}  
@@ -78,7 +80,8 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   jsonShowExpect(dump, expected);
   myExpect(oneofusNet.rejected.isEmpty, true);
 
-  await signIn(bart.token, null);
+  await signInState.signIn(bart.token, null);
+  await Comp.waitOnComps([oneofusEquiv, keyLabels]);
   dump = await OneofusTreeNode.root.dump();
   expected = {
     "N:Me-true:": {

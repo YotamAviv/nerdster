@@ -16,7 +16,6 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:test/test.dart';
 
@@ -25,7 +24,6 @@ void main() async {
   FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
   TrustStatement.init();
   ContentStatement.init();
-  SignInState.init('dummy');
 
   DemoKey dummy = await DemoKey.findOrCreate('dummy');
   DemoKey homer = dummy;
@@ -53,7 +51,6 @@ void main() async {
     useClock(TestClock());
     DemoKey.clear();
     signInState.signOut();
-    await signIn('dummy', null);
     oneofusNet.numPaths = 1;
     followNet.fcontext = null;
     oneofusNet.blockerBenefit = 2;
@@ -93,8 +90,8 @@ void main() async {
     loadSimpsons();
     Fetcher.clear();
     clearDistinct();
-    await signIn(bart.token, null);
-    assert(oneofusNet.ready);
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([oneofusNet, keyLabels]);
 
     // maggie isn't in because she doesn't have a delegate
     followNet.fcontext = 'family';
@@ -521,12 +518,12 @@ void main() async {
   /// Switching between context='social' and context=null was acting strangely.
   test('poser social follow bug', () async {
     var (oneofus, delegate) = await DemoKey.demos['egos']();
-    await signIn(oneofus.token, null);
 
     DemoKey hipster = DemoKey.findByName('hipster')!;
     DemoKey hipDel0 = DemoKey.findByName('hipster-nerdster0')!;
     DemoKey hipDel1 = DemoKey.findByName('hipster-nerdster1')!;
 
+    await signInState.signIn(oneofus.token, null);
     await contentBase.waitUntilReady();
     expect(contentBase.getRoots().length, 2);
     Map<String, String?> delegate2revokedAt =
@@ -579,10 +576,9 @@ void main() async {
   test('lisa social', () async {
     await DemoKey.demos['simpsons']();
     loadSimpsons();
-    await signIn(lisa.token, null);
 
     followNet.fcontext = 'family';
-    signInState.center = lisa.token;
+    await signInState.signIn(lisa.token, null);
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus, {
       "daughter-delegate": "daughter",

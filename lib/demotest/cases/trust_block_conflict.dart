@@ -1,3 +1,4 @@
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
@@ -5,6 +6,7 @@ import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/singletons.dart';
 
 Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
@@ -22,8 +24,9 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
   await bart.doTrust(TrustVerb.block, milhouse);
   
-  await signIn(lisa.token, null);
-  
+  await signInState.signIn(lisa.token, null);
+  await Comp.waitOnComps([contentBase, keyLabels]);
+
   network = OneofusNet().network;
   expectedNetwork = {
     "Lisa": null,
