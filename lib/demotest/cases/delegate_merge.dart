@@ -28,7 +28,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     await Comp.waitOnComps([contentBase, keyLabels]);
     expected = {"Me": null};
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     myExpect(roots.length, 2);
 
     DemoKey loner2 = await DemoKey.findOrCreate('loner2');
@@ -41,7 +41,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     expected = {"Me": 2};
     jsonShowExpect(
         followNet.oneofus2delegates.map((key, value) => MapEntry(key, value.length)), expected);
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     myExpect(roots.length, 2);
 
     DemoKey loner2N = await loner2.makeDelegate();
@@ -49,7 +49,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     Jsonish s3 = await loner2N.doRate(title: 't3');
     contentBase.listen();
     await Comp.waitOnComps([contentBase]);
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     myExpect(roots.length, 3);
 
     DemoKey loner2N2 = await loner2.makeDelegate();
@@ -57,7 +57,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     Jsonish s4 = await loner2N2.doRate(title: 't4');
     contentBase.listen();
     await Comp.waitOnComps([contentBase]);
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
     myExpect(roots.length, 4);
 
     // --- 2 equiv Oneofus, with 2 active delegates each, ready to merge.. --- //
@@ -78,7 +78,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     await loner2N2.doRate(title: 'merge');
     contentBase.listen();
     await Comp.waitOnComps([contentBase]);
-    roots = contentBase.getRoots();
+    roots = contentBase.roots;
 
     myExpect(roots.length, 5);
 

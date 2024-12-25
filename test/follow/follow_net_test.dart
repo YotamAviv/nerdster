@@ -174,7 +174,7 @@ void main() async {
     signInState.center = loner.token;
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
-    myExpect(contentBase.getRoots().length, 1);
+    myExpect(contentBase.roots.length, 1);
 
     // Either should work
     if (Random().nextBool()) {
@@ -185,7 +185,7 @@ void main() async {
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(followNet.getStatements(loner.token).length, 0);
-    myExpect(contentBase.getRoots().length, 0);
+    myExpect(contentBase.roots.length, 0);
   });
 
   test('''bo and luke rate; bo claims luke's delegate; should see 1 rating''', () async {
@@ -201,14 +201,14 @@ void main() async {
     signInState.center = bo.token;
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
-    myExpect(contentBase.getRoots().length, 1);
-    ContentTreeNode cn = contentBase.getRoots().first;
+    myExpect(contentBase.roots.length, 1);
+    ContentTreeNode cn = contentBase.roots.first;
 
     await bo.doTrust(TrustVerb.delegate, lukeN);
     oneofusNet.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
-    myExpect(contentBase.getRoots().length, 1);
-    cn = contentBase.getRoots().first;
+    myExpect(contentBase.roots.length, 1);
+    cn = contentBase.roots.first;
     // print(cn.getChildren().length);
     // print('followNet.delegate2oneofus=${keyLabels.show(followNet.delegate2oneofus)}');
     // print('followNet.oneofus2delegates=${keyLabels.show(followNet.oneofus2delegates)}');
@@ -232,8 +232,8 @@ void main() async {
     followNet.listen();
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
-    myExpect(contentBase.getRoots().length, 1);
-    myExpect(contentBase.getRoots().first.getChildren().length, 1);
+    myExpect(contentBase.roots.length, 1);
+    myExpect(contentBase.roots.first.getChildren().length, 1);
 
     // This delegate is inherited, revoked, and so
     // Either should work
@@ -246,7 +246,7 @@ void main() async {
     followNet.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(followNet.getStatements(loner2.token).length, 0);
-    myExpect(contentBase.getRoots().length, 0);
+    myExpect(contentBase.roots.length, 0);
   });
 
   test('!canon follow !canon', () async {
@@ -525,7 +525,7 @@ void main() async {
 
     await signInState.signIn(oneofus.token, null);
     await contentBase.waitUntilReady();
-    expect(contentBase.getRoots().length, 2);
+    expect(contentBase.roots.length, 2);
     Map<String, String?> delegate2revokedAt =
         followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
     List<String> ss = List.of(followNet.getStatements(hipster.token).map((s) => s.token));
@@ -539,7 +539,7 @@ void main() async {
 
     followNet.fcontext = 'social';
     await contentBase.waitUntilReady();
-    expect(contentBase.getRoots().length, 2);
+    expect(contentBase.roots.length, 2);
     Map<String, String?> delegate2revokedAt2 =
         followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
     expect(delegate2revokedAt2, delegate2revokedAt);
@@ -550,7 +550,7 @@ void main() async {
 
     oneofusNet.listen();
     await contentBase.waitUntilReady();
-    expect(contentBase.getRoots().length, 2);
+    expect(contentBase.roots.length, 2);
     Map<String, String?> delegate2revokedAt3 =
         followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
     expect(delegate2revokedAt3, delegate2revokedAt);
