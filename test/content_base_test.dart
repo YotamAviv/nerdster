@@ -99,7 +99,7 @@ void main() async {
     timezoneOffsetKludge = -3;
     Prefs.showStatements.value = true;
     Prefs.showKeys.value = true;
-    Prefs.nice.value = false;
+    Prefs.keyLabel.value = false;
     await contentBase.waitUntilReady();
     await testByDump(rateAndDis);
   });
@@ -109,7 +109,7 @@ void main() async {
     timezoneOffsetKludge = -3;
     Prefs.showStatements.value = true;
     Prefs.showKeys.value = true;
-    Prefs.nice.value = false;
+    Prefs.keyLabel.value = false;
     await testByDump(jock1);
   });
 
@@ -236,7 +236,7 @@ void main() async {
     timezoneOffsetKludge = -3;
     Prefs.showStatements.value = true;
     Prefs.showKeys.value = true;
-    Prefs.nice.value = false;
+    Prefs.keyLabel.value = false;
     await testByDump(equate1);
   });
 

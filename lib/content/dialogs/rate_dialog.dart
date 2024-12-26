@@ -255,7 +255,7 @@ which will make your reaction to his reaction lost.''',
               child: TextField(
                   scrollController: scrollController,
                   controller: TextEditingController()
-                    ..text = Prefs.nice.value
+                    ..text = Prefs.keyLabel.value
                         ? encoder.convert(keyLabels.show(widget.subject.json))
                         : widget.subject.ppJson,
                   maxLines: 10,

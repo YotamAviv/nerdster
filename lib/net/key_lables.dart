@@ -35,10 +35,8 @@ class KeyLabels with Comp, ChangeNotifier {
     notifyListeners();
   }
 
-  /// DEFER: There may come a time when not all delegates are Nerdster delegates {Me-nerdster.org / Me-airbnb.com ...}
-  /// Dealing with that will probably involve work in [FollowNet].
-
-  /// Convert jibrish (crypto keys, tokens) to, say, 'Me', 'lisa', 'hipster-delegate', ...
+  // Label gibberish (crypto keys, tokens)
+  // Strip ['signature', 'previous']
   dynamic show(dynamic d) {
     if (d is Iterable) {
       return List.of(d.map(show)); // Json converter doesn't like Iterable, and so List.of

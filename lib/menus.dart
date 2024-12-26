@@ -23,6 +23,34 @@ import 'package:nerdster/tokenize.dart';
 
 const iconSpacer = SizedBox(width: 3);
 
+class IntSettingDropdown extends StatefulWidget {
+  final String label;
+  final ValueNotifier<int> setting;
+  final List<int> values;
+  const IntSettingDropdown(this.label, this.setting, this.values, {super.key});
+
+  @override
+  State<StatefulWidget> createState() => _IntSettingDropdownState();
+}
+
+class _IntSettingDropdownState extends State<IntSettingDropdown> {
+  @override
+  Widget build(Object context) {
+    return DropdownButton<int>(
+      alignment: AlignmentDirectional.centerEnd,
+      isExpanded: true,
+      value: widget.setting.value,
+      onChanged: (int? val) {
+        setState(() {
+          widget.setting.value = val!;
+        });
+      },
+      items: List.of(widget.values
+          .map((i) => DropdownMenuItem<int>(value: i, child: Text('$i ${widget.label}')))),
+    );
+  }
+}
+
 class Menus {
   static List<Widget> build(context) {
     List<Widget> demos = <Widget>[];
@@ -65,7 +93,7 @@ class Menus {
       // Prefs
       SubmenuButton(
           menuChildren: <Widget>[
-            MyCheckbox(Prefs.nice, 'translate <JSON> and token gibberish'),
+            MyCheckbox(Prefs.keyLabel, 'translate gibberish'),
             MyCheckbox(Prefs.showJson, 'show JSON'),
             MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
             MyCheckbox(Prefs.showStatements, 'show trust statements'),
@@ -74,6 +102,18 @@ class Menus {
             MyCheckbox(Prefs.postSignin, '''(requires new phone version) HTTP Post sign in'''),
             MyCheckbox(Prefs.hideDismissed, '''hide content where count(dis) > count(recommend)'''),
             // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
+            SubmenuButton(menuChildren: <Widget>[
+              IntSettingDropdown(
+                  'degrees', Prefs.oneofusNetDegrees, List<int>.generate(6, (i) => i + 1)),
+              IntSettingDropdown(
+                  'paths', Prefs.oneofusNetPaths, List<int>.generate(2, (i) => i + 1)),
+            ], child: const Text('one-of-us.net network')),
+            SubmenuButton(menuChildren: <Widget>[
+              IntSettingDropdown(
+                  'degrees', Prefs.followNetDegrees, List<int>.generate(6, (i) => i + 1)),
+              IntSettingDropdown(
+                  'paths', Prefs.followNetPaths, List<int>.generate(2, (i) => i + 1)),
+            ], child: const Text('follow network')),
           ],
           child: const Row(
             children: [
@@ -120,7 +160,6 @@ ${tokenNpp.$2}''',
             },
             child: const Text('About')),
       ], child: const Text('/etc')),
-
 
       // Dev
       if (Prefs.showDevMenu.value)
