@@ -76,10 +76,6 @@ class _NetBarState extends State<NetBar> {
           const BarRefresh(),
           const _CenterDropdown(),
           const _FollowDropdown(),
-          SizedBox(
-            width: 80,
-            child: DegreesDropdown(),
-          ),
           _StructureDropdown(NetBar.bNetView.value),
           if (!NetBar.bNetView.value)
             IconButton(
@@ -97,7 +93,7 @@ class _NetBarState extends State<NetBar> {
 
 class _StructureDropdown extends StatefulWidget {
   final bool bContent;
-  const _StructureDropdown(this.bContent, {super.key});
+  const _StructureDropdown(this.bContent);
 
   @override
   State<StatefulWidget> createState() => _StructureDropdownState();
@@ -226,48 +222,6 @@ class _CenterDropdownState extends State<_CenterDropdown> {
           signInState.center = signInState.centerReset!;
         }
       },
-    );
-  }
-}
-
-class DegreesDropdown extends StatefulWidget {
-  const DegreesDropdown({super.key});
-
-  @override
-  State<StatefulWidget> createState() => DegreesDropdownState();
-}
-
-class DegreesDropdownState extends State<DegreesDropdown> {
-  @override
-  void initState() {
-    super.initState();
-    oneofusNet.addListener(listen);
-    listen();
-  }
-
-  void listen() async {
-    setState(() {});
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    oneofusNet.removeListener(listen);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownMenu<int>(
-      initialSelection: oneofusNet.degrees,
-      requestFocusOnTap: true,
-      label: const Text('Degrees'),
-      onSelected: (int? degrees) {
-        setState(() {
-          oneofusNet.degrees = degrees!;
-        });
-      },
-      dropdownMenuEntries: List.of(List<int>.generate(6, (i) => i + 1)
-          .map((i) => DropdownMenuEntry<int>(value: i, label: i.toString()))),
     );
   }
 }

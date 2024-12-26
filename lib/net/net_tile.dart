@@ -38,14 +38,12 @@ class _NetTileState extends State<NetTile> {
   @override
   initState() {
     super.initState();
-    Prefs.nice.addListener(listen);
     Prefs.showStatements.addListener(listen);
     Prefs.showJson.addListener(listen);
   }
 
   @override
   dispose() {
-    Prefs.nice.removeListener(listen);
     Prefs.showStatements.removeListener(listen);
     Prefs.showJson.removeListener(listen);
     super.dispose();

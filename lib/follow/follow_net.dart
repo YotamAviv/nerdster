@@ -14,6 +14,7 @@ import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 import 'package:nerdster/trust/trust1.dart';
@@ -30,6 +31,10 @@ class FollowNet with Comp, ChangeNotifier {
     oneofusNet.addListener(listen);
     addSupporter(oneofusEquiv);
     oneofusEquiv.addListener(listen);
+
+    // Prefs
+    Prefs.followNetDegrees.addListener(listen);
+    Prefs.followNetPaths.addListener(listen);
   }
 
   void _readParams() {
@@ -112,7 +117,10 @@ class FollowNet with Comp, ChangeNotifier {
 
     Iterable<String> network;
     if (b(fcontext)) {
-      Trust1 trust1 = Trust1(numPaths: 1, blockerBenefit: 0);
+      Trust1 trust1 = Trust1(
+          degrees: Prefs.followNetDegrees.value,
+          numPaths: Prefs.followNetPaths.value,
+          blockerBenefit: 0);
       FollowNode.clear();
       LinkedHashMap<String, Node> canonNetwork =
           await trust1.process(FollowNode(signInState.center));

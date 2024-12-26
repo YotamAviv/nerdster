@@ -671,7 +671,7 @@ void main() async {
     var expectedNetwork = {"Me": null, "hipster": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
-    Prefs.nice.value = true;
+    Prefs.keyLabel.value = true;
 
     await followNet.waitUntilReady();
     dynamic dump = await OneofusTreeNode.root.dump();

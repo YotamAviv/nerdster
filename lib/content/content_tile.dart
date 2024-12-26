@@ -38,14 +38,14 @@ class _SubjectState extends State<SubjectTile> {
   @override
   initState() {
     super.initState();
-    Prefs.nice.addListener(listener);
+    Prefs.keyLabel.addListener(listener);
     Prefs.showStatements.addListener(listener);
     Prefs.showJson.addListener(listener);
   }
 
   @override
   dispose() {
-    Prefs.nice.removeListener(listener);
+    Prefs.keyLabel.removeListener(listener);
     Prefs.showStatements.removeListener(listener);
     Prefs.showJson.removeListener(listener);
     super.dispose();

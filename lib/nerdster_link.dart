@@ -13,7 +13,6 @@ String generateLink() {
   }
   
   Prefs.setParams(params);
-  oneofusNet.setParams(params);
   followNet.setParams(params);
   contentBase.setParams(params);
   NetBar.setParams(params);

@@ -14,7 +14,7 @@ class JSWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     dynamic json2 = json;
-    if (Prefs.nice.value) {
+    if (Prefs.keyLabel.value) {
       json2 = keyLabels.show(json);
     }
 
