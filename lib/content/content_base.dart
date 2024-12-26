@@ -52,7 +52,6 @@ class ContentBase with Comp, ChangeNotifier {
   Sort _sort = Sort.recentActivity;
   ContentType _type = ContentType.all;
   Timeframe _timeframe = Timeframe.all;
-  bool _censor = true;
 
   Future<Jsonish?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
@@ -72,7 +71,6 @@ class ContentBase with Comp, ChangeNotifier {
 
   Iterable<ContentStatement>? getSubjectStatements(String subject) {
     return _subject2statements[subject];
-    // Skipping censored statements not necessary here, already I think.
   }
 
   Iterable<ContentTreeNode>? getChildren(ContentTreeNode node) {
@@ -157,7 +155,7 @@ class ContentBase with Comp, ChangeNotifier {
     ///     do include it as usual (and also display the censorship statement about it)
     /// - Hide things whose only children are censor/delete statements.
 
-    if (_censor) {
+    if (censor) {
       /// delete deletions correctly (more trusted can delete less trusted)
       for (final ContentStatement statement
           in statements.where((s) => s.verb == ContentVerb.censor)) {
@@ -221,7 +219,7 @@ class ContentBase with Comp, ChangeNotifier {
   /// - (GONE: I censored this. I could just clear it.)
   /// - I have censorship enabled and someone in my network censored this
   /// - (Gone: author of this censored it himself.. Gone because author can clear his own stuff anyway.)
-  bool _isCensored(String subject) => _censor && _censored.contains(subject);
+  bool _isCensored(String subject) => censor && _censored.contains(subject);
 
   Iterable<ContentTreeNode> get roots {
     if (b(_roots)) {
@@ -361,10 +359,9 @@ class ContentBase with Comp, ChangeNotifier {
     listen();
   }
 
-  bool get censor => _censor;
+  bool get censor => Prefs.censor.value;
   set censor(bool censor) {
-    _censor = censor;
-    listen();
+    Prefs.censor.value = censor;
   }
 
   Iterable<String> getMostTags() => mostTags.most();
@@ -503,6 +500,7 @@ class ContentBase with Comp, ChangeNotifier {
     addSupporter(oneofusEquiv);
     oneofusEquiv.addListener(listen);
 
+    Prefs.censor.addListener(listen);
     Prefs.hideDismissed.addListener(listen);
   }
 
@@ -523,7 +521,6 @@ class ContentBase with Comp, ChangeNotifier {
     params['sort'] = sort.name;
     params['type'] = type.name;
     params['timeframe'] = timeframe.name;
-    params['censor'] = censor.toString();
   }
 
   void _readParams() {
@@ -554,16 +551,6 @@ class ContentBase with Comp, ChangeNotifier {
       try {
         timeframe = Timeframe.values.byName(timeframeParam!);
         print('timeframe=$timeframe');
-      } catch (e) {
-        print(e);
-      }
-    }
-
-    String? censorParam = params['censor'];
-    if (b(censorParam)) {
-      try {
-        censor = bool.parse(censorParam!);
-        print('censor=$censor');
       } catch (e) {
         print(e);
       }

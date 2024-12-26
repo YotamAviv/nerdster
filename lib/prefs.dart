@@ -10,6 +10,7 @@ class Prefs {
   static final ValueNotifier<bool> showStatements = ValueNotifier(bDev);
   static final ValueNotifier<bool> showKeys = ValueNotifier(bDev);
   static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> censor = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> hideDismissed = ValueNotifier<bool>(true);
 
   static final ValueNotifier<bool> postSignin = ValueNotifier<bool>(false); // TODO: Eliminate
@@ -28,8 +29,8 @@ class Prefs {
     if (b(params['showStatements'])) showStatements.value = bs(params['showStatements']);
     if (b(params['showKeys'])) showKeys.value = bs(params['showKeys']);
     if (b(params['skipVerify'])) skipVerify.value = bs(params['skipVerify']);
+    if (b(params['censor'])) censor.value = bs(params['censor']);
     if (b(params['hideDismissed'])) hideDismissed.value = bs(params['hideDismissed']);
-
 
     if (b(params['oneofusNetDegrees'])) oneofusNetDegrees.value = int.parse(params['oneofusNetDegrees']!);
     if (b(params['oneofusNetPaths'])) oneofusNetPaths.value = int.parse(params['oneofusNetPaths']!);
@@ -44,6 +45,7 @@ class Prefs {
     if (showStatements.value) params['showStatements'] = showStatements.value.toString();
     if (showKeys.value) params['showKeys'] = showKeys.value.toString();
     if (!skipVerify.value) params['skipVerify'] = skipVerify.value.toString();
+    if (!censor.value) params['censor'] = censor.value.toString();
     if (!hideDismissed.value) params['hideDismissed'] = hideDismissed.value.toString();
 
     if (oneofusNetDegrees.value != 5) params['oneofusNetDegrees'] = oneofusNetDegrees.value.toString();

@@ -100,7 +100,8 @@ class Menus {
             MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             MyCheckbox(Prefs.skipVerify, '''skip verifying signatures (goes quicker;)'''),
             MyCheckbox(Prefs.postSignin, '''(requires new phone version) HTTP Post sign in'''),
-            MyCheckbox(Prefs.hideDismissed, '''hide content where count(dis) > count(recommend)'''),
+            MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
+            MyCheckbox(Prefs.hideDismissed, '''hide content where network #(dis) > #(recommend)'''),
             // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
             SubmenuButton(menuChildren: <Widget>[
               IntSettingDropdown(

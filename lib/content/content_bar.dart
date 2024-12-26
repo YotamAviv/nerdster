@@ -121,27 +121,6 @@ class _ContentBarState extends State<ContentBar> {
                             ))
                     .toList(),
               )),
-          SizedBox(
-              width: 100,
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  labelText: 'Censor',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0)),
-                ),
-                child: Tooltip(
-                  message:
-                      'Allow folks you follow for net.one-of-us.censor to censor content you see',
-                  child: Checkbox(
-                      value: contentBase.censor,
-                      onChanged: (censor) {
-                        contentBase.censor = censor!;
-                        setState(() => {});
-                      }),
-                ),
-              )),
         ],
       ),
     );
