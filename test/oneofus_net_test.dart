@@ -896,7 +896,7 @@ void main() async {
 
     await signInState.signIn(bart.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(toJson(labelKeyPathsX(lisa.token)), [
+    expect(toJson(labelPathsX(lisa.token)), [
       [
         {'sis': 'sis'}
       ],
@@ -916,7 +916,7 @@ void main() async {
 
     await signInState.signIn(homer.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(toJson(labelKeyPathsX(homer2.token)), [
+    expect(toJson(labelPathsX(homer2.token)), [
       [
         {'wife': 'wife'},
         {'hubby2': 'hubby2'}
@@ -925,7 +925,7 @@ void main() async {
 
     await signInState.signIn(homer2.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(toJson(labelKeyPathsX(homer.token)), [
+    expect(toJson(labelPathsX(homer.token)), [
       [
         {'hubby2 (0)': '(replaced)'}
       ],

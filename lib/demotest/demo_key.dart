@@ -43,6 +43,7 @@ class DemoKey {
     'simpsons': simpsons,
     'loner': loner,
     'egos': egos,
+    'blockDecap': blockDecap,
     'delegateMerge': delegateMerge,
     'delete3': deletions3,
     'blockOldKey': blockOldKey,

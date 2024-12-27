@@ -5,10 +5,13 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/show_qr.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
+import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/trust/trust.dart';
+import 'package:nerdster/util_ui.dart';
 
 // Goal: Test every kind of rejection / notification
 // - Attempt to block your key.
@@ -25,14 +28,7 @@ import 'package:nerdster/singletons.dart';
 // - TO-DO: Web-of-trust key equivalence rejected: Equivalent key already replaced.
 //   I don't think this can happen, not sure.. CONSIDER
 
-// TODO: Challenge is that 'I' or 'subject' might not be in network, and so hard to show:
-// - paths
-// - label
-
-// As Trust1 does BFS, it can encounter conflicts, and at the time, it does know:
-// - degree
-// - in case 
-
+const Widget _space = SizedBox(height: 10);
 
 printStatement(String statementToken) {
   TrustStatement statement = TrustStatement.find(statementToken)!;
@@ -88,20 +84,27 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
       ...oneofusEquiv.trustNonCanonical
     };
     for (MapEntry<String, String> e in all.entries) {
-      Jsonish statement = Jsonish.find(e.key)!;
+      TrustStatement statement = TrustStatement.find(e.key)!;
       String reason = e.value;
       MenuItemButton x = MenuItemButton(
           onPressed: () {
-            String text = Jsonish.encoder.convert(KeyLabels().show(statement.json));
-            alert(reason, text, ['Okay'], context);
-                // showDialog(
-                //     context: context,
-                //     barrierDismissible: true,
-                //     builder: (BuildContext context) => Dialog(
-                //         child: SizedBox(
-                //             width: (MediaQuery.of(context).size).width / 2,
-                //             child: StatementNotification(statement, reason))))
+            showDialog<void>(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                    title: Text(reason),
+                    content: StatementNotification(statement, reason),
+                    actions: [
+                      OutlinedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('Okay'))
+                    ]);
               },
+            );
+          },
           child: Text(reason));
       notifications.add(x);
     }
@@ -121,7 +124,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
 }
 
 class StatementNotification extends StatelessWidget {
-  final Jsonish statement;
+  final TrustStatement statement;
   final String reason;
 
   const StatementNotification(this.statement, this.reason, {super.key});
@@ -129,11 +132,100 @@ class StatementNotification extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Json json = statement.json;
-    String subject = statement.token;
     String text = Jsonish.encoder.convert(KeyLabels().show(json));
 
-    return Text(text,
-        style: GoogleFonts.courierPrime(
-            fontWeight: FontWeight.w700, fontSize: 12, color: Colors.black));
+    Node? iNode = oneofusNet.network[statement.iToken];
+
+    Node? subjectNode = oneofusNet.network[statement.subjectToken];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          // mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Flexible(
+                child: Linky('''A conflict was encountered during the trust network computation when processing the statement displayed to the right:
+
+This doesn't necessarily require you to do anything. For example if a key you trust is blocked by another key, then it matters to you, and you'll see a notification, but when the owner of that key signs in, he'll see a notification that a key is blocking his key, and so sorting this should be more on him than on you.
+That said, even in that situation, it may be the case that that guy never checks his notifications, and so maybe pick up the slack for him.''')),
+            Text(text,
+                style: GoogleFonts.courierPrime(
+                    fontWeight: FontWeight.w700, fontSize: 12, color: Colors.black))
+          ],
+        ),
+        _space,
+        Flexible(child: Linky('''Tactics for addressing this:
+- If you think you know the individuals involved, get in touch with them, figure it out, and get it straightened out.
+- Consider browsing as others. You'll see the notifications they would see, and this may shed light on the situation.
+- Email conflict-help@nerdtser.org. Include the link from the "menu => /etc => Generate link for current view".''')),
+        _space,
+        Text('''Trust paths to the statement's signing key:'''),
+        TrustRows(iNode),
+        _space,
+        Text('''Trust paths to the key the statements is trying to ${statement.verb.label}:'''),
+        TrustRows(subjectNode),
+        _space,
+        Flexible(
+            child: Linky('''This app obviously does not know which actual people posses which keys.
+It has labled the keys in the paths above by best guess monikers provided by your network; but they could be wrong.
+You can click on the keys on those paths to see their QR codes, and if appropriate, use your ONE-OF-US phone app and block.''')),
+        _space,
+      ],
+    );
+  }
+}
+
+class TrustRows extends StatelessWidget {
+  final Node? node;
+  const TrustRows(this.node, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!b(node)) return Text('Unknown, untrusted, unsure... ;(');
+
+    // Special case for me. no paths.
+    if (node!.token == signInState.center) return Text('- Me');
+
+    List<Row> rows = <Row>[];
+    for (List<Trust> path in node!.paths) {
+      List<Widget> monikers = <Widget>[];
+      monikers.add(Text('- Me'));
+      for (Trust trust in path.sublist(1)) {
+        TrustStatement statement = TrustStatement.find(trust.statementToken)!;
+        String moniker;
+        if (statement.verb == TrustVerb.trust) {
+          moniker = statement.moniker!;
+        } else {
+          assert(statement.verb == TrustVerb.replace);
+          moniker = '(replaced)';
+        }
+        monikers.add(Text(' --"$moniker"-> '));
+        monikers.add(NameKeyWidget(keyLabels.labelKey(statement.subjectToken)!, statement.subject));
+      }
+      rows.add(Row(children: monikers));
+    }
+
+    return Column(children: rows);
+  }
+}
+
+class NameKeyWidget extends StatelessWidget {
+  final String display;
+  final Json keyJson;
+
+  const NameKeyWidget(this.display, this.keyJson, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        ShowQr(encoder.convert(keyJson)).show(context);
+      },
+      child: Text(
+        display,
+        style: linkStyle,
+      ),
+    );
   }
 }

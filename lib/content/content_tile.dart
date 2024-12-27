@@ -302,8 +302,7 @@ class SubjectTitle extends StatelessWidget {
                   myLaunchUrl(url);
                 },
                 child: Text((subject.json['title']),
-                    style: const TextStyle(
-                        color: Colors.blueAccent, decoration: TextDecoration.underline),
+                    style: linkStyle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis))));
   }

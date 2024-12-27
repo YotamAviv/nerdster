@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 const Color linkColor = Colors.blueAccent;
 final Color linkColorAlready = Colors.blue.shade900;
 final Color linkColorDisabled = Colors.blue.shade200;
+const TextStyle hintStyle = TextStyle(color: Colors.black26);
 const TextStyle linkStyle = TextStyle(color: linkColor, decoration: TextDecoration.underline);
 
 // TODO: Add param context, show alert if can't

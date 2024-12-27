@@ -18,6 +18,7 @@ import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/util_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 /// Nerdster web client QR sign-in:

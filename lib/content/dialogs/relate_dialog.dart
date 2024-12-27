@@ -3,8 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/util_ui.dart';
 
 Future<Json?> relateDialog(
     BuildContext context, Json subject, Json otherSubject, ContentStatement? priorStatement) {
