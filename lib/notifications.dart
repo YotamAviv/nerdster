@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
-
-
-/// TODO: a lot, see [OneofusNet]
-
 
 // Goal: Test every kind of rejection / notification
 // - Attempt to block your key.
@@ -22,20 +20,25 @@ import 'package:nerdster/singletons.dart';
 // - TODO: Attempt to replace a blocked key.
 // - Attempt to trust blocked key.
 // - Web-of-trust key equivalence rejected: Replaced key not in network. ('simpsons, degrees=2')
-// - TODO: Web-of-trust key equivalence rejected: Replacing key not in network.
-// - TODO: Web-of-trust key equivalence rejected: Equivalent key already replaced.
+// - TO-DO: Web-of-trust key equivalence rejected: Replacing key not in network.
+//   I don't think this can happen, not sure.. CONSIDER
+// - TO-DO: Web-of-trust key equivalence rejected: Equivalent key already replaced.
+//   I don't think this can happen, not sure.. CONSIDER
 
-
-// TODO: Challenge is that I or subject might not be in network, and so hard to show:
+// TODO: Challenge is that 'I' or 'subject' might not be in network, and so hard to show:
 // - paths
 // - label
-// Helpers, WIP..
-dumpStatement(String statementToken) {
-    TrustStatement statement = TrustStatement.find(statementToken)!;
-    var nice = keyLabels.show(statement.json);
-    String string = encoder.convert(nice);
-    print(string);
 
+// As Trust1 does BFS, it can encounter conflicts, and at the time, it does know:
+// - degree
+// - in case 
+
+
+printStatement(String statementToken) {
+  TrustStatement statement = TrustStatement.find(statementToken)!;
+  var nice = keyLabels.show(statement.json);
+  String string = encoder.convert(nice);
+  print(string);
 }
 
 class NotificationsMenu extends StatefulWidget {
@@ -79,17 +82,28 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
     }
     print('notifications.build(${Comp.compsReady([oneofusNet, oneofusEquiv])})');
     List<Widget> notifications = <Widget>[];
-    for (MapEntry<String, String> e in oneofusNet.rejected.entries) {
+    Map<String, String> all = {
+      ...oneofusNet.rejected,
+      ...oneofusEquiv.rejected,
+      ...oneofusEquiv.trustNonCanonical
+    };
+    for (MapEntry<String, String> e in all.entries) {
       Jsonish statement = Jsonish.find(e.key)!;
       String reason = e.value;
-      RejectedNotification n = RejectedNotification(statement, reason);
-      notifications.add(n);
-    }
-    for (MapEntry<String, String> e in oneofusEquiv.trustNonCanonical.entries) {
-      Jsonish statement = Jsonish.find(e.key)!;
-      String reason = e.value;
-      TrustNonCanonicalNotification n = TrustNonCanonicalNotification(statement, reason);
-      notifications.add(n);
+      MenuItemButton x = MenuItemButton(
+          onPressed: () {
+            String text = Jsonish.encoder.convert(KeyLabels().show(statement.json));
+            alert(reason, text, ['Okay'], context);
+                // showDialog(
+                //     context: context,
+                //     barrierDismissible: true,
+                //     builder: (BuildContext context) => Dialog(
+                //         child: SizedBox(
+                //             width: (MediaQuery.of(context).size).width / 2,
+                //             child: StatementNotification(statement, reason))))
+              },
+          child: Text(reason));
+      notifications.add(x);
     }
 
     print('notifications.length=${notifications.length}');
@@ -106,67 +120,20 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
   }
 }
 
-class RejectedNotification extends StatelessWidget {
+class StatementNotification extends StatelessWidget {
   final Jsonish statement;
   final String reason;
 
-  const RejectedNotification(this.statement, this.reason, {super.key});
+  const StatementNotification(this.statement, this.reason, {super.key});
 
   @override
   Widget build(BuildContext context) {
     Json json = statement.json;
     String subject = statement.token;
+    String text = Jsonish.encoder.convert(KeyLabels().show(json));
 
-    return
-        // InkWell(
-        //     onTap: (() => {}),
-        //     child: Tooltip(
-        //         richMessage: WidgetSpan(child: qrTooltip),
-        //         child: Text('{JS}',
-        //             style: GoogleFonts.courierPrime(
-        //                 fontWeight: FontWeight.w700,
-        //                 fontSize: 12,
-        //                 color: Colors.black)))),
-//    )
-        Tooltip(
-      message: Jsonish.encoder.convert(KeyLabels().show(json)),
-      child: Text(reason),
-    );
-
-    // Text(reason);
-
-    // Text(Jsonish.encoder.convert(oneofusEquiv.show(json)));
-  }
-}
-
-class TrustNonCanonicalNotification extends StatelessWidget {
-  final Jsonish statement;
-  final String reason;
-
-  const TrustNonCanonicalNotification(this.statement, this.reason, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    Json json = statement.json;
-
-    return
-        // InkWell(
-        //     onTap: (() => {}),
-        //     child: Tooltip(
-        //         richMessage: WidgetSpan(child: qrTooltip),
-        //         child: Text('{JS}',
-        //             style: GoogleFonts.courierPrime(
-        //                 fontWeight: FontWeight.w700,
-        //                 fontSize: 12,
-        //                 color: Colors.black)))),
-//    )
-        Tooltip(
-      message: Jsonish.encoder.convert(KeyLabels().show(json)),
-      child: Text(reason),
-    );
-
-    // Text(reason);
-
-    // Text(Jsonish.encoder.convert(oneofusEquiv.show(json)));
+    return Text(text,
+        style: GoogleFonts.courierPrime(
+            fontWeight: FontWeight.w700, fontSize: 12, color: Colors.black));
   }
 }
