@@ -55,3 +55,22 @@ Future<(DemoKey, DemoKey?)> decap2() async {
 
   return (bart, null);
 }
+
+// I've lost track of why the other 2 above are called decap, but this is a true decapitation.
+// Homer trust marge, who blocks him, and so her block counts even though it takes her out as well.
+Future<(DemoKey, DemoKey?)> blockDecap() async {
+  useClock(TestClock());
+
+  DemoKey homer = await DemoKey.findOrCreate('homer');
+  DemoKey marge = await DemoKey.findOrCreate('marge');
+  DemoKey bart = await DemoKey.findOrCreate('bart');
+
+  await bart.doTrust(TrustVerb.trust, homer);
+  await homer.doTrust(TrustVerb.trust, marge);
+  await marge.doTrust(TrustVerb.block, homer);
+
+
+  useClock(LiveClock());
+
+  return (bart, null);
+}

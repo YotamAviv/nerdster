@@ -24,15 +24,11 @@ abstract class NetTreeModel {
     // Special case for me. no paths.
     if (token == signInState.center) return [rootLabel];
 
-    List<String> labeledKeyPaths = <String>[];
-    // We don't show paths for delegate.
-    // DEFER: We chould add '$rootLabel->' and look up the moniker of the trust to the delegate.
-    if (followNet.delegate2oneofus.containsKey(token)) {
-      assert(!oneofusNet.network.containsKey(token));
-      return ['delegate key'];
-    }
+    // DEFER: We don't show much for delegate keys.
+    if (followNet.delegate2oneofus.containsKey(token)) return ['delegate key'];
 
-    for (List<LabeledEdge> labeledKeyPath in labelKeyPathsX(token!)) {
+    List<String> labeledKeyPaths = <String>[];
+    for (List<LabeledEdge> labeledKeyPath in labelPathsX(token!)) {
       String labeledPath = labeledKeyPath.map((e) => e.edgeLabel).join('->');
       labeledKeyPaths.add('$rootLabel->$labeledPath');
     }
@@ -162,27 +158,33 @@ class LabeledEdge {
   // Json toJson() => {'key': keyLabel, 'edge': edgeLabel};
 }
 
-LabeledEdge labelEdge(Trust edge) {
-  String edgemoniker = TrustStatement.find(edge.statementToken)!.moniker!;
-  String keyLabel = keyLabels.labelKey(edge.node.token)!;
-  return LabeledEdge(edgemoniker, keyLabel);
+LabeledEdge labelTrust(Trust trust) {
+  String trustMoniker = TrustStatement.find(trust.statementToken)!.moniker!;
+  String keyLabel = keyLabels.labelKey(trust.node.token)!;
+  return LabeledEdge(trustMoniker, keyLabel);
 }
 
-List<LabeledEdge> labelKeyPathX(Path path) {
+List<LabeledEdge> labelPathX(Path path) {
   List<LabeledEdge> out = <LabeledEdge>[];
-  for (Trust edge in path.sublist(1)) {
-    TrustStatement statement = TrustStatement.find(edge.statementToken)!;
-    String moniker = statement.moniker ?? '(replaced)';
-    LabeledEdge labeledEdge = LabeledEdge(keyLabels.labelKey(edge.node.token)!, moniker);
+  for (Trust trust in path.sublist(1)) {
+    TrustStatement statement = TrustStatement.find(trust.statementToken)!;
+    String moniker;
+    if (statement.verb == TrustVerb.trust) {
+      moniker = statement.moniker!;
+    } else {
+      assert(statement.verb == TrustVerb.replace);
+      moniker = '(replaced)';
+    }
+    LabeledEdge labeledEdge = LabeledEdge(keyLabels.labelKey(trust.node.token)!, moniker);
     out.add(labeledEdge);
   }
   return out;
 }
 
-List<List<LabeledEdge>> labelKeyPathsX(String token) {
+List<List<LabeledEdge>> labelPathsX(String token) {
   List<List<LabeledEdge>> out = <List<LabeledEdge>>[];
   for (Path path in oneofusNet.network[token]!.paths) {
-    out.add(labelKeyPathX(path));
+    out.add(labelPathX(path));
   }
   return out;
 }

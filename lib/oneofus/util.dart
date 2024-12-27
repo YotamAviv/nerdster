@@ -10,8 +10,6 @@ import 'jsonish.dart';
 const OouCryptoFactory crypto = CryptoFactoryEd25519();
 const JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
-const TextStyle hintStyle = TextStyle(color: Colors.black26);
-
 int i(dynamic d) => d == null ? 0 : 1;
 bool b(dynamic d) => d == null ? false : true;
 bool bb(bool? bb) => (bb == null) ? false : bb;
