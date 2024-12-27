@@ -37,9 +37,6 @@ import 'package:nerdster/trust/trust1.dart';
 ///   - depends on:
 ///     - DelegateNet
 
-/// BUGS:
-/// - I don't see WOT notifications in Simpsons (I should). Clean up the rejected collection business.
-
 /// Notifications plan (WIP)
 ///
 /// Conflicts, I think these are all "rejections"
@@ -95,7 +92,7 @@ class OneofusNet with Comp, ChangeNotifier {
   int _blockerBenefit = 1;
   LinkedHashMap<String, Node> _network = LinkedHashMap<String, Node>();
   final Map<String, int> _token2keyCounter = <String, int>{};
-  final Map<String, String> _rejected = <String, String>{};
+  final LinkedHashMap<String, String> _rejected = LinkedHashMap<String, String>();
 
   int? getPosition(token) => _token2keyCounter[token];
 
@@ -118,16 +115,8 @@ class OneofusNet with Comp, ChangeNotifier {
   LinkedHashMap<String, Node> get network => _network;
 
   Map<String, String> get rejected => UnmodifiableMapView(_rejected);
-  void addWotEquivRejected(String statementToken, String reason) {
-    // var jsonish = Jsonish.find(statementToken)!;
-    // print('${keyLabels.show(jsonish.ppJson)}, $reason');
-    // Statement statement = Statement.make(jsonish);
-    // print(keyLabels.labelKey(statement.iToken));
-    // print(keyLabels.labelKey(statement.subjectToken));
-    if (!_rejected.containsKey(statementToken)) {
-      _rejected[statementToken] = reason;
-    }
-  }
+  // TEMP: Make sure that the WOT rejections end up being shown somewhere as they've been removed from here.
+  // return UnmodifiableMapView({... _rejected, ...oneofusEquiv.rejected});
 
   void listen() {
     if (!ready) {

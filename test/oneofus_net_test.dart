@@ -810,16 +810,17 @@ void main() async {
     var expectedNetwork = {"son": null, "friend": null, "sis": null, "homer2": null, "moms": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
-    expect(oneofusNet.rejected.length, 1);
-    MapEntry e = oneofusNet.rejected.entries.first;
-    String rejectedStatementToken = e.key;
+    expect(oneofusNet.rejected.length, 0);
+    expect(oneofusEquiv.rejected.length, 1);
+    MapEntry e = oneofusEquiv.rejected.entries.first;
+    String rejectedToken = e.key;
     String reason = e.value;
-    dumpStatement(rejectedStatementToken);
-    TrustStatement rejectedStatement = TrustStatement.find(rejectedStatementToken)!;
+    printStatement(rejectedToken);
+    TrustStatement rejectedStatement = TrustStatement.find(rejectedToken)!;
     expect(keyLabels.labelKey(rejectedStatement.iToken), 'homer2');
     expect(rejectedStatement.verb, TrustVerb.replace);
     expect(rejectedStatement.subjectToken, homer.token); // no label (homer not in network)
-    expect(reason, 'Web-of-trust key equivalence rejected: Replaced key not in network.');
+    expect(reason, 'Replaced key not in network.');
   });
 
   // Notification:
@@ -846,10 +847,10 @@ void main() async {
 
     expect(oneofusNet.rejected.length, 1);
     MapEntry e = oneofusNet.rejected.entries.first;
-    String rejectedStatementToken = e.key;
+    String rejectedToken = e.key;
     String reason = e.value;
-    dumpStatement(rejectedStatementToken);
-    TrustStatement rejectedStatement = TrustStatement.find(rejectedStatementToken)!;
+    printStatement(rejectedToken);
+    TrustStatement rejectedStatement = TrustStatement.find(rejectedToken)!;
     expect(keyLabels.labelKey(rejectedStatement.iToken), 'clown');
     expect(rejectedStatement.verb, TrustVerb.replace);
     expect(keyLabels.labelKey(rejectedStatement.subjectToken), 'son');
@@ -866,9 +867,9 @@ void main() async {
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(oneofusNet.rejected.length, 1);
     MapEntry e = oneofusNet.rejected.entries.first;
-    String rejectedStatementToken = e.key;
+    String rejectedToken = e.key;
     String reason = e.value;
-    expect(lisaBlocksMarge.token, rejectedStatementToken);
+    expect(lisaBlocksMarge.token, rejectedToken);
     expect(reason, 'Attempt to block your key.');
   });
 
@@ -883,9 +884,9 @@ void main() async {
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(oneofusNet.rejected.length, 1);
     MapEntry e = oneofusNet.rejected.entries.first;
-    String rejectedStatementToken = e.key;
+    String rejectedToken = e.key;
     String reason = e.value;
-    expect(rejected.token, rejectedStatementToken);
+    expect(rejected.token, rejectedToken);
     expect(reason, 'Attempt to replace a replaced key.');
   });
 

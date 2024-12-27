@@ -97,6 +97,7 @@ class _NetTileState extends State<NetTile> {
         }
       } else {
         // Key (delegate or equivalent)
+        iconColor = Colors.black54;
         bool isDelegate = followNet.delegate2oneofus.containsKey(node.token);
         if (!revoked) {
           iconPair = keyIconPair;
@@ -115,6 +116,7 @@ class _NetTileState extends State<NetTile> {
       }
     } else {
       // Statement
+      iconColor = Colors.black;
       iconTooltip = 'statement';
       iconPair = statementIconPair;
       if (node.rejected) {

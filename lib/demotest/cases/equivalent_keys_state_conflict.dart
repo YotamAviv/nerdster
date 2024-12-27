@@ -68,7 +68,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   };
   jsonShowExpect(dump, expected);
   myExpect(oneofusNet.rejected.length, 1);
-  dumpStatement(oneofusNet.rejected.keys.first);
+  printStatement(oneofusNet.rejected.keys.first);
   myExpect(oneofusNet.rejected[lisaTrustsMilhouse.token], 'A trusted key was blocked.');
 
   await signInState.signIn(bart2.token, null);
