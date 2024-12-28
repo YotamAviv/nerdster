@@ -7,15 +7,29 @@ import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 
 class Tokenize {
-  static Future<(String, String)?> make(BuildContext context) async {
+  static Future<void> show(BuildContext context) async {
     TextEditingController controller = TextEditingController();
 
-    void okHandler() {
+    Future<void> okHandler() async {
       try {
-        dynamic json = jsonDecode(controller.text);
+        Json json = jsonDecode(controller.text);
+        bool removedId = false;
+        if (json.containsKey('id')) {
+          json.remove('id');
+          removedId = true;
+        }
         Jsonish jsonish = Jsonish(json);
-        Navigator.pop(context, (jsonish.token, jsonish.ppJson));
-      } catch(e) {
+        Navigator.of(context).pop();
+        
+        await alert(
+            removedId ? 'removed "id", formatted, hashed' : 'formatted, hashed',
+            '''token (sha1 hash of formatted JSON):
+${jsonish.token}
+
+formatted JSON:
+${jsonish.ppJson}''',
+            ['okay'], context);
+      } catch (e) {
         alert('Error', e.toString(), ['Okay'], context);
       }
     }
@@ -25,12 +39,15 @@ class Tokenize {
         barrierDismissible: false,
         builder: (context) => Dialog(
                 child: Column(children: [
-              TextField(
-                  controller: controller,
-                  maxLines: 30,
-                  style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black)),
+              Expanded(
+                  child: TextField(
+                      controller: controller,
+                      maxLines: null,
+                      expands: true,
+                      style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black))),
               const SizedBox(height: 10),
               OkCancel(okHandler, 'Tokenize'),
+              const SizedBox(height: 5),
             ])));
   }
 }
