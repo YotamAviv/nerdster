@@ -6,7 +6,6 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/singletons.dart';
 
-/// CONSIDER: Display (instead of imply) 'not signed in'.
 class SignInMenu extends StatefulWidget {
   static const SignInMenu _singleton = SignInMenu._internal();
   factory SignInMenu() => _singleton;
@@ -25,7 +24,6 @@ class _SignInMenuState extends State<SignInMenu> {
 
   Future<void> listen() async {
     await keyLabels.waitUntilReady();
-    // bad, null: print('_SignInMenuState.listen(keyLabels): ${BarRefresh.stopwatch!.elapsed}');
     setState(() {});
   }
 
