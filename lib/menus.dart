@@ -141,19 +141,8 @@ $link''',
             child: const Text('Generate link for current view..')),
         MenuItemButton(
             child: const Text('Tokenize'),
-            onPressed: () async {
-              (String, String)? tokenNpp = (await Tokenize.make(context));
-              if (b(tokenNpp)) {
-                await alert(
-                    'formatted, hashed',
-                    '''token (sha1 hash of formatted JSON):
-${tokenNpp!.$1}
-
-formatted JSON:
-${tokenNpp.$2}''',
-                    ['okay'],
-                    context);
-              }
+            onPressed: () {
+              Tokenize.show(context);
             }),
         MenuItemButton(
             onPressed: () async {
