@@ -142,14 +142,22 @@ $link''',
         MenuItemButton(
             child: const Text('Tokenize'),
             onPressed: () {
-              Tokenize.show(context);
+              Tokenize.startTokenize(context);
             }),
+        MenuItemButton(
+            child: const Text('Verify'),
+            onPressed: () {
+              Tokenize.startVerify(context);
+            }),
+      ], child: const Text('/etc')),
+
+      SubmenuButton(menuChildren: <Widget>[
         MenuItemButton(
             onPressed: () async {
               await About.show(context);
             },
             child: const Text('About')),
-      ], child: const Text('/etc')),
+      ], child: const Text('?')),
 
       // Dev
       if (Prefs.showDevMenu.value)
