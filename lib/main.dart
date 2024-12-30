@@ -189,24 +189,10 @@ dynamic hardCodedSignin = {
   // FireChoice.emulator: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'}
 
   // Loner
-  FireChoice.emulator: {
-    "one-of-us.net": '33dddd8f0638bb617f6274f8dccdc9c4d3b754aa',
-    "nerdster.org": {
-      "crv": "Ed25519",
-      "d": "lfnx_MYqtMYxdpznMuf9V-GfRly6UtS_MpNd2obEK_A",
-      "kty": "OKP",
-      "x": "yQdgsPSBj3QyOqUL7PCqxsc6UH3dMk8nzvKveG506jM"
-    }
-  }
+  // FireChoice.emulator: {
+  // }
 
   // simpsons
   // FireChoice.emulator: {
-  //   "one-of-us.net": 'd466beac8a2413b897c50c84f2543d73968ec456',
-  //   "nerdster.org": {
-  //     "crv": "Ed25519",
-  //     "d": "HXI46ZmAT8kkNp4njYDL72usUNowYOGJA4xuDanYxH4",
-  //     "kty": "OKP",
-  //     "x": "ZXnLr2JA8EnE89E3LKwfEQuzipUs4VBQZPESB1vWle8"
-  //   }
   // }
 };
