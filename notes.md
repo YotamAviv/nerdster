@@ -82,12 +82,31 @@ UI for clear relate/equate.
   - limit path length?
   - limit time?
 
-** Firebase emulators
+## Firebase emulators
 Run these from 'nerdster' base directory.
 $ firebase --project=nerdster emulators:start
 $ firebase --project=one-of-us-net --config=oneofus-nerdster.firebase.json emulators:start
 
-## Doc
+### Export PROD Firebase for use by local emulators
+firebase projects:list
+gcloud projects list
+gcloud auth login
+
+firebase use one-of-us-net
+gcloud config set project one-of-us-net
+export NOW=`date2`
+echo $NOW
+gcloud firestore export gs://one-of-us-net/oneofus-$NOW
+gsutil -m cp -r gs://one-of-us-net/oneofus-$NOW .
+
+firebase use nerdster
+gcloud config set project nerdster
+gcloud firestore export gs://nerdster/nerdster-$NOW
+gsutil -m cp -r gs://nerdster/nerdster-$NOW .
+
+
+firebase --project=nerdster emulators:start --import exports/nerdster-12-30-24--08-17/
+firebase --project=one-of-us-net --config=oneofus-nerdster.firebase.json emulators:start --import exports/oneofus-12-30-24--08-17/
 
 ## code labels:
 These are in flux, but I've been using

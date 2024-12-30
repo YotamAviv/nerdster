@@ -126,8 +126,14 @@ class RateBodyState extends State<RateBody> {
       if (commentController.text.isNotEmpty) {
         comment = commentController.text;
       }
+
+      // When rating a statement, use the token instead of the entire statement.
+      var subject = (widget.subject.json.containsKey('statement'))
+          ? getToken(widget.subject.json)
+          : widget.subject.json;
+
       json = ContentStatement.make(
-          signInState.signedInDelegatePublicKeyJson!, ContentVerb.rate, widget.subject.json,
+          signInState.signedInDelegatePublicKeyJson!, ContentVerb.rate, subject,
           recommend: recommendX, dismiss: dismiss, comment: comment);
     }
     print(Jsonish(json).ppJson);
@@ -234,7 +240,8 @@ class RateBodyState extends State<RateBody> {
       warning = SizedBox(
         width: 120.0,
         child: Tooltip(
-            message: '''Subjects (ex. {books, articles, or movies}) just exist, but Nerd'ster user reactions (ex. {rate, comment, dis}) are fleeting.
+            message:
+                '''Subjects (ex. {books, articles, or movies}) just exist, but Nerd'ster user reactions (ex. {rate, comment, dis}) are fleeting.
 A user can have one disposition on a subject, and so any newer reaction by him (including an edit to a comment) will overwrite his earlier one,
 which will make your reaction to his reaction lost.''',
             child: Text('reacting to a reaction?', style: linkStyle)),
