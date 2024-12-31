@@ -186,7 +186,7 @@ dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'},
 
   // Yotam
-  // FireChoice.emulator: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'}
+  FireChoice.emulator: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'}
 
   // Loner
   // FireChoice.emulator: {
