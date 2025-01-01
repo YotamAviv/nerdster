@@ -47,7 +47,7 @@ class SignInState with ChangeNotifier {
 
     // Check if delegate is delegate of Oneofus
     await Comp.waitOnComps([followNet]);
-    if (followNet.delegate2oneofus[_signedInDelegate] != _center) {
+    if (b(nerdsterKeyPair) && followNet.delegate2oneofus[_signedInDelegate] != _center) {
       print('********** ${followNet.delegate2oneofus[_signedInDelegate]} != $_center **********');
       print('********** followNet.delegate2oneofus[_signedInDelegate] != _center **********');
     }
