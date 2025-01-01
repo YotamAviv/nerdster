@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/key_store.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
@@ -52,13 +53,16 @@ Future<void> qrSignin(BuildContext context) async {
     // The utility 'postman' didn't help, as it somehow did work there, maybe. I'm still confused.
     // I finally noticed that this URL, https://signin-tj5ghgc22q-uc.a.run.app, is spit out after
     // deploy, and ideed it works .
-    // 
+    //
     // Stackoverflow (https://stackoverflow.com/questions/76306434/unpredictable-urls-with-firebase-cloud-functions-2nd-gen)
     // notes that predictable URLs still do work, but mine didn't, not in camelCase, but yes in
     // notcamelcase, and so 'signin' (not 'signIn').
     forPhone['method'] = 'POST';
     // OLD: forPhone['uri'] = 'https://us-central1-nerdster.cloudfunctions.net/signin';
     forPhone['uri'] = 'https://signin.nerdster.org/signin';
+    if (fireChoice == FireChoice.emulator) {
+      forPhone['uri'] = 'http://127.0.0.1:5001/nerdster/us-central1/signin)';
+    }
   } else {
     forPhone['method'] = 'Firestore';
   }
@@ -130,11 +134,17 @@ Future<void> qrSignin(BuildContext context) async {
       OouKeyPair? nerdsterKeyPair;
       if (b(data['publicKey'])) {
         PkePublicKey phonePkePublicKey = await crypto.parsePkePublicKey(data['publicKey']);
+
         String? delegateCiphertext = data['delegateCiphertext'];
+        String? delegateCleartext = data['delegateCleartext'];
+        assert(!(b(delegateCiphertext) && b(delegateCleartext)));
         if (b(delegateCiphertext)) {
-          String delegateCleartext = await keyPair.decrypt(delegateCiphertext!, phonePkePublicKey);
-          nerdsterKeyPair = await crypto.parseKeyPair(jsonDecode(delegateCleartext));
+          print('delegate key encrypted: YES');
+          delegateCleartext = await keyPair.decrypt(delegateCiphertext!, phonePkePublicKey);
+        } else {
+          print('delegate key encrypted: NO');
         }
+        nerdsterKeyPair = await crypto.parseKeyPair(jsonDecode(delegateCleartext!));
       }
 
       // Stop listening
