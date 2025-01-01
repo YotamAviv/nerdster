@@ -39,18 +39,18 @@ class SignInState with ChangeNotifier {
       _signedInDelegateKeyPair = nerdsterKeyPair;
       _signedInDelegatePublicKey = await nerdsterKeyPair!.publicKey;
       _signedInDelegatePublicKeyJson = await _signedInDelegatePublicKey!.json;
-      _signedInDelegate = getToken(await _signedInDelegatePublicKey!.json);
+      _signedInDelegate = getToken(_signedInDelegatePublicKeyJson);
       _signer = await OouSigner.make(nerdsterKeyPair);
-      
-      // Check if delegate is delegate of Oneofus
-      await Comp.waitOnComps([followNet]);
-      if (followNet.delegate2oneofus[_signedInDelegate] != _center) {
-        print('************ ${followNet.delegate2oneofus[_signedInDelegate]} != $_center ************');
-        print('************ followNet.delegate2oneofus[_signedInDelegate] != _center ************');
-      }
     }
 
     notifyListeners();
+
+    // Check if delegate is delegate of Oneofus
+    await Comp.waitOnComps([followNet]);
+    if (followNet.delegate2oneofus[_signedInDelegate] != _center) {
+      print('********** ${followNet.delegate2oneofus[_signedInDelegate]} != $_center **********');
+      print('********** followNet.delegate2oneofus[_signedInDelegate] != _center **********');
+    }
   }
 
   void signOut() {
