@@ -196,3 +196,33 @@ dynamic hardCodedSignin = {
   // FireChoice.emulator: {
   // }
 };
+
+// simpsons PROD
+String bart = '163d570bdbcdb84c78ec4138813569e773806d8b';
+var bartKeys = {
+  "one-of-us.net": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "dm2mW57IpaFWBDvCl9zDZz6okLB26kDVZzVqEc0tDTc"
+  },
+  "nerdster.org": {
+    "crv": "Ed25519",
+    "d": "NWraRSnhWNwi-35aANivWYtBgRWmryPiDtN_CaxDvPA",
+    "kty": "OKP",
+    "x": "3X_v6Zlxztv85f202TZ8BsxM8OAWgta8Bu_vjoSa-LI"
+  }
+};
+var bartFullKeys = {
+  "one-of-us.net": {
+    "crv": "Ed25519",
+    "d": "vb_axJuiskCfxKBLONtbFRTf8qRukxW73Urc2AZ6LeQ",
+    "kty": "OKP",
+    "x": "dm2mW57IpaFWBDvCl9zDZz6okLB26kDVZzVqEc0tDTc"
+  },
+  "nerdster.org": {
+    "crv": "Ed25519",
+    "d": "NWraRSnhWNwi-35aANivWYtBgRWmryPiDtN_CaxDvPA",
+    "kty": "OKP",
+    "x": "3X_v6Zlxztv85f202TZ8BsxM8OAWgta8Bu_vjoSa-LI"
+  }
+};
