@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 bool bDev = fireChoice != FireChoice.prod;
 
 class Prefs {
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+
   static final ValueNotifier<bool> keyLabel = ValueNotifier(true);
   static final ValueNotifier<bool> showJson = ValueNotifier(bDev);
   static final ValueNotifier<bool> showStatements = ValueNotifier(bDev);
@@ -14,7 +17,7 @@ class Prefs {
   static final ValueNotifier<bool> hideDismissed = ValueNotifier<bool>(true);
 
   static final ValueNotifier<bool> postSignin = ValueNotifier<bool>(true); // TODO: Eliminate
-  static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false); // TODO: Persist
+  static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> showDevMenu = ValueNotifier<bool>(bDev); // TODO: Eliminate, do differently
 
   static final ValueNotifier<int> oneofusNetDegrees = ValueNotifier<int>(5);
@@ -22,7 +25,7 @@ class Prefs {
   static final ValueNotifier<int> followNetDegrees = ValueNotifier<int>(5);
   static final ValueNotifier<int> followNetPaths = ValueNotifier<int>(1);
 
-  static void init() {
+  static Future<void> init() async {
     Map<String, String> params = Uri.base.queryParameters;
     if (b(params['keyLabel'])) keyLabel.value = bs(params['keyLabel']);
     if (b(params['showJson'])) showJson.value = bs(params['showJson']);
@@ -36,6 +39,15 @@ class Prefs {
     if (b(params['oneofusNetPaths'])) oneofusNetPaths.value = int.parse(params['oneofusNetPaths']!);
     if (b(params['followNetDegrees'])) followNetDegrees.value = int.parse(params['followNetDegrees']!);
     if (b(params['followNetPaths'])) followNetPaths.value = int.parse(params['followNetPaths']!);
+
+    try {
+      String? skipLgtmS = await _storage.read(key: 'skipLgtm');
+      if (b(skipLgtmS)) skipLgtm.value = bool.parse(skipLgtmS!);
+    } catch (e) {
+      print (e);
+    }
+
+    Prefs.skipLgtm.addListener(listener);
   }
 
   static void setParams(Map<String, String> params) {
@@ -52,6 +64,10 @@ class Prefs {
     if (oneofusNetPaths.value != 1) params['oneofusNetPaths'] = oneofusNetPaths.value.toString();
     if (followNetDegrees.value != 5) params['followNetDegrees'] = followNetDegrees.value.toString();
     if (followNetPaths.value != 1) params['followNetPaths'] = followNetPaths.value.toString();
+  }
+
+  static Future<void> listener() async {
+    await _storage.write(key: 'skipLgtm', value: Prefs.skipLgtm.value.toString());
   }
 
   Prefs._();

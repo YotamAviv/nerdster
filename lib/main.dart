@@ -89,7 +89,7 @@ Future<void> main() async {
     FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore());
     FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
   }
-  Prefs.init();
+  await Prefs.init();
   TrustStatement.init();
   ContentStatement.init();
   await About.init();
@@ -186,11 +186,18 @@ dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'},
 
   // Yotam
-  FireChoice.emulator: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'}
+  // FireChoice.emulator: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'}
 
   // Loner
-  // FireChoice.emulator: {
-  // }
+  FireChoice.emulator: {
+    "one-of-us.net": 'd99df66319f25894262ae9929327e84045e4f9d0',
+    "nerdster.org": {
+      "crv": "Ed25519",
+      "d": "zOge-pqee8VR1tZy-AgyfO1lDHczXGP2uh9Q40wJCXg",
+      "kty": "OKP",
+      "x": "KQIk3V0mVKnjGR5CikRNXvjrplgk1U20CIZkfazWcr8"
+    }
+  }
 
   // simpsons
   // FireChoice.emulator: {
