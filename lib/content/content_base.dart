@@ -291,8 +291,10 @@ class ContentBase with Comp, ChangeNotifier {
       for (String relatedToken in relatedTokens) {
         assert(!_isCensored(relatedToken));
         // Skip dismissed. TODO: Test
-        if (_subject2statements[relatedToken]!.any((statement) =>
-            b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.center)) {
+        List<ContentStatement>? relatedStatements = _subject2statements[relatedToken];
+        if (b(relatedStatements) &&
+            relatedStatements!.any((statement) =>
+                b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.center)) {
           continue;
         }
 
@@ -395,12 +397,12 @@ class ContentBase with Comp, ChangeNotifier {
   static Set<ContentType> findContentTypes(Json json) {
     if (json.containsKey('statement')) {
       ContentStatement statement = ContentStatement(Jsonish(json));
-      dynamic subject = statement.subject;
-      dynamic otherSubject = statement.other;
+      Json? subject = _findSubject(statement.subject);
+      Json? otherSubject = _findSubject(statement.other);
       if (b(subject) && b(otherSubject)) {
-        return findContentTypes(subject).union(findContentTypes(otherSubject));
+        return findContentTypes(subject!).union(findContentTypes(otherSubject!));
       } else if (b(subject)) {
-        return findContentTypes(subject);
+        return findContentTypes(subject!);
       } else {
         return {};
       }
@@ -410,6 +412,13 @@ class ContentBase with Comp, ChangeNotifier {
     } else {
       return {};
     }
+  }
+
+  static Json? _findSubject(dynamic tokenOrJson) {
+    if (!b(tokenOrJson)) return null;
+    if (tokenOrJson is Json) return tokenOrJson;
+    Jsonish? jsonish = Jsonish.find(tokenOrJson as String);
+    return jsonish?.json;
   }
 
   dynamic dump() {
