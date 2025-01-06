@@ -140,14 +140,9 @@ $link''',
             },
             child: const Text('Generate link for current view..')),
         MenuItemButton(
-            child: const Text('Tokenize'),
+            child: const Text('Tokenize/Verify..'),
             onPressed: () {
               Tokenize.startTokenize(context);
-            }),
-        MenuItemButton(
-            child: const Text('Verify'),
-            onPressed: () {
-              Tokenize.startVerify(context);
             }),
       ], child: const Text('/etc')),
 
