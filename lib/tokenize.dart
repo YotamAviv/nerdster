@@ -8,78 +8,68 @@ import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 
 class Tokenize {
+  static final OouVerifier _oouVerifier = OouVerifier();
+
   static Future<void> startTokenize(BuildContext context) async {
-    Json json = await collect(context);
-
+    List words = [];
+    List lines = [];
+    Jsonish jsonish;
     try {
-      String? removedId;
+      Json json = jsonDecode(await _input(context));
+
       if (json.containsKey('id')) {
         json.remove('id');
-        removedId = '("id" removed)\n\n';
+        lines.add('(Removed "id")');
+        lines.add('');
       }
-      Jsonish jsonish = Jsonish(json);
-      await alert(
-          'Token (SHA1 hash of pretty printed JSON)',
-          '''${removedId?? ''}token:
-${jsonish.token}
 
-JSON:
-${jsonish.ppJson}''',
-          ['okay'],
-          context);
+      if (json.containsKey('signature')) {
+        jsonish = await Jsonish.makeVerify(json, _oouVerifier);
+        lines.add('Verified');
+        lines.add('');
+        words.add('Verified');
+      } else {
+        jsonish = Jsonish(json);
+      }
+      words.add('Tokenized');
+      lines.add('Formatted:');
+      lines.add(jsonish.ppJson);
+      lines.add('');
+      lines.add('Token:');
+      lines.add(jsonish.token);
+      lines.add('');
     } catch (e) {
-      alert('Error', e.toString(), ['Okay'], context);
+      words = ['Error'];
+      lines = [e.toString()];
     }
+
+    await alert(words.join(', '), lines.join('\n'), ['okay'], context);
   }
 
-  static Future<void> startVerify(BuildContext context) async {
-    Json json = await collect(context);
-
-    try {
-      String? removedId;
-      if (json.containsKey('id')) {
-        json.remove('id');
-        removedId = '("id" removed)\n\n';
-      }
-      Jsonish jsonish = await Jsonish.makeVerify(json, OouVerifier());
-      await alert(
-          'Verified',
-          '''${removedId?? ''}token:
-${jsonish.token}
-
-formatted JSON:
-${jsonish.ppJson}''',
-          ['okay'],
-          context);
-    } catch (e) {
-      alert('Error', e.toString(), ['Okay'], context);
-    }
-  }
-
-
-  static Future<Json> collect(BuildContext context) async {
+  static Future<String> _input(BuildContext context) async {
     TextEditingController controller = TextEditingController();
     return await showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => Dialog(
+            child: SizedBox(
+                width: (MediaQuery.of(context).size).width / 2,
                 child: Column(children: [
-              Expanded(
-                  child: TextField(
-                      controller: controller,
-                      maxLines: null,
-                      expands: true,
-                      style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black))),
-              const SizedBox(height: 10),
-              OkCancel(() {
-                try {
-                  Json json = jsonDecode(controller.text);
-                  Navigator.of(context).pop(json);
-                } catch (e) {
-                  alert('Error', e.toString(), ['Okay'], context);
-                }
-              }, 'Next'),
-              const SizedBox(height: 5),
-            ])));
+                  Expanded(
+                      child: TextField(
+                          controller: controller,
+                          maxLines: null,
+                          expands: true,
+                          style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black))),
+                  const SizedBox(height: 10),
+                  OkCancel(() {
+                    try {
+                      Navigator.of(context).pop(controller.text);
+                    } catch (e) {
+                      alert('Error', e.toString(), ['Okay'], context);
+                    }
+                  }, 'Next'),
+                  const SizedBox(height: 5),
+                ]))));
   }
 }
