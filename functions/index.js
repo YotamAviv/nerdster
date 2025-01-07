@@ -116,16 +116,18 @@ exports.export2 = onRequest(async (req, res) => {
   const token = req.query.token;
   if (!token) return res.status(400).send('Missing token');
 
+  // I'm not commenting out the Oneofus verbs because I often run the emulator from the nerdster 
+  // directory. Sloppy, not correct..
   const key2order = {
     'statement': 0, 'time': 1, 'I': 2,
     'clear': 7,
     // Oneofus verbs
-    // 'trust': 3, 'block': 4, 'replace': 5, 'delegate': 6,
+    'trust': 3, 'block': 4, 'replace': 5, 'delegate': 6,
     // Nerdster verbs
     'rate': 8, 'censor': 9, 'relate': 10, 'dontRelate': 11, 'equate': 12, 'dontEquate': 13, 'follow': 14,
     'with': 16,
     // Oneofus with
-    // 'moniker': 18, 'revokeAt': 19, 'domain': 20,
+    'moniker': 18, 'revokeAt': 19, 'domain': 20,
     // Nerdster with
     'tags': 21, 'recommend': 22, 'dismiss': 23, 'stars': 24, 'comment': 25, 'contentType': 26, 'other': 17,
     'previous': 27, 'signature': 28
