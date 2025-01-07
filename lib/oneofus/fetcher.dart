@@ -130,7 +130,8 @@ class Fetcher {
     if (b(_cached)) return;
     _cached = <Statement>[];
 
-    final fireStatements = fire.collection(token).doc('statements').collection('statements');
+    CollectionReference<Map<String, dynamic>> fireStatements =
+        fire.collection(token).doc('statements').collection('statements');
 
     // query _revokeAtTime
     if (_revokeAt != null && _revokeAtTime == null) {

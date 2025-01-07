@@ -32,23 +32,23 @@ abstract class StatementVerifier {
   Future<bool> verify(Json json, String string, signature);
 }
 
-// This is here in Jsonish because I wanted the oneofus dir not to depend on Content 
+// This is here in Jsonish because I wanted the oneofus dir not to depend on Content
 // stuff, not super elegant.
 enum ContentVerb {
   // apply to 'subject'
   rate('rate', 'rated'), // (comment), recommend, dismiss, ..
-  
+
   censor('censor', 'censored'),
-  
-  // apply to 'subject', 'otherSubject'. 
+
+  // apply to 'subject', 'otherSubject'.
   relate('relate', 'related'),
   dontRelate('dontRelate', 'un-related'),
   equate('equate', 'equated'),
   dontEquate('dontEquate', 'un-equated'),
 
   follow('follow', 'followed'),
-  
-  clear('clear', 'cleared'); 
+
+  clear('clear', 'cleared');
 
   const ContentVerb(this.label, this.pastTense);
   final String label;
@@ -77,11 +77,11 @@ class Jsonish {
     'dismiss',
     'stars', // gone but may exist in old statements
 
-    'comment', // CONSIDER: map of comments, both from the user and from the tech, invitation, etc..
+    'comment',
 
     'contentType', // for subjects like book, movie..
 
-    'previous', 
+    'previous',
     'signature',
   ];
   static const JsonEncoder encoder = JsonEncoder.withIndent('  ');
@@ -89,13 +89,15 @@ class Jsonish {
       Map.unmodifiable({for (var e in keysInOrder) e: keysInOrder.indexOf(e)});
 
   static int compareKeys(String key1, String key2) {
-    // Keys we know and like have an order.
-    // Keys we don't know are to be listed below most stuff (but above signature) in alphabetical order.
-    if (key2order.containsKey(key1) && key2order.containsKey(key2)) {
-      return key2order[key1]! - key2order[key2]!;
-    } else if (!key2order.containsKey(key1) && !key2order.containsKey(key2)) {
+    // Keys we know have an order.
+    // Keys we don't know are ordered alphabetically below keys we know except signature.
+    int? key1i = key2order[key1];
+    int? key2i = key2order[key2];
+    if (key1i != null && key2i != null) {
+      return key1i - key2i;
+    } else if (key1i == null && key2i == null) {
       return key1.compareTo(key2);
-    } else if (key2order.containsKey(key1)) {
+    } else if (key1i != null) {
       return -1;
     } else {
       return 1;
@@ -154,8 +156,7 @@ class Jsonish {
     }
 
     // Verify
-    Json orderedWithoutSig =
-        orderMap(Map.from(json)..removeWhere((k, v) => k == 'signature'));
+    Json orderedWithoutSig = orderMap(Map.from(json)..removeWhere((k, v) => k == 'signature'));
     String ppJsonWithoutSig = encoder.convert(orderedWithoutSig);
     bool verified = await verifier.verify(json, ppJsonWithoutSig, signature);
     if (!verified) {
@@ -208,27 +209,15 @@ class Jsonish {
   Jsonish._internal(this._json, this._token);
 
   static LinkedHashMap<String, dynamic> orderMap(Json jsonMap) {
-    String? signature;
-    List<MapEntry<String, dynamic>> list = [];
-    list.addAll(jsonMap.entries);
+    String? signature = jsonMap['signature']; // signature last
+    List<MapEntry<String, dynamic>> list = List.of(jsonMap.entries);
     list.sort((x, y) => compareKeys(x.key, y.key));
-    LinkedHashMap<String, dynamic> orderedMap =
-        LinkedHashMap<String, dynamic>();
+    LinkedHashMap<String, dynamic> orderedMap = LinkedHashMap<String, dynamic>();
     for (MapEntry<String, dynamic> entry in list) {
-      dynamic value = entry.value;
-      if (entry.key == 'signature') {
-        // We don't include signature in our token as we can't sign the signature before it exists.
-        signature = value;
-        continue;
-      } else {
-        value = orderDynamic(value);
-      }
-      orderedMap[entry.key] = value;
+      if (entry.key == 'signature') continue;
+      orderedMap[entry.key] = orderDynamic(entry.value);
     }
-    // add signature last
-    if (signature != null) {
-      orderedMap['signature'] = signature;
-    }
+    if (signature != null) orderedMap['signature'] = signature;
     return orderedMap;
   }
 
@@ -249,8 +238,7 @@ class Jsonish {
 
   Json get json => _json;
   String get token => _token;
-  
-  
+
   // String get ppJson => _ppJson; // Don't cache ppJson and generate it on the fly instead.
   String get ppJson => encoder.convert(json);
 
