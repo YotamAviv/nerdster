@@ -126,7 +126,7 @@ exports.export2 = onRequest(async (req, res) => {
     'with': 16,
     // Oneofus with
     // 'moniker': 18, 'revokeAt': 19, 'domain': 20,
-    // Nedster with
+    // Nerdster with
     'tags': 21, 'recommend': 22, 'dismiss': 23, 'stars': 24, 'comment': 25, 'contentType': 26, 'other': 17,
     'previous': 27, 'signature': 28
   };
