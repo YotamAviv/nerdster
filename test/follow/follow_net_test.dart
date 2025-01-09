@@ -164,7 +164,7 @@ void main() async {
     await delegateMerge();
   });
 
-  test('clear, 2 delegates', () async {
+  test('2 delegates, same subject, clear', () async {
     DemoKey loner = await DemoKey.findOrCreate('loner');
     DemoKey lonerN = await loner.makeDelegate();
     Jsonish n1 = await lonerN.doRate(title: 't');
@@ -178,14 +178,39 @@ void main() async {
 
     // Either should work
     if (Random().nextBool()) {
-      Jsonish n3 = await lonerN2.doRate(title: 't', verb: ContentVerb.clear);
+      await lonerN.doRate(title: 't', verb: ContentVerb.clear);
     } else {
-      Jsonish n4 = await lonerN.doRate(title: 't', verb: ContentVerb.clear);
+      await lonerN2.doRate(title: 't', verb: ContentVerb.clear);
     }
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(followNet.getStatements(loner.token).length, 0);
     myExpect(contentBase.roots.length, 0);
+  });
+
+
+  test('2 delegates, differet subjects, clear', () async {
+    DemoKey loner = await DemoKey.findOrCreate('loner');
+    DemoKey lonerN = await loner.makeDelegate();
+    Jsonish n1 = await lonerN.doRate(title: 't1');
+    DemoKey lonerN2 = await loner.makeDelegate();
+    Jsonish n2 = await lonerN2.doRate(title: 't2');
+
+    signInState.center = loner.token;
+    contentBase.listen();
+    await Comp.waitOnComps([contentBase, keyLabels]);
+    myExpect(contentBase.roots.length, 2);
+
+    // Either should work
+    if (Random().nextBool()) {
+      await lonerN.doRate(title: 't1', verb: ContentVerb.clear);
+    } else {
+      await lonerN2.doRate(title: 't2', verb: ContentVerb.clear);
+    }
+    contentBase.listen();
+    await Comp.waitOnComps([contentBase, keyLabels]);
+    expect(followNet.getStatements(loner.token).length, 1);
+    myExpect(contentBase.roots.length, 1);
   });
 
   test('''bo and luke rate; bo claims luke's delegate; should see 1 rating''', () async {
