@@ -6,6 +6,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 class Tokenize {
   static final OouVerifier _oouVerifier = OouVerifier();
@@ -15,7 +16,10 @@ class Tokenize {
     List lines = [];
     Jsonish jsonish;
     try {
-      Json json = jsonDecode(await _input(context));
+      String? input = await _input(context);
+      if (!b(input)) return;
+      
+      Json json = jsonDecode(input!);
 
       if (json.containsKey('id')) {
         json.remove('id');
@@ -46,7 +50,7 @@ class Tokenize {
     await alert(words.join(', '), lines.join('\n'), ['okay'], context);
   }
 
-  static Future<String> _input(BuildContext context) async {
+  static Future<String?> _input(BuildContext context) async {
     TextEditingController controller = TextEditingController();
     return await showDialog(
         context: context,
