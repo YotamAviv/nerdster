@@ -77,13 +77,13 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
       return const Text('Loading..');
     }
     print('notifications.build(${Comp.compsReady([oneofusNet, oneofusEquiv])})');
-    List<Widget> notifications = <Widget>[];
-    Map<String, String> all = {
+    List<MenuItemButton> notifications = <MenuItemButton>[];
+    Map<String, String> statementToken2reason = {
       ...oneofusNet.rejected,
       ...oneofusEquiv.rejected,
       ...oneofusEquiv.trustNonCanonical
     };
-    for (MapEntry<String, String> e in all.entries) {
+    for (MapEntry<String, String> e in statementToken2reason.entries) {
       TrustStatement statement = TrustStatement.find(e.key)!;
       String reason = e.value;
       MenuItemButton x = MenuItemButton(

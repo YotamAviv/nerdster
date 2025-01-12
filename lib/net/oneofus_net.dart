@@ -115,13 +115,8 @@ class OneofusNet with Comp, ChangeNotifier {
   LinkedHashMap<String, Node> get network => _network;
 
   Map<String, String> get rejected => UnmodifiableMapView(_rejected);
-  // TEMP: Make sure that the WOT rejections end up being shown somewhere as they've been removed from here.
-  // return UnmodifiableMapView({... _rejected, ...oneofusEquiv.rejected});
 
   void listen() {
-    if (!ready) {
-      // return;
-    }
     setDirty();
     notifyListeners();
   }
@@ -135,7 +130,7 @@ class OneofusNet with Comp, ChangeNotifier {
     Trust1 trust1 = Trust1(degrees: degrees, numPaths: numPaths, blockerBenefit: _blockerBenefit);
     _network = await trust1.process(FetcherNode(signInState.center));
     _rejected.clear();
-    _rejected.addAll(trust1.rejected); // TODO: Make rejected be a return value of the algorithm.
+    _rejected.addAll(trust1.rejected); // CODE: Make rejected be a return value of the algorithm.
     _token2keyCounter.clear();
 
     int keyCounter = 0;
