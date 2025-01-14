@@ -10,8 +10,6 @@ import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
-/// TODO:
-/// - Linky, RTFM..
 /// DONE:
 /// - Don't allow me to clear and censor (must do one at a time).
 /// - Don't allow me to censor if I have a priorStatement (I should clear my statement instead).
@@ -52,11 +50,6 @@ class RateBodyState extends State<RateBody> {
   ValueNotifier<bool> erase = ValueNotifier(false);
   ValueNotifier<bool> censor = ValueNotifier(false);
 
-  // OnOffIcon recommendButton;
-  // OnOffIcon disButton;
-  // OnOffIcon eraseButton;
-  // OnOffIcon censorButton;
-
   ValueNotifier<bool> okEnabled = ValueNotifier(false);
 
   @override
@@ -67,8 +60,8 @@ class RateBodyState extends State<RateBody> {
   }
 
   void listener() {
-    okEnabled.value = !compareToPrior() || censor.value;
-    if (fieldsClear() && b(widget.priorStatement)) {
+    okEnabled.value = !compareToPrior || censor.value;
+    if (bAllFieldsClear && b(widget.priorStatement)) {
       erase.value = true;
     }
     setState(() {});
@@ -82,13 +75,14 @@ class RateBodyState extends State<RateBody> {
     }
   }
 
-  bool compareToPrior() {
+  bool get compareToPrior {
     if (b(widget.priorStatement)) {
       return recommend.value == b(widget.priorStatement!.recommend) &&
           dis.value == b(widget.priorStatement!.dismiss) &&
+          censor.value == (widget.priorStatement!.verb == ContentVerb.censor) &&
           commentController.text == (widget.priorStatement!.comment ?? '');
     } else {
-      return fieldsClear();
+      return bAllFieldsClear;
     }
   }
 
@@ -98,9 +92,7 @@ class RateBodyState extends State<RateBody> {
     commentController.text = '';
   }
 
-  bool fieldsClear() {
-    return !recommend.value && !dis.value && commentController.text.isEmpty;
-  }
+  bool get bAllFieldsClear => !recommend.value && !dis.value && commentController.text.isEmpty;
 
   Future<void> okHandler() async {
     Json json;
@@ -110,7 +102,7 @@ class RateBodyState extends State<RateBody> {
           signInState.signedInDelegatePublicKeyJson!, ContentVerb.clear, widget.subject.token);
     } else if (censor.value) {
       assert(!erase.value);
-      assert(fieldsClear());
+      assert(bAllFieldsClear);
       json = ContentStatement.make(
           signInState.signedInDelegatePublicKeyJson!, ContentVerb.censor, widget.subject.token);
     } else {
