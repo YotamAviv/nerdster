@@ -12,6 +12,12 @@
 // 
 
 const { logger } = require("firebase-functions");
+
+
+// Dependencies for callable functions.
+const {onCall, HttpsError} = require("firebase-functions/v2/https");
+
+
 const { onRequest } = require("firebase-functions/v2/https");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 
@@ -102,6 +108,22 @@ exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
   return event.data.ref.set({ title }, { merge: true });
 });
 
+// Worked
+exports.getGreeting = onCall(
+  (request) => {
+    return "Hello, world!";
+  }
+);
+
+exports.export3 = onCall(async (req) => {
+  const db = admin.firestore();
+  const token = req.data.token;
+  const collectionRef = db.collection(token).doc('statements').collection('statements');
+  const snapshot = await collectionRef.orderBy('time', 'desc').get();
+  const data = snapshot.docs.map(doc => doc.data());
+  return data;
+
+});
 
 // from: Google AI: https://www.google.com/search?q=Firebase+function+HTTP+GET+export+collection&oq=Firebase+function+HTTP+GET+export+collection&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRhA0gEIOTYzMmowajSoAgCwAgE&sourceid=chrome&ie=UTF-8
 // Enter this in browser: http://127.0.0.1:5001/nerdster/us-central1/export2?token=<Nerdster delegate token>

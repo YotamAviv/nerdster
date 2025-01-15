@@ -7,7 +7,10 @@ import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/getter.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -157,6 +160,42 @@ $link''',
       // Dev
       if (Prefs.showDevMenu.value)
         SubmenuButton(menuChildren: <Widget>[
+          MenuItemButton(
+              onPressed: () async {
+                Fetcher.clear();
+                Jsonish.wipeCache();
+                clearDistinct();
+
+                Stopwatch stopwatch = Stopwatch();
+                stopwatch.start();
+
+                await Getter.cloudCall();
+
+                stopwatch.stop();
+                print('call:\t stopwatch.elapsed=${stopwatch.elapsed}');
+              },
+              child: const Text('cloudCall')), 
+          MenuItemButton(
+              onPressed: () async {
+                Fetcher.clear();
+                Jsonish.wipeCache();
+                clearDistinct();
+
+                Stopwatch stopwatch = Stopwatch();
+                stopwatch.start();
+
+                await Getter.fetch();
+
+                stopwatch.stop();
+                print('fetch:\t stopwatch.elapsed=${stopwatch.elapsed}');
+              },
+              child: const Text('fetch')),
+           MenuItemButton(
+              onPressed: () async {
+                await Getter.getGreeting();
+              },
+              child: const Text('getGreeting')),
+
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
           MenuItemButton(
               child: const Text('Load JSON statements'),
