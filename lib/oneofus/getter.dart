@@ -24,9 +24,11 @@ class Getter {
       final result =
           await FirebaseFunctions.instance.httpsCallable('export3').call({'token': yotamNerdster});
       for (Json x in result.data) {
-        ContentStatement s = ContentStatement(Jsonish(x));
+        // ContentStatement s = ContentStatement(Jsonish(x));
         // print(s.subject);
+        print(x);
       }
+      print(result.data.first);
       print(result.data.length);
     } on FirebaseFunctionsException catch (error) {
       print(error.code);
@@ -39,6 +41,7 @@ class Getter {
     try {
       Fetcher fetcher = Fetcher(yotamNerdster, kNerdsterDomain);
       await fetcher.fetch();
+      print(fetcher.statements.first.json);
       print(fetcher.statements.length);
     } on FirebaseFunctionsException catch (error) {
       print(error.code);

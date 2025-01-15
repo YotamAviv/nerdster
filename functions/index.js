@@ -108,21 +108,42 @@ exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
   return event.data.ref.set({ title }, { merge: true });
 });
 
-// Worked
-exports.getGreeting = onCall(
-  (request) => {
-    return "Hello, world!";
-  }
-);
+// Works
+// exports.getGreeting = onCall(
+//   (request) => {
+//     return "Hello, world!";
+//   }
+// );
 
+// Works
+// This uses Cloud Functions to deliver data to the Nerdster, and so it can processing server side.
+// The hope was to apply distinct, clear, maybe verify on the server to make things faster, but
+// it although there was progress towards working, it wasn't showing much promise towards being
+// faster.
 exports.export3 = onCall(async (req) => {
   const db = admin.firestore();
   const token = req.data.token;
   const collectionRef = db.collection(token).doc('statements').collection('statements');
   const snapshot = await collectionRef.orderBy('time', 'desc').get();
   const data = snapshot.docs.map(doc => doc.data());
-  return data;
 
+
+  // I never got this to work. I was trying to make the payload lighter in the hope that dlivering 
+  // it would be be faster. My payload was empty [{}, {}, ..], but it still wasn't faster, and
+  // so I stopped there.
+  // 
+  // const keysToDelete = ["statement", "I", "previous", "signature"];
+  // var data2 = [];
+  // for (const datum of data) {
+  //   logger.log(`Object.entries(datum)=${Object.entries(datum)}`);
+  //   const newMap = new Map(Object.entries(datum));
+  //   // keysToDelete.forEach((key) => newMap.delete(key));
+  //   // logger.log(`newMap=${newMap}`);
+  //   // logger.log(`newMap['signature']=${newMap['signature']}`);
+  //   data2.push(newMap);
+  // }
+
+  return data;
 });
 
 // from: Google AI: https://www.google.com/search?q=Firebase+function+HTTP+GET+export+collection&oq=Firebase+function+HTTP+GET+export+collection&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRhA0gEIOTYzMmowajSoAgCwAgE&sourceid=chrome&ie=UTF-8
