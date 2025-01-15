@@ -163,9 +163,9 @@ class FetcherNode extends Node {
   }
 
   @override
-  set revokeAt(String? revokeAt) {
+  Future<void> setRevokeAt(String? revokeAt) async {
     assert(b(revokeAt)); // 'String' not allowed; had to use 'String?' to compile.
-    _fetcher.setRevokeAt(revokeAt!);
+    await _fetcher.setRevokeAt(revokeAt!);
   }
 
   @override

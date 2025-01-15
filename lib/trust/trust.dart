@@ -53,7 +53,7 @@ abstract class Node {
   }
 
   String? get revokeAt;
-  set revokeAt(String? revokeAt);
+  Future<void> setRevokeAt(String? revokeAt);
   DateTime? get revokeAtTime;
 
   Future<Iterable<Trust>> get trusts; // newest to oldest

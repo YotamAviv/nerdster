@@ -167,7 +167,7 @@ class Trust1 {
           final Path newPath = List.of(path)..add(replace);
           other.paths.add(newPath);
           assert(newPath.length == pass + 1); // Just checking
-          other.revokeAt = replace.revokeAt;
+          await other.setRevokeAt(replace.revokeAt);
           // Add to queue if not already visited.
           if (!visited.contains(other)) {
             nextLayer.addLast(newPath);

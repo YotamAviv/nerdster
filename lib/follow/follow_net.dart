@@ -292,7 +292,7 @@ class FollowNode extends Node {
   Future<Iterable<Replace>> get replaces async => [];
 
   @override
-  set revokeAt(String? revokeAt) => throw Exception('unexpected');
+  Future<void> setRevokeAt(String? revokeAt) => throw Exception('unexpected');
   @override
   String? get revokeAt => null;
   @override

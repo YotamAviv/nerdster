@@ -90,7 +90,7 @@ class Fetcher {
   // - okay to block a blocked key.
   // - okay to revoke (replace) a blocked key.
   // - not okay to revoke (replace) a revoked (replaced) key.
-  void setRevokeAt(String revokeAt) {
+  Future<void> setRevokeAt(String revokeAt) async {
     if (b(_revokeAt)) {
       // Changing revokeAt not supported
       assert(_revokeAt == revokeAt, '$_revokeAt != $revokeAt');
