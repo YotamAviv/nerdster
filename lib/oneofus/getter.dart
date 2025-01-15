@@ -1,5 +1,6 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 
@@ -16,11 +17,12 @@ final String yotamNerdster = 'f4e45451dd663b6c9caf90276e366f57e573841b';
 class Getter {
   static Future<void> cloudCall() async {
     try {
-      FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
+      if (fireChoice == FireChoice.emulator) {
+        FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
+      }
 
-      final result = await FirebaseFunctions.instance
-          .httpsCallable('export3')
-          .call({'token': yotamNerdster});
+      final result =
+          await FirebaseFunctions.instance.httpsCallable('export3').call({'token': yotamNerdster});
       for (Json x in result.data) {
         ContentStatement s = ContentStatement(Jsonish(x));
         // print(s.subject);
@@ -45,11 +47,12 @@ class Getter {
     }
   }
 
-
   // Worked
   static Future<void> getGreeting() async {
     try {
-      FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
+      if (fireChoice == FireChoice.emulator) {
+        FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
+      }
 
       final result = await FirebaseFunctions.instance.httpsCallable('getGreeting').call();
       print(result.data as String);
