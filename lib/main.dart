@@ -141,6 +141,7 @@ Future<void> defaultSignIn() async {
     }
   }
 
+  // TODO: Remove this code if we stick with signing in as dummy (instead of yotam or random)
   // Check for hard coded values
   if (b(hardCodedSignin[fireChoice])) {
     String? hardOneofus = hardCodedSignin[fireChoice]![kOneofusDomain]!;
@@ -182,11 +183,21 @@ Future<void> defaultSignIn() async {
   await signInState.signIn(oneofusToken, nerdsterKeyPair);
 }
 
+// Parts of the code use Jsonish.find(signInState.center)! to find the center public key, and so 
+// we call Jsonish(lonerNoDelegatePK) here in anticipation of that.
+const Json dummyPublicKey = {
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "f7ersaoKfgPjXh182kc2tKNxAMqT1h-I4vT2rBssR7g"
+};
+String dummyOneofus = Jsonish(dummyPublicKey).token;
+const String yotam = '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431';
 dynamic hardCodedSignin = {
-  FireChoice.prod: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'},
+  FireChoice.prod: {"one-of-us.net": dummyOneofus},
 
   // Yotam
-  FireChoice.emulator: {"one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431'}
+  // FireChoice.emulator: {"one-of-us.net": yotam}
+  FireChoice.emulator: {"one-of-us.net": dummyOneofus}
 
   // Loner
   // FireChoice.emulator: {
