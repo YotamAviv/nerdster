@@ -92,21 +92,25 @@ firebase projects:list
 gcloud projects list
 gcloud auth login
 
+date2
 export NOW=`date2`
+# If running in 2 windows, make sure to set (export) NOW in both
+export NOW=...
 echo $NOW
-
-firebase use one-of-us-net
-gcloud config set project one-of-us-net
-gcloud firestore export gs://one-of-us-net/oneofus-$NOW
-gsutil -m cp -r gs://one-of-us-net/oneofus-$NOW exports
 
 firebase use nerdster
 gcloud config set project nerdster
 gcloud firestore export gs://nerdster/nerdster-$NOW
 gsutil -m cp -r gs://nerdster/nerdster-$NOW exports
+firebase --project=nerdster emulators:start --import exports/nerdster-$NOW/
 
-firebase --project=nerdster emulators:start --import exports/nerdster-01-16-25--12-18/
-firebase --project=one-of-us-net --config=oneofus-nerdster.firebase.json emulators:start --import exports/oneofus-01-16-25--12-18/
+firebase use one-of-us-net
+gcloud config set project one-of-us-net
+gcloud firestore export gs://one-of-us-net/oneofus-$NOW
+gsutil -m cp -r gs://one-of-us-net/oneofus-$NOW exports
+firebase --project=one-of-us-net --config=oneofus-nerdster.firebase.json emulators:start --import exports/oneofus-$NOW/
+
+
 
 ## code labels:
 These are in flux, but I've been using

@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:nerdster/comp.dart';
@@ -72,16 +70,17 @@ class _NetTreeViewState extends State<NetTreeView> {
     // Expand tree to highlightToken if applicable.
     String? expandToToken = NetTreeView.highlightToken.value;
     if (b(expandToToken)) {
+      // Tree structure could be Oneofus or Follow.
       // This doesn't work any longer as Follow tree view doesn't show delegate keys.
       // if (!Prefs.showEquivalentKeys.value) {
       //   expandToToken = followNet.delegate2oneofus[expandToToken];
       // }
       String expandToOneofusToken = followNet.delegate2oneofus[expandToToken] ?? expandToToken!;
-      TreeSearchResult result =
-          treeController.search((node) => (node.token == expandToOneofusToken));
-      Object? n = result.matches.keys.firstOrNull;
-      if (b(n)) {
-        NetTreeModel node = n as NetTreeModel;
+      // Search BFS (first, shortest)
+      NetTreeModel? netTreeModel = treeController.breadthFirstSearch(
+          returnCondition: (x) => x.token == expandToOneofusToken);
+      if (b(netTreeModel)) {
+        NetTreeModel node = netTreeModel!;
         for (NetTreeModel x in node.path) {
           treeController.expand(x);
         }
@@ -95,6 +94,9 @@ class _NetTreeViewState extends State<NetTreeView> {
 
   Future<void> listen() async {
     await Comp.waitOnComps([followNet, keyLabels]);
+    // BUG: Witnessed in console:
+    // A TreeController<NetTreeModel> was used after being disposed.
+    // Once you have called dispose() on a TreeController<NetTreeModel>, it can no longer be used.
     treeController.roots = [NetTreeView.makeRoot()];
     treeController.rebuild();
     if (mounted) {

@@ -4,14 +4,16 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 bool bDev = fireChoice != FireChoice.prod;
+// bool bNerd = bDev;
+bool bNerd = false;
 
 class Prefs {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
   static final ValueNotifier<bool> keyLabel = ValueNotifier(true);
-  static final ValueNotifier<bool> showJson = ValueNotifier(bDev);
-  static final ValueNotifier<bool> showStatements = ValueNotifier(bDev);
-  static final ValueNotifier<bool> showKeys = ValueNotifier(bDev);
+  static final ValueNotifier<bool> showJson = ValueNotifier(bNerd);
+  static final ValueNotifier<bool> showStatements = ValueNotifier(bNerd);
+  static final ValueNotifier<bool> showKeys = ValueNotifier(bNerd);
   static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> censor = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> hideDismissed = ValueNotifier<bool>(true);
