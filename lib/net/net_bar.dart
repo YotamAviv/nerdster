@@ -203,6 +203,8 @@ class _CenterDropdownState extends State<_CenterDropdown> {
     if (signInState.center != signInState.centerReset) {
       DropdownMenuEntry<String?> reset = DropdownMenuEntry<String?>(value: null, label: '<reset>');
       entries.add(reset);
+      // TODO: Put <reset> at top instead of bottom.
+      // entries.insert(0, reset);
     }
     
     return DropdownMenu<String?>(

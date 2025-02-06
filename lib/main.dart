@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -141,34 +140,13 @@ Future<void> defaultSignIn() async {
     }
   }
 
-  // TODO: Remove this code if we stick with signing in as dummy (instead of yotam or random)
   // Check for hard coded values
   if (b(hardCodedSignin[fireChoice])) {
     String? hardOneofus = hardCodedSignin[fireChoice]![kOneofusDomain]!;
     OouKeyPair? hardDelegate = b(hardCodedSignin[fireChoice]![kNerdsterDomain])
         ? await crypto.parseKeyPair(hardCodedSignin[fireChoice]![kNerdsterDomain]!)
         : null;
-
-    // Random if yes hardcoded and no delegate
-    // TODO: pick a follow context
-    if (b(hardOneofus) && !b(hardDelegate)) {
-      signInState.center = hardOneofus!;
-      await oneofusNet.waitUntilReady();
-      List<String> n = List.of(oneofusNet.network.keys);
-      n.shuffle(Random(DateTime.now().millisecondsSinceEpoch));
-      while (n.isNotEmpty) {
-        signInState.center = n.first;
-        await oneofusNet.waitUntilReady();
-        if (oneofusNet.network.keys.contains(hardOneofus)) {
-          await signInState.signIn(n.first, null);
-          break;
-        } else {
-          n.removeAt(0);
-        }
-      }
-    } else {
-      await signInState.signIn(hardOneofus!, hardDelegate);
-    }
+    await signInState.signIn(hardOneofus!, hardDelegate);
     return;
   }
 
@@ -183,7 +161,7 @@ Future<void> defaultSignIn() async {
   await signInState.signIn(oneofusToken, nerdsterKeyPair);
 }
 
-// Parts of the code use Jsonish.find(signInState.center)! to find the center public key, and so 
+// Parts of the code use Jsonish.find(signInState.center)! to find the center public key, and so
 // we call Jsonish(lonerNoDelegatePK) here in anticipation of that.
 const Json dummyPublicKey = {
   "crv": "Ed25519",
@@ -196,8 +174,8 @@ dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
 
   // Yotam
-  // FireChoice.emulator: {"one-of-us.net": yotam}
-  FireChoice.emulator: {"one-of-us.net": dummyOneofus}
+  FireChoice.emulator: {"one-of-us.net": yotam}
+  // FireChoice.emulator: {"one-of-us.net": dummyOneofus}
 
   // Loner
   // FireChoice.emulator: {

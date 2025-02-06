@@ -60,7 +60,7 @@ class _SubjectState extends State<SubjectTile> {
 
   @override
   Widget build(BuildContext context) {
-    assert(contentBase.ready);
+    assert(contentBase.ready); // BUG: I've witenessed this fire.
 
     final ContentTreeNode subjectNode = widget.entry.node;
 
