@@ -49,7 +49,6 @@ class NotificationsMenu extends StatefulWidget {
 class _NotificationsMenuState extends State<NotificationsMenu> {
   @override
   void initState() {
-    print('notifications.initState(..)');
     oneofusNet.addListener(listen);
     oneofusEquiv.addListener(listen);
     super.initState();
@@ -76,7 +75,6 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
       });
       return const Text('Loading..');
     }
-    print('notifications.build(${Comp.compsReady([oneofusNet, oneofusEquiv])})');
     List<MenuItemButton> notifications = <MenuItemButton>[];
     Map<String, String> statementToken2reason = {
       ...oneofusNet.rejected,
@@ -108,8 +106,6 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
           child: Text(reason));
       notifications.add(x);
     }
-
-    print('notifications.length=${notifications.length}');
 
     return SubmenuButton(
         menuChildren: notifications,
