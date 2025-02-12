@@ -87,31 +87,34 @@ class _SignInMenuState extends State<SignInMenu> {
   }
 }
 
+const bool _showNotice = false;
 Future<void> recenter(String token, BuildContext context) async {
-  Widget w = const Text(
-      '''Notice: You'll be viewing from a different perspective using a different network.
+  if (_showNotice) {
+    const Widget notice = Text(
+        '''Notice: You'll be viewing from a different perspective using a different network.
 This network might know you by a different name, 
 or might not even know you exist...''');
-
-  // DEFER: Make less wide, maybe use text field instead of Text. BoxConstraints?
-  return showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return Dialog(
-            child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: SizedBox(
-                    width: (MediaQuery.of(context).size).width / 2,
-                    child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          w,
-                          OkCancel(() async {
-                            signInState.center = token;
-                            Navigator.pop(context);
-                          }, 'Okay'),
-                        ]))));
-      });
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return Dialog(
+              child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: SizedBox(
+                      width: (MediaQuery.of(context).size).width / 2,
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            notice,
+                            OkCancel(() async {
+                              signInState.center = token;
+                              Navigator.pop(context);
+                            }, 'Okay'),
+                          ]))));
+        });
+  } else {
+    signInState.center = token;
+  }
 }
