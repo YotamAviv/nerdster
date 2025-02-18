@@ -52,9 +52,6 @@ UI for clear relate/equate.
 
 ## TODO:
 
-- Take care to warn user if he signs in oneofus/delegate keys that
-  aren't related, are revoked, etc...
-
 - Look into if we verify 'nerdster.org'
 
 ? clean up 'data corruption' in Nerdster that dumps all entries by
