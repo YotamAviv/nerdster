@@ -70,7 +70,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
 
   @override
   void dispose() {
-    // TODO: I would think I need to stop listening, and I might be leaking Controllers, too.
+    // CONSIDER: Stop listening? Am I leaking Controllers?
     super.dispose();
   }
 

@@ -100,8 +100,8 @@ class Fetcher {
     _revokeAt = revokeAt;
 
     // If I can't find revokeAtStatement, then something strange is going on unless it's 'since always'
-    // TODO: Use the same string for 'since always' (although I should be able to handle any string.)
-    // TODO(2): Warn when it's not 'since always' or a valid past statement token.
+    // CONSIDER: Use the same string for 'since always' (although I should be able to handle any string.)
+    // CONSIDER: Warn when it's not 'since always' or a valid past statement token.
     if (b(_cached)) {
       Statement? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
       if (b(revokeAtStatement)) {
@@ -206,10 +206,7 @@ class Fetcher {
     assert(_revokeAt == null);
     changeNotify();
 
-    // TODO: Why not assert
-    if (_cached == null) {
-      await fetch(); // Was green.
-    }
+    if (_cached == null) await fetch(); // Was green.
 
     // add 'previous', verify time is later than last statement
     Statement? previous;

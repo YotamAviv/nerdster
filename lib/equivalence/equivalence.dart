@@ -150,7 +150,7 @@ class _EquivalenceCell {
     // Check for DONTs
     if (parentRoot.donts.contains(oldRoot)) {
       assert(oldRoot.donts.contains(parentRoot));
-      // print('prevented by DONT'); // TODO: Debug log?
+      // print('prevented by DONT');
       return false;
     }
     assert(!oldRoot.donts.contains(parentRoot));
