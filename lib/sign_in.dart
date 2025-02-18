@@ -238,15 +238,14 @@ The text to copy/paste here should look like this:
 }
 
 Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
-  if (store) {
+ if (store) {
     await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
   } else {
     await KeyStore.wipeKeys();
   }
 
-  await signInState.signIn(getToken(await oneofusPublicKey.json), nerdsterKeyPair);
-
-  // Common it is for a new user to create a delegate key (and issue the delegate statement) as he's
-  // signinig in for his first time. We should refresh so that he knows about his delegate.
+  final String oneofusToken = getToken(await oneofusPublicKey.json);
+  // Don't await 
+  signInState.signIn(oneofusToken, nerdsterKeyPair);
   BarRefresh.refresh();
 }

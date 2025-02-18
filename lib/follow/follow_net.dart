@@ -189,7 +189,7 @@ class FollowNet with Comp, ChangeNotifier {
       _centerContexts.addAll(contexts);
     }
 
-    BarRefresh.elapsed(runtimeType.toString());
+    BarRefresh.elapsed('FollowNet');
   }
 
   void _processFollowStatementForMost(ContentStatement c) {

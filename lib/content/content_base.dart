@@ -212,7 +212,7 @@ class ContentBase with Comp, ChangeNotifier {
 
     ReactIconStateClearHelper.clear();
 
-    BarRefresh.elapsed(runtimeType.toString());
+    BarRefresh.elapsed('ContentBase');
   }
 
   /// Censor if any of these hold:

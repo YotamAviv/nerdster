@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/singletons.dart';
 
 /// This has changed much over time, and so some docs, variable names, or worse might be misleading.
 /// This class may not even be necessary.
@@ -42,17 +40,7 @@ class SignInState with ChangeNotifier {
       _signedInDelegate = getToken(_signedInDelegatePublicKeyJson);
       _signer = await OouSigner.make(nerdsterKeyPair);
     }
-
     notifyListeners();
-
-    // Check if delegate is delegate of Oneofus
-    await Comp.waitOnComps([followNet]);
-    if (b(nerdsterKeyPair) && followNet.delegate2oneofus[_signedInDelegate] != _center) {
-      // TODO: Notify
-      // TODO: Check if delegate revoked
-      print('********** ${followNet.delegate2oneofus[_signedInDelegate]} != $_center **********');
-      print('********** followNet.delegate2oneofus[_signedInDelegate] != _center **********');
-    }
   }
 
   void signOut() {
