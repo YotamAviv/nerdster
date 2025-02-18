@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
-bool bDev = fireChoice != FireChoice.prod;
+bool devDefault = fireChoice != FireChoice.prod;
 // bool bNerd = bDev;
 bool bNerd = false;
 
@@ -19,7 +19,7 @@ class Prefs {
   static final ValueNotifier<bool> hideDismissed = ValueNotifier<bool>(true);
 
   static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
-  static final ValueNotifier<bool> showDevMenu = ValueNotifier<bool>(bDev); // TODO: Eliminate, do differently
+  static final ValueNotifier<bool> dev = ValueNotifier<bool>(devDefault);
 
   static final ValueNotifier<int> oneofusNetDegrees = ValueNotifier<int>(5);
   static final ValueNotifier<int> oneofusNetPaths = ValueNotifier<int>(1);
