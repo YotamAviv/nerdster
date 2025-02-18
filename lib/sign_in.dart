@@ -17,7 +17,6 @@ import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -44,25 +43,16 @@ Future<void> qrSignin(BuildContext context) async {
   // Name a "session"
   final String session = Jsonish(publicKeyJson).token;
   forPhone['session'] = session;
-  if (Prefs.postSignin.value) {
-    // What a mess!
-    // Getting this to work deployed at Google Cloud functions proved as fustrating as I had anticipated.
-    // Stuff worked on the emulator fairly easily, but not once deployed.
-    // The utility 'postman' didn't help, as it somehow did work there, maybe. I'm still confused.
-    // I finally noticed that this URL, https://signin-tj5ghgc22q-uc.a.run.app, is spit out after
-    // deploy, and ideed it works .
-    //
-    // Stackoverflow (https://stackoverflow.com/questions/76306434/unpredictable-urls-with-firebase-cloud-functions-2nd-gen)
-    // notes that predictable URLs still do work, but mine didn't, not in camelCase, but yes in
-    // notcamelcase, and so 'signin' (not 'signIn').
-    forPhone['method'] = 'POST';
-    // OLD: forPhone['uri'] = 'https://us-central1-nerdster.cloudfunctions.net/signin';
-    forPhone['uri'] = 'https://signin.nerdster.org/signin';
-    if (fireChoice == FireChoice.emulator) {
-      forPhone['uri'] = 'http://127.0.0.1:5001/nerdster/us-central1/signin)';
-    }
-  } else {
-    forPhone['method'] = 'Firestore';
+
+  // Getting this to work deployed at Google Cloud functions proved as fustrating as I had anticipated.
+  // Kudos: https://stackoverflow.com/questions/76306434/unpredictable-urls-with-firebase-cloud-functions-2nd-gen
+  // notes that predictable URLs can still do work, but not in camelCase, yes in
+  // notcamelcase, and so 'signin' (not 'signIn').
+  forPhone['method'] = 'POST';
+  // OLD: forPhone['uri'] = 'https://us-central1-nerdster.cloudfunctions.net/signin';
+  forPhone['uri'] = 'https://signin.nerdster.org/signin';
+  if (fireChoice == FireChoice.emulator) {
+    forPhone['uri'] = 'http://127.0.0.1:5001/nerdster/us-central1/signin)';
   }
 
   ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
@@ -238,14 +228,16 @@ The text to copy/paste here should look like this:
 }
 
 Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
- if (store) {
+  if (store) {
     await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
   } else {
     await KeyStore.wipeKeys();
   }
 
   final String oneofusToken = getToken(await oneofusPublicKey.json);
-  // Don't await 
+  // Don't await
+  // ignore: unawaited_futures
   signInState.signIn(oneofusToken, nerdsterKeyPair);
+  // ignore: unawaited_futures
   BarRefresh.refresh();
 }

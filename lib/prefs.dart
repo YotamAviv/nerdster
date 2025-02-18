@@ -18,7 +18,6 @@ class Prefs {
   static final ValueNotifier<bool> censor = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> hideDismissed = ValueNotifier<bool>(true);
 
-  static final ValueNotifier<bool> postSignin = ValueNotifier<bool>(true); // TODO: Eliminate
   static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> showDevMenu = ValueNotifier<bool>(bDev); // TODO: Eliminate, do differently
 

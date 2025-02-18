@@ -5,9 +5,9 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/show_qr.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -113,23 +113,8 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
         if (followNet.delegate2oneofus[signInState.signedInDelegate] != signInState.center) {
           MenuItemButton item = MenuItemButton(
               onPressed: () {
-                showDialog<Json>(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) => Dialog(
-                        child: Padding(
-                            padding: const EdgeInsets.all(15),
-                            child: SizedBox(
-                                width: (MediaQuery.of(context).size).width / 2,
-                                child: ListView(shrinkWrap: true, children: [
-                                  const Text(
-                                      '''You're signed in with a Nerdster delgate key that isn't associated with you
-You probably need to address this using your ONE-0F-US.NET phone app.'''),
-                                  const SizedBox(height: 10),
-                                  OkCancel(() {
-                                    Navigator.of(context).pop();
-                                  }, 'Okay', showCancel: false)
-                                ])))));
+                alert('Delgate not associated with you', '''You're signed in with a Nerdster delgate key that isn't associated with you
+You probably need to address this using your ONE-0F-US.NET phone app.''', ['Okay'], context);
               },
               child: const Text(
                   '''You're signed in with a Nerdster delgate key that isn't associated with you.'''));
