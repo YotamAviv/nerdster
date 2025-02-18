@@ -154,7 +154,7 @@ $link''',
       ], child: const Text('?')),
 
       // Dev
-      if (Prefs.showDevMenu.value)
+      if (Prefs.dev.value)
         SubmenuButton(menuChildren: <Widget>[
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
           MenuItemButton(
