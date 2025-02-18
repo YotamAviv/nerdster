@@ -72,6 +72,6 @@ class OneofusEquiv with Comp, ChangeNotifier {
       }
     }
 
-    BarRefresh.elapsed(runtimeType.toString());
+    BarRefresh.elapsed('OneofusEquiv');
   }
 }

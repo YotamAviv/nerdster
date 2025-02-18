@@ -5,6 +5,7 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/show_qr.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
@@ -51,6 +52,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
   void initState() {
     oneofusNet.addListener(listen);
     oneofusEquiv.addListener(listen);
+    signInState.addListener(listen);
     super.initState();
   }
 
@@ -58,6 +60,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
   void dispose() {
     oneofusNet.removeListener(listen);
     oneofusEquiv.removeListener(listen);
+    signInState.removeListener(listen);
     super.dispose();
   }
 
@@ -75,7 +78,67 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
       });
       return const Text('Loading..');
     }
+
     List<MenuItemButton> notifications = <MenuItemButton>[];
+
+    if (signInState.center != signInState.centerReset) {
+      // Notfications I've decided against for now
+      //       if (oneofusNet.network.containsKey(signInState.centerReset)) {
+      //         MenuItemButton item = MenuItemButton(
+      //             onPressed: () {
+      //               showDialog<Json>(
+      //                   context: context,
+      //                   barrierDismissible: false,
+      //                   builder: (BuildContext context) => Dialog(
+      //                       child: Padding(
+      //                           padding: const EdgeInsets.all(15),
+      //                           child: OkCancel(() {
+      //                             signInState.center = signInState.centerReset!;
+      //                             Navigator.of(context).pop();
+      //                           }, 'Reset'))));
+      //             },
+      //             child: Text(
+      //                 '''You're viewing from the point of view of someone other than how you signed in'''));
+      //         notifications.add(item);
+      //       } else {
+      //         MenuItemButton item = MenuItemButton(
+      //             onPressed: () {},
+      //             child: Text(
+      //                 '''You're viewing from the point of view of someone other than how you signed in.
+      // Furthermore, you're not even in this network, and so your contributions are not visible (You're not whitelisetd)'''));
+      //         notifications.add(item);
+      //       }
+    } else {
+      if (b(signInState.signedInDelegate)) {
+        if (followNet.delegate2oneofus[signInState.signedInDelegate] != signInState.center) {
+          MenuItemButton item = MenuItemButton(
+              onPressed: () {
+                showDialog<Json>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) => Dialog(
+                        child: Padding(
+                            padding: const EdgeInsets.all(15),
+                            child: SizedBox(
+                                width: (MediaQuery.of(context).size).width / 2,
+                                child: ListView(shrinkWrap: true, children: [
+                                  const Text(
+                                      '''You're signed in with a Nerdster delgate key that isn't associated with you
+You probably need to address this using your ONE-0F-US.NET phone app.'''),
+                                  const SizedBox(height: 10),
+                                  OkCancel(() {
+                                    Navigator.of(context).pop();
+                                  }, 'Okay', showCancel: false)
+                                ])))));
+              },
+              child: const Text(
+                  '''You're signed in with a Nerdster delgate key that isn't associated with you.'''));
+          notifications.add(item);
+        }
+        // TODO: Check if delegate revoked
+      }
+    }
+
     Map<String, String> statementToken2reason = {
       ...oneofusNet.rejected,
       ...oneofusEquiv.rejected,
@@ -84,7 +147,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
     for (MapEntry<String, String> e in statementToken2reason.entries) {
       TrustStatement statement = TrustStatement.find(e.key)!;
       String reason = e.value;
-      MenuItemButton x = MenuItemButton(
+      MenuItemButton item = MenuItemButton(
           onPressed: () {
             showDialog<void>(
               context: context,
@@ -104,7 +167,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
             );
           },
           child: Text(reason));
-      notifications.add(x);
+      notifications.add(item);
     }
 
     return SubmenuButton(
@@ -141,7 +204,8 @@ class StatementNotification extends StatelessWidget {
           // mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Flexible(
-                child: Linky('''A conflict was encountered during the trust network computation when processing the statement displayed to the right:
+                child: Linky(
+                    '''A conflict was encountered during the trust network computation when processing the statement displayed to the right:
 
 This doesn't necessarily require you to do anything. For example if a key you trust is blocked by another key, then it matters to you, and you'll see a notification, but when the owner of that key signs in, he'll see a notification that a key is blocking his key, and so sorting this should be more on him than on you.
 That said, even in that situation, it may be the case that that guy never checks his notifications, and so maybe pick up the slack for him.''')),

@@ -30,7 +30,7 @@ abstract mixin class Comp {
     if (_processing) {
       assert(!ready);
       _invalidProcess = true;
-      // print('_invalidProcess = true;');
+      print('_invalidProcess = true;');
     }
     _ready.value = false;
   }

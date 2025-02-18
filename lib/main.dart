@@ -208,6 +208,19 @@ var bartKeys = {
     "x": "3X_v6Zlxztv85f202TZ8BsxM8OAWgta8Bu_vjoSa-LI"
   }
 };
+var lisaWithWrongDelegateBart = {
+  "one-of-us.net": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "DbUGydInoa0RAVZIzVZCpS2LhzbqVTQfOMxgGzct1rU"
+  },
+  "nerdster.org": {
+    "crv": "Ed25519",
+    "d": "NWraRSnhWNwi-35aANivWYtBgRWmryPiDtN_CaxDvPA",
+    "kty": "OKP",
+    "x": "3X_v6Zlxztv85f202TZ8BsxM8OAWgta8Bu_vjoSa-LI"
+  }
+};
 var bartFullKeys = {
   "one-of-us.net": {
     "crv": "Ed25519",

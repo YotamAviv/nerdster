@@ -123,6 +123,7 @@ class OneofusNet with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
+    BarRefresh.elapsed('OneofusNet in');
     // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
     Fetcher.resetRevokedAt();
     NetNode.clear();
@@ -138,7 +139,7 @@ class OneofusNet with Comp, ChangeNotifier {
       _token2keyCounter[token] = keyCounter++;
     }
 
-    BarRefresh.elapsed(runtimeType.toString());
+    BarRefresh.elapsed('OneofusNet out');
   }
 }
 
