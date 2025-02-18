@@ -22,18 +22,16 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+/// This doc is a little stale as of the switch to HTTP POST.
 /// Nerdster web client QR sign-in:
-/// - creates a PKE keyPair (and a session string (for a Firestore collection, but could be for HTTP POST instead).
-/// - show these to the user's phone:
-///   - the PKE public key
-///   - host: nerdster.org
-///   - method: Firebase
-/// Next listen to Firebase for writes to that session.
-/// - the user's phone packs these up and communicates them to the server
-///   (Fire collection in our case, but could be HTTP POST)
-///   - (optiona) encrypted Nerdster key pair
+/// - creates a PKE keyPair and a session string for HTTP POST.
+/// - show stuff to the user's phone.
+/// Next listen to Firebase for writes to that session collection
+/// (Firestore Cloud Function is POST'ed to by phone and writes to a Firebase collection).
+/// - the user's phone packs these up and communicates them to the server (HTTP POST)
 ///   - Oneofus public key
-/// - Nerdster web client can now read that from the database, decrypt it, and use it for the session.
+///   - (optional) encrypted Nerdster key pair (optionally encrypted, iPhone App Store restrictions.)
+/// - Nerdster web client then reads that from the database, (optionally) decrypts, and signs in.
 Future<void> qrSignin(BuildContext context) async {
   Map<String, dynamic> forPhone = <String, dynamic>{};
   forPhone['domain'] = kNerdsterDomain;
@@ -151,7 +149,8 @@ Future<void> qrSignin(BuildContext context) async {
       // ignore: unawaited_futures
       subscription!.cancel();
 
-      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+      // Don't await
+      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       // Dismiss dialog
       if (context.mounted) Navigator.of(context).pop();
@@ -196,7 +195,8 @@ The text to copy/paste here should look like this:
         nerdsterKeyPair = await crypto.parseKeyPair(json[kNerdsterDomain]!);
       }
 
-      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+      // Don't await
+      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       Navigator.pop(context);
     } catch (exception) {
