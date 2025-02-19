@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/oneofus/distincter.dart';
@@ -9,6 +8,7 @@ import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
+import 'package:nerdster/progress.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 import 'package:nerdster/trust/trust1.dart';
@@ -82,6 +82,7 @@ import 'package:nerdster/trust/trust1.dart';
 
 class OneofusNet with Comp, ChangeNotifier {
   static final OneofusNet _singleton = OneofusNet._internal();
+  static final Measure measure = Measure('OneofusNet');
   factory OneofusNet() => _singleton;
   OneofusNet._internal() {
     signInState.addListener(listen);
@@ -123,7 +124,8 @@ class OneofusNet with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    BarRefresh.elapsed('OneofusNet in');
+    measure.start();
+    
     // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
     Fetcher.resetRevokedAt();
     NetNode.clear();
@@ -139,7 +141,7 @@ class OneofusNet with Comp, ChangeNotifier {
       _token2keyCounter[token] = keyCounter++;
     }
 
-    BarRefresh.elapsed('OneofusNet out');
+    measure.stop();
   }
 }
 

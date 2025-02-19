@@ -43,7 +43,8 @@ class Fetcher {
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
 
-  static Measure elapsed = Measure();
+  static final Measure mFire = Measure('fire');
+  static final Measure mVerify = Measure('verify');
 
   final FirebaseFirestore fire;
   final String domain;
@@ -140,7 +141,8 @@ class Fetcher {
 
     // query _revokeAtTime
     if (_revokeAt != null && _revokeAtTime == null) {
-      final DocumentSnapshot<Json> docSnap = await fireStatements.doc(_revokeAt).get();
+      DocumentReference<Json> doc = fireStatements.doc(_revokeAt);
+      final DocumentSnapshot<Json> docSnap = await mFire.mAsync(doc.get);
       // _revokeAt can be any string. If it is the id (token) of something this Fetcher has ever
       // stated, the we revoke it there; otherwise, it's blocked - revoked "since forever".
       // TODO(2): add unit test.
@@ -153,7 +155,7 @@ class Fetcher {
     }
 
     Query<Json> query = fireStatements.orderBy('time', descending: true); // newest to oldest
-    QuerySnapshot<Json> snapshots = await elapsed.make(query.get);
+    QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
     // DEFER: Something with the error.
     // .catchError((e) => print("Error completing: $e"));
     bool first = true;
@@ -163,9 +165,9 @@ class Fetcher {
       Jsonish jsonish;
 
       if (Prefs.skipVerify.value || testingNoVerify) {
-        jsonish = Jsonish(data);
+        jsonish = mVerify.mSync(() => Jsonish(data));
       } else {
-        jsonish = await Jsonish.makeVerify(data, _verifier);
+        jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(data, _verifier));
       }
 
       // newest to oldest

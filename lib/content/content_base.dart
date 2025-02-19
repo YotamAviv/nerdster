@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_bar.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -13,10 +12,10 @@ import 'package:nerdster/content/dialogs/establish_subject_dialog.dart';
 import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/content/dialogs/rate_dialog.dart';
 import 'package:nerdster/content/dialogs/relate_dialog.dart';
-import 'package:nerdster/follow/most_contexts.dart';
 import 'package:nerdster/content/props.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/equivalence_bridge.dart';
+import 'package:nerdster/follow/most_contexts.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -24,6 +23,7 @@ import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
+import 'package:nerdster/progress.dart';
 import 'package:nerdster/singletons.dart';
 
 /// An old comment from back during preparation for NerdsterFollow, not sure if it's still relevant:
@@ -36,6 +36,7 @@ import 'package:nerdster/singletons.dart';
 class ContentBase with Comp, ChangeNotifier {
   static final OouVerifier verifier = OouVerifier();
   static final ContentBase _singleton = ContentBase._internal();
+  static final Measure measure = Measure('ContentBase');
   factory ContentBase() => _singleton;
 
   final EquivalenceBridge _equivalence = EquivalenceBridge(_ContentEquateParser(), null);
@@ -80,6 +81,8 @@ class ContentBase with Comp, ChangeNotifier {
   @override
   Future<void> process() async {
     assert(supportersReady);
+    measure.start();
+    
     _equivalence.clear();
     _related.clear();
     _censored.clear();
@@ -212,7 +215,7 @@ class ContentBase with Comp, ChangeNotifier {
 
     ReactIconStateClearHelper.clear();
 
-    BarRefresh.elapsed('ContentBase');
+    measure.stop();
   }
 
   /// Censor if any of these hold:

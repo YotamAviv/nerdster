@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+
 /// I'm thinking about 2 things:
 ///
 /// 1) Instrumentation to investigate what's slow. My time would probably be better spent learning about the tools.
@@ -18,20 +20,67 @@ import 'dart:async';
 ///
 class Progress {}
 
-class Measure {
-  final stopwatch = Stopwatch();
+/// DEFER: Look for someone else's one of these instead of working on this one more.
+/// DEFER: Consider doing something smart when 2 timers are running, like maybe suspend the outer 
+/// ones which inner ones are running; this would allow measure OneofusNet time minus Fire time.
+class Measure with ChangeNotifier {
+  static List<Measure> _instances = <Measure>[];
 
-  void reset() {
-    stopwatch.reset();
+  factory Measure(String name) {
+    Measure out = Measure._internal(name);
+    _instances.add(out);
+    return out;
   }
 
-  Duration get elapsed => stopwatch.elapsed;
+  static void dump() {
+    print('Measures:');
+    for (Measure m in _instances) {
+      print('- ${m._name}: ${m.elapsed}');
+    }
+  }
 
-  Future make(func) async {
-    assert(!stopwatch.isRunning);
-    stopwatch.start();
+  static void reset() {
+    for (Measure m in _instances) {
+      m._reset();
+    }
+  }
+
+  Measure._internal(this._name);
+
+  final Stopwatch _stopwatch = Stopwatch();
+  final String _name;
+
+  void _reset() {
+    _stopwatch.reset();
+  }
+
+  void start() {
+    _stopwatch.start();
+    notifyListeners();
+  }
+
+  void stop() {
+    _stopwatch.stop();
+    notifyListeners();
+  }
+
+  Duration get elapsed => _stopwatch.elapsed;
+
+  bool get isRunning => _stopwatch.isRunning;
+
+  Future mAsync(func) async {
+    assert(!_stopwatch.isRunning);
+    _stopwatch.start();
     final out = await func();
-    stopwatch.stop();
+    _stopwatch.stop();
+    return out;
+  }
+
+  dynamic mSync(func) {
+    assert(!_stopwatch.isRunning);
+    _stopwatch.start();
+    final out = func();
+    _stopwatch.stop();
     return out;
   }
 }

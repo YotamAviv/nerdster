@@ -2,7 +2,6 @@ import 'dart:collection';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/dialogs/lgtm.dart';
@@ -15,6 +14,7 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
+import 'package:nerdster/progress.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 import 'package:nerdster/trust/trust1.dart';
@@ -23,6 +23,7 @@ typedef StatementFilter = Iterable<Statement> Function(Iterable<Statement>);
 
 class FollowNet with Comp, ChangeNotifier {
   static final FollowNet _singleton = FollowNet._internal();
+  static final Measure measure = Measure('FollowNet');
   factory FollowNet() => _singleton;
   FollowNet._internal() {
     _readParams();
@@ -107,6 +108,8 @@ class FollowNet with Comp, ChangeNotifier {
   @override
   Future<void> process() async {
     assert(supportersReady); // QUESTIONABLE:
+    measure.start();
+
     _mostContexts.clear();
     _centerContexts.clear();
     FollowNode.clear();
@@ -189,7 +192,7 @@ class FollowNet with Comp, ChangeNotifier {
       _centerContexts.addAll(contexts);
     }
 
-    BarRefresh.elapsed('FollowNet');
+    measure.stop();
   }
 
   void _processFollowStatementForMost(ContentStatement c) {
