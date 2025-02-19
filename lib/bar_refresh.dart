@@ -2,43 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/progress.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 class BarRefresh extends StatefulWidget {
-  static final ValueNotifier<Stopwatch?> stopwatch = ValueNotifier<Stopwatch?>(null);
+  static final Measure measure = Measure('refresh');
 
   const BarRefresh({
     super.key,
   });
 
-  static elapsed(String s) {
-    if (b(stopwatch.value)) {
-      print('$s: elapsed: ${BarRefresh.stopwatch.value!.elapsed}');
-    }
-  }
 
   static Future<void> refresh() async {
-    // - The state is BarRefresh.stopwatch
-    // - ignore the click if we're already refreshing
-    if (!b(stopwatch.value)) {
-      stopwatch.value = Stopwatch();
-      stopwatch.value!.start();
-      Fetcher.elapsed.reset();
-
+    if (!measure.isRunning) {
+      Measure.reset();
+      measure.start();
       // This could probably be captured in an Observable Comp instance
-      Jsonish.wipeCache(); // TEMP
+      // OPTIONAL: (maybe add to Dev menu): Jsonish.wipeCache();
       Fetcher.clear();
       clearDistinct(); // redundant
       oneofusNet.listen();
       
       await Comp.waitOnComps([contentBase, keyLabels]);
-      print('Refresh took: ${stopwatch.value!.elapsed}');
-      print('Fetcher.elapsed.elapsed==${Fetcher.elapsed.elapsed}');
-      stopwatch.value!.stop();
-      stopwatch.value = null;
+      measure.stop();
+      Measure.dump();
     }
   }
 
@@ -50,12 +38,12 @@ class _BarRefreshState extends State<BarRefresh> {
   @override
   void initState() {
     super.initState();
-    BarRefresh.stopwatch.addListener(listener);
+    BarRefresh.measure.addListener(listener);
   }
 
   @override
   void dispose() {
-    BarRefresh.stopwatch.removeListener(listener);
+    BarRefresh.measure.removeListener(listener);
     super.dispose();
   }
 
@@ -65,7 +53,7 @@ class _BarRefreshState extends State<BarRefresh> {
 
   @override
   Widget build(BuildContext context) {
-    IconData icon = !b(BarRefresh.stopwatch.value) ? Icons.refresh : Icons.rotate_right_outlined;
+    IconData icon = !BarRefresh.measure.isRunning ? Icons.refresh : Icons.rotate_right_outlined;
     return IconButton(
         icon: Icon(icon),
         color: linkColor,

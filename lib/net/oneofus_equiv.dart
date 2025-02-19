@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/wot_equivalence.dart';
@@ -9,10 +8,12 @@ import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/progress.dart';
 import 'package:nerdster/singletons.dart';
 
 class OneofusEquiv with Comp, ChangeNotifier {
   static final OneofusEquiv _singleton = OneofusEquiv._internal();
+  static final Measure measure = Measure('OneofusEquiv');
   factory OneofusEquiv() => _singleton;
     
   OneofusEquiv._internal() {
@@ -40,6 +41,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
   @override
   Future<void> process() async {
     assert(Comp.compsReady([oneofusNet]));
+    measure.start();
 
     _rejected.clear();
     _equivalence = WotEquivalence(Set.of(oneofusNet.network.keys));
@@ -72,6 +74,6 @@ class OneofusEquiv with Comp, ChangeNotifier {
       }
     }
 
-    BarRefresh.elapsed('OneofusEquiv');
+    measure.stop();
   }
 }
