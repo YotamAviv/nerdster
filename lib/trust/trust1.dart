@@ -4,6 +4,8 @@ import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/trust/trust.dart';
 
+/// TODO: PERFORMANCE: let the server do distinct, don't revoke ahead of trust by more than 1 degree.
+
 /// TODO: time limit
 /// TODO: network size max
 
