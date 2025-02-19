@@ -17,8 +17,8 @@ tar -czf ~/backups/nerdster.git.`date2`.tgz .git
 
 ```
 Push to PROD:
-flutter build web --release; firebase deploy --except functions
-(flutter clean; flutter build web --release; firebase deploy)
+flutter build web --release; firebase --project=nerdster deploy --except functions
+(flutter clean; flutter build web --release; firebase --project=nerdster deploy)
 firebase init hosting # Answer: build/web
 
 add to .bashrc:
