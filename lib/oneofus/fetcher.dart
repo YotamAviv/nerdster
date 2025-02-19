@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:flutter/material.dart';
+import 'package:nerdster/progress.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but might work for phone codebase.
 
 import 'distincter.dart';
@@ -36,9 +37,13 @@ class Fetcher {
   static int? testingCrashIn;
 
   static final OouVerifier _verifier = OouVerifier();
+
+  // (I've lost track of the reasoning behind having a final VoidCallback for this.)
   static final VoidCallback changeNotify = clearDistinct;
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
+
+  static Measure elapsed = Measure();
 
   final FirebaseFirestore fire;
   final String domain;
@@ -148,7 +153,7 @@ class Fetcher {
     }
 
     Query<Json> query = fireStatements.orderBy('time', descending: true); // newest to oldest
-    QuerySnapshot<Json> snapshots = await query.get();
+    QuerySnapshot<Json> snapshots = await elapsed.make(query.get);
     // DEFER: Something with the error.
     // .catchError((e) => print("Error completing: $e"));
     bool first = true;
@@ -168,14 +173,12 @@ class Fetcher {
       // middles: statement.token = previousToken
       // Last: statement.token = null
       if (first) {
-        // no check
-        first = false;
+        first = false; // no check
       } else {
         if (jsonish.token != previousToken) {
-          // TODO: Something.
-          // TODO: Log instead of print
+          // DEFER: Something.
           print(
-              'Blockchain notarization violation detected ($domain/$token): ${jsonish.token} != $previousToken');
+              'Blockchain notarization violation: ($domain/$token): ${jsonish.token} != $previousToken');
           continue;
         }
       }
