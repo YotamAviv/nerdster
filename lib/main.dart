@@ -34,7 +34,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -179,12 +179,12 @@ dynamic hardCodedSignin = {
 
   // Loner
   // FireChoice.emulator: {
-  //   "one-of-us.net": 'd99df66319f25894262ae9929327e84045e4f9d0',
+  //   "one-of-us.net": '8772bb811c3a48abe68a9d0cc6910e0321df769a',
   //   "nerdster.org": {
   //     "crv": "Ed25519",
-  //     "d": "zOge-pqee8VR1tZy-AgyfO1lDHczXGP2uh9Q40wJCXg",
+  //     "d": "vdY5zLTyfdjz8uOQxJoMOro9ZzMGhxrsH-l0lEc0gx8",
   //     "kty": "OKP",
-  //     "x": "KQIk3V0mVKnjGR5CikRNXvjrplgk1U20CIZkfazWcr8"
+  //     "x": "_MdFUWv9CYe6VY270cQIpsidBp3HfqLzvLIzj6xYhLA"
   //   }
   // }
 
