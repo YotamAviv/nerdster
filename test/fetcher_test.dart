@@ -5,6 +5,7 @@ import 'package:collection/collection.dart'; // You have to add this manually, f
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/test_clock.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/distincter.dart';
@@ -53,6 +54,7 @@ class TestSigner implements StatementSigner {
 }
 
 void main() async {
+  fireChoice = FireChoice.fake;
   FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore());
   FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
   TestClock testClock = TestClock();

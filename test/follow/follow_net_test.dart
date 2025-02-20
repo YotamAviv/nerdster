@@ -9,6 +9,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -20,6 +21,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:test/test.dart';
 
 void main() async {
+  fireChoice = FireChoice.fake;
   FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore());
   FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
   TrustStatement.init();
