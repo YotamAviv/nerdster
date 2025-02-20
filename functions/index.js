@@ -252,8 +252,6 @@ function getVerbSubject(j) {
   return null;
 }
 
-// TODO: verify notary chain, previous...
-// TODO: ensure order descending
 async function clouddistinct(input) {
   var out = [];
   var already = new Set();
@@ -263,13 +261,9 @@ async function clouddistinct(input) {
     var key = await keyToken(subject);
     if (already.has(key)) continue;
     already.add(key);
-    // Investigated: Why clearing "clear" statements makes me see results that should have 
-    // been cleared.
-    // Solved: Sometimes (ex, clear, censor) we identify the subject by its token instead of the full Json.
-    // So: With our keyTokens not correct, this isn't reliably distinct, but it's still somewhat
-    // helpful for performance.
-    // Regardless, we wll need to retain the 'clear' statements because we might be using multiple
-    // delegates and use one delegate to clear something the other stated.
+    // Retain= 'clear' statements or not?
+    // Pro: Multiple delegates: use one to clear another's statement.
+    // Con: Performance.
     if (verb == 'clear') continue;
     delete j.I;
     delete j.statement;
@@ -304,6 +298,30 @@ exports.clouddistinct = onCall(async (request) => {
     if (data.length > 0) {
       iKey = data[0].I;
       lastToken = data[data.length - 1].id;
+    }
+
+    // Validate notary chain
+    var first = true;
+    var previousToken = 'bogus';
+    var previousTime;
+    for (var d of data) {
+      if (first) {
+        first = false; // no check
+      } else {
+        if (d.id != previousToken) {
+          var error = `Notarization violation: ${d.id} != ${previousToken}`;
+          logger.error(error);
+          throw error;
+        }
+
+        if (d.time >= previousTime) {
+          var error = `Not decending: ${d.time} >= ${previousTime}`;
+          logger.error(error);
+          throw error;
+        }
+      }
+      previousToken = d.previous;
+      previousTime = d.time;
     }
 
     var distinct = await clouddistinct(data);
