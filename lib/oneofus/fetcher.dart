@@ -11,6 +11,25 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
+/// Cloud functions distinct...
+/// 
+/// Nerdster web app, Nerdster content first.
+/// 
+/// Deploy a Cloud fuunction
+/// - DEFER: revokedAt
+/// - DEFER: other filters (ex, past month)
+/// 
+/// CONCERN: How to get the full "I" key. Do we actually need it?
+/// - I don't think we need it.
+/// 
+/// Modify Statement / ContentStatement
+/// - deal with "I" token instead of full key
+/// 
+/// DEFER: Dealing with revokedAt 
+/// 
+/// -------- Stop here and compare PROD performance --------------
+/// 
+
 /// This class combines much functionality, which is messy, but it was even messier with multiple classes:
 /// - Firestore fetch/push, cache
 /// - revokeAt (part of trust algorithm)
