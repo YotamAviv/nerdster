@@ -196,15 +196,40 @@ exports.signin = onRequest((req, res) => {
     });
 });
 
-function keyToken(dict) {
-  const sortedKeys = Object.keys(dict).sort();
-  let resultString = "";
-  for (const key of sortedKeys) {
-    resultString += (key + dict[key]);
-    logger.log(resultString);
-  }
-  return resultString;
+async function computeSHA1(str) {
+  const buffer = new TextEncoder("utf-8").encode(str);
+  const hash = await crypto.subtle.digest("SHA-1", buffer);
+  return Array.from(new Uint8Array(hash))
+    .map(x => x.toString(16).padStart(2, '0'))
+    .join('');
 }
+
+function sortDictionaryByKey(dictionary) {
+  const sortedKeys = Object.keys(dictionary).sort();
+  const sortedDictionary = {};
+  if ("contentType" in dictionary) {
+    sortedDictionary["contentType"] = dictionary["contentType"];
+    // delete dictionary.contentType; // This delete makes it not be in sortedDictionary.
+  }
+  sortedKeys.forEach(key => {
+    if (key != "contentType") {
+      sortedDictionary[key] = dictionary[key];
+    }
+  });
+  return sortedDictionary;
+}
+
+async function keyToken(input) {
+  if (typeof input === 'string') {
+    return input;
+  } else {
+    const sortedDict = sortDictionaryByKey(input);
+    var ppJson = JSON.stringify(sortedDict, null, 2);
+    var token = await computeSHA1(ppJson);
+    return token;
+  }
+}
+
 
 const contentVerbs = [
   'rate',
@@ -228,13 +253,13 @@ function getVerbSubject(j) {
 
 // TODO: verify notary chain, previous...
 // TODO: ensure order descending
-function clouddistinct(input) {
+async function clouddistinct(input) {
   var out = [];
   var already = new Set();
   for (var j of input) {
     var i = j['I'];
     const [verb, subject] = getVerbSubject(j);
-    var key = keyToken(subject);
+    var key = await keyToken(subject);
     if (already.has(key)) continue;
     already.add(key);
     // Investigated: Why clearing "clear" statements makes me see results that should have 
@@ -244,7 +269,7 @@ function clouddistinct(input) {
     // helpful for performance.
     // Regardless, we wll need to retain the 'clear' statements because we might be using multiple
     // delegates and use one delegate to clear something the other stated.
-    // if (verb == 'clear') continue;
+    if (verb == 'clear') continue;
     delete j.I;
     delete j.statement;
     // TEMP: delete j.signature;
@@ -280,7 +305,7 @@ exports.clouddistinct = onCall(async (request) => {
       lastToken = data[data.length - 1].id;
     }
 
-    var distinct = clouddistinct(data);
+    var distinct = await clouddistinct(data);
 
     return { "iKey": iKey, "lastToken": lastToken, "statements": distinct };
   } catch (error) {
