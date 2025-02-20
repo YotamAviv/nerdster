@@ -207,6 +207,7 @@ async function computeSHA1(str) {
 function sortDictionaryByKey(dictionary) {
   const sortedKeys = Object.keys(dictionary).sort();
   const sortedDictionary = {};
+  // TODO: Generalize this and merge with the export stuff
   if ("contentType" in dictionary) {
     sortedDictionary["contentType"] = dictionary["contentType"];
     // delete dictionary.contentType; // This delete makes it not be in sortedDictionary.
