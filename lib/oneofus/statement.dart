@@ -28,7 +28,7 @@ abstract class Statement {
 
   Statement(this.jsonish, this.subject) :
       time = parseIso(jsonish.json['time']),
-      iToken = Jsonish(jsonish.json['I']).token,
+      iToken = getToken(jsonish.json['I']),
       comment = jsonish.json['comment'];
 
   String get subjectToken {

@@ -98,6 +98,7 @@ class Menus {
             MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
             MyCheckbox(Prefs.showStatements, 'show trust statements'),
             MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
+            MyCheckbox(Prefs.fetchDistinct, 'fetchDistinct'),
             MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             // MyCheckbox(Prefs.skipVerify, '''skip verifying signatures (goes quicker;)'''),
             MyCheckbox(Prefs.censor, '''hide content censored by my network'''),

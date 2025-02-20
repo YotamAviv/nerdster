@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:flutter/material.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/progress.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but might work for phone codebase.
 
@@ -12,25 +15,27 @@ import 'statement.dart';
 import 'util.dart';
 
 /// Cloud functions distinct...
-/// 
+///
 /// Nerdster web app, Nerdster content first.
-/// 
+///
 /// Deploy a Cloud fuunction
 /// - DEFER: revokedAt
 /// - DEFER: other filters (ex, past month)
-/// 
+///
 /// Maybe add a DEV menu helper / tester
-/// 
+///
 /// CONCERN: How to get the full "I" key. Do we actually need it?
 /// - I don't think we need it.
-/// 
+/// - We need it in NetTile, probably to show the key, which we like doing..
+///   Can return this from cloud func: {"key": key, "statements": statements}
+///
 /// Modify Statement / ContentStatement
 /// - deal with "I" token instead of full key
-/// 
-/// DEFER: Dealing with revokedAt 
-/// 
+///
+/// DEFER: Dealing with revokedAt
+///
 /// -------- Stop here and compare PROD performance --------------
-/// 
+///
 
 /// This class combines much functionality, which is messy, but it was even messier with multiple classes:
 /// - Firestore fetch/push, cache
@@ -156,6 +161,25 @@ class Fetcher {
 
     if (b(_cached)) return;
     _cached = <Statement>[];
+
+    if (domain == kNerdsterDomain && Prefs.fetchDistinct.value) {
+      FirebaseFunctions functions = FirebaseFunctions.instance;
+      if (fireChoice == FireChoice.emulator) {
+        functions.useFunctionsEmulator('127.0.0.1', 5001);
+      }
+      final result = await functions.httpsCallable('clouddistinct').call(
+        {"token": token},
+      );
+      // print(result.data);
+      for (Json j in result.data) {
+        // TEMP:
+        j['statement'] = kNerdsterType;
+        j['I'] = token;
+        Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
+        _cached!.add(Statement.make(jsonish));
+      }
+      return;
+    }
 
     CollectionReference<Map<String, dynamic>> fireStatements =
         fire.collection(token).doc('statements').collection('statements');
