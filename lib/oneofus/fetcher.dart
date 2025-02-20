@@ -39,10 +39,23 @@ import 'util.dart';
 /// - FollowNet: 0:00:02.640401
 /// So good.. Probably go with it.
 ///
-/// NEXT: get 'clear' cleared. Assert on the descending order.
-/// NEXT: Consider "other" subject, doc a little
+/// DONE: get 'clear' cleared.
+/// Done: Assert on the descending order.
+/// 
 /// TODO: Pass the correct token (it can't be computed without previous, "I", "statement")
 ///
+/// TODO: Clean up index.js
+/// - JavaScript unit testing
+/// - Josonish.compute token
+/// - trust and content statement verbs..
+///
+/// NEXT: Consider "other" subject, doc a little
+///
+///
+///
+/// Down the line:
+/// TODO: Modify Trust1 to be just greedy, no revoking what was trusted
+/// TODO: revokeAt in request
 
 /// This class combines much functionality, which is messy, but it was even messier with multiple classes:
 /// - Firestore fetch/push, cache
@@ -246,8 +259,7 @@ class Fetcher {
         } else {
           if (jsonish.token != previousToken) {
             // DEFER: Something.
-            print(
-                'Blockchain notarization violation: ($domain/$token): ${jsonish.token} != $previousToken');
+            print('Notarization violation: ($domain/$token): ${jsonish.token} != $previousToken');
             continue;
           }
         }
