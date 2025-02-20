@@ -41,7 +41,7 @@ import 'util.dart';
 ///
 /// DONE: get 'clear' cleared.
 /// Done: Assert on the descending order.
-/// 
+///
 /// TODO: Pass the correct token (it can't be computed without previous, "I", "statement")
 ///
 /// TODO: Clean up index.js
@@ -209,11 +209,22 @@ class Fetcher {
         j['I'] = iKey; // TODO: Allow token in 'I' in statements; we might be already.
         assert(getToken(j['I']) == getToken(iKey));
         String serverToken = j['id'];
-        // NEXT: TODO: Make this the token of the Jsonish. And allow not sending previous and signature from server.
         j.remove('id');
+
+        /// CONSIDER: Don't get [signature, previous] from server.
+        /// That requires getting and using token from server instead if computing it.
+        /// It'd be a destabilizing change to deal with Jsonish instances whose tokens aren't the tokens we'd compute from their Json.
+        ///
+        /// Options:
+        /// - Don't even bother.
+        /// - Move to Jsonish over Json wherever possible, and be very careful not to compute the
+        ///   token of a Json that you got from a Jsonish.
+
         Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
-        assert(serverToken == jsonish.token);
-        _cached!.add(Statement.make(jsonish));
+        assert(jsonish.token == serverToken);
+        Statement statement = Statement.make(jsonish);
+        assert(statement.token == serverToken);
+        _cached!.add(statement);
       }
     } else {
       CollectionReference<Map<String, dynamic>> fireStatements =

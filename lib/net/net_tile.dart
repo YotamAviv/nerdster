@@ -151,7 +151,7 @@ class _NetTileState extends State<NetTile> {
       shadows: shadows,
     );
 
-    Json json = isStatement ? node.statement!.json : (Jsonish.find(node.token!))!.json;
+    Jsonish jsonish = isStatement ? node.statement!.jsonish : (Jsonish.find(node.token!))!;
 
     return TreeIndentation(
         entry: widget.entry,
@@ -167,7 +167,7 @@ class _NetTileState extends State<NetTile> {
                   isOpen: widget.entry.hasChildren ? widget.entry.isExpanded : null,
                   onPressed: widget.entry.hasChildren ? widget.onTap : null),
             ),
-            if (Prefs.showJson.value) JSWidget(json),
+            if (Prefs.showJson.value) JSWidget(jsonish),
             if (isStatement)
               Text(
                 text!,

@@ -28,11 +28,11 @@ class SubjectTile extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _SubjectState();
+    return _SubjectTileState();
   }
 }
 
-class _SubjectState extends State<SubjectTile> {
+class _SubjectTileState extends State<SubjectTile> {
   Icon relateIcon = const Icon(Icons.balance);
 
   @override
@@ -159,7 +159,7 @@ class _SubjectState extends State<SubjectTile> {
                 ),
                 const SizedBox(width: 8),
                 ...propWidgets,
-                if (Prefs.showJson.value) JSWidget(subjectNode.subject.json),
+                if (Prefs.showJson.value) JSWidget(subjectNode.subject),
                 titleWidget,
                 if (b(statementDesc)) statementDesc!,
               ]),
@@ -259,8 +259,7 @@ class _StatementTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Json jsonKey = statement.json['I'];
-    String token = Jsonish(jsonKey).token;
+    String token = statement.iToken;
     String label = keyLabels.labelKey(followNet.delegate2oneofus[token]!)!;
     var time = statement.time;
     return InkWell(
