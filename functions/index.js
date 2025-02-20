@@ -225,6 +225,11 @@ function getVerbSubject(j) {
   return null;
 }
 
+// TODO: provide correct token (can't be computed at client without "previous" and others)
+// TODO: provide "I" full key
+// TDOO: provide last token (it might be a statement we don't send across (ex, it's "clear"))
+// TODO: verify previous
+// TODO: ensure order descending
 function clouddistinct(input) {
   var out = [];
   var already = new Set();
@@ -238,13 +243,14 @@ function clouddistinct(input) {
     // if (verb == 'clear') continue;
     delete j.I;
     delete j.statement;
-    delete j.signature;
-    delete j.previous;
+    // delete j.signature;
+    // TEMP: delete j.previous;
     out.push(j);
   }
   return out;
 }
 
+// TODO: Test boundary condition of empty
 /// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
 // exports.clouddistinct = onRequest(async (req, res) => {
 exports.clouddistinct = onCall(async (request) => {
@@ -256,13 +262,19 @@ exports.clouddistinct = onCall(async (request) => {
     const db = admin.firestore();
     const collectionRef = db.collection(token).doc('statements').collection('statements');
     const snapshot = await collectionRef.orderBy('time', 'desc').get();
-    const data = snapshot.docs.map(doc => doc.data());
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    var data3 = clouddistinct(data);
+    // Do this before distinct call below as the "delete" operations there affect the underlying objects.
+    var iKey;
+    var lastToken;
+    if (data.length > 0) {
+      iKey = data[0].I;
+      lastToken = data[data.length - 1].id;
+    }
 
+    var distinct = clouddistinct(data);
 
-
-    return data3;
+    return { "iKey": iKey, "lastToken": lastToken, "statements": distinct };
   } catch (error) {
     console.error(error);
     // res.status(500).send('Error exporting collection');
