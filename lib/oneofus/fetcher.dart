@@ -69,6 +69,9 @@ final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 class Fetcher {
   static int? testingCrashIn;
 
+  static FirebaseFunctions? functions =
+      (fireChoice == FireChoice.fake) ? null : FirebaseFunctions.instance;
+
   static final OouVerifier _verifier = OouVerifier();
 
   // (I've lost track of the reasoning behind having a final VoidCallback for this.)
@@ -104,6 +107,10 @@ class Fetcher {
   }
 
   factory Fetcher(String token, String domain, {bool testingNoVerify = false}) {
+    if (fireChoice == FireChoice.emulator) {
+      // TODO: This should be static.
+      functions!.useFunctionsEmulator('127.0.0.1', 5001);
+    }
     String key = '$token$domain';
     FirebaseFirestore fire = FireFactory.find(domain);
     Fetcher out;
@@ -171,28 +178,25 @@ class Fetcher {
 
     DateTime? time;
     if (domain == kNerdsterDomain && Prefs.fetchDistinct.value && fireChoice != FireChoice.fake) {
-      FirebaseFunctions functions = FirebaseFunctions.instance;
-      if (fireChoice == FireChoice.emulator) {
-        functions.useFunctionsEmulator('127.0.0.1', 5001);
-      }
-      final result = await functions.httpsCallable('clouddistinct').call({"token": token});
-      print('result.data=${result.data}');
+      final result = await functions!.httpsCallable('clouddistinct').call({"token": token});
       List statements = result.data["statements"];
-      if (statements.isEmpty) return; // Hmm..
+      if (statements.isEmpty) return;
       Json iKey = result.data['iKey'];
       assert(getToken(iKey) == token);
       String lastToken = result.data["lastToken"]; // TEMP: TODO: Use
       for (Json j in statements) {
         DateTime jTime = parseIso(j['time']);
         if (time != null) {
-          assert (jTime.isBefore(time));
+          assert(jTime.isBefore(time));
         }
         time = jTime;
         j['statement'] = kNerdsterType;
-        j['I'] = iKey; // TEMP: token;
+        j['I'] =
+            iKey; // DEFER: Save memory by allowing token in 'I' in statements; we might be already.
         assert(getToken(j['I']) == getToken(iKey));
         String serverToken = j['id'];
-        j.remove('id'); // TODO: Make this the token of the Jsonish. TEMP:
+        j.remove(
+            'id'); // NEXT: TODO: Make this the token of the Jsonish. And allow not sending previous and signature from server.
         Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
         assert(serverToken == jsonish.token);
         _cached!.add(Statement.make(jsonish));
