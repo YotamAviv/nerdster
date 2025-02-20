@@ -239,11 +239,15 @@ function clouddistinct(input) {
     var key = keyToken(subject);
     if (already.has(key)) continue;
     already.add(key);
-    // TEMP: Investigate why it's boken without this.
+    // CONSIDER: Investigate why clearing "clear" statements makes me see results that should have 
+    // been cleared.
+    // I'd like to understand this, but I think that regardless, we need to send the 'clear'
+    // statements because we might be using multiple delegates and use one delegate to clear
+    // something the other stated.
     // if (verb == 'clear') continue;
     delete j.I;
     delete j.statement;
-    // delete j.signature;
+    // TEMP: delete j.signature;
     // TEMP: delete j.previous;
     out.push(j);
   }
