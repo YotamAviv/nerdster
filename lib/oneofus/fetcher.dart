@@ -94,7 +94,9 @@ class Fetcher {
   String? _revokeAt; // set by others to let me know
   DateTime? _revokeAtTime; // set by me after querying the db
 
+  // Due to clouddistinct, this isn't all statements.
   List<Statement>? _cached;
+  String? _lastToken;
 
   static void clear() => _fetchers.clear();
 
@@ -183,7 +185,7 @@ class Fetcher {
       if (statements.isEmpty) return;
       Json iKey = result.data['iKey'];
       assert(getToken(iKey) == token);
-      String lastToken = result.data["lastToken"]; // TEMP: TODO: Use
+      _lastToken = result.data["lastToken"]; // TEMP: TODO: Use
       for (Json j in statements) {
         DateTime jTime = parseIso(j['time']);
         if (time != null) {
@@ -191,8 +193,7 @@ class Fetcher {
         }
         time = jTime;
         j['statement'] = kNerdsterType;
-        j['I'] =
-            iKey; // DEFER: Save memory by allowing token in 'I' in statements; we might be already.
+        j['I'] = iKey; // DEFER: Allow token in 'I' in statements; we might be already.
         assert(getToken(j['I']) == getToken(iKey));
         String serverToken = j['id'];
         j.remove(
@@ -201,66 +202,68 @@ class Fetcher {
         assert(serverToken == jsonish.token);
         _cached!.add(Statement.make(jsonish));
       }
-      return;
-    }
+    } else {
+      CollectionReference<Map<String, dynamic>> fireStatements =
+          fire.collection(token).doc('statements').collection('statements');
 
-    CollectionReference<Map<String, dynamic>> fireStatements =
-        fire.collection(token).doc('statements').collection('statements');
-
-    // query _revokeAtTime
-    if (_revokeAt != null && _revokeAtTime == null) {
-      DocumentReference<Json> doc = fireStatements.doc(_revokeAt);
-      final DocumentSnapshot<Json> docSnap = await mFire.mAsync(doc.get);
-      // _revokeAt can be any string. If it is the id (token) of something this Fetcher has ever
-      // stated, the we revoke it there; otherwise, it's blocked - revoked "since forever".
-      // TODO(2): add unit test.
-      if (b(docSnap.data())) {
-        final Json data = docSnap.data()!;
-        _revokeAtTime = parseIso(data['time']);
-      } else {
-        _revokeAtTime = DateTime(0);
-      }
-    }
-
-    Query<Json> query = fireStatements.orderBy('time', descending: true); // newest to oldest
-    QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
-    // DEFER: Something with the error.
-    // .catchError((e) => print("Error completing: $e"));
-    bool first = true;
-    String? previousToken;
-    for (final docSnapshot in snapshots.docs) {
-      final Json data = docSnapshot.data();
-      Jsonish jsonish;
-
-      if (Prefs.skipVerify.value || testingNoVerify) {
-        jsonish = mVerify.mSync(() => Jsonish(data));
-      } else {
-        jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(data, _verifier));
-      }
-
-      // newest to oldest
-      // First: previousToken is null
-      // middles: statement.token = previousToken
-      // Last: statement.token = null
-      if (first) {
-        first = false; // no check
-      } else {
-        if (jsonish.token != previousToken) {
-          // DEFER: Something.
-          print(
-              'Blockchain notarization violation: ($domain/$token): ${jsonish.token} != $previousToken');
-          continue;
+      // query _revokeAtTime
+      if (_revokeAt != null && _revokeAtTime == null) {
+        DocumentReference<Json> doc = fireStatements.doc(_revokeAt);
+        final DocumentSnapshot<Json> docSnap = await mFire.mAsync(doc.get);
+        // _revokeAt can be any string. If it is the id (token) of something this Fetcher has ever
+        // stated, the we revoke it there; otherwise, it's blocked - revoked "since forever".
+        // TODO(2): add unit test.
+        if (b(docSnap.data())) {
+          final Json data = docSnap.data()!;
+          _revokeAtTime = parseIso(data['time']);
+        } else {
+          _revokeAtTime = DateTime(0);
         }
       }
-      previousToken = data['previous'];
 
-      _cached!.add(Statement.make(jsonish));
+      Query<Json> query = fireStatements.orderBy('time', descending: true); // newest to oldest
+      QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
+      // DEFER: Something with the error.
+      // .catchError((e) => print("Error completing: $e"));
+      bool first = true;
+      String? previousToken;
+      for (final docSnapshot in snapshots.docs) {
+        final Json data = docSnapshot.data();
+        Jsonish jsonish;
+
+        if (Prefs.skipVerify.value || testingNoVerify) {
+          jsonish = mVerify.mSync(() => Jsonish(data));
+        } else {
+          jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(data, _verifier));
+        }
+
+        // newest to oldest
+        // First: previousToken is null
+        // middles: statement.token = previousToken
+        // Last: statement.token = null
+        if (first) {
+          first = false; // no check
+        } else {
+          if (jsonish.token != previousToken) {
+            // DEFER: Something.
+            print(
+                'Blockchain notarization violation: ($domain/$token): ${jsonish.token} != $previousToken');
+            continue;
+          }
+        }
+        previousToken = data['previous'];
+
+        _cached!.add(Statement.make(jsonish));
+      }
+      if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
     }
+
     // print('fetched: $fire, $token');
   }
 
   List<Statement> get statements {
     if (b(_revokeAt)) {
+      // TODO: NEXT: Might need to disable the ability to set revokedAt due to clouddistinc///t/
       Statement? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
       if (b(revokeAtStatement)) {
         return _cached!.sublist(_cached!.indexOf(revokeAtStatement!));
@@ -287,16 +290,17 @@ class Fetcher {
       previous = _cached!.first;
 
       // assert time is after last statement time
+      // This is a little confusing with clouddistinct, but I think this is okay.
       DateTime prevTime = parseIso(previous.json['time']!);
       DateTime thisTime = parseIso(json['time']!);
       assert(thisTime.isAfter(prevTime));
 
       if (json.containsKey('previous')) {
         // for load dump
-        assert(json['previous'] == previous.token);
+        assert(json['previous'] == _lastToken);
       }
-      json['previous'] = previous.token;
     }
+    if (_lastToken != null) json['previous'] = _lastToken;
 
     // sign (or verify) statement
     String? signature = json['signature'];
@@ -310,6 +314,7 @@ class Fetcher {
     }
 
     _cached!.insert(0, Statement.make(jsonish));
+    _lastToken = jsonish.token;
 
     final fireStatements = fire.collection(token).doc('statements').collection('statements');
     // NOTE: We don't 'await'.. Ajax!.. Bad idea now that others call this, like tests.

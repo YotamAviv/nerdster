@@ -200,7 +200,8 @@ function keyToken(dict) {
   const sortedKeys = Object.keys(dict).sort();
   let resultString = "";
   for (const key of sortedKeys) {
-    resultString += dict[key];
+    resultString += (key + dict[key]);
+    logger.log(resultString);
   }
   return resultString;
 }
@@ -225,10 +226,7 @@ function getVerbSubject(j) {
   return null;
 }
 
-// TODO: provide correct token (can't be computed at client without "previous" and others)
-// TODO: provide "I" full key
-// TDOO: provide last token (it might be a statement we don't send across (ex, it's "clear"))
-// TODO: verify previous
+// TODO: verify notary chain, previous...
 // TODO: ensure order descending
 function clouddistinct(input) {
   var out = [];
@@ -239,11 +237,13 @@ function clouddistinct(input) {
     var key = keyToken(subject);
     if (already.has(key)) continue;
     already.add(key);
-    // CONSIDER: Investigate why clearing "clear" statements makes me see results that should have 
+    // Investigated: Why clearing "clear" statements makes me see results that should have 
     // been cleared.
-    // I'd like to understand this, but I think that regardless, we need to send the 'clear'
-    // statements because we might be using multiple delegates and use one delegate to clear
-    // something the other stated.
+    // Solved: Sometimes (ex, clear, censor) we identify the subject by its token instead of the full Json.
+    // So: With our keyTokens not correct, this isn't reliably distinct, but it's still somewhat
+    // helpful for performance.
+    // Regardless, we wll need to retain the 'clear' statements because we might be using multiple
+    // delegates and use one delegate to clear something the other stated.
     // if (verb == 'clear') continue;
     delete j.I;
     delete j.statement;
@@ -253,6 +253,10 @@ function clouddistinct(input) {
   }
   return out;
 }
+
+// TODO: Clean this up
+// - Organize the file, use Javascript helpers and constants in 
+// - Export clouddistinct to the HTTP interface (at least for debugging, demonstrating..) 
 
 // TODO: Test boundary condition of empty
 /// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
