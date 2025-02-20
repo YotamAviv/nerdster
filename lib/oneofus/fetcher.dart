@@ -169,7 +169,8 @@ class Fetcher {
     if (b(_cached)) return;
     _cached = <Statement>[];
 
-    if (domain == kNerdsterDomain && Prefs.fetchDistinct.value) {
+    DateTime? time;
+    if (domain == kNerdsterDomain && Prefs.fetchDistinct.value && fireChoice != FireChoice.fake) {
       FirebaseFunctions functions = FirebaseFunctions.instance;
       if (fireChoice == FireChoice.emulator) {
         functions.useFunctionsEmulator('127.0.0.1', 5001);
@@ -182,6 +183,11 @@ class Fetcher {
       assert(getToken(iKey) == token);
       String lastToken = result.data["lastToken"]; // TEMP: TODO: Use
       for (Json j in statements) {
+        DateTime jTime = parseIso(j['time']);
+        if (time != null) {
+          assert (jTime.isBefore(time));
+        }
+        time = jTime;
         j['statement'] = kNerdsterType;
         j['I'] = iKey; // TEMP: token;
         assert(getToken(j['I']) == getToken(iKey));
