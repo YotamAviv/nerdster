@@ -36,8 +36,12 @@ import 'util.dart';
 ///
 /// -------- Stop here and compare PROD performance --------------
 /// - FollowNet: 0:00:01.760300 (fetchDistinct)
-/// - FollowNet: 0:00:02.640401 
+/// - FollowNet: 0:00:02.640401
 /// So good.. Probably go with it.
+///
+/// NEXT: get 'clear' cleared. Assert on the descending order.
+/// NEXT: Consider "other" subject, doc a little
+/// TODO: Pass the correct token (it can't be computed without previous, "I", "statement")
 ///
 
 /// This class combines much functionality, which is messy, but it was even messier with multiple classes:
@@ -170,15 +174,21 @@ class Fetcher {
       if (fireChoice == FireChoice.emulator) {
         functions.useFunctionsEmulator('127.0.0.1', 5001);
       }
-      final result = await functions.httpsCallable('clouddistinct').call(
-        {"token": token},
-      );
-      // print(result.data);
-      for (Json j in result.data) {
-        // TEMP:
+      final result = await functions.httpsCallable('clouddistinct').call({"token": token});
+      print('result.data=${result.data}');
+      List statements = result.data["statements"];
+      if (statements.isEmpty) return; // Hmm..
+      Json iKey = result.data['iKey'];
+      assert(getToken(iKey) == token);
+      String lastToken = result.data["lastToken"]; // TEMP: TODO: Use
+      for (Json j in statements) {
         j['statement'] = kNerdsterType;
-        j['I'] = token;
+        j['I'] = iKey; // TEMP: token;
+        assert(getToken(j['I']) == getToken(iKey));
+        String serverToken = j['id'];
+        j.remove('id'); // TODO: Make this the token of the Jsonish. TEMP:
         Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
+        assert(serverToken == jsonish.token);
         _cached!.add(Statement.make(jsonish));
       }
       return;
