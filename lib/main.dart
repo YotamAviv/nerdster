@@ -34,7 +34,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.emulator;
+FireChoice fireChoice = FireChoice.prod;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -171,7 +171,8 @@ const Json dummyPublicKey = {
 String dummyOneofus = Jsonish(dummyPublicKey).token;
 const String yotam = '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431';
 dynamic hardCodedSignin = {
-  FireChoice.prod: {"one-of-us.net": dummyOneofus},
+  // TEMP: FireChoice.prod: {"one-of-us.net": dummyOneofus},
+  FireChoice.prod: {"one-of-us.net": yotam},
 
   // Yotam
   FireChoice.emulator: {"one-of-us.net": yotam}
