@@ -278,6 +278,8 @@ async function clouddistinct(input) {
 // - Organize the file, use Javascript helpers and constants in 
 // - Export clouddistinct to the HTTP interface (at least for debugging, demonstrating..) 
 
+// TODO: Rename "id" to "token"
+
 // TODO: Test boundary condition of empty
 /// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
 // exports.clouddistinct = onRequest(async (req, res) => {
@@ -300,9 +302,9 @@ exports.clouddistinct = onCall(async (request) => {
       lastToken = data[data.length - 1].id;
     }
 
-    // Validate notary chain
+    // Validate notary chain, decending order
     var first = true;
-    var previousToken = 'bogus';
+    var previousToken;
     var previousTime;
     for (var d of data) {
       if (first) {

@@ -3,7 +3,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/menus.dart';
-import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/show_qr.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -176,7 +175,7 @@ class StatementNotification extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Json json = statement.json;
-    String text = Jsonish.encoder.convert(KeyLabels().show(json));
+    String text = Jsonish.encoder.convert(keyLabels.show(json));
 
     Node? iNode = oneofusNet.network[statement.iToken];
 
