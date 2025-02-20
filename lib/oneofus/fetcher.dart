@@ -185,7 +185,7 @@ class Fetcher {
       if (statements.isEmpty) return;
       Json iKey = result.data['iKey'];
       assert(getToken(iKey) == token);
-      _lastToken = result.data["lastToken"]; // TEMP: TODO: Use
+      _lastToken = result.data["lastToken"];
       for (Json j in statements) {
         DateTime jTime = parseIso(j['time']);
         if (time != null) {
@@ -193,11 +193,11 @@ class Fetcher {
         }
         time = jTime;
         j['statement'] = kNerdsterType;
-        j['I'] = iKey; // DEFER: Allow token in 'I' in statements; we might be already.
+        j['I'] = iKey; // TODO: Allow token in 'I' in statements; we might be already.
         assert(getToken(j['I']) == getToken(iKey));
         String serverToken = j['id'];
-        j.remove(
-            'id'); // NEXT: TODO: Make this the token of the Jsonish. And allow not sending previous and signature from server.
+        // NEXT: TODO: Make this the token of the Jsonish. And allow not sending previous and signature from server.
+        j.remove('id');
         Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
         assert(serverToken == jsonish.token);
         _cached!.add(Statement.make(jsonish));
