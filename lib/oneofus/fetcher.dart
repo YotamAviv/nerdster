@@ -35,6 +35,9 @@ import 'util.dart';
 /// DEFER: Dealing with revokedAt
 ///
 /// -------- Stop here and compare PROD performance --------------
+/// - FollowNet: 0:00:01.760300 (fetchDistinct)
+/// - FollowNet: 0:00:02.640401 
+/// So good.. Probably go with it.
 ///
 
 /// This class combines much functionality, which is messy, but it was even messier with multiple classes:
