@@ -41,6 +41,8 @@ import 'util.dart';
 ///
 /// DONE: get 'clear' cleared.
 /// Done: Assert on the descending order.
+/// 
+/// -------- Stop here and compare PROD Oneofus performance --------------
 ///
 /// TODO: Pass the correct token (it can't be computed without previous, "I", "statement")
 ///
@@ -51,7 +53,8 @@ import 'util.dart';
 ///
 /// NEXT: Consider "other" subject, doc a little
 ///
-///
+/// TODO: Address testing:
+/// - possible on emulaotr
 ///
 /// Down the line:
 /// TODO: Modify Trust1 to be just greedy, no revoking what was trusted
@@ -142,16 +145,24 @@ class Fetcher {
 
   Fetcher.internal(this.token, this.domain, this.fire, {this.testingNoVerify = false});
 
-  // Oneofus trust does not allow 2 different keys replace a key. That's a conflict.
-  // It does allow anyone to block a key, and so multiple keys could block the same key.
+  // Oneofus trust does not allow 2 different keys replace a key (that's a conflict).
   // Fetcher isn't responsible for implementing that, but I am going to assume that
   // something else does and I'll rely on that and not implement code to update
-  // revokeAt. So:
-  // - okay to block a revoked (replaced) key.
-  // - okay to block a blocked key.
-  // - not okay to revoke (replace) a blocked key.
-  // - not okay to revoke (replace) a revoked (replaced) key.
+  // revokeAt.
+  // 
+  // Changing center is encouraged, and we'd like to make that fast (without re-fetching too much).
+  // 
+  // Moving to clouddistinct... What if 
+  // 
   void setRevokeAt(String revokeAt) {
+    if (_revokeAt == revokeAt) return;
+
+    _revokeAt = revokeAt;
+    _revokeAtTime = null;
+    _cached = null; // Have to re-fetch.
+    changeNotify();
+    return;
+
     // TEMP: NEW: I don't think that even setting the same value twice should be supported
     // assert(_revokeAt == null);
 

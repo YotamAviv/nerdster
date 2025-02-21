@@ -605,6 +605,7 @@ void main() async {
 
     followNet.fcontext = 'family';
     await signInState.signIn(lisa.token, null);
+    await Comp.waitOnComps([oneofusNet]); // TEMP: Wanted to see if crash is here
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus, {
       "daughter-delegate": "daughter",

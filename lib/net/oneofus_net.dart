@@ -174,7 +174,9 @@ class FetcherNode extends Node {
   // DEFER: MINOR: Listen to _fetcher and cache, minor becuase Fetcher caches.
   Future<Iterable<Trust>> get trusts async {
     assert(!blocked);
-    await _fetcher.fetch(); // (redundant, but okay; should already be fetched at get blocks)
+    await _fetcher.fetch();
+    // TODO: moving to cloud distinct...  Not entirely, and not necessarily fully 
+    // correctly (other subject..)
     return distinct(_fetcher.statements)
         .cast()
         .where((s) => s.verb == TrustVerb.trust)
@@ -184,7 +186,7 @@ class FetcherNode extends Node {
   @override
   Future<Iterable<Replace>> get replaces async {
     assert(!blocked);
-    await _fetcher.fetch(); // (redundant, but okay; should already be fetched at get blocks)
+    await _fetcher.fetch();
     return distinct(_fetcher.statements)
         .cast()
         .where((s) => s.verb == TrustVerb.replace)
