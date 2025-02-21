@@ -19,6 +19,9 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   var expectedNetwork;
   var expectedEquivalents;
 
+  // TODO: blockerBenefit removed. Test something or remove. 
+  return (bart, null);
+
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await lisa.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
   await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');

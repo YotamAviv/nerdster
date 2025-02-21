@@ -146,6 +146,7 @@ class Trust1 {
           other.paths.add(newPath);
           assert(newPath.length == pass + 1); // Just checking
           other.revokeAt = replace.revokeAt;
+          await other.trusts; // KLUDGE: Setting revoked at might require re-fetching.
           // Add to queue if not already visited.
           if (!visited.contains(other)) {
             nextLayer.addLast(newPath);
@@ -260,7 +261,8 @@ class Trust1 {
       String? fromRevokeAt = network[edge.node.token]!.revokeAt;
       fromRevokeAtTime = network[edge.node.token]!.revokeAtTime;
       if (fromRevokeAt != null) {
-        // The only case where we should have fromRevokeAtTime != null is if it's the last path.
+        // The only case where we should have fromRevokeAtTime != null is if it's the last path 
+        // (which we didn't take, and so it wasn't fetched.)
         assert(fromRevokeAtTime != null || edge.node.token == path.last.node.token);
       }
     }

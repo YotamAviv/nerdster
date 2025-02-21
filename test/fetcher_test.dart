@@ -219,6 +219,7 @@ void main() async {
       expect(fetcher.statements.length, 4);
 
       fetcher.setRevokeAt(revokeAtHere.token);
+      await fetcher.fetch();
       expect(fetcher.statements.length, 2);
       List subjects = List.of(fetcher.statements.map((s) => s.subject));
       // expect(subjects, ['sub4', 'sub3', 'sub2']);

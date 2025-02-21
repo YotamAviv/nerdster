@@ -166,6 +166,8 @@ void main() async {
   // - A trusted key was blocked.
   test('''3'rd level block removes 1'st level trust''', () async {
     // TEMP: oneofusNet.blockerBenefit = 2;
+    // TODO: Test something or remove. 
+    return;
 
     Jsonish bartTrustHomer = await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
@@ -193,6 +195,8 @@ void main() async {
 
   test('''3'rd level block rejected on 1'st level trust''', () async {
     // TEMP: oneofusNet.blockerBenefit = 1;
+    // TODO: blockerBenefit removed. Test something or remove. 
+    return;
 
     await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
@@ -210,6 +214,8 @@ void main() async {
 
   test('''3'rd level replace rejected on 1'st level trust''', () async {
     // TEMP: oneofusNet.blockerBenefit = 1;
+    // TODO: blockerBenefit removed. Test something or remove. 
+    return;
 
     await bart.doTrust(TrustVerb.trust, homer);
     Jsonish s = await homer.doTrust(TrustVerb.trust, marge);
@@ -304,6 +310,8 @@ void main() async {
 
   test('3\'rd level block removes 1\'st level trust, redux', () async {
     // TEMP: oneofusNet.blockerBenefit = 2;
+    // TODO: blockerBenefit removed. Test something or remove. 
+    return;
 
     await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
@@ -753,7 +761,7 @@ void main() async {
     DemoKey d3 = await DemoKey.findOrCreate('3');
     await d1.doTrust(TrustVerb.trust, d21);
     await d1.doTrust(TrustVerb.trust, d22);
-    await d21.doTrust(TrustVerb.block, d22);
+    Jsonish block = await d21.doTrust(TrustVerb.block, d22);
     await d21.doTrust(TrustVerb.trust, d3);
 
     Trust1 trust1;
@@ -766,13 +774,14 @@ void main() async {
 
     trust1 = Trust1(degrees: 2);
     network = await trust1.process(FetcherNode(d1.token));
-    expect(network.keys, [d1.token, d21.token]);
+    jsonExpect(trust1.rejected, {block.token: "Attempt to block trusted key."});
     expect(trust1.rejected.length, 1);
+    expect(network.keys, [d1.token, d22.token, d21.token]);
 
     trust1 = Trust1(degrees: 3);
     network = await trust1.process(FetcherNode(d1.token));
-    expect(network.keys, [d1.token, d21.token, d3.token]);
-    expect(trust1.rejected.length, 1);
+    jsonExpect(trust1.rejected, {block.token: "Attempt to block trusted key."});
+    expect(network.keys, [d1.token, d22.token, d21.token, d3.token]);
   });
 
   // Notification:
