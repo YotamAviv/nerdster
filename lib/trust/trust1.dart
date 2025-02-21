@@ -29,11 +29,10 @@ class Trust1 {
   final Map<String, String> _rejected = <String, String>{};
   final int degrees; // 1 degree is just me.
   final int numPaths;
-  final int blockerBenefit; // also for replace
 
   Map<String, String> get rejected => _rejected;
 
-  Trust1({this.degrees = 6, this.numPaths = 1, this.blockerBenefit = 1});
+  Trust1({this.degrees = 6, this.numPaths = 1});
 
   Future<LinkedHashMap<String, Node>> process(Node source) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
@@ -67,40 +66,31 @@ class Trust1 {
             continue;
           }
 
-          // Block the other node if allowed.
-          /// CONSIDER: I used to think that it's a good idea to give blocks preference over trusts,
-          /// but I'm not sure. For now, I've replaced the hard coded [2] with [blockerBenefit].
-          /// This is in place: (blocker is the key trying to block blockee)
-          /// I'm not sure what to name
-          /// blockee path-length 0 (me): no one can block
-          /// blockee path-length 1: blocker path-length <= 3 (1 + 2) can block.
-          /// blockee path-length 2: blocker path-length <= 4 (2 + 2) can block.
-          /// and so on...
+          // Block the other node if allowed (not already trusted).
+          /// I used to think (feel, assume) that it's good to give blocks preference over trusts.
+          /// Greedy approach, briefly, simplified: If trusted then can't block.
           if (other == source) {
             // Special case, no paths
             _rejected[block.statementToken] = 'Attempt to block your key.';
             continue;
           }
-          if (other.paths.isNotEmpty && !other.blocked) {
-            int blockeePathLength = other.paths[0].length; // (Shortest paths should be first)
-            int blockerPathLength = n.paths[0].length;
-            if (blockerPathLength > blockeePathLength + blockerBenefit) {
-              _rejected[block.statementToken] =
-                  'A key $blockerPathLength degrees away attempted to block a key $blockeePathLength degrees away.';
-              continue;
-            }
+          if (other.paths.isNotEmpty) {
+            // Already trusted (not blocked, has paths, isn't blocked)
+            assert(!other.blocked);
+            assert(network.containsKey(other.token));
+            _rejected[block.statementToken] = 'Attempt to block trusted key.';
+            continue;
           }
 
           // Block allowed
-          // Reject all trust statements to other if block allowed
-          if (network.containsKey(other.token)) {
-            Node otherNode = network[other.token]!;
-            for (Path path in otherNode.paths) {
-              _rejected[path.last.statementToken] = "A trusted key was blocked.";
-            }
-          }
-          network.putIfAbsent(other.token, () => other);
-          other.paths.clear(); // (gratuitous)
+          assert(!network.containsKey(other.token));
+          assert(other.paths.isEmpty);
+
+          // NEXT: Find and purge:
+          // "A trusted key was blocked.".
+          // 'A key $blockerPathLength degrees away attempted to block a key $blockeePathLength degrees away.';
+
+          // TEMP: REMOVE: Not sure wy this was  ever here: network.putIfAbsent(other.token, () => other);
           other.blocked = true;
         }
       }
@@ -123,28 +113,14 @@ class Trust1 {
             continue;
           }
 
-          // Replace the other node if allowed.
-          // Greedy block/replace rules:
-          // replacee path-length 0 (me): no one can replace
-          // replacee path-length 1: revoker path-length <= 3 (1 + 2) can revoke.
-          // replacee path-length 2: revoker path-length <= 4 (2 + 2) can revoke.
-          // and so on...
+          // Replace the other node if allowed. TEMP: WIP.. 
           if (other == source) {
             // Special case, no paths
             _rejected[replace.statementToken] = 'Attempt to replace your key.';
             continue;
           }
-          if (other.paths.isNotEmpty && !other.blocked) {
-            int replaceePathLength = other.paths[0].length; // (Shortest paths should be first)
-            int replacerPathLength = n.paths[0].length;
-            if (replacerPathLength > replaceePathLength + blockerBenefit) {
-              // Is there actually a problem here? Should we not allow a far replacer to replace a close replacee?
-              // TODO: add a test.
-              _rejected[replace.statementToken] =
-                  'A key $replacerPathLength degrees away attempted to replace a key $replaceePathLength degrees away.';
-              continue;
-            }
-          }
+
+          // NEXT: Find and purge: 'A key $replacerPathLength degrees away attempted to replace a key $replaceePathLength degrees away.';
 
           if (other.revokeAt != null) {
             // In the grand scheme of Oneofus trust, only one key should be able to claim to
@@ -220,7 +196,7 @@ class Trust1 {
       if (nextLayer.isEmpty) {
         break;
       }
-      if (pass >= degrees + blockerBenefit) {
+      if (pass >= degrees) {
         break;
       }
       pass++;
@@ -263,7 +239,6 @@ class Trust1 {
   // - each edge should have
   //  - statedAt before node was revoked (in case it was revoked)
   bool isValidPath(Path path, Map<String, Node> network) {
-    // The algorithm does consider replace statements to degrees + blockerBenefit.
     if (path.length > degrees) return false;
 
     bool out = true;

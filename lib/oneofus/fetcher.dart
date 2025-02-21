@@ -149,9 +149,17 @@ class Fetcher {
   // revokeAt. So:
   // - okay to block a revoked (replaced) key.
   // - okay to block a blocked key.
-  // - okay to revoke (replace) a blocked key.
+  // - not okay to revoke (replace) a blocked key.
   // - not okay to revoke (replace) a revoked (replaced) key.
   void setRevokeAt(String revokeAt) {
+    // TEMP: NEW: I don't think that even setting the same value twice should be supported
+    // assert(_revokeAt == null);
+
+    // TEMP: NEW: Greedier
+    // assert(_cached == null);
+
+    // NEXT: Remove dead code
+    // return;
     if (b(_revokeAt)) {
       // Changing revokeAt not supported
       assert(_revokeAt == revokeAt, '$_revokeAt != $revokeAt');
@@ -219,7 +227,7 @@ class Fetcher {
         /// - Don't even bother.
         /// - Move to Jsonish over Json wherever possible, and be very careful not to compute the
         ///   token of a Json that you got from a Jsonish.
-        ///   - One way to do this might be to 
+        ///   - One way to do this might be to
         ///     - not have Jsonish.json (override [] instead)
         ///     - not have Statement.json (ppJson or jsonish only instead)
 
