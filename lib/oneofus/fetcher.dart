@@ -219,6 +219,9 @@ class Fetcher {
         /// - Don't even bother.
         /// - Move to Jsonish over Json wherever possible, and be very careful not to compute the
         ///   token of a Json that you got from a Jsonish.
+        ///   - One way to do this might be to 
+        ///     - not have Jsonish.json (override [] instead)
+        ///     - not have Statement.json (ppJson or jsonish only instead)
 
         Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
         assert(jsonish.token == serverToken);
