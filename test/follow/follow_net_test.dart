@@ -55,7 +55,6 @@ void main() async {
     signInState.signOut();
     oneofusNet.numPaths = 1;
     followNet.fcontext = null;
-    oneofusNet.blockerBenefit = 2;
     Prefs.showKeys.value = false;
     Prefs.showStatements.value = false;
     for (final fire in FireFactory.domain2fire.values) {

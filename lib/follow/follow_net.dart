@@ -122,8 +122,7 @@ class FollowNet with Comp, ChangeNotifier {
     if (b(fcontext)) {
       Trust1 trust1 = Trust1(
           degrees: Prefs.followNetDegrees.value,
-          numPaths: Prefs.followNetPaths.value,
-          blockerBenefit: 0);
+          numPaths: Prefs.followNetPaths.value);
       FollowNode.clear();
       LinkedHashMap<String, Node> canonNetwork =
           await trust1.process(FollowNode(signInState.center));

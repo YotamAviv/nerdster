@@ -11,10 +11,10 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:test/test.dart';
 
-Future<(DemoKey, DemoKey?)> blockOldKey() async {
+Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
-  oneofusNet.blockerBenefit = 2;
 
   bool showEquivalentKeysBefore = Prefs.showKeys.value;
   bool showTrustStatementsBefore = Prefs.showStatements.value;
@@ -34,9 +34,9 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   var expected;
 
   Jsonish s1 = await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
-  Jsonish r2 = await bart2.doTrust(TrustVerb.replace, bart, revokeAt: s1.token);
+  Jsonish r1 = await bart2.doTrust(TrustVerb.replace, bart, revokeAt: s1.token);
   Jsonish s2 = await bart2.doTrust(TrustVerb.trust, homer);
-  await bart3.doTrust(TrustVerb.replace, bart2, revokeAt: s2.token);
+  Jsonish r2 = await bart3.doTrust(TrustVerb.replace, bart2, revokeAt: s2.token);
   await lisa.doTrust(TrustVerb.trust, bart3, moniker: 'Bart');
   // Lisa has not cleared trust in bart or ever trusted bart2
 
@@ -52,18 +52,20 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
     "homer": null
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-
   expectedEquivalents = {"Bart", "Bart (0)", "Bart (1)"};
   jsonShowExpect(oneofusEquiv.getEquivalents(bart3.token), expectedEquivalents);
+  expect(oneofusNet.rejected.length, 0);
 
   // ------------------------------------------------------------------------------------
   // Bart (currently 'bart3') now decides that 'bart' no longer represents him and blocks
   // ------------------------------------------------------------------------------------
-  await bart3.doTrust(TrustVerb.block, bart);
+  Jsonish bart3blocksBart = await bart3.doTrust(TrustVerb.block, bart);
 
   signInState.center  = lisa.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
-
+  expect(oneofusNet.rejected.length, 1);
+  expect(oneofusNet.rejected.keys.first, r1.token);
+  expect(oneofusNet.rejected.values.first, 'Attempt to replace a blocked key.');
   network = oneofusNet.network;
   expectedNetwork = {
     "Me": null, // Note that I'm not labled "Lisa" any longer.
@@ -74,7 +76,7 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   expectedEquivalents = {'Bart', 'Bart (0)'};
   jsonShowExpect(oneofusEquiv.getEquivalents(bart3.token), expectedEquivalents);
-  myExpect(oneofusNet.rejected.containsKey(r2.token), true);
+  myExpect(oneofusNet.rejected.containsKey(r1.token), true);
   await Comp.waitOnComps([followNet]);
   dump = await OneofusTreeNode.root.dump();
   expected = {
@@ -89,7 +91,10 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
 
   signInState.center  = bart3.token;
   await Comp.waitOnComps([keyLabels]);
-
+  expect(oneofusNet.rejected.length, 1);
+  expect(oneofusNet.rejected.length, 1);
+  expect(oneofusNet.rejected.keys.first, r1.token);
+  expect(oneofusNet.rejected.values.first, 'Attempt to replace a blocked key.');
   dump = await OneofusTreeNode.root.dump();
   expected = {
     "N:Me-true:": {
@@ -101,15 +106,29 @@ Future<(DemoKey, DemoKey?)> blockOldKey() async {
 
   signInState.center = bart2.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
-
+  expect(oneofusNet.rejected.length, 2);
+  jsonShowExpect(oneofusNet.rejected, {
+    r2.token:'Attempt to replace your key.', 
+    bart3blocksBart.token:'Attempt to block trusted key.', 
+  });
   network = oneofusNet.network;
-  expectedNetwork = {"Me": null, "homer": null};
+  expectedNetwork = {
+    "Me": null,
+    "Me (0)": "5/1/2024 12:01 AM",
+    "homer": null,
+    "Lisa": null,
+    "Bart": null
+  };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  jsonShowExpect(oneofusEquiv.getEquivalents(bart2.token), {bart2.token});
+  jsonShowExpect(oneofusEquiv.getEquivalents(bart2.token), {bart2.token, bart.token});
   dump = await OneofusTreeNode.root.dump();
   expected = {
     "N:Me-true:": {
       "N:homer-true:Me": {},
+      "N:Lisa-true:Me": {
+        "N:Bart-true:Me->Lisa": {}
+      },
+      "N:Me (0)-false:5/1/2024 12:01 AM:Me": {}
     }
   };
   jsonShowExpect(dump, expected);

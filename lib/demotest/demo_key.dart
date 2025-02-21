@@ -1,5 +1,5 @@
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/demotest/cases/block_old_key.dart';
+import 'package:nerdster/demotest/cases/block_replaced_key.dart';
 import 'package:nerdster/demotest/cases/decapitate.dart';
 import 'package:nerdster/demotest/cases/delegate_merge.dart';
 import 'package:nerdster/demotest/cases/deletions.dart';
@@ -46,7 +46,7 @@ class DemoKey {
     'blockDecap': blockDecap,
     'delegateMerge': delegateMerge,
     'delete3': deletions3,
-    'blockOldKey': blockOldKey,
+    'blockOldKey': blockReplacedKey,
     'multipleBlocks': multipleBlocks,
     'trustBlockConflict': trustBlockConflict,
     'equivalentKeysStateConflict': equivalentKeysStateConflict,

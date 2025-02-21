@@ -1,7 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/demotest/cases/block_old_key.dart';
+import 'package:nerdster/demotest/cases/block_replaced_key.dart';
 import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
@@ -54,7 +54,6 @@ void main() async {
     await signInState.signIn(Jsonish({}).token, null); // unnecessary.
     oneofusNet.degrees = 6;
     oneofusNet.numPaths = 1;
-    oneofusNet.blockerBenefit = 1;
     followNet.fcontext = null;
     Prefs.showKeys.value = false;
     Prefs.showStatements.value = false;
@@ -104,8 +103,8 @@ void main() async {
     await oneofusEquiv.waitUntilReady();
   });
 
-  test('blockOldKey', () async {
-    await blockOldKey();
+  test('blockReplacedKey', () async {
+    await blockReplacedKey();
   });
 
   test('equivalentKeysStateConflict', () async {
@@ -166,7 +165,7 @@ void main() async {
   // Notification:
   // - A trusted key was blocked.
   test('''3'rd level block removes 1'st level trust''', () async {
-    oneofusNet.blockerBenefit = 2;
+    // TEMP: oneofusNet.blockerBenefit = 2;
 
     Jsonish bartTrustHomer = await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
@@ -193,7 +192,7 @@ void main() async {
   });
 
   test('''3'rd level block rejected on 1'st level trust''', () async {
-    oneofusNet.blockerBenefit = 1;
+    // TEMP: oneofusNet.blockerBenefit = 1;
 
     await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
@@ -210,7 +209,7 @@ void main() async {
   });
 
   test('''3'rd level replace rejected on 1'st level trust''', () async {
-    oneofusNet.blockerBenefit = 1;
+    // TEMP: oneofusNet.blockerBenefit = 1;
 
     await bart.doTrust(TrustVerb.trust, homer);
     Jsonish s = await homer.doTrust(TrustVerb.trust, marge);
@@ -235,7 +234,7 @@ void main() async {
   ///
   /// See some related nonsense in decapitate.dart
   test('3\'rd level replaces 1\'st level trust', () async {
-    oneofusNet.blockerBenefit = 2;
+    // TEMP: oneofusNet.blockerBenefit = 2;
     // await marge.doTrust(TrustVerb.trust, bart); // added for bart's name.
     Jsonish s2 = await homer.doTrust(TrustVerb.trust,
         lenny); // I added this because I need a statement. I could block, but that's above.
@@ -264,7 +263,7 @@ void main() async {
   });
 
   test('3\'rd level replaces 1\'st level trust, homer better', () async {
-    oneofusNet.blockerBenefit = 2;
+    // TEMP: oneofusNet.blockerBenefit = 2;
     await homer.doTrust(TrustVerb.trust, lenny);
     await bart.doTrust(TrustVerb.trust, homer);
     Jsonish s2 = await homer.doTrust(TrustVerb.trust, marge);
@@ -304,7 +303,7 @@ void main() async {
   });
 
   test('3\'rd level block removes 1\'st level trust, redux', () async {
-    oneofusNet.blockerBenefit = 2;
+    // TEMP: oneofusNet.blockerBenefit = 2;
 
     await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
@@ -747,7 +746,7 @@ void main() async {
     expect(network.keys, [d1.token, d2.token, d3.token]);
   });
 
-  test('degrees base block, blockerBenefit: 0', () async {
+  test('degrees base block', () async {
     DemoKey d1 = await DemoKey.findOrCreate('1');
     DemoKey d21 = await DemoKey.findOrCreate('2.1');
     DemoKey d22 = await DemoKey.findOrCreate('2.2');
@@ -760,44 +759,20 @@ void main() async {
     Trust1 trust1;
     Map<String, Node> network;
 
-    trust1 = Trust1(degrees: 1, blockerBenefit: 0);
+    trust1 = Trust1(degrees: 1);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token]);
     expect(trust1.rejected.length, 0);
 
-    trust1 = Trust1(degrees: 2, blockerBenefit: 0);
+    trust1 = Trust1(degrees: 2);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token, d21.token]);
     expect(trust1.rejected.length, 1);
 
-    trust1 = Trust1(degrees: 3, blockerBenefit: 0);
+    trust1 = Trust1(degrees: 3);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token, d21.token, d3.token]);
     expect(trust1.rejected.length, 1);
-  });
-
-  test('degrees base block, blockerBenefit: 1', () async {
-    DemoKey d1 = await DemoKey.findOrCreate('1');
-    DemoKey d2 = await DemoKey.findOrCreate('2');
-    DemoKey d3 = await DemoKey.findOrCreate('3');
-    await d1.doTrust(TrustVerb.trust, d2);
-    await d2.doTrust(TrustVerb.trust, d3);
-    await d3.doTrust(TrustVerb.block, d2);
-
-    Trust1 trust1;
-    Map<String, Node> network;
-
-    trust1 = Trust1(degrees: 1, blockerBenefit: 1);
-    network = await trust1.process(FetcherNode(d1.token));
-    expect(network.keys, [d1.token]);
-
-    trust1 = Trust1(degrees: 2, blockerBenefit: 1);
-    network = await trust1.process(FetcherNode(d1.token));
-    expect(network.keys, [d1.token, d2.token]);
-
-    trust1 = Trust1(degrees: 3, blockerBenefit: 1);
-    network = await trust1.process(FetcherNode(d1.token));
-    expect(network.keys, [d1.token]);
   });
 
   // Notification:
@@ -893,7 +868,6 @@ void main() async {
   });
 
   test('simpsons label key edges', () async {
-    oneofusNet.blockerBenefit = 2;
     await DemoKey.demos['simpsons']();
 
     await signInState.signIn(bart.token, null);

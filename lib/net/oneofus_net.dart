@@ -90,7 +90,6 @@ class OneofusNet with Comp, ChangeNotifier {
     Prefs.oneofusNetPaths.addListener(listen);
   }
 
-  int _blockerBenefit = 1;
   LinkedHashMap<String, Node> _network = LinkedHashMap<String, Node>();
   final Map<String, int> _token2keyCounter = <String, int>{};
   final LinkedHashMap<String, String> _rejected = LinkedHashMap<String, String>();
@@ -105,12 +104,6 @@ class OneofusNet with Comp, ChangeNotifier {
   int get numPaths => Prefs.oneofusNetPaths.value;
   set numPaths(int numPaths) {
     Prefs.oneofusNetPaths.value = numPaths;
-  }
-
-  int get blockerBenefit => _blockerBenefit;
-  set blockerBenefit(int blockerBenefit) {
-    _blockerBenefit = blockerBenefit;
-    listen();
   }
 
   LinkedHashMap<String, Node> get network => _network;
@@ -130,7 +123,7 @@ class OneofusNet with Comp, ChangeNotifier {
     Fetcher.resetRevokedAt();
     NetNode.clear();
     FetcherNode.clear();
-    Trust1 trust1 = Trust1(degrees: degrees, numPaths: numPaths, blockerBenefit: _blockerBenefit);
+    Trust1 trust1 = Trust1(degrees: degrees, numPaths: numPaths);
     _network = await trust1.process(FetcherNode(signInState.center));
     _rejected.clear();
     _rejected.addAll(trust1.rejected); // CODE: Make rejected be a return value of the algorithm.
