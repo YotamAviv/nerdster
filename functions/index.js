@@ -1,70 +1,36 @@
-// I've lost track... 
-// - some code snippets came from a tutorial: https://firebase.google.com/docs/functions/get-started
-// - some code came from Google AI.
+// TODO:
+// Pressing:
+// - Fix Yotam data corruption, would be nice to get support from export with ids (tokens)
+// - Prototype performance enhancements on Oneofus (would be nice to have identical index.js functions file)
+// - integration tests
+//   - Implement, test: revokedAt
+// Can be later:
+// - Clean this up
+// - Organize the file, use Javascript helpers and constants
+// - try to unify Nerdster and Oneofus. Any reason they can't be identical?
+//   - different verbs, but I can just include all verbs, no worries
+// - JavaScript unit testing
+// - Export clouddistinct to the HTTP interface (at least for debugging, demonstrating..) 
+// - Rename "id" to "token"
+// - Test boundary condition of empty// - 
 // 
-// It used to be v1, then there may have been an upgrade, and some of the prototyping was 
-// broken for a while.
-//
-// I often forget and then see it in the logs.. 
-// .. something about running "npm install" in the functions directory.
-// 
-// TODO: Look into this warning about running "npm audit fix"
+// I often forget and then see it in the logs.. (to run in the functions directory)
+// - "npm install"
+// - "npm install --save firebase-functions@latest"
+// - "npm audit fix"
 // 
 
 const { logger } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
-
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-
 const fetch = require("node-fetch");
 const cheerio = require('cheerio'); // For HTML parsing
 
 admin.initializeApp();
 
-// These 2 functions are strictly for prototyping.
-// To see it:
-// - run the nerdster emulator
-// - (the Nerdster app does not need to be running)
-// Access this in a browser:
-//   http://127.0.0.1:5001/nerdster/us-central1/addmessage/?text=foo
-//   http://us-central1-nerdster.cloudfunctions.net/?text=foo
-// You should see a document {original: foo, uppercase: FOO} in the "messages" collection in the
-// Firestore emulator, maybe here:
-//   http://127.0.0.1:4000/firestore/ 
-
-// Take the text parameter passed to this HTTP endpoint and insert it into
-// Firestore under the path /messages/:documentId/original
-exports.addmessage = onRequest(async (req, res) => {
-  const original = req.query.text;
-  const db = admin.firestore();
-  const writeResult = await db
-    .collection("messages")
-    .add({ original: original });
-  // Send back a message that we've successfully written the message
-  res.json({ result: `Message with ID: ${writeResult.id} added.` });
-});
-
-// Listens for new messages added to /messages/:documentId/original
-// and saves an uppercased version of the message
-// to /messages/:documentId/uppercase
-exports.makeuppercase = onDocumentCreated("/messages/{documentId}", (event) => {
-  // Grab the current value of what was written to Firestore.
-  const original = event.data.data().original;
-
-  // Access the parameter `{documentId}` with `event.params`
-  logger.log("Uppercasing", event.params.documentId, original);
-
-  const uppercase = original.toUpperCase();
-
-  // You must return a Promise when performing
-  // asynchronous tasks inside a function
-  // such as writing to Firestore.
-  // Setting an 'uppercase' field in Firestore document returns a Promise.
-  return event.data.ref.set({ uppercase }, { merge: true });
-});
 
 // This works and is used to develop fetchtitle below.
 // Take the url parameter passed to this HTTP endpoint and insert it into
@@ -95,19 +61,36 @@ exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
 
   const html = await response.text();
   const $ = cheerio.load(html);
-
   const title = $('title').text(); // .trim()?
-
-  logger.log(title);
 
   return event.data.ref.set({ title }, { merge: true });
 });
 
+// Jsonish'ish needs here in JavaScript:
+// - sort keys in a doc (JS dictionary) for pretty exports for demo ("statement", "time", "I", "trust", "with", "previous", "signature")
+// - sort keys in a JS dictionary for distinct based on subjects and keys ("contentType", "author", "title")
+// Statement'ish needs here in JavaScript:
+// - get subject of verb for  distinct based on subjects.
 
+// Demo / debugging needs
+// Export the cloud functions, include id/token
+
+// Performance needs / desires
+// - Distinct
+//   Doesn't have to be complete and correct to be helpful
+// - revokedAt 
+//   required as applying distinct may clear the revokedAt token.
+// - Filters, like say, fetch?verbs={censor:all, rate:month}.. complicated.. not necessarily helpful '
+//   anyway considering where "dis" is, how I either should or shouldn't an entire subject..
+// 
+
+// JSON export
 // from: Google AI: https://www.google.com/search?q=Firebase+function+HTTP+GET+export+collection&oq=Firebase+function+HTTP+GET+export+collection&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRhA0gEIOTYzMmowajSoAgCwAgE&sourceid=chrome&ie=UTF-8
-// Enter this in browser: http://127.0.0.1:5001/nerdster/us-central1/export2?token=<Nerdster delegate token>
-// Expect: JSON export
-// Deployed! Try at: https://us-central1-nerdster.cloudfunctions.net/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
+// - Emulator-Nerdster-Yotam: http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
+// - Emulator-Oneofus-Yotam: http://127.0.0.1:5002/one-of-us-net/us-central1/export2?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431
+// - Prod-Nerdster-Yotam: https://us-central1-nerdster.cloudfunctions.net/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
+// - Prod-Oneofus-Yotam: http://us-central1-one-of-us-net.cloudfunctions.net/export2?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431
+// 
 // Updates from 10/18/24:
 // - upgraded to v2 (in response to errors on command line)
 // - mapped to https://export.nerdster.org/?token=f4e45451dd663b6c9caf90276e366f57e573841b
@@ -181,7 +164,7 @@ exports.export2 = onRequest(async (req, res) => {
 });
 
 
-// HTTP POST for QR signin (not 'signIn' - that breaks things).
+// HTTP POST for QR signin (not 'signIn' (in camelCase) - that breaks things).
 // The Nerdster should be listening for a new doc at collection /sessions/doc/<session>/
 // The phone app should POST to this function (it used to write directly to the Nerdster Firebase collection.)
 exports.signin = onRequest((req, res) => {
@@ -258,7 +241,7 @@ function getVerbSubject(j) {
   return null;
 }
 
-async function clouddistinct(input) {
+async function makedistinct(input) {
   var out = [];
   var already = new Set();
   for (var j of input) {
@@ -277,20 +260,14 @@ async function clouddistinct(input) {
     if (verb == 'clear') continue;
     delete j.I;
     delete j.statement;
-    // TEMP: delete j.signature;
-    // TEMP: delete j.previous;
+    // TODO: Teach Dart Jsonish to accept our token so that we can delete [signature, previous]
+    // delete j.signature;
+    // delete j.previous;
     out.push(j);
   }
   return out;
 }
 
-// TODO: Clean this up
-// - Organize the file, use Javascript helpers and constants in 
-// - Export clouddistinct to the HTTP interface (at least for debugging, demonstrating..) 
-
-// TODO: Rename "id" to "token"
-
-// TODO: Test boundary condition of empty
 /// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
 // exports.clouddistinct = onRequest(async (req, res) => {
 exports.clouddistinct = onCall(async (request) => {
@@ -336,7 +313,7 @@ exports.clouddistinct = onCall(async (request) => {
       previousTime = d.time;
     }
 
-    var distinct = await clouddistinct(data);
+    var distinct = await makedistinct(data);
 
     return { "iKey": iKey, "lastToken": lastToken, "statements": distinct };
   } catch (error) {
