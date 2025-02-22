@@ -3,10 +3,9 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/main.dart';
 import 'package:nerdster/progress.dart';
-import '../prefs.dart'; // CODE: Kludgey way to include, but might work for phone codebase.
 
+import '../prefs.dart'; // CODE: Kludgey way to include, but might work for phone codebase.
 import 'distincter.dart';
 import 'fire_factory.dart';
 import 'jsonish.dart';
@@ -15,6 +14,13 @@ import 'statement.dart';
 import 'util.dart';
 
 /// Cloud functions distinct...
+///
+/// Integration Testing:
+/// With non-trivial code in JavaScript cloud functions, integration testing is required.
+/// As Firebase does not support Linux, this will necessarily have to run in Chrome or on the Android emulator.
+/// I'm partway there with some tests implemented in demotest/cases. I don't want to re-implement
+/// a test framework, and so I expect to end up somewhere in the middle (and yes, I have and will
+/// always have bugs;)
 ///
 /// Nerdster web app, Nerdster content first.
 ///
@@ -206,7 +212,8 @@ class Fetcher {
     DateTime? time;
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     if (functions != null && Prefs.fetchDistinct.value) {
-      final result = await functions!.httpsCallable('clouddistinct').call({"token": token});
+      final result =
+          await mFire.mAsync(() {return functions.httpsCallable('clouddistinct').call({"token": token});});
       List statements = result.data["statements"];
       if (statements.isEmpty) return;
       Json iKey = result.data['iKey'];
