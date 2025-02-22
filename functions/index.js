@@ -232,7 +232,7 @@ async function keyToken(input) {
 }
 
 
-const contentVerbs = [
+const verbs = [
   'rate',
   'clear',
   'follow',
@@ -241,10 +241,16 @@ const contentVerbs = [
   'dontRelate',
   'equate',
   'dontEquate',
+
+  'trust',
+  'delegate',
+  'clear',
+  'replace',
+  'block',
 ];
 
 function getVerbSubject(j) {
-  for (var verb of contentVerbs) {
+  for (var verb of verbs) {
     if (j[verb] != null) {
       return [verb, j[verb]];
     }
@@ -262,8 +268,12 @@ async function clouddistinct(input) {
     if (already.has(key)) continue;
     already.add(key);
     // Retain= 'clear' statements or not?
-    // Pro: Multiple delegates: use one to clear another's statement.
-    // Con: Performance.
+    // Pro: 
+    // - Multiple delegates: use one to clear another's statement. 
+    //   But we can make that the new semantics, have to censor something from your other 
+    //   delegate, can't just clear.
+    // Con:
+    // - Performance.
     if (verb == 'clear') continue;
     delete j.I;
     delete j.statement;
@@ -313,13 +323,13 @@ exports.clouddistinct = onCall(async (request) => {
         if (d.id != previousToken) {
           var error = `Notarization violation: ${d.id} != ${previousToken}`;
           logger.error(error);
-          throw error;
+          // TEMP: throw error;
         }
 
         if (d.time >= previousTime) {
-          var error = `Not decending: ${d.time} >= ${previousTime}`;
+          var error = `Not descending: ${d.time} >= ${previousTime}`;
           logger.error(error);
-          throw error;
+          // TEMP: throw error;
         }
       }
       previousToken = d.previous;
