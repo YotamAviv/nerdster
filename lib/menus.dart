@@ -6,7 +6,7 @@ import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/notifications.dart';
-import 'package:nerdster/oneofus/check.dart';
+import 'package:nerdster/oneofus/corruption_check.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';

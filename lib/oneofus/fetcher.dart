@@ -41,7 +41,7 @@ import 'util.dart';
 ///
 /// DONE: get 'clear' cleared.
 /// Done: Assert on the descending order.
-/// 
+///
 /// -------- Stop here and compare PROD Oneofus performance --------------
 ///
 /// TODO: Pass the correct token (it can't be computed without previous, "I", "statement")
@@ -142,11 +142,11 @@ class Fetcher {
   // Fetcher isn't responsible for implementing that, but I am going to assume that
   // something else does and I'll rely on that and not implement code to update
   // revokeAt.
-  // 
+  //
   // Changing center is encouraged, and we'd like to make that fast (without re-fetching too much).
-  // 
-  // Moving to clouddistinct... What if 
-  // 
+  //
+  // Moving to clouddistinct... What if
+  //
   void setRevokeAt(String revokeAt) {
     if (_revokeAt == revokeAt) return;
 
@@ -265,12 +265,11 @@ class Fetcher {
       QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
       // DEFER: Something with the error.
       // .catchError((e) => print("Error completing: $e"));
-      bool first = true;
       String? previousToken;
+      DateTime? previousTime;
       for (final docSnapshot in snapshots.docs) {
         final Json data = docSnapshot.data();
         Jsonish jsonish;
-
         if (Prefs.skipVerify.value || testingNoVerify) {
           jsonish = mVerify.mSync(() => Jsonish(data));
         } else {
@@ -281,16 +280,24 @@ class Fetcher {
         // First: previousToken is null
         // middles: statement.token = previousToken
         // Last: statement.token = null
-        if (first) {
-          first = false; // no check
+        DateTime time = parseIso(jsonish.json['time']);
+        if (previousTime == null) {
+          // no check
         } else {
           if (jsonish.token != previousToken) {
             // DEFER: Something.
             print('Notarization violation: ($domain/$token): ${jsonish.token} != $previousToken');
             continue;
           }
+          if (!time.isBefore(previousTime)) {
+            // DEFER: Something.
+            String error = '!Descending: ($domain/$token): $time >= $previousTime';
+            print(error);
+            // DEFER: continue; Not continuing because my (Tom) data is currently corrupt ;(
+          }
         }
         previousToken = data['previous'];
+        previousTime = time;
 
         _cached!.add(Statement.make(jsonish));
       }
@@ -302,7 +309,7 @@ class Fetcher {
 
   List<Statement> get statements {
     if (b(_revokeAt)) {
-      // TODO: NEXT: Might need to disable the ability to set revokedAt due to clouddistinc///t/
+      // TODO: NEXT: Might need to disable the ability to set revokedAt due to clouddistinct
       Statement? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
       if (b(revokeAtStatement)) {
         return _cached!.sublist(_cached!.indexOf(revokeAtStatement!));
