@@ -73,9 +73,7 @@ Future<void> main() async {
   }
 
   if (fireChoice != FireChoice.fake) {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     await OneofusFire.init();
     if (fireChoice == FireChoice.emulator) {
       // $ firebase --project=nerdster emulators:start

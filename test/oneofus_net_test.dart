@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
@@ -9,6 +13,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
+import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/net/net_tree_model.dart';
@@ -19,6 +24,7 @@ import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
@@ -27,8 +33,28 @@ import 'package:test/test.dart';
 
 void main() async {
   fireChoice = FireChoice.fake;
-  FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
-  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
+  // TODO: Run unit tests against emulator which has our cloud functions and different code paths.
+  // This can't work, see: https://stackoverflow.com/questions/53225813/unit-testing-on-flutter-firebase-functions
+  switch (fireChoice) {
+    case FireChoice.fake:
+      FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
+      FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
+      break;
+    case FireChoice.emulator:
+      WidgetsFlutterBinding.ensureInitialized();
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await OneofusFire.init(); // $ firebase --project=nerdster emulators:start
+      FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+      FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
+      // $ firebase --project=one-of-us-net -config=oneofus-nerdster.firebase.json emulators:start
+      OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
+      OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
+      break;
+    case FireChoice.prod:
+      throw UnimplementedError();
+  }
+
+
   TrustStatement.init();
   ContentStatement.init();
 
