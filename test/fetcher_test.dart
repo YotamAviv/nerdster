@@ -41,7 +41,7 @@ import 'package:test/test.dart';
 const OouCryptoFactory _crypto = CryptoFactoryEd25519();
 const String _domain = kOneofusDomain;
 const String _type = kOneofusType;
-final FirebaseFirestore _fire = FireFactory.domain2fire[_domain]!;
+final FirebaseFirestore _fire = FireFactory.find(_domain);
 
 const Json kI = {'trust': 'me'};
 
@@ -55,17 +55,15 @@ class TestSigner implements StatementSigner {
 
 void main() async {
   fireChoice = FireChoice.fake;
-  FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore());
-  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
+  FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
+  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
   TestClock testClock = TestClock();
   TrustStatement.init();
 
   _setUp() async {
     testClock = TestClock();
     useClock(testClock);
-    for (final fire in FireFactory.domain2fire.values) {
-      await fire.clearPersistence();
-    }
+    await FireFactory.clearPersistence();
     Fetcher.clear();
     clearDistinct();
   }

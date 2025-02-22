@@ -27,8 +27,8 @@ import 'package:test/test.dart';
 
 void main() async {
   fireChoice = FireChoice.fake;
-  FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore());
-  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
+  FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
+  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
   TrustStatement.init();
   ContentStatement.init();
 
@@ -57,9 +57,7 @@ void main() async {
     followNet.fcontext = null;
     Prefs.showKeys.value = false;
     Prefs.showStatements.value = false;
-    for (final fire in FireFactory.domain2fire.values) {
-      await fire.clearPersistence();
-    }
+    await FireFactory.clearPersistence();
 
     homer = await DemoKey.findOrCreate('homer');
     homer2 = await DemoKey.findOrCreate('homer2');

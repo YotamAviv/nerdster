@@ -43,8 +43,8 @@ Future<void> testByDump(caseDump) async {
 
 void main() async {
   fireChoice = FireChoice.fake;
-  FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore());
-  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
+  FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
+  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
   TrustStatement.init();
   ContentStatement.init();
 
@@ -60,7 +60,7 @@ void main() async {
     Prefs.showKeys.value = false;
     Prefs.showStatements.value = false;
     for (final fire in FireFactory.domain2fire.values) {
-      await fire.clearPersistence();
+      await fire.$1.clearPersistence();
     }
   });
 

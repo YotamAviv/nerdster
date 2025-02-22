@@ -1,9 +1,15 @@
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 const String kNerdsterDomain = 'nerdster.org';
 const String kNerdsterType = 'org.nerdster';
+
+const domain2statementType = {
+  kOneofusDomain: kOneofusType,
+  kNerdsterDomain: kNerdsterType,
+};
 
 class ContentStatement extends Statement {
   static final Map<String, ContentStatement> _cache = <String, ContentStatement>{};
@@ -68,11 +74,7 @@ class ContentStatement extends Statement {
   // CONSIDER: A fancy StatementBuilder.
   // CONSIDER: Factoring a little more into parent.
   static Json make(Json iJson, ContentVerb verb, dynamic subject,
-      {String? comment,
-      Json? other,
-      bool? recommend,
-      bool? dismiss,
-      Json? contexts}) {
+      {String? comment, Json? other, bool? recommend, bool? dismiss, Json? contexts}) {
     Json json = {
       'statement': kNerdsterType,
       'time': clock.nowIso,
@@ -99,7 +101,7 @@ class ContentStatement extends Statement {
   // - iToken: always
   // - subjectToken: never
   // SUSPECT: The assumption is that transformer is delegate2oneofus.
-  // Note that ContentVerb.follow statements use a Nerdster token for 'I' and a Oneofus 
+  // Note that ContentVerb.follow statements use a Nerdster token for 'I' and a Oneofus
   // token for 'subject'
   @override
   String getDistinctSignature({Transformer? transformer}) {

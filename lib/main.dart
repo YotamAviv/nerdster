@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -34,7 +35,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.fake;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -79,14 +80,16 @@ Future<void> main() async {
     if (fireChoice == FireChoice.emulator) {
       // $ firebase --project=nerdster emulators:start
       FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+      FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
       // $ firebase --project=one-of-us-net -config=oneofus-nerdster.firebase.json emulators:start
-      OneofusFire.oneofusFirestore.useFirestoreEmulator('localhost', 8081);
+      OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
+      OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
     }
-    FireFactory.registerFire(kOneofusDomain, OneofusFire.oneofusFirestore);
-    FireFactory.registerFire(kNerdsterDomain, FirebaseFirestore.instance);
+    FireFactory.registerFire(kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
+    FireFactory.registerFire(kOneofusDomain, OneofusFire.firestore, OneofusFire.functions);
   } else {
-    FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore());
-    FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore());
+    FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
+    FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
   }
   await Prefs.init();
   TrustStatement.init();
@@ -171,21 +174,20 @@ const Json dummyPublicKey = {
 String dummyOneofus = Jsonish(dummyPublicKey).token;
 const String yotam = '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431';
 dynamic hardCodedSignin = {
-  // TEMP: FireChoice.prod: {"one-of-us.net": dummyOneofus},
-  FireChoice.prod: {"one-of-us.net": yotam},
+  FireChoice.prod: {"one-of-us.net": dummyOneofus},
+  // TEMP: FireChoice.prod: {"one-of-us.net": yotam},
 
-  // Yotam
+  // TEMP: FireChoice.emulator: {"one-of-us.net": dummyOneofus}
   FireChoice.emulator: {"one-of-us.net": yotam}
-  // FireChoice.emulator: {"one-of-us.net": dummyOneofus}
 
   // Loner
   // FireChoice.emulator: {
-  //   "one-of-us.net": '8772bb811c3a48abe68a9d0cc6910e0321df769a',
+  //   "one-of-us.net": '66e1c0385c1b891afc13a265688e28616f2c758b',
   //   "nerdster.org": {
   //     "crv": "Ed25519",
-  //     "d": "vdY5zLTyfdjz8uOQxJoMOro9ZzMGhxrsH-l0lEc0gx8",
+  //     "d": "OqVGV74cfK7VN2ORTHVMiXi-R4gbFfDtw9nw-ETrv0o",
   //     "kty": "OKP",
-  //     "x": "_MdFUWv9CYe6VY270cQIpsidBp3HfqLzvLIzj6xYhLA"
+  //     "x": "yo89GnI45-CGEujWol6J6xhrsCqvBXIiFinbKgXTRto"
   //   }
   // }
 

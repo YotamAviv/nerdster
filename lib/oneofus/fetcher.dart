@@ -85,9 +85,6 @@ final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 class Fetcher {
   static int? testingCrashIn;
 
-  static FirebaseFunctions? functions =
-      (fireChoice == FireChoice.fake) ? null : FirebaseFunctions.instance;
-
   static final OouVerifier _verifier = OouVerifier();
 
   // (I've lost track of the reasoning behind having a final VoidCallback for this.)
@@ -125,10 +122,6 @@ class Fetcher {
   }
 
   factory Fetcher(String token, String domain, {bool testingNoVerify = false}) {
-    if (fireChoice == FireChoice.emulator) {
-      // TODO: This should be static.
-      functions!.useFunctionsEmulator('127.0.0.1', 5001);
-    }
     String key = '$token$domain';
     FirebaseFirestore fire = FireFactory.find(domain);
     Fetcher out;
@@ -211,7 +204,8 @@ class Fetcher {
     _cached = <Statement>[];
 
     DateTime? time;
-    if (domain == kNerdsterDomain && Prefs.fetchDistinct.value && fireChoice != FireChoice.fake) {
+    FirebaseFunctions? functions = FireFactory.findFunctions(domain);
+    if (functions != null && Prefs.fetchDistinct.value) {
       final result = await functions!.httpsCallable('clouddistinct').call({"token": token});
       List statements = result.data["statements"];
       if (statements.isEmpty) return;
@@ -224,7 +218,7 @@ class Fetcher {
           assert(jTime.isBefore(time));
         }
         time = jTime;
-        j['statement'] = kNerdsterType;
+        j['statement'] = domain2statementType[domain]!;
         j['I'] = iKey; // TODO: Allow token in 'I' in statements; we might be already.
         assert(getToken(j['I']) == getToken(iKey));
         String serverToken = j['id'];
