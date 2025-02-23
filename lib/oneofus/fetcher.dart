@@ -197,6 +197,14 @@ class Fetcher {
 
   bool get isCached => b(_cached);
 
+  // NEXT: Rename
+  static const Map fetchhParams = {
+    "bIncludeId": true,
+    "bDistinct": true,
+    "bClearClear": true,
+    "omit": ['statement', 'I'] // DEFER: ['statement', 'I', 'signature', 'previous']
+  };
+
   Future<void> fetch() async {
     if (b(testingCrashIn) && testingCrashIn! > 0) {
       testingCrashIn = testingCrashIn! - 1;
@@ -212,11 +220,14 @@ class Fetcher {
     DateTime? time;
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     if (functions != null && Prefs.fetchDistinct.value) {
-      final result =
-          await mFire.mAsync(() {return functions.httpsCallable('clouddistinct').call({"token": token});});
+      Map params = Map.of(fetchhParams);
+      params["token"] = token;
+      final result = await mFire.mAsync(() {
+        return functions.httpsCallable('clouddistinct').call(params);
+      });
       List statements = result.data["statements"];
       if (statements.isEmpty) return;
-      Json iKey = result.data['iKey'];
+      Json iKey = result.data['I'];
       assert(getToken(iKey) == token);
       _lastToken = result.data["lastToken"];
       for (Json j in statements) {

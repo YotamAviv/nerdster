@@ -1,5 +1,6 @@
 # Nice ones:
 ```
+node js/jsonish.js
 git tag PROD-v`date2`
 git tag PROD-11
 code $(git diff --no-commit-id --name-only -r HEAD) -r

@@ -20,9 +20,14 @@ import 'package:test/test.dart';
 
 /// Actually test: What am I worried about?
 /// - caching
-/// - revoked at
+/// - revokeAt
 /// - distinct
 /// - notarizations
+///
+/// Cloud Functions require integration tests
+/// - revokeAt
+/// - distinct (partial is enough)
+/// - 
 ///
 /// Caching:
 /// - Need non-async method for ChildrenProvider<T> = Iterable<T> Function(T node); (not async)
@@ -425,11 +430,7 @@ void main() async {
 
   test('sublist', () {
     List l = [0, 1, 2, 3, 4, 5];
-    expect(
-        l.firstWhereOrNull(
-          (element) => element == 2,
-        ),
-        2);
+    expect(l.firstWhereOrNull((element) => element == 2), 2);
     List s = l.sublist(0, 2);
     expect(s.length, 2);
     expect(s, [0, 1]);
