@@ -222,11 +222,18 @@ class Fetcher {
     if (functions != null && Prefs.fetchDistinct.value) {
       Map params = Map.of(fetchhParams);
       params["token"] = token;
+      if (_revokeAt != null) {
+        params["revokeAt"] = revokeAt;
+      }
       final result = await mFire.mAsync(() {
         return functions.httpsCallable('clouddistinct').call(params);
       });
       List statements = result.data["statements"];
       if (statements.isEmpty) return;
+      if (_revokeAt != null) {
+        assert(statements.first['id'] == _revokeAt);
+        _revokeAtTime = parseIso(statements.first['time']);
+      }
       Json iKey = result.data['I'];
       assert(getToken(iKey) == token);
       _lastToken = result.data["lastToken"];
@@ -261,12 +268,12 @@ class Fetcher {
         _cached!.add(statement);
       }
     } else {
-      CollectionReference<Map<String, dynamic>> fireStatements =
+      final CollectionReference<Map<String, dynamic>> collectionRef =
           fire.collection(token).doc('statements').collection('statements');
 
       // query _revokeAtTime
       if (_revokeAt != null && _revokeAtTime == null) {
-        DocumentReference<Json> doc = fireStatements.doc(_revokeAt);
+        DocumentReference<Json> doc = collectionRef.doc(_revokeAt);
         final DocumentSnapshot<Json> docSnap = await mFire.mAsync(doc.get);
         // _revokeAt can be any string. If it is the id (token) of something this Fetcher has ever
         // stated, the we revoke it there; otherwise, it's blocked - revoked "since forever".
@@ -279,7 +286,7 @@ class Fetcher {
         }
       }
 
-      Query<Json> query = fireStatements.orderBy('time', descending: true); // newest to oldest
+      Query<Json> query = collectionRef.orderBy('time', descending: true); // newest to oldest
       QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
       // DEFER: Something with the error.
       // .catchError((e) => print("Error completing: $e"));
@@ -328,6 +335,9 @@ class Fetcher {
   List<Statement> get statements {
     if (b(_revokeAt)) {
       // TODO: NEXT: Might need to disable the ability to set revokedAt due to clouddistinct
+      // NEXT: Looks like we always fetch all statements even when revoked. Consider... 
+      // (That may have made sense back when we used to allow calling setRevokedAt during 
+      // trust1 processing.)
       Statement? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
       if (b(revokeAtStatement)) {
         return _cached!.sublist(_cached!.indexOf(revokeAtStatement!));
