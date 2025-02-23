@@ -1,12 +1,13 @@
 import 'dart:convert';
 
+import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:test/test.dart';
 
-
-const String jsonSubjects = 
-'''
+const String jsonSubjects = '''
 [
   {
     "contentType": "article",
@@ -25,24 +26,21 @@ const String jsonSubjects =
   }
 ]''';
 
-const String jsonFakeNewsBadOrder = 
-'''
+const String jsonFakeNewsBadOrder = '''
 {
   "url": "https://mobile.nytimes.com/2017/02/24/us/politics/fact-check-trump-blasts-fake-news-and-repeats-inaccurate-claims-at-cpac.html?referer=https://www.google.com/",
   "contentType": "article",
   "title": "Fact Check: Trump Blasts ‘Fake News’ and Repeats Inaccurate Claims at CPAC - NYTimes.com"
 }''';
 
-const String jsonFakeNewsGoodOrder = 
-'''
+const String jsonFakeNewsGoodOrder = '''
 {
   "contentType": "article",
   "title": "Fact Check: Trump Blasts ‘Fake News’ and Repeats Inaccurate Claims at CPAC - NYTimes.com",
   "url": "https://mobile.nytimes.com/2017/02/24/us/politics/fact-check-trump-blasts-fake-news-and-repeats-inaccurate-claims-at-cpac.html?referer=https://www.google.com/"
 }''';
 
-const String jsonStatements = 
-'''
+const String jsonStatements = '''
 [
   {
     "user": "Yotam Aviv",
@@ -117,7 +115,6 @@ const Map<String, dynamic> bartTrustsHomerSigned = {
   "signature": "77778e9e13ec1025f4d641ad650b26884a1fd5101edee06897c6152bc66a33747f6c5fb4d6e115fb2c135f8e58f8d2fd05ebf892425365836b3236fa045b0e0e"
 };
 
-
 void main() {
   test('json: decode', () {
     Jsonish.wipeCache();
@@ -126,7 +123,6 @@ void main() {
     expect(statements[0] is Map, true);
     expect(statements[0]['user'], 'Yotam Aviv');
   });
-
 
   test('== and identical', () async {
     Jsonish.wipeCache();
@@ -138,7 +134,7 @@ void main() {
     try {
       fakenews.json['dummy'] = 'dummy';
       fail('expected exception. map should be immutable');
-    } catch(e) {
+    } catch (e) {
       // expected.
     }
 
@@ -147,7 +143,6 @@ void main() {
     expect(fakenews.token, fakenews2.token);
     expect(identical(fakenews, fakenews2), true);
   });
-
 
   test('bad order', () async {
     Jsonish.wipeCache();
@@ -194,12 +189,8 @@ void main() {
     expect(identical(fakenews, fakenews2), true);
   });
 
-  test('{signature, previous} do not affect token', () async {
-    Jsonish.wipeCache();
-
-    Jsonish unsigned = Jsonish(bartTrustsHomerUnsigned);
-
-    // // Keep commented out normally. Comment in to sign for subsequent testing
+  test('signature affects token', () async {
+    // Keep commented out normally. Comment in to sign for subsequent testing
     // OouKeyPair keyPair = await CryptoFactoryEd25519().createKeyPair();
     // OouSigner signer = await OouSigner.make(keyPair);
     // Json copyToSign = Map.from(bartTrustsHomerUnsigned);
@@ -208,28 +199,87 @@ void main() {
     // print(signedX.ppJson);
     // return;
 
-    String token1 = unsigned.token;
+    Jsonish.wipeCache();
+    Jsonish withoutSignature = Jsonish(bartTrustsHomerUnsigned);
 
     Jsonish.wipeCache();
+    Jsonish withSignature = Jsonish(bartTrustsHomerSigned);
+    expect(withoutSignature.token != withSignature.token, true);
 
-    Map<String, dynamic> signed = Map.from(bartTrustsHomerSigned);
-    Jsonish jsonishSigned = await Jsonish.makeVerify(signed, OouVerifier());
-    String token2 = jsonishSigned.token;
-
-    expect(token1 == token2, false);
+    Jsonish.wipeCache();
+    Jsonish withSignatureVerified = await Jsonish.makeVerify(bartTrustsHomerSigned, OouVerifier());
+    expect(withSignature.token, withSignatureVerified.token);
   });
 
-  test('CANCELLED: Jsonish demands verifying signature', () async {
-    // Jsonish.wipeCache();
+  test('unknown keys at bottom but above signature', () async {
+    const Json statementBadOrder = {
+      "signature": "268613a844523fe8682ced911f724df04d9502056dd172ffa6b5b9dec5ee9d29ffc5748d71da3c8625511a928f97ae0639b8c4e1321135d964b36c588f718907",
+      "statement": "net.one-of-us",
+      "time": "2025-02-17T14:22:24.842019Z",
+      "I": {
+        "crv": "Ed25519",
+        "kty": "OKP",
+        "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+      },
+      "with": {
+        "moniker": "Eyal F"
+      },
+      "previous": "bf020f1641972aed5cbd4c6c040f78e5d936e105",
+      "trust": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "M7l7bQBumX2Z-Rhh8M2nvgupd65ZwNn8x0uHY7H5bRY"
+      }
+    };
+        
+    Jsonish.wipeCache();
+    Jsonish jsonish = Jsonish(statementBadOrder);
+    expect(jsonish.ppJson, '''{
+  "statement": "net.one-of-us",
+  "time": "2025-02-17T14:22:24.842019Z",
+  "I": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+  },
+  "trust": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "M7l7bQBumX2Z-Rhh8M2nvgupd65ZwNn8x0uHY7H5bRY"
+  },
+  "with": {
+    "moniker": "Eyal F"
+  },
+  "previous": "bf020f1641972aed5cbd4c6c040f78e5d936e105",
+  "signature": "268613a844523fe8682ced911f724df04d9502056dd172ffa6b5b9dec5ee9d29ffc5748d71da3c8625511a928f97ae0639b8c4e1321135d964b36c588f718907"
+}''');
 
-    // try {
-    //   Map<String, dynamic> signedBogus = Map.from(bartTrustsHomerUnsigned);
-    //   signedBogus['signature'] = 'bogus';
-    //   Jsonish jsonishSignedBogus = Jsonish(signedBogus);
-    // } catch (e) {
-    //   print(e);
-    //   return;
-    // }
-    // fail('expected exception');
+    Json statementBadOrderWithUnknownKeys = Map.from(statementBadOrder);
+    statementBadOrderWithUnknownKeys['Timmy'] = 'rock';
+    statementBadOrderWithUnknownKeys['Betty'] = 'Timmy';
+    Jsonish.wipeCache();
+    Jsonish jsonish2 = Jsonish(statementBadOrderWithUnknownKeys);
+    expect(jsonish2.json.keys.last, 'signature');
+    expect(jsonish2.ppJson, '''{
+  "statement": "net.one-of-us",
+  "time": "2025-02-17T14:22:24.842019Z",
+  "I": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+  },
+  "trust": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "M7l7bQBumX2Z-Rhh8M2nvgupd65ZwNn8x0uHY7H5bRY"
+  },
+  "with": {
+    "moniker": "Eyal F"
+  },
+  "previous": "bf020f1641972aed5cbd4c6c040f78e5d936e105",
+  "Betty": "Timmy",
+  "Timmy": "rock",
+  "signature": "268613a844523fe8682ced911f724df04d9502056dd172ffa6b5b9dec5ee9d29ffc5748d71da3c8625511a928f97ae0639b8c4e1321135d964b36c588f718907"
+}''');
   });
 }
