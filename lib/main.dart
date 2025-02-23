@@ -175,6 +175,8 @@ dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
   // TEMP: FireChoice.prod: {"one-of-us.net": yotam},
 
+  FireChoice.emulator: {"one-of-us.net": yotam},
+
   // Loner
   // FireChoice.emulator: {
   //   "one-of-us.net": '66e1c0385c1b891afc13a265688e28616f2c758b',
