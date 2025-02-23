@@ -175,17 +175,6 @@ dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
   // TEMP: FireChoice.prod: {"one-of-us.net": yotam},
 
-  // TEMP: FireChoice.emulator: {"one-of-us.net": dummyOneofus}
-  FireChoice.emulator: {
-    "one-of-us.net": '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431',
-    "nerdster.org": {
-      "crv": "Ed25519",
-      "d": "QxJzCqiaoqTRC_7_SJaQqH4xIWZdXTlPgupG4V6s4dE",
-      "kty": "OKP",
-      "x": "qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI"
-    }
-  }
-
   // Loner
   // FireChoice.emulator: {
   //   "one-of-us.net": '66e1c0385c1b891afc13a265688e28616f2c758b',

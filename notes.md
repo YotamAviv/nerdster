@@ -93,7 +93,7 @@ gcloud auth login
 date2
 export NOW=`date2`
 # If running in 2 windows, make sure to set (export) NOW in both
-export NOW=02-05-25--20-08
+export NOW=02-23-25--09-50
 echo $NOW
 
 firebase use nerdster
