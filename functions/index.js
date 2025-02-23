@@ -1,7 +1,8 @@
 // TODO:
 // Pressing:
-// - Fix Yotam data corruption, would be nice to get support from export with ids (tokens)
-// - Prototype performance enhancements on Oneofus (would be nice to have identical index.js functions file)
+// - Fix Yotam data corruption
+//   - would be nice to get support from export with ids (tokens)
+// - DONE: Prototype performance enhancements on Oneofus (would be nice to have identical index.js functions file)
 // - integration tests
 //   - Implement, test: revokedAt
 // Can be later:
@@ -142,6 +143,7 @@ exports.export2 = onRequest(async (req, res) => {
     const db = admin.firestore();
     const collectionRef = db.collection(token).doc('statements').collection('statements');
     const snapshot = await collectionRef.orderBy('time', 'desc').get();
+    // const data = snapshot.docs.map( doc => ({ id: doc.id, ...doc.data() }));
     const data = snapshot.docs.map(doc => doc.data());
 
     var data2 = [];
@@ -320,5 +322,75 @@ exports.clouddistinct = onCall(async (request) => {
     console.error(error);
     // res.status(500).send('Error exporting collection');
     throw new HttpsError(error);
+  }
+});
+
+// TEMP: Rename export3: 
+exports.export3 = onRequest(async (req, res) => {
+  const token = req.query.token;
+  if (!token) return res.status(400).send('Missing token');
+
+  // I'm not commenting out the Oneofus verbs because I often run the emulator from the nerdster 
+  // directory. Sloppy, not correct..
+  const key2order = {
+    'statement': 0, 'time': 1, 'I': 2,
+    'clear': 7,
+    // Oneofus verbs
+    'trust': 3, 'block': 4, 'replace': 5, 'delegate': 6,
+    // Nerdster verbs
+    'rate': 8, 'censor': 9, 'relate': 10, 'dontRelate': 11, 'equate': 12, 'dontEquate': 13, 'follow': 14,
+    'with': 16,
+    // Oneofus with
+    'moniker': 18, 'revokeAt': 19, 'domain': 20,
+    // Nerdster with
+    'tags': 21, 'recommend': 22, 'dismiss': 23, 'stars': 24, 'comment': 25, 'contentType': 26, 'other': 17,
+    'contentType': 23, // 
+    'previous': 27, 'signature': 28
+  };
+
+  // This works, but we're not recursing into the Maps or Lists, and so there's no need for it.
+  // DEFER: Port more from Jsonish to sort the keys for display
+  function compareKeys(key1, key2) {
+    // Keys we know have an order.
+    // Keys we don't know are ordered alphabetically below keys we know except signature.
+    const key1i = key2order[key1];
+    const key2i = key2order[key2];
+    var out;
+    if (key1i != null && key2i != null) {
+      out = key1i - key2i;
+    } else if (key1i == null && key2i == null) {
+      out = key1.compareTo(key2);
+    } else if (key1i != null) {
+      out = -1;
+    } else {
+      out = 1;
+    }
+    logger.log(`${key1} ${key2} ${out}`);
+    return out;
+  }
+
+  try {
+    const db = admin.firestore();
+    const collectionRef = db.collection(token).doc('statements').collection('statements');
+    const snapshot = await collectionRef.orderBy('time', 'desc').get();
+    const data = snapshot.docs.map(doc => doc.data());
+
+    var data2 = [];
+    for (const datum of data) {
+      const orderedDatum = Object.keys(datum)
+        .sort((a, b) => compareKeys(a, b))
+        .reduce((obj, key) => {
+          obj[key] = datum[key];
+          return obj;
+        }, {});
+      data2.push(orderedDatum);
+    }
+
+    var distinct = await makedistinct(data);
+
+    res.status(200).json(distinct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error exporting collection');
   }
 });
