@@ -6,7 +6,6 @@ import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/notifications.dart';
-import 'package:nerdster/oneofus/corruption_check.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
@@ -159,7 +158,8 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: <Widget>[
-          MenuItemButton(onPressed: () => CorruptionCheck.make(), child: const Text('Check Statements')),
+          // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
+          // MenuItemButton(onPressed: () => CorruptionCheck.make(), child: const Text('Check Statements')),
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
           MenuItemButton(
               child: const Text('Load JSON statements'),
