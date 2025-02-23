@@ -19,6 +19,12 @@
 // - "npm install --save firebase-functions@latest"
 // - "npm audit fix"
 // 
+// TEST: Would be nice to see that these all produce output we expect:
+// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bValidate=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
+// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true
+// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true
+// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bClearClear=true
+// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true&bClearClear=true&omit=[%22I%22,%22statement%22]
 
 const { logger } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
@@ -192,7 +198,6 @@ function getVerbSubject(j) {
 
 // -----------  --------------------------------------------------------//
 
-
 // DEFER: getOtherSubject, makeDistinct based on both of those sorted.
 
 // Demo / debugging needs
@@ -220,7 +225,29 @@ async function fetchh(token, params = {}, omit = {}) {
 
   const db = admin.firestore();
   const collectionRef = db.collection(token).doc('statements').collection('statements');
-  const snapshot = await collectionRef.orderBy('time', 'desc').get();
+
+  var revokedAtTime;
+  if (revokeAt) {
+    const doc = collectionRef.doc(revokeAt);
+    const docSnap = await doc.get();
+    if (docSnap) {
+      logger.log(`found revokedAt doc`);
+      revokedAtTime = docSnap.data().time;
+      logger.log(`revokedAtTime=${revokedAtTime}`);
+    } else {
+      logger.log(`didn't find revokedAt doc`);
+      // TODO: Boundary conditions testing.
+      return { "statements": [] };
+    }
+  }
+
+  var snapshot;
+  if (revokedAtTime) {
+    snapshot = await collectionRef.where('time', "<=", revokedAtTime).orderBy('time', 'desc').get();
+  } else {
+    snapshot = await collectionRef.orderBy('time', 'desc').get();
+  }
+
   var statements;
   if (bIncludeId) {
     statements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -241,7 +268,7 @@ async function fetchh(token, params = {}, omit = {}) {
       for (const key of omit) {
         delete s[key];
       }
-    }  
+    }
   }
 
   if (bValidate) {
@@ -290,7 +317,7 @@ async function fetchh(token, params = {}, omit = {}) {
     statements = orderedStatements;
   }
 
-  return {"statements": statements, "I": iKey, "lastToken": lastToken};
+  return { "statements": statements, "I": iKey, "lastToken": lastToken };
 }
 
 
