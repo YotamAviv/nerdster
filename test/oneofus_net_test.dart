@@ -1,8 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
@@ -13,7 +9,6 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/net/net_tree_model.dart';
@@ -24,7 +19,6 @@ import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
@@ -33,28 +27,8 @@ import 'package:test/test.dart';
 
 void main() async {
   fireChoice = FireChoice.fake;
-  // TODO: Run unit tests against emulator which has our cloud functions and different code paths.
-  // This can't work, see: https://stackoverflow.com/questions/53225813/unit-testing-on-flutter-firebase-functions
-  switch (fireChoice) {
-    case FireChoice.fake:
-      FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
-      FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
-      break;
-    case FireChoice.emulator:
-      WidgetsFlutterBinding.ensureInitialized();
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-      await OneofusFire.init(); // $ firebase --project=nerdster emulators:start
-      FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
-      FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
-      // $ firebase --project=one-of-us-net -config=oneofus-nerdster.firebase.json emulators:start
-      OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
-      OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
-      break;
-    case FireChoice.prod:
-      throw UnimplementedError();
-  }
-
-
+  FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
+  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
   TrustStatement.init();
   ContentStatement.init();
 
@@ -186,42 +160,7 @@ void main() async {
     jsonShowExpect(dump, expectedTree);
   });
 
-  // Notification:
-  // - A trusted key was blocked.
-  test('''3'rd level block removes 1'st level trust''', () async {
-    // TEMP: oneofusNet.blockerBenefit = 2;
-    // TODO: Test something or remove. 
-    return;
-
-    Jsonish bartTrustHomer = await bart.doTrust(TrustVerb.trust, homer);
-    await homer.doTrust(TrustVerb.trust, marge);
-    await marge.doTrust(TrustVerb.trust, lisa);
-    await lisa.doTrust(TrustVerb.block, homer);
-
-    await signInState.signIn(bart.token, null);
-    await Comp.waitOnComps([contentBase, keyLabels]);
-
-    var network = oneofusNet.network;
-    var expectedNetwork = {"Me": null};
-    jsonShowExpect(dumpNetwork(network), expectedNetwork);
-
-    dynamic dump = await OneofusTreeNode.root.dump();
-    var expectedTree = {"N:Me-true:": {}};
-    jsonShowExpect(dump, expectedTree);
-
-    await compareNetworkToTree(bart.token);
-
-    expect(oneofusNet.rejected.length, 1);
-    MapEntry e = oneofusNet.rejected.entries.first;
-    expect(e.key, bartTrustHomer.token);
-    expect(e.value, 'A trusted key was blocked.');
-  });
-
   test('''3'rd level block rejected on 1'st level trust''', () async {
-    // TEMP: oneofusNet.blockerBenefit = 1;
-    // TODO: blockerBenefit removed. Test something or remove. 
-    return;
-
     await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
     await marge.doTrust(TrustVerb.trust, lisa);
@@ -229,18 +168,10 @@ void main() async {
 
     await signInState.signIn(bart.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
-
-    expect(oneofusNet.rejected.length, 1);
-    MapEntry e = oneofusNet.rejected.entries.first;
-    expect(e.key, lisaBlocksHomer.token);
-    expect(e.value, 'A key 4 degrees away attempted to block a key 2 degrees away.');
+    jsonExpect(oneofusNet.rejected, {lisaBlocksHomer.token: 'Attempt to block trusted key.'});
   });
 
-  test('''3'rd level replace rejected on 1'st level trust''', () async {
-    // TEMP: oneofusNet.blockerBenefit = 1;
-    // TODO: blockerBenefit removed. Test something or remove. 
-    return;
-
+  test('''3'rd level replace succeeds on 1'st level trust''', () async {
     await bart.doTrust(TrustVerb.trust, homer);
     Jsonish s = await homer.doTrust(TrustVerb.trust, marge);
     await marge.doTrust(TrustVerb.trust, lisa);
@@ -248,11 +179,7 @@ void main() async {
 
     await signInState.signIn(bart.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
-
-    expect(oneofusNet.rejected.length, 1);
-    MapEntry e = oneofusNet.rejected.entries.first;
-    expect(e.key, lisaReplacesHomer.token);
-    expect(e.value, 'A key 4 degrees away attempted to replace a key 2 degrees away.');
+    expect(oneofusNet.rejected.isEmpty, true);
   });
 
   /// Self be-heading
@@ -264,8 +191,6 @@ void main() async {
   ///
   /// See some related nonsense in decapitate.dart
   test('3\'rd level replaces 1\'st level trust', () async {
-    // TEMP: oneofusNet.blockerBenefit = 2;
-    // await marge.doTrust(TrustVerb.trust, bart); // added for bart's name.
     Jsonish s2 = await homer.doTrust(TrustVerb.trust,
         lenny); // I added this because I need a statement. I could block, but that's above.
     await bart.doTrust(TrustVerb.trust, homer);
@@ -293,7 +218,6 @@ void main() async {
   });
 
   test('3\'rd level replaces 1\'st level trust, homer better', () async {
-    // TEMP: oneofusNet.blockerBenefit = 2;
     await homer.doTrust(TrustVerb.trust, lenny);
     await bart.doTrust(TrustVerb.trust, homer);
     Jsonish s2 = await homer.doTrust(TrustVerb.trust, marge);
@@ -328,59 +252,6 @@ void main() async {
       }
     };
     jsonShowExpect(dump, expectedTree);
-
-    await compareNetworkToTree(bart.token);
-  });
-
-  test('3\'rd level block removes 1\'st level trust, redux', () async {
-    // TEMP: oneofusNet.blockerBenefit = 2;
-    // TODO: blockerBenefit removed. Test something or remove. 
-    return;
-
-    await bart.doTrust(TrustVerb.trust, homer);
-    await homer.doTrust(TrustVerb.trust, marge);
-    await marge.doTrust(TrustVerb.trust, lisa);
-    await lisa.doTrust(TrustVerb.block, homer);
-    await bart.doTrust(TrustVerb.trust, maggie);
-    await maggie.doTrust(TrustVerb.trust, marge);
-
-    await signInState.signIn(bart.token, null);
-    await Comp.waitOnComps([contentBase, keyLabels]);
-
-    var network = oneofusNet.network;
-    var expectedNetwork = {"Me": null, "maggie": null, "marge": null, "lisa": null};
-    jsonShowExpect(dumpNetwork(network), expectedNetwork);
-
-    dynamic dump = await OneofusTreeNode.root.dump();
-    var expectedTree = {
-      "N:Me-true:": {
-        "N:maggie-true:Me": {
-          "N:marge-true:Me->maggie": {"N:lisa-true:Me->maggie->marge": {}}
-        }
-      }
-    };
-    jsonShowExpect(dump, expectedTree);
-
-    await compareNetworkToTree(bart.token);
-  });
-
-  test('4\'th level block of 1\'st level trust rejected', () async {
-    await bart.doTrust(TrustVerb.trust, homer);
-    await homer.doTrust(TrustVerb.trust, marge);
-    await marge.doTrust(TrustVerb.trust, lisa);
-    await lisa.doTrust(TrustVerb.trust, maggie);
-    Jsonish blockStatement = await maggie.doTrust(TrustVerb.block, homer);
-
-    await signInState.signIn(bart.token, null);
-    await Comp.waitOnComps([contentBase, keyLabels]);
-
-    var network = oneofusNet.network;
-    var expectedNetwork = {"Me": null, "homer": null, "marge": null, "lisa": null, "maggie": null};
-    jsonShowExpect(dumpNetwork(network), expectedNetwork);
-
-    // expect a rejected statement.
-    expect(oneofusNet.rejected.length, 1);
-    expect(oneofusNet.rejected.keys.first, blockStatement.token);
 
     await compareNetworkToTree(bart.token);
   });

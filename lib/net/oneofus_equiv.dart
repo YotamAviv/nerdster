@@ -8,7 +8,7 @@ import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/progress.dart';
+import 'package:nerdster/measure.dart';
 import 'package:nerdster/singletons.dart';
 
 class OneofusEquiv with Comp, ChangeNotifier {

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
+import 'package:nerdster/bar_refresh.dart';
+import 'package:nerdster/demotest/cases/integration_tests.dart';
+import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
@@ -98,12 +101,10 @@ class Menus {
             MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
             MyCheckbox(Prefs.showStatements, 'show trust statements'),
             MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
-            MyCheckbox(Prefs.fetchDistinct, 'fetchDistinct'),
+            MyCheckbox(Prefs.cloudFetchDistinct, 'cloud fetch distinct (goes quicker)'),
             MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
-            // MyCheckbox(Prefs.skipVerify, '''skip verifying signatures (goes quicker;)'''),
             MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
             MyCheckbox(Prefs.hideDismissed, '''hide content where network #(dis) > #(recommend)'''),
-            // MyCheckbox(Prefs.showDevMenu, 'show DEV menu'),
             SubmenuButton(menuChildren: <Widget>[
               IntSettingDropdown(
                   'degrees', Prefs.oneofusNetDegrees, List<int>.generate(6, (i) => i + 1)),
@@ -158,8 +159,11 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: <Widget>[
+          MenuItemButton(onPressed: () => BarRefresh.refresh(), child: const Text('refresh')),
+          MenuItemButton(onPressed: () => fetcherIntegrationTest(), child: const Text('fetcherIntegrationTest')),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
           // MenuItemButton(onPressed: () => CorruptionCheck.make(), child: const Text('Check Statements')),
+          MenuItemButton(onPressed: () => integrationTests(), child: const Text('runCases')),
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
           MenuItemButton(
               child: const Text('Load JSON statements'),
@@ -183,7 +187,7 @@ $link''',
               onPressed: () {
                 Fetcher.testingCrashIn = 3;
               }),
-        ], child: const Text('Dev')),
+        ], child: const Text('DEV')),
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
     ];
   }

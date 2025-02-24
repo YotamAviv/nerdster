@@ -15,7 +15,7 @@ class Prefs {
   static final ValueNotifier<bool> showStatements = ValueNotifier(bNerd);
   static final ValueNotifier<bool> showKeys = ValueNotifier(bNerd);
   static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> fetchDistinct = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> cloudFetchDistinct = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> censor = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> hideDismissed = ValueNotifier<bool>(true);
 

@@ -60,7 +60,8 @@ class _SubjectTileState extends State<SubjectTile> {
 
   @override
   Widget build(BuildContext context) {
-    assert(contentBase.ready); // BUG: I've witenessed this fire.
+    // assert(contentBase.ready); // Witenessed, happens often with demo "delegateMerge"
+    if (!contentBase.ready) return Text('...');
 
     final ContentTreeNode subjectNode = widget.entry.node;
 
@@ -194,7 +195,8 @@ class _ReactIconState extends State<_ReactIcon> {
 
   @override
   Widget build(BuildContext context) {
-    assert(contentBase.ready); // QUESTIONABLE
+    // assert(contentBase.ready); // Witenessed, happens often with demo "delegateMerge"
+    if (!contentBase.ready) return Text('...');
 
     Color color;
     IconData iconData;

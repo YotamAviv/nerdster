@@ -86,11 +86,6 @@ class Trust1 {
           assert(!network.containsKey(other.token));
           assert(other.paths.isEmpty);
 
-          // NEXT: Find and purge:
-          // "A trusted key was blocked.".
-          // 'A key $blockerPathLength degrees away attempted to block a key $blockeePathLength degrees away.';
-
-          // TEMP: REMOVE: Not sure wy this was  ever here: network.putIfAbsent(other.token, () => other);
           other.blocked = true;
         }
       }
@@ -113,14 +108,12 @@ class Trust1 {
             continue;
           }
 
-          // Replace the other node if allowed. TEMP: WIP.. 
+          // Replace the other node if allowed.
           if (other == source) {
             // Special case, no paths
             _rejected[replace.statementToken] = 'Attempt to replace your key.';
             continue;
           }
-
-          // NEXT: Find and purge: 'A key $replacerPathLength degrees away attempted to replace a key $replaceePathLength degrees away.';
 
           if (other.revokeAt != null) {
             // In the grand scheme of Oneofus trust, only one key should be able to claim to

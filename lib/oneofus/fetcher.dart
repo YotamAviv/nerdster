@@ -3,7 +3,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/progress.dart';
+import 'package:nerdster/measure.dart';
 
 import '../prefs.dart'; // CODE: Kludgey way to include, but might work for phone codebase.
 import 'distincter.dart';
@@ -22,49 +22,38 @@ import 'util.dart';
 /// a test framework, and so I expect to end up somewhere in the middle (and yes, I have and will
 /// always have bugs;)
 ///
-/// Nerdster web app, Nerdster content first.
+/// - DEFER: filters (ex, past month)
 ///
-/// Deploy a Cloud fuunction
-/// - DEFER: revokedAt
-/// - DEFER: other filters (ex, past month)
+/// Cloud function are being used for permance.
+/// Omit: "statement", "I"
+/// How to get the full "I" key?
+/// - returning this from cloud func: {"statements": statements, "I": {key}, "lastToken": ...}
+/// Do we actually need it?
+/// - We only need it for some stuff which can be changed (param ?oneofus=token, for example).
 ///
-/// Maybe add a DEV menu helper / tester
-///
-/// CONCERN: How to get the full "I" key. Do we actually need it?
-/// - I don't think we need it.
-/// - We need it in NetTile, probably to show the key, which we like doing..
-///   Can return this from cloud func: {"key": key, "statements": statements}
-///
-/// Modify Statement / ContentStatement
+/// DEFER: Modify Statement / ContentStatement
 /// - deal with "I" token instead of full key
 ///
-/// DEFER: Dealing with revokedAt
+/// DEFER: Cloud distinct to regard "other" subject.
+/// All the pieces are there, and it shouldn't be hard. That said, relate / equate are rarely used.
 ///
-/// -------- Stop here and compare PROD performance --------------
-/// - FollowNet: 0:00:01.760300 (fetchDistinct)
-/// - FollowNet: 0:00:02.640401
-/// So good.. Probably go with it.
+/// TODO: Address integraion testing using Firebase emulator.
 ///
-/// DONE: get 'clear' cleared.
-/// Done: Assert on the descending order.
-///
-/// -------- Stop here and compare PROD Oneofus performance --------------
-///
-/// TODO: Pass the correct token (it can't be computed without previous, "I", "statement")
-///
-/// TODO: Clean up index.js
-/// - JavaScript unit testing
-/// - Josonish.compute token
-/// - trust and content statement verbs..
-///
-/// NEXT: Consider "other" subject, doc a little
-///
-/// TODO: Address testing:
-/// - possible on emulaotr
-///
-/// Down the line:
-/// TODO: Modify Trust1 to be just greedy, no revoking what was trusted
-/// TODO: revokeAt in request
+/// DONE: Modify Trust1 to be just greedy, no revoking what was trusted
+/// DONE: revokeAt in request
+
+
+
+/// DEFER: PERFORMANCE: Get and use token from cloud instaed of computing it.
+/// This will allow us to not ask for [previous, signature].
+/// It'd be a destabilizing change to deal with Jsonish instances whose tokens aren't the tokens we'd compute from their Json.
+/// Options:
+/// - Don't even bother.
+/// - Move to Jsonish over Json wherever possible, and be very careful not to compute the
+///   token of a Json that you got from a Jsonish.
+///   - One way to do this might be to
+///     - not have Jsonish.json (override [] instead)
+///     - not have Statement.json (ppJson or jsonish only instead)
 
 /// This class combines much functionality, which is messy, but it was even messier with multiple classes:
 /// - Firestore fetch/push, cache
@@ -102,6 +91,7 @@ class Fetcher {
   static final Measure mVerify = Measure('verify');
 
   final FirebaseFirestore fire;
+  final FirebaseFunctions? functions;
   final String domain;
   final String token;
   final bool testingNoVerify;
@@ -109,20 +99,27 @@ class Fetcher {
   // 3 states:
   // - not revoked : null
   // - revoked at token (last legit statement) : token
-  // - blocked : any string that isn't a toke makes this blocked (revoked since forever)
-  String? _revokeAt; // set by others to let me know
-  DateTime? _revokeAtTime; // set by me after querying the db
+  // - blocked : any string that isn't a statement token makes this blocked (revokedAt might be "since forever")
+  String? _revokeAt; // set by others to let this object know
+  DateTime? _revokeAtTime; // set by this object after querying the db
 
-  // Due to clouddistinct, this isn't all statements.
+  // The main performance benefit of using cloud functions is to only fetch distinct.
+  // TODO: Cloud function are hard to test, and so make the non-cloud path use _cached similary - distinct and revoked.
   List<Statement>? _cached;
   String? _lastToken;
 
   static void clear() => _fetchers.clear();
 
+  // I've lost track a little, but...
+  // If we ever fetched a statement for {domain, token}, then that statement remains correct forever.
+  // But if we change center (POV) or learn about a new trust or block, then that might change revokedAt.
   static resetRevokedAt() {
     for (Fetcher f in _fetchers.values) {
-      f._revokeAt = null;
-      f._revokeAtTime = null;
+      if (f._revokeAt != null) {
+        f._cached = null;
+        f._revokeAt = null;
+        f._revokeAtTime = null;
+      }
     }
     changeNotify();
   }
@@ -130,23 +127,25 @@ class Fetcher {
   factory Fetcher(String token, String domain, {bool testingNoVerify = false}) {
     String key = '$token$domain';
     FirebaseFirestore fire = FireFactory.find(domain);
+    FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     Fetcher out;
     if (_fetchers.containsKey(key)) {
       out = _fetchers[key]!;
       assert(out.fire == fire);
       assert(out.testingNoVerify == testingNoVerify);
     } else {
-      out = Fetcher.internal(token, domain, fire, testingNoVerify: testingNoVerify);
+      out = Fetcher.internal(token, domain, fire, functions, testingNoVerify: testingNoVerify);
       _fetchers[key] = out;
     }
     return out;
   }
 
-  Fetcher.internal(this.token, this.domain, this.fire, {this.testingNoVerify = false});
+  Fetcher.internal(this.token, this.domain, this.fire, this.functions,
+      {this.testingNoVerify = false});
 
   // Oneofus trust does not allow 2 different keys replace a key (that's a conflict).
   // Fetcher isn't responsible for implementing that, but I am going to assume that
-  // something else does and I'll rely on that and not implement code to update
+  // something else does and I'll rely on that, assert that, and not implement code to update
   // revokeAt.
   //
   // Changing center is encouraged, and we'd like to make that fast (without re-fetching too much).
@@ -154,41 +153,15 @@ class Fetcher {
   // Moving to clouddistinct... What if
   //
   void setRevokeAt(String revokeAt) {
+    // CONSIDER: I don't think that even setting the same value twice should be supported.  I tried
+    // that and failed tests on follow net and delegate related stuff. Hmm..
+    // assert(_revokeAt == null);
     if (_revokeAt == revokeAt) return;
 
     _revokeAt = revokeAt;
     _revokeAtTime = null;
-    _cached = null; // Have to re-fetch.
+    _cached = null;
     changeNotify();
-    return;
-
-    // TEMP: NEW: I don't think that even setting the same value twice should be supported
-    // assert(_revokeAt == null);
-
-    // TEMP: NEW: Greedier
-    // assert(_cached == null);
-
-    // NEXT: Remove dead code
-    // return;
-    if (b(_revokeAt)) {
-      // Changing revokeAt not supported
-      assert(_revokeAt == revokeAt, '$_revokeAt != $revokeAt');
-      return;
-    }
-    changeNotify();
-    _revokeAt = revokeAt;
-
-    // If I can't find revokeAtStatement, then something strange is going on unless it's 'since always'
-    // CONSIDER: Use the same string for 'since always' (although I should be able to handle any string.)
-    // CONSIDER: Warn when it's not 'since always' or a valid past statement token.
-    if (b(_cached)) {
-      Statement? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
-      if (b(revokeAtStatement)) {
-        _revokeAtTime = parseIso(revokeAtStatement!.json['time']);
-      } else {
-        _revokeAtTime = date0;
-      }
-    }
   }
 
   String? get revokeAt => _revokeAt;
@@ -197,12 +170,12 @@ class Fetcher {
 
   bool get isCached => b(_cached);
 
-  // NEXT: Rename
-  static const Map fetchhParams = {
+  // TODO: Rename
+  static const Map fetchParamsProto = {
     "bIncludeId": true,
     "bDistinct": true,
     "bClearClear": true,
-    "omit": ['statement', 'I'] // DEFER: ['statement', 'I', 'signature', 'previous']
+    "omit": ['statement', 'I'] // DEFER: ['signature', 'previous']
   };
 
   Future<void> fetch() async {
@@ -218,18 +191,15 @@ class Fetcher {
     _cached = <Statement>[];
 
     DateTime? time;
-    FirebaseFunctions? functions = FireFactory.findFunctions(domain);
-    if (functions != null && Prefs.fetchDistinct.value) {
-      Map params = Map.of(fetchhParams);
+    if (functions != null && Prefs.cloudFetchDistinct.value) {
+      Map params = Map.of(fetchParamsProto);
       params["token"] = token;
-      if (_revokeAt != null) {
-        params["revokeAt"] = revokeAt;
-      }
+      if (_revokeAt != null) params["revokeAt"] = revokeAt;
       final result = await mFire.mAsync(() {
-        return functions.httpsCallable('clouddistinct').call(params);
+        return functions!.httpsCallable('clouddistinct').call(params);
       });
       List statements = result.data["statements"];
-      if (statements.isEmpty) return;
+      if (statements.isEmpty) return; // QUESTIONABLE
       if (_revokeAt != null) {
         assert(statements.first['id'] == _revokeAt);
         _revokeAtTime = parseIso(statements.first['time']);
@@ -239,27 +209,13 @@ class Fetcher {
       _lastToken = result.data["lastToken"];
       for (Json j in statements) {
         DateTime jTime = parseIso(j['time']);
-        if (time != null) {
-          assert(jTime.isBefore(time));
-        }
+        if (time != null) assert(jTime.isBefore(time));
         time = jTime;
         j['statement'] = domain2statementType[domain]!;
         j['I'] = iKey; // TODO: Allow token in 'I' in statements; we might be already.
         assert(getToken(j['I']) == getToken(iKey));
         String serverToken = j['id'];
         j.remove('id');
-
-        /// CONSIDER: Don't get [signature, previous] from server.
-        /// That requires getting and using token from server instead if computing it.
-        /// It'd be a destabilizing change to deal with Jsonish instances whose tokens aren't the tokens we'd compute from their Json.
-        ///
-        /// Options:
-        /// - Don't even bother.
-        /// - Move to Jsonish over Json wherever possible, and be very careful not to compute the
-        ///   token of a Json that you got from a Jsonish.
-        ///   - One way to do this might be to
-        ///     - not have Jsonish.json (override [] instead)
-        ///     - not have Statement.json (ppJson or jsonish only instead)
 
         Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
         assert(jsonish.token == serverToken);
@@ -287,6 +243,9 @@ class Fetcher {
       }
 
       Query<Json> query = collectionRef.orderBy('time', descending: true); // newest to oldest
+      if (_revokeAtTime != null) {
+        query = query.where('time', isLessThanOrEqualTo: formatIso(_revokeAtTime!));
+      }
       QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
       // DEFER: Something with the error.
       // .catchError((e) => print("Error completing: $e"));
@@ -327,32 +286,16 @@ class Fetcher {
         _cached!.add(Statement.make(jsonish));
       }
       if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
+      // TODO: distinct the cache. That's what cloud does.
     }
-
     // print('fetched: $fire, $token');
   }
 
-  List<Statement> get statements {
-    if (b(_revokeAt)) {
-      // TODO: NEXT: Might need to disable the ability to set revokedAt due to clouddistinct
-      // NEXT: Looks like we always fetch all statements even when revoked. Consider... 
-      // (That may have made sense back when we used to allow calling setRevokedAt during 
-      // trust1 processing.)
-      Statement? revokeAtStatement = _cached!.firstWhereOrNull((s) => s.token == _revokeAt);
-      if (b(revokeAtStatement)) {
-        return _cached!.sublist(_cached!.indexOf(revokeAtStatement!));
-      } else {
-        return [];
-      }
-    } else {
-      return _cached!;
-    }
-  }
+  List<Statement> get statements => _cached!;
 
   // TODO: Why return value Jsonish and not Statement?
   // Side effects: add 'previous', 'signature'
   Future<Jsonish> push(Json json, StatementSigner? signer) async {
-    // (I've had this commented out in the past for persistDemo)
     assert(_revokeAt == null);
     changeNotify();
 

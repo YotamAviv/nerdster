@@ -173,25 +173,10 @@ String dummyOneofus = Jsonish(dummyPublicKey).token;
 const String yotam = '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431';
 dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
-  // TEMP: FireChoice.prod: {"one-of-us.net": yotam},
+  // FireChoice.prod: {"one-of-us.net": yotam},
 
   FireChoice.emulator: {"one-of-us.net": yotam},
-  // TEMP: FireChoice.emulator: {"one-of-us.net": dummyOneofus},
-
-  // Loner
-  // FireChoice.emulator: {
-  //   "one-of-us.net": '66e1c0385c1b891afc13a265688e28616f2c758b',
-  //   "nerdster.org": {
-  //     "crv": "Ed25519",
-  //     "d": "OqVGV74cfK7VN2ORTHVMiXi-R4gbFfDtw9nw-ETrv0o",
-  //     "kty": "OKP",
-  //     "x": "yo89GnI45-CGEujWol6J6xhrsCqvBXIiFinbKgXTRto"
-  //   }
-  // }
-
-  // simpsons
-  // FireChoice.emulator: {
-  // }
+  // FireChoice.emulator: {"one-of-us.net": dummyOneofus},
 };
 
 // simpsons PROD
