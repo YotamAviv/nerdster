@@ -69,7 +69,7 @@ void main() {
     final SimpleKeyPair aliceKeyPair = await algorithm.newKeyPair();
     final SimplePublicKey alicePublicKey = await aliceKeyPair.extractPublicKey();
 
-    Jwk alicePublicKeyJwk = await Jwk.fromPublicKey(alicePublicKey);
+    Jwk alicePublicKeyJwk = Jwk.fromPublicKey(alicePublicKey);
     final Json alicePublicKeyJson = alicePublicKeyJwk.toJson();
 
     final Jwk alicePublicKeyJwk2 = Jwk.fromJson(alicePublicKeyJson);

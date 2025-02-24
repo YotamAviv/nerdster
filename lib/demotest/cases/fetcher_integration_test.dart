@@ -247,10 +247,7 @@ Future<void> revokeAtSinceAlways() async {
     // Cloud functions throws error; local skips the statement.
     try {
       await fetcher.fetch();
-      js = fetcher.statements;
-      expect(js.length, 4);
-      js = fetcher.statements;
-      expect(js.length, 4);
+      fail('exception expected');
     } catch (e) {
       print('Catching error expected from cloud functions: $e');
     }

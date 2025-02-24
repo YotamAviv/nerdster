@@ -90,7 +90,7 @@ abstract mixin class Comp {
             }
           } catch (e) {
             _exception = e;
-            // print('Rethrowing: $_exception');
+            print('Rethrowing: $_exception');
             rethrow;
           } finally {
             _processing = false;
@@ -103,6 +103,7 @@ abstract mixin class Comp {
           // Note: This fires: assert(ready || b(_exception));
           if (b(_exception)) {
             // print('Throwing _exception: $_exception');
+            print('Throwing _exception: $_exception'); // TEMP:
             throw _exception!;
           }
         }

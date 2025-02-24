@@ -66,7 +66,7 @@ class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
 
   // (I've lost track of the reasoning behind having a final VoidCallback for this.)
-  static final VoidCallback changeNotify = clearDistinct;
+  static final VoidCallback changeNotify = clearDistincterCache;
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
 
@@ -154,7 +154,7 @@ class Fetcher {
   static const Map fetchParamsProto = {
     "bIncludeId": true, // BUG: See index.js. If we don't ask for id's, then we don't get lastId.
     "bDistinct": true,
-    // I'm leaning against this. "bClearClear": true, TODO: Make regular code path do same.
+    // I'm leaning against this. "bClearClear": true, TODO: Make !clouddistinct code path is same.
     "omit": ['statement', 'I'] // DEFER: ['signature', 'previous']
   };
 
@@ -187,7 +187,6 @@ class Fetcher {
       Json iKey = result.data['I'];
       assert(getToken(iKey) == token);
       _lastToken = result.data["lastToken"];
-      print('_lastToken=$_lastToken');
       for (Json j in statements) {
         DateTime jTime = parseIso(j['time']);
         if (time != null) assert(jTime.isBefore(time));
@@ -212,24 +211,19 @@ class Fetcher {
       if (_revokeAt != null && _revokeAtTime == null) {
         DocumentReference<Json> doc = collectionRef.doc(_revokeAt);
         final DocumentSnapshot<Json> docSnap = await mFire.mAsync(doc.get);
-        // _revokeAt can be any string. If it is the id (token) of something this Fetcher has ever
-        // stated, the we revoke it there; otherwise, it's blocked - revoked "since forever".
-        // TEST: add unit test.
         if (b(docSnap.data())) {
           final Json data = docSnap.data()!;
           _revokeAtTime = parseIso(data['time']);
         } else {
-          _revokeAtTime = DateTime(0);
+          _revokeAtTime = DateTime(0); // "since always" (or any unknown token)
         }
       }
 
-      Query<Json> query = collectionRef.orderBy('time', descending: true); // newest to oldest
+      Query<Json> query = collectionRef.orderBy('time', descending: true);
       if (_revokeAtTime != null) {
         query = query.where('time', isLessThanOrEqualTo: formatIso(_revokeAtTime!));
       }
       QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
-      // DEFER: Something with the error.
-      // .catchError((e) => print("Error completing: $e"));
       String? previousToken;
       DateTime? previousTime;
       for (final docSnapshot in snapshots.docs) {
@@ -246,19 +240,16 @@ class Fetcher {
         // middles: statement.token = previousToken
         // Last: statement.token = null
         DateTime time = parseIso(jsonish.json['time']);
-        if (previousTime == null) {
-          // no check
-        } else {
+        if (previousToken != null) {
           if (jsonish.token != previousToken) {
-            // DEFER: Something.
-            print('Notarization violation: ($domain/$token): ${jsonish.token} != $previousToken');
-            continue;
+            String error = 'Notarization violation: ($domain/$token): ${jsonish.token} != $previousToken';
+            print(error);
+            throw error;
           }
-          if (!time.isBefore(previousTime)) {
-            // DEFER: Something.
+          if (!time.isBefore(previousTime!)) {
             String error = '!Descending: ($domain/$token): $time >= $previousTime';
             print(error);
-            // DEFER: continue; Not continuing because my (Tom) data is currently corrupt ;(
+            throw error;
           }
         }
         previousToken = data['previous'];
@@ -267,7 +258,11 @@ class Fetcher {
         _cached!.add(Statement.make(jsonish));
       }
       if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
-      // NEXT: distinct the cache. That's what cloud does.
+      // Be like clouddistinct
+      // - DEFER: bClearClear
+      if (fetchParamsProto.containsKey('bDistinct')) {
+        // TEMP: _cached = distinct(_cached!);
+      }
     }
     // print('fetched: $fire, $token');
   }
