@@ -1,30 +1,23 @@
-// TODO:
-// Pressing:
-// - DONE: Fix Yotam data corruption
-// - DONE: Prototype performance enhancements on Oneofus (would be nice to have identical index.js functions file)
-// - integration tests
-//   - Implement, test: revokedAt
-// Can be later:
-// - Clean this up
-// - Organize the file, use Javascript helpers and constants
-// - try to unify Nerdster and Oneofus. Any reason they can't be identical?
-//   - different verbs, but I can just include all verbs, no worries
-// - JavaScript unit testing
-// - Export clouddistinct to the HTTP interface (at least for debugging, demonstrating..) 
-// - Rename "id" to "token"
-// - Test boundary condition of empty// - 
-// 
-// I often forget and then see it in the logs.. (to run in the functions directory)
-// - "npm install"
-// - "npm install --save firebase-functions@latest"
-// - "npm audit fix"
-// 
-// TEST: Would be nice to see that these all produce output we expect:
-// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bValidate=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
-// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true
-// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true
-// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bClearClear=true
-// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true&bClearClear=true&omit=[%22I%22,%22statement%22]
+
+/// 
+/// - DONE: Try to unify this file for both Nerdster and Oneofus. Any reason they can't be identical?
+///   - (different verbs, but I can just include all verbs, no worries)
+/// - DONE: JavaScript unit testing
+/// - DONE: Export clouddistinct to the HTTP interface (at least for debugging, demonstrating..) 
+/// - Rename "id" to "token"
+/// - Test boundary condition of empty. This is on the Fetcher/Nerdster side, not really here.
+/// 
+/// I often forget and then see it in the logs.. (to run in the functions directory)
+/// - "npm install"
+/// - "npm install --save firebase-functions@latest"
+/// - "npm audit fix"
+/// 
+/// TEST: Would be nice to see that these all produce output we expect:
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bValidate=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bClearClear=true
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true&bClearClear=true&omit=[%22I%22,%22statement%22]
 
 const { logger } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
@@ -198,22 +191,20 @@ function getVerbSubject(j) {
 
 // -----------  --------------------------------------------------------//
 
-// DEFER: getOtherSubject, makeDistinct based on both of those sorted.
+/// DEFER: Cloud distinct to regard "other" subject.
+/// All the pieces are there, and it shouldn't be hard. That said, relate / equate are rarely used.
 
-// Demo / debugging needs
-// - include id/token
-// Performance needs / desires
-// - Distinct
-//   Doesn't have to be complete and correct to be helpful
-// - revokedAt 
-//   required as applying distinct may clear the revokedAt token.
-// - Filters, like say, fetch?verbs={censor:all, rate:month}.. complicated.. not necessarily helpful '
-//   anyway considering where "dis" is, how I either should or shouldn't an entire subject..
-// 
+/// CONSIDER: Do we really need "I" or "lastToken"?
+/// - revokedAt means we're revoked, and so we shouldn't be writing new statements anyway. But 
+///   maybe we do.
+/// - if we send "clear" statements, then we'll always send the last statement (even if it's clear, 
+///   even if we make distinct)
+/// - If we're omitting "I", we can still include it on the top statemement.
+/// All this feels kludgey, and so I'll leave things as they are.
 
 // bClearClear only applicable with bDistinct
 async function fetchh(token, params = {}, omit = {}) {
-  const revokeAt = params.revokeAt; // NEXT:
+  const revokeAt = params.revokeAt;
   const bValidate = params.bValidate != null;
   const bDistinct = params.bDistinct != null;
   const bOrderStatements = params.bOrderStatements != null;

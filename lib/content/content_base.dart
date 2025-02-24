@@ -23,7 +23,7 @@ import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/progress.dart';
+import 'package:nerdster/measure.dart';
 import 'package:nerdster/singletons.dart';
 
 /// An old comment from back during preparation for NerdsterFollow, not sure if it's still relevant:
