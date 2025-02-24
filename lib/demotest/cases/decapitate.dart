@@ -6,7 +6,7 @@ import 'package:nerdster/demotest/test_clock.dart';
 
 /// This is to help debug the issues I encountered around test 
 /// '3\'rd level replaces 1\'st level trust'.
-/// TODO: Maybe run the dfs that in the NerdNode test.
+/// CONSIDER: Maybe run the dfs that in the NerdNode test.
 Future<(DemoKey, DemoKey?)> decap() async {
   useClock(TestClock());
 
@@ -29,7 +29,7 @@ Future<(DemoKey, DemoKey?)> decap() async {
   return (bart, null);
 }
 
-/// TODO: NerdNode or NerdTreeNode issue: Consider: Maybe bart should not see both 
+/// CONSIDER: NerdNode or NerdTreeNode issue: Consider: Maybe bart should not see both 
 /// the old homer key and the homer EG which he doesn't trust directly as children.
 /// Hmm...
 /// - he should see that he trusts a replaced, non-canonical key directly.

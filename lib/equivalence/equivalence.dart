@@ -134,7 +134,7 @@ class _EquivalenceCell {
   // When 2 EGs merge, we:
   // - union DONTs from child up to parent
   // - update DONTs at EC's of child to be parent (unless parent was already there).
-  // TODO: add a check invariant
+  // CODE: add a check invariant
   // - only roots have DONTs.
   // - DONTs are symmetric.
   // 

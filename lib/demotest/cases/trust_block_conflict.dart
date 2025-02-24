@@ -3,13 +3,13 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/net/oneofus_net.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
 Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
-  useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
+  useClock(TestClock());
 
   DemoKey bart = await DemoKey.findOrCreate('bart');
   DemoKey lisa = await DemoKey.findOrCreate('lisa');
@@ -17,25 +17,32 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   
   var network;
   var expectedNetwork;
-  var expectedEquivalents;
-
-  // TODO: blockerBenefit removed. Test something or remove. 
-  return (bart, null);
 
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await lisa.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
-  await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
-  await bart.doTrust(TrustVerb.block, milhouse);
+  Jsonish listTrustMilhouse = await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
+  Jsonish bartBlocMilhouse = await bart.doTrust(TrustVerb.block, milhouse);
   
   await signInState.signIn(lisa.token, null);
   await Comp.waitOnComps([contentBase, keyLabels]);
+  network = oneofusNet.network;
+  expectedNetwork = {
+    "Lisa": null,
+    "Millhouse": null,
+    "Bart": null
+  };
+  jsonShowExpect(dumpNetwork(network), expectedNetwork);
+  jsonExpect(oneofusNet.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
 
-  network = OneofusNet().network;
+  await signInState.signIn(bart.token, null);
+  await Comp.waitOnComps([contentBase, keyLabels]);
+  network = oneofusNet.network;
   expectedNetwork = {
     "Lisa": null,
     "Bart": null
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
+  jsonExpect(oneofusNet.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
 
   useClock(LiveClock());
   return (bart, null);

@@ -4,8 +4,6 @@ import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/trust/trust.dart';
 
-/// TODO: PERFORMANCE: let the server do distinct, don't revoke ahead of trust by more than 1 degree.
-
 /// TODO: time limit
 /// TODO: network size max
 
@@ -125,11 +123,9 @@ class Trust1 {
             continue;
           }
           if (other.blocked) {
-            // TODO: Probably decide if this should or should not be rejected and test accordingly.
-            // Hmm.. if someone blocks your old key, you should probably be informed about it. This might be that rejected replace (otherwise, it'd be a rejected block)
-            // FYI: This fires: assert(false); in test 'blockOldKey'.
+            // Hmm.. if someone blocks your old key, you should probably be informed about it. 
+            // This might be that rejected replace (otherwise, it'd be a rejected block)
             _rejected[replace.statementToken] = 'Attempt to replace a blocked key.';
-            // FYI: The test blockOldKey passes whether or not we continue below or not.
             continue;
           }
 

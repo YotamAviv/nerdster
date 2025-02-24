@@ -196,7 +196,7 @@ class ContentBase with Comp, ChangeNotifier {
 
     // _subject2statements
     for (ContentStatement statement in statements) {
-      // TODO: CONSIDER: filters only for 'rate', not equate, relate, censor
+      // CONSIDER: filters only for 'rate', not equate, relate, censor
       if (_filterByTType(statement) || _filterByTimeframe(statement)) {
         continue;
       }
@@ -255,7 +255,7 @@ class ContentBase with Comp, ChangeNotifier {
         // CONSIDER...
         // - make this optional in settings
         // - count a single dis as 1/2 a recommend
-        // TODO: Update React dialog to not allow both recommend and dis. Or not.
+        // DEFER: Update React dialog to not allow both recommend and dis. Or not.
         if (subjectNode.computeProps([PropType.recommend])[PropType.recommend]!.value! as int < 0) {
           continue;
         }
@@ -293,7 +293,7 @@ class ContentBase with Comp, ChangeNotifier {
       relatedTokens = relatedTokens.where((token) => token != node.subject.token);
       for (String relatedToken in relatedTokens) {
         assert(!_isCensored(relatedToken));
-        // Skip dismissed. TODO: Test
+        // Skip dismissed. TEST:
         List<ContentStatement>? relatedStatements = _subject2statements[relatedToken];
         if (b(relatedStatements) &&
             relatedStatements!.any((statement) =>
@@ -325,7 +325,7 @@ class ContentBase with Comp, ChangeNotifier {
 
     for (ContentStatement statement in _subject2statements[node.subject.token] ?? []) {
       assert(!_isCensored(statement.token));
-      // Skip dismissed. TODO: Test
+      // Skip dismissed. TEST:
       if (b(_subject2statements[statement.token]) &&
           _subject2statements[statement.token]!.any((statement) =>
               b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.center)) {

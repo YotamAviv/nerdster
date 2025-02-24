@@ -19,7 +19,7 @@ import 'package:nerdster/util_ui.dart';
 // - Attempt to block trusted key.
 // - Attempt to trust blocked key.
 // - Attempt to replace a replaced key.
-// - TODO: Attempt to replace a blocked key.
+// - DEFER: Attempt to replace a blocked key.
 // - Web-of-trust key equivalence rejected: Replaced key not in network. ('simpsons, degrees=2')
 // - TO-DO: Web-of-trust key equivalence rejected: Replacing key not in network.
 //   I don't think this can happen, not sure.. CONSIDER

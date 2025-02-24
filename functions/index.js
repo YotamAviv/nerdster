@@ -14,6 +14,7 @@
 /// 
 /// TEST: Would be nice to see that these all produce output we expect:
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bValidate=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bValidate=true&revokeAt=sincealways
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bClearClear=true
@@ -221,7 +222,7 @@ async function fetchh(token, params = {}, omit = {}) {
   if (revokeAt) {
     const doc = collectionRef.doc(revokeAt);
     const docSnap = await doc.get();
-    if (docSnap) {
+    if (docSnap.data()) {
       logger.log(`found revokedAt doc`);
       revokedAtTime = docSnap.data().time;
       logger.log(`revokedAtTime=${revokedAtTime}`);

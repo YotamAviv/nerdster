@@ -26,7 +26,7 @@ import 'package:nerdster/oneofus/util.dart';
 /// 
 /// - run UI (local machine, local code changes, emulator)
 /// - manually delete my collection (Firebase console on emulator)
-/// - call FIX from DEV menu
+/// - call fix from DEV menu
 /// - fix writes my new collection
 /// - look around and verify
 /// 
@@ -1206,6 +1206,6 @@ class Fix {
 
       print('.');
     }
-    print('FIX done.');
+    print('fix done.');
   }
 }
