@@ -245,7 +245,7 @@ async function fetchh(token, params = {}, omit = {}) {
   var lastToken;
   if (statements.length > 0) {
     iKey = statements[0].I;
-    lastToken = statements[0].id;
+    lastToken = statements[0].id; // BUG: We don't get lastToken unless we asked for ID.
   }
 
   if (omit) {
@@ -302,7 +302,6 @@ async function fetchh(token, params = {}, omit = {}) {
     statements = orderedStatements;
   }
 
-  logger.log(lastToken);
   return { "statements": statements, "I": iKey, "lastToken": lastToken };
 }
 
