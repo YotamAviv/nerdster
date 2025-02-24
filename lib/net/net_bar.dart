@@ -24,7 +24,7 @@ class NetBar extends StatefulWidget {
   static Future<void> showTree(BuildContext context) async {
     await Comp.waitOnComps([followNet, keyLabels]);
     assert (!bNetView.value);
-    NetTreeView.show(context);
+    await NetTreeView.show(context);
   }
 
   static void setParams(Map<String, String> params) {
@@ -83,7 +83,7 @@ class _NetBarState extends State<NetBar> {
                 color: linkColor,
                 tooltip: 'Network view',
                 onPressed: () async {
-                  NetBar.showTree(context);
+                  await NetBar.showTree(context);
                 }),
         ],
       ),

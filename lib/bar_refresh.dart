@@ -21,7 +21,7 @@ class BarRefresh extends StatefulWidget {
       // This could probably be captured in an Observable Comp instance
       // OPTIONAL: (maybe add to Dev menu): Jsonish.wipeCache();
       Fetcher.clear();
-      clearDistinct(); // redundant
+      clearDistincterCache(); // redundant?
       oneofusNet.listen();
       
       await Comp.waitOnComps([contentBase, keyLabels]);

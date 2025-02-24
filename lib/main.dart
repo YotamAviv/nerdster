@@ -112,7 +112,7 @@ Future<void> main() async {
   KeyLabels();
 
   // Show 'loading', start the timer.
-  BarRefresh.refresh();
+  await BarRefresh.refresh();
 
   // -------------- run app ---------------
   runApp(const MaterialApp(

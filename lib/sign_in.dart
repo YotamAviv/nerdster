@@ -140,7 +140,7 @@ Future<void> qrSignin(BuildContext context) async {
       subscription!.cancel();
 
       // Don't await
-      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       // Dismiss dialog
       if (context.mounted) Navigator.of(context).pop();
@@ -186,7 +186,7 @@ The text to copy/paste here should look like this:
       }
 
       // Don't await
-      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       Navigator.pop(context);
     } catch (exception) {

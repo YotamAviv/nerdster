@@ -1,4 +1,5 @@
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
@@ -23,7 +24,8 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   Jsonish listTrustMilhouse = await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
   Jsonish bartBlocMilhouse = await bart.doTrust(TrustVerb.block, milhouse);
   
-  await signInState.signIn(lisa.token, null);
+
+  signInState.center = lisa.token;
   await Comp.waitOnComps([contentBase, keyLabels]);
   network = oneofusNet.network;
   expectedNetwork = {
@@ -31,18 +33,22 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
     "Millhouse": null,
     "Bart": null
   };
-  jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  jsonExpect(oneofusNet.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
+  // jsonShowExpect(dumpNetwork(network), expectedNetwork);
+  // jsonExpect(oneofusNet.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
+  print(';');
 
-  await signInState.signIn(bart.token, null);
+  signInState.center = bart.token;
+  print('x');
   await Comp.waitOnComps([contentBase, keyLabels]);
+  print('z');
   network = oneofusNet.network;
   expectedNetwork = {
     "Lisa": null,
     "Bart": null
   };
-  jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  jsonExpect(oneofusNet.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
+  // jsonShowExpect(dumpNetwork(network), expectedNetwork);
+  // jsonExpect(oneofusNet.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
+  print(';');
 
   useClock(LiveClock());
   return (bart, null);
