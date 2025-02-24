@@ -154,7 +154,7 @@ class Fetcher {
   static const Map fetchParamsProto = {
     "bIncludeId": true,
     "bDistinct": true,
-    "bClearClear": true,
+    // I'm leaning against this. "bClearClear": true, TODO: Make regular code path do same.
     "omit": ['statement', 'I'] // DEFER: ['signature', 'previous']
   };
 
