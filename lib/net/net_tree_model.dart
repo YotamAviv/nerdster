@@ -59,7 +59,7 @@ abstract class NetTreeModel {
   bool get isCanonicalStatement =>
       oneofusEquiv.getCanonical(statement!.iToken) == statement!.iToken;
 
-  // For use in dump for testing. TODO: include statements in testing.
+  // For use in dump for testing. TEST: include statements in testing.
   @override
   String toString() {
     List<String> items = <String>[];
@@ -91,7 +91,7 @@ abstract class NetTreeModel {
     return items.join(':');
   }
 
-  /// TODO: ... I can probably take a lot of this out.
+  /// CODE: ... I can probably take a lot of this out.
   /// Formerly also for dumping and tests
   String hashString() {
     List<String> items = <String>[];

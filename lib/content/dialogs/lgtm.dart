@@ -98,7 +98,7 @@ class DontCheckbox extends StatelessWidget {
   }
 }
 
-// TODO2: Code duplication.. use in [ShowQr], [JSWidget]
+// CODE: Code duplication.. use in [ShowQr], [JSWidget]
 class JsonDisplay extends StatelessWidget {
   final Json json;
   const JsonDisplay(

@@ -32,6 +32,7 @@ void main() async {
   test('base', helper.base);
 
   test('revokeAt', helper.revokeAt);
+  test('revokeAtSinceAlways', helper.revokeAtSinceAlways);
 
   test('notarizationBlockchainViolation', helper.notarizationBlockchainViolation);
 

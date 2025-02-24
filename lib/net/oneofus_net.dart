@@ -60,10 +60,10 @@ import 'package:nerdster/trust/trust1.dart';
 ///   It is sort of a conflict. Your 2'nd key is not a replacement of your 1'st, now your 3'rd is.
 ///   It could also be an absolute conflict, someone else (not EG) claims your old key.
 ///
-/// - rejected replace (replacer farther than trustee) (Yes, both keys in network)
-///   TODO: CONSIDER: Why reject this?
-/// - rejected replace (key already blocked). (No, key not in network)
-///   TODO: Think...
+/// TEST: I only recenly updated these comments with decisions, not sure if code works this way.
+/// - Reject replace key from trusted but distant - no worries, allow
+/// - Reject replace blocked key - yes, reject
+
 ///
 /// WOT trust non-canonical key directly (note that these are not conflicts or rejections)
 ///
@@ -171,12 +171,9 @@ class FetcherNode extends Node {
 
   @override
   // We don't cache because _fetcher could be revoked
-  // DEFER: MINOR: Listen to _fetcher and cache, minor becuase Fetcher caches.
   Future<Iterable<Trust>> get trusts async {
     assert(!blocked);
     await _fetcher.fetch();
-    // TODO: moving to cloud distinct...  Not entirely, and not necessarily fully 
-    // correctly (other subject..)
     return distinct(_fetcher.statements)
         .cast()
         .where((s) => s.verb == TrustVerb.trust)

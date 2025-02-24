@@ -50,7 +50,7 @@ Future<(DemoKey, DemoKey?)> stress() async {
         revokeAt: index2statementTokens[keyIndex2]![statementIndex]);
   }
 
-  useClock(LiveClock()); // TODO: Get use of clock less error prone.
+  useClock(LiveClock()); // DEFER: Get use of clock less error prone.
   
   return (keys[0], null);
 }

@@ -62,7 +62,7 @@ class OneofusTreeNode extends NetTreeModel {
   /// - Don't show children that are already on the path.
   @override
   Iterable<OneofusTreeNode> get children {
-    // TODO: This fires, block the click somehow - async...
+    // BUG: This has fired, I believe
     assert(Comp.compsReady([followNet, oneofusEquiv, oneofusNet]));
     if (_children != null) return _children!;
     // Don't expand statements, !canoncial, or nodes already on path
@@ -80,7 +80,7 @@ class OneofusTreeNode extends NetTreeModel {
       childNerds[childNetNode.token] = child;
     }
 
-    // TODO: Test: dump NerdTree in !minimalist mode. Capture these:
+    // TEST: Test: dump NerdTree in !minimalist mode. Capture these:
     // - isCanonical (shown as face) / isDelegate (shown as key)
     // - revokeAt time (replaced) (shown in pink) / blocked (shown in red)
 
@@ -114,7 +114,7 @@ class OneofusTreeNode extends NetTreeModel {
       // (Same: childStatements.addAll(Fetcher(token!, kOneofusDomain).statements.cast().map((s) => NetTreeNode(path, statement: s)));)
       if (canonical) {
         // show trust statements from equivalent keys as well if I'm canonical.
-        // TODO: Add a test where equivlent key statements matter. Homer has those, but they're not dumped.
+        // TEST: Add a test where equivlent key statements matter. Homer has those, but they're not dumped.
         for (String equiv
             in oneofusEquiv.getEquivalents(token!).whereNot((equiv) => equiv == token)) {
           for (TrustStatement statement

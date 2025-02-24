@@ -19,8 +19,8 @@ enum TrustVerb {
   final String pastTense;
 }
 
-// TODO: wipeCaches?
 class TrustStatement extends Statement {
+  // CONSIDER: wipeCaches? ever?
   static final Map<String, TrustStatement> _cache = <String, TrustStatement>{};
 
   static void init() {

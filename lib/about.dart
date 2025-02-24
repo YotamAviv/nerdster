@@ -37,7 +37,7 @@ class About extends StatelessWidget {
         body: SafeArea(
           child: ListView(padding: const EdgeInsets.all(20.0), children: [
             Linky('''Home: https://nerdster.org'''),
-            // TODO: Doesn't work in debug Chrome. Hope for PROD'; delete if doesn't work
+            // Doesn't work in debug Chrome, but seems to do in PROD
             Linky('''Contact: contact@nerdster.org'''),
             const SizedBox(height: 10),
             Text('Package name: ${_packageInfo.packageName}'),

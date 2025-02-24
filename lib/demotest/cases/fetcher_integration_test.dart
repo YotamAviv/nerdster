@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -24,16 +23,17 @@ import 'package:test/test.dart';
 /// TODO: everything related to distinct...
 /// - it's a mess already
 /// - it used to be Fetcher job, then it wasn't, and no it's partially done by cloud functions.
-///
-/// TODO: actually test cloud distinct. This might require moving distinct(..) into the old code path thus changing the semantics of Fetcher. But then what's the point? Do I want to maintain 2 code paths forever.
-/// 2 code paths forever
+/// This might require moving distinct(..) into the non-clouddistinct code path thus changing the
+///  semantics of Fetcher. But then what's the point? Do I want to maintain 2 code paths forever.
+/// 2 code paths forever:
 /// pros:
 /// - FakeFirebaseFirestore
 /// cons:
 /// - 2 code paths forever
 ///
+/// TEST: Specifically test cloud distinct. 
 ///
-/// TODO: Error prone: There is a pref for using cloud distinct; running this from the DEV menu
+/// TEST: Error prone: There is a pref for using cloud distinct; running this from the DEV menu
 /// uses that  settings says.
 
 /// Actually test: What am I worried about?
@@ -67,6 +67,7 @@ Future<void> fetcherIntegrationTest() async {
   test('base', helper.base);
 
   test('revokeAt', helper.revokeAt);
+  test('revokeAtSinceAlways', helper.revokeAtSinceAlways);
 
   test('notarizationBlockchainViolation', helper.notarizationBlockchainViolation);
 
@@ -123,7 +124,6 @@ class FetcherTestHelper {
 
   Future<void> revokeAt() async {
     for (bool doClear in [true, false]) {
-      // setUp();
       Json kI = await makeI();
 
       TestSigner signer = TestSigner();
@@ -163,10 +163,52 @@ class FetcherTestHelper {
     }
   }
 
-  // TODO: This test seems to verify that we omit a statement that isn't part of the notary chain.
-  // I think that it'd be better to let  the user know that the chain is corrupt and revoke at something.
-  // Then again, if he revokes, then we want to respect the chain from his identified statement, and it's okay if that skips statements that aren't part of the chain.
-  // This whole notary business isn't really relevant for the Nerdster but is rather there for the future, which is bigger than the Nerdster.
+Future<void> revokeAtSinceAlways() async {
+    for (bool doClear in [true, false]) {
+      Json kI = await makeI();
+
+      TestSigner signer = TestSigner();
+      Fetcher fetcher;
+
+      List<Statement> js;
+      fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
+
+      await fetcher
+          .push({'statement': _type, 'I': kI, 'block': 'sub1', 'time': clock.nowIso}, signer);
+      Jsonish revokeAtHere = await fetcher
+          .push({'statement': _type, 'I': kI, 'block': 'sub2', 'time': clock.nowIso}, signer);
+      await fetcher
+          .push({'statement': _type, 'I': kI, 'block': 'sub3', 'time': clock.nowIso}, signer);
+      await fetcher
+          .push({'statement': _type, 'I': kI, 'block': 'sub4', 'time': clock.nowIso}, signer);
+
+      if (doClear) {
+        Fetcher.clear();
+        await fetcher.fetch();
+      }
+
+      js = fetcher.statements;
+      expect(js.length, 4);
+      expect(fetcher.statements.length, 4);
+
+      fetcher.setRevokeAt('since always');
+      await fetcher.fetch();
+      expect(fetcher.statements.length, 0);
+
+      await fetcher.fetch();
+      js = fetcher.statements;
+      expect(js.length, 0);
+    }
+  }
+  // TODO: Decide what to do for notarization violations:
+  // - !cloud functions: omit notary chain violations.
+  // - cloud functions: throw error for notary chain violations.
+  // User should be made aware that the chain is corrupt (he'll then probably choose to revoke at 
+  // something).
+  // But once he revokes at something, then we want to respect the chain from his identified 
+  // statement, and it's okay if that skips statements that aren't part of the chain.
+  // This whole notary business isn't really relevant for the Nerdster but is rather there for the
+  // future, which is bigger than the Nerdster.
   Future<void> notarizationBlockchainViolation() async {
     TestSigner signer = TestSigner();
     Fetcher fetcher;

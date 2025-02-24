@@ -36,13 +36,6 @@ import 'util.dart';
 ///
 /// DEFER: Cloud distinct to regard "other" subject.
 /// All the pieces are there, and it shouldn't be hard. That said, relate / equate are rarely used.
-///
-/// TODO: Address integraion testing using Firebase emulator.
-///
-/// DONE: Modify Trust1 to be just greedy, no revoking what was trusted
-/// DONE: revokeAt in request
-
-
 
 /// DEFER: PERFORMANCE: Get and use token from cloud instaed of computing it.
 /// This will allow us to not ask for [previous, signature].
@@ -64,17 +57,7 @@ import 'util.dart';
 /// Blockchain:
 /// Each signed statement (other than first) includes the token of the previous statement.
 /// Revoking a key requires identifying its last, valid statement token. Without this, it doesn't work.
-///
-/// revokeAt: before and current:
-/// before:
-/// - OneofusNet and its FetcherNode have been responsible for setting revokeAt
-/// - Fetcher.fetch() only fetches up to revokedAt; setRevokedAt trims the cache.
-/// - refreshing OneofusNet requires re-fetching.
-/// current:
-/// - (OneofusNet and its FetcherNode remain responsible for setting revokeAt)
-/// - Fetcher.fetch() fetches everything so that we can change revokedAt without re-fetching
-///   - Fetcher.statements respects revokedAt (doesn't serve everything)
-/// - (refreshing OneofusNet no longer requires re-fetching.)
+
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 
 class Fetcher {
@@ -102,9 +85,7 @@ class Fetcher {
   // - blocked : any string that isn't a statement token makes this blocked (revokedAt might be "since forever")
   String? _revokeAt; // set by others to let this object know
   DateTime? _revokeAtTime; // set by this object after querying the db
-
-  // The main performance benefit of using cloud functions is to only fetch distinct.
-  // TODO: Cloud function are hard to test, and so make the non-cloud path use _cached similary - distinct and revoked.
+  // TODO: Make cloud and non-cloud path use _cached similary ({distinct, revoked}).
   List<Statement>? _cached;
   String? _lastToken;
 
@@ -170,7 +151,6 @@ class Fetcher {
 
   bool get isCached => b(_cached);
 
-  // TODO: Rename
   static const Map fetchParamsProto = {
     "bIncludeId": true,
     "bDistinct": true,
@@ -212,7 +192,7 @@ class Fetcher {
         if (time != null) assert(jTime.isBefore(time));
         time = jTime;
         j['statement'] = domain2statementType[domain]!;
-        j['I'] = iKey; // TODO: Allow token in 'I' in statements; we might be already.
+        j['I'] = iKey; // PERFORMANCE: Allow token in 'I' in statements; we might be already.
         assert(getToken(j['I']) == getToken(iKey));
         String serverToken = j['id'];
         j.remove('id');
@@ -233,7 +213,7 @@ class Fetcher {
         final DocumentSnapshot<Json> docSnap = await mFire.mAsync(doc.get);
         // _revokeAt can be any string. If it is the id (token) of something this Fetcher has ever
         // stated, the we revoke it there; otherwise, it's blocked - revoked "since forever".
-        // TODO(2): add unit test.
+        // TEST: add unit test.
         if (b(docSnap.data())) {
           final Json data = docSnap.data()!;
           _revokeAtTime = parseIso(data['time']);
@@ -286,7 +266,7 @@ class Fetcher {
         _cached!.add(Statement.make(jsonish));
       }
       if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
-      // TODO: distinct the cache. That's what cloud does.
+      // NEXT: distinct the cache. That's what cloud does.
     }
     // print('fetched: $fire, $token');
   }
