@@ -1,12 +1,5 @@
 
 /// 
-/// - DONE: Try to unify this file for both Nerdster and Oneofus. Any reason they can't be identical?
-///   - (different verbs, but I can just include all verbs, no worries)
-/// - DONE: JavaScript unit testing
-/// - DONE: Export clouddistinct to the HTTP interface (at least for debugging, demonstrating..) 
-/// - Rename "id" to "token"
-/// - Test boundary condition of empty. This is on the Fetcher/Nerdster side, not really here.
-/// 
 /// I often forget and then see it in the logs.. (to run in the functions directory)
 /// - "npm install"
 /// - "npm install --save firebase-functions@latest"
@@ -309,6 +302,7 @@ async function fetchh(token, params = {}, omit = {}) {
     statements = orderedStatements;
   }
 
+  logger.log(lastToken);
   return { "statements": statements, "I": iKey, "lastToken": lastToken };
 }
 
@@ -331,8 +325,8 @@ exports.export2 = onRequest(async (req, res) => {
   const token = req.query.token;
   const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
   try {
-    const statements = await fetchh(token, req.query, omit);
-    res.status(200).json(statements);
+    const retval = await fetchh(token, req.query, omit);
+    res.status(200).json(retval);
   } catch (error) {
     console.error(error);
     res.status(500).send(`Error: ${error}`);
@@ -374,7 +368,7 @@ async function makedistinct(input, bClearClear = false) {
     if (bClearClear) {
       if (verb == 'clear') continue;
     }
-    // TODO: Teach Dart Jsonish to accept our token so that we can delete [signature, previous]
+    // PERFORMANCE: Teach Dart Jsonish to accept our token so that we can delete [signature, previous]
     out.push(j);
   }
   return out;

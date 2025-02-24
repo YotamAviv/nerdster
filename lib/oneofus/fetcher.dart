@@ -152,7 +152,7 @@ class Fetcher {
   bool get isCached => b(_cached);
 
   static const Map fetchParamsProto = {
-    "bIncludeId": true,
+    "bIncludeId": true, // BUG: See index.js. If we don't ask for id's, then we don't get lastId.
     "bDistinct": true,
     // I'm leaning against this. "bClearClear": true, TODO: Make regular code path do same.
     "omit": ['statement', 'I'] // DEFER: ['signature', 'previous']
@@ -187,6 +187,7 @@ class Fetcher {
       Json iKey = result.data['I'];
       assert(getToken(iKey) == token);
       _lastToken = result.data["lastToken"];
+      print('_lastToken=$_lastToken');
       for (Json j in statements) {
         DateTime jTime = parseIso(j['time']);
         if (time != null) assert(jTime.isBefore(time));

@@ -20,7 +20,7 @@ tar -czf ~/backups/nerdster.git.`date2`.tgz .git
 Push to PROD:
 flutter build web --release; firebase --project=nerdster deploy --except functions
 (flutter clean; flutter build web --release; firebase --project=nerdster deploy)
-firebase  --project=nerdster deploy --only functions
+firebase --project=nerdster deploy --only functions
 firebase init hosting # Answer: build/web
 
 add to .bashrc:
@@ -123,5 +123,6 @@ These are in flux, but I've been using
 - CODE
 - QUESTIONABLE
 - CONSIDER
+- PERFORMANCE
 - DEFER
 Maybe shift to TODO1 or TODO(1) through 5 
