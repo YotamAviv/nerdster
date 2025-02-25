@@ -1,3 +1,4 @@
+import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
@@ -33,6 +34,8 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   jsonExpect(oneofusNet.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
+
+  await Comp.waitOnComps([contentBase, keyLabels]); // BUG: We're deadlocked without this.
 
   await signInState.signIn(bart.token, null);
   await Comp.waitOnComps([contentBase, keyLabels]);

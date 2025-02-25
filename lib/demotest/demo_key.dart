@@ -46,7 +46,7 @@ class DemoKey {
     'blockDecap': blockDecap,
     'delegateMerge': delegateMerge,
     'delete3': deletions3,
-    'blockOldKey': blockReplacedKey,
+    'blockReplacedKey': blockReplacedKey,
     'multipleBlocks': multipleBlocks,
     'trustBlockConflict': trustBlockConflict,
     'equivalentKeysStateConflict': equivalentKeysStateConflict,

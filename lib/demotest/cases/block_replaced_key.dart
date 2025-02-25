@@ -11,7 +11,6 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:test/test.dart';
 
 Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
@@ -54,7 +53,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   expectedEquivalents = {"Bart", "Bart (0)", "Bart (1)"};
   jsonShowExpect(oneofusEquiv.getEquivalents(bart3.token), expectedEquivalents);
-  expect(oneofusNet.rejected.length, 0);
+  myExpect(oneofusNet.rejected.length, 0);
 
   // ------------------------------------------------------------------------------------
   // Bart (currently 'bart3') now decides that 'bart' no longer represents him and blocks
@@ -63,9 +62,9 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
 
   signInState.center  = lisa.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
-  expect(oneofusNet.rejected.length, 1);
-  expect(oneofusNet.rejected.keys.first, r1.token);
-  expect(oneofusNet.rejected.values.first, 'Attempt to replace a blocked key.');
+  myExpect(oneofusNet.rejected.length, 1);
+  myExpect(oneofusNet.rejected.keys.first, r1.token);
+  myExpect(oneofusNet.rejected.values.first, 'Attempt to replace a blocked key.');
   network = oneofusNet.network;
   expectedNetwork = {
     "Me": null, // Note that I'm not labled "Lisa" any longer.
@@ -91,10 +90,10 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
 
   signInState.center  = bart3.token;
   await Comp.waitOnComps([keyLabels]);
-  expect(oneofusNet.rejected.length, 1);
-  expect(oneofusNet.rejected.length, 1);
-  expect(oneofusNet.rejected.keys.first, r1.token);
-  expect(oneofusNet.rejected.values.first, 'Attempt to replace a blocked key.');
+  myExpect(oneofusNet.rejected.length, 1);
+  myExpect(oneofusNet.rejected.length, 1);
+  myExpect(oneofusNet.rejected.keys.first, r1.token);
+  myExpect(oneofusNet.rejected.values.first, 'Attempt to replace a blocked key.');
   dump = await OneofusTreeNode.root.dump();
   expected = {
     "N:Me-true:": {
@@ -106,7 +105,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
 
   signInState.center = bart2.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
-  expect(oneofusNet.rejected.length, 2);
+  myExpect(oneofusNet.rejected.length, 2);
   jsonShowExpect(oneofusNet.rejected, {
     r2.token:'Attempt to replace your key.', 
     bart3blocksBart.token:'Attempt to block trusted key.', 
