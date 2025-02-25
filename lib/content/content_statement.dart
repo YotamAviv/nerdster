@@ -34,7 +34,7 @@ class ContentStatement extends Statement {
         break;
       }
     }
-    xssert(b(subject));
+    assert(b(subject));
 
     Json? withx = json['with'];
     ContentStatement s = ContentStatement._internal(

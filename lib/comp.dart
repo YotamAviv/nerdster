@@ -1,22 +1,36 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:nerdster/value_waiter.dart';
 
 ///
+/// Semantics of 'ready' in the face of exceptions thrown during processing:
+/// - I should not be left waiting
+/// - I should get the exception
+/// - The Comp that threw the exception should not be 'ready' (but I may have a race conditions)
 ///
+/// TEST: My tests don't test this effectively, see documented bug in trustBlockConflict, 
+/// (the bug's been fixed, but the tests have not been updated).
 abstract mixin class Comp {
   final List<Comp> supporters = <Comp>[];
   final ValueNotifier<bool> _ready = ValueNotifier<bool>(false);
-  int _waitingCount = 0;
   bool _processing = false;
   bool _invalidProcess = false;
   Object? _exception;
 
-  // Would be nice to have a common listen method and automatically listen to supporters, 
-  // but that'd require ChangeNotifier mixin both for addListener and notifyListeners.
-  void addSupporter(Comp supporter) {
-    supporters.add(supporter);
+  static void dumpComps() {
+    for (Comp comp in [oneofusNet, oneofusEquiv, followNet, keyLabels, contentBase]) {
+      comp.compDump();
+    }
   }
+
+  void compDump() {
+    print('$this ready:$ready processing:$_processing invalidProcess:$_invalidProcess');
+  }
+
+  // Would be nice to have a common listen method and automatically listen to supporters,
+  // but that'd require ChangeNotifier mixin both for addListener and notifyListeners.
+  void addSupporter(Comp supporter) => supporters.add(supporter);
 
   Future<void> process();
 
@@ -25,25 +39,24 @@ abstract mixin class Comp {
   bool get invalidProcess => _invalidProcess;
 
   setDirty() {
-    // I don't understand this completely, but ignoring setDirty if we're dirty breaks things.
-    // Don't: if (!ready) { .. }
+    // Ignoring setDirty() if we're already dirty breaks things; maybe the gratuitous notification
+    // helps move thigs along.
+    // So DON'T do this: if (!ready) return;
     if (_processing) {
-      xssert(!ready);
+      assert(!ready);
       _invalidProcess = true;
-      print('_invalidProcess = true;');
+      // print('_invalidProcess = true;');
     }
     _ready.value = false;
   }
 
-  static bool compsReady(Iterable<Comp> comps) {
-    return comps.where((s) => !s.ready).isEmpty;
-  }
+  static bool compsReady(Iterable<Comp> comps) => comps.where((s) => !s.ready).isEmpty;
 
   bool get supportersReady => compsReady(supporters);
 
   // I have issues. Consider the BUG identified in trustBlockConflict.
   // I don't know if this is better, but it feels more organized.
-  void thowIfSupportersNotRead() {
+  void thowIfSupportersNotReady() {
     if (!supportersReady) throw Exception('!supportersReady');
   }
 
@@ -51,15 +64,9 @@ abstract mixin class Comp {
     while (true) {
       Iterable<Future> futures = comps.map((c) => c.waitUntilReady());
       await Future.wait(futures);
-      if (compsReady(comps)) {
-        break;
-      }
-      // print('looping: !ready: ${comps.where((s) => !s.ready).map((c) => c.runtimeType)}');
-      // for (Comp comp in comps.where((s) => !s.ready)) {
-      //   print('!ready comp:${comp.runtimeType}, _waitingCount:${comp._waitingCount}');
-      // }
+      if (compsReady(comps)) break;
     }
-    xssert(compsReady(comps));
+    assert(compsReady(comps));
   }
 
   Future<void> waitOnSupporters() async {
@@ -67,55 +74,37 @@ abstract mixin class Comp {
   }
 
   Future<void> waitUntilReady() async {
-    try {
-      _waitingCount++;
-      // I'm new to this, but I'm learning.
-      // In particular it appears that anything goes during async gaps; for example, 
-      // I might wait using ValueNotifier for ready and immediately after not be ready.
-      // And so, there are while loops where I though ifs would be sufficient.
-      while (!ready) {
-        if (_waitingCount == 1) {
-          try {
-            while (!ready) {
-              await waitOnSupporters();
+    while (!_ready.value && !_processing) {
+      await waitOnSupporters();
+      if (_processing || _ready.value) break;
+      try {
+        _invalidProcess = false;
+        _exception = null;
+        _processing = true;
+        await process();
+        _processing = false;
 
-              _processing = true;
-              _invalidProcess = false;
-              _exception = null;
-              await process();
-              _processing = false;
-
-              if (_invalidProcess) {
-                _invalidProcess = false;
-                xssert(!ready);
-                continue;
-              }
-
-              thowIfSupportersNotRead(); // QUESTIONABLE. Then again, it'll throw an exception. Maybe make 
-              _ready.value = true;
-            }
-          } catch (e) {
-            _exception = e;
-            // print('Rethrowing: $_exception');
-            rethrow;
-          } finally {
-            _processing = false;
-            _ready.value = true;
-          }
-          xssert(ready);
-        } else {
-          // calling process has been initiated; just wait..
-          await ValueWaiter(_ready, true).untilReady();
-          // Note: This fires: xssert(ready || b(_exception));
-          if (b(_exception)) {
-            // print('Throwing _exception: $_exception');
-            throw _exception!;
-          }
+        if (_invalidProcess) {
+          _invalidProcess = false;
+          assert(!ready);
+          continue;
         }
+
+        _ready.value = true;
+      } catch (e) {
+        _exception = e;
+        _ready.value = true; // necessary to end the waiting below
+        _processing = false;
+        break;
       }
-      xssert(ready);
-    } finally {
-      _waitingCount--;
+      assert(ready);
+    }
+    // calling process has been initiated; just wait..
+    await ValueWaiter(_ready, true).untilReady();
+    if (b(_exception)) {
+      // print('Throwing _exception: $_exception');
+      _ready.value = false; // See docs at top about semantics of 'ready'.
+      throw _exception!;
     }
   }
 }

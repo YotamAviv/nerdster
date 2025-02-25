@@ -41,7 +41,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    thowIfSupportersNotRead();
+    thowIfSupportersNotReady();
     measure.start();
 
     _rejected.clear();
@@ -60,7 +60,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
       }
     }
     _equivalence!.make();
-    xssert(_equivalence!.getCanonical(signInState.center) == signInState.center);
+    assert(_equivalence!.getCanonical(signInState.center) == signInState.center);
 
     _trustNonCanonical.clear();
     for (TrustStatement trustStatement
@@ -69,7 +69,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
       if (trustStatement.verb == TrustVerb.trust) {
         String subjectToken = trustStatement.subjectToken;
         if (getCanonical(subjectToken) != subjectToken) {
-          xssert(!oneofusNet.rejected.containsKey(subjectToken), 'might need multiple');
+          assert(!oneofusNet.rejected.containsKey(subjectToken), 'might need multiple');
           _trustNonCanonical[trustStatement.token] = 'You trust a non-canonical key directly.';
         }
       }

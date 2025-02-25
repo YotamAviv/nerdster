@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
-import 'package:nerdster/demotest/cases/integration_tests.dart';
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
+import 'package:nerdster/demotest/cases/integration_tests.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
@@ -161,11 +162,15 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: <Widget>[
+          MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           MenuItemButton(onPressed: () => BarRefresh.refresh(), child: const Text('refresh')),
           MenuItemButton(onPressed: () => fetcherIntegrationTest(), child: const Text('fetcherIntegrationTest')),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
           // MenuItemButton(onPressed: () => CorruptionCheck.make(), child: const Text('Check Statements')),
-          MenuItemButton(onPressed: () => integrationTests(), child: const Text('runCases')),
+          SubmenuButton(menuChildren: <Widget>[
+            ...demos,
+          ], child: const Text('run case')),
+          MenuItemButton(onPressed: () => integrationTests(), child: const Text('run cases')),
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
           MenuItemButton(
               child: const Text('Load JSON statements'),
@@ -173,9 +178,6 @@ $link''',
                 await loadDumpDialog(context);
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
               }),
-          SubmenuButton(menuChildren: <Widget>[
-            ...demos,
-          ], child: const Text('Load demo')),
           SubmenuButton(menuChildren: <Widget>[
             ...demoSignins,
           ], child: const Text('Demo sign-in')),

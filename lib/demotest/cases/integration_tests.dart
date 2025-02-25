@@ -13,7 +13,7 @@ import 'package:test/test.dart';
 /// is no reason.
 void integrationTests() async {
   setUp(() {
-    xssert(fireChoice != FireChoice.prod);
+    assert(fireChoice != FireChoice.prod);
     useClock(TestClock());
     DemoKey.clear();
   });

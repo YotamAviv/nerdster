@@ -35,7 +35,7 @@ class Trust1 {
   Future<LinkedHashMap<String, Node>> process(Node source) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
     network[source.token] = source;
-    xssert(source.paths.isEmpty);
+    assert(source.paths.isEmpty);
 
     Set<Node> visited = <Node>{};
 
@@ -74,15 +74,15 @@ class Trust1 {
           }
           if (other.paths.isNotEmpty) {
             // Already trusted (not blocked, has paths, isn't blocked)
-            xssert(!other.blocked);
-            xssert(network.containsKey(other.token));
+            assert(!other.blocked);
+            assert(network.containsKey(other.token));
             _rejected[block.statementToken] = 'Attempt to block trusted key.';
             continue;
           }
 
           // Block allowed
-          xssert(!network.containsKey(other.token));
-          xssert(other.paths.isEmpty);
+          assert(!network.containsKey(other.token));
+          assert(other.paths.isEmpty);
 
           other.blocked = true;
         }
@@ -99,7 +99,7 @@ class Trust1 {
         if (visited.contains(n)) continue;
 
         for (Replace replace in await n.replaces) {
-          xssert(b(replace.revokeAt));
+          assert(b(replace.revokeAt));
           Node other = replace.node;
           if (other == n) {
             _rejected[replace.statementToken] = '''Don't replace yourself''';
@@ -133,7 +133,7 @@ class Trust1 {
           network.putIfAbsent(other.token, () => other);
           final Path newPath = List.of(path)..add(replace);
           other.paths.add(newPath);
-          xssert(newPath.length == pass + 1); // Just checking
+          assert(newPath.length == pass + 1); // Just checking
           other.revokeAt = replace.revokeAt;
           await other.trusts; // KLUDGE: Setting revoked at might require re-fetching.
           // Add to queue if not already visited.
@@ -173,7 +173,7 @@ class Trust1 {
             network.putIfAbsent(other.token, () => other);
             final Path newPath = List.of(path)..add(trust);
             other.paths.add(newPath);
-            xssert(newPath.length == pass + 1); // Just checking
+            assert(newPath.length == pass + 1); // Just checking
 
             // Add to queue if not already visited.
             if (!visited.contains(other)) {
@@ -252,7 +252,7 @@ class Trust1 {
       if (fromRevokeAt != null) {
         // The only case where we should have fromRevokeAtTime != null is if it's the last path 
         // (which we didn't take, and so it wasn't fetched.)
-        xssert(fromRevokeAtTime != null || edge.node.token == path.last.node.token);
+        assert(fromRevokeAtTime != null || edge.node.token == path.last.node.token);
       }
     }
     // print ('isValidPath(${List.from(path.map((e) => e.node.token))} returning $out');

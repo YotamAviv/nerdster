@@ -1,6 +1,5 @@
 import 'package:nerdster/equivalence/eg.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 
 /// Concerns (resolved):
 /// - (Do we reject DONTs? We do!
@@ -87,20 +86,20 @@ class Equivalence {
       // Make newCanonical the new root of that existing EG.
       canonicalCell = _createCell(canonical);
       bool noNotIssues = equivalentRoot!.checkAndSetParent(canonicalCell);
-      xssert(noNotIssues);
+      assert(noNotIssues);
       return true;
     } else if (canonicalCell != null) {
       // only newCanonical is already known.
       // add newEquivalent as a child of newCanonical.
       equivalentCell = _createCell(equivalent);
       bool noNotIssues = equivalentCell.checkAndSetParent(canonicalCell);
-      xssert(noNotIssues);
+      assert(noNotIssues);
       return true;
     } else {
       canonicalCell = _createCell(canonical);
       equivalentCell = _createCell(equivalent);
       bool noNotIssues = equivalentCell.checkAndSetParent(canonicalCell);
-      xssert(noNotIssues);
+      assert(noNotIssues);
       return true;
     }
   }
@@ -150,11 +149,11 @@ class _EquivalenceCell {
 
     // Check for DONTs
     if (parentRoot.donts.contains(oldRoot)) {
-      xssert(oldRoot.donts.contains(parentRoot));
+      assert(oldRoot.donts.contains(parentRoot));
       // print('prevented by DONT');
       return false;
     }
-    xssert(!oldRoot.donts.contains(parentRoot));
+    assert(!oldRoot.donts.contains(parentRoot));
 
     // Set the new parent and update DONTs
     parentRoot.donts.addAll(oldRoot.donts);
@@ -179,14 +178,14 @@ class _EquivalenceCell {
   void checkRepInvariant() {
     // Only roots have DONTs
     if (parent != null) {
-      xssert(donts.isEmpty);
+      assert(donts.isEmpty);
     }
 
     // DONTs are stored symmetricly.
     if (parent == null) {
       for (_EquivalenceCell otherRoot in donts) {
-        xssert(otherRoot.parent == null, token);
-        xssert(otherRoot.donts.contains(this));
+        assert(otherRoot.parent == null, token);
+        assert(otherRoot.donts.contains(this));
       }
     }
 
@@ -197,6 +196,6 @@ class _EquivalenceCell {
         strings.add(otherRoot.token);
       }
     }
-    xssert(strings.length == donts.length);
+    assert(strings.length == donts.length);
   }
 }

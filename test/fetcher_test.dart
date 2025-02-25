@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -46,7 +44,6 @@ void main() async {
   // I uses the full blown fetcher signing push(..) to write to the db; it should have been
   // done in a more "unit testing" fashion.
   test('FakeFirebaseFirestore', () async {
-    const JsonEncoder flatEncoder = JsonEncoder();
     Fetcher fetcher;
 
     OouKeyPair bartKeyPair = await crypto.createKeyPair();

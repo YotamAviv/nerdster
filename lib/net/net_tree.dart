@@ -30,6 +30,8 @@ class NetTreeView extends StatefulWidget {
     await Comp.waitOnComps([followNet, keyLabels]);
     NetTreeView tree = NetTreeView(makeRoot());
     NetTreeView.highlightToken.value = highlightToken;
+    // NEXT: Revisit this await / non-await
+    // ignore: unawaited_futures
     Navigator.push(context, MaterialPageRoute(builder: (context) => tree));
     NetBar.bNetView.value = true;
   }

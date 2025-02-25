@@ -22,7 +22,7 @@ import 'package:nerdster/singletons.dart';
 ///
 /// - OneofusCanon: canonical (WOT): statements made by equivalents appear as if made by canonical.
 ///   - NOTE: Re: 'I'. Don't change the statements, but consider that their 'I' may not be accurate.
-///     Will at least require removing xsserts.
+///     Will at least require removing asserts.
 ///   - no more revokedAt. That's in the previous layer.
 ///
 /// OneofusWOT could be a consumer of OneofusNet

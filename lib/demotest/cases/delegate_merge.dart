@@ -62,11 +62,11 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
 
     // --- 2 equiv Oneofus, with 2 active delegates each, ready to merge.. --- //
 
-    xssert(oneofusNet.ready);
+    assert(oneofusNet.ready);
     expected = {"Me": null, "Me (0)": "5/1/2024 12:04 AM"};
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);
 
-    xssert(followNet.ready);
+    assert(followNet.ready);
     expected = {"Me": 4};
     jsonShowExpect(
         followNet.oneofus2delegates.map((key, value) => MapEntry(key, value.length)), expected);
@@ -83,9 +83,9 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     myExpect(roots.length, 5);
 
     // 'merge' title should have 1 child
-    xssert(roots.where((n) => n.subject.json['title'] == 'merge').length == 1);
+    assert(roots.where((n) => n.subject.json['title'] == 'merge').length == 1);
     ContentTreeNode mergeTreeNode = roots.where((n) => n.subject.json['title'] == 'merge').first;
-    xssert(mergeTreeNode.getChildren().length == 1, mergeTreeNode.getChildren().length);
+    assert(mergeTreeNode.getChildren().length == 1, mergeTreeNode.getChildren().length);
 
     useClock(clock);
     return (loner2, loner2N2);

@@ -60,7 +60,7 @@ class _SubjectTileState extends State<SubjectTile> {
 
   @override
   Widget build(BuildContext context) {
-    // xssert(contentBase.ready); // Witenessed, happens often with demo "delegateMerge"
+    // assert(contentBase.ready); // Witenessed, happens often with demo "delegateMerge"
     if (!contentBase.ready) return Text('...');
 
     final ContentTreeNode subjectNode = widget.entry.node;
@@ -195,7 +195,7 @@ class _ReactIconState extends State<_ReactIcon> {
 
   @override
   Widget build(BuildContext context) {
-    // xssert(contentBase.ready); // Witenessed, happens often with demo "delegateMerge"
+    // assert(contentBase.ready); // Witenessed, happens often with demo "delegateMerge"
     if (!contentBase.ready) return Text('...');
 
     Color color;
@@ -229,16 +229,16 @@ Double click to relate / equate''',
   /// - After dismissing the dialog (relate / equate or cancel), the selections should be cleared.
   Future<void> handleRelateClick(BuildContext context) async {
     if (marked1 == null) {
-      xssert(marked2 == null);
+      assert(marked2 == null);
       marked1 = this;
       setState(() {});
     } else if (marked1 == this) {
-      xssert(marked2 == null);
+      assert(marked2 == null);
       marked1 = null;
       setState(() {});
     } else {
-      xssert(marked1 != null);
-      xssert(marked2 == null);
+      assert(marked1 != null);
+      assert(marked2 == null);
       marked2 = this;
       setState(() {});
       _ReactIconState? tmp1 = marked1;

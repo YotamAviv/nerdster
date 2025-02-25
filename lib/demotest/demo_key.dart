@@ -41,6 +41,7 @@ class DemoKey {
 
   static final dynamic demos = {
     'loner': loner,
+    'trustBlockConflict': trustBlockConflict,
     'simpsons': simpsons,
     'egos': egos,
     'blockDecap': blockDecap,
@@ -48,7 +49,6 @@ class DemoKey {
     'delete3': deletions3,
     'blockReplacedKey': blockReplacedKey,
     'multipleBlocks': multipleBlocks,
-    'trustBlockConflict': trustBlockConflict,
     'equivalentKeysStateConflict': equivalentKeysStateConflict,
     'lonerEquate': lonerEquate,
     'decap2': decap2,
@@ -88,7 +88,7 @@ class DemoKey {
 
   Future<Jsonish> doRate(
       {Json? subject, String? title, String? comment, bool? recommend, ContentVerb? verb}) async {
-    xssert(i(title) + i(subject) == 1);
+    assert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
@@ -112,7 +112,7 @@ class DemoKey {
   }
 
   Future<Jsonish> doCensor({Json? subject, String? title}) async {
-    xssert(i(title) + i(subject) == 1);
+    assert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
@@ -126,8 +126,8 @@ class DemoKey {
 
   Future<Jsonish> doRelate(ContentVerb verb,
       {Json? subject, String? title, Json? other, String? otherTitle}) async {
-    xssert(i(subject) + i(title) == 1);
-    xssert(i(other) + i(otherTitle) == 1);
+    assert(i(subject) + i(title) == 1);
+    assert(i(other) + i(otherTitle) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
@@ -147,13 +147,13 @@ class DemoKey {
       case TrustVerb.trust:
         moniker ??= other.name;
       case TrustVerb.block:
-        xssert(!b(moniker));
+        assert(!b(moniker));
         comment ??= 'blocking demo ${other.name}';
       case TrustVerb.replace:
-        xssert(!b(moniker));
+        assert(!b(moniker));
         comment ??= 'replacing demo ${other.name}';
       case TrustVerb.delegate:
-        xssert(!b(moniker));
+        assert(!b(moniker));
       case TrustVerb.clear:
     }
 
@@ -168,7 +168,7 @@ class DemoKey {
   }
 
   Future<DemoKey> makeDelegate() async {
-    xssert(_name2key.containsKey(name));
+    assert(_name2key.containsKey(name));
     int i = 0;
     String delegateKeyName;
     while (true) {

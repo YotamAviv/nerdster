@@ -12,7 +12,7 @@ import 'package:nerdster/singletons.dart';
 
 /// I loose track at times of what tests were meant to test. As the implementation evolves (like
 /// getting rid of blockerBenefit), I've just been going through and updating the outcomes.
-/// As long as there are not crashes (ex, xssertion failures) and the outcome seems reasonable, 
+/// As long as there are not crashes (ex, assertion failures) and the outcome seems reasonable, 
 /// I just go with it.
 Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...

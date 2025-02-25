@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
-import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 import 'package:quiver/collection.dart';
@@ -73,18 +71,18 @@ class KeyLabels with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    thowIfSupportersNotRead();
+    thowIfSupportersNotReady();
     _token2name.clear();
 
     _labelKeys();
     _labelDelegateKeys();
 
-    xssert(b(labelKey(SignInState().center)));
+    assert(b(labelKey(signInState.center)));
   }
 
   void _labelKeys() {
     _labelMe();
-    String meLabel = labelKey(SignInState().center)!;
+    String meLabel = labelKey(signInState.center)!;
     for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
       String token = e.key;
       Path path = e.value.paths.first;
@@ -92,7 +90,7 @@ class KeyLabels with Comp, ChangeNotifier {
       for (Trust edge in path.reversed) {
         String statementToken = edge.statementToken;
         TrustStatement statement = TrustStatement.find(statementToken)!;
-        if (statement.verb == TrustVerb.replace && statement.iToken == SignInState().center) {
+        if (statement.verb == TrustVerb.replace && statement.iToken == signInState.center) {
           _labelKey(token, meLabel);
           break;
         }
@@ -101,7 +99,7 @@ class KeyLabels with Comp, ChangeNotifier {
           break;
         }
       }
-      xssert(_token2name.containsKey(token), token);
+      assert(_token2name.containsKey(token), token);
     }
   }
 
@@ -131,12 +129,12 @@ class KeyLabels with Comp, ChangeNotifier {
       for (TrustStatement ts in distinct(f.statements)
           .cast<TrustStatement>()
           .where((s) => !oneofusNet.rejected.containsKey(s.token))) {
-        if (ts.verb == TrustVerb.trust && ts.subjectToken == SignInState().center) {
+        if (ts.verb == TrustVerb.trust && ts.subjectToken == signInState.center) {
           String moniker = ts.moniker!;
-          return _labelKey(SignInState().center, moniker);
+          return _labelKey(signInState.center, moniker);
         }
       }
     }
-    return _labelKey(SignInState().center, kMe);
+    return _labelKey(signInState.center, kMe);
   }
 }

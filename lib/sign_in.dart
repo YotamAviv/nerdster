@@ -125,7 +125,7 @@ Future<void> qrSignin(BuildContext context) async {
 
         String? delegateCiphertext = data['delegateCiphertext'];
         String? delegateCleartext = data['delegateCleartext'];
-        xssert(!(b(delegateCiphertext) && b(delegateCleartext)));
+        assert(!(b(delegateCiphertext) && b(delegateCleartext)));
         if (b(delegateCiphertext)) {
           print('delegate key encrypted: YES');
           delegateCleartext = await keyPair.decrypt(delegateCiphertext!, phonePkePublicKey);
@@ -140,7 +140,8 @@ Future<void> qrSignin(BuildContext context) async {
       subscription!.cancel();
 
       // Don't await
-      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+      // NEXT: Revisit this await / non-await
+      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       // Dismiss dialog
       if (context.mounted) Navigator.of(context).pop();
@@ -236,8 +237,8 @@ Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, 
 
   final String oneofusToken = getToken(await oneofusPublicKey.json);
   // Don't await
-  // ignore: unawaited_futures
-  signInState.signIn(oneofusToken, nerdsterKeyPair);
+  // NEXT: Revisit this await / non-await
+  await signInState.signIn(oneofusToken, nerdsterKeyPair);
   // ignore: unawaited_futures
   BarRefresh.refresh();
 }
