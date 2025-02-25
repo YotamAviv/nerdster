@@ -1,14 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/measure.dart';
 
+import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but might work for phone codebase.
 import 'distincter.dart';
 import 'fire_factory.dart';
 import 'jsonish.dart';
+import 'measure.dart';
 import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';

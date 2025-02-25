@@ -3,9 +3,9 @@
 import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:jwk/jwk.dart';
-import 'package:nerdster/oneofus/util.dart';
 
 import '/oneofus/jsonish.dart';
+import '../util.dart';
 import 'crypto.dart';
 
 final ed25519 = Ed25519(); // Ed25519, a popular signature algorithm:

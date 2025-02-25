@@ -2,9 +2,9 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
-import 'package:nerdster/oneofus/util.dart';
 
 import 'trust_statement.dart';
+import 'util.dart';
 
 /// Statement signing and verification are handled here.
 /// Getting the map from this object, and then signing that, and then putting the

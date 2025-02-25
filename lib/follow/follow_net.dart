@@ -14,10 +14,11 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/measure.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 import 'package:nerdster/trust/trust1.dart';
+
+import '../oneofus/measure.dart';
 
 typedef StatementFilter = Iterable<Statement> Function(Iterable<Statement>);
 

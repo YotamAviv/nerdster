@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
-import 'package:nerdster/measure.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
+
+import 'oneofus/measure.dart';
 
 class BarRefresh extends StatefulWidget {
   static final Measure measure = Measure('refresh');
