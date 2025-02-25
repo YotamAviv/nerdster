@@ -46,7 +46,6 @@ class Trust1 {
 
     int pass = 1; // degrees (plus/minus 1 ;)
     while (true) {
-      print('.');
       Set<Path> removeAfterIteration = <Path>{};
 
       // ====== BLOCKS ====== //
@@ -206,7 +205,6 @@ class Trust1 {
     // - degrees
     int networkSizeBefore = network.length;
     while (true) {
-      print('.');
       // Remove invalid paths (revoked nodes made edges, node no longer in network (not enough paths)),
       for (Node n in network.values) {
         if (n == source) {
