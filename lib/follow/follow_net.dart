@@ -107,7 +107,7 @@ class FollowNet with Comp, ChangeNotifier {
   // impl
   @override
   Future<void> process() async {
-    assert(supportersReady); // QUESTIONABLE:
+    thowIfSupportersNotRead();
     measure.start();
 
     _mostContexts.clear();

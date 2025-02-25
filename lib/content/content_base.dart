@@ -80,7 +80,7 @@ class ContentBase with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    assert(supportersReady);
+    thowIfSupportersNotRead();
     measure.start();
     
     _equivalence.clear();
