@@ -97,12 +97,12 @@ class RateBodyState extends State<RateBody> {
   Future<void> okHandler() async {
     Json json;
     if (erase.value) {
-      xssert(!censor.value);
+      assert(!censor.value);
       json = ContentStatement.make(
           signInState.signedInDelegatePublicKeyJson!, ContentVerb.clear, widget.subject.token);
     } else if (censor.value) {
-      xssert(!erase.value);
-      xssert(bAllFieldsClear);
+      assert(!erase.value);
+      assert(bAllFieldsClear);
       json = ContentStatement.make(
           signInState.signedInDelegatePublicKeyJson!, ContentVerb.censor, widget.subject.token);
     } else {

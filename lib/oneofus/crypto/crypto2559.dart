@@ -5,7 +5,6 @@ import 'package:cryptography/cryptography.dart';
 import 'package:jwk/jwk.dart';
 
 import '/oneofus/jsonish.dart';
-import '../util.dart';
 import 'crypto.dart';
 
 final ed25519 = Ed25519(); // Ed25519, a popular signature algorithm:
@@ -84,9 +83,9 @@ class _KeyPair implements OouKeyPair {
     // print('secretBox.cipherText.length: ${secretBox.cipherText.length}'); // Encrypted message
     // print('secretBox.mac.bytes.length: ${secretBox.mac.bytes.length}'); // Message authentication code
 
-    xssert(secretBox.nonce.length == nonceLength, 
+    assert(secretBox.nonce.length == nonceLength, 
       'Unexpected: secretBox.nonce.length = ${secretBox.nonce.length}.');
-    xssert(secretBox.mac.bytes.length == macLength, 
+    assert(secretBox.mac.bytes.length == macLength, 
       'Unexpected: secretBox.mac.bytes.length = ${secretBox.mac.bytes.length}');
 
     // If you are sending the secretBox somewhere, you can concatenate all parts of it:
@@ -184,9 +183,9 @@ class _PkeKeyPair implements PkeKeyPair {
       cleartext,
       secretKey: sharedSecret1,
     );
-    xssert(secretBox.nonce.length == nonceLength, 
+    assert(secretBox.nonce.length == nonceLength, 
       'Unexpected: secretBox.nonce.length = ${secretBox.nonce.length}.');
-    xssert(secretBox.mac.bytes.length == macLength, 
+    assert(secretBox.mac.bytes.length == macLength, 
       'Unexpected: secretBox.mac.bytes.length = ${secretBox.mac.bytes.length}');
     final concatenatedBytes = secretBox.concatenation();
 

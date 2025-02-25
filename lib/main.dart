@@ -35,7 +35,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -117,7 +117,9 @@ Future<void> main() async {
   KeyLabels();
 
   // Show 'loading', start the timer.
-  await BarRefresh.refresh();
+  // NEXT: Revisit this await / non-await
+  // ignore: unawaited_futures
+  BarRefresh.refresh();
 
   // -------------- run app ---------------
   runApp(const MaterialApp(

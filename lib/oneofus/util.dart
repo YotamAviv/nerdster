@@ -10,19 +10,21 @@ const OouCryptoFactory crypto = CryptoFactoryEd25519();
 const JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
 // Don't evaluate message if condtion is true.
-void xssert(bool condition, [dynamic messageOrFunc = 'xssert failed']) {
-  if (!condition) {
-    String message;
-    if (messageOrFunc == null) {
-      message = '<null>';
-    } else if (messageOrFunc is Function) {
-      message = messageOrFunc();
-    } else {
-      message = messageOrFunc.toString();
-    }
-    throw Exception(message);
-  }
-}
+// I've flipped on this. I like the stack trace and other advantages of the built-in assert.
+// void xssert(bool condition, [dynamic messageOrFunc = 'assert failed']) {
+//   if (!condition) {
+//     String message;
+//     if (messageOrFunc == null) {
+//       message = '<null>';
+//     } else if (messageOrFunc is Function) {
+//       message = messageOrFunc();
+//     } else {
+//       message = messageOrFunc.toString();
+//     }
+//     print(message);
+//     throw Exception(message);
+//   }
+// }
 
 int i(dynamic d) => d == null ? 0 : 1;
 bool b(dynamic d) => d == null ? false : true;

@@ -20,12 +20,10 @@ class ValueWaiter {
   }
 
   Future<void> untilReady() async {
-    if (_notifier.value == value) {
-      return;
-    } else {
+    if (_notifier.value != value) {
       await _completer.future;
-      // NOTE: This does fire: 
-      //   xssert(_notifier.value == value);
     }
+    // This fires sometimes: assert(_notifier.value == value); 
+    // Probably related to the race condition of exceptions and !ready.
   }
 }

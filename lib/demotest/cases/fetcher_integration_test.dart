@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
@@ -221,7 +222,9 @@ Future<void> revokeAtSinceAlways() async {
         .push({'statement': _type, 'I': kI, 'trust': 'sub1', 'time': clock.nowIso}, signer);
     await fetcher
         .push({'statement': _type, 'I': kI, 'trust': 'sub2', 'time': clock.nowIso}, signer);
+    clock.nowIso;
     DateTime t1 = testClock.nowClean;
+    clock.nowIso;
     await fetcher
         .push({'statement': _type, 'I': kI, 'trust': 'sub3', 'time': clock.nowIso}, signer);
     await fetcher
@@ -229,28 +232,27 @@ Future<void> revokeAtSinceAlways() async {
 
     Fetcher.clear();
 
-    Json fraudulent = {'statement': _type, 'I': kI, 'subject': 'bad-sub', 'time': formatIso(t1)};
+    Json fraudulent = {'statement': _type, 'I': kI, 'trust': 'bad-sub', 'time': formatIso(t1)};
     Jsonish fraudJ = await Jsonish.makeSign(fraudulent, signer);
     final fireStatements =
         _fire.collection(getToken(kI)).doc('statements').collection('statements');
-    // NOTE: We don't 'await'.. Ajax!.. Bad idea now that others call this, like tests.
-    // DEFER: In case this seems slow, try Ajax after all.
     await fireStatements
         .doc(fraudJ.token)
-        .set(fraudulent)
+        .set(fraudJ.json)
         .then((doc) {}, onError: (e) => print("Error: $e"));
-    // CONSIDER: Handle in case asynch DB write succeeds or fails.
 
     fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
 
     // notary verification is different between local and cloud (right now).
     // Cloud functions throws error; local skips the statement.
+    var caught;
     try {
       await fetcher.fetch();
-      fail('exception expected');
     } catch (e) {
-      print('Catching error expected from cloud functions: $e');
+      caught = e;
     }
+    myExpect(caught != null, true);
+    print('(500 (Internal Server Error) or "Notarization violation" above was expected)');
   }
 
   Future<void> distinctContentComment() async {

@@ -22,9 +22,10 @@ class NetBar extends StatefulWidget {
 
 
   static Future<void> showTree(BuildContext context) async {
-    await Comp.waitOnComps([followNet, keyLabels]);
-    xssert (!bNetView.value);
-    await NetTreeView.show(context);
+    assert (!bNetView.value);
+    // NEXT: Revisit this await / non-await
+    // ignore: unawaited_futures
+    NetTreeView.show(context);
   }
 
   static void setParams(Map<String, String> params) {

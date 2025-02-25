@@ -74,7 +74,7 @@ class FollowNet with Comp, ChangeNotifier {
   Map<String, Fetcher> get delegate2fetcher => UnmodifiableMapView(_delegate2fetcher);
 
   Iterable<ContentStatement> getStatements(String oneofus) {
-    xssert(oneofusNet.network.containsKey(oneofus));
+    assert(oneofusNet.network.containsKey(oneofus));
     Iterable<Iterable<Statement>> iiStatements =
         _oneofus2delegates[oneofus]!.map((delegate) => _delegate2fetcher[delegate]!.statements);
     Merger merger = Merger(iiStatements);
@@ -86,7 +86,7 @@ class FollowNet with Comp, ChangeNotifier {
   // impl
   Future<Jsonish?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
-    xssert(signInState.signedInDelegate == iToken);
+    assert(signInState.signedInDelegate == iToken);
     Fetcher fetcher = Fetcher(iToken, kNerdsterDomain);
 
     bool? proceed = await Lgtm.check(json, context);
@@ -108,7 +108,7 @@ class FollowNet with Comp, ChangeNotifier {
   // impl
   @override
   Future<void> process() async {
-    thowIfSupportersNotRead();
+    thowIfSupportersNotReady();
     measure.start();
 
     _mostContexts.clear();
@@ -140,7 +140,7 @@ class FollowNet with Comp, ChangeNotifier {
     Map<String, String?> delegate2revokeAt = <String, String?>{};
     for (String oneofusKey in network) {
       Fetcher oneofusFetcher = Fetcher(oneofusKey, kOneofusDomain);
-      xssert(oneofusFetcher.isCached);
+      assert(oneofusFetcher.isCached);
       String oneofus = oneofusEquiv.getCanonical(oneofusKey);
       _oneofus2delegates.putIfAbsent(oneofus, () => <String>{});
       for (TrustStatement s in distinct(oneofusFetcher.statements)
@@ -163,7 +163,7 @@ class FollowNet with Comp, ChangeNotifier {
       Fetcher fetcher = Fetcher(delegateToken, kNerdsterDomain);
       if (b(revokeAt)) fetcher.setRevokeAt(revokeAt!);
       await fetcher.fetch(); // fill cache, query revokeAtTime
-      xssert(fetcher.revokeAt == null || fetcher.revokeAtTime != null);
+      assert(fetcher.revokeAt == null || fetcher.revokeAtTime != null);
       _delegate2fetcher[delegateToken] = fetcher;
     }
 
@@ -224,12 +224,12 @@ class FollowNode extends Node {
 
   Future<void> process() async {
     if (processed) return;
-    xssert(Comp.compsReady([oneofusNet, oneofusEquiv]));
+    assert(Comp.compsReady([oneofusNet, oneofusEquiv]));
 
     List<Iterable<Statement>> delegateStatementss = <Iterable<Statement>>[];
     for (String equiv in oneofusEquiv.getEquivalents(token)) {
       Fetcher oneofusFetcher = Fetcher(equiv, kOneofusDomain);
-      xssert(oneofusFetcher.isCached);
+      assert(oneofusFetcher.isCached);
       for (TrustStatement delegateStatement in distinct(oneofusFetcher.statements)
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
@@ -254,7 +254,7 @@ class FollowNode extends Node {
       if (!oneofusNet.network.containsKey(followStatement.subjectToken)) continue; // not Oneofus
       followNet._processFollowStatementForMost(followStatement);
       String canon = oneofusEquiv.getCanonical(followStatement.subjectToken);
-      xssert(oneofusNet.network.containsKey(canon));
+      assert(oneofusNet.network.containsKey(canon));
       // Use context to compute {follow, blocking, or neither} for this nerd.
       Json contexts = followStatement.contexts!;
       int? i = contexts[followNet.fcontext];
@@ -276,7 +276,7 @@ class FollowNode extends Node {
   }
 
   Iterable<Trust> get cachedTrusts {
-    xssert(processed);
+    assert(processed);
     return _trusts;
   }
 
@@ -287,7 +287,7 @@ class FollowNode extends Node {
   }
 
   Iterable<Block> get cachedBlocks {
-    xssert(processed);
+    assert(processed);
     return _blocks;
   }
 

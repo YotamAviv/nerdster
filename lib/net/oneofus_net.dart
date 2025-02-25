@@ -118,7 +118,7 @@ class OneofusNet with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    thowIfSupportersNotRead();
+    thowIfSupportersNotReady();
     measure.start();
     
     // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
@@ -156,13 +156,13 @@ class FetcherNode extends Node {
 
   @override
   set blocked(bool b) {
-    xssert(b); // I don't think we ever unblock.
+    assert(b); // I don't think we ever unblock.
     super.blocked = b;
   }
 
   @override
   set revokeAt(String? revokeAt) {
-    xssert(b(revokeAt)); // 'String' not allowed; had to use 'String?' to compile.
+    assert(b(revokeAt)); // 'String' not allowed; had to use 'String?' to compile.
     _fetcher.setRevokeAt(revokeAt!);
   }
 
@@ -174,7 +174,7 @@ class FetcherNode extends Node {
   @override
   // We don't cache because _fetcher could be revoked
   Future<Iterable<Trust>> get trusts async {
-    xssert(!blocked);
+    assert(!blocked);
     await _fetcher.fetch();
     return distinct(_fetcher.statements)
         .cast()
@@ -184,7 +184,7 @@ class FetcherNode extends Node {
 
   @override
   Future<Iterable<Replace>> get replaces async {
-    xssert(!blocked);
+    assert(!blocked);
     await _fetcher.fetch();
     return distinct(_fetcher.statements)
         .cast()
@@ -194,7 +194,7 @@ class FetcherNode extends Node {
 
   @override
   Future<Iterable<Block>> get blocks async {
-    xssert(!blocked);
+    assert(!blocked);
     await _fetcher.fetch();
 
     return distinct(_fetcher.statements)

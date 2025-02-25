@@ -1,10 +1,9 @@
 import 'dart:collection';
 
 import 'package:nerdster/oneofus/distincter.dart';
-import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
 /// Stricly canonical.
@@ -30,7 +29,7 @@ class NetNode {
   NetNode._internal(this.token);
 
   Iterable<NetNode> get children {
-    xssert(oneofusEquiv.ready);
+    assert(oneofusEquiv.ready);
     if (_children != null) return _children!;
     _children = SplayTreeSet<NetNode>(
         (n, o) => oneofusNet.getPosition(n.token)!.compareTo(oneofusNet.getPosition(o.token)!));
@@ -44,7 +43,7 @@ class NetNode {
     Iterable<TrustStatement> dis =
         distinct(merger.cast(), transformer: oneofusEquiv.getCanonical).cast<TrustStatement>();
     for (TrustStatement statement in dis) {
-      xssert(oneofusNet.network.containsKey(statement.iToken));
+      assert(oneofusNet.network.containsKey(statement.iToken));
       if (!oneofusNet.network.containsKey(statement.subjectToken)) continue;
       NetNode childNerdNode = NetNode(oneofusEquiv.getCanonical(statement.subjectToken));
       if (!_children!.contains(childNerdNode)) {

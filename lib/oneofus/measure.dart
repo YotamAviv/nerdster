@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import 'util.dart';
-
 /// I'm thinking about 2 things:
 ///
 /// 1) Instrumentation to investigate what's slow. My time would probably be better spent learning about the tools.
@@ -68,7 +66,7 @@ class Measure with ChangeNotifier {
 
   Future mAsync(func) async {
     try {
-      xssert(!_stopwatch.isRunning);
+      assert(!_stopwatch.isRunning);
       _stopwatch.start();
       final out = await func();
       return out;
@@ -79,7 +77,7 @@ class Measure with ChangeNotifier {
 
   dynamic mSync(func) {
     try {
-      xssert(!_stopwatch.isRunning);
+      assert(!_stopwatch.isRunning);
       _stopwatch.start();
       final out = func();
       return out;

@@ -58,7 +58,7 @@ class _NetTileState extends State<NetTile> {
 
   @override
   Widget build(BuildContext context) {
-    xssert(Comp.compsReady([oneofusEquiv, followNet]));
+    assert(Comp.compsReady([oneofusEquiv, followNet]));
 
     final NetTreeModel node = widget.entry.node;
     final bool isStatement = node.statement != null;
@@ -82,7 +82,7 @@ class _NetTileState extends State<NetTile> {
       iconTooltip = node.labelKeyPaths().join('\n');
       bool revoked = b(node.revokeAt);
       bool isFollowed = followNet.oneofus2delegates.containsKey(node.token);
-      xssert(!(!node.canonical && isFollowed));
+      assert(!(!node.canonical && isFollowed));
       if (node.canonical) {
         // EG
         iconPair = smileyIconPair;
@@ -108,7 +108,7 @@ class _NetTileState extends State<NetTile> {
         }
         if (isDelegate) {
           // From Oneofus KeyWidget: color = local ? Colors.blue.shade700 : Colors.blue.shade100;
-          xssert(b(widget.entry.node.token));
+          assert(b(widget.entry.node.token));
           iconColor = (widget.entry.node.token == signInState.signedInDelegate)
               ? Colors.blue.shade700
               : iconColor = Colors.blue.shade100;
@@ -214,7 +214,7 @@ class _MonikerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    xssert(b(node.token));
+    assert(b(node.token));
     // No centering as delegates
     bool clickable = oneofusNet.network.containsKey(node.token);
     TextStyle? style = clickable ? linkStyle : null;

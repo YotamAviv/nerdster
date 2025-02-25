@@ -28,9 +28,9 @@ class Summer with Comp, ChangeNotifier {
   void setDirty() {
     if (!ready) {
       // Uncommenting the return below makes the async tests fails.
-      // I'd like to understand why better. I suspect that anything goes during async gaps and that 
+      // I'd like to understand why better. I suspect that anything goes during async gaps and that
       // I may have gone dirty->ready->dirty.. or something like that.
-      // Until I do, keep this same patter in the code: 
+      // Until I do, keep this same patter in the code:
       // => setDirty means setDirty and notify observers every time!
 
       // return;
@@ -52,7 +52,7 @@ class Summer with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    thowIfSupportersNotRead();
+    thowIfSupportersNotReady();
 
     await Future.delayed(Duration(microseconds: delay * 100));
 
@@ -117,7 +117,7 @@ class BrokenSummer extends Summer {
   BrokenSummer(super.name, super.delay);
   @override
   Future<void> process() async {
-    await Future.delayed(Duration(microseconds: delay * 100));
+    await Future.delayed(Duration(microseconds: delay * random.nextInt(100)));
     throw Exception('broken');
   }
 }
@@ -158,7 +158,7 @@ void main() async {
     expect(d.result, 30);
   });
 
-  test('async, delays, interruptions..', () async {
+  test('async, delays..', () async {
     // Create 111 that feed up to top (100 at bottom, 10 next layer, 1 at top)
     List<Summer> bottom = <Summer>[];
     for (int i = 0; i < 100; i++) {
@@ -223,6 +223,8 @@ void main() async {
       expect(e.toString().contains('broken'), true);
       caught = true;
     }
+    assert(!a.ready);
+    assert(!c.ready);
     expect(caught, true);
   });
 
@@ -233,15 +235,19 @@ void main() async {
     ExceptionExpecter b = ExceptionExpecter(a, 'b');
     ExceptionExpecter c = ExceptionExpecter(a, 'c');
 
-    await Comp.waitOnComps([b, c]);
-    expect(b.caught, true);
-    expect(c.caught, true);
+    try {
+      await Comp.waitOnComps([b, c]);
+      expect(b.caught, true);
+      expect(c.caught, true);
+    } catch (e) {
+      fail('Unexpcted: $e');
+    }
   });
 }
 
 class ExceptionExpecter extends Comp {
-  final String name;
   final Comp comp;
+  final String name;
   bool caught = false;
 
   ExceptionExpecter(this.comp, this.name);

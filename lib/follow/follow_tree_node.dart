@@ -37,7 +37,7 @@ class FollowTreeNode extends NetTreeModel {
 
   @override
   Iterable<NetTreeModel> get children {
-    xssert(Comp.compsReady([followNet, oneofusEquiv, oneofusNet]));
+    assert(Comp.compsReady([followNet, oneofusEquiv, oneofusNet]));
     if (_children != null) return _children!;
     // Don't expand statements, !canoncial, or nodes already on path
     if (token == null || !canonical || path.map((n) => n.token).contains(token)) return [];

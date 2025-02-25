@@ -35,13 +35,6 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   jsonExpect(oneofusNet.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
 
 
-  // BUG: We're deadlocked without one of these below.
-  // Not that the code above is syncronous up to Comp.waitOnComps. The bits below are effective even if they're way up there.
-  // await Future.delayed(Duration(microseconds: 1));
-  await Comp.waitOnComps([contentBase, keyLabels]);
-  // (Not this: SchedulerBinding.instance.addPostFrameCallback((Duration d) {});)
-
-
   signInState.center = bart.token;
   await Comp.waitOnComps([contentBase, keyLabels]);
   network = oneofusNet.network;
