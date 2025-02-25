@@ -242,7 +242,8 @@ class Fetcher {
         DateTime time = parseIso(jsonish.json['time']);
         if (previousToken != null) {
           if (jsonish.token != previousToken) {
-            String error = 'Notarization violation: ($domain/$token): ${jsonish.token} != $previousToken';
+            String error =
+                'Notarization violation: ($domain/$token): ${jsonish.token} != $previousToken';
             print(error);
             throw error;
           }
@@ -261,7 +262,7 @@ class Fetcher {
       // Be like clouddistinct
       // - DEFER: bClearClear
       if (fetchParamsProto.containsKey('bDistinct')) {
-        // TEMP: _cached = distinct(_cached!);
+        _cached = distinct(_cached!);
       }
     }
     // print('fetched: $fire, $token');
