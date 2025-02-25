@@ -139,8 +139,7 @@ Future<void> qrSignin(BuildContext context) async {
       // ignore: unawaited_futures
       subscription!.cancel();
 
-      // Don't await
-      // NEXT: Revisit this await / non-await
+      // ignore: unawaited_futures
       signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 
       // Dismiss dialog
@@ -236,8 +235,6 @@ Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, 
   }
 
   final String oneofusToken = getToken(await oneofusPublicKey.json);
-  // Don't await
-  // NEXT: Revisit this await / non-await
   await signInState.signIn(oneofusToken, nerdsterKeyPair);
   // ignore: unawaited_futures
   BarRefresh.refresh();
