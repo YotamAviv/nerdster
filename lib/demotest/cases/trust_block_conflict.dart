@@ -1,6 +1,4 @@
-import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
-import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
@@ -24,7 +22,6 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   await lisa.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
   Jsonish listTrustMilhouse = await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
   Jsonish bartBlocMilhouse = await bart.doTrust(TrustVerb.block, milhouse);
-  
 
   signInState.center = lisa.token;
   await Comp.waitOnComps([contentBase, keyLabels]);
@@ -37,12 +34,16 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   jsonExpect(oneofusNet.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
 
-  
-  await Comp.waitOnComps([contentBase, keyLabels]); // BUG: We're deadlocked without this.
+
+  // BUG: We're deadlocked without one of these below.
+  // Not that the code above is syncronous up to Comp.waitOnComps. The bits below are effective even if they're way up there.
+  // await Future.delayed(Duration(microseconds: 1));
+  await Comp.waitOnComps([contentBase, keyLabels]);
+  // (Not this: SchedulerBinding.instance.addPostFrameCallback((Duration d) {});)
+
 
   signInState.center = bart.token;
   await Comp.waitOnComps([contentBase, keyLabels]);
-  print('z');
   network = oneofusNet.network;
   expectedNetwork = {
     "Lisa": null,
@@ -50,7 +51,6 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   jsonExpect(oneofusNet.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
-  print(';');
 
   useClock(LiveClock());
   return (bart, null);
