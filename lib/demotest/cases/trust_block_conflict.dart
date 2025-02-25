@@ -1,3 +1,4 @@
+import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -33,12 +34,13 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
     "Millhouse": null,
     "Bart": null
   };
-  // jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  // jsonExpect(oneofusNet.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
-  print(';');
+  jsonShowExpect(dumpNetwork(network), expectedNetwork);
+  jsonExpect(oneofusNet.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
+
+  
+  await Comp.waitOnComps([contentBase, keyLabels]); // BUG: We're deadlocked without this.
 
   signInState.center = bart.token;
-  print('x');
   await Comp.waitOnComps([contentBase, keyLabels]);
   print('z');
   network = oneofusNet.network;
@@ -46,8 +48,8 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
     "Lisa": null,
     "Bart": null
   };
-  // jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  // jsonExpect(oneofusNet.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
+  jsonShowExpect(dumpNetwork(network), expectedNetwork);
+  jsonExpect(oneofusNet.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
   print(';');
 
   useClock(LiveClock());
