@@ -52,7 +52,7 @@ class Summer with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    assert(supportersReady);
+    thowIfSupportersNotRead();
 
     await Future.delayed(Duration(microseconds: delay * 100));
 

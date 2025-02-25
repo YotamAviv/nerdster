@@ -117,6 +117,7 @@ class OneofusNet with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
+    thowIfSupportersNotRead();
     measure.start();
     
     // No need to clear Fetcher content, just clear all Fetcher revokedAt values.

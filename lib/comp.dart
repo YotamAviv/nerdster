@@ -41,6 +41,12 @@ abstract mixin class Comp {
 
   bool get supportersReady => compsReady(supporters);
 
+  // I have issues. Consider the BUG identified in trustBlockConflict.
+  // I don't know if this is better, but it feels more organized.
+  void thowIfSupportersNotRead() {
+    if (!supportersReady) throw Exception('!supportersReady');
+  }
+
   static Future<void> waitOnComps(Iterable<Comp> comps) async {
     while (true) {
       Iterable<Future> futures = comps.map((c) => c.waitUntilReady());
@@ -85,7 +91,7 @@ abstract mixin class Comp {
                 continue;
               }
 
-              assert(supportersReady); // QUESTIONABLE
+              thowIfSupportersNotRead(); // QUESTIONABLE. Then again, it'll throw an exception. Maybe make 
               _ready.value = true;
             }
           } catch (e) {

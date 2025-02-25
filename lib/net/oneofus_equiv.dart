@@ -40,7 +40,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    assert(Comp.compsReady([oneofusNet]));
+    thowIfSupportersNotRead();
     measure.start();
 
     _rejected.clear();
