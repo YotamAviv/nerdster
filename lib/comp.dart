@@ -28,7 +28,7 @@ abstract mixin class Comp {
     // I don't understand this completely, but ignoring setDirty if we're dirty breaks things.
     // Don't: if (!ready) { .. }
     if (_processing) {
-      assert(!ready);
+      xssert(!ready);
       _invalidProcess = true;
       print('_invalidProcess = true;');
     }
@@ -59,7 +59,7 @@ abstract mixin class Comp {
       //   print('!ready comp:${comp.runtimeType}, _waitingCount:${comp._waitingCount}');
       // }
     }
-    assert(compsReady(comps));
+    xssert(compsReady(comps));
   }
 
   Future<void> waitOnSupporters() async {
@@ -87,7 +87,7 @@ abstract mixin class Comp {
 
               if (_invalidProcess) {
                 _invalidProcess = false;
-                assert(!ready);
+                xssert(!ready);
                 continue;
               }
 
@@ -102,11 +102,11 @@ abstract mixin class Comp {
             _processing = false;
             _ready.value = true;
           }
-          assert(ready);
+          xssert(ready);
         } else {
           // calling process has been initiated; just wait..
           await ValueWaiter(_ready, true).untilReady();
-          // Note: This fires: assert(ready || b(_exception));
+          // Note: This fires: xssert(ready || b(_exception));
           if (b(_exception)) {
             // print('Throwing _exception: $_exception');
             print('Throwing _exception: $_exception'); // TEMP:
@@ -114,7 +114,7 @@ abstract mixin class Comp {
           }
         }
       }
-      assert(ready);
+      xssert(ready);
     } finally {
       _waitingCount--;
     }

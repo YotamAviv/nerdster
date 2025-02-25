@@ -56,7 +56,7 @@ class ContentBase with Comp, ChangeNotifier {
 
   Future<Jsonish?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
-    assert(signInState.signedInDelegate == iToken);
+    xssert(signInState.signedInDelegate == iToken);
     Fetcher fetcher = Fetcher(iToken, kNerdsterDomain);
 
     bool? proceed = await Lgtm.check(json, context);
@@ -282,7 +282,7 @@ class ContentBase with Comp, ChangeNotifier {
   }
 
   void _addChildren(ContentTreeNode node) {
-    assert(!_node2children.containsKey(node));
+    xssert(!_node2children.containsKey(node));
     final List<String> path = List.from(node.path)..add(node.subject.token);
     _node2children[node] = <ContentTreeNode>[];
 
@@ -292,7 +292,7 @@ class ContentBase with Comp, ChangeNotifier {
       Iterable<String> relatedTokens = _related.getEquivalents(node.subject.token);
       relatedTokens = relatedTokens.where((token) => token != node.subject.token);
       for (String relatedToken in relatedTokens) {
-        assert(!_isCensored(relatedToken));
+        xssert(!_isCensored(relatedToken));
         // Skip dismissed. TEST:
         List<ContentStatement>? relatedStatements = _subject2statements[relatedToken];
         if (b(relatedStatements) &&
@@ -313,7 +313,7 @@ class ContentBase with Comp, ChangeNotifier {
       Iterable<String> equivalentTokens = _equivalence.getEquivalents(node.subject.token);
       equivalentTokens = equivalentTokens.where((token) => token != node.subject.token);
       for (String equivalentToken in equivalentTokens) {
-        assert(!_isCensored(equivalentToken));
+        xssert(!_isCensored(equivalentToken));
         Jsonish equivalentSubject = Jsonish.find(equivalentToken)!;
         ContentTreeNode equivalentNode = ContentTreeNode(path, equivalentSubject, equivalent: true);
         if (!node.path.contains(equivalentNode.subject.token)) {
@@ -324,7 +324,7 @@ class ContentBase with Comp, ChangeNotifier {
     }
 
     for (ContentStatement statement in _subject2statements[node.subject.token] ?? []) {
-      assert(!_isCensored(statement.token));
+      xssert(!_isCensored(statement.token));
       // Skip dismissed. TEST:
       if (b(_subject2statements[statement.token]) &&
           _subject2statements[statement.token]!.any((statement) =>

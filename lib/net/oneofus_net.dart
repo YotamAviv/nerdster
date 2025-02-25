@@ -155,13 +155,13 @@ class FetcherNode extends Node {
 
   @override
   set blocked(bool b) {
-    assert(b); // I don't think we ever unblock.
+    xssert(b); // I don't think we ever unblock.
     super.blocked = b;
   }
 
   @override
   set revokeAt(String? revokeAt) {
-    assert(b(revokeAt)); // 'String' not allowed; had to use 'String?' to compile.
+    xssert(b(revokeAt)); // 'String' not allowed; had to use 'String?' to compile.
     _fetcher.setRevokeAt(revokeAt!);
   }
 
@@ -173,7 +173,7 @@ class FetcherNode extends Node {
   @override
   // We don't cache because _fetcher could be revoked
   Future<Iterable<Trust>> get trusts async {
-    assert(!blocked);
+    xssert(!blocked);
     await _fetcher.fetch();
     return distinct(_fetcher.statements)
         .cast()
@@ -183,7 +183,7 @@ class FetcherNode extends Node {
 
   @override
   Future<Iterable<Replace>> get replaces async {
-    assert(!blocked);
+    xssert(!blocked);
     await _fetcher.fetch();
     return distinct(_fetcher.statements)
         .cast()
@@ -193,7 +193,7 @@ class FetcherNode extends Node {
 
   @override
   Future<Iterable<Block>> get blocks async {
-    assert(!blocked);
+    xssert(!blocked);
     await _fetcher.fetch();
 
     return distinct(_fetcher.statements)

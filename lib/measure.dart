@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 /// I'm thinking about 2 things:
 ///
@@ -66,7 +67,7 @@ class Measure with ChangeNotifier {
 
   Future mAsync(func) async {
     try {
-      assert(!_stopwatch.isRunning);
+      xssert(!_stopwatch.isRunning);
       _stopwatch.start();
       final out = await func();
       return out;
@@ -77,7 +78,7 @@ class Measure with ChangeNotifier {
 
   dynamic mSync(func) {
     try {
-      assert(!_stopwatch.isRunning);
+      xssert(!_stopwatch.isRunning);
       _stopwatch.start();
       final out = func();
       return out;

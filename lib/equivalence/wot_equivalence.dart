@@ -3,6 +3,7 @@ import 'package:nerdster/equivalence/equivalence_bridge.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 /// Unlike the other equivalence where different folks collaborate to form equivalence group,
 /// this is supposed to form just one person's equivalence group of his own keys. 
@@ -52,8 +53,8 @@ class WotEquivalence {
   // 
   // returns rejection reason in case of conflict.
   String? process(final EquateStatement es) {
-    assert(!es.dont);
-    assert(es.canonical != es.equivalent);
+    xssert(!es.dont);
+    xssert(es.canonical != es.equivalent);
     if (!network.contains(es.equivalent)) {
       return '''Replaced key not in network.''';
     }
@@ -61,7 +62,7 @@ class WotEquivalence {
       return '''Replacing key not in network.''';
     }
     if (equiv2canon.containsKey(es.equivalent)) {
-      assert(equiv2canon[es.equivalent] != es.canonical, 'repeat');
+      xssert(equiv2canon[es.equivalent] != es.canonical, 'repeat');
       return '''Equivalent key already replaced''';
     }
     equiv2canon[es.equivalent] = es.canonical;

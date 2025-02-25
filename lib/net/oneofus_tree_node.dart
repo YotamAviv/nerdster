@@ -63,7 +63,7 @@ class OneofusTreeNode extends NetTreeModel {
   @override
   Iterable<OneofusTreeNode> get children {
     // BUG: This has fired, I believe
-    assert(Comp.compsReady([followNet, oneofusEquiv, oneofusNet]));
+    xssert(Comp.compsReady([followNet, oneofusEquiv, oneofusNet]));
     if (_children != null) return _children!;
     // Don't expand statements, !canoncial, or nodes already on path
     if (token == null || !canonical || path.map((n) => n.token).contains(token)) return [];
@@ -74,7 +74,7 @@ class OneofusTreeNode extends NetTreeModel {
     NetNode netNode = NetNode(token);
     for (NetNode childNetNode in netNode.children) {
       Fetcher fetcher = Fetcher(childNetNode.token, kOneofusDomain);
-      assert(fetcher.isCached);
+      xssert(fetcher.isCached);
       OneofusTreeNode child = OneofusTreeNode(nextPath,
           token: childNetNode.token, canonical: true, revokeAt: fetcher.revokeAtTime);
       childNerds[childNetNode.token] = child;

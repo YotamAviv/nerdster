@@ -48,7 +48,7 @@ class TrustStatement extends Statement {
         break; // could continue to loop to make sure that there isn't a second subject
       }
     }
-    assert(b(subject));
+    xssert(b(subject));
 
     Json? withx = json['with'];
     TrustStatement s = TrustStatement._internal(
@@ -66,21 +66,21 @@ class TrustStatement extends Statement {
 
   static TrustStatement? find(String token) => _cache[token];
 
-  static void assertValid(TrustVerb verb, String? revokeAt, String? moniker, String? comment, String? domain) {
+  static void xssertValid(TrustVerb verb, String? revokeAt, String? moniker, String? comment, String? domain) {
     switch (verb) {
       case TrustVerb.trust:
-        assert(!b(revokeAt));
-        // assert(b(moniker)); For phone UI in construction..
-        assert(!b(domain));
+        xssert(!b(revokeAt));
+        // xssert(b(moniker)); For phone UI in construction..
+        xssert(!b(domain));
       case TrustVerb.block:
-        assert(!b(revokeAt));
-        assert(!b(domain));
+        xssert(!b(revokeAt));
+        xssert(!b(domain));
       case TrustVerb.replace:
-        // assert(b(comment)); For phone UI in construction..
-        // assert(b(revokeAt)); For phone UI in construction..
-        assert(!b(domain));
+        // xssert(b(comment)); For phone UI in construction..
+        // xssert(b(revokeAt)); For phone UI in construction..
+        xssert(!b(domain));
       case TrustVerb.delegate:
-        // assert(b(domain)); For phone UI in construction..
+        // xssert(b(domain)); For phone UI in construction..
       case TrustVerb.clear:
     }
   }
@@ -94,7 +94,7 @@ class TrustStatement extends Statement {
     required this.revokeAt,
     required this.domain,
   }) {
-    assertValid(verb, revokeAt, moniker, comment, domain);
+    xssertValid(verb, revokeAt, moniker, comment, domain);
   }
 
   // A fancy StatementBuilder would be nice, but the important thing is not to have
@@ -102,10 +102,10 @@ class TrustStatement extends Statement {
   // CONSIDER: A fancy StatementBuilder.
   static Json make(Json iJson, Json otherJson, TrustVerb verb,
       {String? revokeAt, String? moniker, String? domain, String? comment}) {
-    assertValid(verb, revokeAt, moniker, comment, domain);
+    xssertValid(verb, revokeAt, moniker, comment, domain);
     // (This below happens (iKey == subjectKey) when:
     // I'm bart; Sideshow replaces my key; I clear his statement replacing my key.
-    // assert(Jsonish(iJson) != Jsonish(otherJson));)
+    // xssert(Jsonish(iJson) != Jsonish(otherJson));)
 
     Json json = {
       'statement': kOneofusType,

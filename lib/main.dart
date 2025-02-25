@@ -28,7 +28,7 @@ import 'package:nerdster/singletons.dart';
 
 import 'firebase_options.dart';
 
-// BUG: NEXT: assert(..) is ignored in release mode.
+// BUG: NEXT: xssert(..) is ignored in release mode.
 
 enum FireChoice {
   fake,

@@ -82,16 +82,16 @@ Future<(DemoKey, DemoKey?)> deletions3() async {
   // observer1 should be censored as per deleter1's desire.
   await signInState.signIn(observer1.token, null);
   await contentBase.waitUntilReady();
-  // Using 'assert', not 'expect' from test. Not sure why it's probablematic here outside the
+  // Using 'xssert', not 'expect' from test. Not sure why it's probablematic here outside the
   // context of a test but not for the one above.
-  assert(contentBase.roots.length == 0, contentBase.roots.length); 
+  xssert(contentBase.roots.length == 0, contentBase.roots.length); 
 
   // observer2 should not be censored as per deleter2's desire to delete deleter1's deletion.
-  assert(contentBase.ready);
+  xssert(contentBase.ready);
   await signInState.signIn(observer2.token, null);
   await contentBase.waitUntilReady();
-  assert(contentBase.roots.length == 1, contentBase.roots.length);
-  assert(contentBase.roots.first.getChildren().length == 1);
+  xssert(contentBase.roots.length == 1, contentBase.roots.length);
+  xssert(contentBase.roots.first.getChildren().length == 1);
 
   useClock(LiveClock());
 

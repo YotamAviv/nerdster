@@ -88,7 +88,7 @@ class DemoKey {
 
   Future<Jsonish> doRate(
       {Json? subject, String? title, String? comment, bool? recommend, ContentVerb? verb}) async {
-    assert(i(title) + i(subject) == 1);
+    xssert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
@@ -112,7 +112,7 @@ class DemoKey {
   }
 
   Future<Jsonish> doCensor({Json? subject, String? title}) async {
-    assert(i(title) + i(subject) == 1);
+    xssert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
@@ -126,8 +126,8 @@ class DemoKey {
 
   Future<Jsonish> doRelate(ContentVerb verb,
       {Json? subject, String? title, Json? other, String? otherTitle}) async {
-    assert(i(subject) + i(title) == 1);
-    assert(i(other) + i(otherTitle) == 1);
+    xssert(i(subject) + i(title) == 1);
+    xssert(i(other) + i(otherTitle) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
@@ -147,13 +147,13 @@ class DemoKey {
       case TrustVerb.trust:
         moniker ??= other.name;
       case TrustVerb.block:
-        assert(!b(moniker));
+        xssert(!b(moniker));
         comment ??= 'blocking demo ${other.name}';
       case TrustVerb.replace:
-        assert(!b(moniker));
+        xssert(!b(moniker));
         comment ??= 'replacing demo ${other.name}';
       case TrustVerb.delegate:
-        assert(!b(moniker));
+        xssert(!b(moniker));
       case TrustVerb.clear:
     }
 
@@ -168,7 +168,7 @@ class DemoKey {
   }
 
   Future<DemoKey> makeDelegate() async {
-    assert(_name2key.containsKey(name));
+    xssert(_name2key.containsKey(name));
     int i = 0;
     String delegateKeyName;
     while (true) {

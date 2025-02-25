@@ -14,7 +14,7 @@ dynamic toJson(dynamic d) => jsonDecode(jsonEncode(d));
 /// I moved code from tests to demos so that I can use the UI on the cases.
 /// I'm faking the test infrastructure's expect, but not well;)
 myExpect(dynamic actual, dynamic matcher) {
-  assert(actual == matcher, '$actual != $matcher');
+  xssert(actual == matcher, '$actual != $matcher');
 }
 
 jsonShowExpect(actual, expected) {
@@ -28,7 +28,7 @@ jsonShowExpect(actual, expected) {
     print('expected:\n${encoder.convert(expected2)}\n');
   }
   // Tests used to use: expect(diffNode.hasNothing, true);
-  assert(diffNode.hasNothing);
+  xssert(diffNode.hasNothing);
 }
 
 jsonExpect(Json actual, Json expected) {
@@ -40,6 +40,6 @@ jsonExpect(Json actual, Json expected) {
     print('expected:\n${encoder.convert(expected)}\n');
   }
   // Tests used to use: expect(diffNode.hasNothing, true);
-  assert(diffNode.hasNothing);
+  xssert(diffNode.hasNothing);
 }
 
