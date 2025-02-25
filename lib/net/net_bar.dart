@@ -23,7 +23,6 @@ class NetBar extends StatefulWidget {
 
   static Future<void> showTree(BuildContext context) async {
     assert (!bNetView.value);
-    // NEXT: Revisit this await / non-await
     // ignore: unawaited_futures
     NetTreeView.show(context);
   }

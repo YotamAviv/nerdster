@@ -54,7 +54,7 @@ abstract mixin class Comp {
 
   bool get supportersReady => compsReady(supporters);
 
-  // I have issues. Consider the BUG identified in trustBlockConflict.
+  // I have (or had) issues (consider the bug identified in trustBlockConflict.)
   // I don't know if this is better, but it feels more organized.
   void thowIfSupportersNotReady() {
     if (!supportersReady) throw Exception('!supportersReady');

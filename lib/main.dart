@@ -117,7 +117,6 @@ Future<void> main() async {
   KeyLabels();
 
   // Show 'loading', start the timer.
-  // NEXT: Revisit this await / non-await
   // ignore: unawaited_futures
   BarRefresh.refresh();
 
