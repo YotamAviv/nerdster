@@ -4,6 +4,7 @@ import 'package:nerdster/equivalence/eg.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/oneofus/statement.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 abstract class EquivalenceBridgeParser {
   EquateStatement? parse(Statement statement);
@@ -55,7 +56,7 @@ class EquivalenceBridge {
         equivalent2canonical[equiv] = eg.canonical;
       }
       canonical2equivalents[eg.canonical] = UnmodifiableSetView(eg.all);
-      assert(eg.all.contains(eg.canonical));
+      xssert(eg.all.contains(eg.canonical));
     }
     return egs;
   }

@@ -19,7 +19,7 @@ abstract class NetTreeModel {
   NetTreeModel(this.path, {this.token, this.statement});
 
   List<String> labelKeyPaths() {
-    assert(b(token));
+    xssert(b(token));
     String rootLabel = keyLabels.labelKey(signInState.center)!;
     // Special case for me. no paths.
     if (token == signInState.center) return [rootLabel];
@@ -172,7 +172,7 @@ List<LabeledEdge> labelPathX(Path path) {
     if (statement.verb == TrustVerb.trust) {
       moniker = statement.moniker!;
     } else {
-      assert(statement.verb == TrustVerb.replace);
+      xssert(statement.verb == TrustVerb.replace);
       moniker = '(replaced)';
     }
     LabeledEdge labeledEdge = LabeledEdge(keyLabels.labelKey(trust.node.token)!, moniker);

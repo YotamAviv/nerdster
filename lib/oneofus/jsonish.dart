@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 import 'trust_statement.dart';
 
@@ -121,7 +122,7 @@ class Jsonish {
   factory Jsonish(Json json) {
     // This ambitious check fails when commenting on a comment (which is signed),
     // and so I'm abandoning it.
-    // assert(!jsonMap.containsKey('signature'), 'should be verifying');
+    // xssert(!jsonMap.containsKey('signature'), 'should be verifying');
 
     // Check cache.
     Json ordered = orderMap(json);
@@ -151,7 +152,7 @@ class Jsonish {
     if (_cache.containsKey(token)) {
       // In cache, that signature has already been verified, skip the crypto if the signature is same.
       Jsonish cached = _cache[token]!;
-      assert(cached.json['signature'] == signature);
+      xssert(cached.json['signature'] == signature);
       return cached;
     }
 
@@ -176,14 +177,14 @@ class Jsonish {
     if (signatureIn != null) {
       json.remove('signature');
     }
-    assert(!json.containsKey('signature'));
+    xssert(!json.containsKey('signature'));
 
     Json ordered = orderMap(json);
     String ppJson = encoder.convert(ordered); // (no signature yet)
     // Sign
     String signature = await signer.sign(json, ppJson);
     if (signatureIn != null) {
-      assert(signature == signatureIn);
+      xssert(signature == signatureIn);
     }
     // Add signature to ordered map and re-convert ppJson
     ordered['signature'] = signature;
@@ -194,7 +195,7 @@ class Jsonish {
     if (_cache.containsKey(token)) {
       // In cache, that signature is good, but why not be sure.
       Jsonish cached = _cache[token]!;
-      assert(signature == cached.json['signature']);
+      xssert(signature == cached.json['signature']);
       return cached;
     }
 

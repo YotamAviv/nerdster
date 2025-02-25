@@ -112,8 +112,8 @@ class Fetcher {
     Fetcher out;
     if (_fetchers.containsKey(key)) {
       out = _fetchers[key]!;
-      assert(out.fire == fire);
-      assert(out.testingNoVerify == testingNoVerify);
+      xssert(out.fire == fire);
+      xssert(out.testingNoVerify == testingNoVerify);
     } else {
       out = Fetcher.internal(token, domain, fire, functions, testingNoVerify: testingNoVerify);
       _fetchers[key] = out;
@@ -126,7 +126,7 @@ class Fetcher {
 
   // Oneofus trust does not allow 2 different keys replace a key (that's a conflict).
   // Fetcher isn't responsible for implementing that, but I am going to assume that
-  // something else does and I'll rely on that, assert that, and not implement code to update
+  // something else does and I'll rely on that, xssert that, and not implement code to update
   // revokeAt.
   //
   // Changing center is encouraged, and we'd like to make that fast (without re-fetching too much).
@@ -136,7 +136,7 @@ class Fetcher {
   void setRevokeAt(String revokeAt) {
     // CONSIDER: I don't think that even setting the same value twice should be supported.  I tried
     // that and failed tests on follow net and delegate related stuff. Hmm..
-    // assert(_revokeAt == null);
+    // xssert(_revokeAt == null);
     if (_revokeAt == revokeAt) return;
 
     _revokeAt = revokeAt;
@@ -181,26 +181,26 @@ class Fetcher {
       List statements = result.data["statements"];
       if (statements.isEmpty) return; // QUESTIONABLE
       if (_revokeAt != null) {
-        assert(statements.first['id'] == _revokeAt);
+        xssert(statements.first['id'] == _revokeAt);
         _revokeAtTime = parseIso(statements.first['time']);
       }
       Json iKey = result.data['I'];
-      assert(getToken(iKey) == token);
+      xssert(getToken(iKey) == token);
       _lastToken = result.data["lastToken"];
       for (Json j in statements) {
         DateTime jTime = parseIso(j['time']);
-        if (time != null) assert(jTime.isBefore(time));
+        if (time != null) xssert(jTime.isBefore(time));
         time = jTime;
         j['statement'] = domain2statementType[domain]!;
         j['I'] = iKey; // PERFORMANCE: Allow token in 'I' in statements; we might be already.
-        assert(getToken(j['I']) == getToken(iKey));
+        xssert(getToken(j['I']) == getToken(iKey));
         String serverToken = j['id'];
         j.remove('id');
 
         Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
-        assert(jsonish.token == serverToken);
+        xssert(jsonish.token == serverToken);
         Statement statement = Statement.make(jsonish);
-        assert(statement.token == serverToken);
+        xssert(statement.token == serverToken);
         _cached!.add(statement);
       }
     } else {
@@ -272,7 +272,7 @@ class Fetcher {
   // TODO: Why return value Jsonish and not Statement?
   // Side effects: add 'previous', 'signature'
   Future<Jsonish> push(Json json, StatementSigner? signer) async {
-    assert(_revokeAt == null);
+    xssert(_revokeAt == null);
     changeNotify();
 
     if (_cached == null) await fetch(); // Was green.
@@ -282,15 +282,15 @@ class Fetcher {
     if (_cached!.isNotEmpty) {
       previous = _cached!.first;
 
-      // assert time is after last statement time
+      // xssert time is after last statement time
       // This is a little confusing with clouddistinct, but I think this is okay.
       DateTime prevTime = parseIso(previous.json['time']!);
       DateTime thisTime = parseIso(json['time']!);
-      assert(thisTime.isAfter(prevTime));
+      xssert(thisTime.isAfter(prevTime));
 
       if (json.containsKey('previous')) {
         // for load dump
-        assert(json['previous'] == _lastToken);
+        xssert(json['previous'] == _lastToken);
       }
     }
     if (_lastToken != null) json['previous'] = _lastToken;
@@ -299,10 +299,10 @@ class Fetcher {
     String? signature = json['signature'];
     Jsonish jsonish;
     if (signer != null) {
-      assert(signature == null);
+      xssert(signature == null);
       jsonish = await Jsonish.makeSign(json, signer);
     } else {
-      assert(signature != null);
+      xssert(signature != null);
       jsonish = await Jsonish.makeVerify(json, _verifier);
     }
 
@@ -349,7 +349,7 @@ class Fetcher {
     for (final docSnapshot in snapshots.docs) {
       final Json data = docSnapshot.data();
       Jsonish jsonish = Jsonish(data);
-      assert(docSnapshot.id == jsonish.token);
+      xssert(docSnapshot.id == jsonish.token);
       out.add(Statement.make(jsonish));
     }
     return out;

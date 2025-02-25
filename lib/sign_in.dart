@@ -125,7 +125,7 @@ Future<void> qrSignin(BuildContext context) async {
 
         String? delegateCiphertext = data['delegateCiphertext'];
         String? delegateCleartext = data['delegateCleartext'];
-        assert(!(b(delegateCiphertext) && b(delegateCleartext)));
+        xssert(!(b(delegateCiphertext) && b(delegateCleartext)));
         if (b(delegateCiphertext)) {
           print('delegate key encrypted: YES');
           delegateCleartext = await keyPair.decrypt(delegateCiphertext!, phonePkePublicKey);

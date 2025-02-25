@@ -9,6 +9,21 @@ import 'jsonish.dart';
 const OouCryptoFactory crypto = CryptoFactoryEd25519();
 const JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
+// Don't evaluate message if condtion is true.
+void xssert(bool condition, [dynamic messageOrFunc = 'xssert failed']) {
+  if (!condition) {
+    String message;
+    if (messageOrFunc == null) {
+      message = '<null>';
+    } else if (messageOrFunc is Function) {
+      message = messageOrFunc();
+    } else {
+      message = messageOrFunc.toString();
+    }
+    throw Exception(message);
+  }
+}
+
 int i(dynamic d) => d == null ? 0 : 1;
 bool b(dynamic d) => d == null ? false : true;
 bool bb(bool? bb) => (bb == null) ? false : bb;
@@ -36,7 +51,7 @@ DateTime parseIso(String iso) => DateTime.parse(iso);
 
 final DateFormat datetimeFormat = DateFormat.yMd().add_jm();
 
-// I used to strip off the milliseconds, but that caused a bug where 
+// I used to strip off the milliseconds, but that caused a bug where
 // statements with the same 'time' were received out of order.
 String formatIso(DateTime datetime) {
   return datetime.toUtc().toIso8601String();
@@ -65,4 +80,3 @@ Future<Json> parsePublicKey(String s) async {
   json = await publictKey.json;
   return json;
 }
-

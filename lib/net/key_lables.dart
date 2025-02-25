@@ -79,7 +79,7 @@ class KeyLabels with Comp, ChangeNotifier {
     _labelKeys();
     _labelDelegateKeys();
 
-    assert(b(labelKey(SignInState().center)));
+    xssert(b(labelKey(SignInState().center)));
   }
 
   void _labelKeys() {
@@ -101,7 +101,7 @@ class KeyLabels with Comp, ChangeNotifier {
           break;
         }
       }
-      assert(_token2name.containsKey(token), DemoKey.findByToken(token)!.name);
+      xssert(_token2name.containsKey(token), token);
     }
   }
 

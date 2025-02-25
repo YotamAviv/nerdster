@@ -239,7 +239,7 @@ class TrustRows extends StatelessWidget {
         if (statement.verb == TrustVerb.trust) {
           moniker = statement.moniker!;
         } else {
-          assert(statement.verb == TrustVerb.replace);
+          xssert(statement.verb == TrustVerb.replace);
           moniker = '(replaced)';
         }
         monikers.add(Text(' --"$moniker"-> '));

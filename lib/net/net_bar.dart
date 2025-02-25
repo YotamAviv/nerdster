@@ -23,7 +23,7 @@ class NetBar extends StatefulWidget {
 
   static Future<void> showTree(BuildContext context) async {
     await Comp.waitOnComps([followNet, keyLabels]);
-    assert (!bNetView.value);
+    xssert (!bNetView.value);
     await NetTreeView.show(context);
   }
 

@@ -25,7 +25,7 @@ class ValueWaiter {
     } else {
       await _completer.future;
       // NOTE: This does fire: 
-      //   assert(_notifier.value == value);
+      //   xssert(_notifier.value == value);
     }
   }
 }
