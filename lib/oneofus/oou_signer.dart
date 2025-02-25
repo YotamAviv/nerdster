@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:nerdster/oneofus/util.dart';
 
 import 'crypto/crypto.dart';
 import 'jsonish.dart';
+import 'util.dart';
 
 class OouSigner implements StatementSigner {
   final OouKeyPair _keyPair;

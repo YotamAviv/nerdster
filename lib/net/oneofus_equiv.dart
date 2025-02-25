@@ -8,8 +8,9 @@ import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/measure.dart';
 import 'package:nerdster/singletons.dart';
+
+import '../oneofus/measure.dart';
 
 class OneofusEquiv with Comp, ChangeNotifier {
   static final OneofusEquiv _singleton = OneofusEquiv._internal();

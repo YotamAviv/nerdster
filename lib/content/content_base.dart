@@ -23,8 +23,9 @@ import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/measure.dart';
 import 'package:nerdster/singletons.dart';
+
+import '../oneofus/measure.dart';
 
 /// An old comment from back during preparation for NerdsterFollow, not sure if it's still relevant:
 /// - Stop using statement.iToken and instead rely on token2statements,

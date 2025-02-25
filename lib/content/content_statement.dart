@@ -1,15 +1,9 @@
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 const String kNerdsterDomain = 'nerdster.org';
 const String kNerdsterType = 'org.nerdster';
-
-const domain2statementType = {
-  kOneofusDomain: kOneofusType,
-  kNerdsterDomain: kNerdsterType,
-};
 
 class ContentStatement extends Statement {
   static final Map<String, ContentStatement> _cache = <String, ContentStatement>{};

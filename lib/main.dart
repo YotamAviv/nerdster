@@ -39,6 +39,11 @@ FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
+const domain2statementType = {
+  kOneofusDomain: kOneofusType,
+  kNerdsterDomain: kNerdsterType,
+};
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
