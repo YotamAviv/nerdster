@@ -6,8 +6,6 @@ git tag PROD-11
 code $(git diff --no-commit-id --name-only -r HEAD) -r
 diff -r lib/oneofus ../oneofus/lib/oneofus
 diff -r ../oneofus/lib/oneofus lib/oneofus
-git reflog expire --all --expire=now
-git gc --prune=now --aggressive
 flutter clean
 flutter pub get
 flutter pub upgrade --major-versions

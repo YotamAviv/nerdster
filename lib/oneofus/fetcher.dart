@@ -288,7 +288,7 @@ class Fetcher {
 
       // assert time is after last statement time
       // This is a little confusing with clouddistinct, but I think this is okay.
-      DateTime prevTime = parseIso(previous.json['time']!);
+      DateTime prevTime = previous.time;
       DateTime thisTime = parseIso(json['time']!);
       assert(thisTime.isAfter(prevTime));
 

@@ -15,7 +15,7 @@ class CorruptionCheck {
       DateTime? previousTime;
       for (Statement s in await fetcher.fetchAllNoVerify()) {
         String token = s.token;
-        DateTime time = parseIso(s.json['time']);
+        DateTime time = s.time;
 
         // Validate notary chain, decending order
         if (previousTime == null) {
@@ -32,7 +32,7 @@ class CorruptionCheck {
           }
         }
 
-        previousToken = s.json['previous'];
+        previousToken = s['previous'];
         previousTime = time;
       }
     }
