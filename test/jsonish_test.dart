@@ -300,4 +300,22 @@ void main() {
       }
     }
   });
+
+  test('no side effects to json source', () {
+    Json json = {
+      "map": {"b": true, "a": true},
+      "list": ["b", "a"]
+    };
+    Jsonish(json);
+    expect(json["list"], ["b", "a"]);
+    expect(json["map"], {"b": true, "a": true});
+  });
+
+  test('json source immutable, no worries', () {
+    Json json = {
+      "map": Map.unmodifiable({"b": true, "a": true}),
+      "list": List.unmodifiable(["b", "a"])
+    };
+    Jsonish(json);
+  });
 }

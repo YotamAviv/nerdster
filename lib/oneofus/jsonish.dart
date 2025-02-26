@@ -114,14 +114,22 @@ class Jsonish {
   final String _token;
 
   /// newly constructed Jsonish or from the cache (all equal intancees identical()!)
-  factory Jsonish(Json json) {
+  factory Jsonish(Json json, [String? serverToken]) {
     // Check cache
-    Json ordered = order(json);
-    String ppJson = encoder.convert(ordered);
-    String token = sha1.convert(utf8.encode(ppJson)).toString();
+    String token;
+    if (serverToken != null) {
+      // EXPERIMENTAL:
+      token = serverToken;
+    } else {
+      json = order(json);
+      String ppJson = encoder.convert(json);
+      token = sha1.convert(utf8.encode(ppJson)).toString();
+    }
     if (_cache.containsKey(token)) return _cache[token]!;
 
-    Jsonish fresh = Jsonish._internal(Map.unmodifiable(ordered), token);
+    // EXPERIMENTAL: json not ordered when serverToken != null.
+    // EXPERIMENTAL: Likely missing [previous, signature], can't compute token, can't verify sig.
+    Jsonish fresh = Jsonish._internal(Map.unmodifiable(json), token);
 
     // Update cache
     _cache[token] = fresh;
