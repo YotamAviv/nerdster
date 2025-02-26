@@ -83,8 +83,8 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     myExpect(roots.length, 5);
 
     // 'merge' title should have 1 child
-    assert(roots.where((n) => n.subject.json['title'] == 'merge').length == 1);
-    ContentTreeNode mergeTreeNode = roots.where((n) => n.subject.json['title'] == 'merge').first;
+    assert(roots.where((n) => n.subject['title'] == 'merge').length == 1);
+    ContentTreeNode mergeTreeNode = roots.where((n) => n.subject['title'] == 'merge').first;
     assert(mergeTreeNode.getChildren().length == 1, mergeTreeNode.getChildren().length);
 
     useClock(clock);

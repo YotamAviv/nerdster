@@ -27,7 +27,7 @@ class JSWidget extends StatelessWidget {
     }
 
     return InkWell(
-        onTap: () => ShowQr(encoder.convert(jsonish.json)).show(context),
+        onTap: () => ShowQr(jsonish.ppJson).show(context),
         onDoubleTap: () => ShowQr(jsonish.token).show(context),
         child: Tooltip(
             message: message,

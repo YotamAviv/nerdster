@@ -111,8 +111,8 @@ class FetcherTestHelper {
       'block': 'sub',
     };
     Jsonish statement = await fetcher.push(map, TestSigner());
-    expect(statement.json.containsKey('signature'), true);
-    expect(statement.json.containsKey('previous'), false);
+    expect(statement.containsKey('signature'), true);
+    expect(statement.containsKey('previous'), false);
 
     List<Statement> js;
     await fetcher.fetch();

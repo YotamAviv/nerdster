@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 
 import 'trust_statement.dart';
@@ -109,9 +110,7 @@ class Jsonish {
   static Jsonish? find(String token) => _cache[token];
 
   // probably for testing
-  static void wipeCache() {
-    _cache.clear();
-  }
+  static void wipeCache() => _cache.clear();
 
   Json _json; // (unmodifiable LinkedHashMap)
   String _token;
@@ -124,7 +123,7 @@ class Jsonish {
     // assert(!jsonMap.containsKey('signature'), 'should be verifying');
 
     // Check cache.
-    Json ordered = orderMap(json);
+    Json ordered = order(json);
     String ppJson = encoder.convert(ordered);
     String token = sha1.convert(utf8.encode(ppJson)).toString();
     if (_cache.containsKey(token)) {
@@ -145,18 +144,18 @@ class Jsonish {
     String signature = json['signature']!;
 
     // Check cache.
-    Json ordered = orderMap(json);
+    Json ordered = order(json);
     String ppJson = encoder.convert(ordered);
     String token = sha1.convert(utf8.encode(ppJson)).toString();
     if (_cache.containsKey(token)) {
       // In cache, that signature has already been verified, skip the crypto if the signature is same.
       Jsonish cached = _cache[token]!;
-      assert(cached.json['signature'] == signature);
+      assert(cached['signature'] == signature);
       return cached;
     }
 
     // Verify
-    Json orderedWithoutSig = orderMap(Map.from(json)..removeWhere((k, v) => k == 'signature'));
+    Json orderedWithoutSig = order(Map.from(json)..removeWhere((k, v) => k == 'signature'));
     String ppJsonWithoutSig = encoder.convert(orderedWithoutSig);
     bool verified = await verifier.verify(json, ppJsonWithoutSig, signature);
     if (!verified) {
@@ -178,7 +177,7 @@ class Jsonish {
     }
     assert(!json.containsKey('signature'));
 
-    Json ordered = orderMap(json);
+    Json ordered = order(json);
     String ppJson = encoder.convert(ordered); // (no signature yet)
     // Sign
     String signature = await signer.sign(json, ppJson);
@@ -194,7 +193,7 @@ class Jsonish {
     if (_cache.containsKey(token)) {
       // In cache, that signature is good, but why not be sure.
       Jsonish cached = _cache[token]!;
-      assert(signature == cached.json['signature']);
+      assert(signature == cached['signature']);
       return cached;
     }
 
@@ -208,49 +207,43 @@ class Jsonish {
 
   Jsonish._internal(this._json, this._token);
 
-  static LinkedHashMap<String, dynamic> orderMap(Json jsonMap) {
-    String? signature = jsonMap['signature']; // signature last
-    List<MapEntry<String, dynamic>> list = List.of(jsonMap.entries);
-    list.sort((x, y) => compareKeys(x.key, y.key));
-    LinkedHashMap<String, dynamic> orderedMap = LinkedHashMap<String, dynamic>();
-    for (MapEntry<String, dynamic> entry in list) {
-      if (entry.key == 'signature') continue;
-      orderedMap[entry.key] = orderDynamic(entry.value);
-    }
-    if (signature != null) orderedMap['signature'] = signature;
-    return orderedMap;
-  }
-
-  static dynamic orderDynamic(dynamic value) {
-    if (value is Map) {
-      return orderMap(value as Json);
+  static dynamic order(dynamic value) {
+    if (value is String || value is num || value is bool) {
+      return value;
+    } else if (value is Map) {
+      String? signature = value['signature']; // signature last
+      List list = List.of(value.entries)..sort((x, y) => compareKeys(x.key, y.key));
+      LinkedHashMap<String, dynamic> orderedMap = LinkedHashMap<String, dynamic>();
+      for (MapEntry entry in list.whereNot((e) => (e.key == 'signature'))) {
+        orderedMap[entry.key] = Jsonish.order(entry.value);
+      }
+      if (signature != null) orderedMap['signature'] = signature;
+      return orderedMap;
     } else if (value is List) {
-      return List.of(value.map(orderDynamic));
-    } else if (value is String) {
-    } else if (value is num) {
-    } else if (value is bool) {
-    } else if (value is DateTime) {
+      return value.map(order).toList();
     } else {
-      throw Exception('Unexpected: $value');
+      throw Exception('Unexpected: (${value.runtimeType}) $value');
     }
-    return value;
   }
 
+  // CODE: Try to reduce uses and switch to []
   Json get json => _json;
+
   String get token => _token;
 
   // String get ppJson => _ppJson; // Don't cache ppJson and generate it on the fly instead.
   String get ppJson => encoder.convert(json);
 
+  operator [](String key) => _json[key];
+  bool containsKey(String key) => _json.containsKey(key);
+  Iterable get keys => _json.keys;
+  Iterable get values => _json.values;
+
   // Good ol' identity== should work.
   // @override
-  // bool operator ==(Object other) {
-  //   if (other is Jsonish) {
-  //     return _ppJson == other._ppJson;
-  //   }
-  //   return false;
-  // }
+  // bool operator ==(Object other);
 
+  // Jsonish instances from the factory constructor are distinct, and so default should work.
   // @override
   // int get hashCode => _token.hashCode;
 

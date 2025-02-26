@@ -234,7 +234,7 @@ class ContentBase with Comp, ChangeNotifier {
       final Jsonish subject = Jsonish.find(subjectToken)!;
 
       // skip statements
-      if (subject.json.containsKey('statement')) {
+      if (subject.containsKey('statement')) {
         continue;
       }
 

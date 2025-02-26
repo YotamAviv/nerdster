@@ -22,14 +22,14 @@ abstract class Statement {
   static final Map<String, StatementFactory> _type2factory = <String, StatementFactory>{};
 
   static Statement make(Jsonish j) {
-    String type = j.json['statement'];
+    String type = j['statement'];
     return _type2factory[type]!.make(j);
   }
 
   Statement(this.jsonish, this.subject) :
-      time = parseIso(jsonish.json['time']),
-      iToken = getToken(jsonish.json['I']),
-      comment = jsonish.json['comment'];
+      time = parseIso(jsonish['time']),
+      iToken = getToken(jsonish['I']),
+      comment = jsonish['comment'];
 
   String get subjectToken {
     if (subject is String) {

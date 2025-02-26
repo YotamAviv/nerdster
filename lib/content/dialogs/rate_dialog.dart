@@ -120,8 +120,8 @@ class RateBodyState extends State<RateBody> {
       }
 
       // When rating a statement, use the token instead of the entire statement.
-      var subject = (widget.subject.json.containsKey('statement'))
-          ? getToken(widget.subject.json)
+      var subject = (widget.subject.containsKey('statement'))
+          ? widget.subject.token
           : widget.subject.json;
 
       json = ContentStatement.make(
@@ -228,7 +228,7 @@ class RateBodyState extends State<RateBody> {
     );
 
     Widget warning = const SizedBox(width: 120.0);
-    if (widget.subject.json['statement'] == kNerdsterType) {
+    if (widget.subject['statement'] == kNerdsterType) {
       warning = SizedBox(
         width: 120.0,
         child: Tooltip(

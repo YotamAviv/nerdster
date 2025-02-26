@@ -78,7 +78,7 @@ const String jsonStatements = '''
   }
 ]''';
 
-const Map<String, dynamic> bartTrustsHomerUnsigned = {
+const Json bartTrustsHomerUnsigned = {
   "statement": "net.one-of-us.trust",
   "I": {
     "crv": "Ed25519",
@@ -96,7 +96,7 @@ const Map<String, dynamic> bartTrustsHomerUnsigned = {
   "verb": "trust",
 };
 
-const Map<String, dynamic> bartTrustsHomerSigned = {
+const Json bartTrustsHomerSigned = {
   "statement": "net.one-of-us.trust",
   "I": {
     "crv": "Ed25519",
@@ -259,7 +259,8 @@ void main() {
     statementBadOrderWithUnknownKeys['Betty'] = 'Timmy';
     Jsonish.wipeCache();
     Jsonish jsonish2 = Jsonish(statementBadOrderWithUnknownKeys);
-    expect(jsonish2.json.keys.last, 'signature');
+    print(jsonish2.ppJson);
+    expect(jsonish2.keys.last, 'signature');
     expect(jsonish2.ppJson, '''{
   "statement": "net.one-of-us",
   "time": "2025-02-17T14:22:24.842019Z",
