@@ -35,16 +35,29 @@ abstract class Statement {
     if (subject is String) {
       return subject;
     } else {
-      return Jsonish(subject).token;
+      return getToken(subject);
     }
   }
 
   String get token => jsonish.token;
-  Json get json => jsonish.json;
+  
+  operator [](String key) => jsonish[key];
+  bool containsKey(String key) => jsonish.containsKey(key);
+  Iterable get keys => jsonish.keys;
+  Iterable get values => jsonish.values;
+
 
   String getDistinctSignature({Transformer? transformer});
 
   bool get isClear;
+
+  // NEXT: CODE: As a lot uses either Json or a token (subject, other, iKey), it might 
+  // make sense to make Jsonish be Json or a string token.
+  // One challenge would be managing the cache, say we encounter a Jsonish string token and later
+  // encounter its Json equivalent. The factory methods are where these come from, and so it should 
+  // be manageable.
+  // CODE: Try to reduce uses and switch to []
+  Json get json => jsonish.json;
 }
 
 abstract class StatementFactory {

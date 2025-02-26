@@ -333,7 +333,7 @@ class ContentBase with Comp, ChangeNotifier {
         continue;
       }
 
-      ContentTreeNode statementNode = ContentTreeNode(path, Jsonish(statement.json));
+      ContentTreeNode statementNode = ContentTreeNode(path, statement.jsonish);
       _node2children[node]!.add(statementNode);
       // Rare (even demented) case: statement is related to subject.
       // Why am I even working on this? Because someone might do it, and I don't want to crash (stack overflow)
