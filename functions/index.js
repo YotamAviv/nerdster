@@ -291,12 +291,12 @@ async function fetchh(token, params = {}, omit = {}) {
 
   // order statements
   if (orderStatements) {
-    var ordered = [];
+    var list = [];
     for (const statement of statements) {
       const ordered = order(statement);
-      ordered.push(ordered);
+      list.push(ordered);
     }
-    statements = ordered;
+    statements = list;
   }
 
   return { "statements": statements, "I": iKey, "lastToken": lastToken };
