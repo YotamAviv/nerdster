@@ -105,31 +105,21 @@ class Jsonish {
     }
   }
 
-  // The cache of all Jsonish objects to be retrieved by token.
+  // The cache of all Jsonish objects
   static final Map<String, Jsonish> _cache = <String, Jsonish>{};
   static Jsonish? find(String token) => _cache[token];
+  static void wipeCache() => _cache.clear(); // probably for testing
 
-  // probably for testing
-  static void wipeCache() => _cache.clear();
+  final Json _json; // (unmodifiable LinkedHashMap)
+  final String _token;
 
-  Json _json; // (unmodifiable LinkedHashMap)
-  String _token;
-
-  /// Construct a new Jsonish based on [json] or
-  /// return a reference to one that already exists (same intance, identical()!)
+  /// newly constructed Jsonish or from the cache (all equal intancees identical()!)
   factory Jsonish(Json json) {
-    // This ambitious check fails when commenting on a comment (which is signed),
-    // and so I'm abandoning it.
-    // assert(!jsonMap.containsKey('signature'), 'should be verifying');
-
-    // Check cache.
+    // Check cache
     Json ordered = order(json);
     String ppJson = encoder.convert(ordered);
     String token = sha1.convert(utf8.encode(ppJson)).toString();
-    if (_cache.containsKey(token)) {
-      Jsonish cached = _cache[token]!;
-      return cached;
-    }
+    if (_cache.containsKey(token)) return _cache[token]!;
 
     Jsonish fresh = Jsonish._internal(Map.unmodifiable(ordered), token);
 
@@ -139,7 +129,7 @@ class Jsonish {
     return fresh;
   }
 
-  // Same as factory constructor, but can't be a constructor because async (due to crypto).
+  // Same as factory constructor, but can't be a constructor because async crypto.
   static Future<Jsonish> makeVerify(Json json, StatementVerifier verifier) async {
     String signature = json['signature']!;
 
@@ -150,7 +140,7 @@ class Jsonish {
     if (_cache.containsKey(token)) {
       // In cache, that signature has already been verified, skip the crypto if the signature is same.
       Jsonish cached = _cache[token]!;
-      assert(cached['signature'] == signature);
+      if (cached['signature'] != signature) throw Exception('!verified');
       return cached;
     }
 
@@ -158,9 +148,7 @@ class Jsonish {
     Json orderedWithoutSig = order(Map.from(json)..removeWhere((k, v) => k == 'signature'));
     String ppJsonWithoutSig = encoder.convert(orderedWithoutSig);
     bool verified = await verifier.verify(json, ppJsonWithoutSig, signature);
-    if (!verified) {
-      throw Exception('!verified');
-    }
+    if (!verified) throw Exception('!verified');
 
     Jsonish fresh = Jsonish._internal(Map.unmodifiable(ordered), token);
 
@@ -171,23 +159,14 @@ class Jsonish {
   }
 
   static Future<Jsonish> makeSign(Json json, StatementSigner signer) async {
-    String? signatureIn = json['signature'];
-    if (signatureIn != null) {
-      json.remove('signature');
-    }
     assert(!json.containsKey('signature'));
 
     Json ordered = order(json);
-    String ppJson = encoder.convert(ordered); // (no signature yet)
-    // Sign
-    String signature = await signer.sign(json, ppJson);
-    if (signatureIn != null) {
-      assert(signature == signatureIn);
-    }
-    // Add signature to ordered map and re-convert ppJson
-    ordered['signature'] = signature;
+    String ppJson = encoder.convert(ordered); // no signature yet
+    final String signature = await signer.sign(json, ppJson);
+    ordered['signature'] = signature; // add signature
     ppJson = encoder.convert(ordered);
-    String token = sha1.convert(utf8.encode(ppJson)).toString();
+    final String token = sha1.convert(utf8.encode(ppJson)).toString();
 
     // Check cache.
     if (_cache.containsKey(token)) {
@@ -226,6 +205,11 @@ class Jsonish {
     }
   }
 
+  // NEXT: CODE: As a lot uses either Json or a token (subject, other, iKey), it might 
+  // make sense to make Jsonish be Json or a string token.
+  // One challenge would be managing the cache, say we encounter a Jsonish string token and later
+  // encounter its Json equivalent. The factory methods are where these come from, and so it should 
+  // be manageable.
   // CODE: Try to reduce uses and switch to []
   Json get json => _json;
 
@@ -248,9 +232,10 @@ class Jsonish {
   // int get hashCode => _token.hashCode;
 
   @override
-  String toString() => json.values.join(':');
+  String toString() => _json.values.join(':');
 }
 
+// NEXT: CODE: This is overused and can probably be eliminated if Jsonish becomes Json or token.
 String getToken(dynamic x) {
   if (x is Json) {
     return Jsonish(x).token;
