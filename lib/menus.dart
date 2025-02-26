@@ -12,6 +12,7 @@ import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -162,15 +163,22 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: <Widget>[
+          MenuItemButton(
+              onPressed: () {
+                Jsonish.wipeCache();
+                BarRefresh.refresh();
+              },
+              child: const Text('Refresh. Jsonish cache, too')),
+          MenuItemButton(
+              onPressed: () => fetcherIntegrationTest(),
+              child: const Text('fetcherIntegrationTest')),
+          MenuItemButton(onPressed: () => integrationTests(), child: const Text('integration test cases')),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
-          MenuItemButton(onPressed: () => BarRefresh.refresh(), child: const Text('refresh')),
-          MenuItemButton(onPressed: () => fetcherIntegrationTest(), child: const Text('fetcherIntegrationTest')),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
           // MenuItemButton(onPressed: () => CorruptionCheck.make(), child: const Text('Check Statements')),
           SubmenuButton(menuChildren: <Widget>[
             ...demos,
           ], child: const Text('run case')),
-          MenuItemButton(onPressed: () => integrationTests(), child: const Text('run cases')),
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
           MenuItemButton(
               child: const Text('Load JSON statements'),

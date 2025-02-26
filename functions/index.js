@@ -6,12 +6,12 @@
 /// - "npm audit fix"
 /// 
 /// TEST: Would be nice to see that these all produce output we expect:
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&&bValidate=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bValidate=true&revokeAt=sincealways
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bClearClear=true
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true&bClearClear=true&omit=[%22I%22,%22statement%22]
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&&checkPrevious=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&checkPrevious=true&revokeAt=sincealways
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&clearClear=true
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true&clearClear=true&omit=[%22I%22,%22statement%22]
 
 const { logger } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
@@ -199,17 +199,17 @@ function getVerbSubject(j) {
 /// - If we're omitting "I", we can still include it on the top statemement.
 /// All this feels kludgey, and so I'll leave things as they are.
 
-// bClearClear only applicable with bDistinct
+// clearClear only applicable with distinct
 async function fetchh(token, params = {}, omit = {}) {
   const revokeAt = params.revokeAt;
-  const bValidate = params.bValidate != null;
-  const bDistinct = params.bDistinct != null;
-  const bOrderStatements = params.bOrderStatements != null;
-  const bClearClear = params.bClearClear != null;
-  const bIncludeId = params.bIncludeId != null;
+  const checkPrevious = params.checkPrevious != null;
+  const distinct = params.distinct != null;
+  const orderStatements = params.orderStatements != null;
+  const clearClear = params.clearClear != null;
+  const includeId = params.includeId != null;
 
   if (!token) throw 'Missing token';
-  if (bClearClear && !bDistinct) throw 'bClearClear only applicable with bDistinct';
+  if (clearClear && !distinct) throw 'clearClear only applicable with distinct';
 
   const db = admin.firestore();
   const collectionRef = db.collection(token).doc('statements').collection('statements');
@@ -237,7 +237,7 @@ async function fetchh(token, params = {}, omit = {}) {
   }
 
   var statements;
-  if (bIncludeId) {
+  if (includeId) {
     statements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } else {
     statements = snapshot.docs.map(doc => doc.data());
@@ -251,15 +251,7 @@ async function fetchh(token, params = {}, omit = {}) {
     lastToken = statements[0].id; // BUG: We don't get lastToken unless we asked for ID.
   }
 
-  if (omit) {
-    for (var s of statements) {
-      for (const key of omit) {
-        delete s[key];
-      }
-    }
-  }
-
-  if (bValidate) {
+  if (checkPrevious) {
     // Validate notary chain, decending order
     var first = true;
     var previousToken;
@@ -285,24 +277,26 @@ async function fetchh(token, params = {}, omit = {}) {
     }
   }
 
-  if (bDistinct) {
-    statements = await makedistinct(statements, bClearClear);
+  if (omit) {
+    for (var s of statements) {
+      for (const key of omit) {
+        delete s[key];
+      }
+    }
+  }
+
+  if (distinct) {
+    statements = await makedistinct(statements, clearClear);
   }
 
   // order statements
-  if (bOrderStatements) {
-    var orderedStatements = [];
-    for (const datum of statements) {
-      const orderedDatum = Object.keys(datum)
-        .sort((a, b) => ((key2order[a] ?? 40) - (key2order[b] ?? 40)))
-        // .sort((a, b) => compareKeys(a, b))
-        .reduce((obj, key) => {
-          obj[key] = datum[key];
-          return obj;
-        }, {});
-      orderedStatements.push(orderedDatum);
+  if (orderStatements) {
+    var ordered = [];
+    for (const statement of statements) {
+      const ordered = order(statement);
+      ordered.push(ordered);
     }
-    statements = orderedStatements;
+    statements = ordered;
   }
 
   return { "statements": statements, "I": iKey, "lastToken": lastToken };
@@ -314,7 +308,7 @@ async function fetchh(token, params = {}, omit = {}) {
 // - Emulator-Nerdster-Yotam: 
 //   http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
 // - Emulator-Oneofus-Yotam:
-//   http://127.0.0.1:5002/one-of-us-net/us-central1/export2?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431&bIncludeId=true&bOrderStatements=true
+//   http://127.0.0.1:5002/one-of-us-net/us-central1/export2?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431&includeId=true&orderStatements=true
 // - Prod-Nerdster-Yotam: https://us-central1-nerdster.cloudfunctions.net/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
 // - Prod-Oneofus-Yotam: http://us-central1-one-of-us-net.cloudfunctions.net/export2?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431
 // 
@@ -351,7 +345,7 @@ exports.signin = onRequest((req, res) => {
 });
 
 // Only considers subject of verb, does not consider otherSubject.
-async function makedistinct(input, bClearClear = false) {
+async function makedistinct(input, clearClear = false) {
   var out = [];
   var already = new Set();
   for (var j of input) {
@@ -367,7 +361,7 @@ async function makedistinct(input, bClearClear = false) {
     //   delegate, can't just clear.
     // Con:
     // - Performance.
-    if (bClearClear) {
+    if (clearClear) {
       if (verb == 'clear') continue;
     }
     // PERFORMANCE: Teach Dart Jsonish to accept our token so that we can delete [signature, previous]

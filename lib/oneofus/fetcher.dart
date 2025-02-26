@@ -12,40 +12,30 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
-/// Cloud functions distinct...
+/// Cloud Functions distinct, order, tokens, checkPervious...
 ///
 /// Integration Testing:
 /// With non-trivial code in JavaScript cloud functions, integration testing is required.
-/// As Firebase does not support Linux, this will necessarily have to run in Chrome or on the Android emulator.
+/// As Firebase does not support Linux, this necessarily requires running in Chrome or Android (emulator).
 /// I'm partway there with some tests implemented in demotest/cases. I don't want to re-implement
 /// a test framework, and so I expect to end up somewhere in the middle (and yes, I have and will
 /// always have bugs;)
 ///
-/// - DEFER: filters (ex, past month)
-///
-/// Cloud function are being used for permance.
-/// Omit: "statement", "I"
-/// How to get the full "I" key?
-/// - returning this from cloud func: {"statements": statements, "I": {key}, "lastToken": ...}
-/// Do we actually need it?
-/// - We only need it for some stuff which can be changed (param ?oneofus=token, for example).
-///
-/// DEFER: Modify Statement / ContentStatement
-/// - deal with "I" token instead of full key
+/// DEFER: filters (ex, past month)
 ///
 /// DEFER: Cloud distinct to regard "other" subject.
 /// All the pieces are there, and it shouldn't be hard. That said, relate / equate are rarely used.
 
-/// DEFER: PERFORMANCE: Get and use token from cloud instaed of computing it.
-/// This will allow us to not ask for [previous, signature].
-/// It'd be a destabilizing change to deal with Jsonish instances whose tokens aren't the tokens we'd compute from their Json.
+/// EXPERIMENTAL: Get and use token from cloud instead of computing it.
+/// This allows us to omit [previous, signature].
+/// It's a destabilizing change to deal with Jsonish instances whose tokens aren't the tokens we'd
+/// compute from their Json, but it seems to work.
 /// Options:
 /// - Don't even bother.
-/// - Move to Jsonish over Json wherever possible, and be very careful not to compute the
-///   token of a Json that you got from a Jsonish.
-///   - One way to do this might be to
-///     - not have Jsonish.json (override [] instead)
-///     - not have Statement.json (ppJson or jsonish only instead)
+/// - Move to Jsonish over Json wherever possible, and be very careful (ideally enforce) not to
+///   compute tokens from Jsonish.json.
+///   - remove Jsonish.json (override [] instead)
+///   - remove Statement.json (ppJson or jsonish only instead)
 
 /// This class combines much functionality, which is messy, but it was even messier with multiple classes:
 /// - Firestore fetch/push, cache
@@ -53,7 +43,7 @@ import 'util.dart';
 /// - blockchain maintenance and verification (previous token)
 /// - signature maintenance and verification
 ///
-/// Blockchain:
+/// Blockchain notarization (I've been loosly calling this this, but it's probably inaccurate):
 /// Each signed statement (other than first) includes the token of the previous statement.
 /// Revoking a key requires identifying its last, valid statement token. Without this, it doesn't work.
 
@@ -151,11 +141,13 @@ class Fetcher {
   bool get isCached => b(_cached);
 
   static const Map fetchParamsProto = {
-    "bIncludeId": true, // BUG: See index.js. If we don't ask for id's, then we don't get lastId.
-    "bValidate": true,
-    "bDistinct": true,
-    // I'm leaning against this. "bClearClear": true, TODO: Make !clouddistinct code path is same.
-    "omit": ['statement', 'I'] // DEFER: ['signature', 'previous']
+    "includeId": true, // BUG: See index.js. If we don't ask for id's, then we don't get lastId.
+    "checkPrevious": true, // CONSIDER: rename to bNotarize or validateNotarize (It doesn't validate signatures)
+    "distinct": true,
+    // "clearClear", true, // I'm leaning against this. If changed, make sure to keep
+    // !clouddistinct code path is same.
+    "omit": ['statement', 'I'], // EXPERIMENTAL: 'signature', 'previous']
+    // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
   Future<void> fetch() async {
@@ -184,8 +176,9 @@ class Fetcher {
         assert(statements.first['id'] == _revokeAt);
         _revokeAtTime = parseIso(statements.first['time']);
       }
-      Json iKey = result.data['I'];
-      assert(getToken(iKey) == token);
+      final Json iKey = result.data['I'];
+      final String iKeyToken = getToken(iKey);
+      assert(iKeyToken == token);
       _lastToken = result.data["lastToken"];
       for (Json j in statements) {
         DateTime jTime = parseIso(j['time']);
@@ -193,10 +186,10 @@ class Fetcher {
         time = jTime;
         j['statement'] = domain2statementType[domain]!;
         j['I'] = iKey; // PERFORMANCE: Allow token in 'I' in statements; we might be already.
-        assert(getToken(j['I']) == getToken(iKey));
         String serverToken = j['id'];
         j.remove('id');
 
+        // EXPERIMENTAL: Jsonish jsonish = mVerify.mSync(() => Jsonish(j, serverToken));
         Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
         assert(jsonish.token == serverToken);
         Statement statement = Statement.make(jsonish);
@@ -263,8 +256,8 @@ class Fetcher {
       }
       if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
       // Be like clouddistinct
-      // - DEFER: bClearClear
-      if (fetchParamsProto.containsKey('bDistinct')) {
+      // - DEFER: clearClear
+      if (fetchParamsProto.containsKey('distinct')) {
         _cached = distinct(_cached!);
       }
     }
