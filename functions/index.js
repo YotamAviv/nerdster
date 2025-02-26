@@ -6,7 +6,7 @@
 /// - "npm audit fix"
 /// 
 /// TEST: Would be nice to see that these all produce output we expect:
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bValidate=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&&bValidate=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bValidate=true&revokeAt=sincealways
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true&bDistinct=true
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&bIncludeId=true&bOrderStatements=true
@@ -125,8 +125,7 @@ function compareKeys(key1, key2) {
   return out;
 }
 
-// BUG: Need to special case on signature which always goes last.
-// (not pressing as none of my statements have unknown top level keys)
+
 function order(thing) {
   if (typeof thing === 'string') {
     return thing;
@@ -137,12 +136,16 @@ function order(thing) {
   } else if (Array.isArray(thing)) {
     return thing.map((x) => order(x));
   } else {
-    return Object.keys(thing)
+    const signature = thing.signature; // signature last
+    const { ['signature']: excluded, ...signatureExcluded } = thing;
+    var out = Object.keys(signatureExcluded)
       .sort((a, b) => compareKeys(a, b))
       .reduce((obj, key) => {
         obj[key] = order(thing[key]);
         return obj;
       }, {});
+    if (signature) out.signature = signature;
+    return out;
   }
 }
 

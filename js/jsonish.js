@@ -1,7 +1,6 @@
-const yotam_oneofus = require('./yotam-oneofus.json');
-const yotam_nerdster = require('./yotam-nerdster.json');
-// TODO: const other = require('./other.json');
-const other = [];
+const yotam_oneofus = require('../test/yotam-oneofus.json');
+const yotam_nerdster = require('../test/yotam-nerdster.json');
+const other = require('../test/other.json');
 
 // TDOO: BUG: Need to special case on signature which always goes last.
 // Test samples from Nerdster or ONE-OF-US are not going to have any unknown fields, and so need 
@@ -68,8 +67,7 @@ function compareKeys(key1, key2) {
   return out;
 }
 
-// BUG: Need to special case on signature which always goes last.
-// (not pressing as none of my statements have unknown top level keys)
+
 function order(thing) {
   if (typeof thing === 'string') {
     return thing;
@@ -80,12 +78,16 @@ function order(thing) {
   } else if (Array.isArray(thing)) {
     return thing.map((x) => order(x));
   } else {
-    return Object.keys(thing)
+    const signature = thing.signature; // signature last
+    const { ['signature']: excluded, ...signatureExcluded } = thing;
+    var out = Object.keys(signatureExcluded)
       .sort((a, b) => compareKeys(a, b))
       .reduce((obj, key) => {
         obj[key] = order(thing[key]);
         return obj;
       }, {});
+    if (signature) out.signature = signature;
+    return out;
   }
 }
 
@@ -104,13 +106,12 @@ async function keyToken(input) {
 async function main() {
   var passing = true;
   // console.log(data);
-  for (var statements of [yotam_oneofus, yotam_nerdster, other]) {
-    for (var statement of statements) {
+  for (const exported of [yotam_oneofus, yotam_nerdster, other]) {
+    for (const statement of exported['statements']) {
+      // Kludge: The server communicates token as "id" to us in the statement.
       const id = statement.id;
       delete statement.id;
       const token = await keyToken(statement);
-      // console.log(id == token ? '.' : '!');
-      // console.log(`${id} ?= ${token}`);
       if (id != token) {
         console.log(`${id} != ${token}`);
         console.log(JSON.stringify(statement, null, 2));
