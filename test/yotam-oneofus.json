@@ -1,0 +1,294 @@
+{
+    "statements": [
+      {
+        "id": "68982c97e3552651f06d338ba40310eb624369b1",
+        "statement": "net.one-of-us",
+        "time": "2025-02-17T14:22:24.842019Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "M7l7bQBumX2Z-Rhh8M2nvgupd65ZwNn8x0uHY7H5bRY"
+        },
+        "with": {
+          "moniker": "Eyal F"
+        },
+        "previous": "3006420b4d90e521a2ee63d3ec349de01bbd8fdb",
+        "signature": "ee812815a7a2eebe91b5673e2eb48583f12665e70ef9c2ae85ac3eb1e7995566a80349b04840e8bb27e3cd0237738396c7eab5a877577b4c42c22f9fbf9b2a0e"
+      },
+      {
+        "id": "3006420b4d90e521a2ee63d3ec349de01bbd8fdb",
+        "statement": "net.one-of-us",
+        "time": "2025-02-17T13:26:50.994021Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "bYhOIKTEqwDe1tmlrtDAtSw9EPeXl_tto5euQpt_v50"
+        },
+        "with": {
+          "moniker": "Dave A"
+        },
+        "previous": "c79e4810155ac697773a89fd9b302b04b03aeee4",
+        "signature": "00ac067d373a79e5052080356dd104803f4aa72c9ac5a99d885ec098dd9d37fbce23dd44109ac9b11ba395192639514eb9a5a9307ba1ee04661f043c159d3e08"
+      },
+      {
+        "id": "c79e4810155ac697773a89fd9b302b04b03aeee4",
+        "statement": "net.one-of-us",
+        "time": "2024-12-16T14:16:45.852751Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "zzWDiUybV6Yj7Fp-frynBZbwHGaL8EDe18NB1DJebp4"
+        },
+        "with": {
+          "moniker": "Mateo"
+        },
+        "previous": "86f3d2850f5e7d0611cc242b6dd79b552852a876",
+        "signature": "8c253628524ea203336df775119d4b90e874af6f3733bb4f1f92660aa30562d19b7f84a8d3f8b840b929497d2385f74410fceb90d9eabffe266eb1ca58f89008"
+      },
+      {
+        "id": "86f3d2850f5e7d0611cc242b6dd79b552852a876",
+        "statement": "net.one-of-us",
+        "time": "2024-12-06T03:23:59.746485Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "2gHnIE6_rm53Q3ktKlih7kjWncPJV3Qc-dtfm3vJsT8"
+        },
+        "with": {
+          "moniker": "A J"
+        },
+        "previous": "22f035a1c1e0360a4ca58a662a971c6435ee6a34",
+        "signature": "46660e5b40525b44d2fa564d24a548e6d7b543d8a5072d24bb586229ffb474266c75d5b7308845bc576b65fedaa74e8e4d5bb08c2b5c298ab0fdbb2d706a830c"
+      },
+      {
+        "id": "22f035a1c1e0360a4ca58a662a971c6435ee6a34",
+        "statement": "net.one-of-us",
+        "time": "2024-12-02T20:07:10.834537Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "-FHOdDNxrUFw2EGCeZiTPIWjK8tn2AsgJL59FqABw2s"
+        },
+        "with": {
+          "moniker": "Jason"
+        },
+        "previous": "86daba5b09ecd511b3245b929dc80514e498830b",
+        "signature": "54c09d3941f3728e419115b00414922c2c45d0f83efd67dae1c25ff2ac6475c6fc5365f726479f0a5bb2cee1a8641630d1ea589ba4f5e86711636902f9c49904"
+      },
+      {
+        "id": "86daba5b09ecd511b3245b929dc80514e498830b",
+        "statement": "net.one-of-us",
+        "time": "2024-11-27T22:33:58.542104Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "G1_KSd2E-V62L8tQIFNmdk2sObHxYAAmk8gVtHQDf84"
+        },
+        "with": {
+          "moniker": "James"
+        },
+        "previous": "85f552204ffc3aedecb72c3fa4e63d05594bfefc",
+        "signature": "9e42ea2f82b318b312f4457bc1bd694c5b98ef4b7185fa771dc0aeb8e5fe6ff34941349610378259cfee8a6b162c5caa4d1c0da408cc37caccd8e785e89b0b08"
+      },
+      {
+        "id": "85f552204ffc3aedecb72c3fa4e63d05594bfefc",
+        "statement": "net.one-of-us",
+        "time": "2024-11-27T18:11:04.748412Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "-bxsrml3jcHQdscHhruRyrP97SGT1J-jJMKD7cRCPKw"
+        },
+        "with": {
+          "moniker": "Hillel M"
+        },
+        "comment": "former colleague\na true and loyal friend",
+        "previous": "3c8b47ec5e8e6ab17252a1fae82c6eba12fe9f51",
+        "signature": "c8adcb72d4dc06df69ef028f495ebaee842a7b23091a8b7647d640efd123a7485c8a0db3231da1d9fdfc52d099748076493334a0d8e715e9ea22368521b2ad0d"
+      },
+      {
+        "id": "3c8b47ec5e8e6ab17252a1fae82c6eba12fe9f51",
+        "statement": "net.one-of-us",
+        "time": "2024-11-17T23:18:36.226803Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "o4fdtWGHNblOhMHDYgoYX4Vi86k9AGUTpcZHfZHZEOQ"
+        },
+        "with": {
+          "moniker": "Andrew"
+        },
+        "previous": "5ce82ab3cbbf79dce1289bf006ff9e583de38b9c",
+        "signature": "a9f7edb9e9d69afcd8fd1b04eef3f1de33b35162658b98e86d727ce9c4af044ed166e1cebc33a0f4571b52c4265aa3985b52552c701df782ef7b1f2be9790006"
+      },
+      {
+        "id": "5ce82ab3cbbf79dce1289bf006ff9e583de38b9c",
+        "statement": "net.one-of-us",
+        "time": "2024-10-22T15:43:40.475401Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "EHc37KRjukpvoSOT-zeExg8q54qsifRBEEr8vq5FW-c"
+        },
+        "with": {
+          "moniker": "Amotz"
+        },
+        "comment": "cousin",
+        "previous": "23cae003f619512ab1685f6ceebbb468cf39dbb4",
+        "signature": "721e46d455191c9a6369eb262608b8e8721a2e6a4d612284cae2ccb972ee81afe0f733c3bb19021b51dd5ae403b5065f9be1268c12655a18fdda4c55b1675e0d"
+      },
+      {
+        "id": "23cae003f619512ab1685f6ceebbb468cf39dbb4",
+        "statement": "net.one-of-us",
+        "time": "2024-10-21T14:36:56.162455Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "LxcgcUEK-djXUcMRg2qJSd00hqw89EP0Pc9iocw2UcE"
+        },
+        "with": {
+          "moniker": "Dave"
+        },
+        "previous": "d0db005b21faf7cf8e8b8fe09161e88e459ce6e1",
+        "signature": "62fe9f295241d88935eb12e2fcb72e76fb03a63323229528fc8246797643739c0998a29e224597bd2e32da72096d92edb47e57d3da855529896f4487230a7005"
+      },
+      {
+        "id": "d0db005b21faf7cf8e8b8fe09161e88e459ce6e1",
+        "statement": "net.one-of-us",
+        "time": "2024-10-18T17:24:13.692677Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "delegate": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI"
+        },
+        "with": {
+          "domain": "nerdster.org"
+        },
+        "previous": "f13771b3ea78804dee4aadcdcc481935d4ef4dd5",
+        "signature": "91386c885e52f9ff100fa50c84277a9749bd8984a985c78481b160d83a77cbd7af581d4dce143b57b3042e8665b8b67c0d2f65bfe72cdcf8011ea561b953e901"
+      },
+      {
+        "id": "f13771b3ea78804dee4aadcdcc481935d4ef4dd5",
+        "statement": "net.one-of-us",
+        "time": "2024-09-13T17:27:02.004843Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "_Gy7YmUG6FR0e2J2Drojz72Kv6yyHVVlJOHHoH6apdQ"
+        },
+        "with": {
+          "moniker": "Hillel TT"
+        },
+        "comment": "cousin",
+        "previous": "43b9acdf090eb325981741b897fd35833a9f8203",
+        "signature": "34f6f7a239d38f4cfa4404a2ffb0682da049b30112fd9278118b41881fbbe46aadfcbdc35bd10f7cb1bcd381df6d5e522eee8d1d75fde7d477009099eb982701"
+      },
+      {
+        "id": "43b9acdf090eb325981741b897fd35833a9f8203",
+        "statement": "net.one-of-us",
+        "time": "2024-08-11T00:55:03.109Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "trust": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "EHc37KRjukpvoSOT-zeExg8q54qsifRBEEr8vq5FW-c"
+        },
+        "with": {
+          "moniker": "Amotz"
+        },
+        "previous": "444b245d7e6dbc8cfbf7393a4e23cfaae3dda80b",
+        "signature": "b736d33c5f946882477ee6004b1e972d38ace0a7ff7189b20cf87c691821469807f87f3efd7b29bc6ba8a7284ed89031f9b129dd319f1f275dc217901e7cb90a"
+      },
+      {
+        "id": "444b245d7e6dbc8cfbf7393a4e23cfaae3dda80b",
+        "statement": "net.one-of-us",
+        "time": "2024-08-11T00:55:01.565Z",
+        "I": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+        },
+        "delegate": {
+          "crv": "Ed25519",
+          "kty": "OKP",
+          "x": "qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI"
+        },
+        "with": {
+          "moniker": "yotam-nerdster0",
+          "domain": "nerdster.org"
+        },
+        "comment": "nerdster key",
+        "signature": "7b72d1e417781b9cba35414aaa5624fdae7cfa026fb08337c9b883b310e17ce0fe9d3fd4e4d03366b87d756033c8d4b51a3604351b78b35b0c1fd395c4597c0d"
+      }
+    ],
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+    },
+    "lastToken": "68982c97e3552651f06d338ba40310eb624369b1"
+  }

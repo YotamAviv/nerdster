@@ -1,0 +1,26 @@
+{
+  "statements": [
+    {
+      "signature": "268613a844523fe8682ced911f724df04d9502056dd172ffa6b5b9dec5ee9d29ffc5748d71da3c8625511a928f97ae0639b8c4e1321135d964b36c588f718907",
+      "statement": "net.one-of-us",
+      "Timmy": "rock",
+      "time": "2025-02-17T14:22:24.842019Z",
+      "I": {
+        "crv": "Ed25519",
+        "kty": "OKP",
+        "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+      },
+      "Betty": "Timmy",
+      "with": {
+        "moniker": "Eyal F"
+      },
+      "id": "02974e5bf0a5376eabe3b5b1b5c2fc7dca91eafb",
+      "previous": "bf020f1641972aed5cbd4c6c040f78e5d936e105",
+      "trust": {
+        "kty": "OKP",
+        "crv": "Ed25519",
+        "x": "M7l7bQBumX2Z-Rhh8M2nvgupd65ZwNn8x0uHY7H5bRY"
+      }
+    }
+  ]
+}

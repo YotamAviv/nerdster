@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
@@ -282,5 +283,21 @@ void main() {
   "Timmy": "rock",
   "signature": "268613a844523fe8682ced911f724df04d9502056dd172ffa6b5b9dec5ee9d29ffc5748d71da3c8625511a928f97ae0639b8c4e1321135d964b36c588f718907"
 }''');
+  });
+
+  test('yotam data', () async {
+    final Json yotamNerdster = jsonDecode(File('test/yotam-nerdster.json').readAsStringSync());
+    final Json yotamOneofus = jsonDecode(File('test/yotam-oneofus.json').readAsStringSync());
+    final Json other = jsonDecode(File('test/other.json').readAsStringSync());
+    // DEFER: TEST: Other with unknow fields
+    for (final exported in [yotamOneofus, yotamNerdster, other]) {
+      for (final Json statement in exported['statements'] as Iterable) {
+        // Kludge: The server communicates token as "id" to us in the statement.
+        final id = statement['id'];
+        statement.remove('id');
+        Jsonish jsonish = Jsonish(statement);
+        expect(jsonish.token, id);
+      }
+    }
   });
 }
