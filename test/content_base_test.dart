@@ -78,7 +78,7 @@ void main() async {
     expect(roots.length, 0);
 
     Jsonish statement = await lonerD.doRate(title: "t1");
-    expect(statement.json.containsKey('signature'), true);
+    expect(statement.containsKey('signature'), true);
     contentBase.listen();
     await signInState.signIn(oneofus.token, delegate.keyPair);
     await contentBase.waitUntilReady();
@@ -86,8 +86,8 @@ void main() async {
     expect(roots.length, 1);
 
     Jsonish statement2 = await lonerD.doRate(title: "t2");
-    expect(statement2.json.containsKey('signature'), true);
-    expect(statement2.json.containsKey('previous'), true);
+    expect(statement2.containsKey('signature'), true);
+    expect(statement2.containsKey('previous'), true);
     await signInState.signIn(oneofus.token, delegate.keyPair);
     await contentBase.waitUntilReady();
     roots = contentBase.roots;
@@ -161,8 +161,8 @@ void main() async {
     expect(roots.length, 0);
 
     Jsonish statement = await lonerD.doRate(title: "t1");
-    expect(statement.json.containsKey('signature'), true);
-    expect(!statement.json.containsKey('previous'), true);
+    expect(statement.containsKey('signature'), true);
+    expect(!statement.containsKey('previous'), true);
     await signInState.signIn(loner.token, lonerD.keyPair);
     contentBase.listen();
     await contentBase.waitUntilReady();
@@ -170,8 +170,8 @@ void main() async {
     expect(roots.length, 1);
 
     Jsonish statement2 = await lonerD.doRate(title: "t2");
-    expect(statement2.json.containsKey('signature'), true);
-    expect(statement2.json.containsKey('previous'), true);
+    expect(statement2.containsKey('signature'), true);
+    expect(statement2.containsKey('previous'), true);
     contentBase.listen();
     await contentBase.waitUntilReady();
     roots = contentBase.roots;
@@ -206,8 +206,8 @@ void main() async {
 
     // say something as new delegate
     Jsonish statement3 = await lonerD2.doRate(title: "t3");
-    expect(statement3.json.containsKey('signature'), true);
-    expect(!statement3.json.containsKey('previous'), true);
+    expect(statement3.containsKey('signature'), true);
+    expect(!statement3.containsKey('previous'), true);
     await signInState.signIn(loner.token, lonerD2.keyPair);
     await contentBase.waitUntilReady();
     roots = contentBase.roots;

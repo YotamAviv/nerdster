@@ -65,14 +65,14 @@ class _SubjectTileState extends State<SubjectTile> {
 
     final ContentTreeNode subjectNode = widget.entry.node;
 
-    final bool isStatement = subjectNode.subject.json.containsKey('statement');
+    final bool isStatement = subjectNode.subject.containsKey('statement');
     ContentStatement? statement;
     (IconData, IconData) iconPair;
     if (isStatement) {
       statement = ContentStatement(subjectNode.subject);
       iconPair = statementIconPair;
     } else {
-      iconPair = ContentType.values.byName(subjectNode.subject.json['contentType']).iconDatas;
+      iconPair = ContentType.values.byName(subjectNode.subject['contentType']).iconDatas;
     }
 
     String rowTooltip = "Click to expand statements about this subject";
@@ -289,10 +289,10 @@ class SubjectTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String url;
-    if (subject.json.containsKey('url')) {
-      url = subject.json['url'];
+    if (subject.containsKey('url')) {
+      url = subject['url'];
     } else {
-      String out = 'https://www.google.com/search?q=${subject.json.values.join(' ')}';
+      String out = 'https://www.google.com/search?q=${subject.values.join(' ')}';
       url = out;
     }
 
@@ -302,7 +302,7 @@ class SubjectTitle extends StatelessWidget {
                 onTap: () {
                   myLaunchUrl(url);
                 },
-                child: Text((subject.json['title']),
+                child: Text((subject['title']),
                     style: linkStyle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis))));

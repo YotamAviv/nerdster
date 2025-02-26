@@ -240,7 +240,7 @@ class Fetcher {
         // First: previousToken is null
         // middles: statement.token = previousToken
         // Last: statement.token = null
-        DateTime time = parseIso(jsonish.json['time']);
+        DateTime time = parseIso(jsonish['time']);
         if (first) {
           first = false;
         } else {

@@ -38,19 +38,18 @@ class TrustStatement extends Statement {
     if (_cache.containsKey(jsonish.token)) {
       return _cache[jsonish.token]!;
     }
-    Json json = jsonish.json;
 
     TrustVerb? verb;
     dynamic subject;
     for (verb in TrustVerb.values) {
-      subject = json[verb.label];
+      subject = jsonish[verb.label];
       if (b(subject)) {
         break; // could continue to loop to make sure that there isn't a second subject
       }
     }
     assert(b(subject));
 
-    Json? withx = json['with'];
+    Json? withx = jsonish['with'];
     TrustStatement s = TrustStatement._internal(
       jsonish,
       subject,

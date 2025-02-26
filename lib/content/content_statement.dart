@@ -21,22 +21,19 @@ class ContentStatement extends Statement {
   }
 
   factory ContentStatement(Jsonish jsonish) {
-    if (_cache.containsKey(jsonish.token)) {
-      return _cache[jsonish.token]!;
-    }
-    Json json = jsonish.json;
+    if (_cache.containsKey(jsonish.token)) return _cache[jsonish.token]!;
 
     ContentVerb? verb;
     dynamic subject;
     for (verb in ContentVerb.values) {
-      subject = json[verb.label];
+      subject = jsonish[verb.label];
       if (b(subject)) {
         break;
       }
     }
     assert(b(subject));
 
-    Json? withx = json['with'];
+    Json? withx = jsonish['with'];
     ContentStatement s = ContentStatement._internal(
       jsonish,
       subject,
