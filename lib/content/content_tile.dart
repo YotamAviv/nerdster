@@ -299,12 +299,8 @@ class SubjectTitle extends StatelessWidget {
     return Flexible(
         child: ClipRect(
             child: InkWell(
-                onTap: () {
-                  myLaunchUrl(url);
-                },
+                onTap: () => myLaunchUrl(url, context),
                 child: Text((subject['title']),
-                    style: linkStyle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis))));
+                    style: linkStyle, maxLines: 1, overflow: TextOverflow.ellipsis))));
   }
 }

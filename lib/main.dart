@@ -35,7 +35,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -88,7 +88,8 @@ Future<void> main() async {
       OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
       OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
     }
-    FireFactory.registerFire(kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
+    FireFactory.registerFire(
+        kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
     FireFactory.registerFire(kOneofusDomain, OneofusFire.firestore, OneofusFire.functions);
   } else {
     FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
@@ -181,8 +182,16 @@ dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
   // FireChoice.prod: {"one-of-us.net": yotam},
 
-  FireChoice.emulator: {"one-of-us.net": yotam},
-  // FireChoice.emulator: {"one-of-us.net": dummyOneofus},
+  // FireChoice.emulator: {"one-of-us.net": yotam},
+  FireChoice.emulator: {
+    "one-of-us.net": "4c8488f746c69ce515ebd3d17f8b3337171bfe03",
+    "nerdster.org": {
+      "crv": "Ed25519",
+      "d": "RP1vk15c_5BDBxuw5SFwxA7_rz0yHz5PPbqTQ6J91-g",
+      "kty": "OKP",
+      "x": "Rrqzz4eXMLjp_QZRn_c_ImlYt6bPHy1nb1TorJn_CUg"
+    }
+  },
 };
 
 // simpsons PROD
