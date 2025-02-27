@@ -142,7 +142,7 @@ class Fetcher {
 
   static const Map fetchParamsProto = {
     "includeId": true, // BUG: See index.js. If we don't ask for id's, then we don't get lastId.
-    "checkPrevious": true, // CONSIDER: rename to bNotarize or validateNotarize (It doesn't validate signatures)
+    "checkPrevious": true,
     "distinct": true,
     // "clearClear", true, // I'm leaning against this. If changed, make sure to keep
     // !clouddistinct code path is same.
