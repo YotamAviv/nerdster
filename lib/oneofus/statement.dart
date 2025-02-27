@@ -51,12 +51,12 @@ abstract class Statement {
 
   bool get isClear;
 
-  // NEXT: CODE: As a lot uses either Json or a token (subject, other, iKey), it might 
+  // CODE: As a lot uses either Json or a token (subject, other, iKey), it might 
   // make sense to make Jsonish be Json or a string token.
   // One challenge would be managing the cache, say we encounter a Jsonish string token and later
   // encounter its Json equivalent. The factory methods are where these come from, and so it should 
   // be manageable.
-  // CODE: Try to reduce uses and switch to []
+  // Try to reduce uses and switch to []
   Json get json => jsonish.json;
 }
 

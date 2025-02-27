@@ -188,8 +188,6 @@ class ContentBase with Comp, ChangeNotifier {
     _related.make();
 
     // distinct.. (1 per author per subject)
-    // CODE: This is new'ish, and it may be that it's sleaker and more elegant than what I did with
-    // a bunch of complicated code related to [censor, clear].
     List<ContentStatement> distinctStatements =
         distinct(statements, transformer: (t) => followNet.delegate2oneofus[t]!)
             .cast<ContentStatement>();

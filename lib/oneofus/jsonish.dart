@@ -22,6 +22,9 @@ import 'trust_statement.dart';
 /// - hash value for caches, Maps (SHA1 of the JSON pretty-printed string)
 /// - identical objects when reading the same JSON (Firebase likes to reorder the fields)
 /// - generate pretty-printed JSON in our preferred order of map keys
+///
+/// CONSIDER: We use either Json or a token all over the place (subject, other, oneofusKey, ..). 
+/// Make Jsonish be either Json or a string token.
 
 typedef Json = Map<String, dynamic>;
 
@@ -113,7 +116,8 @@ class Jsonish {
   final Json _json; // (unmodifiable LinkedHashMap)
   final String _token;
 
-  /// newly constructed Jsonish or from the cache (all equal intancees identical()!)
+  /// Return either a newly constructed Jsonish or one from the cache
+  /// (all equal intancees identical()!)
   factory Jsonish(Json json, [String? serverToken]) {
     // Check cache
     String token;
@@ -213,17 +217,10 @@ class Jsonish {
     }
   }
 
-  // NEXT: CODE: As a lot uses either Json or a token (subject, other, iKey), it might 
-  // make sense to make Jsonish be Json or a string token.
-  // One challenge would be managing the cache, say we encounter a Jsonish string token and later
-  // encounter its Json equivalent. The factory methods are where these come from, and so it should 
-  // be manageable.
   // CODE: Try to reduce uses and switch to []
   Json get json => _json;
 
   String get token => _token;
-
-  // String get ppJson => _ppJson; // Don't cache ppJson and generate it on the fly instead.
   String get ppJson => encoder.convert(json);
 
   operator [](String key) => _json[key];
@@ -243,7 +240,7 @@ class Jsonish {
   String toString() => _json.values.join(':');
 }
 
-// NEXT: CODE: This is overused and can probably be eliminated if Jsonish becomes Json or token.
+// CODE: This is overused and can probably be eliminated if Jsonish becomes Json or token.
 String getToken(dynamic x) {
   if (x is Json) {
     return Jsonish(x).token;
