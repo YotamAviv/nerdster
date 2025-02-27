@@ -6,6 +6,7 @@
 /// - "npm audit fix"
 /// 
 /// TEST: Would be nice to see that these all produce output we expect:
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&&checkPrevious=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&checkPrevious=true&revokeAt=sincealways
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true
@@ -204,7 +205,7 @@ async function fetchh(token, params = {}, omit = {}) {
   const revokeAt = params.revokeAt;
   const checkPrevious = params.checkPrevious != null;
   const distinct = params.distinct != null;
-  const orderStatements = params.orderStatements != null;
+  const orderStatements = params.orderStatements != 'false'; // On by default for demo.
   const clearClear = params.clearClear != null;
   const includeId = params.includeId != null;
 

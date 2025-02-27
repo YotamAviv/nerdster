@@ -146,6 +146,7 @@ class Fetcher {
     "distinct": true,
     // "clearClear", true, // I'm leaning against this. If changed, make sure to keep
     // !clouddistinct code path is same.
+    "orderStatements": "false",
     "omit": ['statement', 'I'], // EXPERIMENTAL: 'signature', 'previous']
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
