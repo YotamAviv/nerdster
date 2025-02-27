@@ -111,7 +111,6 @@ class Equivalence {
   }
 }
 
-// TODO: override == and hashCode as we're keeping these in sets. Add test, too.
 class _EquivalenceCell {
   String token;
   _EquivalenceCell? parent;
