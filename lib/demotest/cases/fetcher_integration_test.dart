@@ -201,15 +201,7 @@ Future<void> revokeAtSinceAlways() async {
       expect(js.length, 0);
     }
   }
-  // TODO: Decide what to do for notarization violations:
-  // - !cloud functions: omit notary chain violations.
-  // - cloud functions: throw error for notary chain violations.
-  // User should be made aware that the chain is corrupt (he'll then probably choose to revoke at 
-  // something).
-  // But once he revokes at something, then we want to respect the chain from his identified 
-  // statement, and it's okay if that skips statements that aren't part of the chain.
-  // This whole notary business isn't really relevant for the Nerdster but is rather there for the
-  // future, which is bigger than the Nerdster.
+  
   Future<void> notarizationBlockchainViolation() async {
     TestSigner signer = TestSigner();
     Fetcher fetcher;
