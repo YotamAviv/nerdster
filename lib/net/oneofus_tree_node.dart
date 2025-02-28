@@ -109,6 +109,7 @@ class OneofusTreeNode extends NetTreeModel {
       // show trust statements made by this key
       for (TrustStatement statement
           in distinct(Fetcher(token!, kOneofusDomain).statements).cast<TrustStatement>()) {
+        if (statement.verb == TrustVerb.clear) continue;
         childStatements.add(OneofusTreeNode(path, statement: statement));
       }
       // (Same: childStatements.addAll(Fetcher(token!, kOneofusDomain).statements.cast().map((s) => NetTreeNode(path, statement: s)));)

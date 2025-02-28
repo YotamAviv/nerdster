@@ -38,7 +38,7 @@ void main() async {
 
   test('distinctContentRelateEquate', helper.distinctContentRelateEquate);
 
-  test('clear', helper.clear);
+  test('clearNot', helper.clearNot);
 
   // I must have written this as I was first using FakeFirebaseFirestore.
   // I uses the full blown fetcher signing push(..) to write to the db; it should have been

@@ -94,8 +94,9 @@ class ContentBase with Comp, ChangeNotifier {
 
     List<ContentStatement> statements = <ContentStatement>[];
     for (String oneofus in followNet.oneofus2delegates.keys) {
-      statements
-          .addAll(followNet.getStatements(oneofus).where((s) => s.verb != ContentVerb.follow));
+      statements.addAll(followNet
+          .getStatements(oneofus)
+          .where((s) => (s.verb != ContentVerb.follow && s.verb != ContentVerb.clear)));
     }
 
     /// Censoring: who gets to do what? (Note: this used to be called delete)

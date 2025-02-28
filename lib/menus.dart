@@ -5,6 +5,7 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/demotest/cases/integration_tests.dart';
 import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/dev/corruption_check.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/nerdster_link.dart';
@@ -162,20 +163,20 @@ $link''',
 
       // Dev
       if (Prefs.dev.value)
-        SubmenuButton(menuChildren: <Widget>[
+        SubmenuButton(menuChildren: [
           MenuItemButton(
               onPressed: () {
                 Jsonish.wipeCache();
                 BarRefresh.refresh();
               },
               child: const Text('Refresh. Jsonish cache, too')),
-          MenuItemButton(
-              onPressed: () => fetcherIntegrationTest(),
-              child: const Text('integration test: Fetcher')),
-          MenuItemButton(onPressed: () => integrationTests(), child: const Text('integration test: demos')),
+          SubmenuButton(menuChildren: [
+            MenuItemButton(onPressed: () => fetcherIntegrationTest(), child: const Text('Fetcher')),
+            MenuItemButton(onPressed: () => integrationTests(), child: const Text('misc  demos')),
+          ], child: const Text('integration tests')),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
-          // MenuItemButton(onPressed: () => CorruptionCheck.make(), child: const Text('Check Statements')),
+          MenuItemButton(onPressed: () => CorruptionCheck.make(), child: const Text('CorruptionCheck')),
           SubmenuButton(menuChildren: <Widget>[
             ...demos,
           ], child: const Text('run case')),
