@@ -3,6 +3,7 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -33,14 +34,20 @@ class KeyLabels with Comp, ChangeNotifier {
     notifyListeners();
   }
 
-  // Label gibberish (crypto keys, tokens)
-  // Strip ['signature', 'previous']
+  // Try to label (or strip):
+  // - "gibberish" (crypto keys, tokens, ['signature', 'previous'] stripped)
+  // - datetimes.,
+  // - lists and maps of those above
   dynamic show(dynamic d) {
-    if (d is Iterable) {
+    if (d is Jsonish) {
+      return show(d.json);
+    } else if (d is Statement) {
+      return show(d.json);
+    } else if (d is Iterable) {
       return List.of(d.map(show)); // Json converter doesn't like Iterable, and so List.of
     } else if (d is Json && d['crv'] == 'Ed25519') {
       try {
-        String token = Jsonish(d).token;
+        String token = getToken(d);
         if (labelKey(token) != null) {
           return labelKey(token);
         }
