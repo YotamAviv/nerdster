@@ -181,7 +181,7 @@ class DemoKey {
     }
 
     DemoKey delegateKey = await DemoKey.findOrCreate(delegateKeyName);
-    // It would be nice to have this returned (so that we can revoke at it)
+    // It would be nice to have this returned (to revoke at it or to verify its rejection)
     Statement statement = await doTrust(TrustVerb.delegate, delegateKey, domain: kNerdsterDomain);
 
     return delegateKey;
