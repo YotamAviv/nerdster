@@ -5,6 +5,7 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/demotest/cases/delegate_merge.dart';
+import 'package:nerdster/demotest/cases/egos.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
@@ -167,8 +168,8 @@ void main() async {
   test('2 delegates, same subject, clear', () async {
     DemoKey loner = await DemoKey.findOrCreate('loner');
     DemoKey lonerN = await loner.makeDelegate();
-    Statement n1 = await lonerN.doRate(title: 't');
     DemoKey lonerN2 = await loner.makeDelegate();
+    Statement n1 = await lonerN.doRate(title: 't');
     Statement n2 = await lonerN2.doRate(title: 't');
 
     signInState.center = loner.token;
@@ -184,7 +185,7 @@ void main() async {
     }
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(followNet.getStatements(loner.token).length, 0);
+    expect(followNet.getStatements(loner.token).first.verb, ContentVerb.clear);
     myExpect(contentBase.roots.length, 0);
   });
 
@@ -192,8 +193,8 @@ void main() async {
   test('2 delegates, differet subjects, clear', () async {
     DemoKey loner = await DemoKey.findOrCreate('loner');
     DemoKey lonerN = await loner.makeDelegate();
-    Statement n1 = await lonerN.doRate(title: 't1');
     DemoKey lonerN2 = await loner.makeDelegate();
+    Statement n1 = await lonerN.doRate(title: 't1');
     Statement n2 = await lonerN2.doRate(title: 't2');
 
     signInState.center = loner.token;
@@ -209,7 +210,7 @@ void main() async {
     }
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(followNet.getStatements(loner.token).length, 1);
+    expect(followNet.getStatements(loner.token).length, 2);
     myExpect(contentBase.roots.length, 1);
   });
 
@@ -274,7 +275,7 @@ void main() async {
     contentBase.listen();
     followNet.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(followNet.getStatements(loner2.token).length, 0);
+    expect(followNet.getStatements(loner2.token).length, 1);
     myExpect(contentBase.roots.length, 0);
   });
 
@@ -555,13 +556,13 @@ void main() async {
   /// This test is in response to a bug.
   /// Switching between context='social' and context=null was acting strangely.
   test('poser social follow bug', () async {
-    var (oneofus, delegate) = await DemoKey.demos['egos']();
+    var (poser, delegate) = await egos();
 
     DemoKey hipster = DemoKey.findByName('hipster')!;
     DemoKey hipDel0 = DemoKey.findByName('hipster-nerdster0')!;
     DemoKey hipDel1 = DemoKey.findByName('hipster-nerdster1')!;
 
-    await signInState.signIn(oneofus.token, null);
+    await signInState.signIn(poser.token, null);
     await contentBase.waitUntilReady();
     expect(contentBase.roots.length, 2);
     Map<String, String?> delegate2revokedAt =

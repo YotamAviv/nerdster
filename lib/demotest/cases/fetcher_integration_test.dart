@@ -76,7 +76,7 @@ Future<void> fetcherIntegrationTest() async {
 
   test('distinctContentRelateEquate', helper.distinctContentRelateEquate);
 
-  test('clear', helper.clear);
+  test('clearNot', helper.clearNot);
 }
 
 class FetcherTestHelper {
@@ -371,7 +371,8 @@ Future<void> revokeAtSinceAlways() async {
     expect(js.length, 4);
   }
 
-  Future<void> clear() async {
+  // Fetcher and Distincter used to clear "clear" statements, but no longer
+  Future<void> clearNot() async {
     ContentStatement.init();
     TestSigner signer = TestSigner();
     Fetcher fetcher;
@@ -403,6 +404,6 @@ Future<void> revokeAtSinceAlways() async {
       'time': clock.nowIso
     }, signer);
     js = distinct(fetcher.statements);
-    expect(js.length, 0);
+    expect(js.length, 1);
   }
 }

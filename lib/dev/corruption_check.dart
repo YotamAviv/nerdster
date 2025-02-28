@@ -2,7 +2,6 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
 class CorruptionCheck {
@@ -34,7 +33,9 @@ class CorruptionCheck {
 
         previousToken = s['previous'];
         previousTime = time;
+        print(',');
       }
+      print('.');
     }
     print('out');
   }

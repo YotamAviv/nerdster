@@ -1,6 +1,5 @@
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
@@ -11,6 +10,9 @@ Future<(DemoKey, DemoKey?)> egos() async {
 
   await jock.doTrust(TrustVerb.trust, poser);
   await poser.doTrust(TrustVerb.trust, hipster);
+  // a gratuitous trust n' clear.
+  await hipster.doTrust(TrustVerb.trust, jock);
+  await hipster.doTrust(TrustVerb.clear, jock);
 
   DemoKey jockN = await jock.makeDelegate();
   DemoKey poserN = await poser.makeDelegate();
