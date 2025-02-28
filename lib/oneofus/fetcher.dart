@@ -172,11 +172,15 @@ class Fetcher {
         return functions!.httpsCallable('clouddistinct').call(params);
       });
       List statements = result.data["statements"];
-      if (statements.isEmpty) return; // QUESTIONABLE
       if (_revokeAt != null) {
-        assert(statements.first['id'] == _revokeAt);
-        _revokeAtTime = parseIso(statements.first['time']);
+        if (statements.isNotEmpty) {
+          assert(statements.first['id'] == _revokeAt);
+          _revokeAtTime = parseIso(statements.first['time']);
+        } else {
+          _revokeAtTime = DateTime(0); // "since always" (or any unknown token);
+        }
       }
+      if (statements.isEmpty) return; // QUESTIONABLE
       final Json iKey = result.data['I'];
       final String iKeyToken = getToken(iKey);
       assert(iKeyToken == token);
