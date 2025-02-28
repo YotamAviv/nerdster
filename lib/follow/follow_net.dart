@@ -120,10 +120,10 @@ class FollowNet with Comp, ChangeNotifier {
     _delegate2fetcher.clear();
 
     Iterable<String> network;
+    final int degrees = Prefs.followNetDegrees.value;
+    final int numPaths = Prefs.followNetPaths.value;
     if (b(fcontext)) {
-      Trust1 trust1 = Trust1(
-          degrees: Prefs.followNetDegrees.value,
-          numPaths: Prefs.followNetPaths.value);
+      Trust1 trust1 = Trust1(degrees: degrees, numPaths: numPaths);
       FollowNode.clear();
       LinkedHashMap<String, Node> canonNetwork =
           await trust1.process(FollowNode(signInState.center));
@@ -134,7 +134,18 @@ class FollowNet with Comp, ChangeNotifier {
       }
       network = tmp;
     } else {
-      network = oneofusNet.network.keys;
+      // Apply [degrees, numPaths] restrictions to oneofusNet.network.
+      // TEST:
+      List<String> networkX = <String>[];
+      networkX.add(oneofusNet.network.entries.first.key); // Special case for source (no paths).
+      for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
+        List<List<Trust>> paths = e.value.paths;
+        Iterable<List<Trust>> paths2 = paths.where((p) => (p.length <= degrees));
+        if (paths2.length >= numPaths) {
+          networkX.add(e.key);
+        }
+      }
+      network = networkX;
     }
 
     Map<String, String?> delegate2revokeAt = <String, String?>{};
