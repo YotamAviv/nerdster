@@ -1,6 +1,14 @@
+
+# Run the integration tests
+Run using Firebase emulators. Use DEV menu => integration test: ...
+(Need to refresh in between for test framework)
+
+# Run the JavaScript tests
+node js/jsonish.js
+
+
 # Nice ones:
 ```
-node js/jsonish.js
 git tag PROD-v`date2`
 git tag PROD-11
 code $(git diff --no-commit-id --name-only -r HEAD) -r

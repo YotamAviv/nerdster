@@ -58,6 +58,7 @@ class FollowNet with Comp, ChangeNotifier {
   final Map<String, Set<String>> _oneofus2delegates = <String, Set<String>>{};
   final Map<String, String> _delegate2oneofus = <String, String>{};
   final Map<String, Fetcher> _delegate2fetcher = <String, Fetcher>{};
+  final LinkedHashMap<String, String> _rejected = LinkedHashMap<String, String>();
 
   // interface
   String? get fcontext => _context;
@@ -72,6 +73,7 @@ class FollowNet with Comp, ChangeNotifier {
   Map<String, Set<String>> get oneofus2delegates => UnmodifiableMapView(_oneofus2delegates);
   Map<String, String> get delegate2oneofus => UnmodifiableMapView(_delegate2oneofus);
   Map<String, Fetcher> get delegate2fetcher => UnmodifiableMapView(_delegate2fetcher);
+  Map<String, String> get rejected => UnmodifiableMapView(_rejected);
 
   Iterable<ContentStatement> getStatements(String oneofus) {
     assert(oneofusNet.network.containsKey(oneofus));
@@ -102,6 +104,7 @@ class FollowNet with Comp, ChangeNotifier {
     _delegate2oneofus.clear();
     _oneofus2delegates.clear();
     _delegate2fetcher.clear();
+    _rejected.clear();
 
     Iterable<String> network;
     final int degrees = Prefs.followNetDegrees.value;
@@ -136,20 +139,25 @@ class FollowNet with Comp, ChangeNotifier {
     for (String oneofusKey in network) {
       Fetcher oneofusFetcher = Fetcher(oneofusKey, kOneofusDomain);
       assert(oneofusFetcher.isCached);
-      String oneofus = oneofusEquiv.getCanonical(oneofusKey);
-      _oneofus2delegates.putIfAbsent(oneofus, () => <String>{});
+      String oneofusCanonicalKey = oneofusEquiv.getCanonical(oneofusKey);
+      _oneofus2delegates.putIfAbsent(oneofusCanonicalKey, () => <String>{});
       for (TrustStatement s in distinct(oneofusFetcher.statements)
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
         String delegateToken = s.subjectToken;
         delegate2revokeAt[delegateToken] = s.revokeAt;
         // Keep track of who's delegate this is for naming delegates (as in, 'homer-nerdster.org')
-        // Equivalents (or even unrelated) may claim the same delegate; I'm going with the first claim (for now)
+        // OLD: Equivalents (or even unrelated) may claim the same delegate
+        // NEW: A delegate can be only one persons, even if equivalent
         String oneofus = oneofusEquiv.getCanonical(oneofusKey);
         if (!_delegate2oneofus.containsKey(delegateToken)) {
           _delegate2oneofus[delegateToken] = oneofus;
+          _oneofus2delegates[oneofus]!.add(delegateToken);
+        } else {
+          // Reject
+          _rejected[s.token] = "Delegate already claimed";
+          // TODO: Notify
         }
-        _oneofus2delegates[oneofus]!.add(delegateToken);
       }
     }
     for (MapEntry<String, String?> e in delegate2revokeAt.entries) {

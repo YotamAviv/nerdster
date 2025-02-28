@@ -224,12 +224,12 @@ void main() async {
     await lukeN.doRate(title: 't', recommend: true);
 
     signInState.center = bo.token;
-    contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
     myExpect(contentBase.roots.length, 1);
     ContentTreeNode cn = contentBase.roots.first;
 
     await bo.doTrust(TrustVerb.delegate, lukeN);
+
     oneofusNet.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
     myExpect(contentBase.roots.length, 1);
@@ -238,6 +238,10 @@ void main() async {
     // print('followNet.delegate2oneofus=${keyLabels.show(followNet.delegate2oneofus)}');
     // print('followNet.oneofus2delegates=${keyLabels.show(followNet.oneofus2delegates)}');
     expect(cn.getChildren().length, 1);
+
+    // Check rejection
+    // (I don't have the rejected statement here because it's not returned by luke.makeDelegate) 
+    expect(followNet.rejected.values, {"Delegate already claimed"});
   });
 
   test('clear, 2 equivs', () async {
@@ -381,9 +385,16 @@ void main() async {
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     // Now the test: fcontext = social
-    signInState.center = bob2.token;
     followNet.fcontext = 'social';
-    await bobN.doFollow(steve, {'social': 1});
+    await Comp.waitOnComps([followNet, keyLabels]);
+    expected = {
+      "Me": ["Me-delegate", "Me-delegate (0)"],
+    };
+    jsonShowExpect(followNet.oneofus2delegates, expected);
+
+    // (signInState.center = bob2.token;)
+    followNet.fcontext = 'social';
+    await bobN.doFollow(steve, {'social': 1}); // !canon follow !canon
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "Me": ["Me-delegate", "Me-delegate (0)"],
@@ -391,27 +402,29 @@ void main() async {
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
-    // Now have bob2 and steve2 claim their older delegates
+    // Now have bob2 and steve2 claim their older delegates (nothing should change, other than 
+    // maybe notifications, rejections)
     await bob2.doTrust(TrustVerb.delegate, bobN);
     await steve2.doTrust(TrustVerb.delegate, steveN);
-    signInState.center = bob2.token;
+    // (signInState.center = bob2.token;)
     followNet.fcontext = null;
     await Comp.waitOnComps([followNet, keyLabels]);
-    expected = {
-      "Me": ["Me-delegate", "Me-delegate (0)"],
-      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
-    };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
-    signInState.center = bob2.token;
+    // (signInState.center = bob2.token;)
     followNet.fcontext = 'social';
-    await bobN.doFollow(steve, {'social': 1});
+    // (await bobN.doFollow(steve, {'social': 1});)
     await Comp.waitOnComps([followNet, keyLabels]);
-    expected = {
-      "Me": ["Me-delegate", "Me-delegate (0)"],
-      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
-    };
     jsonShowExpect(followNet.oneofus2delegates, expected);
+
+    // Use this opportunity to check a litte about rejections of claim delegate statements
+    expect(followNet.delegate2oneofus[bob2N.token], bob2.token);
+    expect(followNet.delegate2oneofus[bobN.token], bob2.token);
+    expect(followNet.oneofus2delegates[bob2.token], {bobN.token, bob2N.token});
+    expect(followNet.oneofus2delegates[bob.token], null);
+    // We don't have the delegate statements right here (not returned by luke.makeDelegate), and
+    // so I'll just count them  instead of comparing them
+    expect(followNet.rejected.length, 2);
   });
 
   test('follow !oneofus', () async {

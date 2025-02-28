@@ -4,7 +4,6 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -19,9 +18,9 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
 
     DemoKey loner = await DemoKey.findOrCreate('loner');
     DemoKey lonerN = await loner.makeDelegate();
-    Statement n1 = await lonerN.doRate(title: 't1');
-
     DemoKey lonerN2 = await loner.makeDelegate();
+
+    Statement n1 = await lonerN.doRate(title: 't1');
     Statement s1 = await loner.doTrust(TrustVerb.block, somebodyElse);
     Statement n2 = await lonerN2.doRate(title: 't2');
 
@@ -34,7 +33,6 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
 
     DemoKey loner2 = await DemoKey.findOrCreate('loner2');
     await loner2.doTrust(TrustVerb.replace, loner, revokeAt: s1.token);
-    oneofusNet.listen();
     signInState.center = loner2.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expected = {"Me": null, "Me (0)": "5/1/2024 12:04 AM"};
