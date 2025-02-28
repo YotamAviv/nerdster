@@ -65,7 +65,7 @@ abstract class NetTreeModel {
     List<String> items = <String>[];
     if (token != null) {
       items.add('N');
-      items.add('${keyLabels.show(token)}-$canonical');
+      items.add('${keyLabels.labelKey(token!)}-$canonical');
       if (b(revokeAt)) {
         // Timezone test issue: I think that I now use local time at both ends (state 
         // and dump in local time).
@@ -97,7 +97,7 @@ abstract class NetTreeModel {
     List<String> items = <String>[];
     if (token != null) {
       items.add('N');
-      items.add('${keyLabels.show(token)}-$canonical');
+      items.add('${keyLabels.labelKey(token!)}-$canonical');
       if (b(revokeAt)) {
         items.add(formatIso(revokeAt!));
       }

@@ -255,7 +255,7 @@ which will make your reaction to his reaction lost.''',
                   scrollController: scrollController,
                   controller: TextEditingController()
                     ..text = Prefs.keyLabel.value
-                        ? encoder.convert(keyLabels.show(widget.subject.json))
+                        ? encoder.convert(keyLabels.show(widget.subject))
                         : widget.subject.ppJson,
                   maxLines: 10,
                   readOnly: true,

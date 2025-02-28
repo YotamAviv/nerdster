@@ -30,7 +30,7 @@ const Widget _space = SizedBox(height: 10);
 
 printStatement(String statementToken) {
   TrustStatement statement = TrustStatement.find(statementToken)!;
-  String string = encoder.convert(keyLabels.show(statement.json));
+  String string = encoder.convert(keyLabels.show(statement));
   print(string);
 }
 
@@ -171,7 +171,7 @@ class StatementNotification extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String text = Jsonish.encoder.convert(keyLabels.show(statement.json));
+    String text = Jsonish.encoder.convert(keyLabels.show(statement));
 
     Node? iNode = oneofusNet.network[statement.iToken];
 
