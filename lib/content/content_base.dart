@@ -55,7 +55,7 @@ class ContentBase with Comp, ChangeNotifier {
   ContentType _type = ContentType.all;
   Timeframe _timeframe = Timeframe.all;
 
-  Future<Jsonish?> insert(Json json, BuildContext context) async {
+  Future<Statement?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
     assert(signInState.signedInDelegate == iToken);
     Fetcher fetcher = Fetcher(iToken, kNerdsterDomain);
@@ -63,7 +63,7 @@ class ContentBase with Comp, ChangeNotifier {
     bool? proceed = await Lgtm.check(json, context);
     if (!bb(proceed)) return null;
 
-    Jsonish statement = await fetcher.push(json, signInState.signer!);
+    Statement statement = await fetcher.push(json, signInState.signer!);
 
     await Lgtm.show(statement, context);
 
@@ -606,33 +606,33 @@ class _ContentRelateParser implements EquivalenceBridgeParser {
   }
 }
 
-Future<Jsonish?> submit(BuildContext context) async {
+Future<Statement?> submit(BuildContext context) async {
   if (await checkSignedIn(context) != true) {
     return null;
   }
   Jsonish? subject = await establishSubjectDialog(context);
   if (subject != null) {
-    Jsonish? statement = await rate(subject, context);
+    Statement? statement = await rate(subject, context);
     return statement;
   }
   return null;
 }
 
 // CONSIDER: Pass a constructed Jsonish? statement in and let the dialog set certain fields.
-Future<Jsonish?> rate(Jsonish subject, BuildContext context) async {
+Future<Statement?> rate(Jsonish subject, BuildContext context) async {
   if (await checkSignedIn(context) != true) {
     return null;
   }
   ContentStatement? priorStatement = contentBase._findMyStatement1(subject.token);
   Json? json = await rateDialog(context, subject, priorStatement);
   if (json != null) {
-    Jsonish? statement = await contentBase.insert(json, context);
+    Statement? statement = await contentBase.insert(json, context);
     return statement;
   }
   return null;
 }
 
-Future<Jsonish?> relate(Jsonish subject, Jsonish otherSubject, BuildContext context) async {
+Future<Statement?> relate(Jsonish subject, Jsonish otherSubject, BuildContext context) async {
   if (await checkSignedIn(context) != true) {
     return null;
   }
@@ -640,7 +640,7 @@ Future<Jsonish?> relate(Jsonish subject, Jsonish otherSubject, BuildContext cont
       contentBase._findMyStatement2(subject.token, otherSubject.token);
   Json? json = await relateDialog(context, subject.json, otherSubject.json, priorStatement);
   if (json != null) {
-    Jsonish? statement = await contentBase.insert(json, context);
+    Statement? statement = await contentBase.insert(json, context);
     return statement;
   }
   return null;

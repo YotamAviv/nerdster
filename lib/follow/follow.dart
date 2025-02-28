@@ -4,6 +4,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/ui/lower_case_text_formatter.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -62,7 +63,7 @@ enum Follow {
   const Follow(this.label, this.color, this.intValue);
 }
 
-Future<Jsonish?> follow(String token, BuildContext context) async {
+Future<Statement?> follow(String token, BuildContext context) async {
   if (await checkSignedIn(context) != true) {
     return null;
   }
@@ -86,7 +87,7 @@ Future<Jsonish?> follow(String token, BuildContext context) async {
     Json json = ContentStatement.make(
         signInState.signedInDelegatePublicKeyJson!, ContentVerb.follow, subjectPublicKey,
         contexts: contextsOut);
-    Jsonish? statement = await followNet.insert(json, context);
+    Statement? statement = await followNet.insert(json, context);
     return statement;
   }
   return null;

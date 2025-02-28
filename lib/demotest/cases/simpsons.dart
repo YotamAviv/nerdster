@@ -1,5 +1,6 @@
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
@@ -32,7 +33,7 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
 
   // most simpsons state trust in each other.
   await homer.doTrust(TrustVerb.trust, marge, moniker: 'wife');
-  Jsonish s2 = await homer.doTrust(TrustVerb.trust, bart, moniker: 'boy');
+  Statement s2 = await homer.doTrust(TrustVerb.trust, bart, moniker: 'boy');
   await marge.doTrust(TrustVerb.trust, maggie, moniker: 'baby');
   await marge.doTrust(TrustVerb.trust, bart, moniker: 'son');
   await marge.doTrust(TrustVerb.trust, lisa, moniker: 'daughter');
@@ -40,7 +41,7 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
       comment: 'lost phone', revokeAt: s2.token); // homer replaces key
   await marge.doTrust(TrustVerb.trust, homer, moniker: 'hubby');
   await bart.doTrust(TrustVerb.trust, marge, moniker: 'moms');
-  Jsonish s3 = await bart.doTrust(TrustVerb.trust, homer, moniker: 'homer');
+  Statement s3 = await bart.doTrust(TrustVerb.trust, homer, moniker: 'homer');
   await sideshow.doTrust(TrustVerb.replace, bart,
       revokeAt: s3.token); // Sideshow tries to thieve bart's key
   await bart.doTrust(TrustVerb.trust, homer2, moniker: 'homer2'); // bart trusts homer2

@@ -5,6 +5,7 @@ import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -28,11 +29,11 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   var expectedNetwork;
   var expectedEquivalents;
 
-  Jsonish lisaTrustsMilhouse = await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
+  Statement lisaTrustsMilhouse = await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
-  Jsonish bartTrustsMilhouse = await bart.doTrust(TrustVerb.trust, milhouse);
+  Statement bartTrustsMilhouse = await bart.doTrust(TrustVerb.trust, milhouse);
   await bart2.doTrust(TrustVerb.replace, bart, revokeAt: bartTrustsMilhouse.token);
-  Jsonish bart2blocksMilhouse = await bart2.doTrust(TrustVerb.block, milhouse);
+  Statement bart2blocksMilhouse = await bart2.doTrust(TrustVerb.block, milhouse);
   await lisa.doTrust(TrustVerb.trust, bart2, moniker: 'Bart');
   
   signInState.center = lisa.token;
@@ -51,7 +52,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   myExpect(oneofusNet.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
   
   // Bart (bart2) now decides that 'bart' no longer represents him and blocks
-  Jsonish b1 = await bart2.doTrust(TrustVerb.block, bart);
+  Statement b1 = await bart2.doTrust(TrustVerb.block, bart);
   
   signInState.center = lisa.token;  
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);

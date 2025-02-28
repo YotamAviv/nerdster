@@ -62,7 +62,7 @@ void main() async {
 
     fetcher = Fetcher(bartToken, _domain);
 
-    Statement pushedStatement = Statement.make(await fetcher.push(map, signer));
+    Statement pushedStatement = await fetcher.push(map, signer);
     Json pushedStatementJson = Map.of(pushedStatement.json)
       ..remove('signature')
       ..remove('previous');

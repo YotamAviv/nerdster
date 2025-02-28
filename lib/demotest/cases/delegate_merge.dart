@@ -5,6 +5,7 @@ import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -18,11 +19,11 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
 
     DemoKey loner = await DemoKey.findOrCreate('loner');
     DemoKey lonerN = await loner.makeDelegate();
-    Jsonish n1 = await lonerN.doRate(title: 't1');
+    Statement n1 = await lonerN.doRate(title: 't1');
 
     DemoKey lonerN2 = await loner.makeDelegate();
-    Jsonish s1 = await loner.doTrust(TrustVerb.block, somebodyElse);
-    Jsonish n2 = await lonerN2.doRate(title: 't2');
+    Statement s1 = await loner.doTrust(TrustVerb.block, somebodyElse);
+    Statement n2 = await lonerN2.doRate(title: 't2');
 
     signInState.center = loner.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
@@ -46,7 +47,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
 
     DemoKey loner2N = await loner2.makeDelegate();
     followNet.listen();
-    Jsonish s3 = await loner2N.doRate(title: 't3');
+    Statement s3 = await loner2N.doRate(title: 't3');
     contentBase.listen();
     await Comp.waitOnComps([contentBase]);
     roots = contentBase.roots;
@@ -54,7 +55,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
 
     DemoKey loner2N2 = await loner2.makeDelegate();
     followNet.listen();
-    Jsonish s4 = await loner2N2.doRate(title: 't4');
+    Statement s4 = await loner2N2.doRate(title: 't4');
     contentBase.listen();
     await Comp.waitOnComps([contentBase]);
     roots = contentBase.roots;

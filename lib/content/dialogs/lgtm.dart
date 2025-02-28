@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
+import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
@@ -49,7 +50,7 @@ class Lgtm {
                     )))));
   }
 
-  static Future<void> show(Jsonish jsonish, BuildContext context) async {
+  static Future<void> show(Statement statement, BuildContext context) async {
     if (Prefs.skipLgtm.value) return;
     return showDialog(
         context: context,
@@ -67,7 +68,7 @@ class Lgtm {
                       children: [
                         Linky(
                             '''Congrats, check it: https://export.nerdster.org/?token=${signInState.signedInDelegate}'''),
-                        JsonDisplay(jsonish.json),
+                        JsonDisplay(statement.json),
                         const SizedBox(height: 10),
                         Row(
                           children: [

@@ -1,5 +1,6 @@
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
@@ -17,7 +18,7 @@ Future<(DemoKey, DemoKey?)> decap() async {
   DemoKey lisa = await DemoKey.findOrCreate('lisa');
   DemoKey lenny = await DemoKey.findOrCreate('lenny');
 
-  Jsonish s2 = await homer.doTrust(TrustVerb.trust, lenny);
+  Statement s2 = await homer.doTrust(TrustVerb.trust, lenny);
   await bart.doTrust(TrustVerb.trust, homer);
   await homer.doTrust(TrustVerb.trust, marge);
   await marge.doTrust(TrustVerb.trust, lisa);
@@ -46,7 +47,7 @@ Future<(DemoKey, DemoKey?)> decap2() async {
 
   await homer.doTrust(TrustVerb.trust, lenny);
   await bart.doTrust(TrustVerb.trust, homer);
-  Jsonish s2 = await homer.doTrust(TrustVerb.trust, marge);
+  Statement s2 = await homer.doTrust(TrustVerb.trust, marge);
   await marge.doTrust(TrustVerb.trust, lisa);
   await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
   await marge.doTrust(TrustVerb.trust, homer2);

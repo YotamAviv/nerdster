@@ -84,7 +84,7 @@ class FollowNet with Comp, ChangeNotifier {
   }
 
   // impl
-  Future<Jsonish?> insert(Json json, BuildContext context) async {
+  Future<Statement?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
     assert(signInState.signedInDelegate == iToken);
     Fetcher fetcher = Fetcher(iToken, kNerdsterDomain);
@@ -92,7 +92,7 @@ class FollowNet with Comp, ChangeNotifier {
     bool? proceed = await Lgtm.check(json, context);
     if (!bb(proceed)) return null;
 
-    Jsonish statement = await fetcher.push(json, signInState.signer!);
+    Statement statement = await fetcher.push(json, signInState.signer!);
 
     await Lgtm.show(statement, context);
 

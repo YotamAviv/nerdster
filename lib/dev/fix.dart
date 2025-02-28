@@ -2,6 +2,7 @@ import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
@@ -1201,7 +1202,7 @@ class Fix {
       json.remove('previous');
       if (previous != null) json['previous'] = previous;
 
-      Jsonish jsonish = await fetcher.push(json, signer);
+      Statement jsonish = await fetcher.push(json, signer);
       previous = jsonish.token;
 
       print('.');
