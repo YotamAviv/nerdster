@@ -111,6 +111,9 @@ class _NetTreeViewState extends State<NetTreeView> {
     followNet.removeListener(listen);
     keyLabels.removeListener(listen);
 
+    Prefs.showKeys.removeListener(listen);
+    Prefs.showStatements.removeListener(listen);
+
     treeController.dispose();
     super.dispose();
   }
