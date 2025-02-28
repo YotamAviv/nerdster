@@ -7,6 +7,7 @@ import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -32,10 +33,10 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   var dump;
   var expected;
 
-  Jsonish s1 = await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
-  Jsonish r1 = await bart2.doTrust(TrustVerb.replace, bart, revokeAt: s1.token);
-  Jsonish s2 = await bart2.doTrust(TrustVerb.trust, homer);
-  Jsonish r2 = await bart3.doTrust(TrustVerb.replace, bart2, revokeAt: s2.token);
+  Statement s1 = await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
+  Statement r1 = await bart2.doTrust(TrustVerb.replace, bart, revokeAt: s1.token);
+  Statement s2 = await bart2.doTrust(TrustVerb.trust, homer);
+  Statement r2 = await bart3.doTrust(TrustVerb.replace, bart2, revokeAt: s2.token);
   await lisa.doTrust(TrustVerb.trust, bart3, moniker: 'Bart');
   // Lisa has not cleared trust in bart or ever trusted bart2
 
@@ -58,7 +59,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   // ------------------------------------------------------------------------------------
   // Bart (currently 'bart3') now decides that 'bart' no longer represents him and blocks
   // ------------------------------------------------------------------------------------
-  Jsonish bart3blocksBart = await bart3.doTrust(TrustVerb.block, bart);
+  Statement bart3blocksBart = await bart3.doTrust(TrustVerb.block, bart);
 
   signInState.center  = lisa.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);

@@ -110,7 +110,7 @@ class FetcherTestHelper {
       'I': kI,
       'block': 'sub',
     };
-    Jsonish statement = await fetcher.push(map, TestSigner());
+    Statement statement = await fetcher.push(map, TestSigner());
     expect(statement.containsKey('signature'), true);
     expect(statement.containsKey('previous'), false);
 
@@ -135,7 +135,7 @@ class FetcherTestHelper {
 
       await fetcher
           .push({'statement': _type, 'I': kI, 'block': 'sub1', 'time': clock.nowIso}, signer);
-      Jsonish revokeAtHere = await fetcher
+      Statement revokeAtHere = await fetcher
           .push({'statement': _type, 'I': kI, 'block': 'sub2', 'time': clock.nowIso}, signer);
       await fetcher
           .push({'statement': _type, 'I': kI, 'block': 'sub3', 'time': clock.nowIso}, signer);
@@ -176,7 +176,7 @@ Future<void> revokeAtSinceAlways() async {
 
       await fetcher
           .push({'statement': _type, 'I': kI, 'block': 'sub1', 'time': clock.nowIso}, signer);
-      Jsonish revokeAtHere = await fetcher
+      await fetcher
           .push({'statement': _type, 'I': kI, 'block': 'sub2', 'time': clock.nowIso}, signer);
       await fetcher
           .push({'statement': _type, 'I': kI, 'block': 'sub3', 'time': clock.nowIso}, signer);

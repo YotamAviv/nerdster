@@ -14,6 +14,7 @@ import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -166,9 +167,9 @@ void main() async {
   test('2 delegates, same subject, clear', () async {
     DemoKey loner = await DemoKey.findOrCreate('loner');
     DemoKey lonerN = await loner.makeDelegate();
-    Jsonish n1 = await lonerN.doRate(title: 't');
+    Statement n1 = await lonerN.doRate(title: 't');
     DemoKey lonerN2 = await loner.makeDelegate();
-    Jsonish n2 = await lonerN2.doRate(title: 't');
+    Statement n2 = await lonerN2.doRate(title: 't');
 
     signInState.center = loner.token;
     contentBase.listen();
@@ -191,9 +192,9 @@ void main() async {
   test('2 delegates, differet subjects, clear', () async {
     DemoKey loner = await DemoKey.findOrCreate('loner');
     DemoKey lonerN = await loner.makeDelegate();
-    Jsonish n1 = await lonerN.doRate(title: 't1');
+    Statement n1 = await lonerN.doRate(title: 't1');
     DemoKey lonerN2 = await loner.makeDelegate();
-    Jsonish n2 = await lonerN2.doRate(title: 't2');
+    Statement n2 = await lonerN2.doRate(title: 't2');
 
     signInState.center = loner.token;
     contentBase.listen();
@@ -244,13 +245,13 @@ void main() async {
 
     DemoKey loner = await DemoKey.findOrCreate('loner');
     DemoKey lonerN = await loner.makeDelegate();
-    Jsonish n1 = await lonerN.doRate(title: 't');
+    Statement n1 = await lonerN.doRate(title: 't');
 
-    Jsonish s1 = await loner.doTrust(TrustVerb.block, somebodyElse);
+    Statement s1 = await loner.doTrust(TrustVerb.block, somebodyElse);
     DemoKey loner2 = await DemoKey.findOrCreate('loner2');
     await loner2.doTrust(TrustVerb.replace, loner, revokeAt: s1.token);
     DemoKey loner2N = await loner2.makeDelegate();
-    Jsonish n2 = await loner2N.doRate(title: 't');
+    Statement n2 = await loner2N.doRate(title: 't');
 
     signInState.center = loner2.token;
     followNet.listen();
@@ -262,9 +263,9 @@ void main() async {
     // This delegate is inherited, revoked, and so
     // Either should work
     if (Random().nextBool()) {
-      Jsonish n3 = await loner2N.doRate(title: 't', verb: ContentVerb.clear);
+      Statement n3 = await loner2N.doRate(title: 't', verb: ContentVerb.clear);
     } else {
-      Jsonish n4 = await lonerN.doRate(title: 't', verb: ContentVerb.clear);
+      Statement n4 = await lonerN.doRate(title: 't', verb: ContentVerb.clear);
     }
     contentBase.listen();
     followNet.listen();
@@ -281,8 +282,8 @@ void main() async {
     DemoKey bobN = await bob.makeDelegate();
     DemoKey steve = await DemoKey.findOrCreate('steve');
     DemoKey steveN = await steve.makeDelegate();
-    Jsonish b1 = await bob.doTrust(TrustVerb.block, somebodyElse);
-    Jsonish s1 = await steve.doTrust(TrustVerb.block, somebodyElse);
+    Statement b1 = await bob.doTrust(TrustVerb.block, somebodyElse);
+    Statement s1 = await steve.doTrust(TrustVerb.block, somebodyElse);
     DemoKey steve2 = await DemoKey.findOrCreate('steve2');
     await steve2.doTrust(TrustVerb.replace, steve, revokeAt: s1.token);
     DemoKey bob2 = await DemoKey.findOrCreate('bob2');
@@ -339,8 +340,8 @@ void main() async {
     DemoKey bobN = await bob.makeDelegate();
     DemoKey steve = await DemoKey.findOrCreate('steve');
     DemoKey steveN = await steve.makeDelegate();
-    Jsonish b1 = await bob.doTrust(TrustVerb.block, somebodyElse);
-    Jsonish s1 = await steve.doTrust(TrustVerb.block, somebodyElse);
+    Statement b1 = await bob.doTrust(TrustVerb.block, somebodyElse);
+    Statement s1 = await steve.doTrust(TrustVerb.block, somebodyElse);
     DemoKey steve2 = await DemoKey.findOrCreate('steve2');
     await steve2.doTrust(TrustVerb.replace, steve, revokeAt: s1.token);
     DemoKey steve2N = await steve2.makeDelegate();
@@ -460,12 +461,12 @@ void main() async {
     DemoKey steve = await DemoKey.findOrCreate('steve');
     DemoKey steveN = await steve.makeDelegate();
     await steveN.doRate(title: 'steveN');
-    Jsonish s1 = await steve.doTrust(TrustVerb.block, somebodyElse);
+    Statement s1 = await steve.doTrust(TrustVerb.block, somebodyElse);
     DemoKey steve2 = await DemoKey.findOrCreate('steve2');
     await steve2.doTrust(TrustVerb.replace, steve, revokeAt: s1.token);
     DemoKey steve2N = await steve2.makeDelegate();
     await steve2N.doRate(title: 'steve2N');
-    Jsonish s2 = await bob.doTrust(TrustVerb.trust, steve2);
+    Statement s2 = await bob.doTrust(TrustVerb.trust, steve2);
 
     signInState.center = bob.token;
     await Comp.waitOnComps([oneofusNet, keyLabels, contentBase]); //

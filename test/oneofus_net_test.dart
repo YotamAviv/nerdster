@@ -17,6 +17,7 @@ import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -118,8 +119,8 @@ void main() async {
   });
 
   test('revoke me rejected', () async {
-    Jsonish s1 = await homer.doTrust(TrustVerb.trust, sideshow);
-    Jsonish replaceStatement = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s1.token);
+    Statement s1 = await homer.doTrust(TrustVerb.trust, sideshow);
+    Statement replaceStatement = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s1.token);
 
     await signInState.signIn(homer.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
@@ -143,7 +144,7 @@ void main() async {
 
   // UI should prevent this, but the backend should also prevernt it.
   test('''don't trust myself''', () async {
-    Jsonish s1 = await bart.doTrust(TrustVerb.trust, bart);
+    Statement s1 = await bart.doTrust(TrustVerb.trust, bart);
 
     await signInState.signIn(bart.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
@@ -164,7 +165,7 @@ void main() async {
     await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
     await marge.doTrust(TrustVerb.trust, lisa);
-    Jsonish lisaBlocksHomer = await lisa.doTrust(TrustVerb.block, homer);
+    Statement lisaBlocksHomer = await lisa.doTrust(TrustVerb.block, homer);
 
     await signInState.signIn(bart.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
@@ -173,9 +174,9 @@ void main() async {
 
   test('''3'rd level replace succeeds on 1'st level trust''', () async {
     await bart.doTrust(TrustVerb.trust, homer);
-    Jsonish s = await homer.doTrust(TrustVerb.trust, marge);
+    Statement s = await homer.doTrust(TrustVerb.trust, marge);
     await marge.doTrust(TrustVerb.trust, lisa);
-    Jsonish lisaReplacesHomer = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
+    Statement lisaReplacesHomer = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
 
     await signInState.signIn(bart.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
@@ -191,7 +192,7 @@ void main() async {
   ///
   /// See some related nonsense in decapitate.dart
   test('3\'rd level replaces 1\'st level trust', () async {
-    Jsonish s2 = await homer.doTrust(TrustVerb.trust,
+    Statement s2 = await homer.doTrust(TrustVerb.trust,
         lenny); // I added this because I need a statement. I could block, but that's above.
     await bart.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
@@ -220,7 +221,7 @@ void main() async {
   test('3\'rd level replaces 1\'st level trust, homer better', () async {
     await homer.doTrust(TrustVerb.trust, lenny);
     await bart.doTrust(TrustVerb.trust, homer);
-    Jsonish s2 = await homer.doTrust(TrustVerb.trust, marge);
+    Statement s2 = await homer.doTrust(TrustVerb.trust, marge);
     await marge.doTrust(TrustVerb.trust, lisa);
     await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
     await marge.doTrust(TrustVerb.trust, homer2);
@@ -347,7 +348,7 @@ void main() async {
 
   test('nameless', () async {
     await bart.doTrust(TrustVerb.trust, homer);
-    Jsonish s = await homer.doTrust(TrustVerb.trust, bart);
+    Statement s = await homer.doTrust(TrustVerb.trust, bart);
     await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
     await bart.doTrust(TrustVerb.clear, homer);
     await bart.doTrust(TrustVerb.trust, homer2);
@@ -364,7 +365,7 @@ void main() async {
     await bart.doTrust(TrustVerb.trust, homer);
     await lisa.doTrust(TrustVerb.trust, marge);
     await lisa.doTrust(TrustVerb.trust, homer);
-    Jsonish s2 = await homer.doTrust(TrustVerb.trust, marge);
+    Statement s2 = await homer.doTrust(TrustVerb.trust, marge);
     await homer.doTrust(TrustVerb.trust, lisa);
     await marge.doTrust(TrustVerb.trust, burns);
     await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token); // lisa not trusted
@@ -400,7 +401,7 @@ void main() async {
     await lisa.doTrust(TrustVerb.trust, marge);
     await lisa.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, marge);
-    Jsonish s2 = await homer.doTrust(TrustVerb.trust, lisa);
+    Statement s2 = await homer.doTrust(TrustVerb.trust, lisa);
     await marge.doTrust(TrustVerb.trust, burns);
     await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token); // lisa trusted.
     await bart.doTrust(TrustVerb.clear, homer);
@@ -471,8 +472,8 @@ void main() async {
 
   test('Bad actor tries to replace key', () async {
     await homer.doTrust(TrustVerb.trust, bart);
-    Jsonish s2 = await homer.doTrust(TrustVerb.trust, marge);
-    Jsonish s3 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s2.token); // rejected
+    Statement s2 = await homer.doTrust(TrustVerb.trust, marge);
+    Statement s3 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s2.token); // rejected
     await bart.doTrust(TrustVerb.trust, sideshow);
 
     await signInState.signIn(homer.token, null);
@@ -490,11 +491,11 @@ void main() async {
   });
 
   test('Bad actor tries to replace replaced key', () async {
-    Jsonish s2 = await homer.doTrust(TrustVerb.trust, bart);
-    Jsonish s3 = await homer.doTrust(TrustVerb.trust, marge);
+    Statement s2 = await homer.doTrust(TrustVerb.trust, bart);
+    Statement s3 = await homer.doTrust(TrustVerb.trust, marge);
     await homer2.doTrust(TrustVerb.replace, homer,
         revokeAt: s2.token); // (marge not trusted, key already replaced.)
-    Jsonish s4 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s3.token); // rejected
+    Statement s4 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s3.token); // rejected
     await bart.doTrust(TrustVerb.trust, sideshow);
 
     await signInState.signIn(homer2.token, null);
@@ -530,7 +531,7 @@ void main() async {
     DemoKey key6 = await DemoKey.findOrCreate('key6');
     await key1.doTrust(TrustVerb.trust, key5);
     await key1.doTrust(TrustVerb.trust, key6);
-    Jsonish s2 = await key1.doTrust(TrustVerb.trust, key6);
+    Statement s2 = await key1.doTrust(TrustVerb.trust, key6);
 
     DemoKey key2 = await DemoKey.findOrCreate('key2');
     await key2.doTrust(TrustVerb.replace, key1, revokeAt: s2.token);
@@ -656,7 +657,7 @@ void main() async {
     DemoKey d3 = await DemoKey.findOrCreate('3');
     await d1.doTrust(TrustVerb.trust, d21);
     await d1.doTrust(TrustVerb.trust, d22);
-    Jsonish block = await d21.doTrust(TrustVerb.block, d22);
+    Statement block = await d21.doTrust(TrustVerb.block, d22);
     await d21.doTrust(TrustVerb.trust, d3);
 
     Trust1 trust1;
@@ -742,7 +743,7 @@ void main() async {
     oneofusNet.degrees = 3;
     await DemoKey.demos['simpsons']();
 
-    Jsonish lisaBlocksMarge = await lisa.doTrust(TrustVerb.block, marge);
+    Statement lisaBlocksMarge = await lisa.doTrust(TrustVerb.block, marge);
 
     await signInState.signIn(marge.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
@@ -758,8 +759,8 @@ void main() async {
     oneofusNet.degrees = 3;
     await DemoKey.demos['simpsons']();
 
-    Jsonish s = await bart.doTrust(TrustVerb.trust, lisa);
-    Jsonish rejected = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
+    Statement s = await bart.doTrust(TrustVerb.trust, lisa);
+    Statement rejected = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
 
     await signInState.signIn(homer2.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);

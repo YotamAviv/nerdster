@@ -14,6 +14,7 @@ import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -77,7 +78,7 @@ void main() async {
     roots = contentBase.roots;
     expect(roots.length, 0);
 
-    Jsonish statement = await lonerD.doRate(title: "t1");
+    Statement statement = await lonerD.doRate(title: "t1");
     expect(statement.containsKey('signature'), true);
     contentBase.listen();
     await signInState.signIn(oneofus.token, delegate.keyPair);
@@ -85,7 +86,7 @@ void main() async {
     roots = contentBase.roots;
     expect(roots.length, 1);
 
-    Jsonish statement2 = await lonerD.doRate(title: "t2");
+    Statement statement2 = await lonerD.doRate(title: "t2");
     expect(statement2.containsKey('signature'), true);
     expect(statement2.containsKey('previous'), true);
     await signInState.signIn(oneofus.token, delegate.keyPair);
@@ -127,7 +128,7 @@ void main() async {
     roots = contentBase.roots;
     expect(roots.length, 0);
 
-    ContentStatement rateStatement = ContentStatement(await lonerD.doRate(title: "t1"));
+    ContentStatement rateStatement = await lonerD.doRate(title: "t1") as ContentStatement;
     contentBase.listen();
     await contentBase.waitUntilReady();
     roots = contentBase.roots;
@@ -135,8 +136,8 @@ void main() async {
     ContentTreeNode t1Node = roots.first;
     expect(t1Node.getChildren().length, 1);
 
-    ContentStatement relateStatement = ContentStatement(
-        await lonerD.doRelate(ContentVerb.relate, title: "t1", other: rateStatement.json));
+    ContentStatement relateStatement = 
+        await lonerD.doRelate(ContentVerb.relate, title: "t1", other: rateStatement.json) as ContentStatement;
     contentBase.listen();
     expect(relateStatement.subject, rateStatement.subject);
     expect(relateStatement.other, rateStatement.json);
@@ -160,7 +161,7 @@ void main() async {
     roots = contentBase.roots;
     expect(roots.length, 0);
 
-    Jsonish statement = await lonerD.doRate(title: "t1");
+    Statement statement = await lonerD.doRate(title: "t1");
     expect(statement.containsKey('signature'), true);
     expect(!statement.containsKey('previous'), true);
     await signInState.signIn(loner.token, lonerD.keyPair);
@@ -169,7 +170,7 @@ void main() async {
     roots = contentBase.roots;
     expect(roots.length, 1);
 
-    Jsonish statement2 = await lonerD.doRate(title: "t2");
+    Statement statement2 = await lonerD.doRate(title: "t2");
     expect(statement2.containsKey('signature'), true);
     expect(statement2.containsKey('previous'), true);
     contentBase.listen();
@@ -205,7 +206,7 @@ void main() async {
     expect(keyLabels.show(dn), {'Me-delegate': null, 'Me-delegate (0)': '5/1/2024 12:02 AM'});
 
     // say something as new delegate
-    Jsonish statement3 = await lonerD2.doRate(title: "t3");
+    Statement statement3 = await lonerD2.doRate(title: "t3");
     expect(statement3.containsKey('signature'), true);
     expect(!statement3.containsKey('previous'), true);
     await signInState.signIn(loner.token, lonerD2.keyPair);
@@ -215,7 +216,7 @@ void main() async {
 
     // say something as revoked delegate
     try {
-      Jsonish statement4 = await lonerD.doRate(title: "t4");
+      Statement statement4 = await lonerD.doRate(title: "t4");
       fail('expected error. Our code will not allow stating stuff with revoked fetcher.');
     } catch (e) {
       // expected

@@ -269,7 +269,7 @@ class Fetcher {
 
   // TODO: Why return value Jsonish and not Statement?
   // Side effects: add 'previous', 'signature'
-  Future<Jsonish> push(Json json, StatementSigner? signer) async {
+  Future<Statement> push(Json json, StatementSigner? signer) async {
     assert(_revokeAt == null);
     changeNotify();
 
@@ -334,7 +334,8 @@ class Fetcher {
       }
     }
 
-    return jsonish;
+    Statement statement = Statement.make(jsonish);
+    return statement;
   }
 
   Future<Iterable<Statement>> fetchAllNoVerify() async {

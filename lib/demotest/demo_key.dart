@@ -15,6 +15,7 @@ import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
@@ -86,7 +87,7 @@ class DemoKey {
 
   DemoKey._internal(this.name, this.keyPair, this.publicKey, this.token);
 
-  Future<Jsonish> doRate(
+  Future<Statement> doRate(
       {Json? subject, String? title, String? comment, bool? recommend, ContentVerb? verb}) async {
     assert(i(title) + i(subject) == 1);
     if (b(title)) {
@@ -97,21 +98,21 @@ class DemoKey {
         comment: comment, recommend: recommend);
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
-    Jsonish statement = await fetcher.push(json, signer);
+    Statement statement = await fetcher.push(json, signer);
     return statement;
   }
 
-  Future<Jsonish> doFollow(DemoKey other, Json contexts, {ContentVerb? verb}) async {
+  Future<Statement> doFollow(DemoKey other, Json contexts, {ContentVerb? verb}) async {
     ContentVerb useVerb = verb ?? ContentVerb.follow;
     Json json = ContentStatement.make(await publicKey.json, useVerb, await (other.publicKey).json,
         contexts: contexts);
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
-    Jsonish statement = await fetcher.push(json, signer);
+    Statement statement = await fetcher.push(json, signer);
     return statement;
   }
 
-  Future<Jsonish> doCensor({Json? subject, String? title}) async {
+  Future<Statement> doCensor({Json? subject, String? title}) async {
     assert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
@@ -120,11 +121,11 @@ class DemoKey {
         ContentStatement.make(await publicKey.json, ContentVerb.censor, Jsonish(subject!).token);
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
-    Jsonish statement = await fetcher.push(json, signer);
+    Statement statement = await fetcher.push(json, signer);
     return statement;
   }
 
-  Future<Jsonish> doRelate(ContentVerb verb,
+  Future<Statement> doRelate(ContentVerb verb,
       {Json? subject, String? title, Json? other, String? otherTitle}) async {
     assert(i(subject) + i(title) == 1);
     assert(i(other) + i(otherTitle) == 1);
@@ -137,11 +138,11 @@ class DemoKey {
     Json json = ContentStatement.make(await publicKey.json, verb, subject, other: other);
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
-    Jsonish statement = await fetcher.push(json, signer);
+    Statement statement = await fetcher.push(json, signer);
     return statement;
   }
 
-  Future<Jsonish> doTrust(TrustVerb verb, DemoKey other,
+  Future<Statement> doTrust(TrustVerb verb, DemoKey other,
       {String? moniker, String? comment, String? domain, String? revokeAt}) async {
     switch (verb) {
       case TrustVerb.trust:
@@ -163,7 +164,7 @@ class DemoKey {
 
     Fetcher fetcher = Fetcher(token, kOneofusDomain);
     OouSigner signer = await OouSigner.make(keyPair);
-    Jsonish statement = await fetcher.push(json, signer);
+    Statement statement = await fetcher.push(json, signer);
     return statement;
   }
 
@@ -181,7 +182,7 @@ class DemoKey {
 
     DemoKey delegateKey = await DemoKey.findOrCreate(delegateKeyName);
     // It would be nice to have this returned (so that we can revoke at it)
-    Jsonish jsonish = await doTrust(TrustVerb.delegate, delegateKey, domain: kNerdsterDomain);
+    Statement statement = await doTrust(TrustVerb.delegate, delegateKey, domain: kNerdsterDomain);
 
     return delegateKey;
   }

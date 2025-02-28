@@ -1,6 +1,7 @@
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -75,9 +76,9 @@ Future<(DemoKey, DemoKey?)> deletions3() async {
   await observer2.doTrust(TrustVerb.trust, deleter2);
 
   // deleter1 delets subject; deleter2 deletes deleter1's deletion.
-  Jsonish rating = await lonerN.doRate(title: 'title');
-  Jsonish deletion1 = await deleter1N.doCensor(title: 'title');
-  Jsonish deletion2 = await deleter2N.doCensor(subject: deletion1.json);
+  Statement rating = await lonerN.doRate(title: 'title');
+  Statement deletion1 = await deleter1N.doCensor(title: 'title');
+  Statement deletion2 = await deleter2N.doCensor(subject: deletion1.json);
 
   // observer1 should be censored as per deleter1's desire.
   await signInState.signIn(observer1.token, null);

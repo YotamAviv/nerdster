@@ -4,6 +4,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
@@ -23,7 +24,7 @@ Future<(DemoKey, DemoKey?)> stress() async {
   // (mostly so that we have at least one statement per key for choosing at random later)
   Map<int, List<String>> index2statementTokens = {};
   for (int i = 0; i < numKeys; i++) {
-    Jsonish s = await keys[i].doTrust(TrustVerb.delegate,
+    Statement s = await keys[i].doTrust(TrustVerb.delegate,
         await DemoKey.findOrCreate('key$i-nerdster'),
         comment: 'nerdster key', domain: kNerdsterDomain);
     index2statementTokens[i] = <String>[s.token];
@@ -35,7 +36,7 @@ Future<(DemoKey, DemoKey?)> stress() async {
     if (keyIndex == keyIndex2) {
       keyIndex2 = (keyIndex2 + 1) % (numKeys);
     }
-    Jsonish s = await keys[keyIndex].doTrust(TrustVerb.trust, keys[keyIndex2]);
+    Statement s = await keys[keyIndex].doTrust(TrustVerb.trust, keys[keyIndex2]);
     index2statementTokens[keyIndex]!.add(s.token);
   }
 
