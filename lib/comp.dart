@@ -92,7 +92,9 @@ abstract mixin class Comp {
 
         _ready.value = true;
       } catch (e, stackTrace) {
-        // print(stackTrace);
+        print(stackTrace); // TODO: Try rethrowing instead. This way it is now, it looks like
+        // Comp threw the exception while processing waitUntilReady instead ofthe actual
+        // Comp subclass during its process().
         _exception = e;
         _ready.value = true; // necessary to end the waiting below
         _processing = false;
