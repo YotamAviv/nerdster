@@ -184,7 +184,6 @@ class Fetcher {
       final Json iKey = result.data['I'];
       final String iKeyToken = getToken(iKey);
       assert(iKeyToken == token);
-      _lastToken = result.data["lastToken"];
       for (Json j in statements) {
         DateTime jTime = parseIso(j['time']);
         if (time != null) assert(jTime.isBefore(time));
@@ -259,14 +258,14 @@ class Fetcher {
 
         _cached!.add(Statement.make(jsonish));
       }
-      if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
       // Be like clouddistinct
       // - DEFER: clearClear
       if (fetchParamsProto.containsKey('distinct')) {
         _cached = distinct(_cached!);
       }
     }
-    // print('fetched: $fire, $token');
+
+    if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
   }
 
   List<Statement> get statements => _cached!;
@@ -285,19 +284,16 @@ class Fetcher {
       previous = _cached!.first;
 
       // assert time is after last statement time
-      // This is a little confusing with clouddistinct, but I think this is okay.
       DateTime prevTime = previous.time;
       DateTime thisTime = parseIso(json['time']!);
       assert(thisTime.isAfter(prevTime));
 
-      if (json.containsKey('previous')) {
-        // for load dump
-        assert(json['previous'] == _lastToken);
-      }
+      // for load dump
+      if (json.containsKey('previous')) assert(json['previous'] == _lastToken);
     }
     if (_lastToken != null) json['previous'] = _lastToken;
 
-    // sign (or verify) statement
+    // sign (verify)
     String? signature = json['signature'];
     Jsonish jsonish;
     if (signer != null) {
