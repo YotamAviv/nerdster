@@ -10,9 +10,8 @@
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&&checkPrevious=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&checkPrevious=true&revokeAt=sincealways
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&clearClear=true
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true&clearClear=true&omit=[%22I%22,%22statement%22]
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=truee
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true&omit=[%22I%22,%22statement%22]
 
 const { logger } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
@@ -192,17 +191,14 @@ function getVerbSubject(j) {
 /// DEFER: Cloud distinct to regard "other" subject.
 /// All the pieces are there, and it shouldn't be hard. That said, relate / equate are rarely used.
 
-// clearClear only applicable with distinct
 async function fetchh(token, params = {}, omit = {}) {
   const revokeAt = params.revokeAt;
   const checkPrevious = params.checkPrevious != null;
   const distinct = params.distinct != null;
   const orderStatements = params.orderStatements != 'false'; // On by default for demo.
-  const clearClear = params.clearClear != null;
   const includeId = params.includeId != null;
 
   if (!token) throw 'Missing token';
-  if (clearClear && !distinct) throw 'clearClear only applicable with distinct';
 
   const db = admin.firestore();
   const collectionRef = db.collection(token).doc('statements').collection('statements');
@@ -277,7 +273,7 @@ async function fetchh(token, params = {}, omit = {}) {
   }
 
   if (distinct) {
-    statements = await makedistinct(statements, clearClear);
+    statements = await makedistinct(statements);
   }
 
   // order statements
@@ -336,29 +332,23 @@ exports.signin = onRequest((req, res) => {
 });
 
 // Only considers subject of verb, does not consider otherSubject.
-async function makedistinct(input, clearClear = false) {
-  var out = [];
+async function makedistinct(input) {
+  var distinct = [];
   var already = new Set();
-  for (var j of input) {
-    var i = j['I'];
-    const [verb, subject] = getVerbSubject(j);
+  for (var s of input) {
+    var i = s['I'];
+    const [verb, subject] = getVerbSubject(s);
     var key = await keyToken(subject);
     if (already.has(key)) continue;
     already.add(key);
-    // Retain= 'clear' statements or not?
-    // Pro: 
-    // - Multiple delegates: use one to clear another's statement. 
-    //   But we can make that the new semantics, have to censor something from your other 
-    //   delegate, can't just clear.
-    // Con:
-    // - Performance.
-    if (clearClear) {
-      if (verb == 'clear') continue;
-    }
-    // PERFORMANCE: Teach Dart Jsonish to accept our token so that we can delete [signature, previous]
-    out.push(j);
+    // Retain 'clear' statements or not?
+    // Pro: Multiple delegates: use one to clear another's statement. 
+    // Con: Performance.
+    // So, no: // if (clearClear) if (verb == 'clear') continue;
+    
+    distinct.push(s);
   }
-  return out;
+  return distinct;
 }
 
 /// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b

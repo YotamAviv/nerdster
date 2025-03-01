@@ -141,13 +141,11 @@ class Fetcher {
   bool get isCached => b(_cached);
 
   static const Map fetchParamsProto = {
-    "includeId": true, // BUG: See index.js. If we don't ask for id's, then we don't get lastId.
-    "checkPrevious": true,
+    // "checkPrevious": true,
     "distinct": true,
-    // "clearClear", true, // I'm leaning against this. If changed, make sure to keep
-    // !clouddistinct code path is same. TODO: Remove from index.js, shouldn't need lastToken
+    "omit": ['statement', 'I'],
     "orderStatements": "false",
-    "omit": ['statement', 'I'], // EXPERIMENTAL: 'signature', 'previous']
+    // EXPERIMENTAL: "includeId": true,
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
@@ -190,14 +188,19 @@ class Fetcher {
         time = jTime;
         j['statement'] = domain2statementType[domain]!;
         j['I'] = iKey; // PERFORMANCE: Allow token in 'I' in statements; we might be already.
-        String serverToken = j['id'];
-        j.remove('id');
+        
+        // EXPERIMENTAL: "EXPERIMENTAL" tagged where the code allows us to not compute the tokens
+        // but just use the stored values, which allows us to not ask for [signature, previous].
+        // The changes worked, but the performance hardly changed. And with this, we wouldn't have
+        // [signature, previous] locally, couldn't verify statements, and there'd be more code 
+        // paths. So, no.
+        // Jsonish jsonish = mVerify.mSync(() => Jsonish(j, serverToken));
+        // String serverToken = j['id'];
+        // j.remove('id');
+        // assert(jsonish.token == serverToken);
 
-        // EXPERIMENTAL: Jsonish jsonish = mVerify.mSync(() => Jsonish(j, serverToken));
         Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
-        assert(jsonish.token == serverToken);
         Statement statement = Statement.make(jsonish);
-        assert(statement.token == serverToken);
         _cached!.add(statement);
       }
     } else {
@@ -259,7 +262,6 @@ class Fetcher {
         _cached!.add(Statement.make(jsonish));
       }
       // Be like clouddistinct
-      // - DEFER: clearClear
       if (fetchParamsProto.containsKey('distinct')) {
         _cached = distinct(_cached!);
       }
@@ -270,7 +272,6 @@ class Fetcher {
 
   List<Statement> get statements => _cached!;
 
-  // TODO: Why return value Jsonish and not Statement?
   // Side effects: add 'previous', 'signature'
   Future<Statement> push(Json json, StatementSigner? signer) async {
     assert(_revokeAt == null);
