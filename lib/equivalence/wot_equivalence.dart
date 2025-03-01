@@ -3,6 +3,7 @@ import 'package:nerdster/equivalence/equivalence_bridge.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/trust/greedy_bfs_trust.dart';
 
 /// Unlike the other equivalence where different folks collaborate to form equivalence group,
 /// this is supposed to form just one person's equivalence group of his own keys. 
@@ -18,7 +19,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 /// Correctness of the web-of-trust relys on our Trust algorithm to reject attempts
 /// for malicious actors to try and claim your key as an equivalent of their key.
 /// 
-/// The demo/test blockOldKey demonstrated a case where [Trust1] does not
+/// The demo/test blockOldKey demonstrated a case where [GreedyBfsTrust] does not
 /// reject a replace statement (and so it was passed on to [WotEquivalence]),
 /// but a later block statemet removed the equivalent from the network.
 /// This is why network is for - to restrict equivalences to the network.

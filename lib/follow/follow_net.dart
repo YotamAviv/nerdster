@@ -16,7 +16,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
-import 'package:nerdster/trust/trust1.dart';
+import 'package:nerdster/trust/greedy_bfs_trust.dart';
 
 import '../oneofus/measure.dart';
 
@@ -110,10 +110,10 @@ class FollowNet with Comp, ChangeNotifier {
     final int degrees = Prefs.followNetDegrees.value;
     final int numPaths = Prefs.followNetPaths.value;
     if (b(fcontext)) {
-      Trust1 trust1 = Trust1(degrees: degrees, numPaths: numPaths);
+      GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
       FollowNode.clear();
       LinkedHashMap<String, Node> canonNetwork =
-          await trust1.process(FollowNode(signInState.center));
+          await bfsTrust.process(FollowNode(signInState.center));
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
       List<String> tmp = <String>[];
       for (String canon in canonNetwork.keys) {
