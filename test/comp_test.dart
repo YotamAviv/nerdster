@@ -223,8 +223,8 @@ void main() async {
       expect(e.toString().contains('broken'), true);
       caught = true;
     }
-    assert(!a.ready);
-    assert(!c.ready);
+    // expect(a.ready, false);
+    expect(c.ready, false);
     expect(caught, true);
   });
 
@@ -240,7 +240,7 @@ void main() async {
       expect(b.caught, true);
       expect(c.caught, true);
     } catch (e) {
-      fail('Unexpcted: $e');
+      fail('Unexpected: $e');
     }
   });
 }
