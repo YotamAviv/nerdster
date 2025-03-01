@@ -192,14 +192,6 @@ function getVerbSubject(j) {
 /// DEFER: Cloud distinct to regard "other" subject.
 /// All the pieces are there, and it shouldn't be hard. That said, relate / equate are rarely used.
 
-/// CONSIDER: Do we really need "I" or "lastToken"?
-/// - revokedAt means we're revoked, and so we shouldn't be writing new statements anyway. But 
-///   maybe we do.
-/// - if we send "clear" statements, then we'll always send the last statement (even if it's clear, 
-///   even if we make distinct)
-/// - If we're omitting "I", we can still include it on the top statemement.
-/// All this feels kludgey, and so I'll leave things as they are.
-
 // clearClear only applicable with distinct
 async function fetchh(token, params = {}, omit = {}) {
   const revokeAt = params.revokeAt;
@@ -246,10 +238,8 @@ async function fetchh(token, params = {}, omit = {}) {
 
   // Do this early (first) before distinct and/or other calls below.
   var iKey;
-  var lastToken;
   if (statements.length > 0) {
     iKey = statements[0].I;
-    lastToken = statements[0].id; // BUG: We don't get lastToken unless we asked for ID.
   }
 
   if (checkPrevious) {
@@ -300,7 +290,7 @@ async function fetchh(token, params = {}, omit = {}) {
     statements = list;
   }
 
-  return { "statements": statements, "I": iKey, "lastToken": lastToken };
+  return { "statements": statements, "I": iKey };
 }
 
 
