@@ -23,7 +23,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
-import 'package:nerdster/trust/trust1.dart';
+import 'package:nerdster/trust/greedy_bfs_trust.dart';
 import 'package:test/test.dart';
 
 void main() async {
@@ -634,18 +634,18 @@ void main() async {
     await d1.doTrust(TrustVerb.trust, d2);
     await d2.doTrust(TrustVerb.trust, d3);
 
-    Trust1 trust1;
+    GreedyBfsTrust trust1;
     Map<String, Node> network;
 
-    trust1 = Trust1(degrees: 1);
+    trust1 = GreedyBfsTrust(degrees: 1);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token]);
 
-    trust1 = Trust1(degrees: 2);
+    trust1 = GreedyBfsTrust(degrees: 2);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token, d2.token]);
 
-    trust1 = Trust1(degrees: 3);
+    trust1 = GreedyBfsTrust(degrees: 3);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token, d2.token, d3.token]);
   });
@@ -660,21 +660,21 @@ void main() async {
     Statement block = await d21.doTrust(TrustVerb.block, d22);
     await d21.doTrust(TrustVerb.trust, d3);
 
-    Trust1 trust1;
+    GreedyBfsTrust trust1;
     Map<String, Node> network;
 
-    trust1 = Trust1(degrees: 1);
+    trust1 = GreedyBfsTrust(degrees: 1);
     network = await trust1.process(FetcherNode(d1.token));
     expect(network.keys, [d1.token]);
     expect(trust1.rejected.length, 0);
 
-    trust1 = Trust1(degrees: 2);
+    trust1 = GreedyBfsTrust(degrees: 2);
     network = await trust1.process(FetcherNode(d1.token));
     jsonExpect(trust1.rejected, {block.token: "Attempt to block trusted key."});
     expect(trust1.rejected.length, 1);
     expect(network.keys, [d1.token, d22.token, d21.token]);
 
-    trust1 = Trust1(degrees: 3);
+    trust1 = GreedyBfsTrust(degrees: 3);
     network = await trust1.process(FetcherNode(d1.token));
     jsonExpect(trust1.rejected, {block.token: "Attempt to block trusted key."});
     expect(network.keys, [d1.token, d22.token, d21.token, d3.token]);

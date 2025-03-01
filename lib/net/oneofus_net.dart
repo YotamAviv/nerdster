@@ -10,7 +10,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
-import 'package:nerdster/trust/trust1.dart';
+import 'package:nerdster/trust/greedy_bfs_trust.dart';
 
 import '../oneofus/measure.dart';
 
@@ -125,10 +125,10 @@ class OneofusNet with Comp, ChangeNotifier {
     Fetcher.resetRevokedAt();
     NetNode.clear();
     FetcherNode.clear();
-    Trust1 trust1 = Trust1(degrees: degrees, numPaths: numPaths);
-    _network = await trust1.process(FetcherNode(signInState.center));
+    GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
+    _network = await bfsTrust.process(FetcherNode(signInState.center));
     _rejected.clear();
-    _rejected.addAll(trust1.rejected); // CODE: Make rejected be a return value of the algorithm.
+    _rejected.addAll(bfsTrust.rejected); // CODE: Make rejected be a return value of the algorithm.
     _token2keyCounter.clear();
 
     int keyCounter = 0;

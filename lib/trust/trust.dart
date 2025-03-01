@@ -1,5 +1,5 @@
 /// Capture the essence of the core algorithm.
-/// [Node] used to be cleaner but now carries state for the [Trust1] algorithm.
+/// [Node] used to be cleaner but now carries state for the [GreedyBfsTrust] algorithm.
 ///
 /// The worst malicious actor will try to game our algorithm and won't fear making
 /// many false statements.
@@ -37,7 +37,7 @@ library;
 
 typedef Path = List<Trust>;
 
-/// Node: Instances carry state (inNetwork, revokeAt, paths) for use by the algorihtm (Trust1),
+/// Node: Instances carry state (inNetwork, revokeAt, paths) for use by the algorihtm (GreedyBfsTrust),
 /// and so we must reliably clear that before computations.
 abstract class Node {
   final String token;

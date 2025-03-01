@@ -4,33 +4,24 @@ import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/trust/trust.dart';
 
+
+/// Greed BFS trust algorithm
+/// At each layer, process [block, replace, trust] statements in that order
+///
 /// TODO: time limit
 /// TODO: network size max
-
-/// Trust1 algorithm: Layered, greedy BFS
-/// At each layer, process in this order
-/// - block statements
-/// - replace statements
-/// - trust statements
 ///
-/// Note: I can trust the same nerd multiple times by using my own equivalents.
-/// This shouldn't be a big deal as long as folks don't trust me more
-/// than once, the path count from their point of view should be unaffected.
-/// Folks should see notifications about trusting a non-equivalent key, which they should respond to by:
-/// - touching base with the person (based on their comments and moniker) and verfiying and then:
-/// - [trust the new key, clear trust for the old key].
-
 /// DEFER: Consider network order/ranking. Right now their in the order we discover them in
 /// the BFS, not terrible.
 
-class Trust1 {
+class GreedyBfsTrust {
   final Map<String, String> _rejected = <String, String>{};
   final int degrees; // 1 degree is just me.
   final int numPaths;
 
   Map<String, String> get rejected => _rejected;
 
-  Trust1({this.degrees = 6, this.numPaths = 1});
+  GreedyBfsTrust({this.degrees = 6, this.numPaths = 1});
 
   Future<LinkedHashMap<String, Node>> process(Node source) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
