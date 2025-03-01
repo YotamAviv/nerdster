@@ -145,6 +145,7 @@ class Fetcher {
     "distinct": true,
     "omit": ['statement', 'I'],
     "orderStatements": "false",
+    "includeId": true,
     // EXPERIMENTAL: "includeId": true,
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
@@ -172,7 +173,7 @@ class Fetcher {
       List statements = result.data["statements"];
       if (_revokeAt != null) {
         if (statements.isNotEmpty) {
-          assert(statements.first['id'] == _revokeAt);
+          assert(statements.first['id'] == _revokeAt, '${statements.first['id']} == $_revokeAt');
           _revokeAtTime = parseIso(statements.first['time']);
         } else {
           _revokeAtTime = DateTime(0); // "since always" (or any unknown token);

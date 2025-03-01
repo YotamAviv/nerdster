@@ -91,14 +91,12 @@ abstract mixin class Comp {
         }
 
         _ready.value = true;
-      } catch (e, stackTrace) {
-        print(stackTrace); // TODO: Try rethrowing instead. This way it is now, it looks like
-        // Comp threw the exception while processing waitUntilReady instead ofthe actual
-        // Comp subclass during its process().
+      } catch (e) {
         _exception = e;
         _ready.value = true; // necessary to end the waiting below
+        // _ready.value = false; // 
         _processing = false;
-        break;
+        rethrow;
       }
       assert(ready);
     }
@@ -106,7 +104,7 @@ abstract mixin class Comp {
     await ValueWaiter(_ready, true).untilReady();
     if (b(_exception)) {
       // print('Throwing: $_exception');
-      _ready.value = false; // See docs at top about semantics of 'ready'.
+      // QUESTIONABLE: _ready.value = false; // See docs at top about semantics of 'ready'.
       throw _exception!;
     }
   }
