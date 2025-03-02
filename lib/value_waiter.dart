@@ -23,7 +23,6 @@ class ValueWaiter {
     if (_notifier.value != value) {
       await _completer.future;
     }
-    // This fires sometimes: assert(_notifier.value == value); 
-    // Probably related to the race condition of exceptions and !ready.
+    // This wll fire in case of an exception: assert(_notifier.value == value); 
   }
 }
