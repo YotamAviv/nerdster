@@ -1,7 +1,9 @@
 
 # Run the integration tests
-Run using Firebase emulators. Use DEV menu => integration test: ...
-(Need to refresh in between for test framework)
+Run using Firebase emulators.
+- DEV menu => integration test: ...
+- Manually change [Prefs.skipVerify, Prefs.cloudFetchDistinct]
+- (Need to refresh in between for test framework)
 
 # Run the JavaScript tests
 node js/jsonish.js

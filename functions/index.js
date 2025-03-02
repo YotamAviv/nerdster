@@ -7,6 +7,8 @@
 /// 
 /// TEST: Would be nice to see that these all produce output we expect:
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&checkPrevious=true&includeId=true
+/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&checkPrevious=true
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&&checkPrevious=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&checkPrevious=true&revokeAt=sincealways
 /// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true
@@ -199,6 +201,7 @@ async function fetchh(token, params = {}, omit = {}) {
   const includeId = params.includeId != null;
 
   if (!token) throw 'Missing token';
+  if (checkPrevious && !includeId) throw 'checkPrevious requires includeId';
 
   const db = admin.firestore();
   const collectionRef = db.collection(token).doc('statements').collection('statements');
@@ -208,12 +211,8 @@ async function fetchh(token, params = {}, omit = {}) {
     const doc = collectionRef.doc(revokeAt);
     const docSnap = await doc.get();
     if (docSnap.data()) {
-      logger.log(`found revokedAt doc`);
       revokedAtTime = docSnap.data().time;
-      logger.log(`revokedAtTime=${revokedAtTime}`);
     } else {
-      logger.log(`didn't find revokedAt doc`);
-      // TODO: Boundary conditions testing.
       return { "statements": [] };
     }
   }
@@ -238,6 +237,7 @@ async function fetchh(token, params = {}, omit = {}) {
     iKey = statements[0].I;
   }
 
+  // BUG: checkPrevious requires includeId
   if (checkPrevious) {
     // Validate notary chain, decending order
     var first = true;

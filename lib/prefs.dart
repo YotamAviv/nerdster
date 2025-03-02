@@ -14,13 +14,14 @@ class Prefs {
   static final ValueNotifier<bool> showJson = ValueNotifier(bNerd);
   static final ValueNotifier<bool> showStatements = ValueNotifier(bNerd);
   static final ValueNotifier<bool> showKeys = ValueNotifier(bNerd);
-  static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> cloudFetchDistinct = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> censor = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> hideDismissed = ValueNotifier<bool>(true);
 
   static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> dev = ValueNotifier<bool>(devDefault);
+
+  static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> cloudFetchDistinct = ValueNotifier<bool>(true);
 
   static final ValueNotifier<int> oneofusNetDegrees = ValueNotifier<int>(5);
   static final ValueNotifier<int> oneofusNetPaths = ValueNotifier<int>(1);
@@ -33,7 +34,6 @@ class Prefs {
     if (b(params['showJson'])) showJson.value = bs(params['showJson']);
     if (b(params['showStatements'])) showStatements.value = bs(params['showStatements']);
     if (b(params['showKeys'])) showKeys.value = bs(params['showKeys']);
-    if (b(params['skipVerify'])) skipVerify.value = bs(params['skipVerify']);
     if (b(params['censor'])) censor.value = bs(params['censor']);
     if (b(params['hideDismissed'])) hideDismissed.value = bs(params['hideDismissed']);
 
