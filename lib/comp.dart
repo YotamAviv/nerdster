@@ -22,6 +22,9 @@ import 'package:nerdster/value_waiter.dart';
 /// In case of an exception, I really just want to show it to the user. 
 /// I'm not really sure beyond that.. I'm okay with crashing.
 ///
+/// CONSIDER: Some kind of helper for wait until ready that takes a function to be called
+/// in case of an exception.
+/// 
 /// TEST: My tests don't test this effectively, see documented bug in trustBlockConflict, 
 /// (the bug's been fixed, but the tests have not been updated).
 abstract mixin class Comp {
