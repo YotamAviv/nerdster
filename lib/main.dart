@@ -119,7 +119,7 @@ Future<void> main() async {
 
   // Show 'loading', start the timer.
   // ignore: unawaited_futures
-  BarRefresh.refresh();
+  BarRefresh.refresh(null); // TODO:
 
   // -------------- run app ---------------
   runApp(const MaterialApp(

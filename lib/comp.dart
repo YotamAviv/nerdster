@@ -4,10 +4,23 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/value_waiter.dart';
 
 ///
-/// Semantics of 'ready' in the face of exceptions thrown during processing:
-/// - I should not be left waiting
-/// - I should get the exception
-/// - The Comp that threw the exception should not be 'ready' (but I may have a race conditions)
+/// Exceptions and semantics of 'ready':
+/// 
+/// Should a single exception be thrown at all those waiting?
+/// - they should stop waiting, right?
+/// - the broken Comp shouldn't be "ready", right?
+/// - that'd mean throwing the same exception at every thing waiting. 
+/// I don't like it
+/// 
+/// My reasoning is as follows
+/// - No waiter should be left waiting
+/// - The Comp that threw the exception should not be 'ready'
+/// - At least one waiter should get the source exception. 
+/// I remain conflicted about throwing the same exception at multiple waiters, but that's what I'm currently doing.
+///
+/// I'm not actually trying to build a generic Comp framework; I just need to satisfy my own requirements.
+/// In case of an exception, I really just want to show it to the user. 
+/// I'm not really sure beyond that.. I'm okay with crashing.
 ///
 /// TEST: My tests don't test this effectively, see documented bug in trustBlockConflict, 
 /// (the bug's been fixed, but the tests have not been updated).
@@ -93,20 +106,18 @@ abstract mixin class Comp {
         _ready.value = true;
       } catch (e) {
         _exception = e;
-        _ready.value = true; // necessary to end the waiting below
-        // _ready.value = false; // 
         _processing = false;
+        _ready.value = true; // necessary to end the waiting below
+        _ready.value = false; // single thread, no "critical section" required.
         rethrow;
       }
       assert(ready);
     }
     // calling process has been initiated; just wait..
     await ValueWaiter(_ready, true).untilReady();
-    // NEXT: TEMP: Do we want to throw the same exception at something else? Probably not.
-    // if (b(_exception)) {
-    //   // print('Throwing: $_exception');
-    //   // QUESTIONABLE: _ready.value = false; // See docs at top about semantics of 'ready'.
-    //   throw _exception!;
-    // }
+    if (b(_exception)) {
+      _ready.value = false; // See docs at top about semantics of 'ready'.
+      throw _exception!;
+    }
   }
 }
