@@ -140,7 +140,7 @@ Future<void> qrSignin(BuildContext context) async {
       subscription!.cancel();
 
       // ignore: unawaited_futures
-      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
 
       // Dismiss dialog
       if (context.mounted) Navigator.of(context).pop();
@@ -186,7 +186,7 @@ The text to copy/paste here should look like this:
       }
 
       // Don't await
-      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
 
       Navigator.pop(context);
     } catch (exception) {
@@ -227,7 +227,8 @@ The text to copy/paste here should look like this:
                       ))))));
 }
 
-Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
+Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
+    BuildContext context) async {
   if (store) {
     await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
   } else {
@@ -237,5 +238,5 @@ Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, 
   final String oneofusToken = getToken(await oneofusPublicKey.json);
   await signInState.signIn(oneofusToken, nerdsterKeyPair);
   // ignore: unawaited_futures
-  BarRefresh.refresh();
+  BarRefresh.refresh(context);
 }

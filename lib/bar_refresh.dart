@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -14,20 +15,25 @@ class BarRefresh extends StatefulWidget {
     super.key,
   });
 
-
-  static Future<void> refresh() async {
+  // TODO: context not nullable
+  static Future<void> refresh(BuildContext? context) async {
     if (!measure.isRunning) {
-      Measure.reset();
-      measure.start();
-      // This could probably be captured in an Observable Comp instance
-      // OPTIONAL: (maybe add to Dev menu): Jsonish.wipeCache();
-      Fetcher.clear();
-      clearDistincterCache(); // redundant?
-      oneofusNet.listen();
-      
-      await Comp.waitOnComps([contentBase, keyLabels]);
-      measure.stop();
-      Measure.dump();
+      try {
+        Measure.reset();
+        measure.start();
+        // This could probably be captured in an Observable Comp instance
+        // OPTIONAL: (maybe add to Dev menu): Jsonish.wipeCache();
+        Fetcher.clear();
+        clearDistincterCache(); // redundant?
+        oneofusNet.listen();
+
+        await Comp.waitOnComps([contentBase, keyLabels]);
+      } catch (e, stack) {
+        if (context != null) await alert(e.toString(), stack.toString(), ['Okay'], context);
+      } finally {
+        measure.stop();
+        Measure.dump();
+      }
     }
   }
 
@@ -63,7 +69,7 @@ class _BarRefreshState extends State<BarRefresh> {
         // - The state is BarRefresh.stopwatch
         // - just ignore the click if we're already refreshing
         onPressed: () {
-          BarRefresh.refresh();
+          BarRefresh.refresh(context);
         });
   }
 }

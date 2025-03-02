@@ -167,16 +167,22 @@ $link''',
           MenuItemButton(
               onPressed: () {
                 Jsonish.wipeCache();
-                BarRefresh.refresh();
+                BarRefresh.refresh(context);
               },
               child: const Text('Refresh. Jsonish cache, too')),
           SubmenuButton(menuChildren: [
             MenuItemButton(onPressed: () => fetcherIntegrationTest(), child: const Text('Fetcher')),
             MenuItemButton(onPressed: () => integrationTests(), child: const Text('misc  demos')),
+            MenuItemButton(
+                child: const Text('Fetcher crash in... 3'),
+                onPressed: () {
+                  Fetcher.testingCrashIn = 3;
+                }),
           ], child: const Text('integration tests')),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
-          MenuItemButton(onPressed: () => CorruptionCheck.make(), child: const Text('CorruptionCheck')),
+          MenuItemButton(
+              onPressed: () => CorruptionCheck.make(), child: const Text('CorruptionCheck')),
           SubmenuButton(menuChildren: <Widget>[
             ...demos,
           ], child: const Text('run case')),
@@ -194,11 +200,6 @@ $link''',
               child: const Text('dump all statements'),
               onPressed: () async {
                 await DumpAllStatements.show(context);
-              }),
-          MenuItemButton(
-              child: const Text('Fetcher crash in... 3'),
-              onPressed: () {
-                Fetcher.testingCrashIn = 3;
               }),
         ], child: const Text('DEV')),
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
