@@ -102,6 +102,7 @@ abstract mixin class Comp {
     }
     // calling process has been initiated; just wait..
     await ValueWaiter(_ready, true).untilReady();
+    // NEXT: TEMP: Do we want to throw the same exception at something else? Probably not.
     // if (b(_exception)) {
     //   // print('Throwing: $_exception');
     //   // QUESTIONABLE: _ready.value = false; // See docs at top about semantics of 'ready'.
