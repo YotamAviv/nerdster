@@ -20,6 +20,7 @@ class Prefs {
   static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> dev = ValueNotifier<bool>(devDefault);
 
+  // TEST:
   static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> cloudFetchDistinct = ValueNotifier<bool>(true);
 
