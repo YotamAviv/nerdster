@@ -21,6 +21,12 @@ import 'util.dart';
 /// a test framework, and so I expect to end up somewhere in the middle (and yes, I have and will
 /// always have bugs;)
 ///
+/// Testing issues: cloud functions options, assert checka, previous token checks, revokedAt, etc...
+/// Cloud functions require "includeId" for "checkPrevious"
+/// I have a Fetcher integration test for checkPrevious
+/// Fetcher irl needs neither checkPrevious nor includeId.
+/// I don't want to slow the code down just so that I can test the code. But i am (not by much)
+///
 /// DEFER: filters (ex, past month)
 ///
 /// DEFER: Cloud distinct to regard "other" subject.
@@ -141,11 +147,13 @@ class Fetcher {
   bool get isCached => b(_cached);
 
   static const Map fetchParamsProto = {
-    // "checkPrevious": true,
     "distinct": true,
     "omit": ['statement', 'I'],
     "orderStatements": "false",
-    "includeId": true,
+
+    "checkPrevious": true,
+    "includeId": true, // includeId required for checkPrevious, not needed but tested and liked.
+
     // EXPERIMENTAL: "includeId": true,
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
@@ -173,7 +181,9 @@ class Fetcher {
       List statements = result.data["statements"];
       if (_revokeAt != null) {
         if (statements.isNotEmpty) {
-          assert(statements.first['id'] == _revokeAt, '${statements.first['id']} == $_revokeAt');
+          assert(statements.first['id'] == _revokeAt);
+          // without includeId, this might work: 
+          // assert(getToken(statements.first) == _revokeAt);
           _revokeAtTime = parseIso(statements.first['time']);
         } else {
           _revokeAtTime = DateTime(0); // "since always" (or any unknown token);
@@ -189,7 +199,8 @@ class Fetcher {
         time = jTime;
         j['statement'] = domain2statementType[domain]!;
         j['I'] = iKey; // PERFORMANCE: Allow token in 'I' in statements; we might be already.
-        
+        j.remove('id');
+
         // EXPERIMENTAL: "EXPERIMENTAL" tagged where the code allows us to not compute the tokens
         // but just use the stored values, which allows us to not ask for [signature, previous].
         // The changes worked, but the performance hardly changed. And with this, we wouldn't have
