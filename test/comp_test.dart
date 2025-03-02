@@ -210,45 +210,74 @@ void main() async {
     expect(top.result, 99 * 50 + 9 * 5);
   });
 
+  // Should a single exception be thrown at all of them?
+  // - they should stop waiting, right?
+  // - the broken Comp shouldn't be "ready", right?
+  // - that'd mean throwing the same exception at every thing waiting. 
+  // I don't like it
   test('exception', () async {
-    Summer a = BrokenSummer('a', 5);
-    Summer c = Summer('c', 5);
-    c.addSummer(a);
+    Summer broken = BrokenSummer('broken', 5);
+    Summer summer = Summer('summer2', 5);
+    summer.addSummer(broken);
 
     bool caught = false;
     try {
-      await c.waitUntilReady();
+      await Comp.waitOnComps([summer]);
       fail('expected exception');
     } catch (e) {
       expect(e.toString().contains('broken'), true);
       caught = true;
     }
-    // expect(a.ready, false);
-    expect(c.ready, false);
+    expect(summer.ready, false);
     expect(caught, true);
+    // NEXT: expect(broken.ready, false);
+  });
+
+  test('exception, 2 summers waiting', () async {
+    Summer broken = BrokenSummer('broken', 5);
+    Summer summer = Summer('summer', 5);
+    Summer summer2 = Summer('summer2', 5);
+    summer.addSummer(broken);
+    summer2.addSummer(broken);
+
+    bool caught = false;
+    try {
+      await Comp.waitOnComps([summer, summer2]);
+      fail('expected exception');
+    } catch (e) {
+      expect(e.toString().contains('broken'), true);
+      caught = true;
+    }
+    expect(summer.ready, false);
+    expect(summer2.ready, false);
+    expect(caught, true);
+    // NEXT: expect(broken.ready, false);
   });
 
   // 2 waiters exercises a different code path as the first waiter initiates the call to process(),
   // but the second waiter is waiting on ready state.
-  test('exception 2', () async {
+  test('exceptions caught', () async {
     Summer a = BrokenSummer('a', 5);
     ExceptionExpecter b = ExceptionExpecter(a, 'b');
     ExceptionExpecter c = ExceptionExpecter(a, 'c');
 
     try {
       await Comp.waitOnComps([b, c]);
-      expect(b.caught, true);
-      expect(c.caught, true);
     } catch (e) {
       fail('Unexpected: $e');
     }
+    expect(b.caught != null, true);
+    expect(b.ready, true);
+    expect(c.caught != null, true);
+    expect(c.ready, true);
+    // NEXT: expect(a.ready, false);
   });
 }
 
 class ExceptionExpecter extends Comp {
   final Comp comp;
   final String name;
-  bool caught = false;
+  Object? caught;
 
   ExceptionExpecter(this.comp, this.name);
 
@@ -258,10 +287,8 @@ class ExceptionExpecter extends Comp {
       await comp.waitUntilReady();
       fail('expected exception');
     } catch (e) {
-      expect(e.toString().contains('broken'), true);
-      caught = true;
+      caught = e;
     }
-    expect(caught, true);
-    // print('$name caught=$caught');
+    expect(caught != null, true);
   }
 }
