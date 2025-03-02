@@ -99,6 +99,7 @@ class Menus {
       // Prefs
       SubmenuButton(
           menuChildren: <Widget>[
+            MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
             MyCheckbox(Prefs.hideDismissed, '''hide content where network #(dis) > #(recommend)'''),
             SubmenuButton(menuChildren: <Widget>[
@@ -113,7 +114,6 @@ class Menus {
               IntSettingDropdown(
                   'paths', Prefs.followNetPaths, List<int>.generate(2, (i) => i + 1)),
             ], child: const Text('follow network')),
-            MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             const Text('--------- nerdier ---------'),
             MyCheckbox(Prefs.keyLabel, 'translate gibberish'),
             MyCheckbox(Prefs.showJson, 'show JSON'),
