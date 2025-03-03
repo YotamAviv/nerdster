@@ -7,7 +7,8 @@ Run using Firebase emulators.
 # Run the JavaScript tests
 node js/jsonish.js
 # Corrupt the database and check what happens
-TODO: App won't load, no error shown. Desired would be a notification about 1 corrupt token.
+TODO: App won't load, no error shown. Desired would be a notification about 1 corrupt token and 
+just that data missing.
 - Corrupt the data by:
   - deleting 1 statement from a notary chain, or 
   - modifying any value in it.
