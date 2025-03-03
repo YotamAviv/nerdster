@@ -24,8 +24,8 @@ import 'package:test/test.dart';
 
 void main() async {
   fireChoice = FireChoice.fake;
-  FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
-  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
+  FireFactory.register(kOneofusDomain, FakeFirebaseFirestore(), null);
+  FireFactory.register(kNerdsterDomain, FakeFirebaseFirestore(), null);
   TrustStatement.init();
   ContentStatement.init();
 

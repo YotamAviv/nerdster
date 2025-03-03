@@ -4,9 +4,13 @@ Run using Firebase emulators.
 - DEV menu => integration test: ...
 - Manually change [Prefs.skipVerify, Prefs.cloudFetchDistinct]
 - (Need to refresh in between for test framework)
-
 # Run the JavaScript tests
 node js/jsonish.js
+# Corrupt the database and check what happens
+TODO: App won't load, no error shown. Desired would be a notification about 1 corrupt token.
+- Corrupt the data by:
+  - deleting 1 statement from a notary chain, or 
+  - modifying any value in it.
 
 
 # Nice ones:
