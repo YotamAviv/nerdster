@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/trust/trust.dart';
@@ -15,11 +16,8 @@ import 'package:nerdster/trust/trust.dart';
 /// the BFS, not terrible.
 
 class GreedyBfsTrust {
-  final Map<String, String> _rejected = <String, String>{};
   final int degrees; // 1 degree is just me.
   final int numPaths;
-
-  Map<String, String> get rejected => _rejected;
 
   GreedyBfsTrust({this.degrees = 6, this.numPaths = 1});
 
@@ -51,7 +49,7 @@ class GreedyBfsTrust {
           Node other = block.node;
           if (other.blocked) continue;
           if (other == n) {
-            _rejected[block.statementToken] = '''Don't block yourself.''';
+            NotificationsMenu.reject(block.statementToken, '''Don't block yourself.''');
             continue;
           }
 
@@ -60,14 +58,14 @@ class GreedyBfsTrust {
           /// Greedy approach, briefly, simplified: If trusted then can't block.
           if (other == source) {
             // Special case, no paths
-            _rejected[block.statementToken] = 'Attempt to block your key.';
+            NotificationsMenu.reject(block.statementToken, 'Attempt to block your key.');
             continue;
           }
           if (other.paths.isNotEmpty) {
             // Already trusted (not blocked, has paths, isn't blocked)
             assert(!other.blocked);
             assert(network.containsKey(other.token));
-            _rejected[block.statementToken] = 'Attempt to block trusted key.';
+            NotificationsMenu.reject(block.statementToken, 'Attempt to block trusted key.');
             continue;
           }
 
@@ -93,14 +91,14 @@ class GreedyBfsTrust {
           assert(b(replace.revokeAt));
           Node other = replace.node;
           if (other == n) {
-            _rejected[replace.statementToken] = '''Don't replace yourself''';
+            NotificationsMenu.reject(replace.statementToken, '''Don't replace yourself''');
             continue;
           }
 
           // Replace the other node if allowed.
           if (other == source) {
             // Special case, no paths
-            _rejected[replace.statementToken] = 'Attempt to replace your key.';
+            NotificationsMenu.reject(replace.statementToken, 'Attempt to replace your key.');
             continue;
           }
 
@@ -110,13 +108,13 @@ class GreedyBfsTrust {
             // web-of-trust equivalence [WotEquivalence], not this class.
             // That said: I don't want to implement revoking at different tokens in Fetcher,
             // and so I do enforce it here.
-            _rejected[replace.statementToken] = 'Attempt to replace a replaced key.';
+            NotificationsMenu.reject(replace.statementToken, 'Attempt to replace a replaced key.');
             continue;
           }
           if (other.blocked) {
             // Hmm.. if someone blocks your old key, you should probably be informed about it. 
             // This might be that rejected replace (otherwise, it'd be a rejected block)
-            _rejected[replace.statementToken] = 'Attempt to replace a blocked key.';
+            NotificationsMenu.reject(replace.statementToken, 'Attempt to replace a blocked key.');
             continue;
           }
 
@@ -147,7 +145,7 @@ class GreedyBfsTrust {
           for (Trust trust in await n.trusts) {
             final Node other = trust.node;
             if (other == n) {
-              _rejected[trust.statementToken] = '''Don't trust yourself.''';
+              NotificationsMenu.reject(trust.statementToken, '''Don't trust yourself.''');
               continue;
             }
 
@@ -156,7 +154,7 @@ class GreedyBfsTrust {
             }
 
             if (other.blocked) {
-              _rejected[trust.statementToken] = '''Attempt to trust blocked key.''';
+              NotificationsMenu.reject(trust.statementToken, '''Attempt to trust blocked key.''');
               continue;
             }
 

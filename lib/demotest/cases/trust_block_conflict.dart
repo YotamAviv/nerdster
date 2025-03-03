@@ -3,6 +3,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -32,7 +33,7 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
     "Bart": null
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  jsonExpect(oneofusNet.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
+  jsonExpect(NotificationsMenu.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
 
 
   signInState.center = bart.token;
@@ -43,7 +44,7 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
     "Bart": null
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  jsonExpect(oneofusNet.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
+  jsonExpect(NotificationsMenu.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
 
   useClock(LiveClock());
   return (bart, null);

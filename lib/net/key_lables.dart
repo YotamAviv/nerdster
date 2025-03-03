@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -135,7 +136,7 @@ class KeyLabels with Comp, ChangeNotifier {
       Fetcher f = Fetcher(t, kOneofusDomain);
       for (TrustStatement ts in distinct(f.statements)
           .cast<TrustStatement>()
-          .where((s) => !oneofusNet.rejected.containsKey(s.token))) {
+          .where((s) => !NotificationsMenu.rejected.containsKey(s.token))) {
         if (ts.verb == TrustVerb.trust && ts.subjectToken == signInState.center) {
           String moniker = ts.moniker!;
           return _labelKey(signInState.center, moniker);

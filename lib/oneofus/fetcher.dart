@@ -158,10 +158,12 @@ class Fetcher {
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
-  // TODO: Catch exceptions and 
-  // - mark this token corrupt
-  // - notify user
-  // instead of crashing.
+  // TODO: Catch exceptions instead of crashing
+  // - mark this 
+  // - notify user of problematic token
+  // 
+  // Do these first:
+  // TODO: Change [Notifications]: Instead of hunting down notifictions...
   Future<void> fetch() async {
     if (b(testingCrashIn) && testingCrashIn! > 0) {
       testingCrashIn = testingCrashIn! - 1;

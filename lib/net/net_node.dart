@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/merger.dart';
@@ -36,7 +37,7 @@ class NetNode {
     Iterable<Iterable<TrustStatement>> iiStatements = oneofusEquiv.getEquivalents(token).map((t) =>
         distinct(Fetcher(t, kOneofusDomain)
                 .statements
-                .where((s) => !oneofusNet.rejected.containsKey(s.token)))
+                .where((s) => !NotificationsMenu.rejected.containsKey(s.token)))
             .cast<TrustStatement>()
             .where((s) => s.verb == TrustVerb.trust));
     Merger merger = Merger(iiStatements);

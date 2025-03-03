@@ -4,7 +4,7 @@ import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -48,16 +48,16 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   expectedEquivalents = { 'Bart', 'Bart (0)' };
   jsonShowExpect(oneofusEquiv.getEquivalents(bart2.token), expectedEquivalents);
-  myExpect(oneofusNet.rejected.length, 1);
-  myExpect(oneofusNet.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
+  myExpect(NotificationsMenu.rejected.length, 1);
+  myExpect(NotificationsMenu.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
   
   // Bart (bart2) now decides that 'bart' no longer represents him and blocks
   Statement b1 = await bart2.doTrust(TrustVerb.block, bart);
   
   signInState.center = lisa.token;  
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
-  myExpect(oneofusNet.rejected.length, 1);
-  myExpect(oneofusNet.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
+  myExpect(NotificationsMenu.rejected.length, 1);
+  myExpect(NotificationsMenu.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
   network = oneofusNet.network;
   expectedNetwork = {
     "Me": null,
@@ -75,9 +75,9 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     }
   };
   jsonShowExpect(dump, expected);
-  myExpect(oneofusNet.rejected.length, 1);
-  // printStatement(oneofusNet.rejected.keys.first);
-  myExpect(oneofusNet.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
+  myExpect(NotificationsMenu.rejected.length, 1);
+  // printStatement(NotificationsMenu.rejected.keys.first);
+  myExpect(NotificationsMenu.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
 
   signInState.center = bart2.token;
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
@@ -86,7 +86,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     "N:Me-true:": {}  
   };
   jsonShowExpect(dump, expected);
-  myExpect(oneofusNet.rejected.isEmpty, true);
+  myExpect(NotificationsMenu.rejected.isEmpty, true);
 
   await signInState.signIn(bart.token, null);
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
@@ -101,8 +101,8 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     }
   };
   jsonShowExpect(dump, expected);
-  myExpect(oneofusNet.rejected.length, 2);
-  jsonShowExpect(oneofusNet.rejected, {
+  myExpect(NotificationsMenu.rejected.length, 2);
+  jsonShowExpect(NotificationsMenu.rejected, {
     b1.token:'Attempt to block your key.', 
     bart2blocksMilhouse.token: 'Attempt to block trusted key.'
   });
