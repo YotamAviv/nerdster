@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -54,8 +55,8 @@ abstract class NetTreeModel {
   String get displayVerbPastTense {
     return (statement as TrustStatement).verb.pastTense;
   }
-  bool get rejected => oneofusNet.rejected.containsKey(statement!.token);
-  bool get trustsNonCanonical => oneofusEquiv.trustNonCanonical.containsKey(statement!.token);
+  bool get rejected => NotificationsMenu.rejected.containsKey(statement!.token);
+  bool get trustsNonCanonical => NotificationsMenu.rejected.containsKey(statement!.token);
   bool get isCanonicalStatement =>
       oneofusEquiv.getCanonical(statement!.iToken) == statement!.iToken;
 

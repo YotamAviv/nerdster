@@ -3,14 +3,15 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/net/net_node.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/trust/trust.dart';
 import 'package:nerdster/trust/greedy_bfs_trust.dart';
+import 'package:nerdster/trust/trust.dart';
 
 import '../oneofus/measure.dart';
 
@@ -93,7 +94,6 @@ class OneofusNet with Comp, ChangeNotifier {
 
   LinkedHashMap<String, Node> _network = LinkedHashMap<String, Node>();
   final Map<String, int> _token2keyCounter = <String, int>{};
-  final LinkedHashMap<String, String> _rejected = LinkedHashMap<String, String>();
 
   int? getPosition(token) => _token2keyCounter[token];
 
@@ -109,8 +109,6 @@ class OneofusNet with Comp, ChangeNotifier {
 
   LinkedHashMap<String, Node> get network => _network;
 
-  Map<String, String> get rejected => UnmodifiableMapView(_rejected);
-
   void listen() {
     setDirty();
     notifyListeners();
@@ -123,12 +121,11 @@ class OneofusNet with Comp, ChangeNotifier {
     
     // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
     Fetcher.resetRevokedAt();
+    NotificationsMenu.clear();
     NetNode.clear();
     FetcherNode.clear();
     GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
     _network = await bfsTrust.process(FetcherNode(signInState.center));
-    _rejected.clear();
-    _rejected.addAll(bfsTrust.rejected); // CODE: Make rejected be a return value of the algorithm.
     _token2keyCounter.clear();
 
     int keyCounter = 0;

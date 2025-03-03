@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,14 +30,29 @@ import 'package:nerdster/util_ui.dart';
 
 const Widget _space = SizedBox(height: 10);
 
-printStatement(String statementToken) {
-  TrustStatement statement = TrustStatement.find(statementToken)!;
-  String string = encoder.convert(keyLabels.show(statement));
-  print(string);
-}
-
 class NotificationsMenu extends StatefulWidget {
   const NotificationsMenu({super.key});
+
+  static final LinkedHashMap<String, String> _rejected = LinkedHashMap<String, String>();
+  static final LinkedHashMap<String, String> _warned = LinkedHashMap<String, String>();
+
+  static Map<String, String> get rejected => UnmodifiableMapView(_rejected);
+  static void reject(String token, String problem) {
+    assert(Jsonish.find(token) != null);
+    _rejected[token] = problem;
+  }
+
+  static Map<String, String> get warned => UnmodifiableMapView(_warned);
+  static void warn(String token, String problem) {
+    assert(Jsonish.find(token) != null);
+    _warned[token] = problem;
+  }
+
+  // KLUEGE: Where/when to call this isn't clear, probably OneofusNet.process, some tests, too. 
+  static void clear() {
+    _rejected.clear();
+    _warned.clear();
+  }
 
   @override
   State<StatefulWidget> createState() {
@@ -109,8 +126,12 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
         if (followNet.delegate2oneofus[signInState.signedInDelegate] != signInState.center) {
           MenuItemButton item = MenuItemButton(
               onPressed: () {
-                alert('Delgate not associated with you', '''You're signed in with a Nerdster delgate key that isn't associated with you
-You probably need to address this using your ONE-0F-US.NET phone app.''', ['Okay'], context);
+                alert(
+                    'Delgate not associated with you',
+                    '''You're signed in with a Nerdster delgate key that isn't associated with you
+You probably need to address this using your ONE-0F-US.NET phone app.''',
+                    ['Okay'],
+                    context);
               },
               child: const Text(
                   '''You're signed in with a Nerdster delgate key that isn't associated with you.'''));
@@ -121,9 +142,8 @@ You probably need to address this using your ONE-0F-US.NET phone app.''', ['Okay
     }
 
     Map<String, String> statementToken2reason = {
-      ...oneofusNet.rejected,
-      ...oneofusEquiv.rejected,
-      ...oneofusEquiv.trustNonCanonical
+      ...NotificationsMenu.rejected,
+      ...NotificationsMenu.warned,
     };
     for (MapEntry<String, String> e in statementToken2reason.entries) {
       TrustStatement statement = TrustStatement.find(e.key)!;
