@@ -55,8 +55,8 @@ class _NetBarState extends State<NetBar> {
 
   @override
   Widget build(BuildContext context) {
-    // DEFER: If [FollowNet].fcontext is null, then we probably shouldn't -> to a
-    // follow network screen which is the same as the one-of-us network screen.
+    
+    
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 14, 0, 4),
       child: Row(

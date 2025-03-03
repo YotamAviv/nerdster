@@ -35,7 +35,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -117,16 +117,8 @@ Future<void> main() async {
   FollowNet();
   KeyLabels();
 
-  // Show 'loading', start the timer.
-  // ignore: unawaited_futures
-  BarRefresh.refresh(null); // TODO:
-
   // -------------- run app ---------------
-  runApp(const MaterialApp(
-    home: ContentTreeView(),
-    // navigatorKey: navigatorKey, // Setting a global key for navigator
-    // Ddidn't work, see https://stackoverflow.com/questions/56280736/alertdialog-without-context-in-flutter
-  ));
+  runApp(const MaterialApp(home: ContentTreeView()));
 }
 
 Future<void> defaultSignIn() async {

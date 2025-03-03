@@ -15,21 +15,19 @@ class BarRefresh extends StatefulWidget {
     super.key,
   });
 
-  // TODO: context not nullable
-  static Future<void> refresh(BuildContext? context) async {
+  static Future<void> refresh(BuildContext context) async {
     if (!measure.isRunning) {
       try {
         Measure.reset();
         measure.start();
-        // This could probably be captured in an Observable Comp instance
-        // OPTIONAL: (maybe add to Dev menu): Jsonish.wipeCache();
+        
         Fetcher.clear();
         clearDistincterCache(); // redundant?
         oneofusNet.listen();
 
         await Comp.waitOnComps([contentBase, keyLabels]);
-      } catch (e, stack) {
-        if (context != null) await alert(e.toString(), stack.toString(), ['Okay'], context);
+      } catch (e, stackTrace) {
+        await alertException(context, e, stackTrace: stackTrace);
       } finally {
         measure.stop();
         Measure.dump();

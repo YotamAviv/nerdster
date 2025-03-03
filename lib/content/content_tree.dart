@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_bar.dart';
 import 'package:nerdster/content/content_tile.dart';
@@ -30,6 +31,8 @@ import 'package:nerdster/singletons.dart';
 /// DEFER: UI: Try 3 dots on right side:
 ///   https://api.flutter.dev/flutter/material/MenuAnchor-class.html
 class ContentTreeView extends StatefulWidget {
+  static bool _firstTime = true;
+
   const ContentTreeView({super.key});
 
   @override
@@ -81,6 +84,12 @@ class _ContentTreeViewState extends State<ContentTreeView> {
 
   @override
   Widget build(BuildContext context) {
+    if (ContentTreeView._firstTime) {
+      // ignore: unawaited_futures
+      ContentTreeView._firstTime = false;
+      BarRefresh.refresh(context);
+    }
+
     return Scaffold(
         body: SafeArea(
             child: Column(children: [
