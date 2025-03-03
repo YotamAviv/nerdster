@@ -6,7 +6,6 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
-import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree.dart';
@@ -58,25 +57,6 @@ Future<void> main() async {
       print(e);
     }
   }
-  String? fireCheckReadParam = params['fireCheckRead'];
-  if (b(fireCheckReadParam)) {
-    try {
-      _fireCheckRead = bool.parse(fireCheckReadParam!);
-      print('_fireCheckRead=$_fireCheckRead');
-    } catch (e) {
-      print(e);
-    }
-  }
-  String? fireCheckWriteParam = params['fireCheckWrite'];
-  if (b(fireCheckWriteParam)) {
-    try {
-      _fireCheckWrite = bool.parse(fireCheckWriteParam!);
-      print('_fireCheckWrite=$_fireCheckWrite');
-    } catch (e) {
-      print(e);
-    }
-  }
-
   if (fireChoice != FireChoice.fake) {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     await OneofusFire.init();
@@ -88,18 +68,14 @@ Future<void> main() async {
       OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
       OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
     }
-    FireFactory.registerFire(
-        kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
-    FireFactory.registerFire(kOneofusDomain, OneofusFire.firestore, OneofusFire.functions);
+    FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
+    FireFactory.register(kOneofusDomain, OneofusFire.firestore, OneofusFire.functions);
   } else {
-    FireFactory.registerFire(kOneofusDomain, FakeFirebaseFirestore(), null);
-    FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
+    FireFactory.register(kOneofusDomain, FakeFirebaseFirestore(), null);
+    FireFactory.register(kNerdsterDomain, FakeFirebaseFirestore(), null);
   }
-  await Prefs.init();
-  TrustStatement.init();
-  ContentStatement.init();
-  await About.init();
-
+  _fireCheckRead = params.containsKey('fireCheckRead');
+  _fireCheckWrite = params.containsKey('fireCheckWrite');
   if (_fireCheckWrite) {
     await checkWrite(FireFactory.find(kNerdsterDomain), 'firecheck: web:nerdster');
     await checkWrite(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
@@ -108,6 +84,11 @@ Future<void> main() async {
     await checkRead(FireFactory.find(kNerdsterDomain), 'firecheck: web:nerdster');
     await checkRead(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
   }
+
+  TrustStatement.init();
+  ContentStatement.init();
+  await Prefs.init();
+  await About.init();
 
   // ------------ sign in credentials ------------
   await defaultSignIn();

@@ -21,8 +21,8 @@ final FirebaseFirestore _fire = FireFactory.find(_domain);
 void main() async {
   FetcherTestHelper helper = FetcherTestHelper();
   fireChoice = FireChoice.fake;
-  FireFactory.registerFire(_domain, FakeFirebaseFirestore(), null);
-  FireFactory.registerFire(kNerdsterDomain, FakeFirebaseFirestore(), null);
+  FireFactory.register(_domain, FakeFirebaseFirestore(), null);
+  FireFactory.register(kNerdsterDomain, FakeFirebaseFirestore(), null);
   TrustStatement.init();
 
   test('2', helper.test2);
