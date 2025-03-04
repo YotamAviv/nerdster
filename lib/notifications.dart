@@ -35,6 +35,7 @@ class NotificationsMenu extends StatefulWidget {
 
   static final LinkedHashMap<String, String> _rejected = LinkedHashMap<String, String>();
   static final LinkedHashMap<String, String> _warned = LinkedHashMap<String, String>();
+  static final LinkedHashMap<String, String> _corrupted = LinkedHashMap<String, String>();
 
   static Map<String, String> get rejected => UnmodifiableMapView(_rejected);
   static void reject(String token, String problem) {
@@ -48,10 +49,17 @@ class NotificationsMenu extends StatefulWidget {
     _warned[token] = problem;
   }
 
+  static Map<String, String> get corrupted => UnmodifiableMapView(_corrupted);
+  static void corrupt(String token, String error) {
+    assert(Jsonish.find(token) != null);
+    _corrupted[token] = error;
+  }
+
   // KLUEGE: Where/when to call this isn't clear, probably OneofusNet.process, some tests, too. 
   static void clear() {
     _rejected.clear();
     _warned.clear();
+    _corrupted.clear();
   }
 
   @override
@@ -144,6 +152,7 @@ You probably need to address this using your ONE-0F-US.NET phone app.''',
     Map<String, String> statementToken2reason = {
       ...NotificationsMenu.rejected,
       ...NotificationsMenu.warned,
+      ...NotificationsMenu.corrupted,
     };
     for (MapEntry<String, String> e in statementToken2reason.entries) {
       TrustStatement statement = TrustStatement.find(e.key)!;
