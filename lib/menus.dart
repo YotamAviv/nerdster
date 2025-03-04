@@ -173,11 +173,6 @@ $link''',
           SubmenuButton(menuChildren: [
             MenuItemButton(onPressed: () => fetcherIntegrationTest(), child: const Text('Fetcher')),
             MenuItemButton(onPressed: () => integrationTests(), child: const Text('misc  demos')),
-            MenuItemButton(
-                child: const Text('Fetcher crash in... 3'),
-                onPressed: () {
-                  Fetcher.testingCrashIn = 3;
-                }),
           ], child: const Text('integration tests')),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),

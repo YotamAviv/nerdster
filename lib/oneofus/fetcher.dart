@@ -56,8 +56,6 @@ import 'util.dart';
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 
 class Fetcher {
-  static int? testingCrashIn;
-
   static final OouVerifier _verifier = OouVerifier();
 
   // (I've lost track of the reasoning behind having a final VoidCallback for this.)
@@ -165,15 +163,8 @@ class Fetcher {
   // Do these first:
   // TODO: Change [Notifications]: Instead of hunting down notifictions...
   Future<void> fetch() async {
-    if (b(testingCrashIn) && testingCrashIn! > 0) {
-      testingCrashIn = testingCrashIn! - 1;
-      if (testingCrashIn == 0) {
-        testingCrashIn = null;
-        throw Exception('testing Exception');
-      }
-    }
-
     if (b(_cached)) return;
+
     _cached = <Statement>[];
 
     DateTime? time;
