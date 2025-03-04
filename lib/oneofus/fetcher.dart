@@ -79,7 +79,7 @@ class Fetcher {
   // - blocked : any string that isn't a statement token makes this blocked (revokedAt might be "since forever")
   String? _revokeAt; // set by others to let this object know
   DateTime? _revokeAtTime; // set by this object after querying the db
-  // TODO: Make cloud and non-cloud path use _cached similary ({distinct, revoked}).
+  // DO: cloud functions and local paths should use _cached similary ({distinct, revoked}).
   List<Statement>? _cached;
   String? _lastToken;
 
@@ -157,12 +157,6 @@ class Fetcher {
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
-  // TODO: Catch exceptions instead of crashing
-  // - mark this
-  // - notify user of problematic token
-  //
-  // Do these first:
-  // TODO: Change [Notifications]: Instead of hunting down notifictions...
   Future<void> fetch() async {
     if (b(_cached)) return;
 

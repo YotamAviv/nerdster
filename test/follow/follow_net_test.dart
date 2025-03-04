@@ -11,6 +11,7 @@ import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/main.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -228,21 +229,23 @@ void main() async {
     await Comp.waitOnComps([contentBase, keyLabels]);
     myExpect(contentBase.roots.length, 1);
     ContentTreeNode cn = contentBase.roots.first;
+    expect(cn.getChildren().length, 2); // 2 ratings
 
-    await bo.doTrust(TrustVerb.delegate, lukeN);
+    Statement boClaimsLukes = await bo.doTrust(TrustVerb.delegate, lukeN);
 
-    oneofusNet.listen();
+    signInState.center = bo.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     myExpect(contentBase.roots.length, 1);
     cn = contentBase.roots.first;
-    // print(cn.getChildren().length);
-    // print('followNet.delegate2oneofus=${keyLabels.show(followNet.delegate2oneofus)}');
-    // print('followNet.oneofus2delegates=${keyLabels.show(followNet.oneofus2delegates)}');
-    expect(cn.getChildren().length, 1);
-
+    expect(cn.getChildren().length, 1); // 2 ratings
     // Check rejection
     // (I don't have the rejected statement here because it's not returned by luke.makeDelegate) 
-    expect(followNet.rejected.values, {"Delegate already claimed"});
+    expect(NotificationsMenu.rejected.values, {"Delegate already claimed"});
+    
+    // 
+    signInState.center = luke.token;
+    await Comp.waitOnComps([contentBase, keyLabels]);
+    expect(NotificationsMenu.rejected, {boClaimsLukes.token: "Delegate already claimed"});
   });
 
   test('clear, 2 equivs', () async {
@@ -425,7 +428,7 @@ void main() async {
     expect(followNet.oneofus2delegates[bob.token], null);
     // We don't have the delegate statements right here (not returned by luke.makeDelegate), and
     // so I'll just count them  instead of comparing them
-    expect(followNet.rejected.length, 2);
+    expect(NotificationsMenu.rejected.length, 2);
   });
 
   test('follow !oneofus', () async {
