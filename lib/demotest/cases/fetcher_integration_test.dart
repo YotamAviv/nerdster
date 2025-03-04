@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -32,7 +32,7 @@ import 'package:test/test.dart';
 /// cons:
 /// - 2 code paths forever
 ///
-/// TEST: Specifically test cloud distinct. 
+/// TEST: Specifically test cloud distinct.
 ///
 /// TEST: Error prone: There is a pref for using cloud distinct; running this from the DEV menu
 /// uses that  settings says.
@@ -164,7 +164,7 @@ class FetcherTestHelper {
     }
   }
 
-Future<void> revokeAtSinceAlways() async {
+  Future<void> revokeAtSinceAlways() async {
     for (bool doClear in [true, false]) {
       Json kI = await makeI();
 
@@ -201,14 +201,15 @@ Future<void> revokeAtSinceAlways() async {
       expect(js.length, 0);
     }
   }
-  
+
   Future<void> notarizationBlockchainViolation() async {
     TestSigner signer = TestSigner();
     Fetcher fetcher;
 
     List<Statement> js;
-    Json kI = await makeI();
-    fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
+    final Json kI = await makeI();
+    final String token = getToken(kI);
+    fetcher = Fetcher(token, _domain, testingNoVerify: true);
 
     await fetcher
         .push({'statement': _type, 'I': kI, 'trust': 'sub1', 'time': clock.nowIso}, signer);
@@ -233,17 +234,12 @@ Future<void> revokeAtSinceAlways() async {
         .set(fraudJ.json)
         .then((doc) {}, onError: (e) => print("Error: $e"));
 
-    fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
-
+    fetcher = Fetcher(token, _domain, testingNoVerify: true);
     // notary verification is different between local and cloud (right now).
     // Cloud functions throws error; local skips the statement.
-    var caught;
-    try {
-      await fetcher.fetch();
-    } catch (e) {
-      caught = e;
-    }
-    myExpect(caught != null, true);
+    await fetcher.fetch();
+    expect(NotificationsMenu.corrupted.length, 1);
+    expect(NotificationsMenu.corrupted.entries.first.key, token);
     print('(500 (Internal Server Error) or "Notarization violation" above was expected)');
   }
 
