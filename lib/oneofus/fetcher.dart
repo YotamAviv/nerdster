@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:flutter/material.dart';
 import 'package:nerdster/notifications.dart';
 
 import '../main.dart';
@@ -14,6 +13,17 @@ import 'statement.dart';
 import 'util.dart';
 
 /// Cloud Functions distinct, order, tokens, checkPervious...
+///
+/// The only reason we use Firebase Cloud Functions is performance.
+/// - distinct: send the client less data over
+/// - omit [I, statement]: send the client less data
+/// - (EXPERIMENTAL: send tokens, omit [signature, previous]:  measurably faster)
+///
+/// The Cloud Functions distinct is currently not complete (does not consider "other"), and so
+/// for
+///
+/// Developing using Cloud Functions is challenging, espeically on Linux, and so I want to keep
+/// the other path alive and for use with unit testing use FakeFirebase which can't Cloud Functions.
 ///
 /// Integration Testing:
 /// With non-trivial code in JavaScript cloud functions, integration testing is required.
@@ -59,9 +69,6 @@ final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
 
-  // (I've lost track of the reasoning behind having a final VoidCallback for this.)
-  static final VoidCallback changeNotify = clearDistincterCache;
-
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
 
   static final Measure mFire = Measure('fire');
@@ -79,7 +86,7 @@ class Fetcher {
   // - blocked : any string that isn't a statement token makes this blocked (revokedAt might be "since forever")
   String? _revokeAt; // set by others to let this object know
   DateTime? _revokeAtTime; // set by this object after querying the db
-  // DO: cloud functions and local paths should use _cached similary ({distinct, revoked}).
+  // MAINTAIN: Cloud Functions and FakeFirestore paths should use _cached similary ({distinct, revoked}).
   List<Statement>? _cached;
   String? _lastToken;
 
@@ -96,7 +103,6 @@ class Fetcher {
         f._revokeAtTime = null;
       }
     }
-    changeNotify();
   }
 
   factory Fetcher(String token, String domain, {bool testingNoVerify = false}) {
@@ -136,7 +142,6 @@ class Fetcher {
     _revokeAt = revokeAt;
     _revokeAtTime = null;
     _cached = null;
-    changeNotify();
   }
 
   String? get revokeAt => _revokeAt;
@@ -265,11 +270,14 @@ class Fetcher {
 
           _cached!.add(Statement.make(jsonish));
         }
-        // Be like clouddistinct
-        if (fetchParamsProto.containsKey('distinct')) {
-          _cached = distinct(_cached!);
-        }
       }
+
+      // Maintain Cloud Functions or not behave similarly.
+      // Callilng distinct(..) on the Cloud Functions is required for that as the Cloud impl is not 
+      // complete, and I wouldn't want to rely on it anyway as it can't be tested using our 
+      // FakeFirebase unit tests.
+      assert(fetchParamsProto.containsKey('distinct'));
+      _cached = distinct(_cached!);
       if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
     } catch (e) {
       NotificationsMenu.corrupt(token, e.toString());
@@ -281,7 +289,6 @@ class Fetcher {
   // Side effects: add 'previous', 'signature'
   Future<Statement> push(Json json, StatementSigner? signer) async {
     assert(_revokeAt == null);
-    changeNotify();
 
     if (_cached == null) await fetch(); // Was green.
 
@@ -311,7 +318,9 @@ class Fetcher {
       jsonish = await Jsonish.makeVerify(json, _verifier);
     }
 
-    _cached!.insert(0, Statement.make(jsonish));
+    Statement statement = Statement.make(jsonish);
+    _cached!.insert(0, statement);
+    _cached = distinct(_cached!);
     _lastToken = jsonish.token;
 
     final fireStatements = fire.collection(token).doc('statements').collection('statements');
@@ -340,7 +349,6 @@ class Fetcher {
       }
     }
 
-    Statement statement = Statement.make(jsonish);
     return statement;
   }
 

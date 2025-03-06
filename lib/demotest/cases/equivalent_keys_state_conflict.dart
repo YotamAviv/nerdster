@@ -54,7 +54,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   // Bart (bart2) now decides that 'bart' no longer represents him and blocks
   Statement b1 = await bart2.doTrust(TrustVerb.block, bart);
   
-  signInState.center = lisa.token;  
+  signInState.center = lisa.token;
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
   myExpect(NotificationsMenu.rejected.length, 1);
   myExpect(NotificationsMenu.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');

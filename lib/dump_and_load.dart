@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -20,8 +20,7 @@ Map<String, String?> dumpNetwork(Map<String, Node> network) => network.map((toke
     MapEntry(token, b(node.revokeAtTime) ? formatUiDatetime(node.revokeAtTime!) : null));
 
 Future<dynamic> dumpDump(BuildContext? context) async {
-  await oneofusEquiv.waitUntilReady();
-  await keyLabels.waitUntilReady();
+  await Comp.waitOnComps([keyLabels, contentBase]);
 
   dynamic out = {
     'center': Jsonish.find(signInState.center)!.json,
@@ -92,7 +91,7 @@ Future<void> loadStatements(domain2token2statements) async {
 }
 
 Future<Map<String, Map<String, List>>> dumpStatements() async {
-  await FollowNet().waitUntilReady();
+  await followNet.waitUntilReady();
 
   Map<String, Map<String, List>> out = <String, Map<String, List>>{};
   Map<String, List> map = <String, List>{};
@@ -101,19 +100,19 @@ Future<Map<String, Map<String, List>>> dumpStatements() async {
     List list = [];
     map[token] = list;
     Fetcher fetcher = Fetcher(token, kOneofusDomain);
-    for (final Statement statement in fetcher.statements) {
+    for (final Statement statement in await fetcher.fetchAllNoVerify()) {
       list.add(statement.json);
     }
   }
 
   Map<String, List> map2 = <String, List>{};
   out[kNerdsterDomain] = map2;
-  for (MapEntry e in FollowNet().delegate2fetcher.entries) {
+  for (MapEntry e in followNet.delegate2fetcher.entries) {
     final String token = e.key;
     final Fetcher fetcher = e.value;
     List list = [];
     map2[token] = list;
-    for (final Statement statement in fetcher.statements) {
+    for (final Statement statement in await fetcher.fetchAllNoVerify()) {
       list.add(statement.json);
     }
   }

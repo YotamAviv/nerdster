@@ -91,7 +91,6 @@ void main() async {
     await DemoKey.demos['simpsons']();
     loadSimpsons();
     Fetcher.clear();
-    clearDistincterCache();
     await signInState.signIn(bart.token, null);
     await Comp.waitOnComps([oneofusNet, keyLabels]);
 

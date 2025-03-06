@@ -3,7 +3,6 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/wot_equivalence.dart';
 import 'package:nerdster/notifications.dart';
-import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -15,7 +14,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
   static final OneofusEquiv _singleton = OneofusEquiv._internal();
   static final Measure measure = Measure('OneofusEquiv');
   factory OneofusEquiv() => _singleton;
-    
+
   OneofusEquiv._internal() {
     // supporters
     addSupporter(oneofusNet);
@@ -42,7 +41,8 @@ class OneofusEquiv with Comp, ChangeNotifier {
     _equivalence = WotEquivalence(Set.of(oneofusNet.network.keys));
     NerdEquateParser equateParser = NerdEquateParser();
     for (String token in oneofusNet.network.keys) {
-      for (TrustStatement statement in distinct(Fetcher(token, kOneofusDomain).statements).cast<TrustStatement>()) {
+      for (TrustStatement statement
+          in (Fetcher(token, kOneofusDomain).statements).cast<TrustStatement>()) {
         if (NotificationsMenu.rejected.containsKey(statement.token)) continue;
         EquateStatement? es = equateParser.parse(statement);
         if (es != null) {
@@ -57,8 +57,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
     assert(_equivalence!.getCanonical(signInState.center) == signInState.center);
 
     for (TrustStatement trustStatement
-        in distinct(Fetcher(signInState.center, kOneofusDomain).statements)
-            .cast<TrustStatement>()) {
+        in (Fetcher(signInState.center, kOneofusDomain).statements).cast<TrustStatement>()) {
       if (trustStatement.verb == TrustVerb.trust) {
         String subjectToken = trustStatement.subjectToken;
         if (getCanonical(subjectToken) != subjectToken) {

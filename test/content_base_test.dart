@@ -10,7 +10,6 @@ import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/main.dart';
-import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -32,8 +31,7 @@ import 'package:test/test.dart';
 // - includes everything for now (content, network, nerd tree..)
 Future<void> testByDump(caseDump) async {
   await loadDump(caseDump);
-  OouPublicKey center = await crypto.parsePublicKey(caseDump['center']);
-  await signInState.signIn(Jsonish(await center.json).token, null);
+  signInState.center = getToken(caseDump['center']);
   await contentBase.waitUntilReady();
 
   // print(await dumpDump(null));

@@ -87,15 +87,12 @@ void main() async {
     await lisa.doTrust(TrustVerb.trust, homer);
     await homer.doTrust(TrustVerb.trust, lisa); // wihtout this we're "Me".
 
-    await signInState.signIn(lisa.token, null);
-    await Comp.waitOnComps([contentBase, keyLabels]);
-
+    signInState.center = lisa.token;
     await keyLabels.waitUntilReady();
     var network = oneofusNet.network;
     var expectedNetwork = {"lisa": null, "homer": null, "marge": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
-    await followNet.waitUntilReady();
     dynamic dump = await OneofusTreeNode.root.dump();
     var expectedTree = {
       "N:lisa-true:": {
@@ -104,8 +101,6 @@ void main() async {
       }
     };
     jsonShowExpect(dump, expectedTree);
-
-    await oneofusEquiv.waitUntilReady();
   });
 
   test('blockReplacedKey', () async {
