@@ -64,7 +64,7 @@ Future<void> main() async {
       // $ firebase --project=nerdster emulators:start
       FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
       FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
-      // $ firebase --project=one-of-us-net -config=oneofus-nerdster.firebase.json emulators:start
+      // $ firebase --project=one-of-us-net -config=oneofus.firebase.json emulators:start
       OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
       OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
     }
