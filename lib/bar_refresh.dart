@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
-import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/singletons.dart';
@@ -22,7 +21,6 @@ class BarRefresh extends StatefulWidget {
         measure.start();
         
         Fetcher.clear();
-        clearDistincterCache(); // redundant?
         oneofusNet.listen();
 
         await Comp.waitOnComps([contentBase, keyLabels]);

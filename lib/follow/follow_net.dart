@@ -138,7 +138,7 @@ class FollowNet with Comp, ChangeNotifier {
       assert(oneofusFetcher.isCached);
       String oneofusCanonicalKey = oneofusEquiv.getCanonical(oneofusKey);
       _oneofus2delegates.putIfAbsent(oneofusCanonicalKey, () => <String>{});
-      for (TrustStatement s in distinct(oneofusFetcher.statements)
+      for (TrustStatement s in oneofusFetcher.statements
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
         String delegateToken = s.subjectToken;
@@ -169,7 +169,7 @@ class FollowNet with Comp, ChangeNotifier {
     // Load up _mostContexts if we didn't run our search that does that.
     if (!b(fcontext)) {
       for (ContentStatement s in (_delegate2fetcher.values)
-          .map((f) => distinct(f.statements))
+          .map((f) => f.statements)
           .flattened
           .cast<ContentStatement>()
           .where((s) => s.verb == ContentVerb.follow)) {
@@ -229,7 +229,7 @@ class FollowNode extends Node {
     for (String equiv in oneofusEquiv.getEquivalents(token)) {
       Fetcher oneofusFetcher = Fetcher(equiv, kOneofusDomain);
       assert(oneofusFetcher.isCached);
-      for (TrustStatement delegateStatement in distinct(oneofusFetcher.statements)
+      for (TrustStatement delegateStatement in oneofusFetcher.statements
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
         Fetcher delegateFetcher = Fetcher(delegateStatement.subjectToken, kNerdsterDomain);

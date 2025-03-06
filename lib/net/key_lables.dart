@@ -134,8 +134,7 @@ class KeyLabels with Comp, ChangeNotifier {
   String _labelMe() {
     for (String t in oneofusNet.network.keys) {
       Fetcher f = Fetcher(t, kOneofusDomain);
-      for (TrustStatement ts in distinct(f.statements)
-          .cast<TrustStatement>()
+      for (TrustStatement ts in f.statements.cast<TrustStatement>()
           .where((s) => !NotificationsMenu.rejected.containsKey(s.token))) {
         if (ts.verb == TrustVerb.trust && ts.subjectToken == signInState.center) {
           String moniker = ts.moniker!;

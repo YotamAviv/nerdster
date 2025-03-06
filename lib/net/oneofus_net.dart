@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/notifications.dart';
-import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -173,7 +172,7 @@ class FetcherNode extends Node {
   Future<Iterable<Trust>> get trusts async {
     assert(!blocked);
     await _fetcher.fetch();
-    return distinct(_fetcher.statements)
+    return _fetcher.statements
         .cast()
         .where((s) => s.verb == TrustVerb.trust)
         .map((s) => Trust(FetcherNode(s.subjectToken), s.time, s.token));
@@ -183,7 +182,7 @@ class FetcherNode extends Node {
   Future<Iterable<Replace>> get replaces async {
     assert(!blocked);
     await _fetcher.fetch();
-    return distinct(_fetcher.statements)
+    return _fetcher.statements
         .cast()
         .where((s) => s.verb == TrustVerb.replace)
         .map((s) => Replace(FetcherNode(s.subjectToken), s.time, s.revokeAt, s.token));
@@ -194,13 +193,13 @@ class FetcherNode extends Node {
     assert(!blocked);
     await _fetcher.fetch();
 
-    return distinct(_fetcher.statements)
+    return _fetcher.statements
         .cast()
         .where((s) => s.verb == TrustVerb.block)
         .map((s) => Block(FetcherNode(s.subjectToken), s.time, s.token));
     // List<Block> blocks = <Block>[];
     // for (TrustStatement statement
-    //     in distinct(_fetcher.statements).cast<TrustStatement>().where((s) => s.verb == TrustVerb.block)) {
+    //     in _fetcher.statements).cast<TrustStatement>().where((s) => s.verb == TrustVerb.blockZ) {
     //   blocks.add(Block(FetcherNode(statement.subjectToken), statement.time, statement.token));
     // }
     // return blocks;
