@@ -1,5 +1,7 @@
 import 'statement.dart';
 
+/// CONSIDER: Eliminate this and move to where neeced. 
+
 List<Statement> distinct(Iterable<Statement> source, {Transformer? transformer}) {
   final Set<String> already = <String>{};
   List<Statement> distinct = <Statement>[];
