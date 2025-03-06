@@ -704,7 +704,7 @@ void main() async {
     MapEntry e = NotificationsMenu.rejected.entries.first;
     String rejectedToken = e.key;
     String reason = e.value;
-    printStatement(rejectedToken);
+    // printStatement(rejectedToken);
     TrustStatement rejectedStatement = TrustStatement.find(rejectedToken)!;
     expect(keyLabels.labelKey(rejectedStatement.iToken), 'homer2');
     expect(rejectedStatement.verb, TrustVerb.replace);
@@ -738,7 +738,7 @@ void main() async {
     MapEntry e = NotificationsMenu.rejected.entries.first;
     String rejectedToken = e.key;
     String reason = e.value;
-    printStatement(rejectedToken);
+    // printStatement(rejectedToken);
     TrustStatement rejectedStatement = TrustStatement.find(rejectedToken)!;
     expect(keyLabels.labelKey(rejectedStatement.iToken), 'clown');
     expect(rejectedStatement.verb, TrustVerb.replace);
@@ -846,7 +846,7 @@ void main() async {
     await signInState.signIn(o.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
 
-    print('executed in ${stopwatch.elapsed}');
+    print('Stress test executed in ${stopwatch.elapsed}');
   });
 }
 

@@ -55,11 +55,8 @@ Future<(DemoKey, DemoKey?)> egos() async {
   await poserN.doFollow(hipster, {'social': 1});
   await jockN.doFollow(hipster, {'hip': 1});
 
-  print('jock:');
   await printDemoCredentials(jock, jockN);
-  print('poser:');
   await printDemoCredentials(poser, poserN);
-  print('hipster (hipsterN2):');
   await printDemoCredentials(hipster, hipsterN2);
 
   return (poser, poserN);

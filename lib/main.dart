@@ -34,7 +34,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -85,6 +85,7 @@ Future<void> main() async {
     await checkRead(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
   }
 
+  DemoKey.printCredentials = true;
   TrustStatement.init();
   ContentStatement.init();
   await Prefs.init();
