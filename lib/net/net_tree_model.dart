@@ -10,11 +10,10 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 
 abstract class NetTreeModel {
-  /// Note that ValidNode contains all paths, but those are web-of-trust keys.
   final List<NetTreeModel> path;
   // Node
   final String? token;
-   // Statement (not a TrustStatement because this class is a parent of [FollowTreeNode])
+  // TrustStatement when [OneofusTreeNode] or a follow ContentStatement when [FollowTreeNode])
   final Statement? statement;
 
   NetTreeModel(this.path, {this.token, this.statement});
@@ -115,9 +114,7 @@ abstract class NetTreeModel {
   // FollowTreeNode != NetTreeNode, I do.
   // (These are not factory singleton'ish like other nodes, and so that might help.)
   @override
-  bool operator ==(other) {
-    return other is NetTreeModel && other.token == token;
-  }
+  bool operator ==(other) => other is NetTreeModel && other.token == token;
 
   @override
   int get hashCode => hashString().hashCode;

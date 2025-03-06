@@ -11,35 +11,7 @@ import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 
-/// Plan for NetBar on every route
-/// Content:
-/// - context, includes <one-of-us>
-/// - follow degrees, N/A when <one-of-us>
-/// FollowNet:
-/// - context, includes <one-of-us>
-/// - follow degrees, N/A when <one-of-us>
-/// - expanding works
-/// - maybe no => to next route
-/// Oneofus:
-/// - context, includes <one-of-us>
-/// - follow degrees, N/A when <one-of-us>
-/// - show colors for followed
-///
-/// Any one-of-us options / tweeks / settings?
-/// - degrees?
-/// - max?
-/// - paths? (unlikely (ever))
-/// One of degrees or max is necessary, but I don't necessarily need to show it; it could end up
-/// in the Pref (or even Dev) menu.
-///
-
-/// [FollowTreeNode] is currently a subclass of this, but it'd be cleaner to
-/// - an abstract base class TreeNode and
-/// - 2 subclasses: {OneofusTreeNode, FollowTreeNode}
-///
-/// This tries to be the model behind the NetTreeView view. CONSIDER: Rename NetTreeModel
-/// Sometimes this is a nerd (either canonical EG or equivalent key);
-/// sometimes it's a statement about a nerd.
+/// One of {canonical EG, equivalent key, a trust statement}
 class OneofusTreeNode extends NetTreeModel {
   // Node
   @override
@@ -62,8 +34,7 @@ class OneofusTreeNode extends NetTreeModel {
   /// - Don't show children that are already on the path.
   @override
   Iterable<OneofusTreeNode> get children {
-    // BUG: This has fired, I believe
-    assert(Comp.compsReady([followNet, oneofusEquiv, oneofusNet]));
+    Comp.throwIfNotReady([followNet, oneofusEquiv, oneofusNet]);
     if (_children != null) return _children!;
     // Don't expand statements, !canoncial, or nodes already on path
     if (token == null || !canonical || path.map((n) => n.token).contains(token)) return [];

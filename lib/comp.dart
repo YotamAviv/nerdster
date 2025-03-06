@@ -67,11 +67,11 @@ abstract mixin class Comp {
   }
 
   static bool compsReady(Iterable<Comp> comps) => comps.where((s) => !s.ready).isEmpty;
+  static void throwIfNotReady(Iterable<Comp> comps) {
+    if (!compsReady(comps)) throw Exception('!compsReady');
+  }
 
   bool get supportersReady => compsReady(supporters);
-
-  // I have (or had) issues (consider the bug identified in trustBlockConflict.)
-  // I don't know if this is better, but it feels more organized.
   void throwIfSupportersNotReady() {
     if (!supportersReady) throw Exception('!supportersReady');
   }

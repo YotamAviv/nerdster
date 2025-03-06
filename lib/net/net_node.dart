@@ -8,7 +8,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
 
 /// Stricly canonical.
-/// Used in [NetTreeNode], tests, possibly redundant.
+/// Used in [OneofusTreeNode], tests, possibly redundant.
 ///
 /// These are different form the [OneofusNet] [_FetcherNodes], which are not strictly cannonical,
 /// have trust edges for 'replace', maybe more..
