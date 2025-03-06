@@ -40,6 +40,8 @@ class DemoKey {
   static final Map<String, DemoKey> _name2key = <String, DemoKey>{};
   static final Map<String, DemoKey> _token2key = <String, DemoKey>{};
 
+  static bool printCredentials = false;
+
   static final dynamic demos = {
     'loner': loner,
     'trustBlockConflict': trustBlockConflict,
@@ -189,6 +191,7 @@ class DemoKey {
 }
 
 Future<void> printDemoCredentials(DemoKey oneofus, DemoKey? delegate) async {
+  if (!DemoKey.printCredentials) return;
   print(oneofus.token);
   var credentials = {
     kOneofusDomain: await oneofus.keyPair.json,

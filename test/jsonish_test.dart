@@ -260,7 +260,7 @@ void main() {
     statementBadOrderWithUnknownKeys['Betty'] = 'Timmy';
     Jsonish.wipeCache();
     Jsonish jsonish2 = Jsonish(statementBadOrderWithUnknownKeys);
-    print(jsonish2.ppJson);
+    // print(jsonish2.ppJson);
     expect(jsonish2.keys.last, 'signature');
     expect(jsonish2.ppJson, '''{
   "statement": "net.one-of-us",
