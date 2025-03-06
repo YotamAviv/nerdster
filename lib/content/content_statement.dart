@@ -88,16 +88,23 @@ class ContentStatement extends Statement {
     return json;
   }
 
-  // KLUDGEY'ish: The transformer is applied on
-  // - iToken: always
-  // - subjectToken: never
-  // SUSPECT: The assumption is that transformer is delegate2oneofus.
-  // Note that ContentVerb.follow statements use a Nerdster token for 'I' and a Oneofus
-  // token for 'subject'
+  // KLUDGEY, messy, possibly buggy.. 
+  // The transformer is applied on
+  // - I: always
+  // - subject: never
+  // The assumption is that transformer is delegate2oneofus, which I believe maps delegates to
+  // canonical oneofus.
+  // ContentVerb.follow statements use a Nerdster token for 'I' and a Oneofus token for 'subject'
+  // It would seem that for the Nerdster follow case this should transform 
+  // - I using followNet.delegate2oneofus
+  // - subject using getCanonical.getCanonical 
+  // This is tested in '!canon follow !canon, multiple delegates'
+  // It may be the case that followNet does this without leveraging distinct/merge.
+  // Smells like I could do something smart like map/reduce.
   @override
   String getDistinctSignature({Transformer? transformer}) {
     String tiToken = b(transformer) ? transformer!(iToken) : iToken;
-    String tSubjectToken = subjectToken;
+    String tSubjectToken = subjectToken; // (not transformed)
     if (b(other)) {
       // We want just one of 'subject relatedTo otherSubject' and 'otherSubject relatedTo subject',
       // and so we sort the tokens.

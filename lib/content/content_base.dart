@@ -81,7 +81,7 @@ class ContentBase with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    thowIfSupportersNotReady();
+    throwIfSupportersNotReady();
     measure.start();
     
     _equivalence.clear();

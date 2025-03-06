@@ -46,9 +46,9 @@ class NetNode {
     for (TrustStatement statement in dis) {
       assert(oneofusNet.network.containsKey(statement.iToken));
       if (!oneofusNet.network.containsKey(statement.subjectToken)) continue;
-      NetNode childNerdNode = NetNode(oneofusEquiv.getCanonical(statement.subjectToken));
-      if (!_children!.contains(childNerdNode)) {
-        _children!.add(childNerdNode);
+      NetNode child = NetNode(oneofusEquiv.getCanonical(statement.subjectToken));
+      if (!_children!.contains(child)) {
+        _children!.add(child);
       }
     }
     return _children!;

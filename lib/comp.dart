@@ -72,7 +72,7 @@ abstract mixin class Comp {
 
   // I have (or had) issues (consider the bug identified in trustBlockConflict.)
   // I don't know if this is better, but it feels more organized.
-  void thowIfSupportersNotReady() {
+  void throwIfSupportersNotReady() {
     if (!supportersReady) throw Exception('!supportersReady');
   }
 
