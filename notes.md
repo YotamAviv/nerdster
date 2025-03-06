@@ -97,7 +97,7 @@ UI for clear relate/equate.
 ## Firebase emulators
 Run these from 'nerdster' base directory.
 $ firebase --project=nerdster emulators:start
-$ firebase --project=one-of-us-net --config=oneofus-nerdster.firebase.json emulators:start
+$ firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start
 
 ### Export PROD Firebase for use by local emulators
 firebase projects:list
@@ -120,7 +120,7 @@ firebase use one-of-us-net
 gcloud config set project one-of-us-net
 gcloud firestore export gs://one-of-us-net/oneofus-$NOW
 gsutil -m cp -r gs://one-of-us-net/oneofus-$NOW exports
-firebase --project=one-of-us-net --config=oneofus-nerdster.firebase.json emulators:start --import exports/oneofus-$NOW/
+firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start --import exports/oneofus-$NOW/
 
 
 
