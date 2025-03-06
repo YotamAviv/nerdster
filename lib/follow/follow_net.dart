@@ -92,7 +92,7 @@ class FollowNet with Comp, ChangeNotifier {
   // impl
   @override
   Future<void> process() async {
-    thowIfSupportersNotReady();
+    throwIfSupportersNotReady();
     measure.start();
 
     _mostContexts.clear();
@@ -119,7 +119,7 @@ class FollowNet with Comp, ChangeNotifier {
       network = tmp;
     } else {
       // Apply [degrees, numPaths] restrictions to oneofusNet.network.
-      // TEST:
+      // TEST: (I've manually tested this; I'm missing a unit test)
       List<String> networkX = <String>[];
       networkX.add(oneofusNet.network.entries.first.key); // Special case for source (no paths).
       for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {

@@ -1,7 +1,10 @@
 import 'statement.dart';
 import 'util.dart';
 
-/// - merge statement streams (probably Fetcher.allStatements)
+/// Merge statement streams
+/// Probably Fetcher.statements, probably:
+/// - ContentBase/FollowNet for different delegates of single oneofus,
+/// - NetNode for equivs, 
 class Merger extends Iterable implements Iterator {
   late final List<Iterator<Statement>> _iters;
   Statement? _next;

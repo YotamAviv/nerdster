@@ -36,7 +36,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    thowIfSupportersNotReady();
+    throwIfSupportersNotReady();
     measure.start();
 
     _equivalence = WotEquivalence(Set.of(oneofusNet.network.keys));

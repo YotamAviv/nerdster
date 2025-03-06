@@ -79,7 +79,7 @@ class KeyLabels with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    thowIfSupportersNotReady();
+    throwIfSupportersNotReady();
     _token2name.clear();
 
     _labelKeys();
