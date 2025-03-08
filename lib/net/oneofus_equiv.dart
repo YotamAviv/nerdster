@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/wot_equivalence.dart';
-import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -43,12 +42,12 @@ class OneofusEquiv with Comp, ChangeNotifier {
     for (String token in oneofusNet.network.keys) {
       for (TrustStatement statement
           in (Fetcher(token, kOneofusDomain).statements).cast<TrustStatement>()) {
-        if (NotificationsMenu.rejected.containsKey(statement.token)) continue;
+        if (notifications.rejected.containsKey(statement.token)) continue;
         EquateStatement? es = equateParser.parse(statement);
         if (es != null) {
           String? rejection = _equivalence!.process(es);
           if (b(rejection)) {
-            NotificationsMenu.reject(statement.token, rejection!);
+            notifications.reject(statement.token, rejection!);
           }
         }
       }
@@ -61,8 +60,8 @@ class OneofusEquiv with Comp, ChangeNotifier {
       if (trustStatement.verb == TrustVerb.trust) {
         String subjectToken = trustStatement.subjectToken;
         if (getCanonical(subjectToken) != subjectToken) {
-          assert(!NotificationsMenu.rejected.containsKey(subjectToken), 'might need multiple');
-          NotificationsMenu.warn(trustStatement.token, 'You trust a non-canonical key directly.');
+          assert(!notifications.rejected.containsKey(subjectToken), 'might need multiple');
+          notifications.warn(trustStatement.token, 'You trust a non-canonical key directly.');
         }
       }
     }

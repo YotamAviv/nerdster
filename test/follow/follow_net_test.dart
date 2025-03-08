@@ -11,8 +11,6 @@ import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/main.dart';
-import 'package:nerdster/notifications.dart';
-import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -239,12 +237,12 @@ void main() async {
     expect(cn.getChildren().length, 1); // 2 ratings
     // Check rejection
     // (I don't have the rejected statement here because it's not returned by luke.makeDelegate) 
-    expect(NotificationsMenu.rejected.values, {"Delegate already claimed"});
+    expect(notifications.rejected.values, {"Delegate already claimed"});
     
     // 
     signInState.center = luke.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(NotificationsMenu.rejected, {boClaimsLukes.token: "Delegate already claimed"});
+    expect(notifications.rejected, {boClaimsLukes.token: "Delegate already claimed"});
   });
 
   test('clear, 2 equivs', () async {
@@ -427,7 +425,7 @@ void main() async {
     expect(followNet.oneofus2delegates[bob.token], null);
     // We don't have the delegate statements right here (not returned by luke.makeDelegate), and
     // so I'll just count them  instead of comparing them
-    expect(NotificationsMenu.rejected.length, 2);
+    expect(notifications.rejected.length, 2);
   });
 
   test('follow !oneofus', () async {
