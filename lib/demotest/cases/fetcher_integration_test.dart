@@ -9,6 +9,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:test/test.dart';
 
 /// Test against FirebaseEmulator and Cloud Functions..
@@ -238,8 +239,8 @@ class FetcherTestHelper {
     // notary verification is different between local and cloud (right now).
     // Cloud functions throws error; local skips the statement.
     await fetcher.fetch();
-    expect(NotificationsMenu.corrupted.length, 1);
-    expect(NotificationsMenu.corrupted.entries.first.key, token);
+    expect(notifications.corrupted.length, 1);
+    expect(notifications.corrupted.entries.first.key, token);
     print('(500 (Internal Server Error) or "Notarization violation" above was expected)');
   }
 

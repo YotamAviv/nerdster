@@ -54,8 +54,8 @@ abstract class NetTreeModel {
   String get displayVerbPastTense {
     return (statement as TrustStatement).verb.pastTense;
   }
-  bool get rejected => NotificationsMenu.rejected.containsKey(statement!.token);
-  bool get trustsNonCanonical => NotificationsMenu.rejected.containsKey(statement!.token);
+  bool get rejected => notifications.rejected.containsKey(statement!.token);
+  bool get trustsNonCanonical => notifications.rejected.containsKey(statement!.token);
   bool get isCanonicalStatement =>
       oneofusEquiv.getCanonical(statement!.iToken) == statement!.iToken;
 

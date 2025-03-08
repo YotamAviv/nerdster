@@ -6,15 +6,10 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
-import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/key_store.dart';
-import 'package:nerdster/net/key_lables.dart';
-import 'package:nerdster/net/oneofus_equiv.dart';
-import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/fire_util.dart';
@@ -93,11 +88,6 @@ Future<void> main() async {
 
   // ------------ sign in credentials ------------
   await defaultSignIn();
-  ContentBase();
-  OneofusNet();
-  OneofusEquiv();
-  FollowNet();
-  KeyLabels();
 
   // -------------- run app ---------------
   runApp(const MaterialApp(home: ContentTreeView()));
@@ -154,9 +144,18 @@ String dummyOneofus = Jsonish(dummyPublicKey).token;
 const String yotam = '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431';
 dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
-  // FireChoice.prod: {"one-of-us.net": yotam},
 
   FireChoice.emulator: {"one-of-us.net": yotam},
+  // Bart
+  // FireChoice.emulator: {
+  //   "one-of-us.net": '163d570bdbcdb84c78ec4138813569e773806d8b',
+  //   "nerdster.org": {
+  //     "crv": "Ed25519",
+  //     "d": "NWraRSnhWNwi-35aANivWYtBgRWmryPiDtN_CaxDvPA",
+  //     "kty": "OKP",
+  //     "x": "3X_v6Zlxztv85f202TZ8BsxM8OAWgta8Bu_vjoSa-LI"
+  //   }
+  // }
 };
 
 // simpsons PROD

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:nerdster/notifications.dart';
+import 'package:nerdster/singletons.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but might work for phone codebase.
@@ -65,6 +65,10 @@ import 'util.dart';
 /// Revoking a key requires identifying its last, valid statement token. Without this, it doesn't work.
 
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
+
+abstract class Corruptor {
+    void corrupt(String token, String error);
+}
 
 class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
@@ -280,7 +284,7 @@ class Fetcher {
       _cached = distinct(_cached!);
       if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
     } catch (e) {
-      NotificationsMenu.corrupt(token, e.toString());
+      corruptor.corrupt(token, e.toString());
     }
   }
 

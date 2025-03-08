@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/follow/most_contexts.dart';
-import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -151,8 +150,7 @@ class FollowNet with Comp, ChangeNotifier {
           _delegate2oneofus[delegateToken] = oneofus;
           _oneofus2delegates[oneofus]!.add(delegateToken);
         } else {
-          // Reject
-          NotificationsMenu.reject(s.token, "Delegate already claimed");
+          notifications.reject(s.token, "Delegate already claimed");
         }
       }
     }

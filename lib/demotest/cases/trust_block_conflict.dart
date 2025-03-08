@@ -33,7 +33,7 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
     "Bart": null
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  jsonExpect(NotificationsMenu.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
+  jsonExpect(notifications.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
 
 
   signInState.center = bart.token;
@@ -44,7 +44,7 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
     "Bart": null
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  jsonExpect(NotificationsMenu.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
+  jsonExpect(notifications.rejected, {listTrustMilhouse.token: 'Attempt to trust blocked key.'});
 
   useClock(LiveClock());
   return (bart, null);
