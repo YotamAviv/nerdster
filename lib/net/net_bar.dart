@@ -276,7 +276,10 @@ class _FollowDropdownState extends State<_FollowDropdown> {
     String message = error
         ? '''Center ("${keyLabels.labelKey(signInState.center)}") does not use the selected follow context ("$initial")}).
 Select an enabled follow context or <one-of-us> (everyone).'''
-        : '''Choose a follow context or <one-of-us> (everyone).''';
+        : '''Choose a follow context:
+- <one-of-us>: everyone
+- <nerdster>: everyone with exceptions (block folks that talk too much or specifically <nerdster> follow those far on your one-of-us network that you want closer)
+- Custom contexts like 'nerd', 'social', 'family', 'local', 'geezer', etc...''';
 
     return DropdownMenu<String?>(
       initialSelection: initial,

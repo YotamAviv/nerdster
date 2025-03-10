@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/follow/follow_net.dart';
@@ -144,7 +145,7 @@ class _FollowUiState extends State<FollowUi> {
                 const Text('Add a follow context: '),
                 DropdownMenu<String>(
                   controller: controller,
-                  inputFormatters: [LowerCaseTextFormatter()],
+                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp("[a-z]"))],
                   requestFocusOnTap: true,
                   onSelected: (String? s) {
                     setState(() {
