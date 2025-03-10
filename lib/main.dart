@@ -29,7 +29,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.emulator;
+FireChoice fireChoice = FireChoice.prod;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -146,15 +146,4 @@ dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
 
   FireChoice.emulator: {"one-of-us.net": yotam},
-  
-  // Bart
-// FireChoice.emulator: {
-//   "one-of-us.net": '6f6745caf67a8f169efbf572e825c47afebbae56',
-//   "nerdster.org": {
-//     "crv": "Ed25519",
-//     "d": "t6Knz9QRKgzQH2CeBdl9I-0onFH0pJY1Rp0e429Ohk0",
-//     "kty": "OKP",
-//     "x": "KFRs66X-VGFx-KXKIJFOOiC6ZkywKtOtyfLsGJW_U5s"
-//   }
-// }
 };
