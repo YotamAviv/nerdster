@@ -91,8 +91,7 @@ void main() async {
     await simpsons();
     loadSimpsons();
     Fetcher.clear();
-    await signInState.signIn(bart.token, null);
-    await Comp.waitOnComps([oneofusNet, keyLabels]);
+    signInState.center = bart.token;
 
     // maggie isn't in because she doesn't have a delegate
     followNet.fcontext = 'family';
@@ -564,7 +563,7 @@ void main() async {
     DemoKey hipDel0 = DemoKey.findByName('hipster-nerdster0')!;
     DemoKey hipDel1 = DemoKey.findByName('hipster-nerdster1')!;
 
-    await signInState.signIn(poser.token, null);
+    signInState.center = poser.token;
     await contentBase.waitUntilReady();
     expect(contentBase.roots.length, 2);
     Map<String, String?> delegate2revokedAt =
@@ -619,7 +618,7 @@ void main() async {
     loadSimpsons();
 
     followNet.fcontext = 'family';
-    await signInState.signIn(lisa.token, null);
+    signInState.center = lisa.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus, {
       "daughter-delegate": "daughter",
@@ -640,7 +639,7 @@ void main() async {
     loadSimpsons();
 
     followNet.fcontext = kNerdsterContext;
-    await signInState.signIn(bart.token, null);
+    signInState.center = bart.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus, {
       "son-delegate": "son",

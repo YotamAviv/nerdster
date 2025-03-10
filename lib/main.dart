@@ -148,13 +148,13 @@ dynamic hardCodedSignin = {
   FireChoice.emulator: {"one-of-us.net": yotam},
   
   // Bart
-  // FireChoice.emulator: {
-  //   "one-of-us.net": '6f6745caf67a8f169efbf572e825c47afebbae56',
-  //   "nerdster.org": {
-  //     "crv": "Ed25519",
-  //     "d": "t6Knz9QRKgzQH2CeBdl9I-0onFH0pJY1Rp0e429Ohk0",
-  //     "kty": "OKP",
-  //     "x": "KFRs66X-VGFx-KXKIJFOOiC6ZkywKtOtyfLsGJW_U5s"
-  //   }
-  // }
+// FireChoice.emulator: {
+//   "one-of-us.net": '6f6745caf67a8f169efbf572e825c47afebbae56',
+//   "nerdster.org": {
+//     "crv": "Ed25519",
+//     "d": "t6Knz9QRKgzQH2CeBdl9I-0onFH0pJY1Rp0e429Ohk0",
+//     "kty": "OKP",
+//     "x": "KFRs66X-VGFx-KXKIJFOOiC6ZkywKtOtyfLsGJW_U5s"
+//   }
+// }
 };
