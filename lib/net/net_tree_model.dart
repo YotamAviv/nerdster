@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:nerdster/comp.dart';
-import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -91,7 +90,8 @@ abstract class NetTreeModel {
     return items.join(':');
   }
 
-  /// CODE: ... I can probably take a lot of this out.
+  /// This helps the tree stay expanded to the same nodes as the user switches follow 
+  /// contexts and such.
   /// Formerly also for dumping and tests
   String hashString() {
     List<String> items = <String>[];

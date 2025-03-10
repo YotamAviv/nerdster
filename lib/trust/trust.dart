@@ -62,9 +62,9 @@ abstract class Node {
 }
 
 class Trust {
+  final Node node;
   final String statementToken;
   final DateTime statedAt;
-  final Node node;
   Trust(this.node, this.statedAt, this.statementToken);
 }
 

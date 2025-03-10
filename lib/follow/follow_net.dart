@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/follow/most_contexts.dart';
+import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -19,6 +19,13 @@ import 'package:nerdster/trust/trust.dart';
 
 import '../oneofus/measure.dart';
 
+/// NEXT: "default" context
+/// If someone never followed, just Oneofus trusted me, then they'll get folks to follow from me based on my "default" follows and blocks.
+
+const kNerdsterContext = '<nerdster>';
+const kOneofusContext = '<one-of-us>';
+const kSpecialContexts = {kOneofusContext, kNerdsterContext};
+// TODO: Don't allow funny chars (<>) in user follow contexts.
 typedef StatementFilter = Iterable<Statement> Function(Iterable<Statement>);
 
 class FollowNet with Comp, ChangeNotifier {
@@ -39,28 +46,24 @@ class FollowNet with Comp, ChangeNotifier {
   }
 
   void _readParams() {
-    Map<String, String> params = Uri.base.queryParameters;
-    String? follow = params['follow'];
-    _context = b(follow) ? follow : null;
+    _context = Uri.base.queryParameters['follow'] ?? kNerdsterContext;
   }
 
   void setParams(Map<String, String> params) {
-    if (b(fcontext)) {
-      params['follow'] = followNet.fcontext!;
-    }
+    params['follow'] = _context;
   }
 
   // vars
-  String? _context;
-  final MostContexts _mostContexts = MostContexts();
+  String _context = kNerdsterContext;
+  final _MostContexts _mostContexts = _MostContexts();
   final Set<String> _centerContexts = <String>{};
   final Map<String, Set<String>> _oneofus2delegates = <String, Set<String>>{};
   final Map<String, String> _delegate2oneofus = <String, String>{};
   final Map<String, Fetcher> _delegate2fetcher = <String, Fetcher>{};
 
   // interface
-  String? get fcontext => _context;
-  set fcontext(String? context) {
+  String get fcontext => _context;
+  set fcontext(String context) {
     _context = context;
     listen();
   }
@@ -97,7 +100,6 @@ class FollowNet with Comp, ChangeNotifier {
     _mostContexts.clear();
     _centerContexts.clear();
     FollowNode.clear();
-    // clearDistinct(); // redundant?
     _delegate2oneofus.clear();
     _oneofus2delegates.clear();
     _delegate2fetcher.clear();
@@ -105,7 +107,7 @@ class FollowNet with Comp, ChangeNotifier {
     Iterable<String> network;
     final int degrees = Prefs.followNetDegrees.value;
     final int numPaths = Prefs.followNetPaths.value;
-    if (b(fcontext)) {
+    if (_context != kOneofusContext) {
       GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
       FollowNode.clear();
       LinkedHashMap<String, Node> canonNetwork =
@@ -165,7 +167,7 @@ class FollowNet with Comp, ChangeNotifier {
     }
 
     // Load up _mostContexts if we didn't run our search that does that.
-    if (!b(fcontext)) {
+    if (_context != kOneofusContext) {
       for (ContentStatement s in (_delegate2fetcher.values)
           .map((f) => f.statements)
           .flattened
@@ -186,7 +188,7 @@ class FollowNet with Comp, ChangeNotifier {
       Json followContextsJ = followStatement.contexts!;
       Iterable<String> contexts =
           followContextsJ.entries.where((e) => e.value > 0).map((e) => e.key);
-      _centerContexts.addAll(contexts);
+      _centerContexts.addAll(contexts.where((x) => !kSpecialContexts.contains(x)));
     }
 
     measure.stop();
@@ -198,7 +200,7 @@ class FollowNet with Comp, ChangeNotifier {
 }
 
 // We're building the follow network on top of OneofusNet and EquivNet.
-// Unlike [_FetcherNode], we do cache (no revoking discovered during search).
+// Unlike [_FetcherNode], we do cache (no revoking discovered during search). DEFER: REVISIT: greedyBfs no longer revokes during search.
 class FollowNode extends Node {
   static final Map<String, FollowNode> _factoryCache = {};
 
@@ -226,7 +228,6 @@ class FollowNode extends Node {
     List<Iterable<Statement>> delegateStatementss = <Iterable<Statement>>[];
     for (String equiv in oneofusEquiv.getEquivalents(token)) {
       Fetcher oneofusFetcher = Fetcher(equiv, kOneofusDomain);
-      assert(oneofusFetcher.isCached);
       for (TrustStatement delegateStatement in oneofusFetcher.statements
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
@@ -248,6 +249,7 @@ class FollowNode extends Node {
     Iterable<ContentStatement> dis =
         distinct(merger.cast<ContentStatement>()).cast<ContentStatement>();
     for (ContentStatement followStatement in dis.where((s) => s.verb == ContentVerb.follow)) {
+      assert(followStatement.verb == ContentVerb.follow);
       if (!oneofusNet.network.containsKey(followStatement.subjectToken)) continue; // not Oneofus
       followNet._processFollowStatementForMost(followStatement);
       String canon = oneofusEquiv.getCanonical(followStatement.subjectToken);
@@ -263,6 +265,17 @@ class FollowNode extends Node {
         }
       }
     }
+
+    // Default <nerdster> context
+    assert(oneofusEquiv.getCanonical(token) == token);
+    if (followNet.fcontext == kNerdsterContext) {
+      for (TrustStatement ts in NetNode.getCanonicalTrustStatements(token)) {
+        assert(oneofusEquiv.getCanonical(ts.iToken) == token);
+        _trusts
+            .add(Trust(FollowNode(oneofusEquiv.getCanonical(ts.subjectToken)), ts.time, ts.token));
+      }
+    }
+
     processed = true;
   }
 
@@ -297,4 +310,26 @@ class FollowNode extends Node {
   String? get revokeAt => null;
   @override
   DateTime? get revokeAtTime => null;
+}
+
+class _MostContexts {
+  final Map<String, int> _x2count = <String, int>{};
+
+  void clear() {
+    _x2count.clear();
+  }
+
+  void process(Iterable<String> xs) {
+    for (String x in xs) {
+      if (kSpecialContexts.contains(x)) continue;
+      if (!_x2count.containsKey(x)) _x2count[x] = 0;
+      _x2count[x] = _x2count[x]! + 1;
+    }
+  }
+
+  Iterable<String> most() {
+    Iterable<MapEntry<String, int>> sorted = _x2count.entries.toList()
+      ..sort((e1, e2) => e2.value.compareTo(e1.value));
+    return sorted.map((e) => e.key);
+  }
 }

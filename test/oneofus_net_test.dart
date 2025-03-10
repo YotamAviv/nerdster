@@ -9,12 +9,12 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
+import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
-import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
@@ -61,7 +61,7 @@ void main() async {
     await signInState.signIn(Jsonish({}).token, null); // unnecessary.
     oneofusNet.degrees = 6;
     oneofusNet.numPaths = 1;
-    followNet.fcontext = null;
+    followNet.fcontext = kOneofusContext;
     Prefs.showKeys.value = false;
     Prefs.showStatements.value = false;
     await FireFactory.clearPersistence();

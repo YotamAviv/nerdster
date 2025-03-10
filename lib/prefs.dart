@@ -4,8 +4,8 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 bool devDefault = fireChoice != FireChoice.prod;
-// bool bNerd = bDev;
-bool bNerd = false;
+bool bNerd = devDefault;
+// bool bNerd = false;
 
 class Prefs {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
