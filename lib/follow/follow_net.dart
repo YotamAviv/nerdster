@@ -19,13 +19,9 @@ import 'package:nerdster/trust/trust.dart';
 
 import '../oneofus/measure.dart';
 
-/// NEXT: "default" context
-/// If someone never followed, just Oneofus trusted me, then they'll get folks to follow from me based on my "default" follows and blocks.
-
 const kNerdsterContext = '<nerdster>';
 const kOneofusContext = '<one-of-us>';
 const kSpecialContexts = {kOneofusContext, kNerdsterContext};
-// TODO: Don't allow funny chars (<>) in user follow contexts.
 typedef StatementFilter = Iterable<Statement> Function(Iterable<Statement>);
 
 class FollowNet with Comp, ChangeNotifier {
