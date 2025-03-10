@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:nerdster/notifications.dart';
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/merger.dart';
@@ -30,27 +30,30 @@ class NetNode {
   NetNode._internal(this.token);
 
   Iterable<NetNode> get children {
-    assert(oneofusEquiv.ready);
     if (_children != null) return _children!;
     _children = SplayTreeSet<NetNode>(
         (n, o) => oneofusNet.getPosition(n.token)!.compareTo(oneofusNet.getPosition(o.token)!));
+    Iterable<TrustStatement> dis = getCanonicalTrustStatements(token);
+    for (TrustStatement statement in dis) {
+      assert(oneofusNet.network.containsKey(statement.iToken));
+      if (!oneofusNet.network.containsKey(statement.subjectToken)) continue;
+      NetNode child = NetNode(oneofusEquiv.getCanonical(statement.subjectToken));
+      if (!_children!.contains(child)) _children!.add(child);
+    }
+    return _children!;
+  }
+
+  static Iterable<TrustStatement> getCanonicalTrustStatements(String token) {
+    Comp.throwIfNotReady([oneofusEquiv]);
     Iterable<Iterable<TrustStatement>> iiStatements = oneofusEquiv.getEquivalents(token).map((t) =>
-        distinct(Fetcher(t, kOneofusDomain)
-                .statements
-                .where((s) => !notifications.rejected.containsKey(s.token)))
+        Fetcher(t, kOneofusDomain)
+            .statements
+            .where((s) => !notifications.rejected.containsKey(s.token))
             .cast<TrustStatement>()
             .where((s) => s.verb == TrustVerb.trust));
     Merger merger = Merger(iiStatements);
     Iterable<TrustStatement> dis =
         distinct(merger.cast(), transformer: oneofusEquiv.getCanonical).cast<TrustStatement>();
-    for (TrustStatement statement in dis) {
-      assert(oneofusNet.network.containsKey(statement.iToken));
-      if (!oneofusNet.network.containsKey(statement.subjectToken)) continue;
-      NetNode child = NetNode(oneofusEquiv.getCanonical(statement.subjectToken));
-      if (!_children!.contains(child)) {
-        _children!.add(child);
-      }
-    }
-    return _children!;
+    return dis;
   }
 }

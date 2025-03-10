@@ -9,6 +9,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
+import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -54,7 +55,7 @@ void main() async {
     signInState.signOut();
     await signInState.signIn(Jsonish({}).token, null); // unnecessary.
     contentBase.censor = true;
-    followNet.fcontext = null;
+    followNet.fcontext = kOneofusContext;
     oneofusNet.numPaths = 1;
     Prefs.showKeys.value = false;
     Prefs.showStatements.value = false;

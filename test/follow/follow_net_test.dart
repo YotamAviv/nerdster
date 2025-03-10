@@ -6,10 +6,12 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/demotest/cases/delegate_merge.dart';
 import 'package:nerdster/demotest/cases/egos.dart';
+import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
+import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -55,7 +57,7 @@ void main() async {
     DemoKey.clear();
     signInState.signOut();
     oneofusNet.numPaths = 1;
-    followNet.fcontext = null;
+    followNet.fcontext = kOneofusContext;
     Prefs.showKeys.value = false;
     Prefs.showStatements.value = false;
     await FireFactory.clearPersistence();
@@ -86,7 +88,7 @@ void main() async {
   }
 
   test('base', () async {
-    await DemoKey.demos['simpsons']();
+    await simpsons();
     loadSimpsons();
     Fetcher.clear();
     await signInState.signIn(bart.token, null);
@@ -94,7 +96,7 @@ void main() async {
 
     // maggie isn't in because she doesn't have a delegate
     followNet.fcontext = 'family';
-    await followNet.waitUntilReady();
+    await Comp.waitOnComps([followNet, keyLabels]);
     Json expected = {
       "son": ["son-delegate"],
       "homer2": ["homer2-delegate"],
@@ -106,8 +108,8 @@ void main() async {
     expect(followNet.most, ['family', 'social', 'nerd', 'famigly']);
     expect(followNet.centerContexts, {'family', 'social', 'nerd'});
 
-    followNet.fcontext = null;
-    await followNet.waitUntilReady();
+    followNet.fcontext = kOneofusContext;
+    await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "son": ["son-delegate"],
       "friend": ["friend-delegate"],
@@ -122,7 +124,7 @@ void main() async {
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     followNet.fcontext = 'nerd';
-    await followNet.waitUntilReady();
+    await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "son": ["son-delegate"],
       "friend": ["friend-delegate"],
@@ -131,7 +133,7 @@ void main() async {
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     followNet.fcontext = 'social';
-    await followNet.waitUntilReady();
+    await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "son": ["son-delegate"],
       "friend": ["friend-delegate"]
@@ -317,7 +319,7 @@ void main() async {
 
     // Now the test: fcontext = null
     signInState.center = bob2.token;
-    followNet.fcontext = null;
+    followNet.fcontext = kOneofusContext;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "Me": ["Me-delegate"],
@@ -377,7 +379,7 @@ void main() async {
 
     // Now the test: fcontext = null
     signInState.center = bob2.token;
-    followNet.fcontext = null;
+    followNet.fcontext = kOneofusContext;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "Me": ["Me-delegate", "Me-delegate (0)"],
@@ -408,7 +410,7 @@ void main() async {
     await bob2.doTrust(TrustVerb.delegate, bobN);
     await steve2.doTrust(TrustVerb.delegate, steveN);
     // (signInState.center = bob2.token;)
-    followNet.fcontext = null;
+    followNet.fcontext = kOneofusContext;
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -544,7 +546,7 @@ void main() async {
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
-    followNet.fcontext = null;
+    followNet.fcontext = kOneofusContext;
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
       "Me": ["Me-delegate"],
@@ -618,7 +620,6 @@ void main() async {
 
     followNet.fcontext = 'family';
     await signInState.signIn(lisa.token, null);
-    await Comp.waitOnComps([oneofusNet]); // TEMP: Wanted to see if crash is here
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus, {
       "daughter-delegate": "daughter",
@@ -633,4 +634,20 @@ void main() async {
     jsonShowExpect(
         followNet.delegate2oneofus, {"daughter-delegate": "daughter", "son-delegate": "son"});
   });
+
+  test('bart default', () async {
+    await simpsons();
+    loadSimpsons();
+
+    followNet.fcontext = kNerdsterContext;
+    await signInState.signIn(bart.token, null);
+    await Comp.waitOnComps([followNet, keyLabels]);
+    jsonShowExpect(followNet.delegate2oneofus, {
+      "son-delegate": "son",
+      "homer2-delegate": "homer2",
+      "friend-delegate": "friend",
+      "moms-delegate": "moms"
+    });
+  });
+
 }

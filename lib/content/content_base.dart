@@ -15,7 +15,6 @@ import 'package:nerdster/content/dialogs/relate_dialog.dart';
 import 'package:nerdster/content/props.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/equivalence_bridge.dart';
-import 'package:nerdster/follow/most_contexts.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -50,7 +49,6 @@ class ContentBase with Comp, ChangeNotifier {
       <ContentTreeNode, List<ContentTreeNode>>{};
 
   // Bar filters, sort, ...
-  MostContexts mostTags = MostContexts();
   Sort _sort = Sort.recentActivity;
   ContentType _type = ContentType.all;
   Timeframe _timeframe = Timeframe.all;
@@ -90,7 +88,6 @@ class ContentBase with Comp, ChangeNotifier {
     _subject2statements.clear();
     _node2children.clear();
     _roots = null;
-    mostTags.clear();
 
     List<ContentStatement> statements = <ContentStatement>[];
     for (String oneofus in followNet.oneofus2delegates.keys) {
@@ -368,8 +365,6 @@ class ContentBase with Comp, ChangeNotifier {
   set censor(bool censor) {
     Prefs.censor.value = censor;
   }
-
-  Iterable<String> getMostTags() => mostTags.most();
 
   // returns if we should filter this one out
   bool _filterByTimeframe(Statement statement) {

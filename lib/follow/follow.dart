@@ -1,57 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/ui/lower_case_text_formatter.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
-
-/// Prep towards Network layers
-/// Motivation:
-///   Censor, Dis, comment on a statement...
-///   Can a different nerd censor my follow or block? Comment on it? (I'd rather not)
-///   The answer is that the Nerdster follows network is a layer above the Nerdster censor and dis.
-/// [ContentBase] should use the Nerdster follows network where it was using the [NetBase] network before.
-///
-/// The layers should be:
-/// - OneofusNet: oneofus / fetcher (async, and sort of same as fetcher): trusted keys only, rejected and conflict statements identified
-///   - revokedAtToken, revokedAtTime on these fetchers
-///   - do we need the paths? Yes, I think so.
-///
-/// - OneofusCanon: canonical (WOT): statements made by equivalents appear as if made by canonical.
-///   - NOTE: Re: 'I'. Don't change the statements, but consider that their 'I' may not be accurate.
-///     Will at least require removing asserts.
-///   - no more revokedAt. That's in the previous layer.
-///
-/// OneofusWOT could be a consumer of OneofusNet
-///
-/// - DelegateNet: delegate (async): statements made by delegates appear as if made by oneofus canonical
-///   - (Try and include delegate domain)
-///
-/// - follow: reduced to include only who you follow
-///
-/// - censored: reduced ..
-///
-/// Observe / listen .. dirty/ready
-///
-/// Consumers of these [Network]s.
-/// - NetNode
-///   relies on rejected and conflict statement knowledge
-///
-/// - NetTreeNode
-///   relies on rejected and conflict statement knowledge
-/// - KeyLabels
-///
-///
-/// ISSUES with just LinkedHashMap<token, distinct statements>
-/// - NetTree: needs revoked at time (known by Fetcher)
-/// - dump: needs all statements including non-distinct and cleared
-/// - names, labels.. still thinking...
-///
-/// Interim thought: Just do it from FollowNet (which I have) onwards
 
 enum Follow {
   follow('Follow', Colors.green, 1),
@@ -146,6 +102,7 @@ class _FollowUiState extends State<FollowUi> {
   @override
   Widget build(BuildContext context) {
     List<String> dropdownContexts = [];
+    dropdownContexts.add(kNerdsterContext);
     dropdownContexts.addAll(followNet.most);
     dropdownContexts.addAll(['social', 'nerd']);
     dropdownContexts.removeWhere((c) => widgets.keys.contains(c));
@@ -229,7 +186,7 @@ class BoxLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 50,
+      width: 80,
       child: Text(label),
     );
   }

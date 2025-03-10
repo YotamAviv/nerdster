@@ -1,9 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/net/net_tree_model.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
@@ -29,15 +28,13 @@ class FollowTreeNode extends NetTreeModel {
       return keyLabels.labelKey(token!)!;
     }
   }
-  @override
-  String get displayVerbPastTense {
-    return verbPastTense!;
-  }
 
+  @override
+  String get displayVerbPastTense => verbPastTense!;
 
   @override
   Iterable<NetTreeModel> get children {
-    assert(Comp.compsReady([followNet, oneofusEquiv, oneofusNet]));
+    Comp.throwIfNotReady([followNet, oneofusEquiv, oneofusNet]);
     if (_children != null) return _children!;
     // Don't expand statements, !canoncial, or nodes already on path
     if (token == null || !canonical || path.map((n) => n.token).contains(token)) return [];
@@ -57,13 +54,17 @@ class FollowTreeNode extends NetTreeModel {
     List<FollowTreeNode> childStatements = <FollowTreeNode>[];
     if (Prefs.showStatements.value) {
       for (Trust trust in followNode.cachedTrusts) {
-        FollowTreeNode child = FollowTreeNode(nextPath,
-            statement: Statement.make(Jsonish.find(trust.statementToken)!), verbPastTense: 'followed');
+        ContentStatement? followStatement = ContentStatement.find(trust.statementToken);
+        if (followStatement == null) continue; // assume TrustStatement for default context.
+        FollowTreeNode child =
+            FollowTreeNode(nextPath, statement: followStatement, verbPastTense: 'followed');
         childStatements.add(child);
       }
       for (Block block in followNode.cachedBlocks) {
-        FollowTreeNode child = FollowTreeNode(nextPath,
-            statement: Statement.make(Jsonish.find(block.statementToken)!), verbPastTense: 'blocked');
+        ContentStatement? followStatement = ContentStatement.find(block.statementToken);
+        if (followStatement == null) continue; // assume TrustStatement for default context.
+        FollowTreeNode child =
+            FollowTreeNode(nextPath, statement: followStatement, verbPastTense: 'blocked');
         childStatements.add(child);
       }
     }
@@ -71,10 +72,10 @@ class FollowTreeNode extends NetTreeModel {
     _children = [childNerds.values, childStatements].flattened;
     return _children!;
   }
-  
+
   @override
   bool get canonical => true;
-  
+
   @override
   DateTime? get revokeAt => null;
 }

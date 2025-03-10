@@ -29,7 +29,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -146,57 +146,15 @@ dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
 
   FireChoice.emulator: {"one-of-us.net": yotam},
+  
   // Bart
   // FireChoice.emulator: {
-  //   "one-of-us.net": '163d570bdbcdb84c78ec4138813569e773806d8b',
+  //   "one-of-us.net": '6f6745caf67a8f169efbf572e825c47afebbae56',
   //   "nerdster.org": {
   //     "crv": "Ed25519",
-  //     "d": "NWraRSnhWNwi-35aANivWYtBgRWmryPiDtN_CaxDvPA",
+  //     "d": "t6Knz9QRKgzQH2CeBdl9I-0onFH0pJY1Rp0e429Ohk0",
   //     "kty": "OKP",
-  //     "x": "3X_v6Zlxztv85f202TZ8BsxM8OAWgta8Bu_vjoSa-LI"
+  //     "x": "KFRs66X-VGFx-KXKIJFOOiC6ZkywKtOtyfLsGJW_U5s"
   //   }
   // }
-};
-
-// simpsons PROD
-String bart = '163d570bdbcdb84c78ec4138813569e773806d8b';
-var bartKeys = {
-  "one-of-us.net": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "dm2mW57IpaFWBDvCl9zDZz6okLB26kDVZzVqEc0tDTc"
-  },
-  "nerdster.org": {
-    "crv": "Ed25519",
-    "d": "NWraRSnhWNwi-35aANivWYtBgRWmryPiDtN_CaxDvPA",
-    "kty": "OKP",
-    "x": "3X_v6Zlxztv85f202TZ8BsxM8OAWgta8Bu_vjoSa-LI"
-  }
-};
-var lisaWithWrongDelegateBart = {
-  "one-of-us.net": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "DbUGydInoa0RAVZIzVZCpS2LhzbqVTQfOMxgGzct1rU"
-  },
-  "nerdster.org": {
-    "crv": "Ed25519",
-    "d": "NWraRSnhWNwi-35aANivWYtBgRWmryPiDtN_CaxDvPA",
-    "kty": "OKP",
-    "x": "3X_v6Zlxztv85f202TZ8BsxM8OAWgta8Bu_vjoSa-LI"
-  }
-};
-var bartFullKeys = {
-  "one-of-us.net": {
-    "crv": "Ed25519",
-    "d": "vb_axJuiskCfxKBLONtbFRTf8qRukxW73Urc2AZ6LeQ",
-    "kty": "OKP",
-    "x": "dm2mW57IpaFWBDvCl9zDZz6okLB26kDVZzVqEc0tDTc"
-  },
-  "nerdster.org": {
-    "crv": "Ed25519",
-    "d": "NWraRSnhWNwi-35aANivWYtBgRWmryPiDtN_CaxDvPA",
-    "kty": "OKP",
-    "x": "3X_v6Zlxztv85f202TZ8BsxM8OAWgta8Bu_vjoSa-LI"
-  }
 };

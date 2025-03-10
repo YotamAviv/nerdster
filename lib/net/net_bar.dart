@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -258,8 +259,8 @@ class _FollowDropdownState extends State<_FollowDropdown> {
   @override
   Widget build(BuildContext context) {
     // The issue was that the Dropdown showed its label inside when initial wasn't one of the options.
-    String initial = b(followNet.fcontext) ? followNet.fcontext! : '<one-of-us>';
-    List<String> options = ['<one-of-us>', ...followNet.most];
+    String initial = b(followNet.fcontext) ? followNet.fcontext : kNerdsterContext;
+    List<String> options = [kNerdsterContext, kOneofusContext, ...followNet.most];
     if (!options.contains(initial)) {
       options.add(initial);
     }
@@ -267,10 +268,10 @@ class _FollowDropdownState extends State<_FollowDropdown> {
         .map<DropdownMenuEntry<String>>((String fcontext) => DropdownMenuEntry<String>(
             value: fcontext,
             label: fcontext,
-            enabled: followNet.centerContexts.contains(fcontext) || fcontext == '<one-of-us>'))
+            enabled: followNet.centerContexts.contains(fcontext) || kSpecialContexts.contains(fcontext)))
         .toList();
 
-    bool error = !(followNet.centerContexts.contains(initial) || initial == '<one-of-us>');
+    bool error = !(followNet.centerContexts.contains(initial) || kSpecialContexts.contains(initial));
 
     String message = error
         ? '''Center ("${keyLabels.labelKey(signInState.center)}") does not use the selected follow context ("$initial")}).
@@ -290,9 +291,7 @@ Select an enabled follow context or <one-of-us> (everyone).'''
       label: const Text('Follow'),
       textStyle: error ? TextStyle(color: Colors.red) : null,
       onSelected: (String? fcontext) {
-        if (fcontext != null) {
-          followNet.fcontext = fcontext != '<one-of-us>' ? fcontext : null;
-        }
+        followNet.fcontext = fcontext!;
         setState(() {});
       },
       dropdownMenuEntries: entries,
