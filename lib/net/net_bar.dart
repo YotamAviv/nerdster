@@ -259,7 +259,7 @@ class _FollowDropdownState extends State<_FollowDropdown> {
   @override
   Widget build(BuildContext context) {
     // The issue was that the Dropdown showed its label inside when initial wasn't one of the options.
-    String initial = b(followNet.fcontext) ? followNet.fcontext : kNerdsterContext;
+    String initial = followNet.fcontext;
     List<String> options = [kNerdsterContext, kOneofusContext, ...followNet.most];
     if (!options.contains(initial)) {
       options.add(initial);
