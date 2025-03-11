@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 Future<Json?> relateDialog(
@@ -18,7 +18,7 @@ Future<Json?> relateDialog(
     if (commentController.text.isNotEmpty) {
       comment = commentController.text;
     }
-    Json json = ContentStatement.make(SignInState().signedInDelegatePublicKeyJson!, verb, subject,
+    Json json = ContentStatement.make(signInState.signedInDelegatePublicKeyJson!, verb, subject,
         other: otherSubject, comment: comment);
     Navigator.pop(context, json);
   }

@@ -461,7 +461,7 @@ class ContentBase with Comp, ChangeNotifier {
     Set<ContentStatement> out = <ContentStatement>{};
     List<ContentStatement>? statements = _subject2statements[subjectToken];
     for (ContentStatement statement in statements ?? []) {
-      if ((_getOneofusI(statement.iToken) == signInState.center) &&
+      if ((_getOneofusI(statement.iToken) == signInState.centerReset) &&
           (subjectToken == statement.subjectToken ||
               (b(statement.other) && subjectToken == getToken(statement.other)))) {
         out.add(statement);
@@ -474,7 +474,7 @@ class ContentBase with Comp, ChangeNotifier {
   ContentStatement? _findMyStatement1(String subject) {
     List<ContentStatement>? statements = _subject2statements[subject];
     for (ContentStatement statement in statements ?? []) {
-      if (_getOneofusI(statement.iToken) == signInState.center &&
+      if (_getOneofusI(statement.iToken) == signInState.centerReset &&
           statement.subjectToken == subject &&
           !b(statement.other)) {
         return statement;
@@ -487,7 +487,7 @@ class ContentBase with Comp, ChangeNotifier {
   ContentStatement? _findMyStatement2(String subject, String other) {
     List<ContentStatement>? statements = _subject2statements[subject];
     for (ContentStatement statement in statements ?? []) {
-      if (_getOneofusI(statement.iToken) == signInState.center && b(statement.other)) {
+      if (_getOneofusI(statement.iToken) == signInState.centerReset && b(statement.other)) {
         String otherToken = getToken(statement.other);
         if ((statement.subjectToken == subject && otherToken == other) ||
             (statement.subjectToken == other && otherToken == subject)) {

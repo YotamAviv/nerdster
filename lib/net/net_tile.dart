@@ -173,8 +173,7 @@ class _NetTileState extends State<NetTile> {
                 text!,
                 style: TextStyle(color: statementTextColor),
               ),
-            if (!isStatement)
-              _MonikerWidget(node)
+            if (!isStatement) _MonikerWidget(node)
           ])
         ]));
   }
@@ -189,20 +188,22 @@ class _MonikerWidget extends StatelessWidget {
   Future<void> showPopUpMenuAtTap(BuildContext context, TapDownDetails details) async {
     // Don't allow following yourself.
     // Do allow following center in case I'm centered on someone else
-    // All that said, we should survive statements that follow ourselves as that can happen with
+    // That said, we should survive statements that follow ourselves as that can happen with
     // claiming/clearing delegate statements, equivalence, etc...
-    if (node.token == signInState.centerReset) {
-      return;
-    }
+
+    List<PopupMenuEntry<String>> items = [
+      if (node.token != signInState.center)
+        const PopupMenuItem<String>(value: 'recenter', child: Text('recenter')),
+      if (node.token != signInState.centerReset)
+        const PopupMenuItem<String>(value: 'follow...', child: Text('follow...')),
+    ];
+    if (items.isEmpty) return;
+
     String? value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(details.globalPosition.dx, details.globalPosition.dy,
           details.globalPosition.dx, details.globalPosition.dy),
-      items: [
-        if (node.token != signInState.center)
-          const PopupMenuItem<String>(value: 'recenter', child: Text('recenter')),
-        const PopupMenuItem<String>(value: 'follow...', child: Text('follow...')),
-      ],
+      items: items,
       elevation: 8.0,
     );
     if (value == 'recenter') {

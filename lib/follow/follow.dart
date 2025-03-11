@@ -6,7 +6,6 @@ import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/ui/lower_case_text_formatter.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -21,11 +20,10 @@ enum Follow {
 }
 
 Future<Statement?> follow(String token, BuildContext context) async {
-  if (await checkSignedIn(context) != true) {
-    return null;
-  }
+  if (await checkSignedIn(context) != true) return null;
+
   ContentStatement? priorStatement;
-  for (ContentStatement s in followNet.getStatements(signInState.center)) {
+  for (ContentStatement s in followNet.getStatements(signInState.centerReset)) {
     if (s.subjectToken == token) {
       priorStatement = s;
     }
