@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/singletons.dart';
 
 Future<bool?> checkSignedIn(BuildContext context) async {
-  if (b(SignInState().signedInDelegate)) {
-    return true;
-  }
+  if (b(signInState.signedInDelegate)) return true;
   return showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -18,9 +16,7 @@ Future<bool?> checkSignedIn(BuildContext context) async {
                   children: [
                     const Text('You are not signed in'),
                     OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context, false);
-                      },
+                      onPressed: () => Navigator.pop(context, false),
                       child: const Text('Okay'),
                     )
                   ]))));

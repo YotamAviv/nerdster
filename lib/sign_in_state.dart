@@ -5,7 +5,6 @@ import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 /// This has changed much over time, and so some docs, variable names, or worse might be misleading.
-/// This class may not even be necessary.
 /// The idea is:
 /// - center and signedIn are not always the same; viewing with a different center is a feature.
 /// - in case you get far from home, we want to help you get back (currently, "<reset>")
@@ -53,7 +52,7 @@ class SignInState with ChangeNotifier {
   }
 
   String get center => _center;
-  String? get centerReset => _centerReset;
+  String get centerReset => _centerReset;
   OouKeyPair? get signedInDelegateKeyPair => _signedInDelegateKeyPair;
   OouPublicKey? get signedInDelegatePublicKey => _signedInDelegatePublicKey;
   Json? get signedInDelegatePublicKeyJson => _signedInDelegatePublicKeyJson;
