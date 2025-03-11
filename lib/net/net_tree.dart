@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/follow/follow_tree_node.dart';
 import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/net/net_bar.dart';
@@ -20,7 +21,7 @@ import 'package:nerdster/singletons.dart';
 
 class NetTreeView extends StatefulWidget {
   static ValueNotifier<String?> highlightToken = ValueNotifier<String?>(null);
-  static ValueNotifier<bool> bOneofus = ValueNotifier<bool>(false);
+  static ValueNotifier<bool> bOneofus = ValueNotifier<bool>(true);
 
   final NetTreeModel root;
 
@@ -37,7 +38,7 @@ class NetTreeView extends StatefulWidget {
 
   static makeRoot() {
     NetTreeModel root;
-    if (bOneofus.value || !b(followNet.fcontext)) {
+    if (bOneofus.value || followNet.fcontext == kOneofusContext) {
       root = OneofusTreeNode.root;
     } else {
       root = FollowTreeNode.root;

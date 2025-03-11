@@ -162,15 +162,13 @@ class FollowNet with Comp, ChangeNotifier {
       _delegate2fetcher[delegateToken] = fetcher;
     }
 
-    // Load up _mostContexts if we didn't run our search that does that.
-    if (_context != kOneofusContext) {
-      for (ContentStatement s in (_delegate2fetcher.values)
-          .map((f) => f.statements)
-          .flattened
-          .cast<ContentStatement>()
-          .where((s) => s.verb == ContentVerb.follow)) {
-        _mostContexts.process(s.contexts!.keys);
-      }
+    // Load up _mostContexts
+    for (ContentStatement s in (_delegate2fetcher.values)
+        .map((f) => f.statements)
+        .flattened
+        .cast<ContentStatement>()
+        .where((s) => s.verb == ContentVerb.follow)) {
+      _mostContexts.process(s.contexts!.keys);
     }
 
     // Load up _centerContexts.
@@ -188,10 +186,6 @@ class FollowNet with Comp, ChangeNotifier {
     }
 
     measure.stop();
-  }
-
-  void _processFollowStatementForMost(ContentStatement c) {
-    _mostContexts.process(c.contexts!.keys);
   }
 }
 
@@ -247,7 +241,6 @@ class FollowNode extends Node {
     for (ContentStatement followStatement in dis.where((s) => s.verb == ContentVerb.follow)) {
       assert(followStatement.verb == ContentVerb.follow);
       if (!oneofusNet.network.containsKey(followStatement.subjectToken)) continue; // not Oneofus
-      followNet._processFollowStatementForMost(followStatement);
       String canon = oneofusEquiv.getCanonical(followStatement.subjectToken);
       assert(oneofusNet.network.containsKey(canon));
       // Use context to compute {follow, blocking, or neither} for this nerd.
