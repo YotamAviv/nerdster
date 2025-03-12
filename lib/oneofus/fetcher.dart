@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:nerdster/singletons.dart';
 
 import '../main.dart';
-import '../prefs.dart'; // CODE: Kludgey way to include, but might work for phone codebase.
+import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
 import 'distincter.dart';
 import 'fire_factory.dart';
 import 'jsonish.dart';
@@ -96,7 +95,10 @@ class Fetcher {
 
   static void clear() => _fetchers.clear();
 
-  // I've lost track a little, but...
+  // 3/12/25: BUG: Corruption, Burner Phone pushed on a revoked delegate. And so much be careful here.
+  // One possible danger is: use the Factory constructor to create an un-revoked fetcher, which
+  // should be revoked and would be revoked had FollowNet or OneofusNet created it.
+  // 
   // If we ever fetched a statement for {domain, token}, then that statement remains correct forever.
   // But if we change center (POV) or learn about a new trust or block, then that might change revokedAt.
   static resetRevokedAt() {

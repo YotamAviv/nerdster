@@ -10,7 +10,9 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/key_store.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/fire_util.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -37,6 +39,8 @@ const domain2statementType = {
   kOneofusDomain: kOneofusType,
   kNerdsterDomain: kNerdsterType,
 };
+
+final Corruptor corruptor  = Notifications();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
