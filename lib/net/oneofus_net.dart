@@ -143,16 +143,14 @@ class FetcherNode extends Node {
   }
 
   factory FetcherNode(String token) {
-    if (!_factoryCache.containsKey(token)) {
-      _factoryCache[token] = FetcherNode._internal(token);
-    }
+    _factoryCache.putIfAbsent(token, () => FetcherNode._internal(token));
     return _factoryCache[token]!;
   }
   final Fetcher _fetcher;
 
   @override
   set blocked(bool b) {
-    assert(b); // I don't think we ever unblock.
+    assert(b); // We never unblock.
     super.blocked = b;
   }
 

@@ -70,17 +70,14 @@ class FollowNet with Comp, ChangeNotifier {
   Map<String, Set<String>> get oneofus2delegates => UnmodifiableMapView(_oneofus2delegates);
   Map<String, String> get delegate2oneofus => UnmodifiableMapView(_delegate2oneofus);
   Map<String, Fetcher> get delegate2fetcher => UnmodifiableMapView(_delegate2fetcher);
-
   Iterable<ContentStatement> getStatements(String oneofus) {
     // BUG: When we're not in center's network, we can't get our own statements
     assert(oneofusNet.network.containsKey(oneofus),
         "BUG: When we're not in center's network, we can't get our own statements");
-    Iterable<Iterable<Statement>> iiStatements =
-        _oneofus2delegates[oneofus]!.map((delegate) => _delegate2fetcher[delegate]!.statements);
-    Merger merger = Merger(iiStatements);
-    Iterable<ContentStatement> dis = distinct(merger.cast<ContentStatement>(),
+    return distinct(
+        Merger(_oneofus2delegates[oneofus]!
+            .map((delegate) => _delegate2fetcher[delegate]!.statements)).cast<ContentStatement>(),
         transformer: (delegate) => followNet.delegate2oneofus[delegate]!).cast<ContentStatement>();
-    return dis.cast<ContentStatement>();
   }
 
   // impl
@@ -158,7 +155,10 @@ class FollowNet with Comp, ChangeNotifier {
       String delegateToken = e.key;
       String? revokeAt = e.value;
       Fetcher fetcher = Fetcher(delegateToken, kNerdsterDomain);
-      if (b(revokeAt)) fetcher.setRevokeAt(revokeAt!);
+      if (b(revokeAt)) {
+        // This fires: assert(fetcher.revokeAt == revokeAt); // TEMP:
+        fetcher.setRevokeAt(revokeAt!);
+      }
       await fetcher.fetch(); // fill cache, query revokeAtTime
       assert(fetcher.revokeAt == null || fetcher.revokeAtTime != null);
       _delegate2fetcher[delegateToken] = fetcher;

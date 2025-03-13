@@ -11,6 +11,50 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
+/// BUG: 3/12/25: Mr. Burner Phone revoked, signed in, still managed to clear, and caused data corruption.
+///
+/// The Fetcher factoy ctor is dangerous.
+///
+/// OneofusNet / GreedyBfsTrust should be able to create Fetchers that retain their expired state
+/// - created expired at a token and will stay that way
+/// - created not expired and will stay that way.
+///
+/// Same for FollowNet and its Nerdster Fetchers
+///
+/// Now we want to change network center or settings and not re-fetch what we don't have to.
+/// These settings make OneofusNet dirty, and it could proceed as follows:
+/// - take all Fetchers off the market
+/// - run GreedyBfsTrust and re-use what we can (non-revoked fetchers, same revoked fetchers)
+/// Same for FollowNet
+///
+/// CODE:
+/// - remove the factory CTOR and make OneofusNet and FollowNet the source for Fetchers.
+/// - they will of course have to create Fetchers, but other code shouldn't do what they do;
+///   instead the other code (ContentBase, various trees, ...) should get them from OneofusNet, FollowNet
+///
+/// Options:
+/// - OneofusNet / FollowNetL either expose the Fetchers or just their statements.
+///   Leaning Fetcher:
+///   - revokedAt token, time
+///   - push() (must have)
+///
+/// Plan:
+/// OneofusNet:
+/// getFetcher(String oneofus)
+/// GreedyBfsTrust / FetcherNode:
+/// FetcherNode already has a _fetcher member, and it seems perfect.
+/// But there's work to do if we want to reuse the Fetchers.
+/// FetcherNode.clear:
+/// - retire all the fetchers from the existing FetcherNodes, re-use them when appropriate in the internal ctor
+///
+/// FollowNet:
+///
+/// While I'm at it:
+/// - actual transactions (check previous then push next statement)
+/// - refresh fetchers, maybe
+///
+///
+
 /// Cloud Functions distinct, order, tokens, checkPervious...
 ///
 /// The only reason we use Firebase Cloud Functions is performance.
@@ -66,7 +110,7 @@ import 'util.dart';
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 
 abstract class Corruptor {
-    void corrupt(String token, String error);
+  void corrupt(String token, String error);
 }
 
 class Fetcher {
@@ -95,10 +139,11 @@ class Fetcher {
 
   static void clear() => _fetchers.clear();
 
-  // 3/12/25: BUG: Corruption, Burner Phone pushed on a revoked delegate. And so much be careful here.
+  // 3/12/25: BUG: Corruption, Burner Phone pushed using a revoked delegate, not sure how (couldn't 
+  // reproduce), but there is much be careful of here.
   // One possible danger is: use the Factory constructor to create an un-revoked fetcher, which
   // should be revoked and would be revoked had FollowNet or OneofusNet created it.
-  // 
+  //
   // If we ever fetched a statement for {domain, token}, then that statement remains correct forever.
   // But if we change center (POV) or learn about a new trust or block, then that might change revokedAt.
   static resetRevokedAt() {
@@ -143,8 +188,10 @@ class Fetcher {
     // CONSIDER: I don't think that even setting the same value twice should be supported.  I tried
     // that and failed tests on follow net and delegate related stuff. Hmm..
     // assert(_revokeAt == null);
+    // Only allowing revoke before any fetch seems reasonable as well, but that fails tests, too.
+    // assert(_cached == null);
     if (_revokeAt == revokeAt) return;
-
+    assert(_revokeAt == null);
     _revokeAt = revokeAt;
     _revokeAtTime = null;
     _cached = null;
@@ -279,8 +326,8 @@ class Fetcher {
       }
 
       // Maintain Cloud Functions or not behave similarly.
-      // Callilng distinct(..) on the Cloud Functions is required for that as the Cloud impl is not 
-      // complete, and I wouldn't want to rely on it anyway as it can't be tested using our 
+      // Callilng distinct(..) on the Cloud Functions is required for that as the Cloud impl is not
+      // complete, and I wouldn't want to rely on it anyway as it can't be tested using our
       // FakeFirebase unit tests.
       assert(fetchParamsProto.containsKey('distinct'));
       _cached = distinct(_cached!);
@@ -330,30 +377,26 @@ class Fetcher {
     _lastToken = jsonish.token;
 
     final fireStatements = fire.collection(token).doc('statements').collection('statements');
-    // DEFER: Don't 'await'.. Ajax!.. Bad idea now that others call this, like tests.
-    await fireStatements.doc(jsonish.token).set(jsonish.json).then((doc) {}, onError: (e) {
-      throw e;
-    });
-
-    // Now fetch to verify our optimistic concurrency.
-    Query<Json> query = fireStatements.orderBy('time', descending: true);
-    QuerySnapshot<Json> snapshots = await query.get();
-    final docSnapshot0 = snapshots.docs.elementAt(0);
-    if (docSnapshot0.id != jsonish.token) {
-      String error =
-          'Optimistic concurrency failed, corruption possible: ${docSnapshot0.id} != ${jsonish.token}';
-      print(error);
-      throw Exception(error);
-    }
-    if (previous != null) {
-      final docSnapshot1 = snapshots.docs.elementAt(1);
-      if (docSnapshot1.id != previous.token) {
-        String error =
-            'Optimistic concurrency failed, corruption possible: ${docSnapshot1.id} != ${previous.token}';
-        print(error);
-        throw Exception(error);
+    // Transaction!
+    // TODO: TEST: Testing will be easier after the changea away from the factgory ctor.
+    await fire.runTransaction((_) async {
+      Query<Json> query = fireStatements.orderBy('time', descending: true);
+      QuerySnapshot<Json> snapshots = await query.get();
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = snapshots.docs;
+      if (docs.isEmpty) {
+        assert(!jsonish.containsKey('previous'));
+      } else {
+        final docSnapshot0 = docs.elementAt(0);
+        if (docSnapshot0.id != jsonish['previous']) {
+          String error = 'Your data was stale. Reload. (${docSnapshot0.id} != ${jsonish.token})';
+          throw Exception(error);
+        }
       }
-    }
+      // DEFER: Don't 'await', Ajax!
+      await fireStatements.doc(jsonish.token).set(jsonish.json).then((doc) {}, onError: (e) {
+        throw e;
+      });
+    });
 
     return statement;
   }
