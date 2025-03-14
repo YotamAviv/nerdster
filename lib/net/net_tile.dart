@@ -75,11 +75,6 @@ class _NetTileState extends State<NetTile> {
     (IconData, IconData) iconPair;
 
     if (!isStatement) {
-      // WIP..
-      // An EG is never replaced; only keys can be replaced
-      //
-      // A key is never followed, only EGs are followed
-
       iconTooltip = node.labelKeyPaths().join('\n');
       bool revoked = b(node.revokeAt);
       bool isFollowed = followNet.oneofus2delegates.containsKey(node.token);
@@ -87,9 +82,7 @@ class _NetTileState extends State<NetTile> {
       if (node.canonical) {
         // EG
         iconPair = smileyIconPair;
-
         if (isFollowed) iconColor = Colors.lightGreen;
-
         if (revoked) {
           // Can an EG (smiley) be revoked/replaced?
           // Bart trusts Milhouse trusts Sideshow replaces Bart before Bart's trust in Milhouse.
@@ -183,27 +176,24 @@ class _NetTileState extends State<NetTile> {
 // CONSIDER: more tooltips with paths.
 class _MonikerWidget extends StatelessWidget {
   final NetTreeModel node;
+  late final List<PopupMenuEntry<String>> items;
+  late final bool bOneofus;
 
-  const _MonikerWidget(this.node);
-
-  Future<void> showPopUpMenuAtTap(BuildContext context, TapDownDetails details) async {
-    // Don't allow following yourself.
-    // Do allow following center in case I'm centered on someone else
-    // That said, we should survive statements that follow ourselves as that can happen with
-    // claiming/clearing delegate statements, equivalence, etc...
-
-    bool bOneofus = oneofusNet.network.containsKey(node.token);
-    List<PopupMenuEntry<String>> items = [
+  _MonikerWidget(this.node) {
+    bOneofus = oneofusNet.network.containsKey(node.token);
+    items = [
       if (bOneofus && node.token != signInState.center)
         const PopupMenuItem<String>(value: 'recenter', child: Text('recenter')),
+      // Don't encourage following yourself.
       if (bOneofus && node.token != signInState.centerReset)
         const PopupMenuItem<String>(value: 'follow...', child: Text('follow...')),
+      if (Prefs.showStatements.value)
+        const PopupMenuItem<String>(value: 'statements', child: Text('statements...'))
     ];
-    if (Prefs.showStatements.value) {
-      items.add(const PopupMenuItem<String>(value: 'statements', child: Text('statements...')));
-    }
-    if (items.isEmpty) return;
+  }
 
+  Future<void> showPopUpMenuAtTap(BuildContext context, TapDownDetails details) async {
+    if (items.isEmpty) return;
     String? value = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(details.globalPosition.dx, details.globalPosition.dy,
@@ -237,16 +227,11 @@ $link''',
   @override
   Widget build(BuildContext context) {
     assert(b(node.token));
-    bool clickable = oneofusNet.network.containsKey(node.token) ||
-        followNet.delegate2oneofus.containsKey(node.token);
-    assert(clickable, 'TEMP:checking');
-    // DEFER: Not clickable unless items has something above in menu code
+    bool clickable = items.isNotEmpty;
     TextStyle? style = clickable ? linkStyle : null;
     return GestureDetector(
         onTapDown: (details) {
-          if (clickable) {
-            showPopUpMenuAtTap(context, details);
-          }
+          if (clickable) showPopUpMenuAtTap(context, details);
         },
         child: Text(style: style, node.moniker));
   }
