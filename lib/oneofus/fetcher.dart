@@ -12,13 +12,15 @@ import 'statement.dart';
 import 'util.dart';
 
 /// BUG: 3/12/25: Mr. Burner Phone revoked, signed in, still managed to clear, and caused data corruption.
+/// I wasn't able to reproduce that bug (lost the private key), and I've changed the code since
+/// by adding transactions, and so that bug might be fixed.
+/// Regardless, the Fetcher factoy CTOR seems dangerous and sloppy.
 ///
-/// The Fetcher factoy ctor is dangerous.
-///
-/// OneofusNet / GreedyBfsTrust should be able to create Fetchers that retain their expired state
+/// OneofusNet / GreedyBfsTrust should be able to create and manage their own Fetchers.
+/// Those Fetchers could retain their expired state for their lifetimes.
+/// But I'm not sure that helps in any way.
 /// - created expired at a token and will stay that way
 /// - created not expired and will stay that way.
-///
 /// Same for FollowNet and its Nerdster Fetchers
 ///
 /// Now we want to change network center or settings and not re-fetch what we don't have to.
@@ -50,8 +52,11 @@ import 'util.dart';
 /// FollowNet:
 ///
 /// While I'm at it:
-/// - actual transactions (check previous then push next statement)
-/// - refresh fetchers, maybe
+/// - DONE: actual transactions (transactionally check previous and push next statement)
+/// - refresh fetchers, maybe. That'd mean calling fetch() again (or refresh()) on a non-revoked fetcher
+///   to get only newer statements. 
+///   That'd make the demo a bit quicker, allow leaving the window open and just re-fetching. 
+///   - Measure first, make sure it's worth the hassle.
 ///
 ///
 
