@@ -6,6 +6,7 @@ import 'package:nerdster/js_widget.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_menu.dart';
@@ -165,7 +166,7 @@ class _NetTileState extends State<NetTile> {
                   openedIcon: openedIcon,
                   closedIcon: closedIcon,
                   isOpen: widget.entry.hasChildren ? widget.entry.isExpanded : null,
-                  onPressed: widget.entry.hasChildren ? widget.onTap : null),
+                  onPressed: widget.onTap),
             ),
             if (Prefs.showJson.value) JSWidget(jsonish),
             if (isStatement)
@@ -191,12 +192,16 @@ class _MonikerWidget extends StatelessWidget {
     // That said, we should survive statements that follow ourselves as that can happen with
     // claiming/clearing delegate statements, equivalence, etc...
 
+    bool bOneofus = oneofusNet.network.containsKey(node.token);
     List<PopupMenuEntry<String>> items = [
-      if (node.token != signInState.center)
+      if (bOneofus && node.token != signInState.center)
         const PopupMenuItem<String>(value: 'recenter', child: Text('recenter')),
-      if (node.token != signInState.centerReset)
+      if (bOneofus && node.token != signInState.centerReset)
         const PopupMenuItem<String>(value: 'follow...', child: Text('follow...')),
     ];
+    if (Prefs.showStatements.value) {
+      items.add(const PopupMenuItem<String>(value: 'statements', child: Text('statements...')));
+    }
     if (items.isEmpty) return;
 
     String? value = await showMenu<String>(
@@ -208,8 +213,24 @@ class _MonikerWidget extends StatelessWidget {
     );
     if (value == 'recenter') {
       await recenter(node.token!, context);
-    } else if (value == 'follow...') {
+    } else if (value == 'follow') {
       await follow(node.token!, context);
+    } else if (value == 'statements') {
+      String link;
+      // DEFER: ?revokedAt=...
+      if (bOneofus) {
+        link = 'https://export.one-of-us.net?token=${node.token!}';
+      } else {
+        assert(followNet.delegate2oneofus.containsKey(node.token));
+        link = 'https://export.nerdster.org?token=${node.token!}';
+      }
+      // DEFER: copy floater, (maybe unite with Nerdster link dialog)
+      await alert(
+          'Published statements',
+          '''Signed and published by this key:
+$link''',
+          ['Okay'],
+          context);
     }
   }
 
@@ -217,7 +238,9 @@ class _MonikerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     assert(b(node.token));
     // No centering as delegates
-    bool clickable = oneofusNet.network.containsKey(node.token);
+    bool clickable = oneofusNet.network.containsKey(node.token) ||
+        followNet.delegate2oneofus.containsKey(node.token);
+    assert(clickable, 'TEMP:checking');
     TextStyle? style = clickable ? linkStyle : null;
     return GestureDetector(
         onTapDown: (details) {
