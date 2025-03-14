@@ -237,10 +237,10 @@ $link''',
   @override
   Widget build(BuildContext context) {
     assert(b(node.token));
-    // No centering as delegates
     bool clickable = oneofusNet.network.containsKey(node.token) ||
         followNet.delegate2oneofus.containsKey(node.token);
     assert(clickable, 'TEMP:checking');
+    // DEFER: Not clickable unless items has something above in menu code
     TextStyle? style = clickable ? linkStyle : null;
     return GestureDetector(
         onTapDown: (details) {
