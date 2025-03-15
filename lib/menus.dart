@@ -98,6 +98,7 @@ class Menus {
       // Prefs
       SubmenuButton(
           menuChildren: <Widget>[
+            MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
             MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
             MyCheckbox(Prefs.hideDismissed, '''hide content where network #(dis) > #(recommend)'''),
