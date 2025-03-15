@@ -290,6 +290,10 @@ class Fetcher {
         if (_revokeAtTime != null) {
           query = query.where('time', isLessThanOrEqualTo: formatIso(_revokeAtTime!));
         }
+        if (Prefs.fetchRecent.value && domain == "nerdster.org") {
+          DateTime tenMinutesAgo = DateTime.now().subtract(const Duration(minutes: 10));
+          query = query.where('time', isGreaterThanOrEqualTo: formatIso(tenMinutesAgo));
+        }
         QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
         bool first = true;
         String? previousToken;
