@@ -231,8 +231,8 @@ class Fetcher {
         params["token"] = token;
         if (_revokeAt != null) params["revokeAt"] = revokeAt;
         if (Prefs.fetchRecent.value && domain == "nerdster.org") {
-          DateTime tenMinutesAgo = DateTime.now().subtract(const Duration(minutes: 10));
-          params['after'] = formatIso(tenMinutesAgo);
+          DateTime recent = DateTime.now().subtract(const Duration(days: 30));
+          params['after'] = formatIso(recent);
         }
         final result = await mFire.mAsync(() {
           return functions!.httpsCallable('clouddistinct').call(params);
