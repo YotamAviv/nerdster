@@ -23,7 +23,7 @@ class Prefs {
 
   // TEST:
   static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> cloudFetchDistinct = ValueNotifier<bool>(false); // TEMP
+  static final ValueNotifier<bool> cloudFetchDistinct = ValueNotifier<bool>(true); // TEMP
 
   static final ValueNotifier<int> oneofusNetDegrees = ValueNotifier<int>(5);
   static final ValueNotifier<int> oneofusNetPaths = ValueNotifier<int>(1);

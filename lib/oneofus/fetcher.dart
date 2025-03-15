@@ -54,8 +54,8 @@ import 'util.dart';
 /// While I'm at it:
 /// - DONE: actual transactions (transactionally check previous and push next statement)
 /// - refresh fetchers, maybe. That'd mean calling fetch() again (or refresh()) on a non-revoked fetcher
-///   to get only newer statements. 
-///   That'd make the demo a bit quicker, allow leaving the window open and just re-fetching. 
+///   to get only newer statements.
+///   That'd make the demo a bit quicker, allow leaving the window open and just re-fetching.
 ///   - Measure first, make sure it's worth the hassle.
 ///
 ///
@@ -144,7 +144,7 @@ class Fetcher {
 
   static void clear() => _fetchers.clear();
 
-  // 3/12/25: BUG: Corruption, Burner Phone pushed using a revoked delegate, not sure how (couldn't 
+  // 3/12/25: BUG: Corruption, Burner Phone pushed using a revoked delegate, not sure how (couldn't
   // reproduce), but there is much be careful of here.
   // One possible danger is: use the Factory constructor to create an un-revoked fetcher, which
   // should be revoked and would be revoked had FollowNet or OneofusNet created it.
@@ -230,6 +230,10 @@ class Fetcher {
         Map params = Map.of(fetchParamsProto);
         params["token"] = token;
         if (_revokeAt != null) params["revokeAt"] = revokeAt;
+        if (Prefs.fetchRecent.value && domain == "nerdster.org") {
+          DateTime tenMinutesAgo = DateTime.now().subtract(const Duration(minutes: 10));
+          params['after'] = formatIso(tenMinutesAgo);
+        }
         final result = await mFire.mAsync(() {
           return functions!.httpsCallable('clouddistinct').call(params);
         });
