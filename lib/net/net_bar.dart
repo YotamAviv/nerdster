@@ -4,6 +4,8 @@ import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/net/net_tree.dart';
+import 'package:nerdster/oneofus/measure.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
@@ -21,9 +23,8 @@ class NetBar extends StatefulWidget {
   @override
   State<NetBar> createState() => _NetBarState();
 
-
   static Future<void> showTree(BuildContext context) async {
-    assert (!bNetView.value);
+    assert(!bNetView.value);
     // ignore: unawaited_futures
     NetTreeView.show(context);
   }
@@ -56,8 +57,6 @@ class _NetBarState extends State<NetBar> {
 
   @override
   Widget build(BuildContext context) {
-    
-    
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 14, 0, 4),
       child: Row(
@@ -152,7 +151,9 @@ If a follow context is selected, those included in the follow network will be gr
 }
 
 class _CenterDropdown extends StatefulWidget {
-  const _CenterDropdown({super.key});
+  static final Measure measure = Measure('center');
+
+  const _CenterDropdown();
 
   @override
   State<StatefulWidget> createState() => _CenterDropdownState();
@@ -207,7 +208,7 @@ class _CenterDropdownState extends State<_CenterDropdown> {
       // TODO: Put <reset> at top instead of bottom.
       // entries.insert(0, reset);
     }
-    
+
     return DropdownMenu<String?>(
       dropdownMenuEntries: entries,
       // Kudos: https://stackoverflow.com/questions/77123848/flutter-dart-dropdownmenu-doesnt-update-when-i-call-a-setstate-and-modify-my-lo
@@ -218,11 +219,19 @@ class _CenterDropdownState extends State<_CenterDropdown> {
       enableSearch: false,
       initialSelection: entries.first.label,
       label: const Text('Center'),
-      onSelected: (String? value) {
-        if (b(value)) {
-          signInState.center = label2oneofus[value]!;
-        } else {
-          signInState.center = signInState.centerReset!;
+      onSelected: (String? value) async {
+        try {
+          Measure.reset();
+          _CenterDropdown.measure.start();
+
+          signInState.center = b(value) ? label2oneofus[value]! : signInState.centerReset;
+
+          await Comp.waitOnComps([contentBase, keyLabels]);
+        } catch (e, stackTrace) {
+          await alertException(context, e, stackTrace: stackTrace);
+        } finally {
+          _CenterDropdown.measure.stop();
+          Measure.dump();
         }
       },
     );
@@ -268,10 +277,12 @@ class _FollowDropdownState extends State<_FollowDropdown> {
         .map<DropdownMenuEntry<String>>((String fcontext) => DropdownMenuEntry<String>(
             value: fcontext,
             label: fcontext,
-            enabled: followNet.centerContexts.contains(fcontext) || kSpecialContexts.contains(fcontext)))
+            enabled:
+                followNet.centerContexts.contains(fcontext) || kSpecialContexts.contains(fcontext)))
         .toList();
 
-    bool error = !(followNet.centerContexts.contains(initial) || kSpecialContexts.contains(initial));
+    bool error =
+        !(followNet.centerContexts.contains(initial) || kSpecialContexts.contains(initial));
 
     String message = error
         ? '''Center ("${keyLabels.labelKey(signInState.center)}") does not use the selected follow context ("$initial")}).
@@ -293,8 +304,20 @@ Select an enabled follow context or <one-of-us> (everyone).'''
       ),
       label: const Text('Follow'),
       textStyle: error ? TextStyle(color: Colors.red) : null,
-      onSelected: (String? fcontext) {
-        followNet.fcontext = fcontext!;
+      onSelected: (String? fcontext) async {
+        try {
+          Measure.reset();
+          _CenterDropdown.measure.start();
+
+          followNet.fcontext = fcontext!;
+
+          await Comp.waitOnComps([contentBase, keyLabels]);
+        } catch (e, stackTrace) {
+          await alertException(context, e, stackTrace: stackTrace);
+        } finally {
+          _CenterDropdown.measure.stop();
+          Measure.dump();
+        }
         setState(() {});
       },
       dropdownMenuEntries: entries,
