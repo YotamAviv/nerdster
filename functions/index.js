@@ -60,11 +60,30 @@ exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
   return event.data.ref.set({ title }, { merge: true });
 });
 
+// History: Before I learned how to call Firebase Cloud Functions directly:
+// - the client wrote the url to a collection
+// - a cloud function listened to that and wrote the title to a collection
+// - the client listened on that collection and read the title.
+// TODO: Remove [addurl, fetchtitle] as this Cloud Function replaces them.
+exports.cloudfetchtitle = onCall(async (request) => {
+  const url = request.data.url;
+  logger.log(`cloudfetchtitle: ${request.data} `);
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new functions.https.HttpsError("unavailable", "Failed to fetch URL",
+      { 'status': response.status });
+  }
+  const html = await response.text();
+  const $ = cheerio.load(html);
+  const title = $('title').text(); // .trim()?
+  return { "title": title };
+});
+
 // Jsonish'ish needs here in JavaScript:
 // - sort keys in a doc (JS dictionary) for pretty exports for demo ("statement", "time", "I", "trust", "with", "previous", "signature")
 // - sort keys in a JS dictionary for distinct based on subjects and keys ("contentType", "author", "title")
 // Statement'ish needs here in JavaScript:
-// - get subject of verb for  distinct based on subjects.
+// - get subject of verb for distinct based on subjects.
 
 // ----------- copy/pasted from <nerdster>/js ---------------------------------------------------//
 
@@ -345,7 +364,7 @@ async function makedistinct(input) {
     // Pro: Multiple delegates: use one to clear another's statement. 
     // Con: Performance.
     // So, no: // if (clearClear) if (verb == 'clear') continue;
-    
+
     distinct.push(s);
   }
   return distinct;
