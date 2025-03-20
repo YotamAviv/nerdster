@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_types.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/util_ui.dart';
 
 /// Fetching URL title:
@@ -20,6 +21,8 @@ import 'package:nerdster/util_ui.dart';
 /// - use Node on the server side to fetch the HTML and exctract the title
 /// - write that back to the Firebase doc.
 /// This class uses that mechanism.
+
+final FirebaseFunctions? _functions = FireFactory.findFunctions(kNerdsterDomain);
 
 Future<Jsonish?> establishSubjectDialog(BuildContext context) {
   return showDialog(
@@ -58,12 +61,21 @@ class _SubjectFieldsState extends State<SubjectFields> {
 
   listen() {
     // Special case kludge for auto-filling 'title' field from 'url' field.
-    if (key2controller['url']!.text.isEmpty) {
-      return;
-    }
-    tryFetchTitle(key2controller['url']!.text, (url, title) {
-      if (key2controller['url']!.text == url) {
-        key2controller['title']!.text = title;
+    TextEditingController urlController = key2controller['url']!;
+    TextEditingController titleController = key2controller['title']!;
+    if (urlController.text.isEmpty) return;
+    tryFetchTitle(urlController.text, (String url, {String? title, String? error}) {
+      if (urlController.text == url) {
+        if (title != null) {
+          titleController.text = title;
+        }
+        // TODO: Show the user the error somehow (so that he knows we tried but paywall, forbidden, whatever prevented us)
+        // I didn't like Snackbar
+        // I don't think I can use hint text effectively as it's hidden once there's any text in the TextField.
+        // I can probably use the border color, but the user would not know what that means.
+        if (error != null) {
+          print(error);
+        }
       }
     });
   }
@@ -82,13 +94,11 @@ class _SubjectFieldsState extends State<SubjectFields> {
       TextEditingController controller = TextEditingController();
       key2controller[entry.key] = controller;
       String hintText = entry.key;
-      fields.add(
-        TextField(
+      TextField textField = TextField(
           decoration: InputDecoration(
               hintText: hintText, hintStyle: hintStyle, border: const OutlineInputBorder()),
-          controller: controller,
-        ),
-      );
+          controller: controller);
+      fields.add(textField);
       // Special case kludge for auto-filling 'title' field from 'url' field.
       if (entry.key == 'url') {
         controller.addListener(listen);
@@ -127,7 +137,7 @@ You can include a URL in a comment or relate or equate this book to an article w
                 dropdownMenuEntries:
                     typesMinusAll.map<DropdownMenuEntry<ContentType>>((ContentType type) {
                   return DropdownMenuEntry<ContentType>(
-                      value: type, label: type.label, leadingIcon: Icon (type.iconDatas.$1));
+                      value: type, label: type.label, leadingIcon: Icon(type.iconDatas.$1));
                 }).toList(),
               ),
               noUrl,
@@ -141,50 +151,14 @@ You can include a URL in a comment or relate or equate this book to an article w
   }
 }
 
-void tryFetchTitle(String url, Function(String, String) callback) {
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    return;
-  }
+void tryFetchTitle(String url, Function(String url, {String title, String error}) callback) async {
+  if (_functions == null) return;
+  if (!url.startsWith('http://') && !url.startsWith('https://')) return;
   try {
-    Uri uri = Uri.parse(url);
-    print('uri=$uri');
-  } catch (e) {
-    print(e);
-    return;
+    var retval = await _functions!.httpsCallable('cloudfetchtitle').call({"url": url});
+    callback(url, title: retval.data["title"]);
+  } on FirebaseFunctionsException catch (e) {
+    String error = [e.toString().trim(), if (e.details != null) e.details].join(', ');
+    callback(url, error: error);
   }
-
-  // Listen for something to arrive at collection, doesn't seem to work with fake fire
-  final firestore = FirebaseFirestore.instance;
-  String doc = clock.nowIso;
-
-  StreamSubscription? subscription;
-
-  void onDone() {
-    if (b(subscription)) {
-      subscription!.cancel();
-      print('cancelled');
-      subscription = null;
-    }
-  }
-
-  void onData(DocumentSnapshot<Map<String, dynamic>> event) {
-    Json? data = event.data();
-    if (b(data) && b(data!['title'])) {
-      String title = data['title'];
-      print(title);
-      callback(url, title);
-      onDone();
-    }
-  }
-
-  firestore.collection('urls').doc(doc).set({'url': url}).then((dummy) {
-    subscription = firestore
-        .collection('urls')
-        .doc(doc)
-        .snapshots()
-        .listen(onData, cancelOnError: true, onDone: () {
-      subscription!.cancel();
-    });
-    print('listening...');
-  });
 }
