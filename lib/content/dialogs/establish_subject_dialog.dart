@@ -8,6 +8,7 @@ import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/util_ui.dart';
 
 /// Fetching URL title:
@@ -47,6 +48,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
   LinkedHashMap<String, TextEditingController> key2controller =
       LinkedHashMap<String, TextEditingController>();
   final List<ContentType> typesMinusAll = List.from(ContentType.values)..removeAt(0);
+  final fetchingUrlWidget = _FetchingUrlWidget();
 
   okHandler() async {
     Map<String, dynamic> map = <String, dynamic>{};
@@ -64,15 +66,15 @@ class _SubjectFieldsState extends State<SubjectFields> {
     TextEditingController urlController = key2controller['url']!;
     TextEditingController titleController = key2controller['title']!;
     if (urlController.text.isEmpty) return;
+    fetchingUrlWidget.isRunning.value = true;
     tryFetchTitle(urlController.text, (String url, {String? title, String? error}) {
       if (urlController.text == url) {
+        fetchingUrlWidget.isRunning.value = false;
         if (title != null) {
           titleController.text = title;
         }
-        // TODO: Show the user the error somehow (so that he knows we tried but paywall, forbidden, whatever prevented us)
-        // I didn't like Snackbar
-        // I don't think I can use hint text effectively as it's hidden once there's any text in the TextField.
-        // I can probably use the border color, but the user would not know what that means.
+        fetchingUrlWidget.message.value = b(error) ? error! : 'Title fetched from URL.';
+        fetchingUrlWidget.isError.value = b(error);
         if (error != null) {
           print(error);
         }
@@ -105,9 +107,9 @@ class _SubjectFieldsState extends State<SubjectFields> {
       }
     }
 
-    Widget noUrl = const SizedBox(width: 80.0);
+    Widget cornerWidget = const SizedBox(width: 80.0);
     if (!contentType.type2field2type.keys.any((x) => x == 'url')) {
-      noUrl = SizedBox(
+      cornerWidget = SizedBox(
         width: 80.0,
         child: Tooltip(
             message: '''A ${contentType.label} doesn't have a singular URL.
@@ -115,6 +117,8 @@ In case multiple people rate a book, their ratings will be grouped correctly onl
 You can include a URL in a comment or relate or equate this book to an article with a URL.''',
             child: Text('no URL?', style: linkStyle)),
       );
+    } else {
+      cornerWidget = fetchingUrlWidget;
     }
 
     return Padding(
@@ -132,6 +136,9 @@ You can include a URL in a comment or relate or equate this book to an article w
                 onSelected: (ContentType? contentType) {
                   setState(() {
                     this.contentType = contentType!;
+                    fetchingUrlWidget.isError.value = false;
+                    fetchingUrlWidget.isRunning.value = false;
+                    fetchingUrlWidget.message.value = '';
                   });
                 },
                 dropdownMenuEntries:
@@ -140,7 +147,7 @@ You can include a URL in a comment or relate or equate this book to an article w
                       value: type, label: type.label, leadingIcon: Icon(type.iconDatas.$1));
                 }).toList(),
               ),
-              noUrl,
+              cornerWidget,
             ]),
             const SizedBox(height: 10),
             ...fields,
@@ -158,7 +165,46 @@ void tryFetchTitle(String url, Function(String url, {String title, String error}
     var retval = await _functions!.httpsCallable('cloudfetchtitle').call({"url": url});
     callback(url, title: retval.data["title"]);
   } on FirebaseFunctionsException catch (e) {
-    String error = [e.toString().trim(), if (e.details != null) e.details].join(', ');
+    String error = [e.message, if (e.details != null) e.details].join(', ');
     callback(url, error: error);
+  }
+}
+
+class _FetchingUrlWidget extends StatefulWidget {
+  final ValueNotifier<bool> isRunning = ValueNotifier(false);
+  final ValueNotifier<bool> isError = ValueNotifier(false);
+  final ValueNotifier<String> message = ValueNotifier('');
+
+  @override
+  State<StatefulWidget> createState() => _FetchingUrlWidgetState();
+}
+
+class _FetchingUrlWidgetState extends State<_FetchingUrlWidget> {
+  @override
+  void initState() {
+    super.initState();
+    widget.isRunning.addListener(listener);
+    widget.message.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    widget.isRunning.removeListener(listener);
+    widget.message.removeListener(listener);
+    super.dispose();
+  }
+
+  void listener() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+        message: widget.message.value,
+        child: Icon(!widget.isRunning.value ? Icons.refresh : Icons.rotate_right_outlined,
+            color: widget.isRunning.value
+                ? Colors.green
+                : widget.isError.value
+                    ? Colors.red
+                    : Colors.blue));
   }
 }
