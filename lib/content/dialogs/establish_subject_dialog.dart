@@ -205,6 +205,6 @@ class _FetchingUrlWidgetState extends State<_FetchingUrlWidget> {
                 ? Colors.green
                 : widget.isError.value
                     ? Colors.red
-                    : Colors.blue));
+                    : Colors.black));
   }
 }
