@@ -207,10 +207,13 @@ function getVerbSubject(j) {
   return null;
 }
 
-// -----------  --------------------------------------------------------//
+function getOtherSubject(j) {
+  if ('with' in j && 'otherSubject' in j['with']) {
+    return j['with']['otherSubject'];
+  }
+}
 
-/// DEFER: Cloud distinct to regard "other" subject.
-/// All the pieces are there, and it shouldn't be hard. That said, relate / equate are rarely used.
+// -----------  --------------------------------------------------------//
 
 async function fetchh(token, params = {}, omit = {}) {
   const revokeAt = params.revokeAt;
@@ -350,21 +353,21 @@ exports.signin = onRequest((req, res) => {
     });
 });
 
-// Only considers subject of verb, does not consider otherSubject.
+// Considers subject of verb (input[verb]) and otherSubject (input[with][otherSubject]) if present.
 async function makedistinct(input) {
   var distinct = [];
   var already = new Set();
   for (var s of input) {
     var i = s['I'];
     const [verb, subject] = getVerbSubject(s);
-    var key = await keyToken(subject);
-    if (already.has(key)) continue;
-    already.add(key);
-    // Retain 'clear' statements or not?
-    // Pro: Multiple delegates: use one to clear another's statement. 
-    // Con: Performance.
-    // So, no: // if (clearClear) if (verb == 'clear') continue;
-
+    const subjectToken = await keyToken(subject);
+    const otherSubject = getOtherSubject(s);
+    const otherToken = otherSubject != null ? await keyToken(otherSubject) : null;
+    const combinedKey = otherToken != null ?
+      ((subjectToken < otherToken) ? subjectToken.concat(otherToken) : otherToken.concat(subjectToken)) :
+      subjectToken;
+    if (already.has(combinedKey)) continue;
+    already.add(combinedKey);
     distinct.push(s);
   }
   return distinct;
