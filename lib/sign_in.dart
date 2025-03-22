@@ -237,6 +237,5 @@ Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, 
 
   final String oneofusToken = getToken(await oneofusPublicKey.json);
   await signInState.signIn(oneofusToken, nerdsterKeyPair);
-  // ignore: unawaited_futures
-  BarRefresh.refresh(context);
+  await BarRefresh.refresh(context);
 }

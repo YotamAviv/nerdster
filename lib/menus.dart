@@ -40,15 +40,17 @@ class IntSettingDropdown extends StatefulWidget {
 
 class _IntSettingDropdownState extends State<IntSettingDropdown> {
   @override
-  Widget build(Object context) {
+  Widget build(BuildContext context) {
     return DropdownButton<int>(
       alignment: AlignmentDirectional.centerEnd,
       isExpanded: true,
       value: widget.setting.value,
       onChanged: (int? val) {
-        setState(() {
-          widget.setting.value = val!;
-        });
+        progress.make(() {
+          setState(() {
+            widget.setting.value = val!;
+          });
+        }, context);
       },
       items: List.of(widget.values
           .map((i) => DropdownMenuItem<int>(value: i, child: Text('$i ${widget.label}')))),

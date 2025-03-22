@@ -103,10 +103,10 @@ class FollowNet with Comp, ChangeNotifier {
     final int degrees = Prefs.followNetDegrees.value;
     final int numPaths = Prefs.followNetPaths.value;
     if (_context != kOneofusContext) {
-      GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
       FollowNode.clear();
+      GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
       LinkedHashMap<String, Node> canonNetwork =
-          await bfsTrust.process(FollowNode(signInState.center));
+          await bfsTrust.process(FollowNode(signInState.center), progress: progress.nerdster);
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
       List<String> tmp = <String>[];
       for (String canon in canonNetwork.keys) {
@@ -151,6 +151,7 @@ class FollowNet with Comp, ChangeNotifier {
         }
       }
     }
+    int count = 0;
     for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
       String delegateToken = e.key;
       String? revokeAt = e.value;
@@ -158,6 +159,10 @@ class FollowNet with Comp, ChangeNotifier {
       if (b(revokeAt)) {
         // This fires: assert(fetcher.revokeAt == revokeAt); // TEMP:
         fetcher.setRevokeAt(revokeAt!);
+      }
+      // Fails in 'poser social follow bug' // assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
+      if (_context == kOneofusContext) {
+        progress.nerdster.value = count++ / delegate2revokeAt.length;
       }
       await fetcher.fetch(); // fill cache, query revokeAtTime
       assert(fetcher.revokeAt == null || fetcher.revokeAtTime != null);
@@ -224,6 +229,7 @@ class FollowNode extends Node {
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
         Fetcher delegateFetcher = Fetcher(delegateStatement.subjectToken, kNerdsterDomain);
+        // NOPE: assert(delegateFetcher.isCached, 'TEMP: checking');
         await delegateFetcher.fetch();
         delegateStatementss.add(delegateFetcher.statements);
       }

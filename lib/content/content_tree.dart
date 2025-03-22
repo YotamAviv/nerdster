@@ -85,9 +85,10 @@ class _ContentTreeViewState extends State<ContentTreeView> {
   @override
   Widget build(BuildContext context) {
     if (ContentTreeView._firstTime) {
-      // ignore: unawaited_futures
       ContentTreeView._firstTime = false;
-      BarRefresh.refresh(context);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        BarRefresh.refresh(context);
+      });
     }
 
     return Scaffold(
