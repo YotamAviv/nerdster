@@ -649,4 +649,17 @@ void main() async {
     });
   });
 
+  test('BUG: followNet subset of oneofusNet', () async {
+    await simpsons();
+    loadSimpsons();
+
+    Prefs.oneofusNetDegrees.value = 2;
+    Prefs.followNetDegrees.value = 3;
+    followNet.fcontext = kNerdsterContext;
+
+    signInState.center = bart.token;
+    await Comp.waitOnComps([followNet, keyLabels]);
+    
+    expect((Set.of(oneofusNet.network.keys)).containsAll( followNet.oneofus2delegates.keys), true);
+  });
 }
