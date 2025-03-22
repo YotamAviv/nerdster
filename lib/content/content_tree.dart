@@ -30,16 +30,16 @@ import 'package:nerdster/singletons.dart';
 ///
 /// DEFER: UI: Try 3 dots on right side:
 ///   https://api.flutter.dev/flutter/material/MenuAnchor-class.html
-class ContentTreeView extends StatefulWidget {
+class ContentTree extends StatefulWidget {
   static bool _firstTime = true;
 
-  const ContentTreeView({super.key});
+  const ContentTree({super.key});
 
   @override
-  State<ContentTreeView> createState() => _ContentTreeViewState();
+  State<ContentTree> createState() => _ContentTreeState();
 }
 
-class _ContentTreeViewState extends State<ContentTreeView> {
+class _ContentTreeState extends State<ContentTree> {
   late final TreeController<ContentTreeNode> treeController;
 
   @override
@@ -84,8 +84,8 @@ class _ContentTreeViewState extends State<ContentTreeView> {
 
   @override
   Widget build(BuildContext context) {
-    if (ContentTreeView._firstTime) {
-      ContentTreeView._firstTime = false;
+    if (ContentTree._firstTime) {
+      ContentTree._firstTime = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         BarRefresh.refresh(context);
       });
@@ -109,7 +109,7 @@ class _ContentTreeViewState extends State<ContentTreeView> {
               child: TreeView<ContentTreeNode>(
         treeController: treeController,
         nodeBuilder: (BuildContext context, TreeEntry<ContentTreeNode> entry) {
-          return SubjectTile(
+          return ContentTile(
             key: UniqueKey(),
             entry: entry,
             onTap: () {

@@ -71,9 +71,8 @@ class FollowNet with Comp, ChangeNotifier {
   Map<String, String> get delegate2oneofus => UnmodifiableMapView(_delegate2oneofus);
   Map<String, Fetcher> get delegate2fetcher => UnmodifiableMapView(_delegate2fetcher);
   Iterable<ContentStatement> getStatements(String oneofus) {
-    // BUG: When we're not in center's network, we can't get our own statements
     assert(oneofusNet.network.containsKey(oneofus),
-        "BUG: When we're not in center's network, we can't get our own statements");
+        "This used to be a bug, but I forgot the details and believe it's fixed.");
     return distinct(
         Merger(_oneofus2delegates[oneofus]!
             .map((delegate) => _delegate2fetcher[delegate]!.statements)).cast<ContentStatement>(),
