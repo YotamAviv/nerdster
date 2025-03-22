@@ -188,7 +188,6 @@ void main() async {
     myExpect(contentBase.roots.length, 0);
   });
 
-
   test('2 delegates, differet subjects, clear', () async {
     DemoKey loner = await DemoKey.findOrCreate('loner');
     DemoKey lonerN = await loner.makeDelegate();
@@ -237,10 +236,10 @@ void main() async {
     cn = contentBase.roots.first;
     expect(cn.getChildren().length, 1); // 2 ratings
     // Check rejection
-    // (I don't have the rejected statement here because it's not returned by luke.makeDelegate) 
+    // (I don't have the rejected statement here because it's not returned by luke.makeDelegate)
     expect(notifications.rejected.values, {"Delegate already claimed"});
-    
-    // 
+
+    //
     signInState.center = luke.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(notifications.rejected, {boClaimsLukes.token: "Delegate already claimed"});
@@ -404,7 +403,7 @@ void main() async {
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
-    // Now have bob2 and steve2 claim their older delegates (nothing should change, other than 
+    // Now have bob2 and steve2 claim their older delegates (nothing should change, other than
     // maybe notifications, rejections)
     await bob2.doTrust(TrustVerb.delegate, bobN);
     await steve2.doTrust(TrustVerb.delegate, steveN);
@@ -649,7 +648,8 @@ void main() async {
     });
   });
 
-  test('BUG: followNet subset of oneofusNet', () async {
+  // This test was used to fix a bug
+  test('followNet subset of oneofusNet', () async {
     await simpsons();
     loadSimpsons();
 
@@ -659,7 +659,7 @@ void main() async {
 
     signInState.center = bart.token;
     await Comp.waitOnComps([followNet, keyLabels]);
-    
-    expect((Set.of(oneofusNet.network.keys)).containsAll( followNet.oneofus2delegates.keys), true);
+
+    expect((Set.of(oneofusNet.network.keys)).containsAll(followNet.oneofus2delegates.keys), true);
   });
 }
