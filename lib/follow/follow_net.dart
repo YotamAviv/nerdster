@@ -160,7 +160,7 @@ class FollowNet with Comp, ChangeNotifier {
         // This fires: assert(fetcher.revokeAt == revokeAt);
         fetcher.setRevokeAt(revokeAt!);
       }
-      // Fails in 'poser social follow bug' // assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
+      // NOPE: assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
       if (_context == kOneofusContext) {
         progress.nerdster.value = count++ / delegate2revokeAt.length;
       }
@@ -230,7 +230,7 @@ class FollowNode extends Node {
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
         Fetcher delegateFetcher = Fetcher(delegateStatement.subjectToken, kNerdsterDomain);
-        // NEXT: NOPE: assert(delegateFetcher.isCached, 'checking..');
+        // NOPE: assert(delegateFetcher.isCached, 'checking..');
         await delegateFetcher.fetch();
         delegateStatementss.add(delegateFetcher.statements);
       }
@@ -275,7 +275,7 @@ class FollowNode extends Node {
         _trusts.add(Trust(FollowNode(canon), ts.time, ts.token));
       }
     }
-    assert(Set.of(oneofusNet.network.keys).containsAll(_trusts.map((t) => t.node.token))); // TEMP: (expensive)
+    assert(Set.of(oneofusNet.network.keys).containsAll(_trusts.map((t) => t.node.token)));
 
     processed = true;
   }
