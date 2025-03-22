@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -13,18 +12,17 @@ import 'package:nerdster/singletons.dart';
 import 'package:test/test.dart';
 
 /// Test against FirebaseEmulator and Cloud Functions..
+/// (This section of doc is mostly useless.)
 ///
-/// Done: Remove code duplication.
-/// I've removed code duplication between this integration and fetcher_tset.dart which uses
-/// FakeFirebaseFirestore, but I did not clean much else up.
+/// DEFER: The point of "unit testing" is to test things indepndantly, and so TEST: Fetcher 
+/// seperately from cloud functions.
+/// - TEST: Fetcher on a cloud functions stub (maybe save cloud functions output).
+/// - TEST: cloud functions specifically without Fetcher (use files, shouldn't be hard)
+/// - TEST: cloud distinct.
 ///
-/// DEFER: The point of "unit testing" is to test things indepndantly, and so to test Fetcher seperately from cloud functions.
-/// - test Fetcher on a cloud functions stub (it's trivial to save cloud functions output).
-/// - test cloud functions specifically without Fetcher (use files, shouldn't be hard)
-///
-/// TODO: everything related to distinct...
+/// Everything related to distinct...
 /// - it's a mess already
-/// - it used to be Fetcher job, then it wasn't, and no it's partially done by cloud functions.
+/// - it used to be Fetcher job, then it wasn't, and now it's also done by cloud functions.
 /// This might require moving distinct(..) into the non-clouddistinct code path thus changing the
 ///  semantics of Fetcher. But then what's the point? Do I want to maintain 2 code paths forever.
 /// 2 code paths forever:
@@ -32,8 +30,6 @@ import 'package:test/test.dart';
 /// - FakeFirebaseFirestore
 /// cons:
 /// - 2 code paths forever
-///
-/// TEST: Specifically test cloud distinct.
 ///
 /// TEST: Error prone: There is a pref for using cloud distinct; running this from the DEV menu
 /// uses that  settings says.

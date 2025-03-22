@@ -383,7 +383,7 @@ class Fetcher {
 
     final fireStatements = fire.collection(token).doc('statements').collection('statements');
     // Transaction!
-    // TODO: TEST: Testing will be easier after the changea away from the factgory ctor.
+    // TODO: TEST: Testing might be easier after the change away from the factory CTOR.
     await fire.runTransaction((_) async {
       Query<Json> query = fireStatements.orderBy('time', descending: true);
       QuerySnapshot<Json> snapshots = await query.get();
@@ -397,7 +397,7 @@ class Fetcher {
           throw Exception(error);
         }
       }
-      // DEFER: Don't 'await', Ajax!
+      // (An old thought: Don't 'await', Ajax!)
       await fireStatements.doc(jsonish.token).set(jsonish.json).then((doc) {}, onError: (e) {
         throw e;
       });
