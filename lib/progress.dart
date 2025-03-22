@@ -44,7 +44,6 @@ class Progress extends StatefulWidget {
   Future<void> _show(BuildContext context) async {
     oneofus.value = 0;
     nerdster.value = 0;
-    // TODO: Wait 2 seconds before showing dialog
     return showDialog<void>(
         context: context,
         barrierDismissible: false,

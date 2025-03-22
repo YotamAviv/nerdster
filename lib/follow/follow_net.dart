@@ -156,7 +156,7 @@ class FollowNet with Comp, ChangeNotifier {
       String? revokeAt = e.value;
       Fetcher fetcher = Fetcher(delegateToken, kNerdsterDomain);
       if (b(revokeAt)) {
-        // This fires: assert(fetcher.revokeAt == revokeAt);
+        // NOPE: assert(fetcher.revokeAt == revokeAt, 'checking..');
         fetcher.setRevokeAt(revokeAt!);
       }
       // NOPE: assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
