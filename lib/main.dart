@@ -20,6 +20,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/prefs.dart';
+import 'package:nerdster/progress.dart';
 import 'package:nerdster/singletons.dart';
 
 import 'firebase_options.dart';
@@ -31,7 +32,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -84,6 +85,7 @@ Future<void> main() async {
     await checkRead(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
   }
 
+  Progress(); // Just to get its Measure instance to be first
   DemoKey.printCredentials = true;
   TrustStatement.init();
   ContentStatement.init();
