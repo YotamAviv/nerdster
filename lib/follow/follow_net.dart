@@ -218,13 +218,14 @@ class FollowNode extends Node {
   final List<Trust> _trusts = <Trust>[];
   final List<Block> _blocks = <Block>[];
 
-  Future<void> process() async {
+  Future<void> _prep() async {
     if (processed) return;
     assert(Comp.compsReady([oneofusNet, oneofusEquiv]));
 
     List<Iterable<Statement>> delegateStatementss = <Iterable<Statement>>[];
     for (String equiv in oneofusEquiv.getEquivalents(token)) {
       Fetcher oneofusFetcher = Fetcher(equiv, kOneofusDomain);
+      if (!oneofusNet.network.containsKey(equiv)) continue; // not Oneofus
       for (TrustStatement delegateStatement in oneofusFetcher.statements
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
@@ -268,17 +269,20 @@ class FollowNode extends Node {
     if (followNet.fcontext == kNerdsterContext) {
       for (TrustStatement ts in NetNode.getCanonicalTrustStatements(token)) {
         assert(oneofusEquiv.getCanonical(ts.iToken) == token);
-        _trusts
-            .add(Trust(FollowNode(oneofusEquiv.getCanonical(ts.subjectToken)), ts.time, ts.token));
+        if (!oneofusNet.network.containsKey(token)) continue; // not Oneofus
+        String canon = oneofusEquiv.getCanonical(ts.subjectToken);
+        if (!oneofusNet.network.containsKey(canon)) continue; // not Oneofus
+        _trusts.add(Trust(FollowNode(canon), ts.time, ts.token));
       }
     }
+    assert(Set.of(oneofusNet.network.keys).containsAll(_trusts.map((t) => t.node.token))); // TEMP: (expensive)
 
     processed = true;
   }
 
   @override
   Future<Iterable<Trust>> get trusts async {
-    await process();
+    await _prep();
     return _trusts;
   }
 
@@ -289,7 +293,7 @@ class FollowNode extends Node {
 
   @override
   Future<Iterable<Block>> get blocks async {
-    await process();
+    await _prep();
     return _blocks;
   }
 
