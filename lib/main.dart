@@ -96,7 +96,7 @@ Future<void> main() async {
   await defaultSignIn();
 
   // -------------- run app ---------------
-  runApp(const MaterialApp(home: ContentTreeView()));
+  runApp(const MaterialApp(home: ContentTree()));
 }
 
 Future<void> defaultSignIn() async {

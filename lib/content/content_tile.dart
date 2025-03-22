@@ -16,8 +16,8 @@ import 'package:nerdster/util_ui.dart';
 
 const (IconData, IconData) statementIconPair = (Icons.attachment_outlined, Icons.attachment);
 
-class SubjectTile extends StatefulWidget {
-  const SubjectTile({
+class ContentTile extends StatefulWidget {
+  const ContentTile({
     super.key,
     required this.entry,
     required this.onTap,
@@ -28,11 +28,11 @@ class SubjectTile extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _SubjectTileState();
+    return _ContentTileState();
   }
 }
 
-class _SubjectTileState extends State<SubjectTile> {
+class _ContentTileState extends State<ContentTile> {
   Icon relateIcon = const Icon(Icons.balance);
 
   @override
@@ -101,13 +101,10 @@ class _SubjectTileState extends State<SubjectTile> {
       // DEFER: The multi-line Tree Tile makes the branch not point to the icon.
       commentWidget = InputDecorator(
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(horizontal: 3, vertical: 3),
-          labelText: 'Comment',
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(1.0)),
-        ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            labelText: 'Comment',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(5))),
         child: Linky(comment),
-        // child: TextField(
-        //     readOnly: true, maxLines: null, controller: TextEditingController()..text = comment)
       );
     }
 
@@ -119,12 +116,8 @@ class _SubjectTileState extends State<SubjectTile> {
       final ContentVerb verb = statement!.verb;
       StringBuffer buf = StringBuffer();
       if (verb == ContentVerb.rate) {
-        if (b(statement.recommend)) {
-          buf.write('recommended ');
-        }
-        if (b(statement.dismiss)) {
-          buf.write('dismissed ');
-        }
+        if (b(statement.recommend)) buf.write('recommended ');
+        if (b(statement.dismiss)) buf.write('dismissed ');
       } else {
         buf.write('  ${verb.pastTense}: ');
       }
@@ -142,9 +135,9 @@ class _SubjectTileState extends State<SubjectTile> {
 
     return TreeIndentation(
         entry: widget.entry,
-        guide: const IndentGuide.connectingLines(indent: 80),
+        guide: const IndentGuide.connectingLines(indent: 92),
         child: Padding(
-            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 _ReactIcon(subjectNode.subject),
@@ -254,10 +247,7 @@ Double click to relate / equate''',
 class _StatementTitle extends StatelessWidget {
   final ContentStatement statement;
 
-  const _StatementTitle(
-    this.statement, {
-    super.key,
-  });
+  const _StatementTitle(this.statement);
 
   @override
   Widget build(BuildContext context) {
