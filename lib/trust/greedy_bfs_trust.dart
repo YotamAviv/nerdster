@@ -1,10 +1,10 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/trust/trust.dart';
-
 
 /// Greed BFS trust algorithm
 /// At each layer, process [block, replace, trust] statements in that order
@@ -21,7 +21,8 @@ class GreedyBfsTrust {
 
   GreedyBfsTrust({this.degrees = 6, this.numPaths = 1});
 
-  Future<LinkedHashMap<String, Node>> process(Node source, {Notifications? notifier}) async {
+  Future<LinkedHashMap<String, Node>> process(Node source,
+      {Notifications? notifier, ValueNotifier<double>? progress}) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
     network[source.token] = source;
     assert(source.paths.isEmpty);
@@ -38,7 +39,13 @@ class GreedyBfsTrust {
       Set<Path> removeAfterIteration = <Path>{};
 
       // ====== BLOCKS ====== //
+      int count = 0;
       for (Path path in currentLayer) {
+        count++;
+        if (b(progress)) {
+          progress!.value = (pass - 1) / degrees + (count / currentLayer.length / degrees);
+        }
+
         if (!isValidPath(path, network)) {
           removeAfterIteration.add(path);
           continue;
@@ -112,7 +119,7 @@ class GreedyBfsTrust {
             continue;
           }
           if (other.blocked) {
-            // Hmm.. if someone blocks your old key, you should probably be informed about it. 
+            // Hmm.. if someone blocks your old key, you should probably be informed about it.
             // This might be that rejected replace (otherwise, it'd be a rejected block)
             notifier?.reject(replace.statementToken, 'Attempt to replace a blocked key.');
             continue;
@@ -210,6 +217,7 @@ class GreedyBfsTrust {
       }
       networkSizeBefore = network.length;
     }
+    if (b(progress)) progress!.value = 1;
     return network;
   }
 
@@ -239,7 +247,7 @@ class GreedyBfsTrust {
       String? fromRevokeAt = network[edge.node.token]!.revokeAt;
       fromRevokeAtTime = network[edge.node.token]!.revokeAtTime;
       if (fromRevokeAt != null) {
-        // The only case where we should have fromRevokeAtTime != null is if it's the last path 
+        // The only case where we should have fromRevokeAtTime != null is if it's the last path
         // (which we didn't take, and so it wasn't fetched.)
         assert(fromRevokeAtTime != null || edge.node.token == path.last.node.token);
       }

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -15,22 +13,11 @@ class BarRefresh extends StatefulWidget {
   });
 
   static Future<void> refresh(BuildContext context) async {
-    if (!measure.isRunning) {
-      try {
-        Measure.reset();
-        measure.start();
-        
-        Fetcher.clear();
-        oneofusNet.listen();
-
-        await Comp.waitOnComps([contentBase, keyLabels]);
-      } catch (e, stackTrace) {
-        await alertException(context, e, stackTrace: stackTrace);
-      } finally {
-        measure.stop();
-        Measure.dump();
-      }
-    }
+    // ignore: unawaited_futures
+    progress.make(() {
+      Fetcher.clear();
+      oneofusNet.listen();
+    }, context);
   }
 
   @override
@@ -61,9 +48,6 @@ class _BarRefreshState extends State<BarRefresh> {
         icon: Icon(icon),
         color: linkColor,
         tooltip: 'Refresh',
-        // A little sloppy..
-        // - The state is BarRefresh.stopwatch
-        // - just ignore the click if we're already refreshing
         onPressed: () {
           BarRefresh.refresh(context);
         });

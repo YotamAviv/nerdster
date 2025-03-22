@@ -4,8 +4,6 @@ import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/net/net_tree.dart';
-import 'package:nerdster/oneofus/measure.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
@@ -151,8 +149,6 @@ If a follow context is selected, those included in the follow network will be gr
 }
 
 class _CenterDropdown extends StatefulWidget {
-  static final Measure measure = Measure('center');
-
   const _CenterDropdown();
 
   @override
@@ -220,19 +216,9 @@ class _CenterDropdownState extends State<_CenterDropdown> {
       initialSelection: entries.first.label,
       label: const Text('Center'),
       onSelected: (String? value) async {
-        try {
-          Measure.reset();
-          _CenterDropdown.measure.start();
-
+        await progress.make(() {
           signInState.center = b(value) ? label2oneofus[value]! : signInState.centerReset;
-
-          await Comp.waitOnComps([contentBase, keyLabels]);
-        } catch (e, stackTrace) {
-          await alertException(context, e, stackTrace: stackTrace);
-        } finally {
-          _CenterDropdown.measure.stop();
-          Measure.dump();
-        }
+        }, context);
       },
     );
   }
@@ -305,19 +291,9 @@ Select an enabled follow context or <one-of-us> (everyone).'''
       label: const Text('Follow'),
       textStyle: error ? TextStyle(color: Colors.red) : null,
       onSelected: (String? fcontext) async {
-        try {
-          Measure.reset();
-          _CenterDropdown.measure.start();
-
+        await progress.make(() {
           followNet.fcontext = fcontext!;
-
-          await Comp.waitOnComps([contentBase, keyLabels]);
-        } catch (e, stackTrace) {
-          await alertException(context, e, stackTrace: stackTrace);
-        } finally {
-          _CenterDropdown.measure.stop();
-          Measure.dump();
-        }
+        }, context);
         setState(() {});
       },
       dropdownMenuEntries: entries,

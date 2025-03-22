@@ -23,6 +23,14 @@ import 'package:flutter/foundation.dart';
 ///   - 'contentType'  (books, movies, ..)
 /// * We should always load all of the signed-in user's statements (for prefilling the dialog, for example)
 
+/// Progress dialog
+/// OneofusNet:
+/// We know that we're going from 1 to 5 degrees, and so exponention 1-5
+/// We don't know how many edges we'll have.
+/// 
+/// 
+/// FollowNet (Content):
+/// We know how many tokens are in the network, not sure how many statements in each, but linear'ish.
 
 /// Intervals (OneofusNet, FollowNet), activities (Fire fetch, verify)
 /// total time could be broken up meaningfully

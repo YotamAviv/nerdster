@@ -9,7 +9,6 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -202,7 +201,9 @@ class _MonikerWidget extends StatelessWidget {
       elevation: 8.0,
     );
     if (value == 'recenter') {
-      await recenter(node.token!, context);
+      await progress.make(() {
+        signInState.center = node.token!;
+      }, context);
     } else if (value == 'follow') {
       await follow(node.token!, context);
     } else if (value == 'statements') {
