@@ -157,7 +157,7 @@ class FollowNet with Comp, ChangeNotifier {
       String? revokeAt = e.value;
       Fetcher fetcher = Fetcher(delegateToken, kNerdsterDomain);
       if (b(revokeAt)) {
-        // This fires: assert(fetcher.revokeAt == revokeAt); // TEMP:
+        // This fires: assert(fetcher.revokeAt == revokeAt);
         fetcher.setRevokeAt(revokeAt!);
       }
       // Fails in 'poser social follow bug' // assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
@@ -229,7 +229,7 @@ class FollowNode extends Node {
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
         Fetcher delegateFetcher = Fetcher(delegateStatement.subjectToken, kNerdsterDomain);
-        // NOPE: assert(delegateFetcher.isCached, 'TEMP: checking');
+        // NEXT: NOPE: assert(delegateFetcher.isCached, 'checking..');
         await delegateFetcher.fetch();
         delegateStatementss.add(delegateFetcher.statements);
       }

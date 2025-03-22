@@ -35,7 +35,6 @@ class Progress extends StatefulWidget {
     } catch (e, stackTrace) {
       await alertException(context, e, stackTrace: stackTrace);
     } finally {
-      // TEMP:
       Navigator.of(context).pop();
       measure.stop();
       Measure.dump();
