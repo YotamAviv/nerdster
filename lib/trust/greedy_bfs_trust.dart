@@ -129,7 +129,7 @@ class GreedyBfsTrust {
           network.putIfAbsent(other.token, () => other);
           final Path newPath = List.of(path)..add(replace);
           other.paths.add(newPath);
-          assert(newPath.length == pass + 1); // Just checking
+          assert(newPath.length == pass + 1);
           other.revokeAt = replace.revokeAt;
           await other.trusts; // KLUDGE: Setting revoked at might require re-fetching.
           // Add to queue if not already visited.
@@ -169,7 +169,7 @@ class GreedyBfsTrust {
             network.putIfAbsent(other.token, () => other);
             final Path newPath = List.of(path)..add(trust);
             other.paths.add(newPath);
-            assert(newPath.length == pass + 1); // Just checking
+            assert(newPath.length == pass + 1);
 
             // Add to queue if not already visited.
             if (!visited.contains(other)) {
