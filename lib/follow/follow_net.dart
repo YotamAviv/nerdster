@@ -162,6 +162,7 @@ class FollowNet with Comp, ChangeNotifier {
       // NOPE: assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
       if (_context == kOneofusContext) {
         progress.nerdster.value = count++ / delegate2revokeAt.length;
+        progress.message.value = delegateToken;
       }
       await fetcher.fetch(); // fill cache, query revokeAtTime
       assert(fetcher.revokeAt == null || fetcher.revokeAtTime != null);

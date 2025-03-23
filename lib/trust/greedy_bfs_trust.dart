@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/progress.dart';
 import 'package:nerdster/trust/trust.dart';
 
 /// Greed BFS trust algorithm
@@ -44,6 +45,7 @@ class GreedyBfsTrust {
         count++;
         if (b(progress)) {
           progress!.value = (pass - 1) / degrees + (count / currentLayer.length / degrees);
+          Progress().message.value = 'degrees: $pass, token: ${path.last.node.token}';
         }
 
         if (!isValidPath(path, network)) {
