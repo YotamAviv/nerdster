@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/follow/follow.dart';
 import 'package:nerdster/js_widget.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -209,12 +212,8 @@ class _MonikerWidget extends StatelessWidget {
     } else if (value == 'statements') {
       String link;
       // DEFER: ?revokedAt=...
-      if (bOneofus) {
-        link = 'https://export.one-of-us.net?token=${node.token!}';
-      } else {
-        assert(followNet.delegate2oneofus.containsKey(node.token));
-        link = 'https://export.nerdster.org?token=${node.token!}';
-      }
+      String domain = bOneofus ? kOneofusDomain : kNerdsterDomain;
+      link = '${exportUrl[fireChoice]![domain]}?token=${node.token!}';
       // DEFER: copy floater, (maybe unite with Nerdster link dialog)
       await alert(
           'Published statements',

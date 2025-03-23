@@ -41,7 +41,18 @@ const domain2statementType = {
   kNerdsterDomain: kNerdsterType,
 };
 
-final Corruptor corruptor  = Notifications();
+final Corruptor corruptor = Notifications();
+
+Map<FireChoice, Map<String, String>> exportUrl = {
+  FireChoice.prod: {
+    kOneofusDomain: 'http://export.one-of-us.net/',
+    kNerdsterDomain: 'http://export.nerdster.org/'
+  },
+  FireChoice.emulator: {
+    kOneofusDomain: 'http://127.0.0.1:5002/one-of-us-net/us-central1/export2',
+    kNerdsterDomain: 'http://127.0.0.1:5001/nerdster/us-central1/export2'
+  },
+};
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -152,4 +163,14 @@ dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
 
   FireChoice.emulator: {"one-of-us.net": yotam},
+
+  // FireChoice.emulator: {
+  //   "one-of-us.net": "39b8ac0d03fb818b48a3116df9616c76bff07d40",
+  //   "nerdster.org": {
+  //     "crv": "Ed25519",
+  //     "d": "Q_MpAKZUudEwUl-3tyujJrh34ySTQZ4ce7nzNfB_cL0",
+  //     "kty": "OKP",
+  //     "x": "nL7-BHdPMdy2k05ONViQUd5rs0pKD77TCMB5UcaKWq0"
+  //   }
+  // }
 };
