@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
 /// Follow contexts (<Nerdster> included) need to load the Nerdster statements
@@ -10,6 +11,7 @@ class Progress extends StatefulWidget {
   final Measure measure = Measure('_');
   final ValueNotifier<double> oneofus = ValueNotifier(0);
   final ValueNotifier<double> nerdster = ValueNotifier(0);
+  final ValueNotifier<String?> message = ValueNotifier(null);
   Progress._internal();
 
   factory Progress() => singleton;
@@ -20,10 +22,8 @@ class Progress extends StatefulWidget {
   Future<void> make(VoidCallback func, BuildContext context) async {
     if (measure.isRunning) return;
     try {
+      // ignore: unawaited_futures
       _show(context);
-      // WidgetsBinding.instance.addPostFrameCallback((_) {
-      //   show(context);
-      // });
 
       Measure.reset();
       measure.start();
@@ -90,6 +90,11 @@ class ProgressState extends State<Progress> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: LinearProgressIndicator(value: widget.nerdster.value),
         ),
+        if (b(widget.message.value)) const Text('''Activity'''),
+        if (b(widget.message.value))
+          Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(widget.message.value!)),
       ],
     );
   }
