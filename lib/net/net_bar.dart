@@ -23,14 +23,11 @@ class NetBar extends StatefulWidget {
 
   static Future<void> showTree(BuildContext context) async {
     assert(!bNetView.value);
-    // ignore: unawaited_futures
-    NetTreeView.show(context);
+    await NetTreeView.show(context);
   }
 
   static void setParams(Map<String, String> params) {
-    if (bNetView.value) {
-      params['netView'] = true.toString();
-    }
+    if (bNetView.value) params['netView'] = true.toString();
   }
 }
 
@@ -226,7 +223,7 @@ class _CenterDropdownState extends State<_CenterDropdown> {
 
 // DEFER: singleton
 class _FollowDropdown extends StatefulWidget {
-  const _FollowDropdown({super.key});
+  const _FollowDropdown();
 
   @override
   State<StatefulWidget> createState() => _FollowDropdownState();

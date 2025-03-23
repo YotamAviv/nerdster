@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
-import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_bar.dart';
 import 'package:nerdster/content/content_tile.dart';
@@ -49,19 +48,8 @@ class _ContentTreeState extends State<ContentTree> {
       roots: contentBase.roots,
       childrenProvider: (ContentTreeNode node) => node.getChildren(),
     );
-
     contentBase.addListener(listen);
     keyLabels.addListener(listen);
-
-    // Check start with network view
-    // I don't like how I've done this.
-    // - content shows up briefly before disappearing
-    // - params are dealt with both here and in NetBar
-    Map<String, String> params = Uri.base.queryParameters;
-    if (bs(params['netView'])) {
-      NetBar.showTree(context);
-    }
-
     listen();
   }
 
@@ -82,14 +70,19 @@ class _ContentTreeState extends State<ContentTree> {
     super.dispose();
   }
 
+  Future<void> kludgeDelayedInit(BuildContext context) async {
+    ContentTree._firstTime = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // progress will call Navigator.pop(context) asynchronously, and so can't showTree first.
+      await progress.make(oneofusNet.listen, context);
+      
+      if (bs(Uri.base.queryParameters['netView'])) await NetBar.showTree(context);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (ContentTree._firstTime) {
-      ContentTree._firstTime = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        BarRefresh.refresh(context);
-      });
-    }
+    if (ContentTree._firstTime) kludgeDelayedInit(context);
 
     return Scaffold(
         body: SafeArea(
