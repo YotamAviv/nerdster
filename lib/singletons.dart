@@ -9,6 +9,7 @@ import 'package:nerdster/sign_in_state.dart';
 
 final ContentBase contentBase = ContentBase();
 final FollowNet followNet = FollowNet();
+final OneofusLabels oneofusLabels = OneofusLabels();
 final KeyLabels keyLabels = KeyLabels();
 final OneofusEquiv oneofusEquiv = OneofusEquiv();
 final OneofusNet oneofusNet = OneofusNet();

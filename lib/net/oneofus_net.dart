@@ -7,6 +7,7 @@ import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
+import 'package:nerdster/progress.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/greedy_bfs_trust.dart';
 import 'package:nerdster/trust/trust.dart';
@@ -78,7 +79,16 @@ import '../oneofus/measure.dart';
 ///     - maybe that's 2 different popup dialogs
 ///     - allow similar popup dialogs along the way of the path, and so maybe show both keys, clicking on key brings up the path and shows the keys along the path
 
-///
+class OneofusNetProgressR extends ProgressR {
+  @override
+  void report(double p, String? token) {
+    progress.oneofus.value = p;
+    progress.message.value = token;
+    // progress.message.value = 'Loading ONE-OF-US statements\n$message';
+  }
+}
+
+OneofusNetProgressR _oneofusNetProgressR = OneofusNetProgressR();
 
 class OneofusNet with Comp, ChangeNotifier {
   static final OneofusNet _singleton = OneofusNet._internal();
@@ -124,7 +134,7 @@ class OneofusNet with Comp, ChangeNotifier {
     FetcherNode.clear();
     GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
     _network = await bfsTrust.process(FetcherNode(signInState.center),
-        notifier: notifications, progress: progress.oneofus);
+        notifier: notifications, progress: _oneofusNetProgressR);
     _token2keyCounter.clear();
 
     int keyCounter = 0;

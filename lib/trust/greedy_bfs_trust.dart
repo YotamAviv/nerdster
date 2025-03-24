@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:flutter/foundation.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -23,7 +22,7 @@ class GreedyBfsTrust {
   GreedyBfsTrust({this.degrees = 6, this.numPaths = 1});
 
   Future<LinkedHashMap<String, Node>> process(Node source,
-      {Notifications? notifier, ValueNotifier<double>? progress}) async {
+      {Notifications? notifier, ProgressR? progress}) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
     network[source.token] = source;
     assert(source.paths.isEmpty);
@@ -44,8 +43,9 @@ class GreedyBfsTrust {
       for (Path path in currentLayer) {
         count++;
         if (b(progress)) {
-          progress!.value = (pass - 1) / degrees + (count / currentLayer.length / degrees);
-          Progress().message.value = 'degrees: $pass, token: ${path.last.node.token}';
+          double p = (pass - 1) / degrees + (count / currentLayer.length / degrees);
+          String message = 'degrees: $pass, token: ${path.last.node.token}';
+          progress!.report(p, path.last.node.token);
         }
 
         if (!isValidPath(path, network)) {
@@ -219,7 +219,12 @@ class GreedyBfsTrust {
       }
       networkSizeBefore = network.length;
     }
-    if (b(progress)) progress!.value = 1;
+
+    if (b(progress)) {
+      double p = 1;
+      String message = 'Done';
+      progress!.report(p, null);
+    }
     return network;
   }
 

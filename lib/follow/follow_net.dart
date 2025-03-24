@@ -13,6 +13,7 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
+import 'package:nerdster/progress.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/greedy_bfs_trust.dart';
 import 'package:nerdster/trust/trust.dart';
@@ -24,17 +25,30 @@ const kOneofusContext = '<one-of-us>';
 const kSpecialContexts = {kOneofusContext, kNerdsterContext};
 typedef StatementFilter = Iterable<Statement> Function(Iterable<Statement>);
 
+class FollowNetProgressR extends ProgressR {
+  @override
+  void report(double p, String? token) {
+    progress.nerdster.value = p;
+    progress.message.value = b(token) ? oneofusLabels.labelKey(token!) : null;
+    // progress.message.value = '''Loading Ner'ster statements\n${oneofusLabels.labelKey(message!)}''';
+  }
+}
+
+FollowNetProgressR _followNetProgressR = FollowNetProgressR();
+
 class FollowNet with Comp, ChangeNotifier {
   static final FollowNet _singleton = FollowNet._internal();
   static final Measure measure = Measure('FollowNet');
   factory FollowNet() => _singleton;
   FollowNet._internal() {
     _readParams();
-    // supporters
-    addSupporter(oneofusNet);
-    oneofusNet.addListener(listen);
+    // // supporters
+    // addSupporter(oneofusNet);
+    // oneofusNet.addListener(listen);
     addSupporter(oneofusEquiv);
     oneofusEquiv.addListener(listen);
+    addSupporter(oneofusLabels);
+    oneofusLabels.addListener(listen);
 
     // Prefs
     Prefs.followNetDegrees.addListener(listen);
@@ -105,7 +119,7 @@ class FollowNet with Comp, ChangeNotifier {
       FollowNode.clear();
       GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
       LinkedHashMap<String, Node> canonNetwork =
-          await bfsTrust.process(FollowNode(signInState.center), progress: progress.nerdster);
+          await bfsTrust.process(FollowNode(signInState.center), progress: _followNetProgressR);
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
       List<String> tmp = <String>[];
       for (String canon in canonNetwork.keys) {
@@ -161,8 +175,9 @@ class FollowNet with Comp, ChangeNotifier {
       }
       // NOPE: assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
       if (_context == kOneofusContext) {
-        progress.nerdster.value = count++ / delegate2revokeAt.length;
-        progress.message.value = delegateToken;
+        double d = count++ / delegate2revokeAt.length;
+        String token = _delegate2oneofus[delegateToken]!;
+        _followNetProgressR.report(d, token);
       }
       await fetcher.fetch(); // fill cache, query revokeAtTime
       assert(fetcher.revokeAt == null || fetcher.revokeAtTime != null);
