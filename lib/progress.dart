@@ -5,6 +5,20 @@ import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
+/// NEXT: Now that we're getting detailed progress with token, we can measure time.
+/// Plan:
+/// Users (Comps) notify at start (0)
+/// We start the stopwatch 
+/// We restart stopwatch at every progress report
+/// Users (Comps) notify at end (1)
+/// We dump repott
+/// 
+/// CONSIDER: Code to skip this in tests.
+/// 
+abstract class ProgressR {
+  void report(double p, String? message);
+}
+
 /// Follow contexts (<Nerdster> included) need to load the Nerdster statements
 class Progress extends StatefulWidget {
   static final Progress singleton = Progress._internal();
@@ -30,8 +44,7 @@ class Progress extends StatefulWidget {
 
       func();
 
-      await Comp.waitOnComps([keyLabels]);
-      await Comp.waitOnComps([contentBase]);
+      await Comp.waitOnComps([keyLabels, contentBase]);
     } catch (e, stackTrace) {
       await alertException(context, e, stackTrace: stackTrace);
     } finally {
@@ -90,7 +103,7 @@ class ProgressState extends State<Progress> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: LinearProgressIndicator(value: widget.nerdster.value),
         ),
-        if (b(widget.message.value)) const Text('''Activity'''),
+        // if (b(widget.message.value)) const Text('''Activity'''),
         if (b(widget.message.value))
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
@@ -11,13 +12,101 @@ import 'package:quiver/collection.dart';
 
 const kMe = 'Me';
 
+/// CODE: Code duplication from a quick separation of KeyLables to KeyLables and OneofusLables just now.
+/// The reason was so that FollowNet (which assigns delegates) can report progress with Oneofus lables.
+/// It looks like that's limited to just _labelKey(..).
+/// 
+/// TODO: When making FollowNet depend on OneofusLabels, I was surprised to find that KeyLabels
+/// didn't depend on OneofusEquiv. I wonder if doing so would make the code simpler (or correct).
+class OneofusLabels with Comp, ChangeNotifier {
+  static final OneofusLabels _singleton = OneofusLabels._internal();
+  factory OneofusLabels() => _singleton;
+  OneofusLabels._internal() {
+    // supporters
+    addSupporter(oneofusNet);
+    oneofusNet.addListener(listen);
+  }
+
+  // vars
+  final BiMap<String, String> _token2name = BiMap<String, String>();
+
+  // interface
+  String? labelKey(String token) => _token2name[token];
+
+  void listen() {
+    setDirty();
+    notifyListeners();
+  }
+
+  @override
+  Future<void> process() async {
+    throwIfSupportersNotReady();
+    _token2name.clear();
+
+    _labelKeys();
+
+    assert(b(labelKey(signInState.center)));
+  }
+
+  void _labelKeys() {
+    _labelMe();
+    String meLabel = labelKey(signInState.center)!;
+    for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
+      String token = e.key;
+      Path path = e.value.paths.first;
+      // We walk the path because some of the edges are 'replace' which don't have a moniker.
+      for (Trust edge in path.reversed) {
+        String statementToken = edge.statementToken;
+        TrustStatement statement = TrustStatement.find(statementToken)!;
+        if (statement.verb == TrustVerb.replace && statement.iToken == signInState.center) {
+          _labelKey(token, meLabel);
+          break;
+        }
+        if (statement.verb == TrustVerb.trust) {
+          _labelKey(token, statement.moniker!);
+          break;
+        }
+      }
+      assert(_token2name.containsKey(token), token);
+    }
+  }
+
+  String _labelKey(String token, String name) {
+    if (!_token2name.inverse.containsKey(name)) {
+      _token2name[token] = name;
+      return name;
+    }
+    for (int i = 0;; i++) {
+      String altName = '$name ($i)';
+      if (!_token2name.inverse.containsKey(altName)) {
+        _token2name[token] = altName;
+        return altName;
+      }
+    }
+  }
+
+  String _labelMe() {
+    for (String t in oneofusNet.network.keys) {
+      TrustStatement? ts = Fetcher(t, kOneofusDomain)
+          .statements
+          .cast<TrustStatement>()
+          .firstWhereOrNull((ts) =>
+              !notifications.rejected.containsKey(ts.token) &&
+              ts.verb == TrustVerb.trust &&
+              ts.subjectToken == signInState.center);
+      if (b(ts)) return _labelKey(signInState.center, ts!.moniker!);
+    }
+    return _labelKey(signInState.center, kMe);
+  }
+}
+
 class KeyLabels with Comp, ChangeNotifier {
   static final KeyLabels _singleton = KeyLabels._internal();
   factory KeyLabels() => _singleton;
   KeyLabels._internal() {
     // supporters
-    addSupporter(oneofusNet);
-    oneofusNet.addListener(listen);
+    addSupporter(oneofusLabels);
+    oneofusLabels.addListener(listen);
     addSupporter(followNet);
     followNet.addListener(listen);
   }
@@ -26,7 +115,7 @@ class KeyLabels with Comp, ChangeNotifier {
   final BiMap<String, String> _token2name = BiMap<String, String>();
 
   // interface
-  String? labelKey(String token) => _token2name[token];
+  String? labelKey(String token) => _token2name[token] ?? oneofusLabels.labelKey(token);
 
   void listen() {
     setDirty();
@@ -79,34 +168,7 @@ class KeyLabels with Comp, ChangeNotifier {
   Future<void> process() async {
     throwIfSupportersNotReady();
     _token2name.clear();
-
-    _labelKeys();
     _labelDelegateKeys();
-
-    assert(b(labelKey(signInState.center)));
-  }
-
-  void _labelKeys() {
-    _labelMe();
-    String meLabel = labelKey(signInState.center)!;
-    for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
-      String token = e.key;
-      Path path = e.value.paths.first;
-      // We walk the path because some of the edges are 'replace' which don't have a moniker.
-      for (Trust edge in path.reversed) {
-        String statementToken = edge.statementToken;
-        TrustStatement statement = TrustStatement.find(statementToken)!;
-        if (statement.verb == TrustVerb.replace && statement.iToken == signInState.center) {
-          _labelKey(token, meLabel);
-          break;
-        }
-        if (statement.verb == TrustVerb.trust) {
-          _labelKey(token, statement.moniker!);
-          break;
-        }
-      }
-      assert(_token2name.containsKey(token), token);
-    }
   }
 
   void _labelDelegateKeys() {
@@ -127,19 +189,5 @@ class KeyLabels with Comp, ChangeNotifier {
         return altName;
       }
     }
-  }
-
-  String _labelMe() {
-    for (String t in oneofusNet.network.keys) {
-      Fetcher f = Fetcher(t, kOneofusDomain);
-      for (TrustStatement ts in f.statements.cast<TrustStatement>()
-          .where((s) => !notifications.rejected.containsKey(s.token))) {
-        if (ts.verb == TrustVerb.trust && ts.subjectToken == signInState.center) {
-          String moniker = ts.moniker!;
-          return _labelKey(signInState.center, moniker);
-        }
-      }
-    }
-    return _labelKey(signInState.center, kMe);
   }
 }
