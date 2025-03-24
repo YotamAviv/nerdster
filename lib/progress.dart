@@ -80,12 +80,12 @@ class ProgressState extends State<Progress> {
       spacing: 16.0,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text('ONE-OF-US'),
+        const Text('Loading one-of-us.net statements'),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: LinearProgressIndicator(value: widget.oneofus.value),
         ),
-        const Text('''Nerd'ster'''),
+        const Text('''Loading nerster.org statements'''),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: LinearProgressIndicator(value: widget.nerdster.value),
