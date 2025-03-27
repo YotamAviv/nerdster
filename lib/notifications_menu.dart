@@ -43,7 +43,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
 
   @override
   Widget build(BuildContext context) {
-    if (!Comp.compsReady([oneofusNet, oneofusEquiv])) {
+    if (!Comp.compsReady([oneofusNet, followNet, oneofusEquiv])) {
       // I'm not confident about this.
       // print('loading..');
       SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -54,52 +54,20 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
 
     List<MenuItemButton> items = <MenuItemButton>[];
 
-    if (signInState.center != signInState.centerReset) {
-      // Notfications I've decided against for now
-      //       if (oneofusNet.network.containsKey(signInState.centerReset)) {
-      //         MenuItemButton item = MenuItemButton(
-      //             onPressed: () {
-      //               showDialog<Json>(
-      //                   context: context,
-      //                   barrierDismissible: false,
-      //                   builder: (BuildContext context) => Dialog(
-      //                       child: Padding(
-      //                           padding: const EdgeInsets.all(15),
-      //                           child: OkCancel(() {
-      //                             signInState.center = signInState.centerReset!;
-      //                             Navigator.of(context).pop();
-      //                           }, 'Reset'))));
-      //             },
-      //             child: Text(
-      //                 '''You're viewing from the point of view of someone other than how you signed in'''));
-      //         notifications.add(item);
-      //       } else {
-      //         MenuItemButton item = MenuItemButton(
-      //             onPressed: () {},
-      //             child: Text(
-      //                 '''You're viewing from the point of view of someone other than how you signed in.
-      // Furthermore, you're not even in this network, and so your contributions are not visible (You're not whitelisetd)'''));
-      //         notifications.add(item);
-      //       }
-    } else {
-      if (b(signInState.signedInDelegate)) {
-        if (followNet.delegate2oneofus[signInState.signedInDelegate] != signInState.center) {
-          MenuItemButton item = MenuItemButton(
-              onPressed: () {
-                alert(
-                    'Delgate not associated with you',
-                    '''You're signed in with a Nerdster delgate key that isn't associated with you
-You probably need to address this using your ONE-0F-US.NET phone app.''',
-                    ['Okay'],
-                    context);
-              },
-              child: const Text(
-                  '''You're signed in with a Nerdster delgate key that isn't associated with you.'''));
-          items.add(item);
-        }
-        // TODO: Check if delegate revoked
-      }
+    if (b(signInState.signedInDelegate) &&
+        !b(followNet.delegate2oneofus[signInState.signedInDelegate])) {
+      MenuItemButton item = MenuItemButton(
+          onPressed: () {
+            alert(
+                '''Your Nerdster delgate isn't in this netowrk''',
+                '''You're signed in with a Nerdster delgate key that isn't in the network you're viewing, and so your own content will not be visible.''',
+                ['Okay'],
+                context);
+          },
+          child: const Text('''Your Nerdster delgate isn't in this netowrk.'''));
+      items.add(item);
     }
+    // TODO: Check if delegate revoked
 
     Map<String, String> statementToken2reason = {
       ...notifications.rejected,
@@ -143,7 +111,6 @@ You probably need to address this using your ONE-0F-US.NET phone app.''',
         ));
   }
 }
-
 
 class StatementNotification extends StatelessWidget {
   final TrustStatement statement;
