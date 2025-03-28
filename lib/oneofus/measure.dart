@@ -1,8 +1,11 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/singletons.dart';
 
-/// 1) Instrumentation to investigate what's slow. 
+/// 1) Instrumentation to investigate what's slow.
 /// Fire fetching is what's slow, and the performance seems to vary depending on cloud functions
 /// number of calls, ?after=<after>, ?distinct, etc...
 /// (I don't think computing takes time, just loading)
@@ -15,7 +18,7 @@ import 'package:flutter/foundation.dart';
 ///   - while loading content, see how many oneofus and delegates have been fetched, cancel any time
 ///
 /// Related: Network limits
-/// - Possibilities: 
+/// - Possibilities:
 ///   - 'limit': say, 100, rate statements per network member
 ///   - Cloud functions could support stuff like including all ['censor', 'relate', 'equate']
 ///   - 'recent'
@@ -27,38 +30,37 @@ import 'package:flutter/foundation.dart';
 /// OneofusNet:
 /// We know that we're going from 1 to 5 degrees, and so exponention 1-5
 /// We don't know how many edges we'll have.
-/// 
-/// 
+///
+///
 /// FollowNet (Content):
 /// We know how many tokens are in the network, not sure how many statements in each, but linear'ish.
 
 /// Intervals (OneofusNet, FollowNet), activities (Fire fetch, verify)
 /// total time could be broken up meaningfully
 /// When does total time start or end?
-        //  try {
-        //   Measure.reset();
-        //   _CenterDropdown.measure.start();
+//  try {
+//   Measure.reset();
+//   _CenterDropdown.measure.start();
 
-        //   signInState.center = .. // or whatever
+//   signInState.center = .. // or whatever
 
-        //   await Comp.waitOnComps([contentBase, keyLabels]);
-        // } catch (e, stackTrace) {
-        //   await alertException(context, e, stackTrace: stackTrace);
-        // } finally {
-        //   _CenterDropdown.measure.stop();
-        //   Measure.dump();
-        // }
- 
+//   await Comp.waitOnComps([contentBase, keyLabels]);
+// } catch (e, stackTrace) {
+//   await alertException(context, e, stackTrace: stackTrace);
+// } finally {
+//   _CenterDropdown.measure.stop();
+//   Measure.dump();
+// }
 
 /// Probably not: Stack push / pop?
 /// I believe that only Fire fetching is slow.
 /// Would be nice to know more about that. Oneofus costs, FollowNet costs, per user or token costs..
 /// Future work on fetch?after=<time> or fetch?limit=<limit> would be affected by the ability to measure.
-/// 
+///
 /// Both of these:
 /// - Data structure output (probably JSON)
 /// - Progress dialog
-/// 
+///
 
 /// DEFER: Look for someone else's one of these instead of working on this one more.
 /// DEFER: Consider doing something smart when 2 timers are running, like maybe suspend the outer
@@ -75,7 +77,7 @@ class Measure with ChangeNotifier {
   static void dump() {
     print('Measures:');
     for (Measure m in _instances) {
-      print('- ${m._name}: ${m.elapsed}');
+      m._dump();
     }
   }
 
@@ -89,9 +91,18 @@ class Measure with ChangeNotifier {
 
   final Stopwatch _stopwatch = Stopwatch();
   final String _name;
+  final Map<String, Duration> token2time = {};
+
+  void _dump() {
+    print('- ${_name}: ${elapsed}');
+    for (MapEntry e in token2time.entries.sorted((e1, e2) => e1.value < e2.value ? 1 : -1)) {
+      print('  ${e.value.toString()} (${keyLabels.labelKey(e.key)})');
+    }
+  }
 
   void _reset() {
     _stopwatch.reset();
+    token2time.clear();
   }
 
   void start() {
@@ -108,14 +119,21 @@ class Measure with ChangeNotifier {
 
   bool get isRunning => _stopwatch.isRunning;
 
-  Future mAsync(func) async {
+  Future mAsync(func, {String? token}) async {
+    Duration d = _stopwatch.elapsed;
     try {
       assert(!_stopwatch.isRunning);
+      d = _stopwatch.elapsed;
       _stopwatch.start();
       final out = await func();
       return out;
     } finally {
       _stopwatch.stop();
+      if (b(token)) {
+        Duration dd = _stopwatch.elapsed - d;
+        assert(!token2time.containsKey(token));
+        token2time[token!] = dd;
+      }
     }
   }
 

@@ -22,7 +22,7 @@ class GreedyBfsTrust {
   GreedyBfsTrust({this.degrees = 6, this.numPaths = 1});
 
   Future<LinkedHashMap<String, Node>> process(Node source,
-      {Notifications? notifier, ProgressR? progress}) async {
+      {Notifications? notifier, ProgressR? progressR}) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
     network[source.token] = source;
     assert(source.paths.isEmpty);
@@ -42,10 +42,10 @@ class GreedyBfsTrust {
       int count = 0;
       for (Path path in currentLayer) {
         count++;
-        if (b(progress)) {
+        if (b(progressR)) {
           double p = (pass - 1) / degrees + (count / currentLayer.length / degrees);
           String message = 'degrees: $pass, token: ${path.last.node.token}';
-          progress!.report(p, path.last.node.token);
+          progressR!.report(p, path.last.node.token);
         }
 
         if (!isValidPath(path, network)) {
@@ -220,10 +220,10 @@ class GreedyBfsTrust {
       networkSizeBefore = network.length;
     }
 
-    if (b(progress)) {
+    if (b(progressR)) {
       double p = 1;
       String message = 'Done';
-      progress!.report(p, null);
+      progressR!.report(p, null);
     }
     return network;
   }

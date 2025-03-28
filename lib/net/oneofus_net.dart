@@ -134,7 +134,7 @@ class OneofusNet with Comp, ChangeNotifier {
     FetcherNode.clear();
     GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
     _network = await bfsTrust.process(FetcherNode(signInState.center),
-        notifier: notifications, progress: _oneofusNetProgressR);
+        notifier: notifications, progressR: _oneofusNetProgressR);
     _token2keyCounter.clear();
 
     int keyCounter = 0;

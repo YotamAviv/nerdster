@@ -5,7 +5,20 @@ import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
-///
+/// Thoughts...
+/// 
+/// Measure.mSync(f) is nice.
+/// 
+/// The thing that takes time is Fetcher.fetch, which does know
+/// - token
+/// - domain
+/// but doesn't know
+/// - degrees
+/// 
+/// GreedyBfsTrust does know degrees, tokens, too, but is not well suited to measure fetch time cleanly.
+/// 
+/// 
+///  
 ///
 /// NEXT: Now that we're getting detailed progress with token, we can measure time.
 /// Plan:
@@ -62,6 +75,10 @@ class Progress extends StatefulWidget {
       Measure.dump();
     }
   }
+
+  // ProgressR start(String name) {
+
+  // }
 
   Future<void> _show(BuildContext context) async {
     oneofus.value = 0;
