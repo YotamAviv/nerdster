@@ -5,6 +5,8 @@ import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
+///
+///
 /// NEXT: Now that we're getting detailed progress with token, we can measure time.
 /// Plan:
 /// Users (Comps) notify at start (0)
@@ -14,9 +16,16 @@ import 'package:nerdster/singletons.dart';
 /// We dump repott
 /// 
 /// CONSIDER: Code to skip this in tests.
+/// The UI should initiate some kind of active Progress thing.
+/// Comps can check that and report to it; otherwise, they can skip that code.
 /// 
+/// Progress.start can return a ProgressR
+/// - Progres will add a row for that thing, presumably {ONE-OF-US, Nerd'ster}
+/// Progress.end closes it
+/// ProgressR.report asserts that it's active
 abstract class ProgressR {
-  void report(double p, String? message);
+  // TODO: Use KeyLabels or OneofusLabels on message, or something less KLUEGY?
+  void report(double p, String? token);
 }
 
 /// Follow contexts (<Nerdster> included) need to load the Nerdster statements
