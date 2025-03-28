@@ -232,7 +232,7 @@ class Fetcher {
         if (_revokeAt != null) params["revokeAt"] = revokeAt;
         final result = await mFire.mAsync(() {
           return functions!.httpsCallable('clouddistinct').call(params);
-        });
+        }, token: token);
         List statements = result.data["statements"];
         if (_revokeAt != null) {
           if (statements.isNotEmpty) {

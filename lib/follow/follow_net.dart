@@ -119,7 +119,7 @@ class FollowNet with Comp, ChangeNotifier {
       FollowNode.clear();
       GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
       LinkedHashMap<String, Node> canonNetwork =
-          await bfsTrust.process(FollowNode(signInState.center), progress: _followNetProgressR);
+          await bfsTrust.process(FollowNode(signInState.center), progressR: _followNetProgressR);
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
       List<String> tmp = <String>[];
       for (String canon in canonNetwork.keys) {
