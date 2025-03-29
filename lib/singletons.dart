@@ -15,4 +15,4 @@ final OneofusEquiv oneofusEquiv = OneofusEquiv();
 final OneofusNet oneofusNet = OneofusNet();
 final SignInState signInState = SignInState();
 final Notifications notifications = Notifications();
-final Progress progress = Progress();
+final ProgressDialog progress = ProgressDialog();

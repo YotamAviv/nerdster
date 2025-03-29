@@ -226,6 +226,8 @@ class Fetcher {
 
   Future<void> fetch() async {
     if (b(_cached)) return;
+    // await Future.delayed(Duration(milliseconds: 300));
+
     try {
       _cached = <Statement>[];
       DateTime? time;

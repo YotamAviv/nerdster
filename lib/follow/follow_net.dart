@@ -27,10 +27,10 @@ typedef StatementFilter = Iterable<Statement> Function(Iterable<Statement>);
 
 class FollowNetProgressR extends ProgressR {
   @override
-  void report(double p, String? token) {
+  void report(double p, String? message, String? token) {
     progress.nerdster.value = p;
-    progress.message.value = b(token) ? oneofusLabels.labelKey(token!) : null;
-    // progress.message.value = '''Loading Ner'ster statements\n${oneofusLabels.labelKey(message!)}''';
+    progress.message.value =
+        (b(token) ? oneofusLabels.labelKey(token!) ?? token : '') + (message ?? '');
   }
 }
 
@@ -177,7 +177,7 @@ class FollowNet with Comp, ChangeNotifier {
       if (_context == kOneofusContext) {
         double d = count++ / delegate2revokeAt.length;
         String token = _delegate2oneofus[delegateToken]!;
-        _followNetProgressR.report(d, token);
+        _followNetProgressR.report(d, null, token);
       }
       await fetcher.fetch(); // fill cache, query revokeAtTime
       assert(fetcher.revokeAt == null || fetcher.revokeAtTime != null);

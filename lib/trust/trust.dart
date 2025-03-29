@@ -73,9 +73,6 @@ class Replace extends Trust {
   Replace(super.node, super.statedAt, this.revokeAt, super.statementToken);
 }
 
-class Block {
-  final String statementToken;
-  final DateTime statedAt;
-  final Node node;
-  Block(this.node, this.statedAt, this.statementToken);
+class Block  extends Trust {
+  Block(super.node, super.statedAt, super.statementToken);
 }

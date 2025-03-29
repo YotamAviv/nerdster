@@ -44,8 +44,8 @@ class GreedyBfsTrust {
         count++;
         if (b(progressR)) {
           double p = (pass - 1) / degrees + (count / currentLayer.length / degrees);
-          String message = 'degrees: $pass, token: ${path.last.node.token}';
-          progressR!.report(p, path.last.node.token);
+          String message = 'degrees: $pass';
+          progressR!.report(p, message, path.last.node.token);
         }
 
         if (!isValidPath(path, network)) {
@@ -133,7 +133,7 @@ class GreedyBfsTrust {
           other.paths.add(newPath);
           assert(newPath.length == pass + 1);
           other.revokeAt = replace.revokeAt;
-          await other.trusts; // KLUDGE: Setting revoked at might require re-fetching.
+          await other.trusts; // Setting revoked require re-fetching for revokedAtTime
           // Add to queue if not already visited.
           if (!visited.contains(other)) {
             nextLayer.addLast(newPath);
@@ -223,7 +223,7 @@ class GreedyBfsTrust {
     if (b(progressR)) {
       double p = 1;
       String message = 'Done';
-      progressR!.report(p, null);
+      progressR!.report(p, message, null);
     }
     return network;
   }

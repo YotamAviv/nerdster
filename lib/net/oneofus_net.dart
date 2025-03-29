@@ -81,10 +81,11 @@ import '../oneofus/measure.dart';
 
 class OneofusNetProgressR extends ProgressR {
   @override
-  void report(double p, String? token) {
+  void report(double p, String? message, String? token) {
     progress.oneofus.value = p;
     progress.message.value = token;
-    // progress.message.value = 'Loading ONE-OF-US statements\n$message';
+    progress.message.value =
+        (b(token) ? oneofusLabels.labelKey(token!) ?? token : '') + (message ?? '');
   }
 }
 

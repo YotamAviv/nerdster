@@ -132,6 +132,7 @@ class Measure with ChangeNotifier {
       if (b(token)) {
         Duration dd = _stopwatch.elapsed - d;
         // BUG: FIRES and is really hard to find in stack trace in Chrome assert(!token2time.containsKey(token));
+        // Fetcher fetches once to find revokedAtTime and then again to get all earlier statements.
         token2time[token!] = dd;
       }
     }
