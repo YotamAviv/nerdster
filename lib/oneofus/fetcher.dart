@@ -230,6 +230,10 @@ class Fetcher {
         Map params = Map.of(fetchParamsProto);
         params["token"] = token;
         if (_revokeAt != null) params["revokeAt"] = revokeAt;
+        if (Prefs.fetchRecent.value && domain == "nerdster.org") {
+          DateTime recent = DateTime.now().subtract(const Duration(days: 30));
+          params['after'] = formatIso(recent);
+        }
         final result = await mFire.mAsync(() {
           return functions!.httpsCallable('clouddistinct').call(params);
         }, token: token);
@@ -289,6 +293,10 @@ class Fetcher {
         Query<Json> query = collectionRef.orderBy('time', descending: true);
         if (_revokeAtTime != null) {
           query = query.where('time', isLessThanOrEqualTo: formatIso(_revokeAtTime!));
+        }
+        if (Prefs.fetchRecent.value && domain == "nerdster.org") {
+          DateTime tenMinutesAgo = DateTime.now().subtract(const Duration(minutes: 10));
+          query = query.where('time', isGreaterThanOrEqualTo: formatIso(tenMinutesAgo));
         }
         QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
         bool first = true;

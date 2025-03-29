@@ -4,16 +4,18 @@
 /// - "npm install"
 /// - "npm install --save firebase-functions@latest"
 /// - "npm audit fix"
-/// 
-/// TEST: Would be nice to see that these all produce output we expect:
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&checkPrevious=true&includeId=true
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&checkPrevious=true
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&&checkPrevious=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&checkPrevious=true&revokeAt=sincealways
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=truee
-/// http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true&omit=[%22I%22,%22statement%22]
+/*
+TEST: Would be nice to see that these all produce output we expect:
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&after=2025-03-08T00:40:59.803Z
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e4551dd663b6c9caf90276e366f57e573841b
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&checkPrevious=true&includeId=true
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&checkPrevious=true
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&&checkPrevious=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&checkPrevious=true&revokeAt=sincealways
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=truee
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true&omit=[%22I%22,%22statement%22]
+*/
 
 const { logger } = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
@@ -23,6 +25,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const fetch = require("node-fetch");
 const cheerio = require('cheerio'); // For HTML parsing
+const { Timestamp } = require("firebase-admin/firestore");
 
 admin.initializeApp();
 
@@ -221,6 +224,7 @@ async function fetchh(token, params = {}, omit = {}) {
   const distinct = params.distinct != null;
   const orderStatements = params.orderStatements != 'false'; // On by default for demo.
   const includeId = params.includeId != null;
+  const after = params.after;
 
   if (!token) throw 'Missing token';
   if (checkPrevious && !includeId) throw 'checkPrevious requires includeId';
@@ -240,8 +244,15 @@ async function fetchh(token, params = {}, omit = {}) {
   }
 
   var snapshot;
-  if (revokedAtTime) {
+  if (revokedAtTime && after) {
+    var error = `Unimplemented: revokedAtTime && after`;
+    logger.error(error);
+    throw error;
+  } else if (revokedAtTime) {
     snapshot = await collectionRef.where('time', "<=", revokedAtTime).orderBy('time', 'desc').get();
+  } else if (after) {
+    logger.log(`after=${after}`)
+    snapshot = await collectionRef.where('time', ">", after).orderBy('time', 'desc').get();
   } else {
     snapshot = await collectionRef.orderBy('time', 'desc').get();
   }
