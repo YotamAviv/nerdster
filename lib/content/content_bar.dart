@@ -18,14 +18,14 @@ enum Sort {
 
 enum Timeframe {
   all('all', null),
-  year('past year', 365),
-  month('past month', 30),
-  week('past week', 7),
-  day('today', 1);
+  year('past year', Duration(days: 365)),
+  month('past month', Duration(days: 30)),
+  week('past week', Duration(days: 7)),
+  day('today', Duration(days: 1));
 
-  const Timeframe(this.label, this.days);
+  const Timeframe(this.label, this.duration);
   final String label;
-  final int? days;
+  final Duration? duration;
 }
 
 class ContentBar extends StatefulWidget {
@@ -75,8 +75,8 @@ class _ContentBarState extends State<ContentBar> {
               });
             },
             dropdownMenuEntries: Sort.values
-                .map<DropdownMenuEntry<Sort>>((Sort sort) =>
-                    DropdownMenuEntry<Sort>(value: sort, label: sort.label))
+                .map<DropdownMenuEntry<Sort>>(
+                    (Sort sort) => DropdownMenuEntry<Sort>(value: sort, label: sort.label))
                 .toList(),
           ),
           SizedBox(
@@ -95,9 +95,7 @@ class _ContentBarState extends State<ContentBar> {
                 dropdownMenuEntries: ContentType.values
                     .map<DropdownMenuEntry<ContentType>>((ContentType type) =>
                         DropdownMenuEntry<ContentType>(
-                            value: type,
-                            label: type.label,
-                              leadingIcon: Icon(type.iconDatas.$1)))
+                            value: type, label: type.label, leadingIcon: Icon(type.iconDatas.$1)))
                     .toList(),
               )),
           SizedBox(
@@ -108,9 +106,7 @@ class _ContentBarState extends State<ContentBar> {
                 label: const Text('Timeframe'),
                 onSelected: (Timeframe? timeframe) {
                   setState(() {
-                    if (timeframe != null) {
-                      contentBase.timeframe = timeframe;
-                    }
+                    contentBase.timeframe = timeframe!;
                   });
                 },
                 dropdownMenuEntries: Timeframe.values
