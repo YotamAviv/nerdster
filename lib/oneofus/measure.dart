@@ -131,7 +131,7 @@ class Measure with ChangeNotifier {
       _stopwatch.stop();
       if (b(token)) {
         Duration dd = _stopwatch.elapsed - d;
-        assert(!token2time.containsKey(token));
+        // BUG: FIRES and is really hard to find in stack trace in Chrome assert(!token2time.containsKey(token));
         token2time[token!] = dd;
       }
     }
