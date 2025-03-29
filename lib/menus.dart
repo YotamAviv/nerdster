@@ -97,10 +97,9 @@ class Menus {
     return <Widget>[
       SignInMenu(),
 
-      // Prefs
+      // Settings
       SubmenuButton(
           menuChildren: <Widget>[
-            MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
             MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
             MyCheckbox(Prefs.hideDismissed, '''hide content where network #(dis) > #(recommend)'''),
@@ -166,6 +165,7 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
+          MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
           MenuItemButton(
               onPressed: () {
                 Jsonish.wipeCache();
