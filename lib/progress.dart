@@ -17,7 +17,14 @@ import 'package:nerdster/singletons.dart';
 /// 
 /// GreedyBfsTrust does know degrees, tokens, too, but is not well suited to measure fetch time cleanly.
 /// 
+/// TODO: Make elegant
+/// - [Measure, Progress]... scattered reporting to both.
+/// - time spent computing outside of the async fetch.
+/// - async fetch separated enclosing mission (oneofusNet, followNet)
+/// - verify is like async fetching in that it'd be nice to measure it
 /// 
+/// 
+/// Progress
 ///  
 ///
 /// NEXT: Now that we're getting detailed progress with token, we can measure time.
@@ -38,22 +45,22 @@ import 'package:nerdster/singletons.dart';
 /// ProgressR.report asserts that it's active
 abstract class ProgressR {
   // TODO: Use KeyLabels or OneofusLabels on message, or something less KLUEGY?
-  void report(double p, String? token);
+  void report(double p, String? message, String? token);
 }
 
 /// Follow contexts (<Nerdster> included) need to load the Nerdster statements
-class Progress extends StatefulWidget {
-  static final Progress singleton = Progress._internal();
+class ProgressDialog extends StatefulWidget {
+  static final ProgressDialog singleton = ProgressDialog._internal();
   final Measure measure = Measure('_');
   final ValueNotifier<double> oneofus = ValueNotifier(0);
   final ValueNotifier<double> nerdster = ValueNotifier(0);
   final ValueNotifier<String?> message = ValueNotifier(null);
-  Progress._internal();
+  ProgressDialog._internal();
 
-  factory Progress() => singleton;
+  factory ProgressDialog() => singleton;
 
   @override
-  State<StatefulWidget> createState() => ProgressState();
+  State<StatefulWidget> createState() => ProgressDialogState();
 
   Future<void> make(VoidCallback func, BuildContext context) async {
     if (measure.isRunning) return;
@@ -98,7 +105,7 @@ class Progress extends StatefulWidget {
   }
 }
 
-class ProgressState extends State<Progress> {
+class ProgressDialogState extends State<ProgressDialog> {
   @override
   void initState() {
     widget.oneofus.addListener(listen);

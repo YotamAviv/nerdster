@@ -96,7 +96,7 @@ Future<void> main() async {
     await checkRead(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
   }
 
-  Progress(); // Just to get its Measure instance to be first
+  ProgressDialog(); // Just to get its Measure instance to be first
   DemoKey.printCredentials = true;
   TrustStatement.init();
   ContentStatement.init();
