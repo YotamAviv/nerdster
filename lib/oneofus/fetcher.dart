@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:nerdster/content/content_statement.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
@@ -230,7 +231,7 @@ class Fetcher {
         Map params = Map.of(fetchParamsProto);
         params["token"] = token;
         if (_revokeAt != null) params["revokeAt"] = revokeAt;
-        if (Prefs.fetchRecent.value && domain == "nerdster.org") {
+        if (Prefs.fetchRecent.value && domain == kNerdsterDomain) { // TEMP:
           DateTime recent = DateTime.now().subtract(const Duration(days: 30));
           params['after'] = formatIso(recent);
         }

@@ -50,7 +50,7 @@ exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
   const url = event.data.data().url;
 
   // Access the parameter `{documentId}` with `event.params`
-  logger.log("fetching", event.params.documentId, url);
+  // logger.log("fetching", event.params.documentId, url);
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch URL: ${response.status}`);
@@ -70,7 +70,7 @@ exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
 // TODO: Remove [addurl, fetchtitle] as this Cloud Function replaces them.
 exports.cloudfetchtitle = onCall(async (request) => {
   const url = request.data.url;
-  logger.log(`cloudfetchtitle: ${request.data} `);
+  // logger.log(`cloudfetchtitle: ${request.data} `);
   const response = await fetch(url);
   if (!response.ok) {
     throw new functions.https.HttpsError("unavailable", "Failed to fetch URL",
@@ -251,7 +251,7 @@ async function fetchh(token, params = {}, omit = {}) {
   } else if (revokedAtTime) {
     snapshot = await collectionRef.where('time', "<=", revokedAtTime).orderBy('time', 'desc').get();
   } else if (after) {
-    logger.log(`after=${after}`)
+    // logger.log(`after=${after}`)
     snapshot = await collectionRef.where('time', ">", after).orderBy('time', 'desc').get();
   } else {
     snapshot = await collectionRef.orderBy('time', 'desc').get();
@@ -389,7 +389,6 @@ async function makedistinct(input) {
 exports.clouddistinct = onCall(async (request) => {
   // const token = req.query.token;
   const token = request.data.token;
-  logger.log(request.data);
   try {
     return await fetchh(token, request.data, request.data.omit);
   } catch (error) {
