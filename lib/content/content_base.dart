@@ -81,7 +81,7 @@ class ContentBase with Comp, ChangeNotifier {
   Future<void> process() async {
     throwIfSupportersNotReady();
     measure.start();
-    
+
     _equivalence.clear();
     _related.clear();
     _censored.clear();
@@ -369,7 +369,7 @@ class ContentBase with Comp, ChangeNotifier {
   // returns if we should filter this one out
   bool _filterByTimeframe(Statement statement) {
     return _timeframe != Timeframe.all &&
-        DateTime.now().subtract(Duration(days: _timeframe.days!)).isAfter(statement.time);
+        DateTime.now().subtract(_timeframe.duration!).isAfter(statement.time);
   }
 
   // returns if we should filter this one out

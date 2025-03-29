@@ -127,6 +127,9 @@ class Fetcher {
   static final Measure mFire = Measure('fire');
   static final Measure mVerify = Measure('verify');
 
+   // DEFER: This is a placeholder for time measuremeants, not the mechanism used by Fetchers to refresh.
+  static final Duration recentDuration = const Duration(days: 30);
+
   final FirebaseFirestore fire;
   final FirebaseFunctions? functions;
   final String domain;
@@ -223,7 +226,6 @@ class Fetcher {
 
   Future<void> fetch() async {
     if (b(_cached)) return;
-    // TEMP: await Future.delayed(Duration(milliseconds: 300));
     try {
       _cached = <Statement>[];
       DateTime? time;
@@ -231,8 +233,9 @@ class Fetcher {
         Map params = Map.of(fetchParamsProto);
         params["token"] = token;
         if (_revokeAt != null) params["revokeAt"] = revokeAt;
-        if (Prefs.fetchRecent.value && domain == kNerdsterDomain) { // TEMP:
-          DateTime recent = DateTime.now().subtract(const Duration(days: 30));
+        if (Prefs.fetchRecent.value && domain == kNerdsterDomain) {
+          // DEFER: Actually make Fetcher refresh. It is faster (not linearly, but still..)
+          DateTime recent = DateTime.now().subtract(recentDuration);
           params['after'] = formatIso(recent);
         }
         final result = await mFire.mAsync(() {
@@ -295,9 +298,9 @@ class Fetcher {
         if (_revokeAtTime != null) {
           query = query.where('time', isLessThanOrEqualTo: formatIso(_revokeAtTime!));
         }
-        if (Prefs.fetchRecent.value && domain == "nerdster.org") {
-          DateTime tenMinutesAgo = DateTime.now().subtract(const Duration(minutes: 10));
-          query = query.where('time', isGreaterThanOrEqualTo: formatIso(tenMinutesAgo));
+        if (Prefs.fetchRecent.value && domain == kNerdsterDomain) {
+          DateTime recent = DateTime.now().subtract(recentDuration);
+          query = query.where('time', isGreaterThanOrEqualTo: formatIso(recent));
         }
         QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
         bool first = true;

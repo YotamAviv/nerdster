@@ -235,7 +235,7 @@ class FetcherTestHelper {
     // notary verification is different between local and cloud (right now).
     // Cloud functions throws error; local skips the statement.
     await fetcher.fetch();
-    expect(notifications.corrupted.length, 1);
+    expect(notifications.corrupted.length, 1); // TEMP: Test fails here
     expect(notifications.corrupted.entries.first.key, token);
     print('(500 (Internal Server Error) or "Notarization violation" above was expected)');
   }
