@@ -361,14 +361,6 @@ exports.mexport = onRequest(async (req, res) => {
 
 /// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
 exports.clouddistinct = onCall(async (request) => {
-  // const i = request.data.i;
-  // var token2revokeAt;
-  // if (typeof i === 'string') {
-  //   token2revokeAt = { [i]: null };
-  // } else {
-  //   token2revokeAt = i;
-  // }
-
   const token2revokeAt = request.data.token2revokeAt;
   logger.log(`token2revokeAt=${token2revokeAt}`);
   try {
@@ -381,14 +373,14 @@ exports.clouddistinct = onCall(async (request) => {
 
 // TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
 exports.mclouddistinct = onCall(async (request) => {
-  const token2revoked = request.data.token2revoked;
-  const params = request.data; // TODO: SUSPICIOUS: not request.data?
+  const token2revokeAt = request.data.token2revokeAt;
+  const params = request.data;
   const omit = request.data.omit;
   try {
     var outs = [];
-    for (const token in token2revoked) {
-      logger.log(`token=${token}`);
-      var out = await fetchh({[token]: null}, params, omit); // TODO: Async streaming (parallel)
+    for (const [token, revokeAt] of Object.entries(token2revokeAt)) {
+      logger.log(`token=${token}, revokeAt=${revokeAt}`);
+      var out = await fetchh({[token]: revokeAt}, params, omit); // TODO: Async streaming (parallel)
       outs.push(out);
     }
     return outs;
