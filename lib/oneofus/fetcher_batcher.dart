@@ -41,6 +41,7 @@ class FetcherBatcher {
       // TODO: Weave tokens from tokenRevokeds and results
       List statements = rd["statements"];
       Json? i = rd['I'];
+      // BUG: Dave Alexander has no nerdster statements, and so the other code can't tell that he's been fetched.
       if (b(i)) {
         String token = getToken(i);
         fetched[token] = FetcherBatcherResult(statements.cast(), i);
