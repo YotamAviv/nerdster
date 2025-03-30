@@ -251,14 +251,14 @@ class Fetcher {
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
-  static Future<void> batchFetch(Map<String, String?> token2revoked, String domain) async {
+  static Future<void> batchFetch(Map<String, String?> token2revokeAt, String domain) async {
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     if (!b(functions)) return;
 
     batchFetched.clear();
 
     Json params = Map.of(paramsProto);
-    params["token2revoked"] = token2revoked;
+    params["token2revokeAt"] = token2revokeAt;
     final results = await Fetcher.mFire.mAsync(() async {
       return await functions!.httpsCallable('mclouddistinct').call(params);
     }, token: 'batch');
@@ -275,7 +275,7 @@ class Fetcher {
       }
     }
     // In case a token had no statements, make it clear that it's been fetched but is just empty.
-    for (String token in token2revoked.keys) {
+    for (String token in token2revokeAt.keys) {
       if (!returned.contains(token)) {
         batchFetched[token] = {"statements": [], "I": null};
       }
