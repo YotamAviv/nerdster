@@ -79,17 +79,7 @@ import '../oneofus/measure.dart';
 ///     - maybe that's 2 different popup dialogs
 ///     - allow similar popup dialogs along the way of the path, and so maybe show both keys, clicking on key brings up the path and shows the keys along the path
 
-class OneofusNetProgressR extends ProgressR {
-  @override
-  void report(double p, String? message, String? token) {
-    progress.oneofus.value = p;
-    progress.message.value = token;
-    progress.message.value =
-        (b(token) ? oneofusLabels.labelKey(token!) ?? token : '') + (message ?? '');
-  }
-}
-
-OneofusNetProgressR _oneofusNetProgressR = OneofusNetProgressR();
+ProgressRX _oneofusNetProgressR = ProgressRX();
 
 class OneofusNet with Comp, ChangeNotifier {
   static final OneofusNet _singleton = OneofusNet._internal();

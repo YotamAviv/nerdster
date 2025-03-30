@@ -204,8 +204,9 @@ class _MonikerWidget extends StatelessWidget {
       elevation: 8.0,
     );
     if (value == 'recenter') {
-      await progress.make(() {
+      await progress.make(() async {
         signInState.center = node.token!;
+        await Comp.waitOnComps([keyLabels, contentBase]);
       }, context);
     } else if (value == 'follow') {
       await follow(node.token!, context);

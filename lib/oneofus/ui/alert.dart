@@ -13,11 +13,18 @@ Future<void> alertException(BuildContext context, Object exception, {StackTrace?
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Error'),
-        content: TextField(
-          readOnly: true,
-          controller: TextEditingController()..text = exception.toString(),
-          maxLines: null,
-        ),
+        content: Column(children: [
+          TextField(
+            readOnly: true,
+            controller: TextEditingController()..text = exception.toString(),
+            maxLines: null,
+          ),
+          TextField(
+            readOnly: true,
+            controller: TextEditingController()..text = stackTrace.toString(),
+            maxLines: null,
+          )
+        ]),
         actions: <Widget>[
           TextButton(
             child: const Text(
