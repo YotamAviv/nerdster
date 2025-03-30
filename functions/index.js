@@ -14,7 +14,7 @@ http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf902
 http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&checkPrevious=true&revokeAt=sincealways
 http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true
 http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=truee
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true&omit=[%22I%22,%22statement%22]
+http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true&omit=["I","statement"]
 */
 
 const { logger } = require("firebase-functions");
@@ -354,20 +354,22 @@ exports.export2 = onRequest(async (req, res) => {
 // TODO: Investigate making parallel, see https://firebase.google.com/docs/functions/callable?gen=2nd#stream-back
 /*
 Try:
-http://127.0.0.1:5001/nerdster/us-central1/mexport?tokens=[%22f4e45451dd663b6c9caf90276e366f57e573841b%22,%2226a43a6a860d03bb31e2e036dbd8801a2236683d%22,%22279dc057530eee7bfb403c48421bc85690d79c75%22,%2236d6ba70682f93e6a56c41c3ec22d89aaec9038c%22,%226e074410a9d391ae414e7dcce01cc8ce32893e94%22,%22dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9%22,%22c61fd46576a4b3a81b1f368b9799556507b96137%22]
-http://127.0.0.1:5001/nerdster/us-central1/mexport?tokens=[%22f4e45451dd663b6c9caf90276e366f57e573841b%22,%2226a43a6a860d03bb31e2e036dbd8801a2236683d%22,%22279dc057530eee7bfb403c48421bc85690d79c75%22,%2236d6ba70682f93e6a56c41c3ec22d89aaec9038c%22,%226e074410a9d391ae414e7dcce01cc8ce32893e94%22,%22dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9%22,%22c61fd46576a4b3a81b1f368b9799556507b96137%22]&omit=[%22I%22,%22statement%22]&distinct=true
-https://us-central1-nerdster.cloudfunctions.net/mexport?tokens=[%22f4e45451dd663b6c9caf90276e366f57e573841b%22,%2226a43a6a860d03bb31e2e036dbd8801a2236683d%22,%22279dc057530eee7bfb403c48421bc85690d79c75%22,%2236d6ba70682f93e6a56c41c3ec22d89aaec9038c%22,%226e074410a9d391ae414e7dcce01cc8ce32893e94%22,%22dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9%22,%22c61fd46576a4b3a81b1f368b9799556507b96137%22]
+http://127.0.0.1:5001/nerdster/us-central1/mexport?token2revoked={"f4e45451dd663b6c9caf90276e366f57e573841b": null}
+
+http://127.0.0.1:5001/nerdster/us-central1/mexport?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b","26a43a6a860d03bb31e2e036dbd8801a2236683d","279dc057530eee7bfb403c48421bc85690d79c75","36d6ba70682f93e6a56c41c3ec22d89aaec9038c","6e074410a9d391ae414e7dcce01cc8ce32893e94","dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9","c61fd46576a4b3a81b1f368b9799556507b96137"]
+http://127.0.0.1:5001/nerdster/us-central1/mexport?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b","26a43a6a860d03bb31e2e036dbd8801a2236683d","279dc057530eee7bfb403c48421bc85690d79c75","36d6ba70682f93e6a56c41c3ec22d89aaec9038c","6e074410a9d391ae414e7dcce01cc8ce32893e94","dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9","c61fd46576a4b3a81b1f368b9799556507b96137"]&omit=["I","statement"]&distinct=true
+https://us-central1-nerdster.cloudfunctions.net/mexport?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b","26a43a6a860d03bb31e2e036dbd8801a2236683d","279dc057530eee7bfb403c48421bc85690d79c75","36d6ba70682f93e6a56c41c3ec22d89aaec9038c","6e074410a9d391ae414e7dcce01cc8ce32893e94","dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9","c61fd46576a4b3a81b1f368b9799556507b96137"]
 https://us-central1-nerdster.cloudfunctions.net/mexport?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b","26a43a6a860d03bb31e2e036dbd8801a2236683d","279dc057530eee7bfb403c48421bc85690d79c75","36d6ba70682f93e6a56c41c3ec22d89aaec9038c","6e074410a9d391ae414e7dcce01cc8ce32893e94","dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9","c61fd46576a4b3a81b1f368b9799556507b96137"]
 */
 exports.mexport = onRequest(async (req, res) => {
   logger.log(`req.query.tokens=${req.query.tokens}`);
-  const tokens = JSON.parse(req.query.tokens);
+  const token2revoked = JSON.parse(req.query.token2revoked);
   const params = req.query;
   const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
   try {
 
     var outs = [];
-    for (const token of tokens) {
+    for (const token in token2revoked) {
       logger.log(`token=${token}`);
       var out = await fetchh(token, params, omit); // TODO: Investigate making parallel
       outs.push(out);
@@ -396,12 +398,12 @@ exports.clouddistinct = onCall(async (request) => {
 
 // TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
 exports.mclouddistinct = onCall(async (request) => {
-  const tokens = request.data.tokens;
+  const token2revoked = request.data.token2revoked;
   const params = request.query;
   const omit = request.data.omit;
   try {
     var outs = [];
-    for (const token of tokens) {
+    for (const token in token2revoked) {
       logger.log(`token=${token}`);
       var out = await fetchh(token, params, omit); // TODO: Async streaming (parallel)
       outs.push(out);
