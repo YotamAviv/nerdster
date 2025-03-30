@@ -3,6 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/menus.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/show_qr.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -14,7 +15,11 @@ import 'package:nerdster/trust/trust.dart';
 import 'package:nerdster/util_ui.dart';
 
 class NotificationsMenu extends StatefulWidget {
-  const NotificationsMenu({super.key});
+  static final NotificationsMenu _singleton = NotificationsMenu._internal();
+  factory NotificationsMenu() {
+    return _singleton;
+  }
+  const NotificationsMenu._internal();
 
   @override
   State<StatefulWidget> createState() => _NotificationsMenuState();
@@ -26,6 +31,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
     contentBase.addListener(listen);
     followNet.addListener(listen);
     signInState.addListener(listen);
+    Notifications().addListener(listen);
     super.initState();
   }
 
@@ -34,6 +40,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
     contentBase.removeListener(listen);
     followNet.removeListener(listen);
     signInState.removeListener(listen);
+    Notifications().removeListener(listen);
     super.dispose();
   }
 
@@ -101,7 +108,8 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
     }
 
     for (MapEntry<String, String> e in notifications.corrupted.entries) {
-      Jsonish? iKey = Jsonish.find(e.key);
+      String iToken = e.key;
+      Jsonish? iKey = Jsonish.find(iToken);
       String? iLable = keyLabels.labelKey(e.key);
       String error = e.value;
       MenuItemButton item = MenuItemButton(
@@ -113,7 +121,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
                 return AlertDialog(
                     title: Text(error),
                     // TODO: Better than this...
-                    content: Text('''iKey: $iKey, iLable: $iLable '''),
+                    content: Text('''iToken: $iToken, iKey: $iKey, iLable: $iLable '''),
                     actions: [
                       OutlinedButton(
                           onPressed: () {
@@ -128,6 +136,8 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
       items.add(item);
     }
 
+    print('NotificationsMenue.. items.. ${items.length}');
+    print('notifications.corrupted.length.. ${notifications.corrupted.length}');
     return SubmenuButton(
         menuChildren: items,
         child: const Row(

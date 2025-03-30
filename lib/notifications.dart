@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:flutter/foundation.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 
@@ -16,17 +17,17 @@ import 'package:nerdster/oneofus/jsonish.dart';
 // - TO-DO: Web-of-trust key equivalence rejected: Equivalent key already replaced.
 //   I don't think this can happen, not sure.. CONSIDER
 
-
-class Notifications implements Corruptor {
+class Notifications with ChangeNotifier implements Corruptor {
   static final Notifications singleton = Notifications._internal();
   factory Notifications() => singleton;
   Notifications._internal();
 
-  // Where/when to call this isn't clear, probably OneofusNet.process, some tests, too. 
+  // Where/when to call this isn't clear, probably OneofusNet.process, some tests, too.
   void clear() {
     _rejected.clear();
     _warned.clear();
     _corrupted.clear();
+    print('notifications cleared');
   }
 
   final LinkedHashMap<String, String> _rejected = LinkedHashMap<String, String>();
@@ -34,6 +35,7 @@ class Notifications implements Corruptor {
   void reject(String token, String problem) {
     assert(Jsonish.find(token) != null);
     _rejected[token] = problem;
+    notifyListeners();
   }
 
   final LinkedHashMap<String, String> _warned = LinkedHashMap<String, String>();
@@ -41,6 +43,7 @@ class Notifications implements Corruptor {
   void warn(String token, String problem) {
     assert(Jsonish.find(token) != null);
     _warned[token] = problem;
+    notifyListeners();
   }
 
   final LinkedHashMap<String, String> _corrupted = LinkedHashMap<String, String>();
@@ -50,5 +53,7 @@ class Notifications implements Corruptor {
     // TEMP: Might be null when I'm loading with ?oneofus=token. // assert(Jsonish.find(token) != null);
     // BUG: I think that if ?oneofus=token leads to an error, then we never even see it because maybe nothing fires a listen().
     _corrupted[token] = error;
+    print('_corrupted[$token] = $error');
+    notifyListeners();
   }
 }

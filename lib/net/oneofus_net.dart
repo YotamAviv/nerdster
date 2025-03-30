@@ -115,16 +115,17 @@ class OneofusNet with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
+    print('oneofusNet in');
     throwIfSupportersNotReady();
     measure.start();
 
     // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
-    Fetcher.resetRevokedAt();
     notifications.clear();
+    Fetcher.resetRevokedAt();
     NetNode.clear();
     FetcherNode.clear();
     GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
-    _network = await bfsTrust.process(FetcherNode(signInState.center),
+    _network = await bfsTrust.process(FetcherNode(signInState.center), domain: kOneofusDomain,
         notifier: notifications, progressR: _oneofusNetProgressR);
     _token2keyCounter.clear();
 
@@ -134,6 +135,7 @@ class OneofusNet with Comp, ChangeNotifier {
     }
 
     measure.stop();
+    print('oneofusNet out');
   }
 }
 

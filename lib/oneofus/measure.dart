@@ -96,7 +96,7 @@ class Measure with ChangeNotifier {
   void _dump() {
     print('- ${_name}: ${elapsed}');
     for (MapEntry e in token2time.entries.sorted((e1, e2) => e1.value < e2.value ? 1 : -1)) {
-      print('  ${e.value.toString()} (${keyLabels.labelKey(e.key)})');
+      print('  ${e.value.toString()} (${keyLabels.labelKey(e.key)??e.key})');
     }
   }
 

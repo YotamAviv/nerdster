@@ -7,8 +7,6 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
-import 'package:nerdster/oneofus/fetcher_batcher.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/statement.dart';
@@ -114,7 +112,7 @@ class FollowNet with Comp, ChangeNotifier {
       FollowNode.clear();
       GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
       LinkedHashMap<String, Node> canonNetwork =
-          await bfsTrust.process(FollowNode(signInState.center), progressR: _followNetProgressR);
+          await bfsTrust.process(FollowNode(signInState.center), domain: kNerdsterDomain, progressR: _followNetProgressR);
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
       List<String> tmp = <String>[];
       for (String canon in canonNetwork.keys) {
@@ -160,17 +158,8 @@ class FollowNet with Comp, ChangeNotifier {
       }
     }
 
-    // WIP: for batch fetching
-    // List<(String, String?)> tokenRevokeds = [];
-    // for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
-    //   tokenRevokeds.add((e.key, e.value));
-    // }
-    Fetcher.fetcherBatcher = FetcherBatcher(delegate2revokeAt, Fetcher.paramsProto,
-        functions: FireFactory.findFunctions(kNerdsterDomain));
-    // await Fetcher.fetcherBatcher!.fetch();
-    await mBatchFire.mAsync(() async {
-      await Fetcher.fetcherBatcher!.fetch();
-    }, token: 'batch');
+    // Batch pre-fetch
+    await Fetcher.batchFetch(delegate2revokeAt, kNerdsterDomain);
 
     int count = 0;
     for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
