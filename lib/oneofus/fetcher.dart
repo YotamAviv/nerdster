@@ -242,7 +242,7 @@ class Fetcher {
         params["token"] = token;
         if (_revokeAt != null) params["revokeAt"] = revokeAt;
         if (Prefs.fetchRecent.value && domain == kNerdsterDomain) {
-          // DEFER: Actually make Fetcher refresh. It is faster (not linearly, but still..)
+          // DEFER: Actually make Fetcher refresh incrementally (not fully reload). It is faster (not linearly, but still..)
           DateTime recent = DateTime.now().subtract(recentDuration);
           params['after'] = formatIso(recent);
         }
@@ -258,8 +258,8 @@ class Fetcher {
           }
         }
         if (!b(statements)) {
-          final result = await mFire.mAsync(() {
-            return functions!.httpsCallable('clouddistinct').call(params);
+          final result = await mFire.mAsync(() async {
+            return await functions!.httpsCallable('clouddistinct').call(params);
           }, token: token);
           statements = result.data["statements"];
           iKey = result.data['I'];
