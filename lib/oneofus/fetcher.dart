@@ -247,14 +247,14 @@ class Fetcher {
           params['after'] = formatIso(recent);
         }
 
-        List? statements = null;
+        List? statements;
         Json? iKey;
         if (Prefs.batchFetch.value) {
-          FetcherBatcherResult? fetcherBatcherResult = fetcherBatcher?.get(token);
+          Json? fetcherBatcherResult = fetcherBatcher?.get(token);
           if (b(fetcherBatcherResult)) {
             print('batcher hit!');
-            statements = fetcherBatcherResult!.statements;
-            iKey = fetcherBatcherResult.i;
+            statements = fetcherBatcherResult!["statements"];
+            iKey = fetcherBatcherResult["I"];
           }
         }
         if (!b(statements)) {

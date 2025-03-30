@@ -242,6 +242,7 @@ class Jsonish {
 
 // CODE: This is overused and can probably be eliminated if Jsonish becomes Json or token.
 String getToken(dynamic x) {
+  assert(x != null);
   if (x is Json) {
     return Jsonish(x).token;
   } else if (x is String) {

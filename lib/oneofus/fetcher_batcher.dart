@@ -7,23 +7,16 @@ import 'package:nerdster/oneofus/util.dart';
 /// TEMP: revoke
 /// TEMP: Use: GreedyBfsTrust, maybe others.
 
-class FetcherBatcherResult {
-  final List<Json> statements;
-  final Json? i;
-
-  FetcherBatcherResult(this.statements, this.i);
-}
-
 // Use once
 class FetcherBatcher {
   final Json paramsProto;
   final Map<String, String?> token2revoked;
   final FirebaseFunctions? functions;
-  final Map<String, FetcherBatcherResult> fetched = {};
+  final Map<String, Json> fetched = {};
 
   FetcherBatcher(this.token2revoked, this.paramsProto, {this.functions});
 
-  FetcherBatcherResult? get(String token) => fetched[token];
+  Json? get(String token) => fetched[token];
 
   Future<void> fetch() async {
     if (!b(functions)) return;
@@ -38,12 +31,12 @@ class FetcherBatcher {
 
     for (Json rd in results.data) {
       // TODO: Weave tokens from tokenRevokeds and results
-      List statements = rd["statements"];
+      List<Json> statements = rd["statements"].cast<Json>();
       Json? i = rd['I'];
       // BUG: Dave Alexander has no nerdster statements, and so the other code can't tell that he's been fetched.
       if (b(i)) {
         String token = getToken(i);
-        fetched[token] = FetcherBatcherResult(statements.cast(), i);
+        fetched[token] = {"statements": statements, "I": i};
       }
     }
   }
