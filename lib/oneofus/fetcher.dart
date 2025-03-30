@@ -239,8 +239,7 @@ class Fetcher {
       DateTime? time;
       if (Prefs.cloudFetchDistinct.value && functions != null) {
         Json params = Map.of(paramsProto);
-        params["token"] = token;
-        if (_revokeAt != null) params["revokeAt"] = revokeAt;
+        params["token2revokeAt"] = {token: _revokeAt};
         if (Prefs.fetchRecent.value && domain == kNerdsterDomain) {
           // DEFER: Actually make Fetcher refresh incrementally (not fully reload). It is faster (not linearly, but still..)
           DateTime recent = DateTime.now().subtract(recentDuration);

@@ -19,6 +19,7 @@ import 'package:nerdster/oneofus/util.dart';
 /// 
 /// - Remove "I" (and "statement") from results and just return statements
 ///   I believe that the only reason "I" was needed was when we come at a Nerdster link with oneofus=token, and so change that to oneofus={key}
+///   This is a big change as SignInState.signIn takes "String center".
 /// 
 /// - Clean up the progress/measure business
 /// 

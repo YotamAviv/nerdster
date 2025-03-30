@@ -47,7 +47,8 @@ class Notifications implements Corruptor {
   Map<String, String> get corrupted => UnmodifiableMapView(_corrupted);
   @override
   void corrupt(String token, String error) {
-    assert(Jsonish.find(token) != null);
+    // TEMP: Might be null when I'm loading with ?oneofus=token. // assert(Jsonish.find(token) != null);
+    // BUG: I think that if ?oneofus=token leads to an error, then we never even see it because maybe nothing fires a listen().
     _corrupted[token] = error;
   }
 }
