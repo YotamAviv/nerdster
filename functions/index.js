@@ -29,45 +29,6 @@ const { Timestamp } = require("firebase-admin/firestore");
 
 admin.initializeApp();
 
-// This works and is used to develop fetchtitle below.
-// Take the url parameter passed to this HTTP endpoint and insert it into
-// Firestore under the path /urls/:documentId/url
-exports.addurl = onRequest(async (req, res) => {
-  const url = req.query.url;
-  const db = admin.firestore();
-  const writeResult = db
-    .collection("urls")
-    .add({ url: url });
-  // Send back a message that we've successfully written the message
-  res.json({ result: `Message with ID: ${writeResult.id} added.` });
-});
-
-// This is live and actively used by Nerdster to fetch HTML titles from URLs.
-// Listens for new urls added to /urls/:documentId/url
-// and saves the fetched title to /urls/:documentId/uppercase
-exports.fetchtitle = onDocumentCreated("/urls/{documentId}", async (event) => {
-  // Grab the current value of what was written to Firestore.
-  const url = event.data.data().url;
-
-  // Access the parameter `{documentId}` with `event.params`
-  // logger.log("fetching", event.params.documentId, url);
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch URL: ${response.status}`);
-  }
-
-  const html = await response.text();
-  const $ = cheerio.load(html);
-  const title = $('title').text(); // .trim()?
-
-  return event.data.ref.set({ title }, { merge: true });
-});
-
-// History: Before I learned how to call Firebase Cloud Functions directly:
-// - the client wrote the url to a collection
-// - a cloud function listened to that and wrote the title to a collection
-// - the client listened on that collection and read the title.
-// TODO: Remove [addurl, fetchtitle] as this Cloud Function replaces them.
 exports.cloudfetchtitle = onCall(async (request) => {
   const url = request.data.url;
   // logger.log(`cloudfetchtitle: ${request.data} `);
@@ -82,13 +43,13 @@ exports.cloudfetchtitle = onCall(async (request) => {
   return { "title": title };
 });
 
-// Jsonish'ish needs here in JavaScript:
-// - sort keys in a doc (JS dictionary) for pretty exports for demo ("statement", "time", "I", "trust", "with", "previous", "signature")
-// - sort keys in a JS dictionary for distinct based on subjects and keys ("contentType", "author", "title")
-// Statement'ish needs here in JavaScript:
+// Jsonish.dart'ish needs here in JavaScript:
+// - sort keys for pretty exports for demo ("statement", "time", "I", "trust", "with", "previous", "signature")
+// - sort keys for distinct subjects ("contentType", "author", "title")
+// Statement.dart'ish needs here in JavaScript:
 // - get subject of verb for distinct based on subjects.
 
-// ----------- copy/pasted from <nerdster>/js ---------------------------------------------------//
+// ----- Code from jsonish.js to copy/paste into <nerdster/oneofus>/functions/index.js ----------//
 
 var key2order = {
   "statement": 0,
@@ -184,6 +145,21 @@ async function keyToken(input) {
   }
 }
 
+// Return {String token: String? revokeAt}
+// Input can be:
+// - Just a string token
+// - A JSON String of a dictionary mapping token to revokeAt: {String token: String? revokeAt}
+function parseIrevoke(i) {
+  if (!i.startsWith('{')) {
+    token = i;
+    return { [token]: null };
+  } else {
+    var token2revoked = (JSON.parse(i));
+    return token2revoked;
+  }
+}
+
+
 // -----------  --------------------------------------------------------//
 
 const verbs = [
@@ -218,38 +194,40 @@ function getOtherSubject(j) {
 
 // -----------  --------------------------------------------------------//
 
-async function fetchh(token, params = {}, omit = {}) {
-  const revokeAt = params.revokeAt;
+async function fetchh(token2revokeAt, params = {}, omit = {}) {
   const checkPrevious = params.checkPrevious != null;
   const distinct = params.distinct != null;
   const orderStatements = params.orderStatements != 'false'; // On by default for demo.
   const includeId = params.includeId != null;
   const after = params.after;
 
+  if (!token2revokeAt) throw 'Missing token2revokeAt';
+  const token = Object.keys(token2revokeAt)[0];
+  const revokeAt = token2revokeAt[token];
   if (!token) throw 'Missing token';
   if (checkPrevious && !includeId) throw 'checkPrevious requires includeId';
 
   const db = admin.firestore();
   const collectionRef = db.collection(token).doc('statements').collection('statements');
 
-  var revokedAtTime;
+  var revokeAtTime;
   if (revokeAt) {
     const doc = collectionRef.doc(revokeAt);
     const docSnap = await doc.get();
     if (docSnap.data()) {
-      revokedAtTime = docSnap.data().time;
+      revokeAtTime = docSnap.data().time;
     } else {
       return { "statements": [] };
     }
   }
 
   var snapshot;
-  if (revokedAtTime && after) {
-    var error = `Unimplemented: revokedAtTime && after`;
+  if (revokeAtTime && after) {
+    var error = `Unimplemented: revokeAtTime && after`;
     logger.error(error);
     throw error;
-  } else if (revokedAtTime) {
-    snapshot = await collectionRef.where('time', "<=", revokedAtTime).orderBy('time', 'desc').get();
+  } else if (revokeAtTime) {
+    snapshot = await collectionRef.where('time', "<=", revokeAtTime).orderBy('time', 'desc').get();
   } else if (after) {
     // logger.log(`after=${after}`)
     snapshot = await collectionRef.where('time', ">", after).orderBy('time', 'desc').get();
@@ -331,17 +309,19 @@ async function fetchh(token, params = {}, omit = {}) {
 //   http://127.0.0.1:5002/one-of-us-net/us-central1/export2?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431&includeId=true&orderStatements=true
 // - Prod-Nerdster-Yotam: https://us-central1-nerdster.cloudfunctions.net/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
 // - Prod-Oneofus-Yotam: http://us-central1-one-of-us-net.cloudfunctions.net/export2?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431
-// 
+/*
+http://127.0.0.1:5001/nerdster/us-central1/export2/?i={"f4e45451dd663b6c9caf90276e366f57e573841b": "9d608f5875b236d7a919dcbcfbc04e51ae14141b"}&includeId=true
+*/
 // Updates from 10/18/24:
 // - upgraded to v2 (in response to errors on command line)
 // - mapped to https://export.nerdster.org/?token=f4e45451dd663b6c9caf90276e366f57e573841b
 //   - https://console.cloud.google.com/run/domains?project=nerdster
 //   - https://console.firebase.google.com/project/nerdster/functions/list
 exports.export2 = onRequest(async (req, res) => {
-  const token = req.query.token;
+  const token2revokeAt = parseIrevoke(req.query.i);
   const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
   try {
-    const retval = await fetchh(token, req.query, omit);
+    const retval = await fetchh(token2revokeAt, req.query, omit);
     res.status(200).json(retval);
   } catch (error) {
     console.error(error);
@@ -354,9 +334,6 @@ exports.export2 = onRequest(async (req, res) => {
 // TODO: Investigate making parallel, see https://firebase.google.com/docs/functions/callable?gen=2nd#stream-back
 /*
 Try:
-http://127.0.0.1:5001/nerdster/us-central1/mexport?token2revoked={"f4e45451dd663b6c9caf90276e366f57e573841b": null}
-http://127.0.0.1:5001/nerdster/us-central1/mexport?token2revoked={%22f4e45451dd663b6c9caf90276e366f57e573841b%22:null,%2226a43a6a860d03bb31e2e036dbd8801a2236683d%22:null,%22279dc057530eee7bfb403c48421bc85690d79c75%22:null,%2236d6ba70682f93e6a56c41c3ec22d89aaec9038c%22:null,%226e074410a9d391ae414e7dcce01cc8ce32893e94%22:null,%22b6741d196e4679ce2d05f91a978b4e367c1756dd%22:null,%22dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9%22:null,%22c61fd46576a4b3a81b1f368b9799556507b96137%22:null}&omit=["I","statement"]&distinct=true&orderStatements=false
-
 https://us-central1-nerdster.cloudfunctions.net/mexport..
 */
 exports.mexport = onRequest(async (req, res) => {
@@ -372,7 +349,7 @@ exports.mexport = onRequest(async (req, res) => {
       var out = await fetchh(token, params, omit); // TODO: Investigate making parallel
       outs.push(out);
     }
-  
+
     // const retval = await mfetchh(tokens, req.query, omit);
     res.status(200).json(outs);
   } catch (error) {
@@ -383,11 +360,19 @@ exports.mexport = onRequest(async (req, res) => {
 
 
 /// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
-// exports.clouddistinct = onRequest(async (req, res) => {
 exports.clouddistinct = onCall(async (request) => {
-  const token = request.data.token;
+  // const i = request.data.i;
+  // var token2revokeAt;
+  // if (typeof i === 'string') {
+  //   token2revokeAt = { [i]: null };
+  // } else {
+  //   token2revokeAt = i;
+  // }
+
+  const token2revokeAt = request.data.token2revokeAt;
+  logger.log(`token2revokeAt=${token2revokeAt}`);
   try {
-    return await fetchh(token, request.data, request.data.omit);
+    return await fetchh(token2revokeAt, request.data, request.data.omit);
   } catch (error) {
     console.error(error);
     throw new HttpsError(error);
@@ -397,13 +382,13 @@ exports.clouddistinct = onCall(async (request) => {
 // TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
 exports.mclouddistinct = onCall(async (request) => {
   const token2revoked = request.data.token2revoked;
-  const params = request.query;
+  const params = request.query; // TODO: SUSPICIOUS: not request.data?
   const omit = request.data.omit;
   try {
     var outs = [];
     for (const token in token2revoked) {
       logger.log(`token=${token}`);
-      var out = await fetchh(token, params, omit); // TODO: Async streaming (parallel)
+      var out = await fetchh({[token]: null}, params, omit); // TODO: Async streaming (parallel)
       outs.push(out);
     }
     return outs;

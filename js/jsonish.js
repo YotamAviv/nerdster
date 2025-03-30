@@ -2,11 +2,10 @@ const yotam_oneofus = require('../test/yotam-oneofus.json');
 const yotam_nerdster = require('../test/yotam-nerdster.json');
 const other = require('../test/other.json');
 
-// TDOO: BUG: Need to special case on signature which always goes last.
 // Test samples from Nerdster or ONE-OF-US are not going to have any unknown fields, and so need 
 // to test on other fake samples as well.
 
-// ----------- Code to copy/paste into <nerdster/oneofus>/functions/index.js -----------------//
+// ----- Code from jsonish.js to copy/paste into <nerdster/oneofus>/functions/index.js ----------//
 
 var key2order = {
   "statement": 0,
@@ -102,9 +101,46 @@ async function keyToken(input) {
   }
 }
 
+// Return {String token: String? revokedAt}
+// Input can be:
+// - Just a string token
+// - A JSON String of a dictionary mapping token to revokeAt: {String token: String? revokeAt}
+function parseIrevoke(i) {
+  if (!i.startsWith('{')) {
+    token = i;
+    return { [token]: null };
+  } else {
+    var token2revoked = (JSON.parse(i));
+    return token2revoked;
+  }
+}
+
 // ----------- the test --------------------------------------------------------//
 async function main() {
   var passing = true;
+
+  const i1 = 'token123';
+  const parsed1 = parseIrevoke(i1);
+  const expected1 = { [i1]: null };
+  if (JSON.stringify(parsed1) != JSON.stringify(expected1)) {
+    console.log(`parsed1=${JSON.stringify(parsed1)}`);
+    passing = false;
+  }
+  const i2 = '{"token123": null}';
+  const parsed2 = parseIrevoke(i2);
+  const expected2 = { [i1]: null };
+  if (JSON.stringify(parsed2) != JSON.stringify(expected2)) {
+    console.log(`parsed2=${JSON.stringify(parsed2)}`);
+    passing = false;
+  }
+  const i3 = '{"token123": "token234"}';
+  const parsed3 = parseIrevoke(i3);
+  const expected3 = { [i1]: "token234" };
+  if (JSON.stringify(parsed3) != JSON.stringify(expected3)) {
+    console.log(`parsed3=${JSON.stringify(parsed3)}`);
+    passing = false;
+  }
+
   // console.log(data);
   for (const exported of [yotam_oneofus, yotam_nerdster, other]) {
     for (const statement of exported['statements']) {
