@@ -7,6 +7,8 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/fetcher_batcher.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/statement.dart';
@@ -25,16 +27,7 @@ const kOneofusContext = '<one-of-us>';
 const kSpecialContexts = {kOneofusContext, kNerdsterContext};
 typedef StatementFilter = Iterable<Statement> Function(Iterable<Statement>);
 
-class FollowNetProgressR extends ProgressR {
-  @override
-  void report(double p, String? message, String? token) {
-    progress.nerdster.value = p;
-    progress.message.value =
-        (b(token) ? oneofusLabels.labelKey(token!) ?? token : '') + (message ?? '');
-  }
-}
-
-FollowNetProgressR _followNetProgressR = FollowNetProgressR();
+ProgressRX _followNetProgressR = ProgressRX();
 
 class FollowNet with Comp, ChangeNotifier {
   static final FollowNet _singleton = FollowNet._internal();
@@ -164,6 +157,17 @@ class FollowNet with Comp, ChangeNotifier {
         }
       }
     }
+
+    // WIP: for batch fetching
+    // List<(String, String?)> tokenRevokeds = [];
+    // for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
+    //   tokenRevokeds.add((e.key, e.value));
+    // }
+    Fetcher.fetcherBatcher = FetcherBatcher(
+        delegate2revokeAt.keys, delegate2revokeAt.values, Fetcher.paramsProto,
+        functions: FireFactory.findFunctions(kNerdsterDomain));
+    await Fetcher.fetcherBatcher!.fetch();
+
     int count = 0;
     for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
       String delegateToken = e.key;

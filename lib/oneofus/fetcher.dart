@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/fetcher_batcher.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
@@ -127,7 +128,7 @@ class Fetcher {
   static final Measure mFire = Measure('fire');
   static final Measure mVerify = Measure('verify');
 
-   // DEFER: This is a placeholder for time measuremeants, not the mechanism used by Fetchers to refresh.
+  // DEFER: This is a placeholder for time measuremeants, not the mechanism used by Fetchers to refresh.
   static final Duration recentDuration = const Duration(days: 30);
 
   final FirebaseFirestore fire;
@@ -135,6 +136,8 @@ class Fetcher {
   final String domain;
   final String token;
   final bool testingNoVerify;
+
+  static FetcherBatcher? fetcherBatcher;
 
   // 3 states:
   // - not revoked : null
@@ -146,7 +149,10 @@ class Fetcher {
   List<Statement>? _cached;
   String? _lastToken;
 
-  static void clear() => _fetchers.clear();
+  static void clear() {
+    _fetchers.clear();
+    fetcherBatcher = null;
+  }
 
   // 3/12/25: BUG: Corruption, Burner Phone pushed using a revoked delegate, not sure how (couldn't
   // reproduce), but there is much be careful of here.
@@ -212,7 +218,7 @@ class Fetcher {
 
   bool get isCached => b(_cached);
 
-  static const Map fetchParamsProto = {
+  static const Json paramsProto = {
     "distinct": true,
     "omit": ['statement', 'I'],
     "orderStatements": "false",
@@ -231,8 +237,8 @@ class Fetcher {
     try {
       _cached = <Statement>[];
       DateTime? time;
-      if (functions != null && Prefs.cloudFetchDistinct.value) {
-        Map params = Map.of(fetchParamsProto);
+      if (Prefs.cloudFetchDistinct.value && functions != null) {
+        Json params = Map.of(paramsProto);
         params["token"] = token;
         if (_revokeAt != null) params["revokeAt"] = revokeAt;
         if (Prefs.fetchRecent.value && domain == kNerdsterDomain) {
@@ -240,12 +246,27 @@ class Fetcher {
           DateTime recent = DateTime.now().subtract(recentDuration);
           params['after'] = formatIso(recent);
         }
-        final result = await mFire.mAsync(() {
-          return functions!.httpsCallable('clouddistinct').call(params);
-        }, token: token);
-        List statements = result.data["statements"];
+
+        List? statements = null;
+        Json? iKey;
+        if (Prefs.batchFetch.value) {
+          FetcherBatcherResult? fetcherBatcherResult = fetcherBatcher?.get(token);
+          if (b(fetcherBatcherResult)) {
+            print('batcher hit!');
+            statements = fetcherBatcherResult!.statements;
+            iKey = fetcherBatcherResult.i;
+          }
+        }
+        if (!b(statements)) {
+          final result = await mFire.mAsync(() {
+            return functions!.httpsCallable('clouddistinct').call(params);
+          }, token: token);
+          statements = result.data["statements"];
+          iKey = result.data['I'];
+        }
+
         if (_revokeAt != null) {
-          if (statements.isNotEmpty) {
+          if (statements!.isNotEmpty) {
             assert(statements.first['id'] == _revokeAt);
             // without includeId, this might work:
             // assert(getToken(statements.first) == _revokeAt);
@@ -254,8 +275,7 @@ class Fetcher {
             _revokeAtTime = DateTime(0); // "since always" (or any unknown token);
           }
         }
-        if (statements.isEmpty) return; // QUESTIONABLE
-        final Json iKey = result.data['I'];
+        if (statements!.isEmpty) return; // QUESTIONABLE
         final String iKeyToken = getToken(iKey);
         assert(iKeyToken == token);
         for (Json j in statements) {
@@ -348,10 +368,11 @@ class Fetcher {
       // Callilng distinct(..) on the Cloud Functions is required for that as the Cloud impl is not
       // complete, and I wouldn't want to rely on it anyway as it can't be tested using our
       // FakeFirebase unit tests.
-      assert(fetchParamsProto.containsKey('distinct'));
+      assert(paramsProto.containsKey('distinct'));
       _cached = distinct(_cached!);
       if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // print(stackTrace);
       corruptor.corrupt(token, e.toString());
     }
   }

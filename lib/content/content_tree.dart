@@ -74,8 +74,11 @@ class _ContentTreeState extends State<ContentTree> {
     ContentTree._firstTime = false;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // progress will call Navigator.pop(context) asynchronously, and so can't showTree first.
-      await progress.make(oneofusNet.listen, context);
-      
+      await progress.make(() async {
+        oneofusNet.listen();
+        await Comp.waitOnComps([contentBase, keyLabels]);
+      }, context);
+
       if (bs(Uri.base.queryParameters['netView'])) await NetBar.showTree(context);
     });
   }

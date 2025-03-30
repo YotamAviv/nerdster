@@ -46,10 +46,11 @@ class _IntSettingDropdownState extends State<IntSettingDropdown> {
       isExpanded: true,
       value: widget.setting.value,
       onChanged: (int? val) {
-        progress.make(() {
+        progress.make(() async {
           setState(() {
             widget.setting.value = val!;
           });
+          await Comp.waitOnComps([keyLabels, contentBase]);
         }, context);
       },
       items: List.of(widget.values
@@ -122,7 +123,6 @@ class Menus {
             MyCheckbox(Prefs.showStatements, 'show trust statements'),
             const Text('--------- nerdiest ---------'),
             MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
-            MyCheckbox(Prefs.cloudFetchDistinct, 'cloud fetch distinct (goes quicker)'),
           ],
           child: const Row(
             children: [
@@ -165,6 +165,8 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
+          MyCheckbox(Prefs.cloudFetchDistinct, 'cloud fetch distinct (goes quicker)'),
+          MyCheckbox(Prefs.batchFetch, 'cloud batch fetch'),
           MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
           MenuItemButton(
               onPressed: () {

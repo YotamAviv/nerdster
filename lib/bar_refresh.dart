@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
@@ -10,13 +11,14 @@ class BarRefresh extends StatelessWidget {
   });
 
   static Future<void> refresh(BuildContext context) async {
-    await progress.make(() {
+    await progress.make(() async {
       Fetcher.clear();
       oneofusNet.listen();
+      await Comp.waitOnComps([keyLabels, contentBase]);
     }, context);
   }
 
- @override
+  @override
   Widget build(BuildContext context) {
     return IconButton(
         icon: Icon(Icons.refresh),

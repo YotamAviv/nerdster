@@ -217,6 +217,18 @@ function getOtherSubject(j) {
 }
 
 // -----------  --------------------------------------------------------//
+// WIP
+// TODO: revokeAt per token, other params for all tokens
+// 
+async function mfetchh(tokens, params = {}, omit = {}) {
+  var outs = [];
+  for (const token of tokens) {
+    logger.log(`token=${token}`);
+    var out = await fetchh(token, params, omit); // TODO: Investigate making parallel
+    outs.push(out);
+  }
+  return outs;
+}
 
 async function fetchh(token, params = {}, omit = {}) {
   const revokeAt = params.revokeAt;
@@ -349,6 +361,49 @@ exports.export2 = onRequest(async (req, res) => {
   }
 });
 
+// TEMP: WIP
+/*
+Try:
+https://us-central1-nerdster.cloudfunctions.net/mexport?tokens=[%22f4e45451dd663b6c9caf90276e366f57e573841b%22,%2226a43a6a860d03bb31e2e036dbd8801a2236683d%22,%22279dc057530eee7bfb403c48421bc85690d79c75%22,%2236d6ba70682f93e6a56c41c3ec22d89aaec9038c%22,%226e074410a9d391ae414e7dcce01cc8ce32893e94%22,%22dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9%22,%22c61fd46576a4b3a81b1f368b9799556507b96137%22]
+https://us-central1-nerdster.cloudfunctions.net/mexport?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b","26a43a6a860d03bb31e2e036dbd8801a2236683d","279dc057530eee7bfb403c48421bc85690d79c75","36d6ba70682f93e6a56c41c3ec22d89aaec9038c","6e074410a9d391ae414e7dcce01cc8ce32893e94","dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9","c61fd46576a4b3a81b1f368b9799556507b96137"]
+*/
+exports.mexport = onRequest(async (req, res) => {
+  logger.log(`req.query.tokens=${req.query.tokens}`);
+  const tokens = JSON.parse(req.query.tokens);
+  const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
+  try {
+    const retval = await mfetchh(tokens, req.query, omit);
+    res.status(200).json(retval);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(`Error: ${error}`);
+  }
+});
+
+
+/// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
+// exports.clouddistinct = onRequest(async (req, res) => {
+exports.clouddistinct = onCall(async (request) => {
+  const token = request.data.token;
+  try {
+    return await fetchh(token, request.data, request.data.omit);
+  } catch (error) {
+    console.error(error);
+    throw new HttpsError(error);
+  }
+});
+
+exports.mclouddistinct = onCall(async (request) => {
+  const tokens = request.data.tokens;
+  try {
+    return await mfetchh(tokens, request.data, request.data.omit);
+  } catch (error) {
+    console.error(error);
+    throw new HttpsError(error);
+  }
+});
+
+
 // HTTP POST for QR signin (not 'signIn' (in camelCase) - that breaks things).
 // The Nerdster should be listening for a new doc at collection /sessions/doc/<session>/
 // The phone app should POST to this function (it used to write directly to the Nerdster Firebase collection.)
@@ -383,16 +438,3 @@ async function makedistinct(input) {
   }
   return distinct;
 }
-
-/// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
-// exports.clouddistinct = onRequest(async (req, res) => {
-exports.clouddistinct = onCall(async (request) => {
-  // const token = req.query.token;
-  const token = request.data.token;
-  try {
-    return await fetchh(token, request.data, request.data.omit);
-  } catch (error) {
-    console.error(error);
-    throw new HttpsError(error);
-  }
-});

@@ -213,8 +213,9 @@ class _CenterDropdownState extends State<_CenterDropdown> {
       initialSelection: entries.first.label,
       label: const Text('Center'),
       onSelected: (String? value) async {
-        await progress.make(() {
+        await progress.make(() async {
           signInState.center = b(value) ? label2oneofus[value]! : signInState.centerReset;
+          await Comp.waitOnComps([keyLabels, contentBase]);
         }, context);
       },
     );
@@ -288,8 +289,9 @@ Select an enabled follow context or <one-of-us> (everyone).'''
       label: const Text('Follow'),
       textStyle: error ? TextStyle(color: Colors.red) : null,
       onSelected: (String? fcontext) async {
-        await progress.make(() {
+        await progress.make(() async {
           followNet.fcontext = fcontext!;
+          await Comp.waitOnComps([keyLabels, contentBase]);
         }, context);
         setState(() {});
       },
