@@ -32,6 +32,8 @@ ProgressRX _followNetProgressR = ProgressRX();
 class FollowNet with Comp, ChangeNotifier {
   static final FollowNet _singleton = FollowNet._internal();
   static final Measure measure = Measure('FollowNet');
+  static final Measure mBatchFire = Measure('batch-fire'); // TEMP:
+
   factory FollowNet() => _singleton;
   FollowNet._internal() {
     _readParams();
@@ -166,7 +168,10 @@ class FollowNet with Comp, ChangeNotifier {
     Fetcher.fetcherBatcher = FetcherBatcher(
         delegate2revokeAt.keys, delegate2revokeAt.values, Fetcher.paramsProto,
         functions: FireFactory.findFunctions(kNerdsterDomain));
-    await Fetcher.fetcherBatcher!.fetch();
+    // await Fetcher.fetcherBatcher!.fetch();
+    await mBatchFire.mAsync(() async {
+      await Fetcher.fetcherBatcher!.fetch();
+    }, token: 'batch');
 
     int count = 0;
     for (MapEntry<String, String?> e in delegate2revokeAt.entries) {

@@ -33,8 +33,8 @@ class FetcherBatcher {
     params["tokens"] = List.of(tokens);
     // NEXT: params["tokenRevokeds"] = tokenRevokeds;
 
-    final results = await Fetcher.mFire.mAsync(() {
-      return functions!.httpsCallable('mclouddistinct').call(params);
+    final results = await Fetcher.mFire.mAsync(() async {
+      return await functions!.httpsCallable('mclouddistinct').call(params);
     });
 
     for (Json rd in results.data) {
