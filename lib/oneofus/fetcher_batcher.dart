@@ -17,12 +17,11 @@ class FetcherBatcherResult {
 // Use once
 class FetcherBatcher {
   final Json paramsProto;
-  final Iterable<String> tokens;
-  final Iterable<String?> revokeds;
+  final Map<String, String?> token2revoked;
   final FirebaseFunctions? functions;
   final Map<String, FetcherBatcherResult> fetched = {};
 
-  FetcherBatcher(this.tokens, this.revokeds, this.paramsProto, {this.functions});
+  FetcherBatcher(this.token2revoked, this.paramsProto, {this.functions});
 
   FetcherBatcherResult? get(String token) => fetched[token];
 
@@ -30,7 +29,7 @@ class FetcherBatcher {
     if (!b(functions)) return;
 
     Json params = Map.of(paramsProto);
-    params["tokens"] = List.of(tokens);
+    params["token2revoked"] = token2revoked;
     // NEXT: params["tokenRevokeds"] = tokenRevokeds;
 
     final results = await Fetcher.mFire.mAsync(() async {

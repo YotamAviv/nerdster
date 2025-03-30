@@ -165,8 +165,7 @@ class FollowNet with Comp, ChangeNotifier {
     // for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
     //   tokenRevokeds.add((e.key, e.value));
     // }
-    Fetcher.fetcherBatcher = FetcherBatcher(
-        delegate2revokeAt.keys, delegate2revokeAt.values, Fetcher.paramsProto,
+    Fetcher.fetcherBatcher = FetcherBatcher(delegate2revokeAt, Fetcher.paramsProto,
         functions: FireFactory.findFunctions(kNerdsterDomain));
     // await Fetcher.fetcherBatcher!.fetch();
     await mBatchFire.mAsync(() async {
