@@ -382,7 +382,7 @@ exports.clouddistinct = onCall(async (request) => {
 // TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
 exports.mclouddistinct = onCall(async (request) => {
   const token2revoked = request.data.token2revoked;
-  const params = request.query; // TODO: SUSPICIOUS: not request.data?
+  const params = request.data; // TODO: SUSPICIOUS: not request.data?
   const omit = request.data.omit;
   try {
     var outs = [];

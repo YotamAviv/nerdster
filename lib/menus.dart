@@ -132,7 +132,7 @@ class Menus {
             ],
           )),
 
-      NotificationsMenu(key: UniqueKey()), // just guessing with UniqueKey()
+      NotificationsMenu(),
 
       SubmenuButton(menuChildren: <Widget>[
         MenuItemButton(

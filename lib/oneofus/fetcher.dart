@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/fetcher_batcher.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
@@ -13,6 +12,29 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
+/// Batch fetch plan:
+///
+/// CODE: Figure out how we want to prefetch batches..
+///
+/// CODE: Clean up index.js
+///
+/// TEST:
+/// - Integration test (necessary because Cloud Functions)
+///   ...
+///
+/// - Implement revoke
+///   Considerations: change the Cloud Functions interface from ?token=token to ?i=token or i={token: revokedAt}
+///   TEST:
+///
+/// - Remove "I" (and "statement") from results and just return statements
+///   I believe that the only reason "I" was needed was when we come at a Nerdster link with oneofus=token, and so change that to oneofus={key}
+///   This is a big change as SignInState.signIn takes "String center".
+///
+/// - Clean up the progress/measure business
+///
+/// - Use elsewhere: GreedyBfsTrust, maybe others.
+
+// Use once
 /// BUG: 3/12/25: Mr. Burner Phone revoked, signed in, still managed to clear, and caused data corruption.
 /// I wasn't able to reproduce that bug (lost the private key), and I've changed the code since
 /// by adding transactions, and so that bug might be fixed.
@@ -124,6 +146,7 @@ class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
+  static Map<String, Json> batchFetched = {};
 
   static final Measure mFire = Measure('fire');
   static final Measure mVerify = Measure('verify');
@@ -137,8 +160,6 @@ class Fetcher {
   final String token;
   final bool testingNoVerify;
 
-  static FetcherBatcher? fetcherBatcher;
-
   // 3 states:
   // - not revoked : null
   // - revoked at token (last legit statement) : token
@@ -151,7 +172,7 @@ class Fetcher {
 
   static void clear() {
     _fetchers.clear();
-    fetcherBatcher = null;
+    batchFetched.clear();
   }
 
   // 3/12/25: BUG: Corruption, Burner Phone pushed using a revoked delegate, not sure how (couldn't
@@ -230,6 +251,37 @@ class Fetcher {
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
+  static Future<void> batchFetch(Map<String, String?> token2revoked, String domain) async {
+    FirebaseFunctions? functions = FireFactory.findFunctions(domain);
+    if (!b(functions)) return;
+
+    batchFetched.clear();
+
+    Json params = Map.of(paramsProto);
+    params["token2revoked"] = token2revoked;
+    final results = await Fetcher.mFire.mAsync(() async {
+      return await functions!.httpsCallable('mclouddistinct').call(params);
+    }, token: 'batch');
+
+    // Weave tokens from token2revoked and results
+    Set<String> returned = {};
+    for (Json rd in results.data) {
+      List statements = rd["statements"];
+      Json? i = rd['I'];
+      if (b(i)) {
+        String token = getToken(i);
+        returned.add(token);
+        batchFetched[token] = {"statements": statements, "I": i};
+      }
+    }
+    // In case a token had no statements, make it clear that it's been fetched but is just empty.
+    for (String token in token2revoked.keys) {
+      if (!returned.contains(token)) {
+        batchFetched[token] = {"statements": [], "I": null};
+      }
+    }
+  }
+
   Future<void> fetch() async {
     if (b(_cached)) return;
     // await Future.delayed(Duration(milliseconds: 300));
@@ -246,17 +298,14 @@ class Fetcher {
           params['after'] = formatIso(recent);
         }
 
-        List? statements;
+        List statements;
         Json? iKey;
-        if (Prefs.batchFetch.value) {
-          Json? fetcherBatcherResult = fetcherBatcher?.get(token);
-          if (b(fetcherBatcherResult)) {
-            print('batcher hit!');
-            statements = fetcherBatcherResult!["statements"];
-            iKey = fetcherBatcherResult["I"];
-          }
-        }
-        if (!b(statements)) {
+        if (Prefs.batchFetch.value && b(batchFetched[token])) {
+          Json fetched = batchFetched[token]!;
+          print('batcher hit!');
+          statements = fetched["statements"];
+          iKey = fetched["I"];
+        } else {
           final result = await mFire.mAsync(() async {
             return await functions!.httpsCallable('clouddistinct').call(params);
           }, token: token);
@@ -265,8 +314,8 @@ class Fetcher {
         }
 
         if (_revokeAt != null) {
-          if (statements!.isNotEmpty) {
-            assert(statements.first['id'] == _revokeAt);
+          if (statements.isNotEmpty) {
+            assert(statements.first['id'] == _revokeAt, '${statements.first['id']} == $_revokeAt');
             // without includeId, this might work:
             // assert(getToken(statements.first) == _revokeAt);
             _revokeAtTime = parseIso(statements.first['time']);
@@ -274,7 +323,7 @@ class Fetcher {
             _revokeAtTime = DateTime(0); // "since always" (or any unknown token);
           }
         }
-        if (statements!.isEmpty) return; // QUESTIONABLE
+        if (statements.isEmpty) return;
         final String iKeyToken = getToken(iKey);
         assert(iKeyToken == token);
         for (Json j in statements) {

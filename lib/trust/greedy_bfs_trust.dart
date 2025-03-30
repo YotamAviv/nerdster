@@ -22,7 +22,7 @@ class GreedyBfsTrust {
   GreedyBfsTrust({this.degrees = 6, this.numPaths = 1});
 
   Future<LinkedHashMap<String, Node>> process(Node source,
-      {Notifications? notifier, ProgressR? progressR}) async {
+      {Notifications? notifier, ProgressR? progressR, String? domain}) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
     network[source.token] = source;
     assert(source.paths.isEmpty);
@@ -37,6 +37,19 @@ class GreedyBfsTrust {
     int pass = 1; // degrees (plus/minus 1 ;)
     while (true) {
       Set<Path> removeAfterIteration = <Path>{};
+
+      if (b(domain)) {
+        Map<String, String?> prefetch = {};
+        for (Path path in currentLayer) {
+          if (!isValidPath(path, network)) {
+            removeAfterIteration.add(path);
+            continue;
+          }
+          Node n = path.last.node;
+          prefetch[n.token] = n.revokeAt;
+        }
+        await Fetcher.batchFetch(prefetch, domain!);
+      }
 
       // ====== BLOCKS ====== //
       int count = 0;
