@@ -3,9 +3,26 @@ import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 
-/// TEST
-/// TEMP: revoke
-/// TEMP: Use: GreedyBfsTrust, maybe others.
+/// Plan:
+/// 
+/// CODE: Figure out how we want to prefetch batches..
+/// 
+/// CODE: Clean up index.js
+/// 
+/// TEST:
+/// - Integration test (necessary because Cloud Functions)
+///   ...
+/// 
+/// - Implement revoke
+///   Considerations: change the Cloud Functions interface from ?token=token to ?i=token or i={token: revokedAt}
+///   TEST:
+/// 
+/// - Remove "I" (and "statement") from results and just return statements
+///   I believe that the only reason "I" was needed was when we come at a Nerdster link with oneofus=token, and so change that to oneofus={key}
+/// 
+/// - Clean up the progress/measure business
+/// 
+/// - Use elsewhere: GreedyBfsTrust, maybe others.
 
 // Use once
 class FetcherBatcher {
