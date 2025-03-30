@@ -355,11 +355,9 @@ exports.export2 = onRequest(async (req, res) => {
 /*
 Try:
 http://127.0.0.1:5001/nerdster/us-central1/mexport?token2revoked={"f4e45451dd663b6c9caf90276e366f57e573841b": null}
+http://127.0.0.1:5001/nerdster/us-central1/mexport?token2revoked={%22f4e45451dd663b6c9caf90276e366f57e573841b%22:null,%2226a43a6a860d03bb31e2e036dbd8801a2236683d%22:null,%22279dc057530eee7bfb403c48421bc85690d79c75%22:null,%2236d6ba70682f93e6a56c41c3ec22d89aaec9038c%22:null,%226e074410a9d391ae414e7dcce01cc8ce32893e94%22:null,%22b6741d196e4679ce2d05f91a978b4e367c1756dd%22:null,%22dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9%22:null,%22c61fd46576a4b3a81b1f368b9799556507b96137%22:null}&omit=["I","statement"]&distinct=true&orderStatements=false
 
-http://127.0.0.1:5001/nerdster/us-central1/mexport?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b","26a43a6a860d03bb31e2e036dbd8801a2236683d","279dc057530eee7bfb403c48421bc85690d79c75","36d6ba70682f93e6a56c41c3ec22d89aaec9038c","6e074410a9d391ae414e7dcce01cc8ce32893e94","dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9","c61fd46576a4b3a81b1f368b9799556507b96137"]
-http://127.0.0.1:5001/nerdster/us-central1/mexport?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b","26a43a6a860d03bb31e2e036dbd8801a2236683d","279dc057530eee7bfb403c48421bc85690d79c75","36d6ba70682f93e6a56c41c3ec22d89aaec9038c","6e074410a9d391ae414e7dcce01cc8ce32893e94","dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9","c61fd46576a4b3a81b1f368b9799556507b96137"]&omit=["I","statement"]&distinct=true
-https://us-central1-nerdster.cloudfunctions.net/mexport?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b","26a43a6a860d03bb31e2e036dbd8801a2236683d","279dc057530eee7bfb403c48421bc85690d79c75","36d6ba70682f93e6a56c41c3ec22d89aaec9038c","6e074410a9d391ae414e7dcce01cc8ce32893e94","dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9","c61fd46576a4b3a81b1f368b9799556507b96137"]
-https://us-central1-nerdster.cloudfunctions.net/mexport?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b","26a43a6a860d03bb31e2e036dbd8801a2236683d","279dc057530eee7bfb403c48421bc85690d79c75","36d6ba70682f93e6a56c41c3ec22d89aaec9038c","6e074410a9d391ae414e7dcce01cc8ce32893e94","dbc8ffe8445fd0f9ddfd2c72b7291a37a7da10d9","c61fd46576a4b3a81b1f368b9799556507b96137"]
+https://us-central1-nerdster.cloudfunctions.net/mexport..
 */
 exports.mexport = onRequest(async (req, res) => {
   logger.log(`req.query.tokens=${req.query.tokens}`);

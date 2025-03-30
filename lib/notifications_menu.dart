@@ -23,16 +23,16 @@ class NotificationsMenu extends StatefulWidget {
 class _NotificationsMenuState extends State<NotificationsMenu> {
   @override
   void initState() {
-    oneofusNet.addListener(listen);
-    oneofusEquiv.addListener(listen);
+    contentBase.addListener(listen);
+    followNet.addListener(listen);
     signInState.addListener(listen);
     super.initState();
   }
 
   @override
   void dispose() {
-    oneofusNet.removeListener(listen);
-    oneofusEquiv.removeListener(listen);
+    contentBase.removeListener(listen);
+    followNet.removeListener(listen);
     signInState.removeListener(listen);
     super.dispose();
   }
@@ -72,7 +72,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
     Map<String, String> statementToken2reason = {
       ...notifications.rejected,
       ...notifications.warned,
-      ...notifications.corrupted,
+      // corrupt tokens are key tokens, not statement tokens ...notifications.corrupted,
     };
     for (MapEntry<String, String> e in statementToken2reason.entries) {
       TrustStatement statement = TrustStatement.find(e.key)!;
@@ -97,6 +97,34 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
             );
           },
           child: Text(reason));
+      items.add(item);
+    }
+
+    for (MapEntry<String, String> e in notifications.corrupted.entries) {
+      Jsonish? iKey = Jsonish.find(e.key);
+      String? iLable = keyLabels.labelKey(e.key);
+      String error = e.value;
+      MenuItemButton item = MenuItemButton(
+          onPressed: () {
+            showDialog<void>(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                    title: Text(error),
+                    // TODO: Better than this...
+                    content: Text('''iKey: $iKey, iLable: $iLable '''),
+                    actions: [
+                      OutlinedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('Okay'))
+                    ]);
+              },
+            );
+          },
+          child: Text(error));
       items.add(item);
     }
 
