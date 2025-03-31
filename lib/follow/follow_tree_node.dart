@@ -34,7 +34,7 @@ class FollowTreeNode extends NetTreeModel {
 
   @override
   Iterable<NetTreeModel> get children {
-    Comp.throwIfNotReady([followNet, oneofusEquiv, oneofusNet]);
+    Comp.throwIfNotReady([followNet]);
     if (_children != null) return _children!;
     // Don't expand statements, !canoncial, or nodes already on path
     if (token == null || !canonical || path.map((n) => n.token).contains(token)) return [];

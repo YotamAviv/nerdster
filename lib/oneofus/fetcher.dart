@@ -14,27 +14,17 @@ import 'util.dart';
 
 /// Batch fetch plan:
 ///
-/// CODE: Figure out how we want to prefetch batches..
+/// - FollowNet still not prefetching everything..
 ///
-/// CODE: Clean up index.js
-///
-/// TEST:
-/// - Integration test (necessary because Cloud Functions)
-///   ...
-///
-/// - Implement revoke
-///   Considerations: change the Cloud Functions interface from ?token=token to ?i=token or i={token: revokedAt}
-///   TEST:
-///
-/// - Remove "I" (and "statement") from results and just return statements
-///   I believe that the only reason "I" was needed was when we come at a Nerdster link with oneofus=token, and so change that to oneofus={key}
-///   This is a big change as SignInState.signIn takes "String center".
-///
+/// - CODE: Clean up index.js
+/// Would be nice to push that to PROD soon (like now), could duplicate the old functions to not break the current Nerd'ster..
+/// 
 /// - Clean up the progress/measure business
 ///
-/// - Use elsewhere: GreedyBfsTrust, maybe others.
+/// - Remove "I" (and {"statements": ...}) from cloud function results and just return statements straight up.
+/// I believe that the only reason "I" was needed was when we come at a Nerdster link with oneofus=token, and so change that to oneofus={key}
 
-// Use once
+
 /// BUG: 3/12/25: Mr. Burner Phone revoked, signed in, still managed to clear, and caused data corruption.
 /// I wasn't able to reproduce that bug (lost the private key), and I've changed the code since
 /// by adding transactions, and so that bug might be fixed.
@@ -146,7 +136,7 @@ class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
-  static Map<String, Json> batchFetched = {};
+  static Map<String, Json> batchFetched = {}; // DEFER: These should include the domain. that said, it's unlikely that we'll have a Oneofus/Nerdster token collision.
 
   static final Measure mFire = Measure('fire');
   static final Measure mVerify = Measure('verify');
@@ -190,6 +180,8 @@ class Fetcher {
         f._revokeAtTime = null;
       }
     }
+    // Any of these could have been revoked.
+    batchFetched.clear();
   }
 
   factory Fetcher(String token, String domain, {bool testingNoVerify = false}) {
@@ -255,8 +247,6 @@ class Fetcher {
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     if (!b(functions)) return;
 
-    batchFetched.clear();
-
     Json params = Map.of(paramsProto);
     params["token2revokeAt"] = token2revokeAt;
     final results = await Fetcher.mFire.mAsync(() async {
@@ -302,10 +292,10 @@ class Fetcher {
         Json? iKey;
         if (Prefs.batchFetch.value && b(batchFetched[token])) {
           Json fetched = batchFetched[token]!;
-          print('batcher hit!');
           statements = fetched["statements"];
           iKey = fetched["I"];
         } else {
+          print('batcher miss $domain');
           final result = await mFire.mAsync(() async {
             return await functions!.httpsCallable('clouddistinct').call(params);
           }, token: token);
