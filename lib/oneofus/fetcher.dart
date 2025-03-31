@@ -12,14 +12,8 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
-/// Batch fetch plan:
 ///
-/// - CODE: Clean up index.js
-/// Would be nice to push that to PROD soon (like now), could duplicate the old functions to not break the current Nerd'ster..
-///
-/// - Clean up the progress/measure business
-///
-/// - Remove "I" (and {"statements": ...}) from cloud function results and just return statements straight up.
+/// DEFER: Remove "I" (and {"statements": ...}) from cloud function results and just return statements straight up.
 /// I believe that the only reason "I" was needed was when we come at a Nerdster link with oneofus=token, and so change that to oneofus={key}
 
 /// BUG: 3/12/25: Mr. Burner Phone revoked, signed in, still managed to clear, and caused data corruption.
