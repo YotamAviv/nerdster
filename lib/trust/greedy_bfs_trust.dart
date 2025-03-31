@@ -1,9 +1,11 @@
 import 'dart:collection';
 
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/progress.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 
 /// Greed BFS trust algorithm
@@ -46,12 +48,19 @@ class GreedyBfsTrust {
             continue;
           }
           Node n = path.last.node;
-          prefetch[n.token] = n.revokeAt;
+          // TEMP: KLUDGE: Pass in a prefetch function instead of domain
+          if (domain == kNerdsterDomain) {
+            for (String del in oneofusEquiv.oneofus2delegates[n.token]!) {
+              prefetch[del] = oneofusEquiv.delegate2revokeAt[del];
+            }
+          } else {
+            prefetch[n.token] = n.revokeAt;
+          }
         }
-        // BUG: Follow tree nodes use Oneofus equivalent tokens, but their edges come from Nerdster delegate statements. 
+        // BUG: Follow tree nodes use Oneofus equivalent tokens, but their edges come from Nerdster delegate statements.
         // So if we have edge I follow Andrew, then we need to prefetch Andrew's delegates.
         // Might have to split followNet like keyLables and oneofusLables, or maybe just move the oou2del and del2oou to oneofusNet.
-        await Fetcher.batchFetch(prefetch, domain!);
+        await Fetcher.batchFetch(prefetch, domain!, mName: 'greedy domain:$domain pass:$pass');
       }
 
       // ====== BLOCKS ====== //

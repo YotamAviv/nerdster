@@ -4,6 +4,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
 import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
+import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
@@ -699,7 +700,6 @@ void main() async {
     var expectedNetwork = {"son": null, "friend": null, "sis": null, "homer2": null, "moms": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
-    // TEMP: expect(notifications.rejected.length, 0);
     expect(notifications.rejected.length, 1);
     MapEntry e = notifications.rejected.entries.first;
     String rejectedToken = e.key;
@@ -839,7 +839,7 @@ void main() async {
     // return;
     DemoKey o;
     DemoKey? n;
-    (o, n) = await DemoKey.demos['stress']();
+    (o, n) = await stress();
 
     final stopwatch = Stopwatch()..start();
 

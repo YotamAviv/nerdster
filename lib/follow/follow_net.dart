@@ -30,7 +30,6 @@ ProgressRX _followNetProgressR = ProgressRX();
 class FollowNet with Comp, ChangeNotifier {
   static final FollowNet _singleton = FollowNet._internal();
   static final Measure measure = Measure('FollowNet');
-  static final Measure mBatchFire = Measure('batch-fire'); // TEMP:
 
   factory FollowNet() => _singleton;
   FollowNet._internal() {
@@ -60,8 +59,8 @@ class FollowNet with Comp, ChangeNotifier {
   String _context = kNerdsterContext;
   final _MostContexts _mostContexts = _MostContexts();
   final Set<String> _centerContexts = <String>{};
-  final Map<String, Set<String>> _oneofus2delegates = <String, Set<String>>{};
-  final Map<String, String> _delegate2oneofus = <String, String>{};
+  Map<String, Set<String>> _oneofus2delegates = <String, Set<String>>{};
+  Map<String, String> _delegate2oneofus = <String, String>{};
   final Map<String, Fetcher> _delegate2fetcher = <String, Fetcher>{};
 
   // interface
@@ -101,8 +100,6 @@ class FollowNet with Comp, ChangeNotifier {
     _mostContexts.clear();
     _centerContexts.clear();
     FollowNode.clear();
-    _delegate2oneofus.clear();
-    _oneofus2delegates.clear();
     _delegate2fetcher.clear();
 
     Iterable<String> network;
@@ -111,8 +108,10 @@ class FollowNet with Comp, ChangeNotifier {
     if (_context != kOneofusContext) {
       FollowNode.clear();
       GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
-      LinkedHashMap<String, Node> canonNetwork =
-          await bfsTrust.process(FollowNode(signInState.center), domain: kNerdsterDomain, progressR: _followNetProgressR);
+      LinkedHashMap<String, Node> canonNetwork = await bfsTrust.process(
+          FollowNode(signInState.center),
+          domain: kNerdsterDomain,
+          progressR: _followNetProgressR);
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
       List<String> tmp = <String>[];
       for (String canon in canonNetwork.keys) {
@@ -134,38 +133,24 @@ class FollowNet with Comp, ChangeNotifier {
       network = networkX;
     }
 
-    Map<String, String?> delegate2revokeAt = <String, String?>{};
-    for (String oneofusKey in network) {
-      Fetcher oneofusFetcher = Fetcher(oneofusKey, kOneofusDomain);
-      assert(oneofusFetcher.isCached);
-      String oneofusCanonicalKey = oneofusEquiv.getCanonical(oneofusKey);
-      _oneofus2delegates.putIfAbsent(oneofusCanonicalKey, () => <String>{});
-      for (TrustStatement s in oneofusFetcher.statements
-          .cast<TrustStatement>()
-          .where((s) => s.verb == TrustVerb.delegate)) {
-        String delegateToken = s.subjectToken;
-        delegate2revokeAt[delegateToken] = s.revokeAt;
-        // Keep track of who's delegate this is for naming delegates (as in, 'homer-nerdster.org')
-        // OLD: Equivalents (or even unrelated) may claim the same delegate
-        // NEW: A delegate can be only one persons, even if equivalent
-        String oneofus = oneofusEquiv.getCanonical(oneofusKey);
-        if (!_delegate2oneofus.containsKey(delegateToken)) {
-          _delegate2oneofus[delegateToken] = oneofus;
-          _oneofus2delegates[oneofus]!.add(delegateToken);
-        } else {
-          notifications.reject(s.token, "Delegate already claimed");
-        }
-      }
-    }
+    _delegate2oneofus = Map.from(oneofusEquiv.delegate2oneofus)
+      ..removeWhere((k, v) => !network.contains(v));
+    _oneofus2delegates = Map.from(oneofusEquiv.oneofus2delegates)
+      ..removeWhere((k, v) => !network.contains(k));
+
+    Map<String, String?> delegate2revokeAt = Map.from(oneofusEquiv.delegate2revokeAt)
+      ..removeWhere((k, v) => !_delegate2oneofus.containsKey(k));
 
     // Batch pre-fetch
-    await Fetcher.batchFetch(delegate2revokeAt, kNerdsterDomain);
+    if (_context == kOneofusContext) {
+      await Fetcher.batchFetch(delegate2revokeAt, kNerdsterDomain, mName: 'followNet dels');
+    }
 
     int count = 0;
     for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
-      String delegateToken = e.key;
+      String delegate = e.key;
       String? revokeAt = e.value;
-      Fetcher fetcher = Fetcher(delegateToken, kNerdsterDomain);
+      Fetcher fetcher = Fetcher(delegate, kNerdsterDomain);
       if (b(revokeAt)) {
         // NOPE: assert(fetcher.revokeAt == revokeAt, 'checking..');
         fetcher.setRevokeAt(revokeAt!);
@@ -173,12 +158,12 @@ class FollowNet with Comp, ChangeNotifier {
       // NOPE: assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
       if (_context == kOneofusContext) {
         double d = count++ / delegate2revokeAt.length;
-        String token = _delegate2oneofus[delegateToken]!;
+        String token = oneofusEquiv.delegate2oneofus[delegate]!;
         _followNetProgressR.report(d, null, token);
       }
       await fetcher.fetch(); // fill cache, query revokeAtTime
       assert(fetcher.revokeAt == null || fetcher.revokeAtTime != null);
-      _delegate2fetcher[delegateToken] = fetcher;
+      _delegate2fetcher[delegate] = fetcher;
     }
 
     // Load up _mostContexts

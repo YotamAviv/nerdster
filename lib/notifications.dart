@@ -27,7 +27,6 @@ class Notifications with ChangeNotifier implements Corruptor {
     _rejected.clear();
     _warned.clear();
     _corrupted.clear();
-    print('notifications cleared');
   }
 
   final LinkedHashMap<String, String> _rejected = LinkedHashMap<String, String>();

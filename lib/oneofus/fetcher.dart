@@ -243,7 +243,7 @@ class Fetcher {
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
-  static Future<void> batchFetch(Map<String, String?> token2revokeAt, String domain) async {
+  static Future<void> batchFetch(Map<String, String?> token2revokeAt, String domain, {String? mName}) async {
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     if (!b(functions)) return;
 
@@ -251,7 +251,7 @@ class Fetcher {
     params["token2revokeAt"] = token2revokeAt;
     final results = await Fetcher.mFire.mAsync(() async {
       return await functions!.httpsCallable('mclouddistinct').call(params);
-    }, token: 'batch');
+    }, token: mName??'?');
 
     // Weave tokens from token2revoked and results
     Set<String> returned = {};
@@ -270,6 +270,9 @@ class Fetcher {
         batchFetched[token] = {"statements": [], "I": null};
       }
     }
+
+    // print('greedy batch $mName');
+    // await Future.delayed(Duration(milliseconds: 800));
   }
 
   Future<void> fetch() async {
