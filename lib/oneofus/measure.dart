@@ -91,7 +91,7 @@ class Measure with ChangeNotifier {
 
   final Stopwatch _stopwatch = Stopwatch();
   final String _name;
-  final Map<String, Duration> token2time = LinkedHashMap<String, Duration>();
+  final Map<String, Duration> token2time = LinkedHashMap<String, Duration>(); // BUG: I'm using token as name, and sometimes it's there more than once (no sum, just overwrite)
 
   void _dump() {
     print('- ${_name}: ${elapsed}');
