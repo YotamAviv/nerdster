@@ -1,11 +1,9 @@
 import 'dart:collection';
 
-import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/progress.dart';
-import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 
 /// Greed BFS trust algorithm
@@ -24,7 +22,9 @@ class GreedyBfsTrust {
   GreedyBfsTrust({this.degrees = 6, this.numPaths = 1});
 
   Future<LinkedHashMap<String, Node>> process(Node source,
-      {Notifications? notifier, ProgressR? progressR, String? domain}) async {
+      {Notifications? notifier,
+      ProgressR? progressR,
+      Future<void> Function(List<Node> tokens, int distance)? batchFetch}) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
     network[source.token] = source;
     assert(source.paths.isEmpty);
@@ -40,27 +40,17 @@ class GreedyBfsTrust {
     while (true) {
       Set<Path> removeAfterIteration = <Path>{};
 
-      if (b(domain)) {
-        Map<String, String?> prefetch = {};
+      if (b(batchFetch)) {
+        List<Node> nodes = [];
         for (Path path in currentLayer) {
           if (!isValidPath(path, network)) {
             removeAfterIteration.add(path);
             continue;
           }
           Node n = path.last.node;
-          // TEMP: KLUDGE: Pass in a prefetch function instead of domain
-          if (domain == kNerdsterDomain) {
-            for (String del in oneofusEquiv.oneofus2delegates[n.token]!) {
-              prefetch[del] = oneofusEquiv.delegate2revokeAt[del];
-            }
-          } else {
-            prefetch[n.token] = n.revokeAt;
-          }
+          nodes.add(n);
         }
-        // BUG: Follow tree nodes use Oneofus equivalent tokens, but their edges come from Nerdster delegate statements.
-        // So if we have edge I follow Andrew, then we need to prefetch Andrew's delegates.
-        // Might have to split followNet like keyLables and oneofusLables, or maybe just move the oou2del and del2oou to oneofusNet.
-        await Fetcher.batchFetch(prefetch, domain!, mName: 'greedy domain:$domain pass:$pass');
+        await batchFetch!(nodes, pass);
       }
 
       // ====== BLOCKS ====== //

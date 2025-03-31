@@ -124,8 +124,15 @@ class OneofusNet with Comp, ChangeNotifier {
     NetNode.clear();
     FetcherNode.clear();
     GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
+    Future<void> batchFetch(List<Node> tokens, int distance) async {
+      Map<String, String?> prefetch = {};
+      for (Node n in tokens) {
+        prefetch[n.token] = n.revokeAt;
+      }
+      await Fetcher.batchFetch(prefetch, kOneofusDomain, mName: 'oneofusNet $distance');
+    }
     _network = await bfsTrust.process(FetcherNode(signInState.center),
-        domain: kOneofusDomain, notifier: notifications, progressR: _oneofusNetProgressR);
+        batchFetch: batchFetch, notifier: notifications, progressR: _oneofusNetProgressR);
     _token2keyCounter.clear();
 
     int keyCounter = 0;

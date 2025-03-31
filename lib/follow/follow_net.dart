@@ -108,9 +108,18 @@ class FollowNet with Comp, ChangeNotifier {
     if (_context != kOneofusContext) {
       FollowNode.clear();
       GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
+      Future<void> batchFetch(List<Node> tokens, int distance) async {
+        Map<String, String?> prefetch = {};
+        for (Node n in tokens) {
+          for (String del in oneofusEquiv.oneofus2delegates[n.token]!) {
+            prefetch[del] = oneofusEquiv.delegate2revokeAt[del];
+          }
+        }
+        await Fetcher.batchFetch(prefetch, kNerdsterDomain, mName: 'followNet $distance');
+      }
       LinkedHashMap<String, Node> canonNetwork = await bfsTrust.process(
           FollowNode(signInState.center),
-          domain: kNerdsterDomain,
+          batchFetch: batchFetch,
           progressR: _followNetProgressR);
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
       List<String> tmp = <String>[];
