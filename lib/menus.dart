@@ -165,9 +165,10 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
-          MyCheckbox(Prefs.cloudFetchDistinct, 'cloud fetch distinct (goes quicker)'),
-          MyCheckbox(Prefs.batchFetch, 'cloud batch fetch'),
+          MyCheckbox(Prefs.cloudFunctionsFetch, 'cloudFunctionsFetch (goes quicker)'),
+          MyCheckbox(Prefs.batchFetch, 'batchFetch'),
           MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
+          MyCheckbox(Prefs.slowFetch, '''slowFetch'''),
           MenuItemButton(
               onPressed: () {
                 Jsonish.wipeCache();

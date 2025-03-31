@@ -7,87 +7,30 @@ import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
-/// Thoughts...
+/// I had ambitions but did not achieve them. This is not well planned, well documented, or well
+/// excuted. See both Measure and Progress.
 ///
-/// Measure.mSync(f) is nice.
-///
-/// The thing that takes time is Fetcher.fetch, which does know
-/// - token
-/// - domain
-/// but doesn't know
-/// - degrees
-///
-/// GreedyBfsTrust does know degrees, tokens, too, but is not well suited to measure fetch time cleanly.
-///
-/// TODO: Make elegant
-/// - [Measure, Progress]... scattered reporting to both.
-/// - time spent computing outside of the async fetch.
-/// - async fetch separated enclosing mission (oneofusNet, followNet)
-/// - verify is like async fetching in that it'd be nice to measure it
-///
-///
-/// the parts are all here
-/// Questions:
-/// - Where to get the singleton or whatever resource to make compatible with phone app?
-///   - Could be a static init on Fetcher.
-///     could more progress from singletons.dart to main.dart
-/// - What changes if/when BatchFetch happens?
-///   - per token loading
-///   - I still want measurements
-///
-///
-/// NEXT: Now that we're getting detailed progress with token, we can measure time.
-/// Plan:
-/// Users (Comps) notify at start (0)
-/// We start the stopwatch
-/// We restart stopwatch at every progress report
-/// Users (Comps) notify at end (1)
-/// We dump repott
-///
-/// CONSIDER: Code to skip this in tests.
-/// The UI should initiate some kind of active Progress thing.
-/// Comps can check that and report to it; otherwise, they can skip that code.
-///
-/// Progress.start can return a ProgressR
-/// - Progres will add a row for that thing, presumably {ONE-OF-US, Nerd'ster}
-/// Progress.end closes it
-/// ProgressR.report asserts that it's active
 
 abstract class ProgressR {
-  void report(double p, String? message, String? token);
-  Future mAsync(func, {String? token});
-  dynamic mSync(func, {String? token});
+  void report(double p, String? message);
 }
 
 class ProgressRX extends ProgressR {
+  final ValueNotifier<double> vn;
+  ProgressRX(this.vn);
   @override
-  void report(double p, String? message, String? token) {
-    progress.nerdster.value = p;
-    progress.message.value =
-        (b(token) ? oneofusLabels.labelKey(token!) ?? token : '') + (message ?? '');
-  }
-  
-  @override
-  Future mAsync(func, {String? token}) {
-    // TODO: implement mAsync
-    throw UnimplementedError();
-  }
-  
-  @override
-  mSync(func, {String? token}) {
-    // TODO: implement mSync
-    throw UnimplementedError();
+  void report(double p, String? message) {
+    vn.value = p;
+    progress.message.value = message;
   }
 }
 
-/// Follow contexts (<Nerdster> included) need to load the Nerdster statements
 class ProgressDialog extends StatefulWidget {
   static final ProgressDialog singleton = ProgressDialog._internal();
-  final Measure measure = Measure('_');
+  final Measure measure = Measure('progress');
   final ValueNotifier<double> oneofus = ValueNotifier(0);
   final ValueNotifier<double> nerdster = ValueNotifier(0);
   final ValueNotifier<String?> message = ValueNotifier(null);
-  final LinkedHashMap<String, ProgressRX> pp = LinkedHashMap<String, ProgressRX>();
 
   ProgressDialog._internal();
 
@@ -95,13 +38,6 @@ class ProgressDialog extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => ProgressDialogState();
-
-  ProgressR create(String title) {
-    assert(!pp.containsKey(title));
-    ProgressRX p = ProgressRX();
-    pp[title] = p;
-    return p;
-  }
 
   Future<void> make(AsyncCallback func, BuildContext context) async {
     if (measure.isRunning) return;
@@ -113,8 +49,6 @@ class ProgressDialog extends StatefulWidget {
       measure.start();
 
       await func();
-
-      // await Comp.waitOnComps([keyLabels, contentBase]);
     } catch (e, stackTrace) {
       await alertException(context, e, stackTrace: stackTrace);
     } finally {
@@ -123,10 +57,6 @@ class ProgressDialog extends StatefulWidget {
       Measure.dump();
     }
   }
-
-  // ProgressR start(String name) {
-
-  // }
 
   Future<void> _show(BuildContext context) async {
     oneofus.value = 0;

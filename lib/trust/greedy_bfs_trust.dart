@@ -52,17 +52,10 @@ class GreedyBfsTrust {
         }
         await batchFetch!(nodes, pass);
       }
+      if (b(progressR)) progressR!.report(pass / degrees, 'degrees: $pass');
 
       // ====== BLOCKS ====== //
-      int count = 0;
       for (Path path in currentLayer) {
-        count++;
-        if (b(progressR)) {
-          double p = (pass - 1) / degrees + (count / currentLayer.length / degrees);
-          String message = 'degrees: $pass';
-          progressR!.report(p, message, path.last.node.token);
-        }
-
         if (!isValidPath(path, network)) {
           removeAfterIteration.add(path);
           continue;
@@ -235,11 +228,7 @@ class GreedyBfsTrust {
       networkSizeBefore = network.length;
     }
 
-    if (b(progressR)) {
-      double p = 1;
-      String message = 'Done';
-      progressR!.report(p, message, null);
-    }
+    if (b(progressR)) progressR!.report(1, 'Done');
     return network;
   }
 

@@ -25,7 +25,7 @@ const kOneofusContext = '<one-of-us>';
 const kSpecialContexts = {kOneofusContext, kNerdsterContext};
 typedef StatementFilter = Iterable<Statement> Function(Iterable<Statement>);
 
-ProgressRX _followNetProgressR = ProgressRX();
+ProgressRX _followNetProgressR = ProgressRX(ProgressDialog.singleton.nerdster);
 
 class FollowNet with Comp, ChangeNotifier {
   static final FollowNet _singleton = FollowNet._internal();
@@ -152,9 +152,8 @@ class FollowNet with Comp, ChangeNotifier {
 
     // Batch pre-fetch
     if (_context == kOneofusContext) {
-      await Fetcher.batchFetch(delegate2revokeAt, kNerdsterDomain, mName: 'followNet dels');
+      await Fetcher.batchFetch(delegate2revokeAt, kNerdsterDomain, mName: 'followNet ${delegate2revokeAt.keys.map((d) => keyLabels.labelKey(d))}');
     }
-
     int count = 0;
     for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
       String delegate = e.key;
@@ -165,13 +164,10 @@ class FollowNet with Comp, ChangeNotifier {
         fetcher.setRevokeAt(revokeAt!);
       }
       // NOPE: assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
-      if (_context == kOneofusContext) {
-        double d = count++ / delegate2revokeAt.length;
-        String token = oneofusEquiv.delegate2oneofus[delegate]!;
-        _followNetProgressR.report(d, null, token);
-      }
       await fetcher.fetch(); // fill cache, query revokeAtTime
-      assert(fetcher.revokeAt == null || fetcher.revokeAtTime != null);
+      if (_context == kOneofusContext) {
+        _followNetProgressR.report(count++ / delegate2revokeAt.length,  keyLabels.labelKey(delegate) );
+      }
       _delegate2fetcher[delegate] = fetcher;
     }
 

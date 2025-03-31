@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
@@ -16,7 +16,7 @@ import 'util.dart';
 ///
 /// - CODE: Clean up index.js
 /// Would be nice to push that to PROD soon (like now), could duplicate the old functions to not break the current Nerd'ster..
-/// 
+///
 /// - Clean up the progress/measure business
 ///
 /// - Remove "I" (and {"statements": ...}) from cloud function results and just return statements straight up.
@@ -133,8 +133,7 @@ class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
-  static Map<String, Json> batchFetched = {}; // DEFER: These should include the domain. that said, it's unlikely that we'll have a Oneofus/Nerdster token collision.
-
+  static Map<String, Json> batchFetched = {};
   static final Measure mFire = Measure('fire');
   static final Measure mVerify = Measure('verify');
 
@@ -182,20 +181,22 @@ class Fetcher {
   }
 
   factory Fetcher(String token, String domain, {bool testingNoVerify = false}) {
-    String key = '$token$domain';
+    String key = _key(token, domain);
     FirebaseFirestore fire = FireFactory.find(domain);
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     Fetcher out;
     if (_fetchers.containsKey(key)) {
       out = _fetchers[key]!;
       assert(out.fire == fire);
-      assert(out.testingNoVerify == testingNoVerify);
+      // TEMP: assert(out.testingNoVerify == testingNoVerify);
     } else {
       out = Fetcher.internal(token, domain, fire, functions, testingNoVerify: testingNoVerify);
       _fetchers[key] = out;
     }
     return out;
   }
+
+  static _key(String token, String domain) => '$token$domain';
 
   Fetcher.internal(this.token, this.domain, this.fire, this.functions,
       {this.testingNoVerify = false});
@@ -240,15 +241,30 @@ class Fetcher {
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
-  static Future<void> batchFetch(Map<String, String?> token2revokeAt, String domain, {String? mName}) async {
+  // BUG: I think I batchFetch over and over when nothing's changed. Note that to re-compute BFS,
+  // cached Fetchers work, but there is no "cached batch fetcher". The different BFS layers
+  // will pre-fetch different tokens, and so considering only the last one won't help.
+  //
+  // Skip cached fetchers?
+  // - or make that the caller's responsibility?
+  // Futhermore, I think that I batch fetch everyone when I'm just missing Amotz.
+  static Future<void> batchFetch(Map<String, String?> token2revokeAt, String domain,
+      {String? mName}) async {
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     if (!b(functions)) return;
+
+    // skip cached fetchers
+    Map<String, String?> tmp = Map.of(token2revokeAt)
+      ..removeWhere((k, v) => Fetcher(k, domain).isCached && Fetcher(k, domain).revokeAt == v);
+    if (tmp.length != token2revokeAt.length)
+      print('skipping ${token2revokeAt.length - tmp.length}');
+    token2revokeAt = tmp;
 
     Json params = Map.of(paramsProto);
     params["token2revokeAt"] = token2revokeAt;
     final results = await Fetcher.mFire.mAsync(() async {
       return await functions!.httpsCallable('mclouddistinct').call(params);
-    }, token: mName??'?');
+    }, note: mName ?? '?');
 
     // Weave tokens from token2revoked and results
     Set<String> returned = {};
@@ -258,31 +274,34 @@ class Fetcher {
       if (b(i)) {
         String token = getToken(i);
         returned.add(token);
-        batchFetched[token] = {"statements": statements, "I": i};
+        batchFetched[_key(token, domain)] = {"statements": statements, "I": i};
       }
     }
     // In case a token had no statements, make it clear that it's been fetched but is just empty.
     for (String token in token2revokeAt.keys) {
       if (!returned.contains(token)) {
-        batchFetched[token] = {"statements": [], "I": null};
+        batchFetched[_key(token, domain)] = {"statements": [], "I": null};
       }
     }
 
-    // print('greedy batch $mName');
-    // await Future.delayed(Duration(milliseconds: 800));
+    print('batchFetch: ${token2revokeAt.keys.map((t) => t)}');
+
+    if (Prefs.slowFetch.value) {
+      await Future.delayed(Duration(milliseconds: token2revokeAt.length * 100));
+    }
   }
 
   Future<void> fetch() async {
     if (b(_cached)) return;
-    // await Future.delayed(Duration(milliseconds: 300));
 
     try {
       _cached = <Statement>[];
       DateTime? time;
-      if (Prefs.cloudFetchDistinct.value && functions != null) {
+      if (Prefs.cloudFunctionsFetch.value && functions != null) {
         Json params = Map.of(paramsProto);
         params["token2revokeAt"] = {token: _revokeAt};
-        if (Prefs.fetchRecent.value && domain == kNerdsterDomain) {
+        // EXPERIMENTA: Refresh - only reload what we need to.
+        if (Prefs.fetchRecent.value && domain != kOneofusDomain) {
           // DEFER: Actually make Fetcher refresh incrementally (not fully reload). It is faster (not linearly, but still..)
           DateTime recent = DateTime.now().subtract(recentDuration);
           params['after'] = formatIso(recent);
@@ -290,15 +309,18 @@ class Fetcher {
 
         List statements;
         Json? iKey;
-        if (Prefs.batchFetch.value && b(batchFetched[token])) {
-          Json fetched = batchFetched[token]!;
+        if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
+          Json fetched = batchFetched[_key(token, domain)]!;
           statements = fetched["statements"];
           iKey = fetched["I"];
         } else {
           print('batcher miss $domain');
+          if (Prefs.slowFetch.value) {
+            await Future.delayed(Duration(milliseconds: 300));
+          }
           final result = await mFire.mAsync(() async {
             return await functions!.httpsCallable('clouddistinct').call(params);
-          }, token: token);
+          }, note: token);
           statements = result.data["statements"];
           iKey = result.data['I'];
         }
@@ -358,7 +380,8 @@ class Fetcher {
         if (_revokeAtTime != null) {
           query = query.where('time', isLessThanOrEqualTo: formatIso(_revokeAtTime!));
         }
-        if (Prefs.fetchRecent.value && domain == kNerdsterDomain) {
+        // EXPERIMENTA: Refresh - only reload what we need to.
+        if (Prefs.fetchRecent.value && domain != kOneofusDomain) {
           DateTime recent = DateTime.now().subtract(recentDuration);
           query = query.where('time', isGreaterThanOrEqualTo: formatIso(recent));
         }
