@@ -194,6 +194,26 @@ function getOtherSubject(j) {
 
 // -----------  --------------------------------------------------------//
 
+// Considers subject of verb (input[verb]) and otherSubject (input[with][otherSubject]) if present.
+async function makedistinct(input) {
+  var distinct = [];
+  var already = new Set();
+  for (var s of input) {
+    var i = s['I'];
+    const [verb, subject] = getVerbSubject(s);
+    const subjectToken = await keyToken(subject);
+    const otherSubject = getOtherSubject(s);
+    const otherToken = otherSubject != null ? await keyToken(otherSubject) : null;
+    const combinedKey = otherToken != null ?
+      ((subjectToken < otherToken) ? subjectToken.concat(otherToken) : otherToken.concat(subjectToken)) :
+      subjectToken;
+    if (already.has(combinedKey)) continue;
+    already.add(combinedKey);
+    distinct.push(s);
+  }
+  return distinct;
+}
+
 async function fetchh(token2revokeAt, params = {}, omit = {}) {
   const checkPrevious = params.checkPrevious != null;
   const distinct = params.distinct != null;
@@ -380,7 +400,7 @@ exports.mclouddistinct = onCall(async (request) => {
     var outs = [];
     for (const [token, revokeAt] of Object.entries(token2revokeAt)) {
       logger.log(`token=${token}, revokeAt=${revokeAt}`);
-      var out = await fetchh({[token]: revokeAt}, params, omit); // TODO: Async streaming (parallel)
+      var out = await fetchh({ [token]: revokeAt }, params, omit); // TODO: Async streaming (parallel)
       outs.push(out);
     }
     return outs;
@@ -405,23 +425,3 @@ exports.signin = onRequest((req, res) => {
       res.status(201).json({});
     });
 });
-
-// Considers subject of verb (input[verb]) and otherSubject (input[with][otherSubject]) if present.
-async function makedistinct(input) {
-  var distinct = [];
-  var already = new Set();
-  for (var s of input) {
-    var i = s['I'];
-    const [verb, subject] = getVerbSubject(s);
-    const subjectToken = await keyToken(subject);
-    const otherSubject = getOtherSubject(s);
-    const otherToken = otherSubject != null ? await keyToken(otherSubject) : null;
-    const combinedKey = otherToken != null ?
-      ((subjectToken < otherToken) ? subjectToken.concat(otherToken) : otherToken.concat(subjectToken)) :
-      subjectToken;
-    if (already.has(combinedKey)) continue;
-    already.add(combinedKey);
-    distinct.push(s);
-  }
-  return distinct;
-}

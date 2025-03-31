@@ -8,13 +8,14 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:test/test.dart';
 
 /// Test against FirebaseEmulator and Cloud Functions..
 /// (This section of doc is mostly useless.)
 ///
-/// DEFER: The point of "unit testing" is to test things indepndantly, and so TEST: Fetcher 
+/// DEFER: The point of "unit testing" is to test things indepndantly, and so TEST: Fetcher
 /// seperately from cloud functions.
 /// - TEST: Fetcher on a cloud functions stub (maybe save cloud functions output).
 /// - TEST: cloud functions specifically without Fetcher (use files, shouldn't be hard)
@@ -74,6 +75,8 @@ Future<void> fetcherIntegrationTest() async {
   test('distinctContentRelateEquate', helper.distinctContentRelateEquate);
 
   test('clearNot', helper.clearNot);
+
+  test('batch', helper.batch);
 }
 
 class FetcherTestHelper {
@@ -398,5 +401,68 @@ class FetcherTestHelper {
     }, signer);
     js = distinct(fetcher.statements);
     expect(js.length, 1);
+  }
+
+  Future<void> batch() async {
+    Prefs.batchFetch.value = true;
+
+    // write data
+    ContentStatement.init();
+    TestSigner signer = TestSigner();
+
+    Json kI1 = await makeI();
+    String t1 = getToken(kI1);
+    Json kI2 = await makeI();
+    String t2 = getToken(kI2);
+
+    // this is to not see 'cache miss' in the debug console as pushing requires fetching first.
+    await Fetcher.batchFetch({t1: null, t2: null}, kNerdsterDomain);
+
+    Fetcher fetcher1 = Fetcher(t1, kNerdsterDomain, testingNoVerify: true);
+    Statement s1 = await fetcher1.push({
+      'statement': kNerdsterType,
+      'I': kI1,
+      'rate': {'title': 'a'},
+      'time': clock.nowIso
+    }, signer);
+
+    Fetcher fetcher2 = Fetcher(t2, kNerdsterDomain, testingNoVerify: true);
+    Statement s2 = await fetcher2.push({
+      'statement': kNerdsterType,
+      'I': kI2,
+      'rate': {'title': 'a'},
+      'time': clock.nowIso
+    }, signer);
+
+    // read data
+
+    Fetcher.clear();
+
+    await Fetcher.batchFetch({t1: null, t2: null}, kNerdsterDomain);
+    fetcher2 = Fetcher(t2, kNerdsterDomain, testingNoVerify: true);
+    await fetcher2.fetch();
+    expect(fetcher2.statements.length, 1);
+    expect(fetcher2.statements[0].token, s2.token);
+
+    // Repeat with revoke since always
+
+    Fetcher.clear();
+
+    await Fetcher.batchFetch({t1: null, t2: 'since always'}, kNerdsterDomain);
+    fetcher2 = Fetcher(t2, kNerdsterDomain, testingNoVerify: true);
+    await fetcher2.fetch();
+    expect(fetcher2.statements.length, 0);
+
+    // Repeat with revoke at token
+
+    Fetcher.clear();
+
+    await Fetcher.batchFetch({t1: null, t2: s2.token}, kNerdsterDomain);
+    fetcher2 = Fetcher(t2, kNerdsterDomain, testingNoVerify: true);
+    await fetcher2.fetch();
+    expect(fetcher2.statements.length, 1);
+    expect(fetcher2.statements[0].token, s2.token);
+
+    // DEFER: actually verify that we're getting hits.
   }
 }
