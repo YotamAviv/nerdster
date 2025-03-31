@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:collection';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -91,11 +91,11 @@ class Measure with ChangeNotifier {
 
   final Stopwatch _stopwatch = Stopwatch();
   final String _name;
-  final Map<String, Duration> token2time = {};
+  final Map<String, Duration> token2time = LinkedHashMap<String, Duration>();
 
   void _dump() {
     print('- ${_name}: ${elapsed}');
-    for (MapEntry e in token2time.entries.sorted((e1, e2) => e1.value < e2.value ? 1 : -1)) {
+    for (MapEntry e in token2time.entries) { // .sorted((e1, e2) => e1.value < e2.value ? 1 : -1)) {
       print('  ${e.value.toString()} (${keyLabels.labelKey(e.key)??e.key})');
     }
   }

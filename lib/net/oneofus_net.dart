@@ -115,7 +115,6 @@ class OneofusNet with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    print('oneofusNet in');
     throwIfSupportersNotReady();
     measure.start();
 
@@ -135,7 +134,6 @@ class OneofusNet with Comp, ChangeNotifier {
     }
 
     measure.stop();
-    print('oneofusNet out');
   }
 }
 

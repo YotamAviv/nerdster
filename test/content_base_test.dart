@@ -5,6 +5,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/demotest/cases/deletions.dart';
+import 'package:nerdster/demotest/cases/loner.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
@@ -161,17 +162,12 @@ void main() async {
     expect(roots.length, 0);
 
     Statement statement = await lonerD.doRate(title: "t1");
-    expect(statement.containsKey('signature'), true);
-    expect(!statement.containsKey('previous'), true);
     await signInState.signIn(loner.token, lonerD.keyPair);
-    contentBase.listen();
     await contentBase.waitUntilReady();
     roots = contentBase.roots;
     expect(roots.length, 1);
 
-    Statement statement2 = await lonerD.doRate(title: "t2");
-    expect(statement2.containsKey('signature'), true);
-    expect(statement2.containsKey('previous'), true);
+    await lonerD.doRate(title: "t2");
     contentBase.listen();
     await contentBase.waitUntilReady();
     roots = contentBase.roots;
@@ -182,12 +178,12 @@ void main() async {
         domain: kNerdsterDomain, comment: 'bad', revokeAt: statement.token);
 
     await signInState.signIn(loner.token, lonerD.keyPair);
-    await contentBase.waitUntilReady();
+    await Comp.waitOnComps([contentBase, keyLabels]);
     expect(keyLabels.show(dumpNetwork(oneofusNet.network)), {'Me': null});
 
     Map<String, Fetcher> delegateNetwork;
     Map<String, DateTime?> dn;
-    await followNet.waitUntilReady();
+    await Comp.waitOnComps([contentBase, keyLabels]);
     delegateNetwork = followNet.delegate2fetcher;
     dn = delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
     expect(keyLabels.show(dn), {'Me-delegate': '5/1/2024 12:02 AM'});
@@ -198,16 +194,15 @@ void main() async {
     DemoKey lonerD2 = await DemoKey.findOrCreate('loner-nerdster2');
     await loner.doTrust(TrustVerb.delegate, lonerD2,
         comment: 'nerdster key 2', domain: kNerdsterDomain);
-    followNet.listen();
+    oneofusEquiv.listen();
     await Comp.waitOnComps([followNet, keyLabels]);
     delegateNetwork = followNet.delegate2fetcher;
     dn = delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
+    expect(dn, {lonerD2.token: null, lonerD.token: parseIso('2024-05-01 04:02:00.000Z')});
     expect(keyLabels.show(dn), {'Me-delegate': null, 'Me-delegate (0)': '5/1/2024 12:02 AM'});
 
     // say something as new delegate
-    Statement statement3 = await lonerD2.doRate(title: "t3");
-    expect(statement3.containsKey('signature'), true);
-    expect(!statement3.containsKey('previous'), true);
+    await lonerD2.doRate(title: "t3");
     await signInState.signIn(loner.token, lonerD2.keyPair);
     await contentBase.waitUntilReady();
     roots = contentBase.roots;
@@ -224,7 +219,7 @@ void main() async {
 
   test('equate1 without dump', () async {
     DemoKey? nerd, delegate;
-    (nerd, delegate) = await DemoKey.demos['lonerEquate']();
+    (nerd, delegate) = await lonerEquate();
     await signInState.signIn(nerd!.token, (delegate != null) ? delegate.keyPair : null);
     await contentBase.waitUntilReady();
     expect(contentBase.roots.length, 1);

@@ -44,7 +44,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     myExpect(roots.length, 2);
 
     DemoKey loner2N = await loner2.makeDelegate();
-    followNet.listen();
+    oneofusEquiv.listen();
     Statement s3 = await loner2N.doRate(title: 't3');
     contentBase.listen();
     await Comp.waitOnComps([contentBase]);
@@ -52,7 +52,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     myExpect(roots.length, 3);
 
     DemoKey loner2N2 = await loner2.makeDelegate();
-    followNet.listen();
+    oneofusEquiv.listen();
     Statement s4 = await loner2N2.doRate(title: 't4');
     contentBase.listen();
     await Comp.waitOnComps([contentBase]);

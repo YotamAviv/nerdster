@@ -232,12 +232,15 @@ void main() async {
 
     signInState.center = bo.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    myExpect(contentBase.roots.length, 1);
-    cn = contentBase.roots.first;
-    expect(cn.getChildren().length, 1); // 2 ratings
+    expect(oneofusNet.network.keys, [bo.token, luke.token]);
     // Check rejection
     // (I don't have the rejected statement here because it's not returned by luke.makeDelegate)
     expect(notifications.rejected.values, {"Delegate already claimed"});
+    expect(oneofusEquiv.oneofus2delegates[luke.token], Set());
+    expect(oneofusEquiv.oneofus2delegates[bo.token], {boN.token, lukeN.token});
+    myExpect(contentBase.roots.length, 1);
+    cn = contentBase.roots.first;
+    expect(cn.getChildren().length, 1); // 2 ratings
 
     //
     signInState.center = luke.token;
@@ -407,6 +410,7 @@ void main() async {
     // maybe notifications, rejections)
     await bob2.doTrust(TrustVerb.delegate, bobN);
     await steve2.doTrust(TrustVerb.delegate, steveN);
+    oneofusEquiv.listen();
     // (signInState.center = bob2.token;)
     followNet.fcontext = kOneofusContext;
     await Comp.waitOnComps([followNet, keyLabels]);
