@@ -10,27 +10,28 @@ bool bNerd = devDefault;
 class Prefs {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
-  static final ValueNotifier<bool> keyLabel = ValueNotifier(true);
-  static final ValueNotifier<bool> showJson = ValueNotifier(bNerd);
-  static final ValueNotifier<bool> showStatements = ValueNotifier(bNerd);
-  static final ValueNotifier<bool> showKeys = ValueNotifier(bNerd);
+  // Settings
+  static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> censor = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> hideDismissed = ValueNotifier<bool>(true);
-
-  static final ValueNotifier<bool> slowFetch = ValueNotifier<bool>(false);
-  static final ValueNotifier<bool> fetchRecent = ValueNotifier<bool>(false);
-  static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
-  static final ValueNotifier<bool> dev = ValueNotifier<bool>(devDefault);
-
-  // TEST:
-  static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> cloudFunctionsFetch = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> batchFetch = ValueNotifier<bool>(true);
-
   static final ValueNotifier<int> oneofusNetDegrees = ValueNotifier<int>(5);
   static final ValueNotifier<int> oneofusNetPaths = ValueNotifier<int>(1);
   static final ValueNotifier<int> followNetDegrees = ValueNotifier<int>(5);
   static final ValueNotifier<int> followNetPaths = ValueNotifier<int>(1);
+  static final ValueNotifier<bool> keyLabel = ValueNotifier(true);
+  static final ValueNotifier<bool> showJson = ValueNotifier(bNerd);
+  static final ValueNotifier<bool> showKeys = ValueNotifier(bNerd);
+  static final ValueNotifier<bool> showStatements = ValueNotifier(bNerd);
+  static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
+
+  // DEV:
+  static final ValueNotifier<bool> dev = ValueNotifier<bool>(devDefault);
+  // DEFER: These are not all compatible with each other, no worries..
+  static final ValueNotifier<bool> cloudFunctionsFetch = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> batchFetch = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> slowFetch = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> fetchRecent = ValueNotifier<bool>(false);
+
 
   static Future<void> init() async {
     Map<String, String> params = Uri.base.queryParameters;
