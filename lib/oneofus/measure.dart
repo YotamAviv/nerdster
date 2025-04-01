@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:nerdster/oneofus/util.dart';
+
+import 'util.dart';
 
 /// I had ambitions but did not achieve them. This is not well planned, well documented, or well
 /// excuted. See both Measure and Progress.
