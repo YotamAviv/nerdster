@@ -102,8 +102,10 @@ class FetcherTestHelper {
   }
 
   Future<void> base() async {
+    Prefs.skipVerify.value = true;
+
     Json kI = await makeI();
-    Fetcher fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
+    Fetcher fetcher = Fetcher(getToken(kI), _domain);
     Json map = {
       'statement': _type,
       'time': clock.nowIso,
@@ -124,6 +126,7 @@ class FetcherTestHelper {
   }
 
   Future<void> revokeAt() async {
+    Prefs.skipVerify.value = true;
     for (bool doClear in [true, false]) {
       Json kI = await makeI();
 
@@ -131,7 +134,7 @@ class FetcherTestHelper {
       Fetcher fetcher;
 
       List<Statement> js;
-      fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
+      fetcher = Fetcher(getToken(kI), _domain);
 
       await fetcher
           .push({'statement': _type, 'I': kI, 'block': 'sub1', 'time': clock.nowIso}, signer);
@@ -165,6 +168,7 @@ class FetcherTestHelper {
   }
 
   Future<void> revokeAtSinceAlways() async {
+    Prefs.skipVerify.value = true;
     for (bool doClear in [true, false]) {
       Json kI = await makeI();
 
@@ -172,7 +176,7 @@ class FetcherTestHelper {
       Fetcher fetcher;
 
       List<Statement> js;
-      fetcher = Fetcher(getToken(kI), _domain, testingNoVerify: true);
+      fetcher = Fetcher(getToken(kI), _domain);
 
       await fetcher
           .push({'statement': _type, 'I': kI, 'block': 'sub1', 'time': clock.nowIso}, signer);
@@ -203,13 +207,14 @@ class FetcherTestHelper {
   }
 
   Future<void> notarizationBlockchainViolation() async {
+    Prefs.skipVerify.value = true;
     TestSigner signer = TestSigner();
     Fetcher fetcher;
 
     List<Statement> js;
     final Json kI = await makeI();
     final String token = getToken(kI);
-    fetcher = Fetcher(token, _domain, testingNoVerify: true);
+    fetcher = Fetcher(token, _domain);
 
     await fetcher
         .push({'statement': _type, 'I': kI, 'trust': 'sub1', 'time': clock.nowIso}, signer);
@@ -234,7 +239,7 @@ class FetcherTestHelper {
         .set(fraudJ.json)
         .then((doc) {}, onError: (e) => print("Error: $e"));
 
-    fetcher = Fetcher(token, _domain, testingNoVerify: true);
+    fetcher = Fetcher(token, _domain);
     // notary verification is different between local and cloud (right now).
     // Cloud functions throws error; local skips the statement.
     await fetcher.fetch();
@@ -250,7 +255,7 @@ class FetcherTestHelper {
     Json kI = await makeI();
 
     Iterable<Statement> js;
-    fetcher = Fetcher(getToken(kI), kNerdsterDomain, testingNoVerify: true);
+    fetcher = Fetcher(getToken(kI), kNerdsterDomain);
 
     await fetcher.push({
       'statement': kNerdsterType,
@@ -296,7 +301,7 @@ class FetcherTestHelper {
     Iterable<Statement> js;
     Json kI = await makeI();
 
-    fetcher = Fetcher(getToken(kI), kNerdsterDomain, testingNoVerify: true);
+    fetcher = Fetcher(getToken(kI), kNerdsterDomain);
 
     await fetcher.push({
       'statement': kNerdsterType,
@@ -375,7 +380,7 @@ class FetcherTestHelper {
     Json kI = await makeI();
 
     Iterable<Statement> js;
-    fetcher = Fetcher(getToken(kI), kNerdsterDomain, testingNoVerify: true);
+    fetcher = Fetcher(getToken(kI), kNerdsterDomain);
 
     await fetcher.push({
       'statement': kNerdsterType,
@@ -404,6 +409,7 @@ class FetcherTestHelper {
   }
 
   Future<void> batch() async {
+    Prefs.skipVerify.value = true;
     Prefs.batchFetch.value = true;
 
     // write data
@@ -418,7 +424,7 @@ class FetcherTestHelper {
     // this is to not see 'cache miss' in the debug console as pushing requires fetching first.
     await Fetcher.batchFetch({t1: null, t2: null}, kNerdsterDomain);
 
-    Fetcher fetcher1 = Fetcher(t1, kNerdsterDomain, testingNoVerify: true);
+    Fetcher fetcher1 = Fetcher(t1, kNerdsterDomain);
     Statement s1 = await fetcher1.push({
       'statement': kNerdsterType,
       'I': kI1,
@@ -426,7 +432,7 @@ class FetcherTestHelper {
       'time': clock.nowIso
     }, signer);
 
-    Fetcher fetcher2 = Fetcher(t2, kNerdsterDomain, testingNoVerify: true);
+    Fetcher fetcher2 = Fetcher(t2, kNerdsterDomain);
     Statement s2 = await fetcher2.push({
       'statement': kNerdsterType,
       'I': kI2,
@@ -439,7 +445,7 @@ class FetcherTestHelper {
     Fetcher.clear();
 
     await Fetcher.batchFetch({t1: null, t2: null}, kNerdsterDomain);
-    fetcher2 = Fetcher(t2, kNerdsterDomain, testingNoVerify: true);
+    fetcher2 = Fetcher(t2, kNerdsterDomain);
     await fetcher2.fetch();
     expect(fetcher2.statements.length, 1);
     expect(fetcher2.statements[0].token, s2.token);
@@ -449,7 +455,7 @@ class FetcherTestHelper {
     Fetcher.clear();
 
     await Fetcher.batchFetch({t1: null, t2: 'since always'}, kNerdsterDomain);
-    fetcher2 = Fetcher(t2, kNerdsterDomain, testingNoVerify: true);
+    fetcher2 = Fetcher(t2, kNerdsterDomain);
     await fetcher2.fetch();
     expect(fetcher2.statements.length, 0);
 
@@ -458,7 +464,7 @@ class FetcherTestHelper {
     Fetcher.clear();
 
     await Fetcher.batchFetch({t1: null, t2: s2.token}, kNerdsterDomain);
-    fetcher2 = Fetcher(t2, kNerdsterDomain, testingNoVerify: true);
+    fetcher2 = Fetcher(t2, kNerdsterDomain);
     await fetcher2.fetch();
     expect(fetcher2.statements.length, 1);
     expect(fetcher2.statements[0].token, s2.token);

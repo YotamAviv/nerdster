@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
@@ -10,6 +9,7 @@ import 'jsonish.dart';
 import 'measure.dart';
 import 'oou_verifier.dart';
 import 'statement.dart';
+import 'trust_statement.dart';
 import 'util.dart';
 
 ///
@@ -138,7 +138,6 @@ class Fetcher {
   final FirebaseFunctions? functions;
   final String domain;
   final String token;
-  final bool testingNoVerify;
 
   // 3 states:
   // - not revoked : null
@@ -174,7 +173,7 @@ class Fetcher {
     batchFetched.clear();
   }
 
-  factory Fetcher(String token, String domain, {bool testingNoVerify = false}) {
+  factory Fetcher(String token, String domain) {
     String key = _key(token, domain);
     FirebaseFirestore fire = FireFactory.find(domain);
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
@@ -182,9 +181,8 @@ class Fetcher {
     if (_fetchers.containsKey(key)) {
       out = _fetchers[key]!;
       assert(out.fire == fire);
-      // TEMP: assert(out.testingNoVerify == testingNoVerify);
     } else {
-      out = Fetcher.internal(token, domain, fire, functions, testingNoVerify: testingNoVerify);
+      out = Fetcher.internal(token, domain, fire, functions);
       _fetchers[key] = out;
     }
     return out;
@@ -192,8 +190,7 @@ class Fetcher {
 
   static _key(String token, String domain) => '$token$domain';
 
-  Fetcher.internal(this.token, this.domain, this.fire, this.functions,
-      {this.testingNoVerify = false});
+  Fetcher.internal(this.token, this.domain, this.fire, this.functions);
 
   // Oneofus trust does not allow 2 different keys replace a key (that's a conflict).
   // Fetcher isn't responsible for implementing that, but I am going to assume that
@@ -246,12 +243,14 @@ class Fetcher {
       {String? mName}) async {
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     if (!b(functions)) return;
+    if (!Prefs.batchFetch.value) return;
 
     // skip cached fetchers
     Map<String, String?> tmp = Map.of(token2revokeAt)
       ..removeWhere((k, v) => Fetcher(k, domain).isCached && Fetcher(k, domain).revokeAt == v);
-    if (tmp.length != token2revokeAt.length)
+    if (tmp.length != token2revokeAt.length) {
       print('skipping ${token2revokeAt.length - tmp.length}');
+    }
     token2revokeAt = tmp;
 
     Json params = Map.of(paramsProto);
@@ -386,7 +385,8 @@ class Fetcher {
         for (final docSnapshot in snapshots.docs) {
           final Json data = docSnapshot.data();
           Jsonish jsonish;
-          if (Prefs.skipVerify.value || testingNoVerify) {
+          if (Prefs.skipVerify.value) {
+            // DEFER: skipVerify is not necessarily compatible with some cloud functions distinct fetching. 
             jsonish = mVerify.mSync(() => Jsonish(data));
           } else {
             jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(data, _verifier));
