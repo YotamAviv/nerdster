@@ -256,7 +256,7 @@ class Fetcher {
     Json params = Map.of(paramsProto);
     params["token2revokeAt"] = token2revokeAt;
     final results = await Fetcher.mFire.mAsync(() async {
-      return await functions!.httpsCallable('mclouddistinct').call(params);
+      return await functions!.httpsCallable('mcloudfetch').call(params);
     }, note: mName ?? '?');
 
     // Weave tokens from token2revoked and results
@@ -307,12 +307,12 @@ class Fetcher {
           statements = fetched["statements"];
           iKey = fetched["I"];
         } else {
-          print('batcher miss $domain');
+          if (Prefs.batchFetch.value) print('batcher miss $domain');
           if (Prefs.slowFetch.value) {
             await Future.delayed(Duration(milliseconds: 300));
           }
           final result = await mFire.mAsync(() async {
-            return await functions!.httpsCallable('xclouddistinct').call(params);
+            return await functions!.httpsCallable('cloudfetch').call(params);
           }, note: token);
           statements = result.data["statements"];
           iKey = result.data['I'];
