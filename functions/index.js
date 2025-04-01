@@ -1,9 +1,10 @@
 
 /// 
 /// I often forget and then see it in the logs.. (to run in the functions directory)
-/// - "npm install"
-/// - "npm install --save firebase-functions@latest"
-/// - "npm audit fix"
+/*
+npm install
+npm install --save firebase-functions@latest
+npm audit fix
 /*
 TEST: Would be nice to see that these all produce output we expect:
 http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&after=2025-03-08T00:40:59.803Z
@@ -229,7 +230,8 @@ async function makedistinct(input) {
   return distinct;
 }
 
-async function xfetchh(token2revokeAt, params = {}, omit = {}) {
+// fetchh: gratuitous h to avoid naming conflict with node-fetch
+async function fetchh(token2revokeAt, params = {}, omit = {}) {
   const checkPrevious = params.checkPrevious != null;
   const distinct = params.distinct != null;
   const orderStatements = params.orderStatements != 'false'; // On by default for demo.
@@ -335,6 +337,39 @@ async function xfetchh(token2revokeAt, params = {}, omit = {}) {
   return { "statements": statements, "I": iKey };
 }
 
+// ------------------------- Firebase cloud functions called Nerdster ------------------------- //
+
+/// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
+exports.cloudfetch = onCall(async (request) => {
+  const token2revokeAt = request.data.token2revokeAt;
+  logger.log(`token2revokeAt=${token2revokeAt}`);
+  try {
+    return await fetchh(token2revokeAt, request.data, request.data.omit);
+  } catch (error) {
+    console.error(error);
+    throw new HttpsError(error);
+  }
+});
+
+// TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
+exports.mcloudfetch = onCall(async (request) => {
+  const token2revokeAt = request.data.token2revokeAt;
+  const params = request.data;
+  const omit = request.data.omit;
+  try {
+    var outs = [];
+    for (const [token, revokeAt] of Object.entries(token2revokeAt)) {
+      logger.log(`token=${token}, revokeAt=${revokeAt}`);
+      var out = await fetchh({ [token]: revokeAt }, params, omit); // TODO: Async streaming (parallel)
+      outs.push(out);
+    }
+    return outs;
+  } catch (error) {
+    console.error(error);
+    throw new HttpsError(error);
+  }
+});
+
 
 // JSON export
 // from: Google AI: https://www.google.com/search?q=Firebase+function+HTTP+GET+export+collection&oq=Firebase+function+HTTP+GET+export+collection&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRhA0gEIOTYzMmowajSoAgCwAgE&sourceid=chrome&ie=UTF-8
@@ -352,11 +387,11 @@ http://127.0.0.1:5001/nerdster/us-central1/export2/?i={"f4e45451dd663b6c9caf9027
 // - mapped to https://export.nerdster.org/?token=f4e45451dd663b6c9caf90276e366f57e573841b
 //   - https://console.cloud.google.com/run/domains?project=nerdster
 //   - https://console.firebase.google.com/project/nerdster/functions/list
-exports.xexport2 = onRequest(async (req, res) => {
+exports.export2 = onRequest(async (req, res) => {
   const token2revokeAt = parseIrevoke(req.query.i);
   const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
   try {
-    const retval = await xfetchh(token2revokeAt, req.query, omit);
+    const retval = await fetchh(token2revokeAt, req.query, omit);
     res.status(200).json(retval);
   } catch (error) {
     console.error(error);
@@ -364,7 +399,7 @@ exports.xexport2 = onRequest(async (req, res) => {
   }
 });
 
-// WIP
+// WIP: 
 // TODO: revokeAt per token, other params for all tokens
 // TODO: Investigate making parallel, see https://firebase.google.com/docs/functions/callable?gen=2nd#stream-back
 /*
@@ -387,161 +422,6 @@ exports.mexport = onRequest(async (req, res) => {
 
     // const retval = await mfetchh(tokens, req.query, omit);
     res.status(200).json(outs);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(`Error: ${error}`);
-  }
-});
-
-
-/// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
-exports.xclouddistinct = onCall(async (request) => {
-  const token2revokeAt = request.data.token2revokeAt;
-  logger.log(`token2revokeAt=${token2revokeAt}`);
-  try {
-    return await xfetchh(token2revokeAt, request.data, request.data.omit);
-  } catch (error) {
-    console.error(error);
-    throw new HttpsError(error);
-  }
-});
-
-// TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
-exports.mclouddistinct = onCall(async (request) => {
-  const token2revokeAt = request.data.token2revokeAt;
-  const params = request.data;
-  const omit = request.data.omit;
-  try {
-    var outs = [];
-    for (const [token, revokeAt] of Object.entries(token2revokeAt)) {
-      logger.log(`token=${token}, revokeAt=${revokeAt}`);
-      var out = await xfetchh({ [token]: revokeAt }, params, omit); // TODO: Async streaming (parallel)
-      outs.push(out);
-    }
-    return outs;
-  } catch (error) {
-    console.error(error);
-    throw new HttpsError(error);
-  }
-});
-
-// ----------------------- older 
-
-
-async function fetchh(token, params = {}, omit = {}) {
-  const revokeAt = params.revokeAt;
-  const checkPrevious = params.checkPrevious != null;
-  const distinct = params.distinct != null;
-  const orderStatements = params.orderStatements != 'false'; // On by default for demo.
-  const includeId = params.includeId != null;
-
-  if (!token) throw 'Missing token';
-  if (checkPrevious && !includeId) throw 'checkPrevious requires includeId';
-
-  const db = admin.firestore();
-  const collectionRef = db.collection(token).doc('statements').collection('statements');
-
-  var revokedAtTime;
-  if (revokeAt) {
-    const doc = collectionRef.doc(revokeAt);
-    const docSnap = await doc.get();
-    if (docSnap.data()) {
-      revokedAtTime = docSnap.data().time;
-    } else {
-      return { "statements": [] };
-    }
-  }
-
-  var snapshot;
-  if (revokedAtTime) {
-    snapshot = await collectionRef.where('time', "<=", revokedAtTime).orderBy('time', 'desc').get();
-  } else {
-    snapshot = await collectionRef.orderBy('time', 'desc').get();
-  }
-
-  var statements;
-  if (includeId) {
-    statements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } else {
-    statements = snapshot.docs.map(doc => doc.data());
-  }
-
-  // Do this early (first) before distinct and/or other calls below.
-  var iKey;
-  if (statements.length > 0) {
-    iKey = statements[0].I;
-  }
-
-  // BUG: checkPrevious requires includeId
-  if (checkPrevious) {
-    // Validate notary chain, decending order
-    var first = true;
-    var previousToken;
-    var previousTime;
-    for (var d of statements) {
-      if (first) {
-        first = false; // no check
-      } else {
-        if (d.id != previousToken) {
-          var error = `Notarization violation: ${d.id} != ${previousToken}`;
-          logger.error(error);
-          throw error;
-        }
-
-        if (d.time >= previousTime) {
-          var error = `Not descending: ${d.time} >= ${previousTime}`;
-          logger.error(error);
-          throw error;
-        }
-      }
-      previousToken = d.previous;
-      previousTime = d.time;
-    }
-  }
-
-  if (omit) {
-    for (var s of statements) {
-      for (const key of omit) {
-        delete s[key];
-      }
-    }
-  }
-
-  if (distinct) {
-    statements = await makedistinct(statements);
-  }
-
-  // order statements
-  if (orderStatements) {
-    var list = [];
-    for (const statement of statements) {
-      const ordered = order(statement);
-      list.push(ordered);
-    }
-    statements = list;
-  }
-
-  return { "statements": statements, "I": iKey };
-}
-
-exports.clouddistinct = onCall(async (request) => {
-  // const token = req.query.token;
-  const token = request.data.token;
-  logger.log(request.data);
-  try {
-    return await fetchh(token, request.data, request.data.omit);
-  } catch (error) {
-    console.error(error);
-    throw new HttpsError(error);
-  }
-});
-
-exports.export2 = onRequest(async (req, res) => {
-  const token = req.query.token;
-  const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
-  try {
-    const retval = await fetchh(token, req.query, omit);
-    res.status(200).json(retval);
   } catch (error) {
     console.error(error);
     res.status(500).send(`Error: ${error}`);
