@@ -535,3 +535,15 @@ exports.clouddistinct = onCall(async (request) => {
     throw new HttpsError(error);
   }
 });
+
+exports.export2 = onRequest(async (req, res) => {
+  const token = req.query.token;
+  const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
+  try {
+    const retval = await fetchh(token, req.query, omit);
+    res.status(200).json(retval);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(`Error: ${error}`);
+  }
+});
