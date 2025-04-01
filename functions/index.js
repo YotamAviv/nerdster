@@ -49,6 +49,21 @@ exports.cloudfetchtitle = onCall(async (request) => {
 // Statement.dart'ish needs here in JavaScript:
 // - get subject of verb for distinct based on subjects.
 
+// HTTP POST for QR signin (not 'signIn' (in camelCase) - that breaks things).
+// The Nerdster should be listening for a new doc at collection /sessions/doc/<session>/
+// The phone app should POST to this function (it used to write directly to the Nerdster Firebase collection.)
+exports.signin = onRequest((req, res) => {
+  const session = req.body.session;
+  const db = admin.firestore();
+  return db
+    .collection("sessions")
+    .doc("doc")
+    .collection(session)
+    .add(req.body).then(() => {
+      res.status(201).json({});
+    });
+});
+
 // ----- Code from jsonish.js to copy/paste into <nerdster/oneofus>/functions/index.js ----------//
 
 var key2order = {
@@ -214,7 +229,7 @@ async function makedistinct(input) {
   return distinct;
 }
 
-async function fetchh(token2revokeAt, params = {}, omit = {}) {
+async function xfetchh(token2revokeAt, params = {}, omit = {}) {
   const checkPrevious = params.checkPrevious != null;
   const distinct = params.distinct != null;
   const orderStatements = params.orderStatements != 'false'; // On by default for demo.
@@ -337,11 +352,11 @@ http://127.0.0.1:5001/nerdster/us-central1/export2/?i={"f4e45451dd663b6c9caf9027
 // - mapped to https://export.nerdster.org/?token=f4e45451dd663b6c9caf90276e366f57e573841b
 //   - https://console.cloud.google.com/run/domains?project=nerdster
 //   - https://console.firebase.google.com/project/nerdster/functions/list
-exports.export2 = onRequest(async (req, res) => {
+exports.xexport2 = onRequest(async (req, res) => {
   const token2revokeAt = parseIrevoke(req.query.i);
   const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
   try {
-    const retval = await fetchh(token2revokeAt, req.query, omit);
+    const retval = await xfetchh(token2revokeAt, req.query, omit);
     res.status(200).json(retval);
   } catch (error) {
     console.error(error);
@@ -380,11 +395,11 @@ exports.mexport = onRequest(async (req, res) => {
 
 
 /// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
-exports.clouddistinct = onCall(async (request) => {
+exports.xclouddistinct = onCall(async (request) => {
   const token2revokeAt = request.data.token2revokeAt;
   logger.log(`token2revokeAt=${token2revokeAt}`);
   try {
-    return await fetchh(token2revokeAt, request.data, request.data.omit);
+    return await xfetchh(token2revokeAt, request.data, request.data.omit);
   } catch (error) {
     console.error(error);
     throw new HttpsError(error);
@@ -400,7 +415,7 @@ exports.mclouddistinct = onCall(async (request) => {
     var outs = [];
     for (const [token, revokeAt] of Object.entries(token2revokeAt)) {
       logger.log(`token=${token}, revokeAt=${revokeAt}`);
-      var out = await fetchh({ [token]: revokeAt }, params, omit); // TODO: Async streaming (parallel)
+      var out = await xfetchh({ [token]: revokeAt }, params, omit); // TODO: Async streaming (parallel)
       outs.push(out);
     }
     return outs;
@@ -410,18 +425,113 @@ exports.mclouddistinct = onCall(async (request) => {
   }
 });
 
+// ----------------------- older 
 
-// HTTP POST for QR signin (not 'signIn' (in camelCase) - that breaks things).
-// The Nerdster should be listening for a new doc at collection /sessions/doc/<session>/
-// The phone app should POST to this function (it used to write directly to the Nerdster Firebase collection.)
-exports.signin = onRequest((req, res) => {
-  const session = req.body.session;
+
+async function fetchh(token, params = {}, omit = {}) {
+  const revokeAt = params.revokeAt;
+  const checkPrevious = params.checkPrevious != null;
+  const distinct = params.distinct != null;
+  const orderStatements = params.orderStatements != 'false'; // On by default for demo.
+  const includeId = params.includeId != null;
+
+  if (!token) throw 'Missing token';
+  if (checkPrevious && !includeId) throw 'checkPrevious requires includeId';
+
   const db = admin.firestore();
-  return db
-    .collection("sessions")
-    .doc("doc")
-    .collection(session)
-    .add(req.body).then(() => {
-      res.status(201).json({});
-    });
+  const collectionRef = db.collection(token).doc('statements').collection('statements');
+
+  var revokedAtTime;
+  if (revokeAt) {
+    const doc = collectionRef.doc(revokeAt);
+    const docSnap = await doc.get();
+    if (docSnap.data()) {
+      revokedAtTime = docSnap.data().time;
+    } else {
+      return { "statements": [] };
+    }
+  }
+
+  var snapshot;
+  if (revokedAtTime) {
+    snapshot = await collectionRef.where('time', "<=", revokedAtTime).orderBy('time', 'desc').get();
+  } else {
+    snapshot = await collectionRef.orderBy('time', 'desc').get();
+  }
+
+  var statements;
+  if (includeId) {
+    statements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } else {
+    statements = snapshot.docs.map(doc => doc.data());
+  }
+
+  // Do this early (first) before distinct and/or other calls below.
+  var iKey;
+  if (statements.length > 0) {
+    iKey = statements[0].I;
+  }
+
+  // BUG: checkPrevious requires includeId
+  if (checkPrevious) {
+    // Validate notary chain, decending order
+    var first = true;
+    var previousToken;
+    var previousTime;
+    for (var d of statements) {
+      if (first) {
+        first = false; // no check
+      } else {
+        if (d.id != previousToken) {
+          var error = `Notarization violation: ${d.id} != ${previousToken}`;
+          logger.error(error);
+          throw error;
+        }
+
+        if (d.time >= previousTime) {
+          var error = `Not descending: ${d.time} >= ${previousTime}`;
+          logger.error(error);
+          throw error;
+        }
+      }
+      previousToken = d.previous;
+      previousTime = d.time;
+    }
+  }
+
+  if (omit) {
+    for (var s of statements) {
+      for (const key of omit) {
+        delete s[key];
+      }
+    }
+  }
+
+  if (distinct) {
+    statements = await makedistinct(statements);
+  }
+
+  // order statements
+  if (orderStatements) {
+    var list = [];
+    for (const statement of statements) {
+      const ordered = order(statement);
+      list.push(ordered);
+    }
+    statements = list;
+  }
+
+  return { "statements": statements, "I": iKey };
+}
+
+exports.clouddistinct = onCall(async (request) => {
+  // const token = req.query.token;
+  const token = request.data.token;
+  logger.log(request.data);
+  try {
+    return await fetchh(token, request.data, request.data.omit);
+  } catch (error) {
+    console.error(error);
+    throw new HttpsError(error);
+  }
 });
