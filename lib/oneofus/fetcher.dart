@@ -313,7 +313,7 @@ class Fetcher {
             await Future.delayed(Duration(milliseconds: 300));
           }
           final result = await mFire.mAsync(() async {
-            return await functions!.httpsCallable('clouddistinct').call(params);
+            return await functions!.httpsCallable('xclouddistinct').call(params);
           }, note: token);
           statements = result.data["statements"];
           iKey = result.data['I'];
