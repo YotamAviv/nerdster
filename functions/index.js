@@ -314,9 +314,8 @@ async function fetchh(token2revokeAt, params = {}, omit = {}) {
   return { "statements": statements, "I": iKey };
 }
 
-// ------------------------- Firebase cloud functions called Nerdster ------------------------- //
+// ----------------------- Firebase cloud functions called by Nerdster ------------------------- //
 
-/// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
 exports.cloudfetch = onCall(async (request) => {
   const token2revokeAt = request.data.token2revokeAt;
   try {
@@ -335,7 +334,7 @@ exports.mcloudfetch = onCall(async (request) => {
     var outs = [];
     // TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
     for (const [token, revokeAt] of Object.entries(token2revokeAt)) {
-      logger.log(`token=${token}, revokeAt=${revokeAt}`);
+      // logger.log(`token=${token}, revokeAt=${revokeAt}`);
       var out = await fetchh({ [token]: revokeAt }, params, omit);
       outs.push(out);
     }
@@ -346,14 +345,15 @@ exports.mcloudfetch = onCall(async (request) => {
   }
 });
 
+// ----------------------- JSON export ------------------------- //
 
-// JSON export
 // - Emulator-Nerdster-Yotam: http://127.0.0.1:5001/nerdster/us-central1/..
 // - Emulator-Oneofus-Yotam: http://127.0.0.1:5002/one-of-us-net/us-central1/..
 // - Prod-Nerdster-Yotam: https://us-central1-nerdster.cloudfunctions.net/..
 // - Prod-Oneofus-Yotam: http://us-central1-one-of-us-net.cloudfunctions.net/..
+// mexport not mapped, just export (to export2)
 //
-// Updates from 10/18/24:
+// 10/18/24:
 // - upgraded to v2 (in response to errors on command line)
 // - mapped to https://export.nerdster.org
 //   - https://console.cloud.google.com/run/domains?project=nerdster
