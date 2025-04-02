@@ -351,7 +351,6 @@ exports.mcloudfetch = onCall(async (request) => {
 // - Emulator-Oneofus-Yotam: http://127.0.0.1:5002/one-of-us-net/us-central1/..
 // - Prod-Nerdster-Yotam: https://us-central1-nerdster.cloudfunctions.net/..
 // - Prod-Oneofus-Yotam: http://us-central1-one-of-us-net.cloudfunctions.net/..
-// mexport not mapped, just export (to export2)
 //
 // 10/18/24:
 // - upgraded to v2 (in response to errors on command line)
@@ -372,40 +371,70 @@ function i2token2revoked(i) {
 
 /*
 * 1 token, many parameters
-http://127.0.0.1:5001/nerdster/us-central1/export2?i="f4e45451dd663b6c9caf90276e366f57e573841b"&distinct=true&includeId=true&&checkPrevious=true&orderStatements=false&omit=["statement","previous","signature"]
+http://127.0.0.1:5001/nerdster/us-central1/export?x="f4e45451dd663b6c9caf90276e366f57e573841b"&distinct=true&includeId=true&&checkPrevious=true&orderStatements=false&omit=["statement","previous","signature"]
 * 1 token with revokedAt
-http://127.0.0.1:5001/nerdster/us-central1/export2?i={"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}
+http://127.0.0.1:5001/nerdster/us-central1/export?x={"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}
+* with or without quotes works when just 1token
+http://127.0.0.1:5002/one-of-us-net/us-central1/export/?x=55c28752d220fa7188d77414f948382c41e36255&includeId
+http://127.0.0.1:5002/one-of-us-net/us-central1/export/?x="55c28752d220fa7188d77414f948382c41e36255"&includeId
+* 2 tokens, 1 revoked
+http://127.0.0.1:5001/nerdster/us-central1/export?x=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
 */
-exports.export2 = onRequest(async (req, res) => {
-  const i = JSON.parse(req.query.i);
-  const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
+exports.export = onRequest(async (req, res) => {
+  var x;
   try {
-    const token2revoked = i2token2revoked(i);
-    const out = await fetchh(token2revoked, req.query, omit);
-    res.status(200).json(out);
+    x = JSON.parse(req.query.x);
+  } catch (e) {
+    x = req.query.x;
+  }
+  try {
+    const params = req.query;
+    const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
+    if (Array.isArray(x)) {
+      var outs = [];
+      for (const i of x) {
+        const token2revoked = i2token2revoked(i);
+        const out = await fetchh(token2revoked, params, omit);
+        outs.push(out);
+      }
+      res.status(200).json(outs);
+    } else {
+      const token2revoked = i2token2revoked(x);
+      const out = await fetchh(token2revoked, params, omit);
+      res.status(200).json(out);
+
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send(`Error: ${error}`);
   }
 });
 
-/*
-* 2 tokens, 1 revoked
-http://127.0.0.1:5001/nerdster/us-central1/mexport?token2revoked=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
-*/
-exports.mexport = onRequest(async (req, res) => {
-  // logger.log(`req.query.token2revoked=${req.query.token2revoked}`);
-  const is = JSON.parse(req.query.token2revoked);
-  const params = req.query;
-  const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
+// TODO: Remove export2 after DNS updates
+exports.export2 = onRequest(async (req, res) => {
+  var x;
   try {
-    var outs = [];
-    for (const i of is) {
-      var token2revoked = i2token2revoked(i);
-      var out = await fetchh(token2revoked, params, omit);
-      outs.push(out);
+    x = JSON.parse(req.query.x);
+  } catch (e) {
+    x = req.query.x;
+  }
+  try {
+    const params = req.query;
+    const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
+    if (Array.isArray(x)) {
+      var outs = [];
+      for (const i of x) {
+        const token2revoked = i2token2revoked(i);
+        const out = await fetchh(token2revoked, params, omit);
+        outs.push(out);
+      }
+      res.status(200).json(outs);
+    } else {
+      const token2revoked = i2token2revoked(x);
+      const out = await fetchh(token2revoked, params, omit);
+      res.status(200).json(out);
+
     }
-    res.status(200).json(outs);
   } catch (error) {
     console.error(error);
     res.status(500).send(`Error: ${error}`);
