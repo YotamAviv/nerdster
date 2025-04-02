@@ -414,3 +414,5 @@ exports.export = onRequest(async (req, res) => {
   }
 
 });
+// TODO: remove
+exports.export2 = exports.export;
