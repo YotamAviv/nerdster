@@ -233,7 +233,7 @@ async function fetchh(token2revokeAt, params = {}, omit = {}) {
     if (docSnap.data()) {
       revokeAtTime = docSnap.data().time;
     } else {
-      return { "statements": [] };
+      return [];
     }
   }
 
@@ -258,13 +258,6 @@ async function fetchh(token2revokeAt, params = {}, omit = {}) {
     statements = snapshot.docs.map(doc => doc.data());
   }
 
-  // Do this early (first) before distinct and/or other calls below.
-  var iKey;
-  if (statements.length > 0) {
-    iKey = statements[0].I;
-  }
-
-  // BUG: checkPrevious requires includeId
   if (checkPrevious) {
     // Validate notary chain, decending order
     var first = true;
@@ -313,7 +306,7 @@ async function fetchh(token2revokeAt, params = {}, omit = {}) {
     statements = list;
   }
 
-  return { "statements": statements, "I": iKey };
+  return statements;
 }
 
 // ----------------------- Firebase cloud functions called by Nerdster ------------------------- //

@@ -45,13 +45,13 @@ class Notifications with ChangeNotifier implements Corruptor {
     notifyListeners();
   }
 
-  final LinkedHashMap<String, String> _corrupted = LinkedHashMap<String, String>();
-  Map<String, String> get corrupted => UnmodifiableMapView(_corrupted);
+  final LinkedHashMap<String, (String, String?)> _corrupted = LinkedHashMap<String, (String, String?)>();
+  Map<String, (String, String?)> get corrupted => UnmodifiableMapView(_corrupted);
   @override
-  void corrupt(String token, String error) {
+  void corrupt(String token, String error, String? details) {
     // BUG: Might be null when I'm loading with ?oneofus=token. // assert(Jsonish.find(token) != null);
     // BUG: I think that if ?oneofus=token leads to an error, then we never even see it because maybe nothing fires a listen().
-    _corrupted[token] = error;
+    _corrupted[token] = (error, details);
     print('_corrupted[$token] = $error');
     notifyListeners();
   }

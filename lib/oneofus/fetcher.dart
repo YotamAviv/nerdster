@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
@@ -120,14 +122,14 @@ import 'util.dart';
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 
 abstract class Corruptor {
-  void corrupt(String token, String error);
+  void corrupt(String token, String error, String? details);
 }
 
 class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
-  static Map<String, Json> batchFetched = {};
+  static Map<String, dynamic> batchFetched = {}; // TEMP: Try List<Json>
   static final Measure mFire = Measure('fire');
   static final Measure mVerify = Measure('verify');
 
@@ -242,16 +244,16 @@ class Fetcher {
   static Future<void> batchFetch(Map<String, String?> token2revokeAt, String domain,
       {String? mName}) async {
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
-    if (!b(functions)) return;
-    if (!Prefs.batchFetch.value) return;
+    if (!b(functions) || !Prefs.batchFetch.value) return;
 
     // skip cached fetchers
-    Map<String, String?> tmp = Map.of(token2revokeAt)
+    LinkedHashMap<String, String?> tmp = LinkedHashMap.of(token2revokeAt)
       ..removeWhere((k, v) => Fetcher(k, domain).isCached && Fetcher(k, domain).revokeAt == v);
     if (tmp.length != token2revokeAt.length) {
       print('skipping ${token2revokeAt.length - tmp.length}');
     }
     token2revokeAt = tmp;
+    if (token2revokeAt.isEmpty) return;
 
     Json params = Map.of(paramsProto);
     params["token2revokeAt"] = token2revokeAt;
@@ -260,21 +262,13 @@ class Fetcher {
     }, note: mName ?? '?');
 
     // Weave tokens from token2revoked and results
-    Set<String> returned = {};
-    for (Json rd in results.data) {
-      List statements = rd["statements"];
-      Json? i = rd['I'];
-      if (b(i)) {
-        String token = getToken(i);
-        returned.add(token);
-        batchFetched[_key(token, domain)] = {"statements": statements, "I": i};
-      }
-    }
-    // In case a token had no statements, make it clear that it's been fetched but is just empty.
-    for (String token in token2revokeAt.keys) {
-      if (!returned.contains(token)) {
-        batchFetched[_key(token, domain)] = {"statements": [], "I": null};
-      }
+    Iterable<String> tokens = token2revokeAt.keys;
+    Iterator<String> tokensIterator = tokens.iterator;
+    // TEMP: try typing results.data as List<Json>
+    for (dynamic statements in results.data) {
+      tokensIterator.moveNext();
+      String token = tokensIterator.current;
+      batchFetched[_key(token, domain)] = statements;
     }
 
     print('batchFetch: ${token2revokeAt.keys.map((t) => t)}');
@@ -286,57 +280,49 @@ class Fetcher {
 
   Future<void> fetch() async {
     if (b(_cached)) return;
-
     try {
       _cached = <Statement>[];
       DateTime? time;
       if (Prefs.cloudFunctionsFetch.value && functions != null) {
-        Json params = Map.of(paramsProto);
-        params["token2revokeAt"] = {token: _revokeAt};
-        // EXPERIMENTA: Refresh - only reload what we need to.
-        if (Prefs.fetchRecent.value && domain != kOneofusDomain) {
-          // DEFER: Actually make Fetcher refresh incrementally (not fully reload). It is faster (not linearly, but still..)
-          DateTime recent = DateTime.now().subtract(recentDuration);
-          params['after'] = formatIso(recent);
-        }
-
-        List statements;
-        Json? iKey;
+        List statements; // TEMP: Try List<Json>
         if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
-          Json fetched = batchFetched[_key(token, domain)]!;
-          statements = fetched["statements"];
-          iKey = fetched["I"];
+          statements = batchFetched[_key(token, domain)]!;
         } else {
           if (Prefs.batchFetch.value) print('batcher miss $domain');
           if (Prefs.slowFetch.value) {
             await Future.delayed(Duration(milliseconds: 300));
           }
+          Json params = Map.of(paramsProto);
+          params["token2revokeAt"] = {token: _revokeAt};
+          // EXPERIMENTA: Refresh - only reload what we need to.
+          if (Prefs.fetchRecent.value && domain != kOneofusDomain) {
+            // DEFER: Actually make Fetcher refresh incrementally (not fully reload). It is faster (not linearly, but still..)
+            DateTime recent = DateTime.now().subtract(recentDuration);
+            params['after'] = formatIso(recent);
+          }
           final result = await mFire.mAsync(() async {
             return await functions!.httpsCallable('cloudfetch').call(params);
           }, note: token);
-          statements = result.data["statements"];
-          iKey = result.data['I'];
+          statements = result.data;
         }
 
         if (_revokeAt != null) {
           if (statements.isNotEmpty) {
             assert(statements.first['id'] == _revokeAt, '${statements.first['id']} == $_revokeAt');
-            // without includeId, this might work:
-            // assert(getToken(statements.first) == _revokeAt);
+            // without includeId, this might work: assert(getToken(statements.first) == _revokeAt);
             _revokeAtTime = parseIso(statements.first['time']);
           } else {
             _revokeAtTime = DateTime(0); // "since always" (or any unknown token);
           }
         }
+
         if (statements.isEmpty) return;
-        final String iKeyToken = getToken(iKey);
-        assert(iKeyToken == token);
         for (Json j in statements) {
           DateTime jTime = parseIso(j['time']);
           if (time != null) assert(jTime.isBefore(time));
           time = jTime;
           j['statement'] = domain2statementType[domain]!;
-          j['I'] = iKey; // PERFORMANCE: Allow token in 'I' in statements; we might be already.
+          j['I'] = Jsonish.find(token)!.json;
           j.remove('id');
 
           // EXPERIMENTAL: "EXPERIMENTAL" tagged where the code allows us to not compute the tokens
@@ -349,7 +335,13 @@ class Fetcher {
           // j.remove('id');
           // assert(jsonish.token == serverToken);
 
-          Jsonish jsonish = mVerify.mSync(() => Jsonish(j));
+          Jsonish jsonish;
+          if (Prefs.skipVerify.value) {
+            // DEFER: skipVerify is not necessarily compatible with some cloud functions distinct fetching.
+            jsonish = mVerify.mSync(() => Jsonish(j));
+          } else {
+            jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(j, _verifier));
+          }
           Statement statement = Statement.make(jsonish);
           _cached!.add(statement);
         }
@@ -386,7 +378,7 @@ class Fetcher {
           final Json data = docSnapshot.data();
           Jsonish jsonish;
           if (Prefs.skipVerify.value) {
-            // DEFER: skipVerify is not necessarily compatible with some cloud functions distinct fetching. 
+            // DEFER: skipVerify is not necessarily compatible with some cloud functions distinct fetching.
             jsonish = mVerify.mSync(() => Jsonish(data));
           } else {
             jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(data, _verifier));
@@ -428,7 +420,7 @@ class Fetcher {
       if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
     } catch (e, stackTrace) {
       // print(stackTrace);
-      corruptor.corrupt(token, e.toString());
+      corruptor.corrupt(token, e.toString(), stackTrace.toString());
     }
   }
 

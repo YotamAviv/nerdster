@@ -32,7 +32,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -131,11 +131,12 @@ Future<void> defaultSignIn() async {
 
   // Check for hard coded values
   if (b(hardCodedSignin[fireChoice])) {
-    String? hardOneofus = hardCodedSignin[fireChoice]![kOneofusDomain]!;
+    Json oneofusJson = hardCodedSignin[fireChoice]![kOneofusDomain]!;
+    String oneofus = getToken(oneofusJson);
     OouKeyPair? hardDelegate = b(hardCodedSignin[fireChoice]![kNerdsterDomain])
         ? await crypto.parseKeyPair(hardCodedSignin[fireChoice]![kNerdsterDomain]!)
         : null;
-    await signInState.signIn(hardOneofus!, hardDelegate);
+    await signInState.signIn(oneofus!, hardDelegate);
     return;
   }
 
@@ -158,19 +159,14 @@ const Json dummyPublicKey = {
   "x": "f7ersaoKfgPjXh182kc2tKNxAMqT1h-I4vT2rBssR7g"
 };
 String dummyOneofus = Jsonish(dummyPublicKey).token;
-const String yotam = '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431';
+const Json yotam = {
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+};
 dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
 
   FireChoice.emulator: {"one-of-us.net": yotam},
 
-  // FireChoice.emulator: {
-  //   "one-of-us.net": "39b8ac0d03fb818b48a3116df9616c76bff07d40",
-  //   "nerdster.org": {
-  //     "crv": "Ed25519",
-  //     "d": "Q_MpAKZUudEwUl-3tyujJrh34ySTQZ4ce7nzNfB_cL0",
-  //     "kty": "OKP",
-  //     "x": "nL7-BHdPMdy2k05ONViQUd5rs0pKD77TCMB5UcaKWq0"
-  //   }
-  // }
 };
