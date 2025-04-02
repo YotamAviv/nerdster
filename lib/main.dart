@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -32,7 +33,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -114,7 +115,10 @@ Future<void> defaultSignIn() async {
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
   if (b(params['oneofus'])) {
-    await signInState.signIn(params['oneofus']!, null);
+    String oneofusParam = params['oneofus']!;
+    Json oneofusJson = json.decode(oneofusParam);
+    String oneofusToken = getToken(oneofusJson);
+    await signInState.signIn(oneofusToken, null);
     return;
   }
 
@@ -131,11 +135,11 @@ Future<void> defaultSignIn() async {
 
   // Check for hard coded values
   if (b(hardCodedSignin[fireChoice])) {
-    String? hardOneofus = hardCodedSignin[fireChoice]![kOneofusDomain]!;
+    Json? hardOneofus = hardCodedSignin[fireChoice]![kOneofusDomain]!;
     OouKeyPair? hardDelegate = b(hardCodedSignin[fireChoice]![kNerdsterDomain])
         ? await crypto.parseKeyPair(hardCodedSignin[fireChoice]![kNerdsterDomain]!)
         : null;
-    await signInState.signIn(hardOneofus!, hardDelegate);
+    await signInState.signIn(getToken(hardOneofus), hardDelegate);
     return;
   }
 
@@ -162,7 +166,11 @@ const String yotam = '2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431';
 dynamic hardCodedSignin = {
   FireChoice.prod: {"one-of-us.net": dummyOneofus},
 
-  FireChoice.emulator: {"one-of-us.net": yotam},
+  FireChoice.emulator: {"one-of-us.net": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+  }},
 
   // FireChoice.emulator: {
   //   "one-of-us.net": "39b8ac0d03fb818b48a3116df9616c76bff07d40",
