@@ -161,7 +161,7 @@ class Fetcher {
   //
   // If we ever fetched a statement for {domain, token}, then that statement remains correct forever.
   // But if we change center (POV) or learn about a new trust or block, then that might change revokedAt.
-  static resetRevokedAt() {
+  static resetRevokeAt() {
     for (Fetcher f in _fetchers.values) {
       if (f._revokeAt != null) {
         f._cached = null;

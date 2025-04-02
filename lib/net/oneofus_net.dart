@@ -120,7 +120,7 @@ class OneofusNet with Comp, ChangeNotifier {
 
     notifications.clear();
     // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
-    Fetcher.resetRevokedAt();
+    Fetcher.resetRevokeAt();
     NetNode.clear();
     FetcherNode.clear();
     GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
