@@ -42,11 +42,13 @@ class Prefs {
     if (b(params['censor'])) censor.value = bs(params['censor']);
     if (b(params['hideDismissed'])) hideDismissed.value = bs(params['hideDismissed']);
 
-    if (b(params['oneofusNetDegrees']))
+    if (b(params['oneofusNetDegrees'])) {
       oneofusNetDegrees.value = int.parse(params['oneofusNetDegrees']!);
+    }
     if (b(params['oneofusNetPaths'])) oneofusNetPaths.value = int.parse(params['oneofusNetPaths']!);
-    if (b(params['followNetDegrees']))
+    if (b(params['followNetDegrees'])) {
       followNetDegrees.value = int.parse(params['followNetDegrees']!);
+    }
     if (b(params['followNetPaths'])) followNetPaths.value = int.parse(params['followNetPaths']!);
 
     try {

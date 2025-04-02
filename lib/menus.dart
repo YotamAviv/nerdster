@@ -171,7 +171,11 @@ $link''',
           MyCheckbox(Prefs.slowFetch, '''slowFetch'''),
           MenuItemButton(
               onPressed: () {
+                // Workaround for omit=["I"] when fetching statements. We have to know our own key
+                // to get going.
+                Json centerJson = Jsonish.find(signInState.center)!.json;
                 Jsonish.wipeCache();
+                Jsonish(centerJson);
                 BarRefresh.refresh(context);
               },
               child: const Text('Refresh. Jsonish cache, too')),

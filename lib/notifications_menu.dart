@@ -107,11 +107,12 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
       items.add(item);
     }
 
-    for (MapEntry<String, String> e in notifications.corrupted.entries) {
+    for (MapEntry<String, (String, String?)> e in notifications.corrupted.entries) {
       String iToken = e.key;
       Jsonish? iKey = Jsonish.find(iToken);
       String? iLable = keyLabels.labelKey(e.key);
-      String error = e.value;
+      String error = e.value.$1;
+      String? details = e.value.$2;
       MenuItemButton item = MenuItemButton(
           onPressed: () {
             showDialog<void>(
@@ -121,7 +122,14 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
                 return AlertDialog(
                     title: Text(error),
                     // TODO: Better than this...
-                    content: Text('''iToken: $iToken, iKey: $iKey, iLable: $iLable '''),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Text('''iToken: $iToken, iKey: $iKey, iLable: $iLable '''),
+                          if (b(details)) Text(details!),
+                        ],
+                      ),
+                    ),
                     actions: [
                       OutlinedButton(
                           onPressed: () {
