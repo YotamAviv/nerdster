@@ -49,8 +49,8 @@ Map<FireChoice, Map<String, String>> exportUrl = {
     kNerdsterDomain: 'http://export.nerdster.org/'
   },
   FireChoice.emulator: {
-    kOneofusDomain: 'http://127.0.0.1:5002/one-of-us-net/us-central1/export/',
-    kNerdsterDomain: 'http://127.0.0.1:5001/nerdster/us-central1/export/'
+    kOneofusDomain: 'http://127.0.0.1:5002/one-of-us-net/us-central1/export2/',
+    kNerdsterDomain: 'http://127.0.0.1:5001/nerdster/us-central1/export2/'
   },
 };
 

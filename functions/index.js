@@ -371,14 +371,14 @@ function i2token2revoked(i) {
 
 /*
 * 1 token, many parameters
-http://127.0.0.1:5001/nerdster/us-central1/export?x="f4e45451dd663b6c9caf90276e366f57e573841b"&distinct=true&includeId=true&&checkPrevious=true&orderStatements=false&omit=["statement","previous","signature"]
+http://127.0.0.1:5001/nerdster/us-central1/export2?x="f4e45451dd663b6c9caf90276e366f57e573841b"&distinct=true&includeId=true&&checkPrevious=true&orderStatements=false&omit=["statement","previous","signature"]
 * 1 token with revokedAt
-http://127.0.0.1:5001/nerdster/us-central1/export?x={"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}
+http://127.0.0.1:5001/nerdster/us-central1/export2?x={"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}
 * with or without quotes works when just 1token
 http://127.0.0.1:5002/one-of-us-net/us-central1/export/?x=55c28752d220fa7188d77414f948382c41e36255&includeId
 http://127.0.0.1:5002/one-of-us-net/us-central1/export/?x="55c28752d220fa7188d77414f948382c41e36255"&includeId
 * 2 tokens, 1 revoked
-http://127.0.0.1:5001/nerdster/us-central1/export?x=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
+http://127.0.0.1:5001/nerdster/us-central1/export2?x=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
 */
 // DEFER: Rename to export
 exports.export2 = onRequest(async (req, res) => {
