@@ -1,21 +1,12 @@
 
-/// 
-/// I often forget and then see it in the logs.. (to run in the functions directory)
 /*
+Everything here is for for the Nerdster web-app, not ONE-OF-US.NET phone app, but this is 
+used by the Nerdster to read from ONE-OF-US.NET, and so it needs to be pushed out there, too.
+
+I often forget and then see it in the logs.. (to run in the functions directory)
 npm install
 npm install --save firebase-functions@latest
 npm audit fix
-/*
-TEST: Would be nice to see that these all produce output we expect:
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&after=2025-03-08T00:40:59.803Z
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e4551dd663b6c9caf90276e366f57e573841b
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&checkPrevious=true&includeId=true
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&checkPrevious=true
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&&checkPrevious=true&revokeAt=254267baf5859ba52100f42c3df6aebc4be6dc56
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&checkPrevious=true&revokeAt=sincealways
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=truee
-http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b&includeId=true&orderStatements=true&distinct=true&omit=["I","statement"]
 */
 
 const { logger } = require("firebase-functions");
@@ -161,23 +152,9 @@ async function keyToken(input) {
   }
 }
 
-// Return {String token: String? revokeAt}
-// Input can be:
-// - Just a string token
-// - A JSON String of a dictionary mapping token to revokeAt: {String token: String? revokeAt}
-function parseIrevoke(i) {
-  if (!i.startsWith('{')) {
-    token = i;
-    return { [token]: null };
-  } else {
-    var token2revoked = (JSON.parse(i));
-    return token2revoked;
-  }
-}
-
-
 // -----------  --------------------------------------------------------//
 
+// ONE-OF-US.NET has those statements and those verbs, but... just union (Nerdster, ONE-OF-US)  
 const verbs = [
   'trust',
   'delegate',
@@ -342,7 +319,6 @@ async function fetchh(token2revokeAt, params = {}, omit = {}) {
 /// Used to Work on emulator: http://127.0.0.1:5001/nerdster/us-central1/clouddistinct?token=f4e45451dd663b6c9caf90276e366f57e573841b
 exports.cloudfetch = onCall(async (request) => {
   const token2revokeAt = request.data.token2revokeAt;
-  logger.log(`token2revokeAt=${token2revokeAt}`);
   try {
     return await fetchh(token2revokeAt, request.data, request.data.omit);
   } catch (error) {
@@ -351,16 +327,16 @@ exports.cloudfetch = onCall(async (request) => {
   }
 });
 
-// TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
 exports.mcloudfetch = onCall(async (request) => {
   const token2revokeAt = request.data.token2revokeAt;
   const params = request.data;
   const omit = request.data.omit;
   try {
     var outs = [];
+    // TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
     for (const [token, revokeAt] of Object.entries(token2revokeAt)) {
       logger.log(`token=${token}, revokeAt=${revokeAt}`);
-      var out = await fetchh({ [token]: revokeAt }, params, omit); // TODO: Async streaming (parallel)
+      var out = await fetchh({ [token]: revokeAt }, params, omit);
       outs.push(out);
     }
     return outs;
@@ -372,55 +348,63 @@ exports.mcloudfetch = onCall(async (request) => {
 
 
 // JSON export
-// from: Google AI: https://www.google.com/search?q=Firebase+function+HTTP+GET+export+collection&oq=Firebase+function+HTTP+GET+export+collection&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIGCAEQRRhA0gEIOTYzMmowajSoAgCwAgE&sourceid=chrome&ie=UTF-8
-// - Emulator-Nerdster-Yotam: 
-//   http://127.0.0.1:5001/nerdster/us-central1/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
-// - Emulator-Oneofus-Yotam:
-//   http://127.0.0.1:5002/one-of-us-net/us-central1/export2?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431&includeId=true&orderStatements=true
-// - Prod-Nerdster-Yotam: https://us-central1-nerdster.cloudfunctions.net/export2?token=f4e45451dd663b6c9caf90276e366f57e573841b
-// - Prod-Oneofus-Yotam: http://us-central1-one-of-us-net.cloudfunctions.net/export2?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431
-/*
-http://127.0.0.1:5001/nerdster/us-central1/export2/?i={"f4e45451dd663b6c9caf90276e366f57e573841b": "9d608f5875b236d7a919dcbcfbc04e51ae14141b"}&includeId=true
-*/
+// - Emulator-Nerdster-Yotam: http://127.0.0.1:5001/nerdster/us-central1/..
+// - Emulator-Oneofus-Yotam: http://127.0.0.1:5002/one-of-us-net/us-central1/..
+// - Prod-Nerdster-Yotam: https://us-central1-nerdster.cloudfunctions.net/..
+// - Prod-Oneofus-Yotam: http://us-central1-one-of-us-net.cloudfunctions.net/..
+//
 // Updates from 10/18/24:
 // - upgraded to v2 (in response to errors on command line)
-// - mapped to https://export.nerdster.org/?token=f4e45451dd663b6c9caf90276e366f57e573841b
+// - mapped to https://export.nerdster.org
 //   - https://console.cloud.google.com/run/domains?project=nerdster
 //   - https://console.firebase.google.com/project/nerdster/functions/list
+
+// DEFER: Use the 'i' over 'token2revokeAt' in cloud functions. (pros: save bytes, cons: bugs)
+function i2token2revoked(i) {
+  var token2revoked;
+  if (typeof i === 'string') {
+    token2revoked = { [i]: null };
+  } else {
+    token2revoked = i;
+  }
+  return token2revoked;
+}
+
+/*
+* 1 token, many parameters
+http://127.0.0.1:5001/nerdster/us-central1/export2?i="f4e45451dd663b6c9caf90276e366f57e573841b"&distinct=true&includeId=true&&checkPrevious=true&orderStatements=false&omit=["statement","previous","signature"]
+* 1 token with revokedAt
+http://127.0.0.1:5001/nerdster/us-central1/export2?i={"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}
+*/
 exports.export2 = onRequest(async (req, res) => {
-  const token2revokeAt = parseIrevoke(req.query.i);
+  const i = JSON.parse(req.query.i);
   const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
   try {
-    const retval = await fetchh(token2revokeAt, req.query, omit);
-    res.status(200).json(retval);
+    const token2revoked = i2token2revoked(i);
+    const out = await fetchh(token2revoked, req.query, omit);
+    res.status(200).json(out);
   } catch (error) {
     console.error(error);
     res.status(500).send(`Error: ${error}`);
   }
 });
 
-// WIP: 
-// TODO: revokeAt per token, other params for all tokens
-// TODO: Investigate making parallel, see https://firebase.google.com/docs/functions/callable?gen=2nd#stream-back
 /*
-Try:
-https://us-central1-nerdster.cloudfunctions.net/mexport..
+* 2 tokens, 1 revoked
+http://127.0.0.1:5001/nerdster/us-central1/mexport?token2revoked=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
 */
 exports.mexport = onRequest(async (req, res) => {
-  logger.log(`req.query.tokens=${req.query.tokens}`);
-  const token2revoked = JSON.parse(req.query.token2revoked);
+  // logger.log(`req.query.token2revoked=${req.query.token2revoked}`);
+  const is = JSON.parse(req.query.token2revoked);
   const params = req.query;
   const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
   try {
-
     var outs = [];
-    for (const token in token2revoked) {
-      logger.log(`token=${token}`);
-      var out = await fetchh(token, params, omit); // TODO: Investigate making parallel
+    for (const i of is) {
+      var token2revoked = i2token2revoked(i);
+      var out = await fetchh(token2revoked, params, omit);
       outs.push(out);
     }
-
-    // const retval = await mfetchh(tokens, req.query, omit);
     res.status(200).json(outs);
   } catch (error) {
     console.error(error);
