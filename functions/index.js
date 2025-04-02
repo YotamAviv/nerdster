@@ -380,37 +380,7 @@ http://127.0.0.1:5002/one-of-us-net/us-central1/export/?x="55c28752d220fa7188d77
 * 2 tokens, 1 revoked
 http://127.0.0.1:5001/nerdster/us-central1/export?x=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
 */
-exports.export = onRequest(async (req, res) => {
-  var x;
-  try {
-    x = JSON.parse(req.query.x);
-  } catch (e) {
-    x = req.query.x;
-  }
-  try {
-    const params = req.query;
-    const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
-    if (Array.isArray(x)) {
-      var outs = [];
-      for (const i of x) {
-        const token2revoked = i2token2revoked(i);
-        const out = await fetchh(token2revoked, params, omit);
-        outs.push(out);
-      }
-      res.status(200).json(outs);
-    } else {
-      const token2revoked = i2token2revoked(x);
-      const out = await fetchh(token2revoked, params, omit);
-      res.status(200).json(out);
-
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(`Error: ${error}`);
-  }
-});
-
-// TODO: Remove export2 after DNS updates
+// DEFER: Rename to export
 exports.export2 = onRequest(async (req, res) => {
   var x;
   try {
