@@ -1,6 +1,8 @@
 
 /*
-Everything here is for for the Nerdster web-app, not ONE-OF-US.NET phone app, but this is 
+Exporting statements is for both [Nerdster, ONE-OF-US.NET].
+
+Cloud functions are all for for the Nerdster web-app, not ONE-OF-US.NET phone app, but this is 
 used by the Nerdster to read from ONE-OF-US.NET, and so it needs to be pushed out there, too.
 
 I often forget and then see it in the logs.. (to run in the functions directory)
@@ -371,42 +373,44 @@ function i2token2revoked(i) {
 
 /*
 * 1 token, many parameters
-http://127.0.0.1:5001/nerdster/us-central1/export2?x="f4e45451dd663b6c9caf90276e366f57e573841b"&distinct=true&includeId=true&&checkPrevious=true&orderStatements=false&omit=["statement","previous","signature"]
+http://127.0.0.1:5001/nerdster/us-central1/export?token="f4e45451dd663b6c9caf90276e366f57e573841b"&distinct=true&includeId=true&&checkPrevious=true&orderStatements=false&after=2024-12-19T00:00:00.000Z&omit=["statement","previous","signature"]
 * 1 token with revokedAt
-http://127.0.0.1:5001/nerdster/us-central1/export2?x={"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}
+http://127.0.0.1:5001/nerdster/us-central1/export?token={"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}
 * with or without quotes works when just 1token
-http://127.0.0.1:5002/one-of-us-net/us-central1/export/?x=55c28752d220fa7188d77414f948382c41e36255&includeId
-http://127.0.0.1:5002/one-of-us-net/us-central1/export/?x="55c28752d220fa7188d77414f948382c41e36255"&includeId
-* 2 tokens, 1 revoked
-http://127.0.0.1:5001/nerdster/us-central1/export2?x=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
+http://127.0.0.1:5002/one-of-us-net/us-central1/export?token=55c28752d220fa7188d77414f948382c41e36255&includeId
+http://127.0.0.1:5002/one-of-us-net/us-central1/export?token="55c28752d220fa7188d77414f948382c41e36255"&includeId
+* tokens: 2 with 1 revoked
+http://127.0.0.1:5001/nerdster/us-central1/export?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
 */
-// DEFER: Rename to export
-exports.export2 = onRequest(async (req, res) => {
-  var x;
-  try {
-    x = JSON.parse(req.query.x);
-  } catch (e) {
-    x = req.query.x;
-  }
+exports.export = onRequest(async (req, res) => {
   try {
     const params = req.query;
     const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
-    if (Array.isArray(x)) {
-      var outs = [];
-      for (const i of x) {
+    if (req.query.token) {
+      if (req.query.tokens) throw new HttpsError('required: token xor tokens');
+      var i;
+      try {
+        i = JSON.parse(req.query.token);
+      } catch (e) {
+        i = req.query.token;
+      }
+      const token2revoked = i2token2revoked(i);
+      const out = await fetchh(token2revoked, params, omit);
+      res.status(200).json(out);
+    } else {
+      if (!req.query.tokens) throw new HttpsError('required: token xor tokens');
+      const is = JSON.parse(req.query.tokens);
+      const outs = [];
+      for (const i of is) {
         const token2revoked = i2token2revoked(i);
         const out = await fetchh(token2revoked, params, omit);
         outs.push(out);
       }
       res.status(200).json(outs);
-    } else {
-      const token2revoked = i2token2revoked(x);
-      const out = await fetchh(token2revoked, params, omit);
-      res.status(200).json(out);
-
     }
   } catch (error) {
     console.error(error);
     res.status(500).send(`Error: ${error}`);
   }
+
 });
