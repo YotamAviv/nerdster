@@ -213,7 +213,7 @@ async function makedistinct(input) {
 async function fetchh(token2revokeAt, params = {}, omit = {}) {
   const checkPrevious = params.checkPrevious != null;
   const distinct = params.distinct != null;
-  const orderStatements = params.orderStatements != 'false'; // On by default for demo.
+  const orderStatements = params.orderStatements != 'false'; // true by default for demo.
   const includeId = params.includeId != null;
   const after = params.after;
 
@@ -257,6 +257,7 @@ async function fetchh(token2revokeAt, params = {}, omit = {}) {
   } else {
     statements = snapshot.docs.map(doc => doc.data());
   }
+
 
   if (checkPrevious) {
     // Validate notary chain, decending order
@@ -353,7 +354,7 @@ exports.mcloudfetch = onCall(async (request) => {
 //   - https://console.cloud.google.com/run/domains?project=nerdster
 //   - https://console.firebase.google.com/project/nerdster/functions/list
 
-// DEFER: Use the 'i' over 'token2revokeAt' in cloud functions. (pros: save bytes, cons: bugs)
+// DEFER: Use the 'i' over 'token2revokeAt' in cloud functions. (pro: save bytes, con: complexity)
 function i2token2revoked(i) {
   var token2revoked;
   if (typeof i === 'string') {

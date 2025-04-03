@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -114,7 +115,10 @@ Future<void> defaultSignIn() async {
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
   if (b(params['oneofus'])) {
-    await signInState.signIn(params['oneofus']!, null);
+    String oneofusParam = params['oneofus']!;
+    Json oneofusJson = json.decode(oneofusParam);
+    String oneofusToken = getToken(oneofusJson);
+    await signInState.signIn(oneofusToken, null);
     return;
   }
 
