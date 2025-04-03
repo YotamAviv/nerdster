@@ -109,7 +109,7 @@ abstract mixin class Comp {
         _ready.value = true;
       } catch (e, stackTrace) {
         _exception = e;
-        // print(stackTrace);
+        print(stackTrace);
         _processing = false;
         _ready.value = true; // necessary to end the waiting below
         _ready.value = false; // single thread, no "critical section" required.

@@ -162,14 +162,13 @@ const Json dummyPublicKey = {
   "kty": "OKP",
   "x": "f7ersaoKfgPjXh182kc2tKNxAMqT1h-I4vT2rBssR7g"
 };
-String dummyOneofus = Jsonish(dummyPublicKey).token;
 const Json yotam = {
   "crv": "Ed25519",
   "kty": "OKP",
   "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
 };
 dynamic hardCodedSignin = {
-  FireChoice.prod: {"one-of-us.net": dummyOneofus},
+  FireChoice.prod: {"one-of-us.net": dummyPublicKey},
 
   FireChoice.emulator: {"one-of-us.net": yotam},
 
