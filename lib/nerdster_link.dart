@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_bar.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -9,7 +12,7 @@ String generateLink() {
 
   params['fire'] = fireChoice.name;
   if (fireChoice != FireChoice.fake) {
-    params['oneofus'] = signInState.center;
+    params['oneofus'] = JsonEncoder().convert(Jsonish.find(signInState.center)!.json);
   }
   
   Prefs.setParams(params);
