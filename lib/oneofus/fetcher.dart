@@ -129,7 +129,7 @@ class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
-  static Map<String, dynamic> batchFetched = {}; // TEMP: Try List<Json>
+  static Map<String, List<Json>> batchFetched = {};
   static final Measure mFire = Measure('fire');
   static final Measure mVerify = Measure('verify');
 
@@ -264,11 +264,10 @@ class Fetcher {
     // Weave tokens from token2revoked and results
     Iterable<String> tokens = token2revokeAt.keys;
     Iterator<String> tokensIterator = tokens.iterator;
-    // TEMP: try typing results.data as List<Json>
-    for (dynamic statements in results.data) {
+    for (List statements in results.data) {
       tokensIterator.moveNext();
       String token = tokensIterator.current;
-      batchFetched[_key(token, domain)] = statements;
+      batchFetched[_key(token, domain)] = List<Json>.from(statements);
     }
 
     print('batchFetch: ${token2revokeAt.keys.map((t) => t)}');
@@ -284,7 +283,7 @@ class Fetcher {
       _cached = <Statement>[];
       DateTime? time;
       if (Prefs.cloudFunctionsFetch.value && functions != null) {
-        List statements; // TEMP: Try List<Json>
+        List<Json> statements;
         if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
           statements = batchFetched[_key(token, domain)]!;
         } else {

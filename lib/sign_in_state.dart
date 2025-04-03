@@ -24,6 +24,7 @@ class SignInState with ChangeNotifier {
   factory SignInState() => _singleton;
 
   set center(String oneofusToken) {
+    assert(b(Jsonish.find(oneofusToken)));
     _center = oneofusToken;
     if (_centerReset == _dummy) _centerReset = _center;
     notifyListeners();
