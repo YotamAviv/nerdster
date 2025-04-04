@@ -410,3 +410,26 @@ exports.export = onRequest(async (req, res) => {
 });
 // TODO: remove
 exports.export2 = exports.export;
+
+// ------------- stream 
+
+// http://127.0.0.1:5001/nerdster/us-central1/streamnums
+exports.streamnums = functions.https.onRequest((request, response) => {
+  response.writeHead(200, {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  let count = 0;
+  const intervalId = setInterval(() => {
+    if (count < 10) {
+      var out = {'data': count};
+      var sOut = JSON.stringify(out);
+      response.write(`${sOut}\n`);
+      count++;
+    } else {
+      clearInterval(intervalId);
+      response.end();
+    }
+  }, 100);
+});
