@@ -406,14 +406,17 @@ exports.export = onRequest(async (req, res) => {
     console.error(error);
     res.status(500).send(`Error: ${error}`);
   }
-
 });
+
 // TODO: remove
 exports.export2 = exports.export;
 
 // ------------- stream 
 
-// http://127.0.0.1:5001/nerdster/us-central1/streamnums
+/*
+Just prototype
+http://127.0.0.1:5001/nerdster/us-central1/streamnums
+*/
 exports.streamnums = functions.https.onRequest((request, response) => {
   response.writeHead(200, {
     'Content-Type': 'application/json',
@@ -423,7 +426,7 @@ exports.streamnums = functions.https.onRequest((request, response) => {
   let count = 0;
   const intervalId = setInterval(() => {
     if (count < 10) {
-      var out = {'data': count};
+      var out = { 'data': count };
       var sOut = JSON.stringify(out);
       response.write(`${sOut}\n`);
       count++;
@@ -431,5 +434,53 @@ exports.streamnums = functions.https.onRequest((request, response) => {
       clearInterval(intervalId);
       response.end();
     }
-  }, 100);
+  }, 500);
+});
+
+/*
+http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b"]
+http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
+http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]&omit=["statement","I"]
+*/
+exports.streamstatements = functions.https.onRequest((req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  try {
+    const params = req.query;
+    const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
+    if (!req.query.tokens) throw new HttpsError('required: tokens');
+    const is = JSON.parse(req.query.tokens);
+
+    // fetch forecast data for all requested locations
+    let count = 0;
+    const allRequests = is.map(
+      async (i) => {
+        logger.log(`i=${i}`);
+        const token2revoked = i2token2revoked(i);
+        logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
+        const x = await fetchh(token2revoked, params, omit);
+        const token = Object.keys(token2revoked)[0];
+        const result = { [token]: x };
+        const sOut = JSON.stringify(result);
+        res.write(`${sOut}\n`);
+        // clients that support streaming will have each
+        // forecast streamed to them as they complete
+        if (req.acceptsStreaming) {
+          res.write(sOut);
+        }
+        count++;
+        if (count == is.length) {
+          res.end();
+          res.status(200);
+          logger.log(`end`);
+        }
+      },
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(`Error: ${error}`);
+  }
 });
