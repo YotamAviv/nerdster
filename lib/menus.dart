@@ -13,6 +13,7 @@ import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/read_stream.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -165,6 +166,11 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
+          MenuItemButton(
+              onPressed: () {
+                readStream();
+              },
+              child: const Text('readStream')),
           MyCheckbox(Prefs.cloudFunctionsFetch, 'cloudFunctionsFetch (goes quicker)'),
           MyCheckbox(Prefs.batchFetch, 'batchFetch'),
           MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
