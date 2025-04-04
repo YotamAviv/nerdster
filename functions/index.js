@@ -434,7 +434,7 @@ exports.streamnums = functions.https.onRequest((request, response) => {
       clearInterval(intervalId);
       response.end();
     }
-  }, 500);
+  }, 300);
 });
 
 /*
