@@ -417,8 +417,10 @@ exports.export2 = exports.export;
 Just prototype
 http://127.0.0.1:5001/nerdster/us-central1/streamnums
 */
-exports.streamnums = functions.https.onRequest((request, response) => {
-  response.writeHead(200, {
+exports.streamnums = functions.https.onRequest((req, res) => {
+  // Add the following line to set the CORS header
+  res.set('Access-Control-Allow-Origin', '*'); // Allow all origins
+  res.writeHead(200, {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive'
@@ -428,11 +430,11 @@ exports.streamnums = functions.https.onRequest((request, response) => {
     if (count < 10) {
       var out = { 'data': count };
       var sOut = JSON.stringify(out);
-      response.write(`${sOut}\n`);
+      res.write(`${sOut}\n`);
       count++;
     } else {
       clearInterval(intervalId);
-      response.end();
+      res.end();
     }
   }, 300);
 });
@@ -443,6 +445,8 @@ http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd
 http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]&omit=["statement","I"]
 */
 exports.streamstatements = functions.https.onRequest((req, res) => {
+  // Add the following line to set the CORS header
+  res.set('Access-Control-Allow-Origin', '*'); // Allow all origins
   res.writeHead(200, {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
