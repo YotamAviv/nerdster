@@ -8,24 +8,24 @@ import 'package:nerdster/content/content_statement.dart';
 
 Map<FireChoice, Map<String, String>> streamstatementsUrl = {
   FireChoice.prod: {
-    kOneofusDomain: 'http://us-central1-one-of-us-net.cloudfunctions.net/streamstatements',
-    kNerdsterDomain: 'http://us-central1-one-of-us-net.cloudfunctions.net/streamstatements'
+    kOneofusDomain: 'https://us-central1-one-of-us-net.cloudfunctions.net/streamstatements',
+    kNerdsterDomain: 'https://us-central1-one-of-us-net.cloudfunctions.net/streamstatements'
   },
   FireChoice.emulator: {
-    kOneofusDomain: 'http://127.0.0.1:5001/one-of-us-net/us-central1/streamstatements',
-    kNerdsterDomain: 'http://127.0.0.1:5001/nerdster/us-central1/streamstatements'
+    kOneofusDomain: 'https://127.0.0.1:5001/one-of-us-net/us-central1/streamstatements',
+    kNerdsterDomain: 'https://127.0.0.1:5001/nerdster/us-central1/streamstatements'
   },
 };
 
 
 Map<FireChoice, Map<String, String>> streamnumsUrl = {
   FireChoice.prod: {
-    kOneofusDomain: 'http://us-central1-one-of-us-net.cloudfunctions.net/streamnums',
-    kNerdsterDomain: 'http://us-central1-one-of-us-net.cloudfunctions.net/streamnums'
+    kOneofusDomain: 'https://us-central1-one-of-us-net.cloudfunctions.net/streamnums',
+    kNerdsterDomain: 'https://us-central1-nerdster.cloudfunctions.net/streamnums'
   },
   FireChoice.emulator: {
-    kOneofusDomain: 'http://127.0.0.1:5001/one-of-us-net/us-central1/streamnums',
-    kNerdsterDomain: 'http://127.0.0.1:5001/nerdster/us-central1/streamnums'
+    kOneofusDomain: 'https://127.0.0.1:5001/one-of-us-net/us-central1/streamnums',
+    kNerdsterDomain: 'https://127.0.0.1:5001/nerdster/us-central1/streamnums'
   },
 };
 
