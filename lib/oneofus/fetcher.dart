@@ -231,12 +231,12 @@ class Fetcher {
   bool get isCached => b(_cached);
 
   static const Json paramsProto = {
-    "distinct": "true",
-    "omit": ['statement', 'I'],
-    "orderStatements": "false",
+    "distinct": true,
+    "omit": ["statement", "I"],
+    "orderStatements": false,
 
-    "checkPrevious": "true",
-    "includeId": "true", // includeId required for checkPrevious, not needed but tested and liked.
+    "checkPrevious": true,
+    "includeId": true, // includeId required for checkPrevious, not needed but tested and liked.
 
     // EXPERIMENTAL: "includeId": true,
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
@@ -275,23 +275,17 @@ class Fetcher {
     if (token2revokeAt.isEmpty) return;
 
     if (Prefs.streamBatchFetch.value) {
-      // Plan: see index.js
       var client = http.Client();
-      List<Map<String, String?>> ttt =
+      List<Map<String, String?>> tokenSpecs =
           List<Map<String, String?>>.from(token2revokeAt.entries.map((e) => {e.key: e.value}));
       try {
         ValueNotifier<bool> done = ValueNotifier(false);
-
         final String host = streamstatementsUrl[fireChoice]![domain]!.$1;
         final String path = streamstatementsUrl[fireChoice]![domain]!.$2;
-        // BUG, see uri.dart:2517, params values should be either strings or Iterable.
-        // TEMP: workaround
-        // BUG: can't pass tokens as ["x", "y"]. The framework chagnes it to tokens=x&tokens=y
-        Json params = {};
-        String encodedTokens2Revoked = Uri.encodeComponent(JsonEncoder().convert(ttt));
-        params['tokens'] = encodedTokens2Revoked;
-        // TODO: https instead of http, currently doesn't work
-        // TODO: Wierd: only http works on emulator, only https works on PROD
+        Json params = Map.of(paramsProto);
+        params['tokens'] = tokenSpecs;
+        params = params.map((k, v) => MapEntry(k, Uri.encodeComponent(JsonEncoder().convert(v))));
+        // DEFER: Wierd: only http works on emulator, only https works on PROD
         final Uri uri = (fireChoice == FireChoice.prod)
             ? Uri.https(host, path, params)
             : Uri.http(host, path, params);
@@ -300,13 +294,13 @@ class Fetcher {
         assert(response.statusCode == 200, 'Request failed with status: ${response.statusCode}');
         response.stream.transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
           Json json = jsonDecode(line);
-          assert(json.length == 1);
           String token = json.keys.first;
           List statements = json.values.first;
           batchFetched[_key(token, domain)] = List<Json>.from(statements);
           print('batchFetched ${_key(token, domain)} #:${statements.length} uri=$uri');
         }, onError: (error) {
-          print('Error in stream: $error');
+          // DEFER: Corrupt the collection. Left as is, fetch() should "miss" and do it.
+          print('Error in stream: $tokenSpecs $domain');
         }, onDone: () {
           client.close();
           done.value = true;
