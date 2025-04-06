@@ -198,7 +198,7 @@ class Fetcher {
     return out;
   }
 
-  static _key(String token, String domain) => '$token$domain';
+  static _key(String token, String domain) => '$token:$domain';
 
   Fetcher.internal(this.token, this.domain, this.fire, this.functions);
 
@@ -292,23 +292,19 @@ class Fetcher {
         params['tokens'] = encodedTokens2Revoked;
         // TODO: https instead of http, currently doesn't work
         // TODO: Wierd: only http works on emulator, only https works on PROD
-        final Uri uri =
-            (fireChoice == FireChoice.prod) ? Uri.https(host, path, params) : Uri.http(host, path, params);
+        final Uri uri = (fireChoice == FireChoice.prod)
+            ? Uri.https(host, path, params)
+            : Uri.http(host, path, params);
         final http.Request request = http.Request('GET', uri);
         final http.StreamedResponse response = await client.send(request);
         assert(response.statusCode == 200, 'Request failed with status: ${response.statusCode}');
-        response.stream.listen((value) {
-          String data = String.fromCharCodes(value);
-          List<String> dat = data.split('\n');
-          for (String da in dat) {
-            if (da.isEmpty) continue;
-            Json json = jsonDecode(da);
-            assert(json.length == 1);
-            String token = json.keys.first;
-            List statements = json.values.first;
-            print('batchFetched[($token, $domain)] ${statements.length} uri=$uri');
-            batchFetched[_key(token, domain)] = List<Json>.from(statements);
-          }
+        response.stream.transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
+          Json json = jsonDecode(line);
+          assert(json.length == 1);
+          String token = json.keys.first;
+          List statements = json.values.first;
+          batchFetched[_key(token, domain)] = List<Json>.from(statements);
+          print('batchFetched ${_key(token, domain)} #:${statements.length} uri=$uri');
         }, onError: (error) {
           print('Error in stream: $error');
         }, onDone: () {
