@@ -29,6 +29,7 @@ class Prefs {
   // DEFER: These are not all compatible with each other, no worries..
   static final ValueNotifier<bool> cloudFunctionsFetch = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> batchFetch = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> streamBatchFetch = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> slowFetch = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> fetchRecent = ValueNotifier<bool>(false);
 

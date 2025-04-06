@@ -155,4 +155,14 @@ void main() async {
     expect(i.length, 2);
     expect(i.length, 2);
   });
+
+  test('string plit', () {
+    String s = 'a\nb\n';
+    List<String> r = s.split('\n');
+    print(r);
+    for (String rr in r) {
+      print('r="$rr"');
+    }
+    expect(r.length, 2);
+  });
 }
