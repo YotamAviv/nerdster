@@ -423,32 +423,34 @@ Plan
 - format the lists String.join(','); maybe '+'
 - format tokenAndOrRevoked pairs String.join(''); (maybe nothing, just extra long; maybe a minus)
 - unit test these Dart and JS
-http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b"]
-http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
-http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]&omit=["statement","I"]
+http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}]
+http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}]&omit=["statement","I"]
+NOPE: http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b"]
+NOPE: http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
+NOPE: http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]&omit=["statement","I"]
 */
 exports.streamstatements = functions.https.onRequest((req, res) => {
-  // TODO:..
-  // if (!req.acceptsStreaming) {
-  //   const error = 'no streaming';
-  //   console.error(error);
-  //   res.status(500).send(`Error: ${error}`);
-  //   return;
-  // }
-  // Add the following line to set the CORS header
-  res.set('Access-Control-Allow-Origin', '*'); // Allow all origins
+  // QUESTIONABLE: I've seen and ignored this stuff:
+  // if (!req.acceptsStreaming) ...
+  // if (req.headers['content-type'] === 'application/stream+json') ...
+  // response.writeHead(200, {
+  //   'Content-Type': 'application/stream+json',
+  //   'Transfer-Encoding': 'chunked' // Important for streaming
+  // });
+  res.set('Access-Control-Allow-Origin', '*'); // CORS header.. Allow all origins
   res.writeHead(200, {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive'
   });
   try {
-    const params = req.query;
-    const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
     if (!req.query.tokens) throw new HttpsError('required: tokens');
-    const decoded = decodeURIComponent(req.query.tokens);
-    var is = JSON.parse(decoded);
-    // fetch forecast data for all requested locations
+    // CODE: call decodeURIComponent on all values in params (but I don't even know what type of object params is)
+    const params = req.query;
+    const omit = req.query.omit ? JSON.parse(decodeURIComponent(params.omit)) : null;
+    // DEFER: rename tokens parameter.
+    // DEFER: allow the token specs in the list to be either String token or map {String token, String? revokeAt }
+    const is = JSON.parse(decodeURIComponent(params.tokens));
     let count = 0;
     const all = is.map(
       async (i) => {

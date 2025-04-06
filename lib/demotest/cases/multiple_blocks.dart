@@ -3,7 +3,6 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/net/oneofus_net.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -21,7 +20,6 @@ Future<(DemoKey, DemoKey?)> multipleBlocks() async {
   
   var network;
   var expectedNetwork;
-  var expectedEquivalents;
 
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await lisa.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
@@ -33,7 +31,7 @@ Future<(DemoKey, DemoKey?)> multipleBlocks() async {
   await signInState.signIn(lisa.token, null);
   await Comp.waitOnComps([contentBase, keyLabels]);
   
-  network = OneofusNet().network;
+  network = oneofusNet.network;
   expectedNetwork = {
     "Lisa": null,
     "Bart": null,
