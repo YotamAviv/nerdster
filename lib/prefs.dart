@@ -4,8 +4,8 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 bool devDefault = fireChoice != FireChoice.prod;
-// TEMP: bool bNerd = devDefault;
-bool bNerd = true;
+bool bNerd = devDefault;
+// bool bNerd = true;
 
 class Prefs {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
@@ -29,7 +29,7 @@ class Prefs {
   // DEFER: These are not all compatible with each other, no worries..
   static final ValueNotifier<bool> cloudFunctionsFetch = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> batchFetch = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> streamBatchFetch = ValueNotifier<bool>(false); // TEMP
+  static final ValueNotifier<bool> streamBatchFetch = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> slowFetch = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> fetchRecent = ValueNotifier<bool>(false);
 
