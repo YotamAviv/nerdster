@@ -173,6 +173,7 @@ $link''',
               child: const Text('readStream')),
           MyCheckbox(Prefs.cloudFunctionsFetch, 'cloudFunctionsFetch (goes quicker)'),
           MyCheckbox(Prefs.batchFetch, 'batchFetch'),
+          MyCheckbox(Prefs.streamBatchFetch, 'streamBatchFetch'),
           MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
           MyCheckbox(Prefs.slowFetch, '''slowFetch'''),
           MenuItemButton(

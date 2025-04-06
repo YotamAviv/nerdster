@@ -328,7 +328,6 @@ exports.mcloudfetch = onCall(async (request) => {
   const omit = request.data.omit;
   try {
     var outs = [];
-    // TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
     for (const [token, revokeAt] of Object.entries(token2revokeAt)) {
       // logger.log(`token=${token}, revokeAt=${revokeAt}`);
       var out = await fetchh({ [token]: revokeAt }, params, omit);
@@ -413,11 +412,80 @@ exports.export2 = exports.export;
 
 // ------------- stream 
 
+// TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
+/*
+Plan
+- reconsider the 'i' stuff. Mabye just pass a map of token2revoked at 
+  - typical:    {token: revoked, token: null, token: revoked, token: null}
+  - unexpected: [{token: revoked}, token, {token: revoked}, token]
+- This should be the export API
+  - detect if allows streaming: stream or return list
+- format the lists String.join(','); maybe '+'
+- format tokenAndOrRevoked pairs String.join(''); (maybe nothing, just extra long; maybe a minus)
+- unit test these Dart and JS
+http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b"]
+http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
+http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]&omit=["statement","I"]
+*/
+exports.streamstatements = functions.https.onRequest((req, res) => {
+  // TODO:..
+  // if (!req.acceptsStreaming) {
+  //   const error = 'no streaming';
+  //   console.error(error);
+  //   res.status(500).send(`Error: ${error}`);
+  //   return;
+  // }
+  // Add the following line to set the CORS header
+  res.set('Access-Control-Allow-Origin', '*'); // Allow all origins
+  res.writeHead(200, {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  try {
+    const params = req.query;
+    const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
+    if (!req.query.tokens) throw new HttpsError('required: tokens');
+    const decoded = decodeURIComponent(req.query.tokens);
+    var is = JSON.parse(decoded);
+    // fetch forecast data for all requested locations
+    let count = 0;
+    const all = is.map(
+      async (i) => {
+        // logger.log(`i=${JSON.stringify(i)}`);
+        var token2revoked = i;
+        const token = Object.keys(token2revoked)[0];
+        // logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
+        const statements = await fetchh(token2revoked, params, omit);
+        const result = { [token]: statements };
+        const sOut = JSON.stringify(result);
+        res.write(`${sOut}\n`);
+        count++;
+        if (count == is.length) {
+          res.end();
+          res.status(200);
+          logger.log(`end`);
+        }
+      },
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(`Error: ${error}`); // BUG: Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+  }
+});
+
 /*
 Just prototype
 http://127.0.0.1:5001/nerdster/us-central1/streamnums
 */
 exports.streamnums = functions.https.onRequest((req, res) => {
+  // if (!req.acceptsStreaming) {
+  //   const error = 'no streaming';
+  //   console.error(error);
+  //   res.status(500).send(`Error: ${error}`);
+  //   return;
+  // }
+
   // Add the following line to set the CORS header
   res.set('Access-Control-Allow-Origin', '*'); // Allow all origins
   res.writeHead(200, {
@@ -437,54 +505,4 @@ exports.streamnums = functions.https.onRequest((req, res) => {
       res.end();
     }
   }, 300);
-});
-
-/*
-http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b"]
-http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
-http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]&omit=["statement","I"]
-*/
-exports.streamstatements = functions.https.onRequest((req, res) => {
-  // Add the following line to set the CORS header
-  res.set('Access-Control-Allow-Origin', '*'); // Allow all origins
-  res.writeHead(200, {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
-  try {
-    const params = req.query;
-    const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
-    if (!req.query.tokens) throw new HttpsError('required: tokens');
-    const is = JSON.parse(req.query.tokens);
-
-    // fetch forecast data for all requested locations
-    let count = 0;
-    const allRequests = is.map(
-      async (i) => {
-        logger.log(`i=${i}`);
-        const token2revoked = i2token2revoked(i);
-        logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
-        const x = await fetchh(token2revoked, params, omit);
-        const token = Object.keys(token2revoked)[0];
-        const result = { [token]: x };
-        const sOut = JSON.stringify(result);
-        res.write(`${sOut}\n`);
-        // clients that support streaming will have each
-        // forecast streamed to them as they complete
-        if (req.acceptsStreaming) {
-          res.write(sOut);
-        }
-        count++;
-        if (count == is.length) {
-          res.end();
-          res.status(200);
-          logger.log(`end`);
-        }
-      },
-    );
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(`Error: ${error}`);
-  }
 });

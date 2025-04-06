@@ -1,8 +1,16 @@
 import 'dart:collection';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/cupertino.dart';
 
+import 'package:http/http.dart' as http;
+import 'package:nerdster/main.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/value_waiter.dart';
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
 import 'distincter.dart';
@@ -223,15 +231,26 @@ class Fetcher {
   bool get isCached => b(_cached);
 
   static const Json paramsProto = {
-    "distinct": true,
+    "distinct": "true",
     "omit": ['statement', 'I'],
     "orderStatements": "false",
 
-    "checkPrevious": true,
-    "includeId": true, // includeId required for checkPrevious, not needed but tested and liked.
+    "checkPrevious": "true",
+    "includeId": "true", // includeId required for checkPrevious, not needed but tested and liked.
 
     // EXPERIMENTAL: "includeId": true,
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
+  };
+
+  static Map<FireChoice, Map<String, (String, String)>> streamstatementsUrl = {
+    FireChoice.prod: {
+      kOneofusDomain: ('us-central1-one-of-us-net.cloudfunctions.net', 'streamstatements'),
+      kNerdsterDomain: ('us-central1-nerdster.cloudfunctions.net', 'streamstatements')
+    },
+    FireChoice.emulator: {
+      kOneofusDomain: ('127.0.0.1:5002', 'one-of-us-net/us-central1/streamstatements'),
+      kNerdsterDomain: ('127.0.0.1:5001', 'nerdster/us-central1/streamstatements')
+    },
   };
 
   // BUG: I think I batchFetch over and over when nothing's changed. Note that to re-compute BFS,
@@ -255,22 +274,69 @@ class Fetcher {
     token2revokeAt = tmp;
     if (token2revokeAt.isEmpty) return;
 
-    Json params = Map.of(paramsProto);
-    params["token2revokeAt"] = token2revokeAt;
-    final results = await Fetcher.mFire.mAsync(() async {
-      return await functions!.httpsCallable('mcloudfetch').call(params);
-    }, note: mName ?? '?');
+    if (Prefs.streamBatchFetch.value) {
+      // Plan: see index.js
+      var client = http.Client();
+      List<Map<String, String?>> ttt =
+          List<Map<String, String?>>.from(token2revokeAt.entries.map((e) => {e.key: e.value}));
+      try {
+        ValueNotifier<bool> done = ValueNotifier(false);
 
-    // Weave tokens from token2revoked and results
-    Iterable<String> tokens = token2revokeAt.keys;
-    Iterator<String> tokensIterator = tokens.iterator;
-    for (List statements in results.data) {
-      tokensIterator.moveNext();
-      String token = tokensIterator.current;
-      batchFetched[_key(token, domain)] = List<Json>.from(statements);
+        final String host = streamstatementsUrl[fireChoice]![domain]!.$1;
+        final String path = streamstatementsUrl[fireChoice]![domain]!.$2;
+        // BUG, see uri.dart:2517, params values should be either strings or Iterable.
+        // TEMP: workaround
+        // BUG: can't pass tokens as ["x", "y"]. The framework chagnes it to tokens=x&tokens=y
+        Json params = {};
+        String encodedTokens2Revoked = Uri.encodeComponent(JsonEncoder().convert(ttt));
+        params['tokens'] = encodedTokens2Revoked;
+        // TODO: https instead of http, currently doesn't work
+        // TODO: Wierd: only http works on emulator, only https works on PROD
+        final Uri uri =
+            (fireChoice == FireChoice.prod) ? Uri.https(host, path, params) : Uri.http(host, path, params);
+        final http.Request request = http.Request('GET', uri);
+        final http.StreamedResponse response = await client.send(request);
+        assert(response.statusCode == 200, 'Request failed with status: ${response.statusCode}');
+        response.stream.listen((value) {
+          String data = String.fromCharCodes(value);
+          List<String> dat = data.split('\n');
+          for (String da in dat) {
+            if (da.isEmpty) continue;
+            Json json = jsonDecode(da);
+            assert(json.length == 1);
+            String token = json.keys.first;
+            List statements = json.values.first;
+            print('batchFetched[($token, $domain)] ${statements.length} uri=$uri');
+            batchFetched[_key(token, domain)] = List<Json>.from(statements);
+          }
+        }, onError: (error) {
+          print('Error in stream: $error');
+        }, onDone: () {
+          client.close();
+          done.value = true;
+        });
+        await ValueWaiter(done, true).untilReady();
+      } catch (e, stackTrace) {
+        print('Error: $e');
+        print(stackTrace);
+      }
+    } else {
+      Json params = Map.of(paramsProto);
+      params["token2revokeAt"] = token2revokeAt;
+
+      final results = await Fetcher.mFire.mAsync(() async {
+        return await functions!.httpsCallable('mcloudfetch').call(params);
+      }, note: mName ?? '?');
+      // Weave tokens from token2revoked and results
+      Iterable<String> tokens = token2revokeAt.keys;
+      Iterator<String> tokensIterator = tokens.iterator;
+      for (List statements in results.data) {
+        tokensIterator.moveNext();
+        String token = tokensIterator.current;
+        batchFetched[_key(token, domain)] = List<Json>.from(statements);
+      }
+      print('batchFetch: ${token2revokeAt.keys.map((t) => t)}');
     }
-
-    print('batchFetch: ${token2revokeAt.keys.map((t) => t)}');
 
     if (Prefs.slowFetch.value) {
       await Future.delayed(Duration(milliseconds: token2revokeAt.length * 100));
@@ -287,7 +353,7 @@ class Fetcher {
         if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
           statements = batchFetched[_key(token, domain)]!;
         } else {
-          if (Prefs.batchFetch.value) print('batcher miss $domain');
+          if (Prefs.batchFetch.value) print('batcher miss $domain $token');
           if (Prefs.slowFetch.value) {
             await Future.delayed(Duration(milliseconds: 300));
           }
@@ -302,7 +368,7 @@ class Fetcher {
           final result = await mFire.mAsync(() async {
             return await functions!.httpsCallable('cloudfetch').call(params);
           }, note: token);
-          statements = result.data;
+          statements = List<Json>.from(result.data);
         }
 
         if (_revokeAt != null) {
