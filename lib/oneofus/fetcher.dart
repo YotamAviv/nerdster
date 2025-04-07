@@ -184,7 +184,7 @@ class Fetcher {
   }
 
   factory Fetcher(String token, String domain) {
-    String key = _key(token, domain);
+    String key = _key(token, null, domain);
     FirebaseFirestore fire = FireFactory.find(domain);
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     Fetcher out;
@@ -198,7 +198,7 @@ class Fetcher {
     return out;
   }
 
-  static _key(String token, String domain) => '$token:$domain';
+  static _key(String token, String? revokedAt, String domain) => '$token:$domain';
 
   Fetcher.internal(this.token, this.domain, this.fire, this.functions);
 
@@ -296,9 +296,10 @@ class Fetcher {
         response.stream.transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
           Json json = jsonDecode(line);
           String token = json.keys.first;
+          String? revokeAt = token2revokeAt[token];
           List statements = json.values.first;
-          batchFetched[_key(token, domain)] = List<Json>.from(statements);
-          print('batchFetched ${_key(token, domain)} #:${statements.length} uri=$uri');
+          batchFetched[_key(token, revokeAt, domain)] = List<Json>.from(statements);
+          print('batchFetched ${_key(token, revokeAt, domain)} #:${statements.length} uri=$uri');
         }, onError: (error) {
           // DEFER: Corrupt the collection. Left as is, fetch() should "miss" and do it.
           print('Error in stream: $specs $domain');
@@ -324,7 +325,8 @@ class Fetcher {
       for (List statements in results.data) {
         tokensIterator.moveNext();
         String token = tokensIterator.current;
-        batchFetched[_key(token, domain)] = List<Json>.from(statements);
+        String? revokeAt = token2revokeAt[token];
+        batchFetched[_key(token, revokeAt, domain)] = List<Json>.from(statements);
       }
       print('batchFetch: ${token2revokeAt.keys.map((t) => t)}');
     }
@@ -341,8 +343,9 @@ class Fetcher {
       DateTime? time;
       if (Prefs.cloudFunctionsFetch.value && functions != null) {
         List<Json> statements;
-        if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
-          statements = batchFetched[_key(token, domain)]!;
+        if (Prefs.batchFetch.value && b(batchFetched[_key(token, revokeAt, domain)])) {
+          // BUG: Key should include revokedAt, too.
+          statements = batchFetched[_key(token, revokeAt, domain)]!;
         } else {
           if (Prefs.batchFetch.value) print('batcher miss $domain $token');
           if (Prefs.slowFetch.value) {
