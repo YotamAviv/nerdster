@@ -22,11 +22,10 @@ void readStream() async {
   try {
     String host = streamnumsUrl[fireChoice]![kNerdsterDomain]!.$1;
     String path = streamnumsUrl[fireChoice]![kNerdsterDomain]!.$2;
-    // TODO: https instead of http, currently doesn't work
     // TODO: Wierd: only http works on emulator, only https works on PROD
     Uri uri = (fireChoice == FireChoice.prod) ? Uri.https(host, path) : Uri.http(host, path);
     final http.Request request = http.Request('GET', uri);
-    // request.headers['Accept'] = 'application/json'; // TEMP, uncomment
+    request.headers['Accept'] = 'application/json';
 
     final http.StreamedResponse response = await client.send(request);
     assert(response.statusCode == 200, 'Request failed with status: ${response.statusCode}');

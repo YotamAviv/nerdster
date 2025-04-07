@@ -122,8 +122,6 @@ class Menus {
             MyCheckbox(Prefs.showJson, 'show JSON'),
             MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
             MyCheckbox(Prefs.showStatements, 'show trust statements'),
-            const Text('--------- nerdiest ---------'),
-            MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
           ],
           child: const Row(
             children: [
@@ -176,6 +174,7 @@ $link''',
           MyCheckbox(Prefs.streamBatchFetch, 'streamBatchFetch'),
           MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
           MyCheckbox(Prefs.slowFetch, '''slowFetch'''),
+          MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
           MenuItemButton(
               onPressed: () {
                 // Workaround for omit=["I"] when fetching statements. We have to know our own key
@@ -198,12 +197,12 @@ $link''',
             ...demos,
           ], child: const Text('run case')),
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
-          MenuItemButton(
-              child: const Text('Load JSON statements'),
-              onPressed: () async {
-                await loadDumpDialog(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
-              }),
+          // MenuItemButton(
+          //     child: const Text('Load JSON statements'),
+          //     onPressed: () async {
+          //       await loadDumpDialog(context);
+          //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
+          //     }),
           SubmenuButton(menuChildren: <Widget>[
             ...demoSignins,
           ], child: const Text('Demo sign-in')),

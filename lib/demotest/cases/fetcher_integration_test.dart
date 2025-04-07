@@ -421,56 +421,55 @@ class FetcherTestHelper {
     Json kI2 = await makeI();
     String t2 = getToken(kI2);
 
-    // this is to not see 'cache miss' in the debug console as pushing requires fetching first.
-    await Fetcher.batchFetch({t1: null, t2: null}, kNerdsterDomain);
+    for (bool b in [true, false]) {
+      // should get same answers without batch fetch
 
-    Fetcher fetcher1 = Fetcher(t1, kNerdsterDomain);
-    Statement s1 = await fetcher1.push({
-      'statement': kNerdsterType,
-      'I': kI1,
-      'rate': {'title': 'a'},
-      'time': clock.nowIso
-    }, signer);
+      // this is to not see 'cache miss' in the debug console as pushing requires fetching first.
+      if (b) await Fetcher.batchFetch({t1: null, t2: null}, kNerdsterDomain);
 
-    Fetcher fetcher2 = Fetcher(t2, kNerdsterDomain);
-    Statement s2 = await fetcher2.push({
-      'statement': kNerdsterType,
-      'I': kI2,
-      'rate': {'title': 'a'},
-      'time': clock.nowIso
-    }, signer);
+      Fetcher.clear();
+      Fetcher fetcher1 = Fetcher(t1, kNerdsterDomain);
+      Statement s1 = await fetcher1.push({
+        'statement': kNerdsterType,
+        'I': kI1,
+        'rate': {'title': 'a'},
+        'time': clock.nowIso
+      }, signer);
 
-    // read data
+      Fetcher fetcher2 = Fetcher(t2, kNerdsterDomain);
+      Statement s2 = await fetcher2.push({
+        'statement': kNerdsterType,
+        'I': kI2,
+        'rate': {'title': 'a'},
+        'time': clock.nowIso
+      }, signer);
 
-    Fetcher.clear();
+      // read data
+      Fetcher.clear();
+      if (b) await Fetcher.batchFetch({t1: null, t2: null}, kNerdsterDomain);
+      fetcher2 = Fetcher(t2, kNerdsterDomain);
+      await fetcher2.fetch();
+      expect(fetcher2.statements.length, 1);
+      expect(fetcher2.statements[0].token, s2.token);
 
-    await Fetcher.batchFetch({t1: null, t2: null}, kNerdsterDomain);
-    fetcher2 = Fetcher(t2, kNerdsterDomain);
-    await fetcher2.fetch();
-    expect(fetcher2.statements.length, 1);
-    expect(fetcher2.statements[0].token, s2.token);
+      // Repeat with revoke since always
+      Fetcher.clear();
+      if (b) await Fetcher.batchFetch({t1: null, t2: 'since always'}, kNerdsterDomain);
+      fetcher2 = Fetcher(t2, kNerdsterDomain);
+      fetcher2.setRevokeAt('since always');
+      await fetcher2.fetch();
+      expect(fetcher2.statements.length, 0);
 
-    // Repeat with revoke since always
+      // Repeat with revoke at token
+      Fetcher.clear();
+      if (b) await Fetcher.batchFetch({t1: null, t2: s2.token}, kNerdsterDomain);
+      fetcher2 = Fetcher(t2, kNerdsterDomain);
+      fetcher2.setRevokeAt(s2.token);
+      await fetcher2.fetch();
+      expect(fetcher2.statements.length, 1);
+      expect(fetcher2.statements[0].token, s2.token);
 
-    Fetcher.clear();
-
-    await Fetcher.batchFetch({t1: null, t2: 'since always'}, kNerdsterDomain);
-    fetcher2 = Fetcher(t2, kNerdsterDomain);
-    fetcher2.setRevokeAt(s2.token); // BUG: TODO: This passes now with this line added, but it also passed without in batch mode.
-    await fetcher2.fetch();
-    expect(fetcher2.statements.length, 0);
-
-    // Repeat with revoke at token
-
-    Fetcher.clear();
-
-    await Fetcher.batchFetch({t1: null, t2: s2.token}, kNerdsterDomain);
-    fetcher2 = Fetcher(t2, kNerdsterDomain);
-    fetcher2.setRevokeAt(s2.token);
-    await fetcher2.fetch();
-    expect(fetcher2.statements.length, 1);
-    expect(fetcher2.statements[0].token, s2.token);
-
-    // DEFER: actually verify that we're getting hits.
+      // DEFER: actually verify that we're getting hits.
+    }
   }
 }
