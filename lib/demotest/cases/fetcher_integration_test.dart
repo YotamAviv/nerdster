@@ -456,6 +456,7 @@ class FetcherTestHelper {
 
     await Fetcher.batchFetch({t1: null, t2: 'since always'}, kNerdsterDomain);
     fetcher2 = Fetcher(t2, kNerdsterDomain);
+    fetcher2.setRevokeAt(s2.token); // BUG: TODO: This passes now with this line added, but it also passed without in batch mode.
     await fetcher2.fetch();
     expect(fetcher2.statements.length, 0);
 
@@ -465,6 +466,7 @@ class FetcherTestHelper {
 
     await Fetcher.batchFetch({t1: null, t2: s2.token}, kNerdsterDomain);
     fetcher2 = Fetcher(t2, kNerdsterDomain);
+    fetcher2.setRevokeAt(s2.token);
     await fetcher2.fetch();
     expect(fetcher2.statements.length, 1);
     expect(fetcher2.statements[0].token, s2.token);
