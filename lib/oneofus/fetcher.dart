@@ -242,14 +242,15 @@ class Fetcher {
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
-  static Map<FireChoice, Map<String, (String, String)>> streamstatementsUrl = {
+  // TODO: Unite this with exportUrl in main.
+  static Map<FireChoice, Map<String, (String, String)>> streamUrl = {
     FireChoice.prod: {
-      kOneofusDomain: ('us-central1-one-of-us-net.cloudfunctions.net', 'streamstatements'),
-      kNerdsterDomain: ('us-central1-nerdster.cloudfunctions.net', 'streamstatements')
+      kOneofusDomain: ('us-central1-one-of-us-net.cloudfunctions.net', 'export'),
+      kNerdsterDomain: ('us-central1-nerdster.cloudfunctions.net', 'export')
     },
     FireChoice.emulator: {
-      kOneofusDomain: ('127.0.0.1:5002', 'one-of-us-net/us-central1/streamstatements'),
-      kNerdsterDomain: ('127.0.0.1:5001', 'nerdster/us-central1/streamstatements')
+      kOneofusDomain: ('127.0.0.1:5002', 'one-of-us-net/us-central1/export'),
+      kNerdsterDomain: ('127.0.0.1:5001', 'nerdster/us-central1/export')
     },
   };
 
@@ -276,14 +277,14 @@ class Fetcher {
 
     if (Prefs.streamBatchFetch.value) {
       var client = http.Client();
-      List<Map<String, String?>> tokenSpecs =
-          List<Map<String, String?>>.from(token2revokeAt.entries.map((e) => {e.key: e.value}));
+      List specs =
+          List.from(token2revokeAt.entries.map((e) => e.value == null ? e.key : {e.key: e.value}));
       try {
         ValueNotifier<bool> done = ValueNotifier(false);
-        final String host = streamstatementsUrl[fireChoice]![domain]!.$1;
-        final String path = streamstatementsUrl[fireChoice]![domain]!.$2;
+        final String host = streamUrl[fireChoice]![domain]!.$1;
+        final String path = streamUrl[fireChoice]![domain]!.$2;
         Json params = Map.of(paramsProto);
-        params['tokens'] = tokenSpecs;
+        params['spec'] = specs;
         params = params.map((k, v) => MapEntry(k, Uri.encodeComponent(JsonEncoder().convert(v))));
         // DEFER: Wierd: only http works on emulator, only https works on PROD
         final Uri uri = (fireChoice == FireChoice.prod)
@@ -300,7 +301,7 @@ class Fetcher {
           print('batchFetched ${_key(token, domain)} #:${statements.length} uri=$uri');
         }, onError: (error) {
           // DEFER: Corrupt the collection. Left as is, fetch() should "miss" and do it.
-          print('Error in stream: $tokenSpecs $domain');
+          print('Error in stream: $specs $domain');
         }, onDone: () {
           client.close();
           done.value = true;

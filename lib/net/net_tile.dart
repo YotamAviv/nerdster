@@ -214,7 +214,7 @@ class _MonikerWidget extends StatelessWidget {
       String link;
       // DEFER: ?revokedAt=...
       String domain = bOneofus ? kOneofusDomain : kNerdsterDomain;
-      link = '${exportUrl[fireChoice]![domain]}?token=${node.token!}';
+      link = '${exportUrl[fireChoice]![domain]}?spec=${node.token!}';
       // DEFER: copy floater, (maybe unite with Nerdster link dialog)
       await alert(
           'Published statements',

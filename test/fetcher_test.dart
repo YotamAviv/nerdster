@@ -40,6 +40,8 @@ void main() async {
 
   test('clearNot', helper.clearNot);
 
+  test('batch', helper.batch);
+
   // I must have written this as I was first using FakeFirebaseFirestore.
   // I uses the full blown fetcher signing push(..) to write to the db; it should have been
   // done in a more "unit testing" fashion.

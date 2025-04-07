@@ -353,83 +353,37 @@ exports.mcloudfetch = onCall(async (request) => {
 //   - https://console.cloud.google.com/run/domains?project=nerdster
 //   - https://console.firebase.google.com/project/nerdster/functions/list
 
-// DEFER: Use the 'i' over 'token2revokeAt' in cloud functions. (pro: save bytes, con: complexity)
-function i2token2revoked(i) {
-  var token2revoked;
-  if (typeof i === 'string') {
-    token2revoked = { [i]: null };
-  } else {
-    token2revoked = i;
-  }
-  return token2revoked;
-}
-
-/*
-* 1 token, many parameters
-http://127.0.0.1:5001/nerdster/us-central1/export?token="f4e45451dd663b6c9caf90276e366f57e573841b"&distinct=true&includeId=true&&checkPrevious=true&orderStatements=false&after=2024-12-19T00:00:00.000Z&omit=["statement","previous","signature"]
-* 1 token with revokedAt
-http://127.0.0.1:5001/nerdster/us-central1/export?token={"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}
-* with or without quotes works when just 1token
-http://127.0.0.1:5002/one-of-us-net/us-central1/export?token=55c28752d220fa7188d77414f948382c41e36255&includeId
-http://127.0.0.1:5002/one-of-us-net/us-central1/export?token="55c28752d220fa7188d77414f948382c41e36255"&includeId
-* tokens: 2 with 1 revoked
-http://127.0.0.1:5001/nerdster/us-central1/export?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
-*/
-exports.export = onRequest(async (req, res) => {
-  try {
-    const params = req.query;
-    const omit = req.query.omit ? JSON.parse(req.query.omit) : null;
-    if (req.query.token) {
-      if (req.query.tokens) throw new HttpsError('required: token xor tokens');
-      var i;
-      try {
-        i = JSON.parse(req.query.token);
-      } catch (e) {
-        i = req.query.token;
-      }
-      const token2revoked = i2token2revoked(i);
-      const out = await fetchh(token2revoked, params, omit);
-      res.status(200).json(out);
-    } else {
-      if (!req.query.tokens) throw new HttpsError('required: token xor tokens');
-      const is = JSON.parse(req.query.tokens);
-      const outs = [];
-      for (const i of is) {
-        const token2revoked = i2token2revoked(i);
-        const out = await fetchh(token2revoked, params, omit);
-        outs.push(out);
-      }
-      res.status(200).json(outs);
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(`Error: ${error}`);
-  }
-});
-
-// TODO: remove
-exports.export2 = exports.export;
 
 // ------------- stream 
 
-// TODO: Async streaming (parallel): https://firebase.google.com/docs/functions/callable?gen=2nd
+// Async streaming (parallel)
 /*
-Plan
-- reconsider the 'i' stuff. Mabye just pass a map of token2revoked at 
+Plan dicussion, points..
+- reconsider the 'spec' stuff; mabye always pass a map of token2revoked 
   - typical:    {token: revoked, token: null, token: revoked, token: null}
   - unexpected: [{token: revoked}, token, {token: revoked}, token]
 - This should be the export API
-  - detect if allows streaming: stream or return list
-- format the lists String.join(','); maybe '+'
-- format tokenAndOrRevoked pairs String.join(''); (maybe nothing, just extra long; maybe a minus)
-- unit test these Dart and JS
-http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}]
-http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}]&omit=["statement","I"]
-NOPE: http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=["f4e45451dd663b6c9caf90276e366f57e573841b"]
-NOPE: http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
-NOPE: http://127.0.0.1:5001/nerdster/us-central1/streamstatements?tokens=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]&omit=["statement","I"]
+  - detect if allows or use a param: stream or return list
+- Only 2 requirements:
+  - demo (Nerster shows statement export link)
+  - Nerdster backend
+- if request starts with ["{", "["] then it's JSON; otherwise, it's a single token.
+  - or token=, 
+- short aliases?
+  - t: token
+  - ts: tokenspec
+- Demo: Nice to just use ?token=<token>
+- Different entry points (/export/, /stream/) or different params (?stream=true)
+  - JSON input? (unlike ?token=<token>)
+
+  TEST: (seem to work)
+http://127.0.0.1:5001/nerdster/us-central1/statements?spec=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}]
+http://127.0.0.1:5001/nerdster/us-central1/statements?spec=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}]&omit=["statement","I"]
+http://127.0.0.1:5001/nerdster/us-central1/statements?spec=["f4e45451dd663b6c9caf90276e366f57e573841b"]
+http://127.0.0.1:5001/nerdster/us-central1/statements?spec=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
+http://127.0.0.1:5001/nerdster/us-central1/statements?spec=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]&omit=["statement","I"]
 */
-exports.streamstatements = functions.https.onRequest((req, res) => {
+exports.export = functions.https.onRequest((req, res) => {
   // QUESTIONABLE: I've seen and ignored this stuff:
   // if (!req.acceptsStreaming) ...
   // if (req.headers['content-type'] === 'application/stream+json') ...
@@ -444,18 +398,37 @@ exports.streamstatements = functions.https.onRequest((req, res) => {
     'Connection': 'keep-alive'
   });
   try {
-    if (!req.query.tokens) throw new HttpsError('required: tokens');
+    // TODO: remove token, once refrence is gone from videos
+    if (!req.query.spec && !req.query.token) throw new HttpsError('required: spec');
+    const specString = req.query.spec ? decodeURIComponent(req.query.spec) : decodeURIComponent(req.query.token);
+    logger.log(`specString=${specString}`);
+    var specs; // list of <String> or <String, String?>{}
+    if (specString.startsWith("[")) {
+      specs = JSON.parse(specString);
+    } else if (specString.startsWith("{")) {
+      specs = [JSON.parse(specString)];
+    } else {
+      specs = [specString];
+    }
+    logger.log(`specs=${JSON.stringify(specs)}`);
+
+
     // CODE: call decodeURIComponent on all values in params (but I don't even know what type of object params is)
     const params = req.query;
     const omit = req.query.omit ? JSON.parse(decodeURIComponent(params.omit)) : null;
-    // DEFER: rename tokens parameter.
-    // DEFER: allow the token specs in the list to be either String token or map {String token, String? revokeAt }
-    const is = JSON.parse(decodeURIComponent(params.tokens));
+
     let count = 0;
-    const all = is.map(
-      async (i) => {
-        // logger.log(`i=${JSON.stringify(i)}`);
-        var token2revoked = i;
+    const all = specs.map(
+      async (spec) => {
+        logger.log(`spec=${JSON.stringify(spec)}`);
+        var token2revoked;
+        if (typeof spec === 'string') {
+          token2revoked = { [spec]: null };
+        } else {
+          token2revoked = spec;
+        }
+        logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
+
         const token = Object.keys(token2revoked)[0];
         // logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
         const statements = await fetchh(token2revoked, params, omit);
@@ -463,7 +436,7 @@ exports.streamstatements = functions.https.onRequest((req, res) => {
         const sOut = JSON.stringify(result);
         res.write(`${sOut}\n`);
         count++;
-        if (count == is.length) {
+        if (count == specs.length) {
           res.end();
           res.status(200);
           logger.log(`end`);
