@@ -214,7 +214,14 @@ class _MonikerWidget extends StatelessWidget {
       String link;
       // DEFER: ?revokedAt=...
       String domain = bOneofus ? kOneofusDomain : kNerdsterDomain;
-      link = '${exportUrl[fireChoice]![domain]}?spec=${node.token!}';
+      final String host = exportUrl[fireChoice]![domain]!.$1;
+      final String path = exportUrl[fireChoice]![domain]!.$2;
+      Json params = {"spec": node.token!};
+      // DEFER: Wierd: only http works on emulator, only https works on PROD
+      final Uri uri = (fireChoice == FireChoice.prod)
+          ? Uri.https(host, path, params)
+          : Uri.http(host, path, params);
+      link = uri.toString();
       // DEFER: copy floater, (maybe unite with Nerdster link dialog)
       await alert(
           'Published statements',

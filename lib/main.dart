@@ -44,14 +44,14 @@ const domain2statementType = {
 
 final Corruptor corruptor = Notifications();
 
-Map<FireChoice, Map<String, String>> exportUrl = {
+const Map<FireChoice, Map<String, (String, String)>> exportUrl = {
   FireChoice.prod: {
-    kOneofusDomain: 'http://export.one-of-us.net/',
-    kNerdsterDomain: 'http://export.nerdster.org/'
+    kOneofusDomain: ('export.one-of-us.net', ''),
+    kNerdsterDomain: ('export.nerdster.org', '')
   },
   FireChoice.emulator: {
-    kOneofusDomain: 'http://127.0.0.1:5002/one-of-us-net/us-central1/export/',
-    kNerdsterDomain: 'http://127.0.0.1:5001/nerdster/us-central1/export/'
+    kOneofusDomain: ('127.0.0.1:5002', 'one-of-us-net/us-central1/export'),
+    kNerdsterDomain: ('127.0.0.1:5001', 'nerdster/us-central1/export')
   },
 };
 

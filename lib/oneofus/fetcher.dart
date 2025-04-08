@@ -4,22 +4,18 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/cupertino.dart';
-
 import 'package:http/http.dart' as http;
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/value_waiter.dart';
-import '../main.dart';
+
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
 import 'distincter.dart';
 import 'fire_factory.dart';
-import 'jsonish.dart';
 import 'measure.dart';
 import 'oou_verifier.dart';
 import 'statement.dart';
-import 'trust_statement.dart';
 import 'util.dart';
 
 ///
@@ -242,18 +238,6 @@ class Fetcher {
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
-  // TODO: Unite this with exportUrl in main.
-  static Map<FireChoice, Map<String, (String, String)>> streamUrl = {
-    FireChoice.prod: {
-      kOneofusDomain: ('us-central1-one-of-us-net.cloudfunctions.net', 'export'),
-      kNerdsterDomain: ('us-central1-nerdster.cloudfunctions.net', 'export')
-    },
-    FireChoice.emulator: {
-      kOneofusDomain: ('127.0.0.1:5002', 'one-of-us-net/us-central1/export'),
-      kNerdsterDomain: ('127.0.0.1:5001', 'nerdster/us-central1/export')
-    },
-  };
-
   // BUG: I think I batchFetch over and over when nothing's changed. Note that to re-compute BFS,
   // cached Fetchers work, but there is no "cached batch fetcher". The different BFS layers
   // will pre-fetch different tokens, and so considering only the last one won't help.
@@ -281,8 +265,8 @@ class Fetcher {
           List.from(token2revokeAt.entries.map((e) => e.value == null ? e.key : {e.key: e.value}));
       try {
         ValueNotifier<bool> done = ValueNotifier(false);
-        final String host = streamUrl[fireChoice]![domain]!.$1;
-        final String path = streamUrl[fireChoice]![domain]!.$2;
+        final String host = exportUrl[fireChoice]![domain]!.$1;
+        final String path = exportUrl[fireChoice]![domain]!.$2;
         Json params = Map.of(paramsProto);
         params['spec'] = specs;
         params = params.map((k, v) => MapEntry(k, Uri.encodeComponent(JsonEncoder().convert(v))));
