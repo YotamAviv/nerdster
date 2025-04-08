@@ -286,11 +286,39 @@ class SubjectTitle extends StatelessWidget {
       url = out;
     }
 
+    ContentType contentType = ContentType.values.byName(subject['contentType']);
+    String? lanyap;
+    // WEIRD: Switching on the enum didn't work, always ended at default.
+    switch (contentType.name) {
+      case 'article':
+        try {
+          lanyap = Uri.parse(subject['url']).host;
+        } catch (e) {
+          print(e);
+        }
+        break;
+      case 'book':
+        lanyap = subject['author'];
+        break;
+      case 'movie':
+        lanyap = subject['year'];
+        break;
+      case 'album':
+        lanyap = subject['artist'];
+        break;
+      default:
+      // print(contentType);
+    }
+
+    String title = subject['title'];
+    String message = b(lanyap) ? '($lanyap) $title' : title;
     return Flexible(
-        child: ClipRect(
-            child: InkWell(
-                onTap: () => myLaunchUrl(url, context),
-                child: Text((subject['title']),
-                    style: linkStyle, maxLines: 1, overflow: TextOverflow.ellipsis))));
+        child: Tooltip(
+            message: message,
+            child: ClipRect(
+                child: InkWell(
+                    onTap: () => myLaunchUrl(url, context),
+                    child: Text(title,
+                        style: linkStyle, maxLines: 1, overflow: TextOverflow.ellipsis)))));
   }
 }
