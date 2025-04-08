@@ -18,9 +18,8 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
-///
-/// DEFER: Remove "I" (and {"statements": ...}) from cloud function results and just return statements straight up.
-/// I believe that the only reason "I" was needed was when we come at a Nerdster link with oneofus=token, and so change that to oneofus={key}
+/// Now that Nerdster loads Oneofus data over HTTPS, not Firebase Cloud Functions, that
+/// access (OneofusFire...) may not be necessary.
 
 /// BUG: 3/12/25: Mr. Burner Phone revoked, signed in, still managed to clear, and caused data corruption.
 /// I wasn't able to reproduce that bug (lost the private key), and I've changed the code since
