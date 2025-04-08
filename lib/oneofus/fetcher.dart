@@ -254,7 +254,7 @@ class Fetcher {
     LinkedHashMap<String, String?> tmp = LinkedHashMap.of(token2revokeAt)
       ..removeWhere((k, v) => Fetcher(k, domain).isCached && Fetcher(k, domain).revokeAt == v);
     if (tmp.length != token2revokeAt.length) {
-      print('skipping ${token2revokeAt.length - tmp.length}');
+      // print('skipping ${token2revokeAt.length - tmp.length}');
     }
     token2revokeAt = tmp;
     if (token2revokeAt.isEmpty) return;
@@ -283,7 +283,7 @@ class Fetcher {
           String? revokeAt = token2revokeAt[token];
           List statements = json.values.first;
           batchFetched[_key(token, revokeAt, domain)] = List<Json>.from(statements);
-          print('batchFetched ${_key(token, revokeAt, domain)} #:${statements.length} uri=$uri');
+          // print('batchFetched ${_key(token, revokeAt, domain)} #:${statements.length} uri=$uri');
         }, onError: (error) {
           // DEFER: Corrupt the collection. Left as is, fetch() should "miss" and do it.
           print('Error in stream: $specs $domain');
