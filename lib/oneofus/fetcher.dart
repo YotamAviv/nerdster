@@ -18,8 +18,34 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
-/// Now that Nerdster loads Oneofus data over HTTPS, not Firebase Cloud Functions, that
-/// access (OneofusFire...) may not be necessary.
+/// Now that Nerdster loads Oneofus data over HTTPS, not Firebase Cloud Functions, 
+/// Fire access in OneofusFire should not be necessary.
+/// 
+/// Brief history:
+/// - Fetcher used direct Firebase querise
+///   - testing and development used FakeFirebase
+/// - I found Cloud Functions and used them to fetch distinct
+///   - That had to be optional to all for testing/FakeFirebase to continue
+/// - Cloud Functions don't support chuncked reading in Dart on the client side (I  don't think),
+///   and so I moved to HTTPS functions.
+/// - HTTPS functions with paralel reads on the server side and chuncked reading on the client
+///   seem ideal, almost
+///   - fastest
+///   - Nerdter should no longer need a back door to Oneofus
+///   - Can't be tested on Linux without emulator
+/// 
+/// I'd like to settle on HTTPS functions only, but I need to keep
+/// - FakeFirebase working for unit testing on Linux.
+/// - Oneofus backdoor on emulator for "integration testing" (see menu DEV->Integration tests)
+/// 
+/// DEFER:
+/// - Almost all of the above - the unit tests need the other code path and are helpful.
+/// - Cloud Functions work.. Yeah, don't waste effort on maintenance, but don't rush to delete.
+/// TODO:
+/// - Try to change fetch(token) to fetch(token, revoked)
+/// - Load up the fetchers after batchFetch, clean up some of the we expect with 'batcher miss'
+/// 
+/// 
 
 /// BUG: 3/12/25: Mr. Burner Phone revoked, signed in, still managed to clear, and caused data corruption.
 /// I wasn't able to reproduce that bug (lost the private key), and I've changed the code since
