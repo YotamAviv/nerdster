@@ -54,7 +54,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
     Map<String, dynamic> map = <String, dynamic>{};
     map['contentType'] = contentType.label;
     for (MapEntry<String, TextEditingController> e in key2controller.entries) {
-      String s = e.value.text;
+      String s = e.value.text.trim();
       map[e.key] = s;
     }
     Jsonish subject = Jsonish(map);
