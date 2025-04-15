@@ -208,7 +208,7 @@ class _MonikerWidget extends StatelessWidget {
         signInState.center = node.token!;
         await Comp.waitOnComps([keyLabels, contentBase]);
       }, context);
-    } else if (value == 'follow') {
+    } else if (value == 'follow...') {
       await follow(node.token!, context);
     } else if (value == 'statements') {
       String link;
