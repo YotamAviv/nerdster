@@ -7,7 +7,9 @@ import 'package:nerdster/js_widget.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/net/net_tree_model.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -175,6 +177,10 @@ class _NetTileState extends State<NetTile> {
   }
 }
 
+const kFollow = "Follow...";
+const kRecenter = "Recenter";
+const kStatements = "Statements...";
+
 // CONSIDER: more tooltips with paths.
 class _MonikerWidget extends StatelessWidget {
   final NetTreeModel node;
@@ -185,12 +191,12 @@ class _MonikerWidget extends StatelessWidget {
     bOneofus = oneofusNet.network.containsKey(node.token);
     items = [
       if (bOneofus && node.token != signInState.center)
-        const PopupMenuItem<String>(value: 'recenter', child: Text('recenter')),
+        const PopupMenuItem<String>(value: kRecenter, child: Text(kRecenter)),
       // Don't encourage following yourself.
       if (bOneofus && node.token != signInState.centerReset)
-        const PopupMenuItem<String>(value: 'follow...', child: Text('follow...')),
+        const PopupMenuItem<String>(value: kFollow, child: Text(kFollow)),
       if (Prefs.showStatements.value)
-        const PopupMenuItem<String>(value: 'statements', child: Text('statements...'))
+        const PopupMenuItem<String>(value: kStatements, child: Text(kStatements))
     ];
   }
 
@@ -203,32 +209,45 @@ class _MonikerWidget extends StatelessWidget {
       items: items,
       elevation: 8.0,
     );
-    if (value == 'recenter') {
+    if (value == kRecenter) {
       await progress.make(() async {
         signInState.center = node.token!;
         await Comp.waitOnComps([keyLabels, contentBase]);
       }, context);
-    } else if (value == 'follow...') {
+    } else if (value == kFollow) {
       await follow(node.token!, context);
-    } else if (value == 'statements') {
-      String link;
-      // DEFER: ?revokedAt=...
+    } else if (value == kStatements) {
+      String token = node.token!;
       String domain = bOneofus ? kOneofusDomain : kNerdsterDomain;
-      final String host = exportUrl[fireChoice]![domain]!.$1;
-      final String path = exportUrl[fireChoice]![domain]!.$2;
-      Json params = {"spec": node.token!};
-      // DEFER: Wierd: only http works on emulator, only https works on PROD
-      final Uri uri = (fireChoice == FireChoice.prod)
-          ? Uri.https(host, path, params)
-          : Uri.http(host, path, params);
-      link = uri.toString();
-      // DEFER: copy floater, (maybe unite with Nerdster link dialog)
-      await alert(
-          'Published statements',
-          '''Signed and published by this key:
+      if (fireChoice != FireChoice.fake) {
+        String link;
+        // DEFER: ?revokedAt=...
+        final String host = exportUrl[fireChoice]![domain]!.$1;
+        final String path = exportUrl[fireChoice]![domain]!.$2;
+        Json params = {"spec": token};
+        // DEFER: Wierd: only http works on emulator, only https works on PROD
+        final Uri uri = (fireChoice == FireChoice.prod)
+            ? Uri.https(host, path, params)
+            : Uri.http(host, path, params);
+        link = uri.toString();
+        // DEFER: copy floater, (maybe unite with Nerdster link dialog)
+        await alert(
+            'Published statements',
+            '''Signed and published by this key:
 $link''',
-          ['Okay'],
-          context);
+            ['Okay'],
+            context);
+      } else {
+        String body;
+        Iterable<Statement> statements = Fetcher(token, domain).statements;
+        // TODO: Show the Prefs.keyLabel checkbox on this dialog.
+        if (Prefs.keyLabel.value) {
+          body = statements.map((s) => encoder.convert(keyLabels.show(s.json))).join('\n');
+        } else {
+          body = statements.map((s) => s.jsonish.ppJson).join('\n');
+        }
+        alert('Statements signed by this key', body, ['Okay'], context);
+      }
     }
   }
 
