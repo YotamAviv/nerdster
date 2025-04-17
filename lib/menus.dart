@@ -9,6 +9,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dev/corruption_check.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -18,6 +19,7 @@ import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
+import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/tokenize.dart';
@@ -64,19 +66,17 @@ class Menus {
   static List<Widget> build(context) {
     List<Widget> demos = <Widget>[];
     for (final e in DemoKey.demos.entries) {
+      String name = e.key;
       demos.add(MenuItemButton(
           onPressed: () async {
+            demo = name;
             DemoKey.clear();
             DemoKey oneofus;
             DemoKey? delegate;
             (oneofus, delegate) = await e.value();
-            if (b(delegate)) {
-              await signInState.signIn(oneofus!.token, delegate!.keyPair);
-            } else {
-              signInState.center = oneofus.token;
-            }
+            await signInState.signIn(oneofus.token, delegate?.keyPair);
           },
-          child: Text(e.key)));
+          child: Text(name)));
     }
 
     return <Widget>[
@@ -84,7 +84,7 @@ class Menus {
 
       // Settings
       SubmenuButton(
-          menuChildren: <Widget>[
+          menuChildren: [
             MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
             MyCheckbox(Prefs.hideDismissed, '''hide content where network #(dis) > #(recommend)'''),
@@ -147,6 +147,9 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
+          MenuItemButton(
+              onPressed: () => pasteSignin(context),
+              child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
           MyCheckbox(Prefs.cloudFunctionsFetch, 'cloudFunctionsFetch (goes quicker)'),
           MyCheckbox(Prefs.batchFetch, 'batchFetch'),
           MyCheckbox(Prefs.streamBatchFetch, 'streamBatchFetch'),

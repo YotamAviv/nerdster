@@ -73,16 +73,9 @@ class _SignInMenuState extends State<SignInMenu> {
         }
         return SubmenuButton(menuChildren: demoSignins, child: const Text('Demo sign-in'));
       } else {
-        return SubmenuButton(menuChildren: [
-          // QR sign-in
-          MenuItemButton(
-              onPressed: () => qrSignin(context),
-              child: const Row(children: [Icon(Icons.qr_code), iconSpacer, Text('QR sign-in')])),
-          // copy/paste sign-in
-          MenuItemButton(
-              onPressed: () => pasteSignin(context),
-              child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
-        ], child: const Row(children: [Icon(Icons.login), iconSpacer, Text('Sign in')]));
+        return MenuItemButton(
+            onPressed: fireChoice != FireChoice.fake ? () => qrSignin(context) : null,
+            child: const Row(children: [Icon(Icons.qr_code), iconSpacer, Text('Sign in')]));
       }
     }
   }
