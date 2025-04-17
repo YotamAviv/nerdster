@@ -43,12 +43,12 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
   DemoKey luann = await DemoKey.findOrCreate('luann');
   DemoKey mel = await DemoKey.findOrCreate('mel');
 
-  DemoKey bartN = await bart.makeDelegate();
   DemoKey lisaN = await lisa.makeDelegate();
-  DemoKey milhouseN = await milhouse.makeDelegate();
-  DemoKey homer2N = await homer2.makeDelegate();
-  DemoKey carlN = await carl.makeDelegate();
+  DemoKey bartN = await bart.makeDelegate();
   DemoKey burnsN = await burns.makeDelegate();
+  DemoKey homer2N = await homer2.makeDelegate();
+  DemoKey milhouseN = await milhouse.makeDelegate();
+  DemoKey carlN = await carl.makeDelegate();
   DemoKey margeN = await marge.makeDelegate();
 
   // most simpsons state trust in each other.
