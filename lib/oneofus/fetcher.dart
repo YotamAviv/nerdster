@@ -508,7 +508,7 @@ class Fetcher {
       // assert time is after last statement time
       DateTime prevTime = previous.time;
       DateTime thisTime = parseIso(json['time']!);
-      assert(thisTime.isAfter(prevTime));
+      assert(thisTime.isAfter(prevTime), '$thisTime !.isAfter($prevTime)');
 
       // for load dump
       if (json.containsKey('previous')) assert(json['previous'] == _lastToken);

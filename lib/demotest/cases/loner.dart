@@ -5,7 +5,6 @@ Future<(DemoKey, DemoKey?)> loner() async {
   DemoKey loner = await DemoKey.findOrCreate('loner');
   DemoKey lonerN = await loner.makeDelegate();
   
-  await printDemoCredentials(loner, lonerN);
   return (loner, lonerN);
 }
 

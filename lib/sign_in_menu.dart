@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/bar_refresh.dart';
+import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/key_store.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/menus.dart';
+import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/singletons.dart';
@@ -49,39 +53,37 @@ class _SignInMenuState extends State<SignInMenu> {
             signInState.signOut();
           },
           child: const Row(
-            children: [
-              Icon(Icons.logout),
-              iconSpacer,
-              Text('Sign out'),
-            ],
+            children: [Icon(Icons.logout), iconSpacer, Text('Sign out')],
           ));
     } else {
-      return SubmenuButton(
-          menuChildren: [
-            // QR sign-in
-            MenuItemButton(
-                onPressed: () => qrSignin(context),
-                child: const Row(children: [
-                  Icon(Icons.qr_code),
-                  iconSpacer,
-                  Text('QR sign-in'),
-                ])),
-            // copy/paste sign-in
-            MenuItemButton(
-                onPressed: () => pasteSignin(context),
-                child: const Row(children: [
-                  Icon(Icons.copy),
-                  iconSpacer,
-                  Text('paste sign-in'),
-                ])),
-          ],
-          child: const Row(
-            children: [
-              Icon(Icons.login),
-              iconSpacer,
-              Text('Sign in'),
-            ],
-          ));
+      if (b(demo)) {
+        List<Widget> demoSignins = <Widget>[];
+        for (final DemoKey key in DemoKey.all) {
+          if (key.name.contains('-nerdster')) continue; // KLUGEY: Don't center as the delegate
+          final String name = key.name;
+          final DemoKey? delegateKey =
+              DemoKey.findByName('$name-nerdster0'); // KLUGEY: and probably wrong
+          final OouKeyPair? nerdsterKeyPair = delegateKey?.keyPair;
+          demoSignins.add(MenuItemButton(
+              onPressed: () async {
+                await signInState.signIn(key.token, nerdsterKeyPair);
+                await BarRefresh.refresh(context);
+              },
+              child: Text(name)));
+        }
+        return SubmenuButton(menuChildren: demoSignins, child: const Text('Demo sign-in'));
+      } else {
+        return SubmenuButton(menuChildren: [
+          // QR sign-in
+          MenuItemButton(
+              onPressed: () => qrSignin(context),
+              child: const Row(children: [Icon(Icons.qr_code), iconSpacer, Text('QR sign-in')])),
+          // copy/paste sign-in
+          MenuItemButton(
+              onPressed: () => pasteSignin(context),
+              child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
+        ], child: const Row(children: [Icon(Icons.login), iconSpacer, Text('Sign in')]));
+      }
     }
   }
 }

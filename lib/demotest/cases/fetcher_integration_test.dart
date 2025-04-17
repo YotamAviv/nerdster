@@ -59,6 +59,7 @@ class TestSigner implements StatementSigner {
 }
 
 Future<void> fetcherIntegrationTest() async {
+  useClock(TestClock());
   FetcherTestHelper helper = FetcherTestHelper();
 
   test('2', helper.test2);

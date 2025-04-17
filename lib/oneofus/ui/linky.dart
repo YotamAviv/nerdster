@@ -6,10 +6,7 @@ const kManUrl = 'https://one-of-us.net/man';
 
 class Linky extends StatelessWidget {
   final String text;
-  const Linky(
-    this.text, {
-    super.key,
-  });
+  const Linky(this.text, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +22,7 @@ class Linky extends StatelessWidget {
           throw Exception('Could not launch ${link.url}');
         }
       },
+      // DEFER: style: TextStyle(fontFamily: 'Courier'),
       text: text,
     );
   }

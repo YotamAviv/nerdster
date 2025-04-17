@@ -110,9 +110,8 @@ Future<void> qrSignin(BuildContext context) async {
   StreamSubscription? subscription;
   subscription = firestore.collection('sessions').doc('doc').collection(session).snapshots().listen(
     (QuerySnapshot<Map<String, dynamic>> docSnapshots) async {
-      if (docSnapshots.docs.isEmpty) {
-        return;
-      }
+      if (docSnapshots.docs.isEmpty) return;
+      
       Map<String, dynamic>? data = docSnapshots.docs.first.data();
 
       // Unpack Oneofus public key
@@ -185,7 +184,6 @@ The text to copy/paste here should look like this:
         nerdsterKeyPair = await crypto.parseKeyPair(json[kNerdsterDomain]!);
       }
 
-      // Don't await
       await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
 
       Navigator.pop(context);

@@ -33,9 +33,11 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
+FireChoice fireChoice = FireChoice.fake;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
+
+String? demo;
 
 const domain2statementType = {
   kOneofusDomain: kOneofusType,
@@ -98,7 +100,6 @@ Future<void> main() async {
   }
 
   ProgressDialog(); // Just to get its Measure instance to be first
-  DemoKey.printCredentials = true;
   TrustStatement.init();
   ContentStatement.init();
   await Prefs.init();
@@ -117,8 +118,19 @@ Future<void> defaultSignIn() async {
   if (b(params['oneofus'])) {
     String oneofusParam = params['oneofus']!;
     Json oneofusJson = json.decode(oneofusParam);
-    String oneofusToken = getToken(oneofusJson);
-    await signInState.signIn(oneofusToken, null);
+    String oneofus = getToken(oneofusJson);
+    await signInState.signIn(oneofus, null);
+    return;
+  }
+
+  if (b(params['demo'])) {
+    demo = params['demo']!;
+    DemoKey oneofusDemoKey;
+    DemoKey? delegateDemoKey;
+    (oneofusDemoKey, delegateDemoKey) = await DemoKey.demos[demo]();
+    String oneofus = oneofusDemoKey.token;
+    OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
+    await signInState.signIn(oneofus, nerdsterKeyPair);
     return;
   }
 
@@ -128,7 +140,8 @@ Future<void> defaultSignIn() async {
     OouKeyPair? nerdsterKeyPair;
     (oneofusPublicKey, nerdsterKeyPair) = await KeyStore.readKeys();
     if (b(oneofusPublicKey)) {
-      await signInState.signIn(getToken(await oneofusPublicKey!.json), nerdsterKeyPair);
+      String oneofus = getToken(await oneofusPublicKey!.json);
+      await signInState.signIn(oneofus, nerdsterKeyPair);
       return;
     }
   }
@@ -140,19 +153,9 @@ Future<void> defaultSignIn() async {
     OouKeyPair? hardDelegate = b(hardCodedSignin[fireChoice]![kNerdsterDomain])
         ? await crypto.parseKeyPair(hardCodedSignin[fireChoice]![kNerdsterDomain]!)
         : null;
-    await signInState.signIn(oneofus!, hardDelegate);
+    await signInState.signIn(oneofus, hardDelegate);
     return;
   }
-
-  // Init the first demo
-  DemoKey oneofusDemoKey;
-  DemoKey? delegateDemoKey;
-  (oneofusDemoKey, delegateDemoKey) = await DemoKey.demos.values.first();
-  print('Loaded demo: ${DemoKey.demos.keys.first}');
-  await printDemoCredentials(oneofusDemoKey, delegateDemoKey);
-  String oneofusToken = oneofusDemoKey.token;
-  OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
-  await signInState.signIn(oneofusToken, nerdsterKeyPair);
 }
 
 // Parts of the code use Jsonish.find(signInState.center)! to find the center public key, and so
