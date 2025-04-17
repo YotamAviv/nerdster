@@ -5,22 +5,42 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
+/// Plan: Simpson public demmo
+/// - DONE: Showing statements works. TODO: Prefs.labelKeys
+/// - DONE: Sign in menu changes..
+/// - cleaner story
+///   - homer2?
+/// - content
+///   - lisa: ponies
+///   - marge: recipes
+///   - homer: bowling
+///   - bart: skateboards
+///   - milhouse: porn
+///   - sideshow?
+///   - everyone else something..
+/// 
+/// Demo mode?
+/// ?demo=name or even anything
+/// sign in menu changed
+/// - includes dump credentials
+/// - sign in or just center as any DemoKey oneofus / delegate
+
 Future<(DemoKey, DemoKey?)> simpsons() async {
   useClock(TestClock());
 
+  DemoKey lisa = await DemoKey.findOrCreate('lisa');
+  DemoKey bart = await DemoKey.findOrCreate('bart');
   DemoKey homer = await DemoKey.findOrCreate('homer');
   DemoKey marge = await DemoKey.findOrCreate('marge');
   DemoKey homer2 = await DemoKey.findOrCreate('homer2');
-  DemoKey bart = await DemoKey.findOrCreate('bart');
-  DemoKey lisa = await DemoKey.findOrCreate('lisa');
+  DemoKey milhouse = await DemoKey.findOrCreate('milhouse');
+  DemoKey sideshow = await DemoKey.findOrCreate('sideshow');
   DemoKey maggie = await DemoKey.findOrCreate('maggie');
   DemoKey lenny = await DemoKey.findOrCreate('lenny');
   DemoKey carl = await DemoKey.findOrCreate('carl');
   DemoKey burns = await DemoKey.findOrCreate('burns');
   DemoKey smithers = await DemoKey.findOrCreate('smithers');
-  DemoKey milhouse = await DemoKey.findOrCreate('milhouse');
   DemoKey luann = await DemoKey.findOrCreate('luann');
-  DemoKey sideshow = await DemoKey.findOrCreate('sideshow');
   DemoKey mel = await DemoKey.findOrCreate('mel');
 
   DemoKey bartN = await bart.makeDelegate();

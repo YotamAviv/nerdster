@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/demotest/cases/integration_tests.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -9,11 +10,10 @@ import 'package:nerdster/dev/corruption_check.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/nerdster_link.dart';
-import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/notifications_menu.dart';
-import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/read_stream.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -67,33 +67,16 @@ class Menus {
       demos.add(MenuItemButton(
           onPressed: () async {
             DemoKey.clear();
-            DemoKey? oneofus, delegate;
+            DemoKey oneofus;
+            DemoKey? delegate;
             (oneofus, delegate) = await e.value();
-            await printDemoCredentials(oneofus!, delegate);
-            if (!b(delegate)) {
-              signInState.center = oneofus.token;
+            if (b(delegate)) {
+              await signInState.signIn(oneofus!.token, delegate!.keyPair);
             } else {
-              await signInState.signIn(oneofus.token, delegate!.keyPair);
+              signInState.center = oneofus.token;
             }
           },
           child: Text(e.key)));
-    }
-
-    List<Widget> demoSignins = <Widget>[];
-    for (final DemoKey key in DemoKey.all) {
-      if (key.name.contains('-nerdster')) {
-        continue; // KLUGEY: Don't center as the delegate
-      }
-      final String name = key.name;
-      final DemoKey? delegateKey = DemoKey.findByName('$name-nerdster0'); // KLUGEY:
-      final OouKeyPair? nerdsterKeyPair = delegateKey?.keyPair;
-      demoSignins.add(MenuItemButton(
-          onPressed: () async {
-            await printDemoCredentials(key, delegateKey);
-            await signInState.signIn(key.token, nerdsterKeyPair);
-            await OneofusEquiv().waitUntilReady();
-          },
-          child: Text(name)));
     }
 
     return <Widget>[
@@ -164,11 +147,6 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
-          MenuItemButton(
-              onPressed: () {
-                readStream();
-              },
-              child: const Text('readStream')),
           MyCheckbox(Prefs.cloudFunctionsFetch, 'cloudFunctionsFetch (goes quicker)'),
           MyCheckbox(Prefs.batchFetch, 'batchFetch'),
           MyCheckbox(Prefs.streamBatchFetch, 'streamBatchFetch'),
@@ -186,16 +164,14 @@ $link''',
               },
               child: const Text('Refresh. Jsonish cache, too')),
           SubmenuButton(menuChildren: [
-            MenuItemButton(onPressed: () => fetcherIntegrationTest(), child: const Text('Fetcher')),
-            MenuItemButton(onPressed: () => integrationTests(), child: const Text('misc  demos')),
+            MenuItemButton(onPressed: fetcherIntegrationTest, child: const Text('Fetcher')),
+            MenuItemButton(onPressed: integrationTests, child: const Text('misc demos')),
           ], child: const Text('integration tests')),
+          SubmenuButton(menuChildren: demos, child: const Text('demo')),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
           MenuItemButton(
               onPressed: () => CorruptionCheck.make(), child: const Text('CorruptionCheck')),
-          SubmenuButton(menuChildren: <Widget>[
-            ...demos,
-          ], child: const Text('run case')),
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
           // MenuItemButton(
           //     child: const Text('Load JSON statements'),
@@ -203,14 +179,25 @@ $link''',
           //       await loadDumpDialog(context);
           //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
           //     }),
-          SubmenuButton(menuChildren: <Widget>[
-            ...demoSignins,
-          ], child: const Text('Demo sign-in')),
+          MenuItemButton(
+              onPressed: () async {
+                String oneofus = signInState.centerReset;
+                var credentials = {
+                  kOneofusDomain: Jsonish.find(oneofus)!.json,
+                  if (b(signInState.signedInDelegateKeyPair))
+                    kNerdsterDomain: await signInState.signedInDelegateKeyPair!.json,
+                };
+                print(oneofus);
+                print(Jsonish.encoder.convert(credentials));
+              },
+              child: const Text('dump credentials')),
+
           MenuItemButton(
               child: const Text('dump all statements'),
               onPressed: () async {
                 await DumpAllStatements.show(context);
               }),
+          MenuItemButton(onPressed: readStream, child: const Text('readStream')),
         ], child: const Text('DEV')),
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
     ];

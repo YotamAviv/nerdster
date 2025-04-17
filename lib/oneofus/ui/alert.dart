@@ -44,9 +44,7 @@ Future<String?> alert(String? title, String body, List<String> options, BuildCon
   List<TextButton> buttons = <TextButton>[];
   for (String option in options) {
     buttons.add(TextButton(
-      child: Text(
-        option,
-      ),
+      child: Text(option),
       onPressed: () {
         Navigator.of(context).pop(option);
       },

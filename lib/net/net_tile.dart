@@ -238,15 +238,15 @@ $link''',
             ['Okay'],
             context);
       } else {
-        String body;
-        Iterable<Statement> statements = Fetcher(token, domain).statements;
+        Iterable statements = Fetcher(token, domain).statements;
         // TODO: Show the Prefs.keyLabel checkbox on this dialog.
+        List jsons = List.from(statements.map((s) => s.json));
         if (Prefs.keyLabel.value) {
-          body = statements.map((s) => encoder.convert(keyLabels.show(s.json))).join('\n');
-        } else {
-          body = statements.map((s) => s.jsonish.ppJson).join('\n');
+          jsons = List.from(jsons.map((s) => keyLabels.show(s)));
         }
-        alert('Statements signed by this key', body, ['Okay'], context);
+        Json j = {token: jsons};
+        String body = encoder.convert(j);
+        await alert('Statements signed by this key', body, ['Okay'], context);
       }
     }
   }

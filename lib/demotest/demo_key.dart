@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
 import 'package:nerdster/demotest/cases/decapitate.dart';
@@ -37,15 +39,13 @@ import 'package:nerdster/oneofus/util.dart';
 const OouCryptoFactory _crypto = CryptoFactoryEd25519();
 
 class DemoKey {
-  static final Map<String, DemoKey> _name2key = <String, DemoKey>{};
+  static final LinkedHashMap<String, DemoKey> _name2key = LinkedHashMap<String, DemoKey>();
   static final Map<String, DemoKey> _token2key = <String, DemoKey>{};
 
-  static bool printCredentials = false;
-
   static final dynamic demos = {
+    'simpsons': simpsons,
     'loner': loner,
     'trustBlockConflict': trustBlockConflict,
-    'simpsons': simpsons,
     'egos': egos,
     'blockDecap': blockDecap,
     'delegateMerge': delegateMerge,
@@ -188,14 +188,4 @@ class DemoKey {
 
     return delegateKey;
   }
-}
-
-Future<void> printDemoCredentials(DemoKey oneofus, DemoKey? delegate) async {
-  if (!DemoKey.printCredentials) return;
-  print(oneofus.token);
-  var credentials = {
-    kOneofusDomain: await oneofus.keyPair.json,
-    if (b(delegate)) kNerdsterDomain: await delegate!.keyPair.json,
-  };
-  print(Jsonish.encoder.convert(credentials));
 }
