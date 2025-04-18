@@ -86,6 +86,7 @@ class _NetTileState extends State<NetTile> {
         // EG
         iconPair = smileyIconPair;
         if (isFollowed) iconColor = Colors.lightGreen;
+        assert(!revoked); // See discussion in GreedyBfsTrust. TODO: Remove code below.
         if (revoked) {
           // Can an EG (smiley) be revoked/replaced?
           // TODO: This is confusing. Understand it and explain it better.

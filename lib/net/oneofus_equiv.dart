@@ -94,7 +94,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
           _delegate2oneofus[delegateToken] = oneofusCanonicalKey;
           _oneofus2delegates[oneofusCanonicalKey]!.add(delegateToken);
         } else {
-          notifications.reject(s.token, "Delegate already claimed");
+          notifications.reject(s.token, 'Delegate already claimed.');
         }
       }
     }

@@ -235,7 +235,7 @@ void main() async {
     expect(oneofusNet.network.keys, [bo.token, luke.token]);
     // Check rejection
     // (I don't have the rejected statement here because it's not returned by luke.makeDelegate)
-    expect(notifications.rejected.values, {"Delegate already claimed"});
+    expect(notifications.rejected.values, {"Delegate already claimed."});
     expect(oneofusEquiv.oneofus2delegates[luke.token], Set());
     expect(oneofusEquiv.oneofus2delegates[bo.token], {boN.token, lukeN.token});
     myExpect(contentBase.roots.length, 1);
@@ -245,7 +245,7 @@ void main() async {
     //
     signInState.center = luke.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(notifications.rejected, {boClaimsLukes.token: "Delegate already claimed"});
+    expect(notifications.rejected, {boClaimsLukes.token: "Delegate already claimed."});
   });
 
   test('clear, 2 equivs', () async {
@@ -613,8 +613,7 @@ void main() async {
     expect(ss3, ss);
   });
 
-  /// Test added due to bug where followNet asserted: trust1.rejected.isEmpty
-  /// But in fact, bart blocks lisa for social, and when cenetered as lisa, that's
+  /// Bart blocks lisa for social, and when centered as lisa, that's
   /// appropriately rejected.
   test('lisa social', () async {
     await simpsons();
@@ -623,18 +622,14 @@ void main() async {
     followNet.fcontext = 'family';
     signInState.center = lisa.token;
     await Comp.waitOnComps([followNet, keyLabels]);
-    jsonShowExpect(followNet.delegate2oneofus, {
-      "daughter-delegate": "daughter",
-      "mom-delegate": "mom",
-      "hubby2-delegate": "hubby2",
-      "son-delegate": "son"
-    });
+    jsonShowExpect(followNet.delegate2oneofus,
+        {"daughter-delegate": "daughter", "mom-delegate": "mom", "son-delegate": "son"});
 
     followNet.fcontext = 'social';
     signInState.center = lisa.token;
     await Comp.waitOnComps([followNet, keyLabels]);
-    jsonShowExpect(
-        followNet.delegate2oneofus, {"daughter-delegate": "daughter", "son-delegate": "son"});
+    jsonShowExpect(followNet.delegate2oneofus,
+        {"daughter-delegate": "daughter", "son-delegate": "son", "friend-delegate": "friend"});
   });
 
   test('bart default', () async {
