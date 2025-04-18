@@ -4,12 +4,31 @@ import 'package:flutter/foundation.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 
-// Goal: Test every kind of rejection / notification
+// TODO: CODE: Something like this
+enum KString {
+  blockYourKey('Attempt to block your key.'),
+  replaceYourKey('Attempt to replace your key.'),
+  //
+  blockTrustedKey('Attempt to block trusted key.'),
+  replaceTrustedKey('Attempt to replace trusted key.'),
+  replaceReplacedKey('Attempt to replace a replaced key.'),
+  trustBlockedKey('Attempt to trust blocked key.'),
+  //
+  delegateAlreadyClaimed('Delegate already claimed.');
+
+  const KString(this.label);
+  final String label;
+}
+
+// Goal: Test every kind of rejection / notification.
 // - Attempt to block your key.
 // - Attempt to replace your key.
 // - Attempt to block trusted key.
 // - Attempt to trust blocked key.
 // - Attempt to replace a replaced key.
+// - Attempt to replace trusted key. TODO:
+// - You trust a non-canonical key directly. TODO:
+// - Delegate already claimed.
 // - DEFER: Attempt to replace a blocked key.
 // - Web-of-trust key equivalence rejected: Replaced key not in network. ('simpsons, degrees=2')
 // - TO-DO: Web-of-trust key equivalence rejected: Replacing key not in network.
@@ -45,7 +64,8 @@ class Notifications with ChangeNotifier implements Corruptor {
     notifyListeners();
   }
 
-  final LinkedHashMap<String, (String, String?)> _corrupted = LinkedHashMap<String, (String, String?)>();
+  final LinkedHashMap<String, (String, String?)> _corrupted =
+      LinkedHashMap<String, (String, String?)>();
   Map<String, (String, String?)> get corrupted => UnmodifiableMapView(_corrupted);
   @override
   void corrupt(String token, String error, String? details) {

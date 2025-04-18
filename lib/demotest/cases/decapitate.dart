@@ -1,10 +1,13 @@
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/demotest/test_clock.dart';
 
+/// TODO: Remove.
+/// 
+/// This sets up a decap but has not tests.
+/// 
 /// This is to help debug the issues I encountered around test 
 /// '3\'rd level replaces 1\'st level trust'.
 /// CONSIDER: Maybe run the dfs that in the NerdNode test.
@@ -25,11 +28,16 @@ Future<(DemoKey, DemoKey?)> decap() async {
   await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
   await marge.doTrust(TrustVerb.trust, homer2);
 
+  // If I stick with can't replace trusted key then things might change..
+  // homer2 revoked before he trusted marge, and so his network is puny
+
   useClock(LiveClock());
 
   return (bart, null);
 }
 
+/// This sets up a decap but has not tests.
+/// 
 /// CONSIDER: NerdNode or NerdTreeNode issue: Consider: Maybe bart should not see both 
 /// the old homer key and the homer EG which he doesn't trust directly as children.
 /// Hmm...
@@ -43,13 +51,11 @@ Future<(DemoKey, DemoKey?)> decap2() async {
   DemoKey homer2 = await DemoKey.findOrCreate('homer2');
   DemoKey bart = await DemoKey.findOrCreate('bart');
   DemoKey lisa = await DemoKey.findOrCreate('lisa');
-  DemoKey lenny = await DemoKey.findOrCreate('lenny');
 
-  await homer.doTrust(TrustVerb.trust, lenny);
   await bart.doTrust(TrustVerb.trust, homer);
-  Statement s2 = await homer.doTrust(TrustVerb.trust, marge);
+  Statement s = await homer.doTrust(TrustVerb.trust, marge);
   await marge.doTrust(TrustVerb.trust, lisa);
-  await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
+  await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
   await marge.doTrust(TrustVerb.trust, homer2);
 
   useClock(LiveClock());
@@ -57,8 +63,11 @@ Future<(DemoKey, DemoKey?)> decap2() async {
   return (bart, null);
 }
 
-// I've lost track of why the other 2 above are called decap, but this is a true decapitation.
-// Homer trust marge, who blocks him, and so her block counts even though it takes her out as well.
+/// This sets up a decap but has not tests.
+/// Things have changed, comments misleading.
+////
+/// I've lost track of why the other 2 above are called decap, but this is a true decapitation.
+/// Homer trust marge, who blocks him, and so her block counts even though it takes her out as well.
 Future<(DemoKey, DemoKey?)> blockDecap() async {
   useClock(TestClock());
 
@@ -69,7 +78,6 @@ Future<(DemoKey, DemoKey?)> blockDecap() async {
   await bart.doTrust(TrustVerb.trust, homer);
   await homer.doTrust(TrustVerb.trust, marge);
   await marge.doTrust(TrustVerb.block, homer);
-
 
   useClock(LiveClock());
 

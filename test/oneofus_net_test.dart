@@ -4,6 +4,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
 import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
+import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -175,19 +176,21 @@ void main() async {
     jsonExpect(notifications.rejected, {lisaBlocksHomer.token: 'Attempt to block trusted key.'});
   });
 
-  test('''3'rd level replace succeeds on 1'st level trust''', () async {
-    await bart.doTrust(TrustVerb.trust, homer);
-    Statement s = await homer.doTrust(TrustVerb.trust, marge);
-    await marge.doTrust(TrustVerb.trust, lisa);
-    Statement lisaReplacesHomer = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
+ // TDOO: Remove
+  // test('''3'rd level replace succeeds on 1'st level trust''', () async {
+  //   await bart.doTrust(TrustVerb.trust, homer);
+  //   Statement s = await homer.doTrust(TrustVerb.trust, marge);
+  //   await marge.doTrust(TrustVerb.trust, lisa);
+  //   Statement lisaReplacesHomer = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
 
-    await signInState.signIn(bart.token, null);
-    await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(notifications.rejected.isEmpty, true);
-    expect(notifications.rejected.containsKey(lisaReplacesHomer.token), false);
-    expect(oneofusEquiv.getCanonical(homer.token), lisa.token);
-  });
+  //   await signInState.signIn(bart.token, null);
+  //   await Comp.waitOnComps([contentBase, keyLabels]);
+  //   expect(notifications.rejected.isEmpty, true);
+  //   expect(notifications.rejected.containsKey(lisaReplacesHomer.token), false);
+  //   expect(oneofusEquiv.getCanonical(homer.token), lisa.token);
+  // });
 
+  // TDOO: Remove
   /// Self be-heading
   /// This one is unusual and challenging to understand.
   ///
@@ -196,71 +199,71 @@ void main() async {
   /// that trusted her.
   ///
   /// See some related nonsense in decapitate.dart
-  test('3\'rd level replaces 1\'st level trust', () async {
-    Statement s2 = await homer.doTrust(TrustVerb.trust,
-        lenny); // I added this because I need a statement. I could block, but that's above.
-    await bart.doTrust(TrustVerb.trust, homer);
-    await homer.doTrust(TrustVerb.trust, marge);
-    await marge.doTrust(TrustVerb.trust, lisa);
-    await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
-    await marge.doTrust(TrustVerb.trust, homer2);
+  // test('3\'rd level replaces 1\'st level trust', () async {
+  //   Statement s2 = await homer.doTrust(TrustVerb.trust,
+  //       lenny); // I added this because I need a statement. I could block, but that's above.
+  //   await bart.doTrust(TrustVerb.trust, homer);
+  //   await homer.doTrust(TrustVerb.trust, marge);
+  //   await marge.doTrust(TrustVerb.trust, lisa);
+  //   await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
+  //   await marge.doTrust(TrustVerb.trust, homer2);
 
-    await signInState.signIn(bart.token, null);
-    await Comp.waitOnComps([contentBase, keyLabels]);
+  //   await signInState.signIn(bart.token, null);
+  //   await Comp.waitOnComps([contentBase, keyLabels]);
 
-    var network = oneofusNet.network;
-    var expectedNetwork = {"Me": null, "homer": "5/1/2024 12:01 AM", "lenny": null};
-    jsonShowExpect(dumpNetwork(network), expectedNetwork);
+  //   var network = oneofusNet.network;
+  //   var expectedNetwork = {"Me": null, "homer": "5/1/2024 12:01 AM", "lenny": null};
+  //   jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
-    await compareNetworkToTree(bart.token);
+  //   await compareNetworkToTree(bart.token);
 
-    dynamic dump = await OneofusTreeNode.root.dump();
-    var expectedTree = {
-      "N:Me-true:": {
-        "N:homer-true:5/1/2024 12:01 AM:Me": {"N:lenny-true:Me->homer": {}}
-      }
-    };
-    jsonShowExpect(dump, expectedTree);
-  });
+  //   dynamic dump = await OneofusTreeNode.root.dump();
+  //   var expectedTree = {
+  //     "N:Me-true:": {
+  //       "N:homer-true:5/1/2024 12:01 AM:Me": {"N:lenny-true:Me->homer": {}}
+  //     }
+  //   };
+  //   jsonShowExpect(dump, expectedTree);
+  // });
 
-  test('3\'rd level replaces 1\'st level trust, homer better', () async {
-    await homer.doTrust(TrustVerb.trust, lenny);
-    await bart.doTrust(TrustVerb.trust, homer);
-    Statement s2 = await homer.doTrust(TrustVerb.trust, marge);
-    await marge.doTrust(TrustVerb.trust, lisa);
-    await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
-    await marge.doTrust(TrustVerb.trust, homer2);
+  // test('3\'rd level replaces 1\'st level trust, homer better', () async {
+  //   await homer.doTrust(TrustVerb.trust, lenny);
+  //   await bart.doTrust(TrustVerb.trust, homer);
+  //   Statement s2 = await homer.doTrust(TrustVerb.trust, marge);
+  //   await marge.doTrust(TrustVerb.trust, lisa);
+  //   await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
+  //   await marge.doTrust(TrustVerb.trust, homer2);
 
-    await signInState.signIn(bart.token, null);
-    await Comp.waitOnComps([contentBase, keyLabels]);
+  //   await signInState.signIn(bart.token, null);
+  //   await Comp.waitOnComps([contentBase, keyLabels]);
 
-    var network = oneofusNet.network;
-    var expectedNetwork = {
-      "Me": null,
-      "homer": "5/1/2024 12:03 AM",
-      "marge": null,
-      "lenny": null,
-      "homer2": null,
-      "lisa": null
-    };
-    jsonShowExpect(dumpNetwork(network), expectedNetwork);
+  //   var network = oneofusNet.network;
+  //   var expectedNetwork = {
+  //     "Me": null,
+  //     "homer": "5/1/2024 12:03 AM",
+  //     "marge": null,
+  //     "lenny": null,
+  //     "homer2": null,
+  //     "lisa": null
+  //   };
+  //   jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
-    dynamic dump = await OneofusTreeNode.root.dump();
-    var expectedTree = {
-      "N:Me-true:": {
-        "N:homer2-true:Me": {
-          "N:marge-true:Me->homer2": {
-            "N:homer2-true:Me->homer2->marge": {},
-            "N:lisa-true:Me->homer2->marge": {}
-          },
-          "N:lenny-true:Me->homer2": {}
-        }
-      }
-    };
-    jsonShowExpect(dump, expectedTree);
+  //   dynamic dump = await OneofusTreeNode.root.dump();
+  //   var expectedTree = {
+  //     "N:Me-true:": {
+  //       "N:homer2-true:Me": {
+  //         "N:marge-true:Me->homer2": {
+  //           "N:homer2-true:Me->homer2->marge": {},
+  //           "N:lisa-true:Me->homer2->marge": {}
+  //         },
+  //         "N:lenny-true:Me->homer2": {}
+  //       }
+  //     }
+  //   };
+  //   jsonShowExpect(dump, expectedTree);
 
-    await compareNetworkToTree(bart.token);
-  });
+  //   await compareNetworkToTree(bart.token);
+  // });
 
   test('diamond trust', () async {
     await homer.doTrust(TrustVerb.trust, lisa);
@@ -291,17 +294,18 @@ void main() async {
     // (Correct, works as intended, but not necessarily great:
     // Marge is trusted via 2 paths, but the nerds on those paths are not in the network,
     // and so Marge isn't trusted.)
+    oneofusNet.numPaths = 1;
     await homer.doTrust(TrustVerb.trust, lisa);
     await homer.doTrust(TrustVerb.trust, bart);
     await bart.doTrust(TrustVerb.trust, marge);
     await lisa.doTrust(TrustVerb.trust, marge);
 
-    await signInState.signIn(homer.token, null);
+    signInState.center = homer.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     oneofusNet.numPaths = 2;
     assert(!oneofusEquiv.ready);
 
-    await oneofusEquiv.waitUntilReady();
+    await Comp.waitOnComps([contentBase, keyLabels]);
     assert(oneofusEquiv.ready);
     assert(oneofusNet.ready);
     var network = oneofusNet.network;
@@ -780,7 +784,7 @@ void main() async {
   });
 
   test('simpsons label key edges', () async {
-    await DemoKey.demos['simpsons']();
+    await simpsons();
 
     await signInState.signIn(bart.token, null);
     await Comp.waitOnComps([contentBase, keyLabels]);
@@ -806,8 +810,12 @@ void main() async {
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(toJson(labelPathsX(homer2.token)), [
       [
+        {'boy': 'boy'},
+        {'homer2': 'homer2'}
+      ],
+      [
         {'wife': 'wife'},
-        {'hubby2': 'hubby2'}
+        {'homer2': 'hubby2'}
       ]
     ]);
 
@@ -815,11 +823,11 @@ void main() async {
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(toJson(labelPathsX(homer.token)), [
       [
-        {'hubby2 (0)': '(replaced)'}
+        {'homer2 (0)': '(replaced)'}
       ],
       [
         {'daughter': 'daughter'},
-        {'hubby2 (0)': 'dad'}
+        {'homer2 (0)': 'dad'}
       ]
     ]);
   });

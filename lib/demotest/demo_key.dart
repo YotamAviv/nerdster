@@ -49,15 +49,15 @@ class DemoKey {
     'loner': loner,
     'trustBlockConflict': trustBlockConflict,
     'egos': egos,
-    'blockDecap': blockDecap,
     'delegateMerge': delegateMerge,
     'delete3': deletions3,
     'blockReplacedKey': blockReplacedKey,
     'multipleBlocks': multipleBlocks,
     'equivalentKeysStateConflict': equivalentKeysStateConflict,
     'lonerEquate': lonerEquate,
-    'decap2': decap2,
     'decap': decap,
+    'decap2': decap2,
+    'blockDecap': blockDecap,
     'stress': stress,
   };
 
