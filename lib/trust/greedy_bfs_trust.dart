@@ -8,6 +8,21 @@ import 'package:nerdster/trust/trust.dart';
 
 /// Greed BFS trust algorithm
 /// At each layer, process [block, replace, trust] statements in that order
+/// 
+/// CONFUSION:
+/// see NetTile:
+///  // Can an EG (smiley) be revoked/replaced?
+///  // TODO: This is confusing. Understand it and explain it better.
+///  // Bart trusts Milhouse trusts Sideshow replaces Bart before Bart's trust in Milhouse.
+///  // When center is Marge, Bart is decapitated, (a revoked EG with no valid replacement).
+/// 
+/// We reject late block (can't block a trusted key), but 
+/// we don't reject late replace (can replace a trusted key). 
+/// Both revoke.
+/// 
+/// I like the "You trust a non-canonical key directly" and don't want to lose it.
+/// That necessary means that we allowed a trusted key to be replaced.
+
 ///
 /// TODO: time limit
 /// TODO: network size max
@@ -69,7 +84,6 @@ class GreedyBfsTrust {
             notifier?.reject(block.statementToken, '''Don't block yourself.''');
             continue;
           }
-
           // Block the other node if allowed (not already trusted).
           /// I used to think (feel, assume) that it's good to give blocks preference over trusts.
           /// Greedy approach, briefly, simplified: If trusted then can't block.
@@ -111,14 +125,12 @@ class GreedyBfsTrust {
             notifier?.reject(replace.statementToken, '''Don't replace yourself''');
             continue;
           }
-
           // Replace the other node if allowed.
           if (other == source) {
             // Special case, no paths
             notifier?.reject(replace.statementToken, 'Attempt to replace your key.');
             continue;
           }
-
           if (other.revokeAt != null) {
             // In the grand scheme of Oneofus trust, only one key should be able to claim to
             // be the replacement of another, and that should be the responsibilty of

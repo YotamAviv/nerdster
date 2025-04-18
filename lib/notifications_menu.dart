@@ -66,12 +66,12 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
       MenuItemButton item = MenuItemButton(
           onPressed: () {
             alert(
-                '''Your Nerdster delgate isn't in this netowrk''',
+                '''Your Nerdster delgate isn't in this network''',
                 '''You're signed in with a Nerdster delgate key that isn't in the network you're viewing, and so your own content will not be visible.''',
                 ['Okay'],
                 context);
           },
-          child: const Text('''Your Nerdster delgate isn't in this netowrk.'''));
+          child: const Text('''Your Nerdster delgate isn't in this network.'''));
       items.add(item);
     }
     // TODO: Check if delegate revoked

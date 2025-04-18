@@ -10,6 +10,7 @@ import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/loner.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
+import 'package:nerdster/demotest/cases/simpsons2.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
@@ -43,6 +44,7 @@ class DemoKey {
   static final Map<String, DemoKey> _token2key = <String, DemoKey>{};
 
   static final dynamic demos = {
+    'simpsons2': simpsons2,
     'simpsons': simpsons,
     'loner': loner,
     'trustBlockConflict': trustBlockConflict,
@@ -90,14 +92,19 @@ class DemoKey {
   DemoKey._internal(this.name, this.keyPair, this.publicKey, this.token);
 
   Future<Statement> doRate(
-      {Json? subject, String? title, String? comment, bool? recommend, ContentVerb? verb}) async {
+      {Json? subject,
+      String? title,
+      String? comment,
+      bool? recommend,
+      bool? dismiss,
+      ContentVerb? verb}) async {
     assert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
     ContentVerb useVerb = verb ?? ContentVerb.rate;
     Json json = ContentStatement.make(await publicKey.json, useVerb, subject!,
-        comment: comment, recommend: recommend);
+        comment: comment, recommend: recommend, dismiss: dismiss);
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);

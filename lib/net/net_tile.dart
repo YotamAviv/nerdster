@@ -9,7 +9,6 @@ import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -89,6 +88,7 @@ class _NetTileState extends State<NetTile> {
         if (isFollowed) iconColor = Colors.lightGreen;
         if (revoked) {
           // Can an EG (smiley) be revoked/replaced?
+          // TODO: This is confusing. Understand it and explain it better.
           // Bart trusts Milhouse trusts Sideshow replaces Bart before Bart's trust in Milhouse.
           // When center is Marge, Bart is decapitated, (a revoked EG with no valid replacement).
           iconColor = Colors.pink;
