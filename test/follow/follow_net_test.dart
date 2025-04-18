@@ -617,7 +617,7 @@ void main() async {
   /// But in fact, bart blocks lisa for social, and when cenetered as lisa, that's
   /// appropriately rejected.
   test('lisa social', () async {
-    await DemoKey.demos['simpsons']();
+    await simpsons();
     loadSimpsons();
 
     followNet.fcontext = 'family';

@@ -5,51 +5,32 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
-/// Plan: Simpson public demmo
-/// - DONE: Showing statements works. TODO: Prefs.labelKeys
-/// - DONE: Sign in menu changes..
-/// - cleaner story
-///   - homer2?
-/// - content
-///   - lisa: ponies
-///   - marge: recipes
-///   - homer: bowling
-///   - bart: skateboards
-///   - milhouse: porn
-///   - sideshow?
-///   - everyone else something..
-/// 
-/// Demo mode?
-/// ?demo=name or even anything
-/// sign in menu changed
-/// - includes dump credentials
-/// - sign in or just center as any DemoKey oneofus / delegate
-
+// This was useful and remains in the tests. The "decentralized" demo Simpsons are in a different file.
 Future<(DemoKey, DemoKey?)> simpsons() async {
   useClock(TestClock());
 
-  DemoKey lisa = await DemoKey.findOrCreate('lisa');
-  DemoKey bart = await DemoKey.findOrCreate('bart');
-  DemoKey homer = await DemoKey.findOrCreate('homer');
-  DemoKey marge = await DemoKey.findOrCreate('marge');
-  DemoKey homer2 = await DemoKey.findOrCreate('homer2');
-  DemoKey milhouse = await DemoKey.findOrCreate('milhouse');
-  DemoKey sideshow = await DemoKey.findOrCreate('sideshow');
-  DemoKey maggie = await DemoKey.findOrCreate('maggie');
-  DemoKey lenny = await DemoKey.findOrCreate('lenny');
-  DemoKey carl = await DemoKey.findOrCreate('carl');
-  DemoKey burns = await DemoKey.findOrCreate('burns');
-  DemoKey smithers = await DemoKey.findOrCreate('smithers');
-  DemoKey luann = await DemoKey.findOrCreate('luann');
-  DemoKey mel = await DemoKey.findOrCreate('mel');
+  final DemoKey lisa = await DemoKey.findOrCreate('lisa');
+  final DemoKey bart = await DemoKey.findOrCreate('bart');
+  final DemoKey homer = await DemoKey.findOrCreate('homer');
+  final DemoKey marge = await DemoKey.findOrCreate('marge');
+  final DemoKey homer2 = await DemoKey.findOrCreate('homer2');
+  final DemoKey milhouse = await DemoKey.findOrCreate('milhouse');
+  final DemoKey sideshow = await DemoKey.findOrCreate('sideshow');
+  final DemoKey maggie = await DemoKey.findOrCreate('maggie');
+  final DemoKey lenny = await DemoKey.findOrCreate('lenny');
+  final DemoKey carl = await DemoKey.findOrCreate('carl');
+  final DemoKey burns = await DemoKey.findOrCreate('burns');
+  final DemoKey smithers = await DemoKey.findOrCreate('smithers');
+  final DemoKey luann = await DemoKey.findOrCreate('luann');
+  final DemoKey mel = await DemoKey.findOrCreate('mel');
 
-  DemoKey lisaN = await lisa.makeDelegate();
-  DemoKey bartN = await bart.makeDelegate();
-  DemoKey burnsN = await burns.makeDelegate();
-  DemoKey homer2N = await homer2.makeDelegate();
-  DemoKey milhouseN = await milhouse.makeDelegate();
-  DemoKey carlN = await carl.makeDelegate();
-  DemoKey margeN = await marge.makeDelegate();
+  final DemoKey lisaN = await lisa.makeDelegate();
+  final DemoKey bartN = await bart.makeDelegate();
+  final DemoKey burnsN = await burns.makeDelegate();
+  final DemoKey homer2N = await homer2.makeDelegate();
+  final DemoKey milhouseN = await milhouse.makeDelegate();
+  final DemoKey carlN = await carl.makeDelegate();
+  final DemoKey margeN = await marge.makeDelegate();
 
   // most simpsons state trust in each other.
   await homer.doTrust(TrustVerb.trust, marge, moniker: 'wife');
@@ -62,8 +43,10 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
   await marge.doTrust(TrustVerb.trust, homer, moniker: 'hubby');
   await bart.doTrust(TrustVerb.trust, marge, moniker: 'moms');
   Statement s3 = await bart.doTrust(TrustVerb.trust, homer, moniker: 'homer');
-  await sideshow.doTrust(TrustVerb.replace, bart,
-      revokeAt: s3.token); // Sideshow tries to thieve bart's key
+  
+  // Sideshow tries to thieve bart's key
+  await sideshow.doTrust(TrustVerb.replace, bart, revokeAt: s3.token);
+  
   await bart.doTrust(TrustVerb.trust, homer2, moniker: 'homer2'); // bart trusts homer2
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'sis');
   await homer2.doTrust(TrustVerb.trust, lisa, moniker: 'daughter');
@@ -95,7 +78,6 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
   // milhouse->sideshow
   await milhouse.doTrust(TrustVerb.trust, sideshow, moniker: 'clown');
 
-  // Submit something as each delegate
   List<DemoKey> delegates = [
     bartN,
     lisaN,
@@ -105,6 +87,7 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
     burnsN,
     margeN,
   ];
+  // Submit something as each delegate
   for (DemoKey delegate in delegates) {
     await delegate.doRate(title: delegate.name);
   }

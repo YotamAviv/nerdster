@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
-bool devDefault = fireChoice != FireChoice.prod;
+bool devDefault = fireChoice != FireChoice.prod && !b(demo);
 bool bNerd = devDefault;
 // bool bNerd = true;
 

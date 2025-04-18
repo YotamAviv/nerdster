@@ -7,16 +7,17 @@ class TestClock extends Clock {
   // Tests failed when I moved PST to EST (were off by 3 hours).
   // I think that I now both state and dump in local time.
   DateTime _now = DateTime.parse("2024-05-01T00:00");
-  Duration duration = const Duration(minutes: 1);
+  Duration? duration;
+
+  TestClock([this.duration = const Duration(minutes: 1)]);
 
   DateTime get nowClean => _now;
 
   // I take no pride in what I did with this getter having side effects.
   @override
   DateTime get now {
-    DateTime next = _now.add(duration);
+    DateTime next = _now.add(duration!);
     _now = next;
     return _now;
   }
 }
-
