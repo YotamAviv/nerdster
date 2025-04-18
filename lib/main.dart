@@ -33,7 +33,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.fake;
+FireChoice fireChoice = FireChoice.emulator;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -124,6 +124,7 @@ Future<void> defaultSignIn() async {
   }
 
   if (b(params['demo'])) {
+    assert(fireChoice != FireChoice.prod);
     demo = params['demo']!;
     DemoKey oneofusDemoKey;
     DemoKey? delegateDemoKey;
