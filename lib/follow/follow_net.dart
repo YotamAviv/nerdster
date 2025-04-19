@@ -108,9 +108,9 @@ class FollowNet with Comp, ChangeNotifier {
     if (_context != kOneofusContext) {
       FollowNode.clear();
       GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
-      Future<void> batchFetch(List<Node> tokens, int distance) async {
+      Future<void> batchFetch(Iterable<Node> nodes, int distance) async {
         Map<String, String?> prefetch = {};
-        for (Node n in tokens) {
+        for (Node n in nodes) {
           for (String del in oneofusEquiv.oneofus2delegates[n.token]!) {
             prefetch[del] = oneofusEquiv.delegate2revokeAt[del];
           }

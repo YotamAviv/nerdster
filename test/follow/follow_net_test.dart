@@ -613,8 +613,7 @@ void main() async {
     expect(ss3, ss);
   });
 
-  /// Bart blocks lisa for social, and when centered as lisa, that's
-  /// appropriately rejected.
+  /// Bart blocks lisa for social, and when centered as lisa, that's appropriately rejected.
   test('lisa social', () async {
     await simpsons();
     loadSimpsons();

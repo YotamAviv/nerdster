@@ -33,7 +33,7 @@ enum FireChoice {
 }
 
 // default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.emulator;
+FireChoice fireChoice = FireChoice.fake;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
