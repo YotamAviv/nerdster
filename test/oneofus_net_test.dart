@@ -60,7 +60,7 @@ void main() async {
     useClock(TestClock());
     DemoKey.clear();
     signInState.signOut();
-    await signInState.signIn(Jsonish({}).token, null); // unnecessary.
+    signInState.center = Jsonish({}).token; // unnecessary.
     oneofusNet.degrees = 6;
     oneofusNet.numPaths = 1;
     followNet.fcontext = kOneofusContext;
@@ -126,7 +126,7 @@ void main() async {
     Statement replaceStatement =
         await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s1.token);
 
-    await signInState.signIn(homer.token, null);
+    signInState.center = homer.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -150,7 +150,7 @@ void main() async {
   test('''don't trust myself''', () async {
     Statement s1 = await bart.doTrust(TrustVerb.trust, bart);
 
-    await signInState.signIn(bart.token, null);
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -171,99 +171,10 @@ void main() async {
     await marge.doTrust(TrustVerb.trust, lisa);
     Statement lisaBlocksHomer = await lisa.doTrust(TrustVerb.block, homer);
 
-    await signInState.signIn(bart.token, null);
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     jsonExpect(notifications.rejected, {lisaBlocksHomer.token: 'Attempt to block trusted key.'});
   });
-
- // TDOO: Remove
-  // test('''3'rd level replace succeeds on 1'st level trust''', () async {
-  //   await bart.doTrust(TrustVerb.trust, homer);
-  //   Statement s = await homer.doTrust(TrustVerb.trust, marge);
-  //   await marge.doTrust(TrustVerb.trust, lisa);
-  //   Statement lisaReplacesHomer = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
-
-  //   await signInState.signIn(bart.token, null);
-  //   await Comp.waitOnComps([contentBase, keyLabels]);
-  //   expect(notifications.rejected.isEmpty, true);
-  //   expect(notifications.rejected.containsKey(lisaReplacesHomer.token), false);
-  //   expect(oneofusEquiv.getCanonical(homer.token), lisa.token);
-  // });
-
-  // TDOO: Remove
-  /// Self be-heading
-  /// This one is unusual and challenging to understand.
-  ///
-  /// Homer's mistake here is that he revokes his old key too early,
-  /// after he trusted marge, who later signs off on replacing the key
-  /// that trusted her.
-  ///
-  /// See some related nonsense in decapitate.dart
-  // test('3\'rd level replaces 1\'st level trust', () async {
-  //   Statement s2 = await homer.doTrust(TrustVerb.trust,
-  //       lenny); // I added this because I need a statement. I could block, but that's above.
-  //   await bart.doTrust(TrustVerb.trust, homer);
-  //   await homer.doTrust(TrustVerb.trust, marge);
-  //   await marge.doTrust(TrustVerb.trust, lisa);
-  //   await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
-  //   await marge.doTrust(TrustVerb.trust, homer2);
-
-  //   await signInState.signIn(bart.token, null);
-  //   await Comp.waitOnComps([contentBase, keyLabels]);
-
-  //   var network = oneofusNet.network;
-  //   var expectedNetwork = {"Me": null, "homer": "5/1/2024 12:01 AM", "lenny": null};
-  //   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-
-  //   await compareNetworkToTree(bart.token);
-
-  //   dynamic dump = await OneofusTreeNode.root.dump();
-  //   var expectedTree = {
-  //     "N:Me-true:": {
-  //       "N:homer-true:5/1/2024 12:01 AM:Me": {"N:lenny-true:Me->homer": {}}
-  //     }
-  //   };
-  //   jsonShowExpect(dump, expectedTree);
-  // });
-
-  // test('3\'rd level replaces 1\'st level trust, homer better', () async {
-  //   await homer.doTrust(TrustVerb.trust, lenny);
-  //   await bart.doTrust(TrustVerb.trust, homer);
-  //   Statement s2 = await homer.doTrust(TrustVerb.trust, marge);
-  //   await marge.doTrust(TrustVerb.trust, lisa);
-  //   await homer2.doTrust(TrustVerb.replace, homer, revokeAt: s2.token);
-  //   await marge.doTrust(TrustVerb.trust, homer2);
-
-  //   await signInState.signIn(bart.token, null);
-  //   await Comp.waitOnComps([contentBase, keyLabels]);
-
-  //   var network = oneofusNet.network;
-  //   var expectedNetwork = {
-  //     "Me": null,
-  //     "homer": "5/1/2024 12:03 AM",
-  //     "marge": null,
-  //     "lenny": null,
-  //     "homer2": null,
-  //     "lisa": null
-  //   };
-  //   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-
-  //   dynamic dump = await OneofusTreeNode.root.dump();
-  //   var expectedTree = {
-  //     "N:Me-true:": {
-  //       "N:homer2-true:Me": {
-  //         "N:marge-true:Me->homer2": {
-  //           "N:homer2-true:Me->homer2->marge": {},
-  //           "N:lisa-true:Me->homer2->marge": {}
-  //         },
-  //         "N:lenny-true:Me->homer2": {}
-  //       }
-  //     }
-  //   };
-  //   jsonShowExpect(dump, expectedTree);
-
-  //   await compareNetworkToTree(bart.token);
-  // });
 
   test('diamond trust', () async {
     await homer.doTrust(TrustVerb.trust, lisa);
@@ -271,7 +182,7 @@ void main() async {
     await bart.doTrust(TrustVerb.trust, marge);
     await lisa.doTrust(TrustVerb.trust, marge);
 
-    await signInState.signIn(homer.token, null);
+    signInState.center = homer.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -326,7 +237,7 @@ void main() async {
     await lisa.doTrust(TrustVerb.trust, bart);
 
     oneofusNet.numPaths = 2;
-    await signInState.signIn(homer.token, null);
+    signInState.center = homer.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -364,7 +275,7 @@ void main() async {
 
     // There used to be a problem here: Bart doesn't know homer's name.
     // homer is in the network because bart =>(trust) homer2 =>(replace) homer.
-    await signInState.signIn(bart.token, null);
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(keyLabels.labelKey(homer2.token), 'homer2');
     expect(keyLabels.labelKey(homer.token), 'homer2 (0)');
@@ -381,7 +292,7 @@ void main() async {
     await bart.doTrust(TrustVerb.clear, homer);
     await bart.doTrust(TrustVerb.trust, homer2);
 
-    await signInState.signIn(bart.token, null);
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -416,7 +327,7 @@ void main() async {
     await bart.doTrust(TrustVerb.clear, homer);
     await bart.doTrust(TrustVerb.trust, homer2);
 
-    await signInState.signIn(bart.token, null);
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -451,7 +362,7 @@ void main() async {
     await maggie.doTrust(TrustVerb.trust, marge);
     await maggie.doTrust(TrustVerb.trust, bart); // overrides the earlier block.
 
-    await signInState.signIn(maggie.token, null);
+    signInState.center = maggie.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     dynamic dump = await OneofusTreeNode.root.dump();
     var expected = {
@@ -470,7 +381,7 @@ void main() async {
     await maggie.doTrust(TrustVerb.trust, marge); // repeat
     await maggie.doTrust(TrustVerb.trust, bart); // overrides the earlier block.
 
-    await signInState.signIn(maggie.token, null);
+    signInState.center = maggie.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     dynamic dump = await OneofusTreeNode.root.dump();
     var expected = {
@@ -485,7 +396,7 @@ void main() async {
     Statement s3 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s2.token); // rejected
     await bart.doTrust(TrustVerb.trust, sideshow);
 
-    await signInState.signIn(homer.token, null);
+    signInState.center = homer.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     expect(notifications.rejected.keys, {s3.token});
@@ -507,7 +418,7 @@ void main() async {
     Statement s4 = await sideshow.doTrust(TrustVerb.replace, homer, revokeAt: s3.token); // rejected
     await bart.doTrust(TrustVerb.trust, sideshow);
 
-    await signInState.signIn(homer2.token, null);
+    signInState.center = homer2.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     expect(notifications.rejected.containsKey(s4.token), true);
@@ -552,7 +463,7 @@ void main() async {
     await key5.doTrust(TrustVerb.trust, key2);
     await key6.doTrust(TrustVerb.trust, key2);
 
-    await signInState.signIn(key2.token, null);
+    signInState.center = key2.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     dynamic network = oneofusNet.network;
@@ -578,7 +489,7 @@ void main() async {
   test('egos', () async {
     var (oneofus, delegate) = await DemoKey.demos['egos']();
     // TODO(2): dump statements. Currently, the different statement tokens are preventing me.
-    await signInState.signIn(oneofus.token, null);
+    signInState.center = oneofus.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -596,10 +507,10 @@ void main() async {
   });
 
   test('simpsons', () async {
-    var (n, d) = await DemoKey.demos['simpsons']();
+    var (n, d) = await simpsons();
     expect(n, bart);
     expect(d, DemoKey.findByName('bart-nerdster0'));
-    await signInState.signIn(bart.token, null);
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -634,8 +545,12 @@ void main() async {
     expect(keyLabels.show(oneofusEquiv.getCanonical(homer.token)), keyLabels.show(homer2.token));
   });
 
+  Map<String, String?> dumpDemoNetwork(Map<String, Node> network) =>
+      network.map((token, node) => MapEntry(DemoKey.findByToken(token)!.name,
+          b(node.revokeAtTime) ? formatUiDatetime(node.revokeAtTime!) : null));
+
   /// This test does not use [OneofusNet] but does use its [FetcherNode].
-  /// Ideally, I would have unit tests for [Trust1].
+  /// Ideally, I would have unit tests for [GreedyBfsTrust].
   test('degrees base', () async {
     DemoKey d1 = await DemoKey.findOrCreate('1');
     DemoKey d2 = await DemoKey.findOrCreate('2');
@@ -646,17 +561,39 @@ void main() async {
     GreedyBfsTrust trust1;
     Map<String, Node> network;
 
+    FetcherNode.clear();
     trust1 = GreedyBfsTrust(degrees: 1);
     network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
+    expect(network.length, 1);
     expect(network.keys, [d1.token]);
+    expect(network.values.first.paths.length, 0);
 
+    FetcherNode.clear();
     trust1 = GreedyBfsTrust(degrees: 2);
     network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
+    expect(network.length, 2);
     expect(network.keys, [d1.token, d2.token]);
+    expect(network.values.first.paths.length, 0);
+    expect(network.values.elementAt(1).paths.length, 1);
+    // print(dumpDemoNetwork(network));
+    // print(network[d2.token]!.paths.first.map((t) => DemoKey.findByToken(t.node.token)!.name));
 
+    FetcherNode
+        .clear(); // TODO: Document, FIX: This shouldn't be required but is to clear the paths cached on the Node.
     trust1 = GreedyBfsTrust(degrees: 3);
     network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
+    expect(network.length, 3);
     expect(network.keys, [d1.token, d2.token, d3.token]);
+    expect(network.values.first.paths.length, 0);
+    expect(network.values.elementAt(1).paths.length, 1);
+    expect(network.values.elementAt(2).paths.length, 1);
+    expect(network[d2.token]!.paths.length, 1);
+    expect(network[d2.token]!.paths.first.length, 2);
+    expect(network[d3.token]!.paths.length, 1);
+    expect(network[d3.token]!.paths.first.length, 3);
+    // print(dumpDemoNetwork(network));
+    // print(network[d2.token]!.paths.first.map((t) => DemoKey.findByToken(t.node.token)!.name));
+    // print(network[d3.token]!.paths.first.map((t) => DemoKey.findByToken(t.node.token)!.name));
   });
 
   test('degrees base block', () async {
@@ -682,7 +619,6 @@ void main() async {
     notifications.clear();
     network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
     jsonExpect(notifications.rejected, {block.token: "Attempt to block trusted key."});
-    expect(notifications.rejected.length, 1);
     expect(network.keys, [d1.token, d22.token, d21.token]);
 
     trust1 = GreedyBfsTrust(degrees: 3);
@@ -696,8 +632,8 @@ void main() async {
   // - Web-of-trust key equivalence rejected: Replaced key not in network.
   test('simpsons, degrees=2', () async {
     oneofusNet.degrees = 2;
-    await DemoKey.demos['simpsons']();
-    await signInState.signIn(bart.token, null);
+    await simpsons();
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -720,8 +656,8 @@ void main() async {
   // - Attempt to replace your key.
   test('simpsons, degrees=3', () async {
     oneofusNet.degrees = 3;
-    await DemoKey.demos['simpsons']();
-    await signInState.signIn(bart.token, null);
+    await simpsons();
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     var network = oneofusNet.network;
@@ -752,11 +688,11 @@ void main() async {
 
   test('Attempt to block your key.', () async {
     oneofusNet.degrees = 3;
-    await DemoKey.demos['simpsons']();
+    await simpsons();
 
     Statement lisaBlocksMarge = await lisa.doTrust(TrustVerb.block, marge);
 
-    await signInState.signIn(marge.token, null);
+    signInState.center = marge.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(notifications.rejected.length, 1);
     MapEntry e = notifications.rejected.entries.first;
@@ -768,12 +704,12 @@ void main() async {
 
   test('Attempt to replace replaced key rejected.', () async {
     oneofusNet.degrees = 3;
-    await DemoKey.demos['simpsons']();
+    await simpsons();
 
     Statement s = await bart.doTrust(TrustVerb.trust, lisa);
     Statement rejected = await lisa.doTrust(TrustVerb.replace, homer, revokeAt: s.token);
 
-    await signInState.signIn(homer2.token, null);
+    signInState.center = homer2.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(notifications.rejected.length, 1);
     MapEntry e = notifications.rejected.entries.first;
@@ -786,7 +722,7 @@ void main() async {
   test('simpsons label key edges', () async {
     await simpsons();
 
-    await signInState.signIn(bart.token, null);
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(toJson(labelPathsX(lisa.token)), [
       [
@@ -806,7 +742,7 @@ void main() async {
       ]
     ]);
 
-    await signInState.signIn(homer.token, null);
+    signInState.center = homer.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(toJson(labelPathsX(homer2.token)), [
       [
@@ -816,10 +752,15 @@ void main() async {
       [
         {'wife': 'wife'},
         {'homer2': 'hubby2'}
+      ],
+      [
+        {'boy': 'boy'},
+        {'wife': 'moms'},
+        {'homer2': 'hubby2'}
       ]
     ]);
 
-    await signInState.signIn(homer2.token, null);
+    signInState.center = homer2.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(toJson(labelPathsX(homer.token)), [
       [
@@ -833,9 +774,9 @@ void main() async {
   });
 
   test('NerdNode', () async {
-    await DemoKey.demos['simpsons']();
+    await simpsons();
 
-    await signInState.signIn(bart.token, null);
+    signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     // CONSIDER: Test something beyond just this.
@@ -851,7 +792,7 @@ void main() async {
 
     final stopwatch = Stopwatch()..start();
 
-    await signInState.signIn(o.token, null);
+    signInState.center = o.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
     print('Stress test executed in ${stopwatch.elapsed}');

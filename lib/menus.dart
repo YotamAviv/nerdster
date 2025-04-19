@@ -169,6 +169,12 @@ $link''',
           SubmenuButton(menuChildren: [
             MenuItemButton(onPressed: fetcherIntegrationTest, child: const Text('Fetcher')),
             MenuItemButton(onPressed: integrationTests, child: const Text('misc demos')),
+            MenuItemButton(
+                onPressed: () {
+                  fetcherIntegrationTest();
+                  integrationTests();
+                },
+                child: const Text('all')),
           ], child: const Text('integration tests')),
           SubmenuButton(menuChildren: demos, child: const Text('demo')),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),

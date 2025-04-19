@@ -15,6 +15,13 @@ import 'package:nerdster/trust/trust.dart';
 /// - various "beheading" scenarios where X trusts (or replaces) Y trusts Z revokes Y.
 /// Odds are good that remants of this past remains in the code and docs.
 ///
+/// Side effects:
+/// - Fetchers (Nodes) in network should be fully fetched (cached).
+/// - Rejections (due to conflict) of statements should be complete (equivalence relies on this).
+///   To facilitate this, we loop 1 extra degree.
+///
+///
+///
 /// TODO: time limit
 /// TODO: network size max
 ///
@@ -30,7 +37,7 @@ class GreedyBfsTrust {
   Future<LinkedHashMap<String, Node>> process(Node source,
       {Notifications? notifier,
       ProgressR? progressR,
-      Future<void> Function(List<Node> tokens, int distance)? batchFetch}) async {
+      Future<void> Function(Iterable<Node> tokens, int distance)? batchFetch}) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
     network[source.token] = source;
     assert(source.paths.isEmpty);
@@ -42,15 +49,11 @@ class GreedyBfsTrust {
 
     Queue<Path> nextLayer = Queue<Path>();
 
-    int pass = 1; // degrees (plus/minus 1 ;)
-    while (true) {
+    // At pass n, we build paths of length n+1.
+    // We nake a gratuitous loop to fetch and reject statements by last layer of nodes.
+    for (int pass = 1; pass < degrees + 1; pass++) {
       if (b(batchFetch)) {
-        List<Node> nodes = [];
-        for (Path path in currentLayer) {
-          assert(isValidPath(path, network)); // (This  used to be possible; code to address gone.)
-          Node n = path.last.node;
-          nodes.add(n);
-        }
+        Iterable<Node> nodes = currentLayer.map((p) => p.last.node);
         await batchFetch!(nodes, pass);
       }
       if (b(progressR)) progressR!.report(pass / degrees, 'degrees: $pass');
@@ -84,10 +87,11 @@ class GreedyBfsTrust {
           }
 
           // Block allowed
-          assert(!network.containsKey(other.token));
-          assert(other.paths.isEmpty);
-
-          other.blocked = true;
+          if (pass < degrees) {
+            assert(!network.containsKey(other.token));
+            assert(other.paths.isEmpty);
+            other.blocked = true;
+          }
         }
       }
 
@@ -95,18 +99,16 @@ class GreedyBfsTrust {
       for (Path path in currentLayer) {
         assert(isValidPath(path, network));
         Node n = path.last.node;
-        if (visited.contains(n)) continue;
 
         for (Replace replace in await n.replaces) {
           assert(b(replace.revokeAt));
           Node other = replace.node;
+          // Replace the other node if allowed.
           if (other == n) {
             notifier?.reject(replace.statementToken, '''Don't replace yourself''');
             continue;
           }
-          // Replace the other node if allowed.
           if (other == source) {
-            // Special case, no paths
             notifier?.reject(replace.statementToken, 'Attempt to replace your key.');
             continue;
           }
@@ -126,7 +128,6 @@ class GreedyBfsTrust {
             continue;
           }
           if (other.paths.isNotEmpty) {
-            // Already trusted (not blocked, has paths, isn't blocked)
             assert(!other.blocked);
             assert(network.containsKey(other.token));
             notifier?.reject(replace.statementToken, 'Attempt to replace trusted key.');
@@ -134,64 +135,49 @@ class GreedyBfsTrust {
           }
 
           // replace allowed
-          network.putIfAbsent(other.token, () => other);
-          final Path newPath = List.of(path)..add(replace);
-          other.paths.add(newPath);
-          assert(newPath.length == pass + 1);
-          other.revokeAt = replace.revokeAt;
-          await other.trusts; // Setting revoked require re-fetching for revokedAtTime
-          // Add to queue if not already visited.
-          if (!visited.contains(other)) {
-            nextLayer.addLast(newPath);
+          if (pass < degrees) {
+            network.putIfAbsent(other.token, () => other);
+            final Path newPath = List.of(path)..add(replace);
+            other.paths.add(newPath);
+            assert(newPath.length == pass + 1);
+            other.revokeAt = replace.revokeAt;
+            // QUESTIONABLE: OLD: await other.trusts; // re-fetch after setting revokedAt
+            // Add to queue if not already visited.
+            if (!visited.contains(other)) nextLayer.addLast(newPath);
           }
         }
       }
 
       // ====== TRUSTS ====== //
-      // If pass > degrees, don't add more trusts, just blocks.
-      if (pass < degrees) {
-        for (Path path in currentLayer) {
-          assert(isValidPath(path, network));
-          Node n = path.last.node;
-          if (visited.contains(n)) continue;
-          visited.add(n);
+      for (Path path in currentLayer) {
+        assert(isValidPath(path, network));
+        Node n = path.last.node;
+        visited.add(n);
 
-          for (Trust trust in await n.trusts) {
-            final Node other = trust.node;
-            if (other == n) {
-              notifier?.reject(trust.statementToken, '''Don't trust yourself.''');
-              continue;
-            }
-            if (path.where((pathEdge) => pathEdge.node == other).isNotEmpty) {
-              continue; // Don't let path cycle
-            }
-
-            if (other.blocked) {
-              notifier?.reject(trust.statementToken, '''Attempt to trust blocked key.''');
-              continue;
-            }
-
-            // Trust / further trust other node as necessary, create path, enqueue
+        for (Trust trust in await n.trusts) {
+          final Node other = trust.node;
+          if (other == n) {
+            notifier?.reject(trust.statementToken, '''Don't trust yourself.''');
+            continue;
+          }
+          if (other.blocked) {
+            notifier?.reject(trust.statementToken, '''Attempt to trust blocked key.''');
+            continue;
+          }
+          if (path.where((pathEdge) => pathEdge.node == other).isNotEmpty) continue; // cycle
+          // Trust / further trust allowed
+          if (pass < degrees) {
             network.putIfAbsent(other.token, () => other);
             final Path newPath = List.of(path)..add(trust);
             other.paths.add(newPath);
-            assert(newPath.length == pass + 1);
-
+            assert(newPath.length == pass + 1, '${newPath.length} == ${pass + 1}');
             // Add to queue if not already visited.
-            if (!visited.contains(other)) {
-              nextLayer.addLast(newPath);
-            }
+            if (!visited.contains(other)) nextLayer.addLast(newPath);
           }
         }
       }
 
-      if (nextLayer.isEmpty) {
-        break;
-      }
-      if (pass >= degrees) {
-        break;
-      }
-      pass++;
+      if (nextLayer.isEmpty) break;
       currentLayer = nextLayer;
       nextLayer = Queue<Path>();
     }
@@ -199,41 +185,38 @@ class GreedyBfsTrust {
     // Remove nodes that were there just to remember that they're blocked.
     network.removeWhere((key, value) => value.blocked);
 
-    // PERFORMANCE: print('now restricting...');
-
-    // Validate, prune/restrict. Repeat until we're not removing more..
-    // - validate: (we may have created paths using nodes that have later been blocked.)
-    // - numPaths
-    // - degrees
-    int networkSizeBefore = network.length;
-    while (true) {
-      // Remove invalid paths (revoked nodes made edges, node no longer in network (not enough paths)),
-      for (Node n in network.values) {
-        if (n == source) continue; // Skip this for source.
-        n.paths = List.of(n.paths.where((path) => isValidPath(path, network))); // TODO: Can probably remove
-      }
-      // Restrict to numPaths
-      network.removeWhere((token, node) => (token != source.token) && node.paths.length < numPaths);
-
-      // We're not removing, and so we're done.
-      if (network.length == networkSizeBefore) break;
-      
-      networkSizeBefore = network.length;
-    }
+    restrict(source, network);
 
     if (b(progressR)) progressR!.report(1, 'Done');
     return network;
   }
 
-  // Walk the path from source to last node.
-  // TODO: Recent changes to be truly greedy can probably eliminate much of this as paths
-  // can't become invalide (nodes can only be revmoed due to not enough paths, not revoked due to 
-  // replacement) the way they used to.
-  // - Each node should be in the network.
-  // - OLD: Each edge should have statedAt before node was revoked (in case it was revoked)
-  bool isValidPath(Path path, Map<String, Node> network) {
-    if (path.length > degrees) return false;
+  void restrict(Node source, LinkedHashMap<String, Node> network) {
+    // Validate, prune/restrict. Repeat until we're not removing more..
+    int networkSizeBefore = network.length;
+    while (true) {
+      // Remove invalid paths (paths with node removed from network due to not enough paths),
+      for (Node n in network.values) {
+        if (n == source) continue; // source.
+        n.paths = List.of(n.paths.where((path) => isValidPath(path, network)));
+      }
 
+      // Remove nodes with not enough paths
+      network.removeWhere((token, node) => (token != source.token) && node.paths.length < numPaths);
+
+      // We're done when we're not removing any more.
+      if (network.length == networkSizeBefore) break;
+      networkSizeBefore = network.length;
+    }
+  }
+
+  // Walk the path from source to last node.
+  // DEFER: Due to recent changes to be truly greedy (trusted nodes don't get replaced (revoked)),
+  // this can be made simpler.
+  // - Each node should be in the network.
+  // - (OLD: Each edge should have statedAt before node was revoked (in case it was revoked))
+  bool isValidPath(Path path, Map<String, Node> network) {
+    assert(path.length <= degrees);
     bool out = true;
     DateTime? fromRevokeAtTime; // (source)
     for (Trust edge in path.sublist(1)) {
@@ -242,14 +225,12 @@ class GreedyBfsTrust {
         out = false;
         break;
       }
-
-      // validate. TODO: remove
+      // validate.
       if (fromRevokeAtTime != null && fromRevokeAtTime.isBefore(edge.statedAt)) {
         out = false;
         assert(out, "Checking. No path contains revoked edges.");
         break;
       }
-
       // compute fromRevokeAtTime for next iteration
       String? fromRevokeAt = network[edge.node.token]!.revokeAt;
       fromRevokeAtTime = network[edge.node.token]!.revokeAtTime;
@@ -260,9 +241,6 @@ class GreedyBfsTrust {
       }
     }
     // print ('isValidPath(${List.from(path.map((e) => e.node.token))} returning $out');
-    // NOPE: assert(out, 'Checking. Turns out that now without blocker benefit, paths remain valid.');
-    // When numPaths > 1, paths become invalid as the nodes leading to them are removed from the 
-    // network due to that restriction.
     return out;
   }
 }
