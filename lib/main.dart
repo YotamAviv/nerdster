@@ -124,7 +124,7 @@ Future<void> defaultSignIn() async {
   }
 
   if (b(params['demo'])) {
-    assert(fireChoice != FireChoice.prod);
+    if(fireChoice == FireChoice.prod) throw "Don't create demo in production.";
     demo = params['demo']!;
     DemoKey oneofusDemoKey;
     DemoKey? delegateDemoKey;
