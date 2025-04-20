@@ -199,8 +199,12 @@ $link''',
                 print(oneofus);
                 print(Jsonish.encoder.convert(credentials));
               },
-              child: const Text('dump credentials')),
-
+              child: const Text('dump signed-in credentials')),
+          MenuItemButton(
+              onPressed: () async {
+                await DemoKey.showDemoCredentials(context);
+              },
+              child: const Text('show all demo credentials')),
           MenuItemButton(
               child: const Text('dump all statements'),
               onPressed: () async {
