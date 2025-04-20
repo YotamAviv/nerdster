@@ -20,7 +20,10 @@ import 'package:nerdster/trust/trust.dart';
 /// - Rejections (due to conflict) of statements should be complete (equivalence relies on this).
 ///   To facilitate this, we loop 1 extra degree.
 ///
-///
+/// DEFER: We don't add trusts (or replaces, blocks) when processing the last layer, but we
+/// do fetch the statements so that we have everyone's statements. This isn't clean or correct as
+/// those statements are not rejected as conflicts, but they're not acted on here; LeyLabels, for
+/// example, mighht use them affect someone's name.
 ///
 /// TODO: time limit
 /// TODO: network size max
