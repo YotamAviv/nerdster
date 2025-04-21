@@ -18,9 +18,9 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
-/// Now that Nerdster loads Oneofus data over HTTPS, not Firebase Cloud Functions, 
+/// Now that Nerdster loads Oneofus data over HTTPS, not Firebase Cloud Functions,
 /// Fire access in OneofusFire should not be necessary.
-/// 
+///
 /// Brief history:
 /// - Fetcher used direct Firebase querise
 ///   - testing and development used FakeFirebase
@@ -33,19 +33,19 @@ import 'util.dart';
 ///   - fastest
 ///   - Nerdter should no longer need a back door to Oneofus
 ///   - Can't be tested on Linux without emulator
-/// 
+///
 /// I'd like to settle on HTTPS functions only, but I need to keep
 /// - FakeFirebase working for unit testing on Linux.
 /// - Oneofus backdoor on emulator for "integration testing" (see menu DEV->Integration tests)
-/// 
+///
 /// DEFER:
 /// - Almost all of the above - the unit tests need the other code path and are helpful.
 /// - Cloud Functions work.. Yeah, don't waste effort on maintenance, but don't rush to delete.
 /// TODO:
 /// - Try to change fetch(token) to fetch(token, revoked)
 /// - Load up the fetchers after batchFetch, clean up some of the we expect with 'batcher miss'
-/// 
-/// 
+///
+///
 
 /// BUG: 3/12/25: Mr. Burner Phone revoked, signed in, still managed to clear, and caused data corruption.
 /// I wasn't able to reproduce that bug (lost the private key), and I've changed the code since
@@ -539,7 +539,10 @@ class Fetcher {
       QuerySnapshot<Json> snapshots = await query.get();
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = snapshots.docs;
       if (docs.isEmpty) {
-        assert(!jsonish.containsKey('previous'));
+        if (jsonish.containsKey('previous')) {
+          String error = 'Your data was stale. Reload. previous=(${jsonish['previous']})';
+          throw Exception(error);
+        }
       } else {
         final docSnapshot0 = docs.elementAt(0);
         if (docSnapshot0.id != jsonish['previous']) {
