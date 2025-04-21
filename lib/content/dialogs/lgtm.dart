@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -42,43 +41,6 @@ class Lgtm {
                                 Navigator.pop(context, true);
                               },
                               'Looks Good To Me',
-                            ),
-                            DontCheckbox(),
-                          ],
-                        ),
-                      ],
-                    )))));
-  }
-
-  static Future<void> show(Statement statement, BuildContext context) async {
-    if (Prefs.skipLgtm.value) return;
-    return showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) => Dialog(
-            child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 700,
-                      maxHeight: 500,
-                    ),
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        Linky(
-                            '''Congrats, check it: https://export.nerdster.org/?token=${signInState.signedInDelegate}'''),
-                        JsonDisplay(statement.json),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            const SizedBox(width: 200),
-                            OkCancel(
-                              () {
-                                Navigator.pop(context, true);
-                              },
-                              'Okay',
-                              showCancel: false,
                             ),
                             DontCheckbox(),
                           ],

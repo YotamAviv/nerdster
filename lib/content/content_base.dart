@@ -63,8 +63,6 @@ class ContentBase with Comp, ChangeNotifier {
 
     Statement statement = await fetcher.push(json, signInState.signer!);
 
-    await Lgtm.show(statement, context);
-
     listen();
     return statement;
   }
