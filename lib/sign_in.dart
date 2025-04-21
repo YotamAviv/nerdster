@@ -35,15 +35,6 @@ Future<void> qrSignin(BuildContext context) async {
   Map<String, dynamic> forPhone = <String, dynamic>{};
   forPhone['domain'] = kNerdsterDomain;
 
-  // Create a disposable PKE key pair for having phone encrypt stuff to this running web app.
-  final PkeKeyPair keyPair = await crypto.createPke();
-  final PkePublicKey publicKey = await keyPair.publicKey;
-  final Map<String, dynamic> publicKeyJson = await publicKey.json;
-  forPhone['publicKey'] = publicKeyJson;
-  // Name a "session"
-  final String session = Jsonish(publicKeyJson).token;
-  forPhone['session'] = session;
-
   // Getting this to work deployed at Google Cloud functions proved as fustrating as I had anticipated.
   // Kudos: https://stackoverflow.com/questions/76306434/unpredictable-urls-with-firebase-cloud-functions-2nd-gen
   // notes that predictable URLs can still do work, but not in camelCase, yes in
@@ -54,6 +45,13 @@ Future<void> qrSignin(BuildContext context) async {
   if (fireChoice == FireChoice.emulator) {
     forPhone['uri'] = 'http://127.0.0.1:5001/nerdster/us-central1/signin)';
   }
+  // disposable PKE key pair for phone to encrypt to this web app.
+  final PkeKeyPair keyPair = await crypto.createPke();
+  final PkePublicKey publicKey = await keyPair.publicKey;
+  final Map<String, dynamic> publicKeyJson = await publicKey.json;
+  final String session = getToken(publicKeyJson);
+  forPhone['session'] = session;
+  forPhone['publicKey'] = publicKeyJson;
 
   ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
   // ignore: unawaited_futures
@@ -86,19 +84,19 @@ Future<void> qrSignin(BuildContext context) async {
                                     fontWeight: FontWeight.w700,
                                     fontSize: 14,
                                     color: Colors.black)),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                MyCheckbox(storeKeys, 'Store keys'),
-                                FloatingActionButton(
-                                    heroTag: 'Copy',
-                                    tooltip: 'Copy',
-                                    child: const Icon(Icons.copy),
-                                    onPressed: () async {
-                                      await Clipboard.setData(ClipboardData(text: forPhoneString));
-                                    }),
-                              ],
-                            )
+                            FloatingActionButton(
+                                heroTag: 'Copy',
+                                tooltip: 'Copy',
+                                child: const Icon(Icons.copy),
+                                onPressed: () async {
+                                  await Clipboard.setData(ClipboardData(text: forPhoneString));
+                                }),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            MyCheckbox(storeKeys, 'Store keys'),
                           ],
                         )
                       ],
@@ -111,7 +109,7 @@ Future<void> qrSignin(BuildContext context) async {
   subscription = firestore.collection('sessions').doc('doc').collection(session).snapshots().listen(
     (QuerySnapshot<Map<String, dynamic>> docSnapshots) async {
       if (docSnapshots.docs.isEmpty) return;
-      
+
       Map<String, dynamic>? data = docSnapshots.docs.first.data();
 
       // Unpack Oneofus public key
