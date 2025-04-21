@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/value_waiter.dart';
+import 'package:nerdster/oneofus/value_waiter.dart';
 
 ///
 /// Exceptions and semantics of 'ready':

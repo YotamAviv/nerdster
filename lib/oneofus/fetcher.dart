@@ -5,10 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
-import 'package:nerdster/main.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/value_waiter.dart';
+import '../main.dart';
+import 'jsonish.dart';
+import 'trust_statement.dart';
+import 'value_waiter.dart';
 
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
 import 'distincter.dart';
