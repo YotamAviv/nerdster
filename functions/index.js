@@ -18,22 +18,55 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const fetch = require("node-fetch");
-const cheerio = require('cheerio'); // For HTML parsing
 const { Timestamp } = require("firebase-admin/firestore");
+// const cheerio = require('cheerio'); // For HTML parsing
+const { decode } = require('html-entities'); // Import the decode function
 
 admin.initializeApp();
 
+/*
+Try:
+https://www.panningtheglobe.com/ottolenghis-roast-chicken-zaatar-sumac/
+
+The code that uses "cheerio" works, but I favor myExtractTitle atm.
+*/
+function myExtractTitle(htmlString) {
+  const match = htmlString.match(/<title>(.*?)<\/title>/i); // Non-greedy match
+  let title = match ? match[1].trim() : null;
+  title = decode(title);
+  return title;
+}
 exports.cloudfetchtitle = onCall(async (request) => {
   const url = request.data.url;
-  // logger.log(`cloudfetchtitle: ${request.data} `);
+
   const response = await fetch(url);
-  if (!response.ok) {
-    throw new functions.https.HttpsError("unavailable", "Failed to fetch URL",
-      { 'status': response.status });
-  }
   const html = await response.text();
-  const $ = cheerio.load(html);
-  const title = $('title').text(); // .trim()?
+  
+  // const $ = cheerio.load(html);
+  // // Select the <title> tag and get its text content
+  // let title = $('title').text();
+  // // AI to remove junk that isn't the title. I don't understand why I need this.
+  // // 1. Attempt to split by the brand separator " | "
+  // let parts = title.split(' | ');
+  // if (parts.length > 1) {
+  //   title = parts[0].trim(); // Take the part before the separator
+  // } else {
+  //   // 2. Fallback: If the brand separator isn't present, look for a hyphen
+  //   parts = title.split(' - ');
+  //   if (parts.length > 1) {
+  //     title = parts[0].trim();
+  //   } else {
+  //     // 3.  Fallback: If still not found, remove any characters after and including "Email"
+  //     const emailIndex = title.indexOf('Email');
+  //     if (emailIndex > -1) {
+  //       title = title.substring(0, emailIndex).trim();
+  //     }
+  //   }
+  // }
+
+  let title = myExtractTitle(html);
+  title = title.trim();
+  logger.log(`title=${title}`);
   return { "title": title };
 });
 
