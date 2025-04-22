@@ -4,6 +4,7 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_bar.dart';
 import 'package:nerdster/content/content_tile.dart';
 import 'package:nerdster/content/content_tree_node.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/notifications_menu.dart';
@@ -76,9 +77,9 @@ class _ContentTreeState extends State<ContentTree> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // progress will call Navigator.pop(context) asynchronously, and so can't showTree first.
       await progress.make(() async {
-        // A mess and maybe a BUG: I had a bug where fetching me (?oneofus=token) was broken, but I didn't see the notification. 
+        // A mess and maybe a BUG: I had a bug where fetching me (?oneofus=token) was broken, but I didn't see the notification.
         // I couldn't figure it out.
-        // I added print statements and saw that I see 
+        // I added print statements and saw that I see
         //   oneofusNet-in, notifications cleared, corrupted, oneofusNet-out, and then a repeat but without the corruptiong.
         // I never figured it out, but commenting this line out seems to help ... ?
         // oneofusNet.listen();
@@ -93,8 +94,13 @@ class _ContentTreeState extends State<ContentTree> {
   Widget build(BuildContext context) {
     NerdsterMenu nerdsterMenu = NerdsterMenu();
     NotificationsMenu();
-    
-    if (ContentTree._firstTime) kludgeDelayedInit(context);
+
+    if (ContentTree._firstTime) {
+      // I couldn't figure out to detect phone or big computer.
+      // This could be detected on every build, not sure why I didn't, not really consequential.
+      isSmall = MediaQuery.of(context).size.width < 600;
+      kludgeDelayedInit(context);
+    }
 
     return Scaffold(
         body: SafeArea(
