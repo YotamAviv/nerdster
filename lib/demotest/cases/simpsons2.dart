@@ -81,7 +81,7 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   await sideshow.doTrust(TrustVerb.trust, lenny,
       moniker: 'Hugh G. Reckshin'); // Well at least that's accurate
   await sideshow.doTrust(TrustVerb.trust, marge,
-      moniker: 'Amanda Huggenkiss'); // Yeah, yeah, looking for Amanda Huggenkiss. What else is new?
+      moniker: 'Amanda Hugginkiss'); // Yeah, yeah, looking for Amanda Huggenkiss. What else is new?
   await sideshow.doTrust(TrustVerb.trust, homer, moniker: 'Dick Hurtz'); // Who's Dick Hurtz?
   await sideshow.doTrust(TrustVerb.trust, carl,
       moniker: 'Ben Dover'); // That doesn't sound like a real name
