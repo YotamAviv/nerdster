@@ -42,7 +42,9 @@ abstract class NetTreeModel {
       // Yes, if someone is blocked, then they're not trusted, not in the network.
       // But it would be nice to know who it is; if there are are others paths of trust to
       // them, then we attempt to name them.
-      return keyLabels.labelKey((statement as TrustStatement).subjectToken) ?? '<!trusted>';
+      TrustStatement ts = statement as TrustStatement;
+      // return keyLabels.labelKey(ts.subjectToken) ?? DemoKey.findByToken(ts.subjectToken)!.name;
+      return keyLabels.labelKey(ts.subjectToken) ?? '<!trusted>';
     } else {
       return keyLabels.labelKey(token!)!;
     }

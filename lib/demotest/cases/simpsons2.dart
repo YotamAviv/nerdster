@@ -36,21 +36,13 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   DemoKey luann = await DemoKey.findOrCreate('luann');
   DemoKey mel = await DemoKey.findOrCreate('mel');
 
-  DemoKey lisaN = await lisa.makeDelegate();
-  DemoKey bartN = await bart.makeDelegate();
-  DemoKey burnsN = await burns.makeDelegate();
-  DemoKey homer2N = await homer2.makeDelegate();
-  DemoKey milhouseN = await milhouse.makeDelegate();
-  DemoKey carlN = await carl.makeDelegate();
-  DemoKey margeN = await marge.makeDelegate();
-
   // Everyone trusts lisa (no dead ends)
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await homer.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await homer2.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await marge.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await milhouse.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
-  await sideshow.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
+  await sideshow.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa'); // DEFER: Try removing
   await maggie.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await lenny.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await carl.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
@@ -76,15 +68,25 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Sis');
   await homer2.doTrust(TrustVerb.trust, lisa, moniker: 'Daughter');
   await lisa.doTrust(TrustVerb.trust, homer, moniker: 'Dad');
-  await marge.doTrust(TrustVerb.trust, homer2, moniker: 'Hubby'); // marge trusts homer2
   await lisa.doTrust(TrustVerb.trust, marge, moniker: 'Mom');
+  await lisa.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
+  await lisa.doTrust(TrustVerb.trust, maggie, moniker: 'Maggie');
+  await marge.doTrust(TrustVerb.trust, homer2, moniker: 'Hubby'); // marge trusts homer2
   await bart.doTrust(TrustVerb.clear, homer); // bart clears homer
-  await lisa.doTrust(TrustVerb.trust, maggie, moniker: 'Sister');
   await marge.doTrust(TrustVerb.clear, homer, moniker: 'Homer');
 
   // sideshow
   await sideshow.doTrust(TrustVerb.trust, mel, moniker: 'Mel');
   await sideshow.doTrust(TrustVerb.trust, milhouse, moniker: '4-Eyes');
+  await sideshow.doTrust(TrustVerb.trust, lenny,
+      moniker: 'Hugh G. Reckshin'); // Well at least that's accurate
+  await sideshow.doTrust(TrustVerb.trust, marge,
+      moniker: 'Amanda Huggenkiss'); // Yeah, yeah, looking for Amanda Huggenkiss. What else is new?
+  await sideshow.doTrust(TrustVerb.trust, homer, moniker: 'Dick Hurtz'); // Who's Dick Hurtz?
+  await sideshow.doTrust(TrustVerb.trust, carl,
+      moniker: 'Ben Dover'); // That doesn't sound like a real name
+
+  await lisa.doTrust(TrustVerb.block, sideshow);
 
   // work
   await homer.doTrust(TrustVerb.trust, lenny, moniker: 'colleague');
@@ -96,24 +98,23 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   await carl.doTrust(TrustVerb.trust, smithers, moniker: 'staff');
 
   // school
-  await bart.doTrust(TrustVerb.trust, milhouse, moniker: 'Milhouse'); // This is after Sideshow..
-  // TEMP: await milhouse.doTrust(TrustVerb.trust, bart, moniker: 'Bart'); // This is after Sideshow..
-  await milhouse.doTrust(TrustVerb.trust, lisa, moniker: 'Babe');
+  await bart.doTrust(TrustVerb.trust, milhouse, moniker: 'Milhouse');
+  await milhouse.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
   await milhouse.doTrust(TrustVerb.trust, luann, moniker: 'Mom');
 
   // milhouse->sideshow
-  await milhouse.doTrust(TrustVerb.trust, sideshow, moniker: 'clown');
+  await milhouse.doTrust(TrustVerb.trust, sideshow, moniker: 'Sideshow T. Clown');
+
+  DemoKey lisaN = await lisa.makeDelegate();
+  DemoKey bartN = await bart.makeDelegate();
+  DemoKey burnsN = await burns.makeDelegate();
+  DemoKey homer2N = await homer2.makeDelegate();
+  DemoKey milhouseN = await milhouse.makeDelegate();
+  DemoKey carlN = await carl.makeDelegate();
+  DemoKey margeN = await marge.makeDelegate();
+  DemoKey sideshowN = await sideshow.makeDelegate();
 
   // Submit something as each delegate
-  List<DemoKey> delegates = [
-    lisaN,
-    bartN,
-    milhouseN,
-    homer2N,
-    carlN,
-    burnsN,
-    margeN,
-  ];
   const Json buck = {'contentType': 'movie', 'title': 'Buck', 'year': '2001'};
   const Json dogtown = {'contentType': 'movie', 'title': 'Dogtown and Z-Boys', 'year': '2001'};
   const Json porkys = {'contentType': 'movie', 'title': "Porky's", 'year': '1981'};
@@ -124,6 +125,7 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   };
   const Json kingpin = {'contentType': 'movie', 'title': "Kingpin", 'year': '1996'};
   const Json secretariat = {'contentType': 'movie', 'title': "Secretariat", 'year': '2010'};
+  const Json shakes = {'contentType': 'movie', 'title': "Shakes the Clown", 'year': '1991'};
 
   await lisaN.doRate(subject: buck, recommend: true, verb: ContentVerb.rate);
   await bartN.doRate(subject: dogtown, recommend: true, verb: ContentVerb.rate);
@@ -139,6 +141,7 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   await bartN.doRate(subject: secretariat, comment: 'boring', verb: ContentVerb.rate);
   await carlN.doRate(
       subject: porkys, recommend: true, comment: 'disgusting', verb: ContentVerb.rate);
+  await sideshowN.doRate(subject: shakes, recommend: true, verb: ContentVerb.rate);
 
   // social: bart trusts milhouse, blocks lisa
   // nerd: bart trusts Milhouse, milhouse trusts lisa and bart.
@@ -171,198 +174,210 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   return (lisa, lisaN);
 }
 
+
+
 // 4/20/2025, created demo on prod
 // from /etc => gen link..
-// ?oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22y2Y-ZrOmiBUMxnpAlFNCzsJmC_MSy82j1V-WsuSbnIw%22%7D&followNetDegrees=2&follow=%3Cone-of-us%3E 
+// ?oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22I-BKc0Dnenk0uQ_SfhJ9HSZnviG1yXLVLHaROnIpyQk%22%7D&follow=%3Cone-of-us%3E
 // from DEV => dump demo credentials..
-const _credentials = {
+const _credentials = 
+{
   "lisa": {
-    "token": "82a7eb63dec62d5647367ec5c8347069d8101479",
+    "token": "a74fc1893a51476a00042d2ff925cba943c7ca65",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "mnH8j1Nv3bi5wC85OS6lU_nsDyLOGJVMnz0UqjJiOMQ",
+      "d": "HuUqhxhERY-Dcjvxcwp_CBTiunKIxO81lzRdRXB8agU",
       "kty": "OKP",
-      "x": "y2Y-ZrOmiBUMxnpAlFNCzsJmC_MSy82j1V-WsuSbnIw"
+      "x": "I-BKc0Dnenk0uQ_SfhJ9HSZnviG1yXLVLHaROnIpyQk"
     }
   },
   "bart": {
-    "token": "d7a66ddca3c1c54c89eb4239e0f1d9a241fbd40f",
+    "token": "04440ff3a5df3d56e4d137f8eaf1b2ab149aa8df",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "3Qs3uBX6UFfLJwqVJ70_2ugpP6H--r_HGSJ9DGDobTY",
+      "d": "uzlOon8jC_UBaKQtcQM9f6NnORlIropbc67bgFrh_LM",
       "kty": "OKP",
-      "x": "0Fs4efRmj4bneAEEOtQnmAzNUThOLxTAWXk0cwEA-EA"
+      "x": "gzqiur0Ri1y0MOEiISz4Hl67tZjR7N_6ViHHRYFKBVM"
     }
   },
   "homer": {
-    "token": "66449e4d99272f37730dd17463040adc7ddf4a9c",
+    "token": "a32618598a34435cf9b5aa005c3e6c7230baa26c",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "-cvo0OM-yNLyJGmMDn4za1LkY6SPE362YSl41X55a0k",
+      "d": "d8BMZAew1CJ-78IbO1nxsAHfdmwDtem6xw6tqV-mRLc",
       "kty": "OKP",
-      "x": "ugakw_Kv-wcZZ-nd_xQ55JIXAIybIMyllwzIpsfcgXc"
+      "x": "mWXfUEx5NewA_NUuFzvw1dT1QWo29Lp0HyHc90sP924"
     }
   },
   "homer2": {
-    "token": "f68253654c8cba214ba840417f202e185b45bad9",
+    "token": "e343e79b5c7bc2e17cb9029ed0340197eb45f547",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "gMQPXPwB55lN0qjaqS4GLJAgJPMlDIIJbC_dee1ohsM",
+      "d": "UJ65P2Wg9dM7rp8Cb-BTWDiqC0ANsLGoH9yIVf6J37A",
       "kty": "OKP",
-      "x": "ecvCarFtJo-LOP-merz2QLZ5EnSu8xlaADn-Pk-NwUA"
+      "x": "5DtRxR0xB0LFiIqUw3W246jqWPEgY2eYA3T7-iI5z0U"
     }
   },
   "marge": {
-    "token": "a5e9aa26d93a232e22192ef9b9bab4b695ada0c5",
+    "token": "77e6d26dbe514f13c1ebb5b5de10692a4c1f4866",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "X9cHmvEZelHlhxmiSa85yeHpE9uWua2faPCJkDuojoQ",
+      "d": "Yjx7QMnEgoZAOeH8vrfAFrnwist2YmAI9GsX-zKcz5w",
       "kty": "OKP",
-      "x": "M-eo10bSbxvgRhS6W80rpkBR5_V0RkqcWRPSM3q4TsE"
+      "x": "mKalXac6R42FI_xwgNOIRFSYfb0Z2iMC6kgnFRrRD14"
     }
   },
   "milhouse": {
-    "token": "1672a842ab6dd46c8d2a6b4ec225d5dd51dc3c78",
+    "token": "6a958d948c6bcaf9a7fb7e61291e14c713045bbb",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "KSncXQ3S05ngtfipuT3Ol_k5aZ76GWuoaIZmClLBEPw",
+      "d": "farEe_ageqWNJbnq3WkKMC10inGak_O0qw_nFHX1qPs",
       "kty": "OKP",
-      "x": "Kv3Gz4m2X2xOydK-tv5ARxk3NLkt_w9F_l6HqqJ3okU"
+      "x": "rebyF1bYMaFvXRsrWnIeBooyWP8opECIV5h0Nl-HCjM"
     }
   },
   "sideshow": {
-    "token": "7e079a433c2212986f411be4fb0b3ca7ff3acaeb",
+    "token": "4521f6e65f23eb0354ea6f03f47acdf40f2d79ac",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "RwOuNtrKiszxBH_VFJXlgQVn-QwMMxA2ktmen-XCXQg",
+      "d": "hPQyGh4ZKR31Ms51-YoMF87E_VeFwSPwqyRoGTBTey0",
       "kty": "OKP",
-      "x": "9_7XL0188B3v-DzIJAwpIinsXVcrOzq2_aRRbuIp2o4"
+      "x": "ql1B9UsGvgm4fhyJUKc-upbfGmeyhnnei6WEJk-5up0"
     }
   },
   "maggie": {
-    "token": "2ee7c781ebd23f8d936bf4e8be123cadf1e61f84",
+    "token": "515c7800224202e1a8da64d6a4d91daae26e862e",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "xkA26Vah6WwHi7k8_MlwVxFq0dntqeqRATrJQJ12hTg",
+      "d": "HBHO_lMgw6G1brUyImAZ3XvmWmA1_-cRnmhLkj9VVGk",
       "kty": "OKP",
-      "x": "XSg56LpIEH4oMK8IjJ5bqh3z64P-a_E8znrGEjpVtMk"
+      "x": "Gp2t3wUwr3BNBl7d5JEIA-d2dqE5OHf47aJOd17L1bM"
     }
   },
   "lenny": {
-    "token": "13f5e8a027aa78b9bdfe07b584d270e542011615",
+    "token": "faa98e4b7587d1896eea731bf898a48eb4d406ba",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "kRii22z5d66NObHg53FSZ2E__05MHspJOZ3UQQtoGjI",
+      "d": "-_s-pe-m0k5iD9bKcdGyWvze5SSsVPlIw6_l6eXnHgs",
       "kty": "OKP",
-      "x": "tET_CsAHlfCY_4qOp2ImdOlHdhAizI9R2zYPMqS0hh0"
+      "x": "mCVNAnu7eDpK9T4dQ4FYa-tk8gc3cRBTTbL3TjNbmeE"
     }
   },
   "carl": {
-    "token": "8c1d2c118f0f81151eae96ae7af2aceaed0d7b73",
+    "token": "dd1a44e24bba667827d74402129dc4027d185c79",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "PBTnXfhbxT42XH0t31A8KIWCwHanYfbI5oHsVLnV2a8",
+      "d": "oKHk2MpvHzTsmZqdDrylmZWA9GSkYpmig_i3BgJ1uQc",
       "kty": "OKP",
-      "x": "HnorP9pDxOy4Hcjoh1z_9L44eeT1-9BA1h--7UvjkdI"
+      "x": "EGvtqNF4ppXda5j5f-OlkAzUQ6OU1Y0-3jFf_d-rjSU"
     }
   },
   "burns": {
-    "token": "70f8d2b9df5a6d2e517ef0529c846edda4c94dce",
+    "token": "9d4b36849adb3fa72ad8eddc0fdd0cfbaa64e6d7",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "iRGGV6SuECCEH54MrJjKedKg8gGHhgmxTiVOYPAPD1U",
+      "d": "62K8mF5JnG_MQrISn3NWV5ITI5h_aMjvKHc943Tm-_M",
       "kty": "OKP",
-      "x": "M5COCy9hhkKPxp3vDxyLH-OgHZZ-YsJZnqilWnacVLI"
+      "x": "a1C4ygPoCvvqUUgUsIrnRpcXh1_46HDIVNg5SVx8ovM"
     }
   },
   "smithers": {
-    "token": "fbc84244f8c658e8e2a5375940ccb05d7e780921",
+    "token": "fabec032007fe99716a846a23182399957988d7b",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "OuHW6iqLpms0pQVWvNwHhKeF-AKoDQRKK1GqjKOaK-8",
+      "d": "U-cS8pyDqrTjweLamyCwPh6U4nSnTbeAiymiA3FbBtU",
       "kty": "OKP",
-      "x": "jVEVT6J2F-BM8njX07gmZ-z6C14mtgamRkEghql8TYM"
+      "x": "wtaGnyGJGZ_tiY4YYCJFd-Dg_ahA4_1KOV6sdzvfcPI"
     }
   },
   "luann": {
-    "token": "029a5f727f7e75f94adb4965bf63aa9c53bcc62e",
+    "token": "4c699dbef4a0b175b64266a668d006647809293e",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "npfF4BTNu-nh4JwRlHAOFESnodmwzm3v-WdjAvjG3UY",
+      "d": "s4Ah2NI-VEaEWVzy-tZfDfXv36CpypndCdy5qU2tX6w",
       "kty": "OKP",
-      "x": "Rcf0YFaUEq4F79kdhFpyPk7_U24I6cEQ5xxUyL6m6y0"
+      "x": "6yMN5ld3AZv1Fe5_g6Y2j5TgkAqFnt9_j-shrFFdt-Q"
     }
   },
   "mel": {
-    "token": "6ccce58e8ae3d30a63832a55914b7b09580583f5",
+    "token": "b396e7856ba55e390842cd0fff5dd3765a888ec0",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "Urdf45TBzLcucGWKtCJXsT3PoJd-052sRsEW0OI_nSE",
+      "d": "NdFQUFn3WTMvn5k5lbzuphZJAKtISJBjVNKYbFgnio4",
       "kty": "OKP",
-      "x": "jLVsTRi7H-gSOfH5RDwmTXCk2wwfpz8EWkl6AV4Oca4"
+      "x": "-NDfO5vnuikGpPJOhHQLc6SFmiOz9N-zUlMJVJ9rUsc"
     }
   },
   "lisa-nerdster0": {
-    "token": "4755af016c4c5ca59b509f66c08e53897d11d342",
+    "token": "f7f74c08a3a372e5d617c724c84bbac0f6081a8f",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "77DGtqNu98S4AitdE9IxsZm0iWsI-T4aRh3ybKeA-Ag",
+      "d": "-tLYDr1-uD2EymgIs_1B5kJviFcXlkF7YYTYP1-ibXU",
       "kty": "OKP",
-      "x": "CSw9n8uvs9eX2tdcCmc5JEOW5gLwD772trBJ8BPJVSM"
+      "x": "R0QT3mJcCm5cNUWpD6fNwG_LTeQ8qExcJTkxZEbtdGY"
     }
   },
   "bart-nerdster0": {
-    "token": "5bc6225feabb618141a46bac8527ed5faa0776a3",
+    "token": "20ece5f7122935f26f791807731acee2cfdd1eab",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "LzBIYqtCKsbAkTjZYjZJxfuTRY50TZ8_x3cJfO0mxT8",
+      "d": "MHRJJ1MPexhY9EQOnK7QrLecTRRig4IKJx_dnuzLCHc",
       "kty": "OKP",
-      "x": "5JCneLN-ioam8mIiJwPdhnRTWCLkDsusemqgmWWmdhw"
+      "x": "vdNKZHNsM_f1EK2PrVNw36k_KqJInPYImjMO-d6ptd8"
     }
   },
   "burns-nerdster0": {
-    "token": "d9aac4166ca73753894324b29a5303083dc2b9e4",
+    "token": "fbcf578344030cfdf4ed03836d0fdd03764a0abf",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "uelBslUjyZ1_M9IXYYFasQP29NeT8bFML3WtodOHK7Q",
+      "d": "EV84uH33ZeWNFgG7Onpd2jJnfLVuzYKVYyIWRTtz8uE",
       "kty": "OKP",
-      "x": "OfDT7VQcggttPIZa4dgu-KwqncSn7fIVvrKtgCAWzGM"
+      "x": "DHypl0Hy2ydywjjq9qB_LiqR1pU4Zhdq-lHOMbe2wvg"
     }
   },
   "homer2-nerdster0": {
-    "token": "6427eb45b54b26c8bb6c13737d1cbc32527bcc80",
+    "token": "d01bcac507f18c80a7844f2218f685582c8a22ce",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "R9iJVLDMSS9SWaZmuGAcED940vUBcVUIkXhJ6KqBUxk",
+      "d": "ctPiQf_qaiavGgxdq6yxBFgg0GouVAg1_dHMjPDHYQc",
       "kty": "OKP",
-      "x": "li6nvPgiRM8Z7KyERsDalDv-2ZNLuNQajXamrnlIQyQ"
+      "x": "pEEm1HMpujO_IcAwsPBe0qARKMPcW8gHnJj_mFd8ks8"
     }
   },
   "milhouse-nerdster0": {
-    "token": "60e20ef6fc80e5febe575afcfcb9585e2291fedb",
+    "token": "d7741b3f7cd011b319f3a5f3b438dba0216583ee",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "1SgVV_ns10OGW_OAH9QtTDDob7aWTPGlXcr_K87qGgI",
+      "d": "rMDefUp6p3-L4IAFqkaMaZgr3ch7mV97Ey2jmbcCMXQ",
       "kty": "OKP",
-      "x": "UrXGg4tDdoKJ19TUR2k1jTtnM_MVoVGApbieGOQ2cAw"
+      "x": "4j6E1TbUWxaE_cjbab7XccB30HYOi4BHSlTijMLG-Dw"
     }
   },
   "carl-nerdster0": {
-    "token": "071269ecb38997c69e297cec0dc31839e113bcd7",
+    "token": "5cb92a66dcba3673a15e29b25f1747e4ceac3158",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "h-TrOBn3J29N5VFRie4prFDXMrtYWOVpC3lzu2eLDlo",
+      "d": "RkNtuDx9cYk8DfIfaWLUdxnYLxcjAs0aWvEi6Xt7k1k",
       "kty": "OKP",
-      "x": "UK9xv9xmW7MOYw4Km2ThNfonSN54Zb-cJYS7t-o14q0"
+      "x": "9SCW3bqrQUeaZ878IWYfs8BKrqgMkBEYj3hCYNyChd4"
     }
   },
   "marge-nerdster0": {
-    "token": "a662dd1f17b7a8addfe90ee0ddea6b047af3fde9",
+    "token": "1b93ebb2194b372b25d96a8da917ccb5c4e20d35",
     "keyPair": {
       "crv": "Ed25519",
-      "d": "3ha-PjYSO5UB3IdY-S7U0Xh8tLb-72UrvZWqzelBnEE",
+      "d": "D6_2p54Ro3BpiWhmsDa_32n_S7FfGIBXDt5No0A8Cpo",
       "kty": "OKP",
-      "x": "WOX4u23gzUTED7yct5FG4yvFf_vnpIEn6o4wXVHfhI4"
+      "x": "OpgJB7rgi8YjvVzJr6w4I42Aj2pECg9-lYR6-bISQRo"
+    }
+  },
+  "sideshow-nerdster0": {
+    "token": "7e0dc35755c49f1d15815bb8eb7a6c78ca89bc11",
+    "keyPair": {
+      "crv": "Ed25519",
+      "d": "mTYuRx5rY1VhOg7IFERKORHvmJGL3UqKbcfgICAwHjo",
+      "kty": "OKP",
+      "x": "JDSLrdBgcuGD4XuLu0oHmoSq_odHXIBeFf3rrdh-1cE"
     }
   }
 };
