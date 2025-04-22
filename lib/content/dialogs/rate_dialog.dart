@@ -202,8 +202,8 @@ class RateBodyState extends State<RateBody> {
       erase,
       Icons.cancel,
       Icons.cancel_outlined,
-      tooltipText: '''Clear my reaction''',
-      text: 'Clear my reaction',
+      tooltipText: '''Clear (erase) my reaction''',
+      text: 'Clear',
       disabled: !b(widget.priorStatement),
       callback: eraseCallback,
     );
