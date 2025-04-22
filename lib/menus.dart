@@ -13,7 +13,6 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/read_stream.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
@@ -210,7 +209,6 @@ $link''',
               onPressed: () async {
                 await DumpAllStatements.show(context);
               }),
-          MenuItemButton(onPressed: readStream, child: const Text('readStream')),
         ], child: const Text('DEV')),
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
     ];
