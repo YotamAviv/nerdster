@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -53,7 +53,7 @@ class _OnOffIconState extends State<OnOffIcon> {
         // decoration: BoxDecoration(
         //     border: Border.all(color: const Color.fromARGB(96, 185, 159, 159), width: 4)),
         child: Row(children: [
-          if (kIsWeb && b(widget.text)) Text(style: textStyle, widget.text!),
+          if (!isSmall && b(widget.text)) Text(style: textStyle, widget.text!),
           IconButton(
               onPressed: bb(widget.disabled) ? null : onPressed,
               color: widget.color,

@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
@@ -11,7 +11,7 @@ import 'package:nerdster/singletons.dart';
 
 class Lgtm {
   static Future<bool?> check(Json json, BuildContext context) async {
-    if (!kIsWeb || Prefs.skipLgtm.value) return true;
+    if (isSmall || Prefs.skipLgtm.value) return true;
     return showDialog<bool?>(
         context: context,
         barrierDismissible: false,

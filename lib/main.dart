@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -38,6 +39,11 @@ bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
 String? demo;
+
+// This doesn't work. [ContentTree] sets this with using its [BuildContext], and only once.
+bool isSmall = kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.android);
 
 const domain2statementType = {
   kOneofusDomain: kOneofusType,
@@ -124,7 +130,7 @@ Future<void> defaultSignIn() async {
   }
 
   if (b(params['demo'])) {
-    if(fireChoice == FireChoice.prod) throw "Don't create demo in production.";
+    if (fireChoice == FireChoice.prod) throw "Don't create demo in production.";
     demo = params['demo']!;
     DemoKey oneofusDemoKey;
     DemoKey? delegateDemoKey;
