@@ -149,12 +149,16 @@ $link''',
           MenuItemButton(
               onPressed: () => pasteSignin(context),
               child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
-          MyCheckbox(Prefs.cloudFunctionsFetch, 'cloudFunctionsFetch (goes quicker)'),
-          MyCheckbox(Prefs.batchFetch, 'batchFetch'),
-          MyCheckbox(Prefs.streamBatchFetch, 'streamBatchFetch'),
-          MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
-          MyCheckbox(Prefs.slowFetch, '''slowFetch'''),
-          MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
+
+          SubmenuButton(menuChildren: [
+            MyCheckbox(Prefs.cloudFunctionsFetch, 'cloudFunctionsFetch (goes quicker)'),
+            MyCheckbox(Prefs.batchFetch, 'batchFetch'),
+            MyCheckbox(Prefs.streamBatchFetch, 'streamBatchFetch'),
+            MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
+            MyCheckbox(Prefs.slowFetch, '''slowFetch'''),
+            MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
+          ], child: const Text('cloud fetching')),
+
           MenuItemButton(
               onPressed: () {
                 // Workaround for omit=["I"] when fetching statements. We have to know our own key
@@ -175,7 +179,14 @@ $link''',
                 },
                 child: const Text('all')),
           ], child: const Text('integration tests')),
-          SubmenuButton(menuChildren: demos, child: const Text('demo')),
+          SubmenuButton(menuChildren: [
+            MenuItemButton(
+                onPressed: () async {
+                  await DemoKey.showDemoCredentials(context);
+                },
+                child: const Text('show all demo credentials')),
+            ...demos
+          ], child: const Text('demo')),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
           MenuItemButton(
@@ -200,15 +211,14 @@ $link''',
               },
               child: const Text('dump signed-in credentials')),
           MenuItemButton(
-              onPressed: () async {
-                await DemoKey.showDemoCredentials(context);
-              },
-              child: const Text('show all demo credentials')),
-          MenuItemButton(
               child: const Text('dump all statements'),
               onPressed: () async {
                 await DumpAllStatements.show(context);
               }),
+          MenuItemButton(
+              child: const Text('MediaQuery.of(context).size'),
+              onPressed: () =>
+                  alert(MediaQuery.of(context).size.toString(), '', ['okay'], context)),
         ], child: const Text('DEV')),
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
     ];

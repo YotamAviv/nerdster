@@ -40,7 +40,7 @@ Future<void> alertException(BuildContext context, Object exception, {StackTrace?
   );
 }
 
-Future<String?> alert(String? title, String body, List<String> options, BuildContext context) {
+Future<String?> alert(String? title, String? content, List<String> options, BuildContext context) {
   List<TextButton> buttons = <TextButton>[];
   for (String option in options) {
     buttons.add(TextButton(
@@ -56,7 +56,7 @@ Future<String?> alert(String? title, String body, List<String> options, BuildCon
     builder: (BuildContext context) {
       return AlertDialog(
         title: b(title) ? Text(title!) : null,
-        content: Linky(body),
+        content: b(content) ? Linky(content!) : null,
         actions: buttons,
       );
     },

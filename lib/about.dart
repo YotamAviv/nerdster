@@ -8,7 +8,7 @@ class About extends StatelessWidget {
   static late final About singleton;
 
   final PackageInfo _packageInfo;
-  const About._internal(this._packageInfo, {super.key});
+  const About._internal(this._packageInfo);
 
   static Future<void> show(BuildContext context) async {
     return showDialog(
@@ -45,9 +45,12 @@ class About extends StatelessWidget {
             GestureDetector(
                 onTap: () {
                   taps++;
-                  if (taps >= 7) {
+                  if (taps >= 7 && !Prefs.dev.value) {
                     Prefs.dev.value = true;
-                    print('You are now a developer.');
+                    const String message = 'You are now a developer.';
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(const SnackBar(content: Text(message)));
+                    print(message);
                   }
                 },
                 child: Text('Build number: ${_packageInfo.buildNumber}')),
