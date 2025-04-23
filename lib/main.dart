@@ -40,10 +40,8 @@ bool _fireCheckWrite = false;
 
 String? demo;
 
-// This doesn't work. [ContentTree] sets this with using its [BuildContext], and only once.
-bool isSmall = kIsWeb &&
-    (defaultTargetPlatform == TargetPlatform.iOS ||
-        defaultTargetPlatform == TargetPlatform.android);
+// This doesn't work. [ContentTree] sets this using [BuildContext].
+ValueNotifier<bool> isSmall = ValueNotifier<bool>(true);
 
 const domain2statementType = {
   kOneofusDomain: kOneofusType,
@@ -113,6 +111,11 @@ Future<void> main() async {
 
   // ------------ sign in credentials ------------
   await defaultSignIn();
+
+  isSmall.addListener(() => print('isSmall=${isSmall.value}'));
+  // This doesn't work. [ContentTree] sets this using actual width (using [BuildContext]).
+  isSmall.value = defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.android;
 
   // -------------- run app ---------------
   runApp(const MaterialApp(home: ContentTree()));

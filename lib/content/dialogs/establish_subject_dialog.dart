@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
@@ -26,11 +27,12 @@ import 'package:nerdster/util_ui.dart';
 final FirebaseFunctions? _functions = FireFactory.findFunctions(kNerdsterDomain);
 
 Future<Jsonish?> establishSubjectDialog(BuildContext context) {
+  double width = max(MediaQuery.of(context).size.width / 2, 500);
   return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => Dialog(
-          child: SizedBox(width: (MediaQuery.of(context).size).width / 2, child: SubjectFields())));
+          child: SizedBox(width: width, child: SubjectFields())));
 }
 
 class SubjectFields extends StatefulWidget {

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -19,6 +21,7 @@ import 'package:nerdster/util_ui.dart';
 /// - All controls disabled when censor or clear pressed (other than unpressing erase or censor).
 
 Future<Json?> rateDialog(BuildContext context, Jsonish subject, ContentStatement? priorStatement) {
+  double width = max(MediaQuery.of(context).size.width / 2, 700);
   return showDialog<Json>(
       context: context,
       barrierDismissible: false,
@@ -26,10 +29,7 @@ Future<Json?> rateDialog(BuildContext context, Jsonish subject, ContentStatement
           child: Padding(
               padding: const EdgeInsets.all(15),
               child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 700,
-                    maxHeight: 500,
-                  ),
+                  constraints: BoxConstraints(maxWidth: width, maxHeight: 500),
                   child: RateBody(subject, priorStatement)))));
 }
 
@@ -57,6 +57,12 @@ class RateBodyState extends State<RateBody> {
     super.initState();
     setToPrior();
     commentController.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    commentController.removeListener(listener);
+    super.dispose();
   }
 
   void listener() {
@@ -120,9 +126,8 @@ class RateBodyState extends State<RateBody> {
       }
 
       // When rating a statement, use the token instead of the entire statement.
-      var subject = (widget.subject.containsKey('statement'))
-          ? widget.subject.token
-          : widget.subject.json;
+      var subject =
+          (widget.subject.containsKey('statement')) ? widget.subject.token : widget.subject.json;
 
       json = ContentStatement.make(
           signInState.signedInDelegatePublicKeyJson!, ContentVerb.rate, subject,

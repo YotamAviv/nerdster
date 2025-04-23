@@ -3,6 +3,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/follow/follow_net.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -36,6 +37,7 @@ class _NetBarState extends State<NetBar> {
   void initState() {
     NetTreeView.bOneofus.addListener(listen);
     NetBar.bNetView.addListener(listen);
+    isSmall.addListener(listen);
     super.initState();
   }
 
@@ -43,6 +45,7 @@ class _NetBarState extends State<NetBar> {
   void dispose() {
     NetTreeView.bOneofus.removeListener(listen);
     NetBar.bNetView.removeListener(listen);
+    isSmall.removeListener(listen);
     super.dispose();
   }
 
@@ -71,7 +74,7 @@ class _NetBarState extends State<NetBar> {
           const BarRefresh(),
           const _CenterDropdown(),
           const _FollowDropdown(),
-          _StructureDropdown(NetBar.bNetView.value),
+          if (!isSmall.value) _StructureDropdown(NetBar.bNetView.value),
           if (!NetBar.bNetView.value)
             IconButton(
                 icon: const Icon(Icons.arrow_forward),

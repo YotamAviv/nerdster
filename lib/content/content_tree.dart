@@ -72,7 +72,7 @@ class _ContentTreeState extends State<ContentTree> {
     super.dispose();
   }
 
-  Future<void> kludgeDelayedInit(BuildContext context) async {
+  void kludgeDelayedInit(BuildContext context) {
     ContentTree._firstTime = false;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // progress will call Navigator.pop(context) asynchronously, and so can't showTree first.
@@ -95,11 +95,14 @@ class _ContentTreeState extends State<ContentTree> {
     NerdsterMenu nerdsterMenu = NerdsterMenu();
     NotificationsMenu();
 
-    if (ContentTree._firstTime) {
-      // I couldn't figure out to detect phone or big computer.
-      // This could be detected on every build, not sure why I didn't, not really consequential.
-      isSmall = MediaQuery.of(context).size.width < 600;
-      kludgeDelayedInit(context);
+    if (ContentTree._firstTime) kludgeDelayedInit(context);
+    // I couldn't figure out to detect phone or big computer.
+    bool newSmall = MediaQuery.of(context).size.width < 600;
+    if (newSmall != isSmall.value) {
+      // don't trigger a build during a build
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        isSmall.value = newSmall;
+      });
     }
 
     return Scaffold(
