@@ -11,7 +11,7 @@ import 'package:nerdster/singletons.dart';
 
 class Lgtm {
   static Future<bool?> check(Json json, BuildContext context) async {
-    if (isSmall || Prefs.skipLgtm.value) return true;
+    if (isSmall.value || Prefs.skipLgtm.value) return true;
     return showDialog<bool?>(
         context: context,
         barrierDismissible: false,

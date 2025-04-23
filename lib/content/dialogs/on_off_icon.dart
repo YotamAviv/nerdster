@@ -28,6 +28,14 @@ class _OnOffIconState extends State<OnOffIcon> {
   void initState() {
     super.initState();
     widget.valueNotifier.addListener(listener);
+    isSmall.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    widget.valueNotifier.removeListener(listener);
+    isSmall.removeListener(listener);
+    super.dispose();
   }
 
   void listener() {
@@ -38,9 +46,7 @@ class _OnOffIconState extends State<OnOffIcon> {
     setState(() {
       widget.valueNotifier.value = !widget.valueNotifier.value;
     });
-    if (b(widget.callback)) {
-      (widget.callback!)();
-    }
+    widget.callback?.call();
   }
 
   @override
@@ -49,11 +55,8 @@ class _OnOffIconState extends State<OnOffIcon> {
     TextStyle? textStyle = bb(widget.disabled) ? hintStyle : null;
     return Tooltip(
         message: widget.tooltipText,
-        // child: Container(
-        // decoration: BoxDecoration(
-        //     border: Border.all(color: const Color.fromARGB(96, 185, 159, 159), width: 4)),
         child: Row(children: [
-          if (!isSmall && b(widget.text)) Text(style: textStyle, widget.text!),
+          if (!isSmall.value && b(widget.text)) Text(style: textStyle, widget.text!),
           IconButton(
               onPressed: bb(widget.disabled) ? null : onPressed,
               color: widget.color,
