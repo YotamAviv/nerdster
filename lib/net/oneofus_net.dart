@@ -117,33 +117,34 @@ class OneofusNet with Comp, ChangeNotifier {
   Future<void> process() async {
     throwIfSupportersNotReady();
     measure.start();
+    try {
+      _network.clear();
+      _token2keyCounter.clear();
+      notifications.clear();
+      // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
+      Fetcher.resetRevokeAt();
+      NetNode.clear();
+      FetcherNode.clear();
+      if (!b(signInState.center)) return;
 
-    _network.clear();
-    _token2keyCounter.clear();
-    notifications.clear();
-    // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
-    Fetcher.resetRevokeAt();
-    NetNode.clear();
-    FetcherNode.clear();
-    if (!b(signInState.center)) return;
+      GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
+      Future<void> batchFetch(Iterable<Node> nodes, int distance) async {
+        Map<String, String?> prefetch =
+            Map.fromEntries(nodes.map((n) => MapEntry(n.token, n.revokeAt)));
+        await Fetcher.batchFetch(prefetch, kOneofusDomain, mName: 'oneofusNet $distance');
+      }
 
-    GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
-    Future<void> batchFetch(Iterable<Node> nodes, int distance) async {
-      Map<String, String?> prefetch =
-          Map.fromEntries(nodes.map((n) => MapEntry(n.token, n.revokeAt)));
-      await Fetcher.batchFetch(prefetch, kOneofusDomain, mName: 'oneofusNet $distance');
+      _network = await bfsTrust.process(FetcherNode(signInState.center!),
+          batchFetch: batchFetch, notifier: notifications, progressR: _oneofusNetProgressR);
+      _token2keyCounter.clear();
+
+      int keyCounter = 0;
+      for (String token in network.keys) {
+        _token2keyCounter[token] = keyCounter++;
+      }
+    } finally {
+      measure.stop();
     }
-
-    _network = await bfsTrust.process(FetcherNode(signInState.center!),
-        batchFetch: batchFetch, notifier: notifications, progressR: _oneofusNetProgressR);
-    _token2keyCounter.clear();
-
-    int keyCounter = 0;
-    for (String token in network.keys) {
-      _token2keyCounter[token] = keyCounter++;
-    }
-
-    measure.stop();
   }
 }
 

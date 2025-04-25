@@ -144,8 +144,8 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
       items.add(item);
     }
 
-    print('NotificationsMenue.. items.. ${items.length}');
-    print('notifications.corrupted.length.. ${notifications.corrupted.length}');
+    // print('NotificationsMenue.. items.. ${items.length}');
+    // print('notifications.corrupted.length.. ${notifications.corrupted.length}');
     return SubmenuButton(
         menuChildren: items,
         child: const Row(

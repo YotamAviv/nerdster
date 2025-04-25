@@ -44,63 +44,64 @@ class OneofusEquiv with Comp, ChangeNotifier {
   Future<void> process() async {
     throwIfSupportersNotReady();
     measure.start();
+    try {
+      _oneofus2delegates.clear();
+      _delegate2oneofus.clear();
+      _delegate2revokeAt.clear();
+      if (!b(signInState.center)) return;
 
-    _oneofus2delegates.clear();
-    _delegate2oneofus.clear();
-    _delegate2revokeAt.clear();
-    if (!b(signInState.center)) return;
-
-    _equivalence = WotEquivalence(Set.of(oneofusNet.network.keys));
-    NerdEquateParser equateParser = NerdEquateParser();
-    for (String token in oneofusNet.network.keys) {
-      for (TrustStatement statement
-          in (Fetcher(token, kOneofusDomain).statements).cast<TrustStatement>()) {
-        if (notifications.rejected.containsKey(statement.token)) continue;
-        EquateStatement? es = equateParser.parse(statement);
-        if (es != null) {
-          String? rejection = _equivalence!.process(es);
-          if (b(rejection)) {
-            notifications.reject(statement.token, rejection!);
+      _equivalence = WotEquivalence(Set.of(oneofusNet.network.keys));
+      NerdEquateParser equateParser = NerdEquateParser();
+      for (String token in oneofusNet.network.keys) {
+        for (TrustStatement statement
+            in (Fetcher(token, kOneofusDomain).statements).cast<TrustStatement>()) {
+          if (notifications.rejected.containsKey(statement.token)) continue;
+          EquateStatement? es = equateParser.parse(statement);
+          if (es != null) {
+            String? rejection = _equivalence!.process(es);
+            if (b(rejection)) {
+              notifications.reject(statement.token, rejection!);
+            }
           }
         }
       }
-    }
-    _equivalence!.make();
-    assert(_equivalence!.getCanonical(signInState.center!) == signInState.center);
+      _equivalence!.make();
+      assert(_equivalence!.getCanonical(signInState.center!) == signInState.center);
 
-    for (TrustStatement trustStatement
-        in (Fetcher(signInState.center!, kOneofusDomain).statements).cast<TrustStatement>()) {
-      if (trustStatement.verb == TrustVerb.trust) {
-        String subjectToken = trustStatement.subjectToken;
-        if (getCanonical(subjectToken) != subjectToken) {
-          assert(!notifications.rejected.containsKey(subjectToken), 'might need multiple');
-          notifications.warn(trustStatement.token, 'You trust a non-canonical key directly.');
+      for (TrustStatement trustStatement
+          in (Fetcher(signInState.center!, kOneofusDomain).statements).cast<TrustStatement>()) {
+        if (trustStatement.verb == TrustVerb.trust) {
+          String subjectToken = trustStatement.subjectToken;
+          if (getCanonical(subjectToken) != subjectToken) {
+            assert(!notifications.rejected.containsKey(subjectToken), 'might need multiple');
+            notifications.warn(trustStatement.token, 'You trust a non-canonical key directly.');
+          }
         }
       }
-    }
 
-    for (final String oneofusKey in oneofusNet.network.keys) {
-      Fetcher oneofusFetcher = Fetcher(oneofusKey, kOneofusDomain);
-      assert(oneofusFetcher.isCached);
-      final String oneofusCanonicalKey = oneofusEquiv.getCanonical(oneofusKey);
-      _oneofus2delegates.putIfAbsent(oneofusCanonicalKey, () => <String>{});
-      for (TrustStatement s in oneofusFetcher.statements
-          .cast<TrustStatement>()
-          .where((s) => s.verb == TrustVerb.delegate)) {
-        String delegateToken = s.subjectToken;
-        // Keep track of who's delegate this is for naming delegates (as in, 'homer-nerdster.org')
-        // OLD: Equivalents (or even unrelated) may claim the same delegate
-        // NEW: A delegate can be only one persons, even if equivalent
-        if (!_delegate2oneofus.containsKey(delegateToken)) {
-          _delegate2revokeAt[delegateToken] = s.revokeAt;
-          _delegate2oneofus[delegateToken] = oneofusCanonicalKey;
-          _oneofus2delegates[oneofusCanonicalKey]!.add(delegateToken);
-        } else {
-          notifications.reject(s.token, 'Delegate already claimed.');
+      for (final String oneofusKey in oneofusNet.network.keys) {
+        Fetcher oneofusFetcher = Fetcher(oneofusKey, kOneofusDomain);
+        assert(oneofusFetcher.isCached);
+        final String oneofusCanonicalKey = oneofusEquiv.getCanonical(oneofusKey);
+        _oneofus2delegates.putIfAbsent(oneofusCanonicalKey, () => <String>{});
+        for (TrustStatement s in oneofusFetcher.statements
+            .cast<TrustStatement>()
+            .where((s) => s.verb == TrustVerb.delegate)) {
+          String delegateToken = s.subjectToken;
+          // Keep track of who's delegate this is for naming delegates (as in, 'homer-nerdster.org')
+          // OLD: Equivalents (or even unrelated) may claim the same delegate
+          // NEW: A delegate can be only one persons, even if equivalent
+          if (!_delegate2oneofus.containsKey(delegateToken)) {
+            _delegate2revokeAt[delegateToken] = s.revokeAt;
+            _delegate2oneofus[delegateToken] = oneofusCanonicalKey;
+            _oneofus2delegates[oneofusCanonicalKey]!.add(delegateToken);
+          } else {
+            notifications.reject(s.token, 'Delegate already claimed.');
+          }
         }
       }
+    } finally {
+      measure.stop();
     }
-
-    measure.stop();
   }
 }
