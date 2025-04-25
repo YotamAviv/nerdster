@@ -56,7 +56,7 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   // most simpsons state trust in each other. homer replaces his key
   await homer.doTrust(TrustVerb.trust, marge, moniker: 'Wife');
   Statement s2 = await homer.doTrust(TrustVerb.trust, bart, moniker: 'Boy');
-  await marge.doTrust(TrustVerb.trust, maggie, moniker: 'Baby');
+  await marge.doTrust(TrustVerb.trust, maggie, moniker: 'Maggie');
   await marge.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
   await marge.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await homer2.doTrust(TrustVerb.replace, homer,
@@ -66,7 +66,7 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   Statement s3 = await bart.doTrust(TrustVerb.trust, homer, moniker: 'Homer');
   await bart.doTrust(TrustVerb.trust, homer2, moniker: 'Homer'); // bart trusts homer2
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Sis');
-  await homer2.doTrust(TrustVerb.trust, lisa, moniker: 'Daughter');
+  await homer2.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await lisa.doTrust(TrustVerb.trust, homer, moniker: 'Dad');
   await lisa.doTrust(TrustVerb.trust, marge, moniker: 'Mom');
   await lisa.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
