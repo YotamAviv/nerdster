@@ -41,6 +41,7 @@ bool _fireCheckWrite = false;
 String? demo;
 
 // This doesn't work. [ContentTree] sets this using [BuildContext].
+// On my Pixel 6a, size is (374.2, 713.1).
 ValueNotifier<bool> isSmall = ValueNotifier<bool>(true);
 
 const domain2statementType = {
