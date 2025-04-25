@@ -133,7 +133,8 @@ class _NetTreeViewState extends State<NetTreeView> {
         ],
       ),
       NetBar(),
-      Expanded(child: SelectionArea(child: NetTreeTree(treeController: treeController)))
+      if (b(signInState.center))
+        Expanded(child: SelectionArea(child: NetTreeTree(treeController: treeController)))
     ])));
   }
 }

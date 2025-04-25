@@ -23,7 +23,7 @@ Future<dynamic> dumpDump(BuildContext? context) async {
   await Comp.waitOnComps([keyLabels, contentBase]);
 
   dynamic out = {
-    'center': Jsonish.find(signInState.center)!.json,
+    'center': Jsonish.find(signInState.center!)!.json,
     'domain2token2statements': await dumpStatements(),
     // Above is required for importing.
     // Below is for strictly for testing / viewing.

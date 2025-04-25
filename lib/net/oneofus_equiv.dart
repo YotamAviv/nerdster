@@ -45,6 +45,11 @@ class OneofusEquiv with Comp, ChangeNotifier {
     throwIfSupportersNotReady();
     measure.start();
 
+    _oneofus2delegates.clear();
+    _delegate2oneofus.clear();
+    _delegate2revokeAt.clear();
+    if (!b(signInState.center)) return;
+
     _equivalence = WotEquivalence(Set.of(oneofusNet.network.keys));
     NerdEquateParser equateParser = NerdEquateParser();
     for (String token in oneofusNet.network.keys) {
@@ -61,10 +66,10 @@ class OneofusEquiv with Comp, ChangeNotifier {
       }
     }
     _equivalence!.make();
-    assert(_equivalence!.getCanonical(signInState.center) == signInState.center);
+    assert(_equivalence!.getCanonical(signInState.center!) == signInState.center);
 
     for (TrustStatement trustStatement
-        in (Fetcher(signInState.center, kOneofusDomain).statements).cast<TrustStatement>()) {
+        in (Fetcher(signInState.center!, kOneofusDomain).statements).cast<TrustStatement>()) {
       if (trustStatement.verb == TrustVerb.trust) {
         String subjectToken = trustStatement.subjectToken;
         if (getCanonical(subjectToken) != subjectToken) {
@@ -74,9 +79,6 @@ class OneofusEquiv with Comp, ChangeNotifier {
       }
     }
 
-    _oneofus2delegates.clear();
-    _delegate2oneofus.clear();
-    _delegate2revokeAt.clear();
     for (final String oneofusKey in oneofusNet.network.keys) {
       Fetcher oneofusFetcher = Fetcher(oneofusKey, kOneofusDomain);
       assert(oneofusFetcher.isCached);

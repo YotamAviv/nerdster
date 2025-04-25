@@ -19,7 +19,7 @@ abstract class NetTreeModel {
 
   List<String> labelKeyPaths() {
     assert(b(token));
-    String rootLabel = keyLabels.labelKey(signInState.center)!;
+    String rootLabel = keyLabels.labelKey(signInState.center!)!;
     // Special case for me. no paths.
     if (token == signInState.center) return [rootLabel];
 
@@ -73,7 +73,7 @@ abstract class NetTreeModel {
         items.add(formatUiDatetime(revokeAt!));
       }
       items.add(labelPath());
-    } else {
+    } else if(b(statement)) {
       items.add('S');
       items.add(statement!.token);
       items.add(displayStatementAtTime);
@@ -88,6 +88,8 @@ abstract class NetTreeModel {
       if (trustsNonCanonical) {
         items.add(' nonCanonicalKey');
       }
+    } else {
+      // not signed in;
     }
     return items.join(':');
   }
@@ -97,16 +99,18 @@ abstract class NetTreeModel {
   /// Formerly also for dumping and tests
   String hashString() {
     List<String> items = <String>[];
-    if (token != null) {
+    if (b(token)) {
       items.add('N');
       items.add('${keyLabels.labelKey(token!)}-$canonical');
       if (b(revokeAt)) {
         items.add(formatIso(revokeAt!));
       }
       items.add(labelPath());
-    } else {
+    } else if(b(statement)) {
       items.add('S');
       items.add(statement!.token);
+    } else {
+      // not signed in;
     }
     return items.join(':');
   }

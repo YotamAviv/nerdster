@@ -118,18 +118,23 @@ class OneofusNet with Comp, ChangeNotifier {
     throwIfSupportersNotReady();
     measure.start();
 
+    _network.clear();
+    _token2keyCounter.clear();
     notifications.clear();
     // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
     Fetcher.resetRevokeAt();
     NetNode.clear();
     FetcherNode.clear();
+    if (!b(signInState.center)) return;
+
     GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
     Future<void> batchFetch(Iterable<Node> nodes, int distance) async {
       Map<String, String?> prefetch =
           Map.fromEntries(nodes.map((n) => MapEntry(n.token, n.revokeAt)));
       await Fetcher.batchFetch(prefetch, kOneofusDomain, mName: 'oneofusNet $distance');
     }
-    _network = await bfsTrust.process(FetcherNode(signInState.center),
+
+    _network = await bfsTrust.process(FetcherNode(signInState.center!),
         batchFetch: batchFetch, notifier: notifications, progressR: _oneofusNetProgressR);
     _token2keyCounter.clear();
 

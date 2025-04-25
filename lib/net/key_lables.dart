@@ -42,15 +42,16 @@ class OneofusLabels with Comp, ChangeNotifier {
   Future<void> process() async {
     throwIfSupportersNotReady();
     _token2name.clear();
+    if (!b(signInState.center)) return;
 
     _labelKeys();
 
-    assert(b(labelKey(signInState.center)));
+    assert(b(labelKey(signInState.center!)));
   }
 
   void _labelKeys() {
     _labelMe();
-    String meLabel = labelKey(signInState.center)!;
+    String meLabel = labelKey(signInState.center!)!;
     for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
       String token = e.key;
       Path path = e.value.paths.first;
@@ -94,9 +95,9 @@ class OneofusLabels with Comp, ChangeNotifier {
               !notifications.rejected.containsKey(ts.token) &&
               ts.verb == TrustVerb.trust &&
               ts.subjectToken == signInState.center);
-      if (b(ts)) return _labelKey(signInState.center, ts!.moniker!);
+      if (b(ts)) return _labelKey(signInState.center!, ts!.moniker!);
     }
-    return _labelKey(signInState.center, kMe);
+    return _labelKey(signInState.center!, kMe);
   }
 }
 

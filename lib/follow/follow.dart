@@ -23,7 +23,7 @@ Future<Statement?> follow(String token, BuildContext context) async {
   if (await checkSignedIn(context) != true) return null;
 
   ContentStatement? priorStatement;
-  for (ContentStatement s in followNet.getStatements(signInState.centerReset)) {
+  for (ContentStatement s in followNet.getStatements(signInState.centerReset!)) {
     if (s.subjectToken == token) {
       priorStatement = s;
     }

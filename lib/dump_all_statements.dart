@@ -3,11 +3,11 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 class DumpAllStatements extends StatelessWidget {
-  final TextEditingController controller = TextEditingController()..text = SignInState().center;
+  final TextEditingController controller = TextEditingController()..text = signInState.center!;
   final TextEditingController dropController = TextEditingController()..text = kOneofusDomain;
 
   static Future<void> show(BuildContext context) {
