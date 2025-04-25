@@ -79,138 +79,139 @@ class ContentBase with Comp, ChangeNotifier {
   Future<void> process() async {
     throwIfSupportersNotReady();
     measure.start();
+    try {
+      _equivalence.clear();
+      _related.clear();
+      _censored.clear();
+      _subject2statements.clear();
+      _node2children.clear();
+      _roots = null;
 
-    _equivalence.clear();
-    _related.clear();
-    _censored.clear();
-    _subject2statements.clear();
-    _node2children.clear();
-    _roots = null;
+      List<ContentStatement> statements = <ContentStatement>[];
+      for (String oneofus in followNet.oneofus2delegates.keys) {
+        statements.addAll(followNet
+            .getStatements(oneofus)
+            .where((s) => (s.verb != ContentVerb.follow && s.verb != ContentVerb.clear)));
+      }
 
-    List<ContentStatement> statements = <ContentStatement>[];
-    for (String oneofus in followNet.oneofus2delegates.keys) {
-      statements.addAll(followNet
-          .getStatements(oneofus)
-          .where((s) => (s.verb != ContentVerb.follow && s.verb != ContentVerb.clear)));
-    }
+      /// Censoring: who gets to do what? (Note: this used to be called delete)
+      /// - (I can always censor my own statements. GONE: I can clear my own statements.)
+      /// - I can always censor statements or subjects for myself.
+      /// - "censor" disabled: no one gets to censor subjects or statements for you
+      /// - "censor" enabled: your network censor subjects or statements for you
+      ///
+      /// What about statements about statements ... about censored subjects?
+      /// - (GONE: I think that these just have nowhere to be. Censor everything about it including
+      ///   all statements about it as well statements about those statements, etc..)
+      ///
+      /// What about the censor statement itself?
+      /// - If a subject (or a statement) is successfully censored, then all statements about it (including its censorship)
+      ///   should be hidden (and there'd be nowhere to display it in the tree anyway).
+      /// In case I censor a subject and later change my mind... Well, I'd need to find that statement first (re-center, uncheck 'censor')
+      /// - If a subject (or statement) is un-successfully censored, then the statement of its censorship should be shown.
+      ///
+      /// What if I try to censor a subject (for others) but am not allowed (by their censor setting), do I still get
+      /// to censor everything I said about it?
+      /// (Gone: Yes. (discussion omitted. Question below is related.))
+      /// No: I can clear my own statements.
+      ///
+      /// What about statements left hanging with no subject to be about?
+      /// I say X. You say Y about my X. I censor my X. Your Y has nowhere to be. Yep.
+      ///
+      /// Hmm..: Censoring censorship (Deleting a deletion..)
+      /// deleter1 issues deletion1 to delete subject
+      /// deleter2 issues deletion2 to delete deletion1
+      /// Cases:
+      /// I am deleter2
+      ///   censorship enabled :   deletion2 respected, not visible; deletion1 ignored, not visible (because it's deleted)
+      ///   censorship disabled:   deletion2 respected, not visible; deletion1 ignored, not visible (because it's deleted)
+      /// I am deleter1
+      ///   censorship enabled: THE CRUX (of the biscuit)!
+      ///     I just deleted subject1; I don't want to see it! I have censorship enabled, but I don't want my censorship censored.
+      ///                          deletion1 respected, not visible; deletion2 ignored, not visible (because deletion1 is not visible).
+      ///   censorship disabled:   deletion1 respected, not visible; deletion2 ignored, not visible (because deletion1 is not visible)
+      /// I am someone unrelated:
+      ///   deleter1 trumps deleter2:
+      ///     censorship enabled:  deletion1 respected, not visible; deletion2 ignored, not visible (because deletion1 is not visible).
+      ///     censorship disabled: deletion2 ignored, visible; deletion2 ignored, visible
+      ///   deleter2 trumps deleter1:
+      ///     censorship enabled:  deletion2 respected, not visible; deletion1 ignored, not visible (because it's deleted)
+      ///     censorship disabled: deletion1 ignored, visible; deletion2 ignored, visible
+      /// It seems that a simple loop through to delete deleted deletions address everything.
+      ///
+      /// Hmm..: Deleting a deletion of a deletion.. or worse..
+      /// Players
+      ///   deleter1 issues deletion1 to delete subject1
+      ///   deleter2 issues deletion2 to delete deletion1
+      ///   deleter3 issues deletion3 to delete deletion2
+      /// I don't see a problem.
+      ///
+      /// So:
+      /// Check each statement: If it, its subject, that thing's subject, etc... has been censored, then:
+      /// - check our censor settings and the censorer
+      ///   If censorship is allowed then:
+      ///     don't include it (censor it)
+      ///   If not allowed then:
+      ///     do include it as usual (and also display the censorship statement about it)
+      /// - Hide things whose only children are censor/delete statements.
 
-    /// Censoring: who gets to do what? (Note: this used to be called delete)
-    /// - (I can always censor my own statements. GONE: I can clear my own statements.)
-    /// - I can always censor statements or subjects for myself.
-    /// - "censor" disabled: no one gets to censor subjects or statements for you
-    /// - "censor" enabled: your network censor subjects or statements for you
-    ///
-    /// What about statements about statements ... about censored subjects?
-    /// - (GONE: I think that these just have nowhere to be. Censor everything about it including
-    ///   all statements about it as well statements about those statements, etc..)
-    ///
-    /// What about the censor statement itself?
-    /// - If a subject (or a statement) is successfully censored, then all statements about it (including its censorship)
-    ///   should be hidden (and there'd be nowhere to display it in the tree anyway).
-    /// In case I censor a subject and later change my mind... Well, I'd need to find that statement first (re-center, uncheck 'censor')
-    /// - If a subject (or statement) is un-successfully censored, then the statement of its censorship should be shown.
-    ///
-    /// What if I try to censor a subject (for others) but am not allowed (by their censor setting), do I still get
-    /// to censor everything I said about it?
-    /// (Gone: Yes. (discussion omitted. Question below is related.))
-    /// No: I can clear my own statements.
-    ///
-    /// What about statements left hanging with no subject to be about?
-    /// I say X. You say Y about my X. I censor my X. Your Y has nowhere to be. Yep.
-    ///
-    /// Hmm..: Censoring censorship (Deleting a deletion..)
-    /// deleter1 issues deletion1 to delete subject
-    /// deleter2 issues deletion2 to delete deletion1
-    /// Cases:
-    /// I am deleter2
-    ///   censorship enabled :   deletion2 respected, not visible; deletion1 ignored, not visible (because it's deleted)
-    ///   censorship disabled:   deletion2 respected, not visible; deletion1 ignored, not visible (because it's deleted)
-    /// I am deleter1
-    ///   censorship enabled: THE CRUX (of the biscuit)!
-    ///     I just deleted subject1; I don't want to see it! I have censorship enabled, but I don't want my censorship censored.
-    ///                          deletion1 respected, not visible; deletion2 ignored, not visible (because deletion1 is not visible).
-    ///   censorship disabled:   deletion1 respected, not visible; deletion2 ignored, not visible (because deletion1 is not visible)
-    /// I am someone unrelated:
-    ///   deleter1 trumps deleter2:
-    ///     censorship enabled:  deletion1 respected, not visible; deletion2 ignored, not visible (because deletion1 is not visible).
-    ///     censorship disabled: deletion2 ignored, visible; deletion2 ignored, visible
-    ///   deleter2 trumps deleter1:
-    ///     censorship enabled:  deletion2 respected, not visible; deletion1 ignored, not visible (because it's deleted)
-    ///     censorship disabled: deletion1 ignored, visible; deletion2 ignored, visible
-    /// It seems that a simple loop through to delete deleted deletions address everything.
-    ///
-    /// Hmm..: Deleting a deletion of a deletion.. or worse..
-    /// Players
-    ///   deleter1 issues deletion1 to delete subject1
-    ///   deleter2 issues deletion2 to delete deletion1
-    ///   deleter3 issues deletion3 to delete deletion2
-    /// I don't see a problem.
-    ///
-    /// So:
-    /// Check each statement: If it, its subject, that thing's subject, etc... has been censored, then:
-    /// - check our censor settings and the censorer
-    ///   If censorship is allowed then:
-    ///     don't include it (censor it)
-    ///   If not allowed then:
-    ///     do include it as usual (and also display the censorship statement about it)
-    /// - Hide things whose only children are censor/delete statements.
+      if (censor) {
+        /// delete deletions correctly (more trusted can delete less trusted)
+        for (final ContentStatement statement
+            in statements.where((s) => s.verb == ContentVerb.censor)) {
+          if (_censored.contains(statement.token)) {
+            continue;
+          }
+          _censored.add(statement.subjectToken);
+        }
 
-    if (censor) {
-      /// delete deletions correctly (more trusted can delete less trusted)
-      for (final ContentStatement statement
-          in statements.where((s) => s.verb == ContentVerb.censor)) {
-        if (_censored.contains(statement.token)) {
+        // Filter censored statements and statements about censored subjects
+        statements.removeWhere((s) => _censored.contains(s.token));
+        statements.removeWhere((s) => _censored.contains(s.subjectToken));
+        statements.removeWhere((s) => b(s.other) && _censored.contains(getToken(s.other)));
+      }
+
+      // equivalent..
+      for (ContentStatement statement in statements) {
+        _equivalence.process(statement);
+      }
+      _equivalence.make();
+
+      // related..
+      for (ContentStatement statement in statements) {
+        _related.process(statement);
+      }
+      _related.make();
+
+      // distinct.. (1 per author per subject)
+      List<ContentStatement> distinctStatements =
+          distinct(statements, transformer: (t) => followNet.delegate2oneofus[t]!)
+              .cast<ContentStatement>();
+      statements = distinctStatements;
+
+      // _subject2statements
+      for (ContentStatement statement in statements) {
+        // CONSIDER: filters only for 'rate', not equate, relate, censor
+        if (_filterByTType(statement) || _filterByTimeframe(statement)) {
           continue;
         }
-        _censored.add(statement.subjectToken);
-      }
-
-      // Filter censored statements and statements about censored subjects
-      statements.removeWhere((s) => _censored.contains(s.token));
-      statements.removeWhere((s) => _censored.contains(s.subjectToken));
-      statements.removeWhere((s) => b(s.other) && _censored.contains(getToken(s.other)));
-    }
-
-    // equivalent..
-    for (ContentStatement statement in statements) {
-      _equivalence.process(statement);
-    }
-    _equivalence.make();
-
-    // related..
-    for (ContentStatement statement in statements) {
-      _related.process(statement);
-    }
-    _related.make();
-
-    // distinct.. (1 per author per subject)
-    List<ContentStatement> distinctStatements =
-        distinct(statements, transformer: (t) => followNet.delegate2oneofus[t]!)
-            .cast<ContentStatement>();
-    statements = distinctStatements;
-
-    // _subject2statements
-    for (ContentStatement statement in statements) {
-      // CONSIDER: filters only for 'rate', not equate, relate, censor
-      if (_filterByTType(statement) || _filterByTimeframe(statement)) {
-        continue;
-      }
-      Set<String> subjectTokens = _getSubjectTokens(statement);
-      for (String subjectToken in subjectTokens) {
-        _subject2statements.putIfAbsent(subjectToken, () => <ContentStatement>[]).add(statement);
-        // Also use canonical subject
-        String canonicalSubjectToken = _equivalence.getCanonical(subjectToken);
-        if (!subjectTokens.contains(canonicalSubjectToken)) {
-          _subject2statements
-              .putIfAbsent(canonicalSubjectToken, () => <ContentStatement>[])
-              .add(statement);
+        Set<String> subjectTokens = _getSubjectTokens(statement);
+        for (String subjectToken in subjectTokens) {
+          _subject2statements.putIfAbsent(subjectToken, () => <ContentStatement>[]).add(statement);
+          // Also use canonical subject
+          String canonicalSubjectToken = _equivalence.getCanonical(subjectToken);
+          if (!subjectTokens.contains(canonicalSubjectToken)) {
+            _subject2statements
+                .putIfAbsent(canonicalSubjectToken, () => <ContentStatement>[])
+                .add(statement);
+          }
         }
       }
+
+      ReactIconStateClearHelper.clear();
+    } finally {
+      measure.stop();
     }
-
-    ReactIconStateClearHelper.clear();
-
-    measure.stop();
   }
 
   /// Censor if any of these hold:

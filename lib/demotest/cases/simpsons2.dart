@@ -166,6 +166,9 @@ Future<(DemoKey, DemoKey?)> simpsons2() async {
   await burnsN.doFollow(homer2, {kNerdsterContext: -1});
 
   // Access with: &followNetDegrees=2&follow=<one-of-us>
+  oneofusNet.listen(); // KLUDGE: Workaround for the bug below.
+  // BUG: The code below will trigger processing, and in case OneofusNet though it was
+  // ready because !b(signInState.center), then FollowNet crashes.
   Prefs.followNetDegrees.value = 2;
   followNet.fcontext = '<one-of-us>';
 
