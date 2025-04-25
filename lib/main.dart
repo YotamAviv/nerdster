@@ -169,33 +169,11 @@ Future<void> defaultSignIn() async {
   }
 }
 
-// Parts of the code use Jsonish.find(signInState.center)! to find the center public key, and so
-// we call Jsonish(lonerNoDelegatePK) here in anticipation of that.
-const Json dummyPublicKey = {
-  "crv": "Ed25519",
-  "kty": "OKP",
-  "x": "f7ersaoKfgPjXh182kc2tKNxAMqT1h-I4vT2rBssR7g"
-};
 const Json yotam = {
   "crv": "Ed25519",
   "kty": "OKP",
   "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
 };
 dynamic hardCodedSignin = {
-  FireChoice.prod: {"one-of-us.net": dummyPublicKey},
-
   FireChoice.emulator: {"one-of-us.net": yotam},
-  // FireChoice.emulator: {
-  //   "one-of-us.net": {
-  //     "crv": "Ed25519",
-  //     "kty": "OKP",
-  //     "x": "_fZscmLxZnCz-ytLuB6ERlBoyKe-cy7lzhM06aGPMtA"
-  //   },
-  //   "nerdster.org": {
-  //     "crv": "Ed25519",
-  //     "d": "Ll4J14cClXr2yi_XaCi-gDBY8IkbSsh194RK6cfPmdQ",
-  //     "kty": "OKP",
-  //     "x": "cYyDH94JhVrUGItWL6D9Zkpmq1MifBsHCBJrEhgCyhE"
-  //   }
-  // }
 };

@@ -101,6 +101,7 @@ class FollowNet with Comp, ChangeNotifier {
     _centerContexts.clear();
     FollowNode.clear();
     _delegate2fetcher.clear();
+    if (!b(signInState.center)) return;
 
     Iterable<String> network;
     final int degrees = Prefs.followNetDegrees.value;
@@ -118,7 +119,7 @@ class FollowNet with Comp, ChangeNotifier {
         await Fetcher.batchFetch(prefetch, kNerdsterDomain, mName: 'followNet $distance');
       }
       LinkedHashMap<String, Node> canonNetwork = await bfsTrust.process(
-          FollowNode(signInState.center),
+          FollowNode(signInState.center!),
           batchFetch: batchFetch,
           progressR: _followNetProgressR);
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.

@@ -1,6 +1,5 @@
 import 'package:collection/collection.dart';
 import 'package:nerdster/comp.dart';
-import 'package:nerdster/follow/follow_tree_node.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/oneofus/distincter.dart';
@@ -11,7 +10,7 @@ import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 
-/// One of {canonical EG, equivalent key, a trust statement}
+/// One of {canonical EG, equivalent key, a trust statement} (or neither when !b(signInState.center))
 class OneofusTreeNode extends NetTreeModel {
   // Node
   @override
@@ -35,6 +34,7 @@ class OneofusTreeNode extends NetTreeModel {
   @override
   Iterable<OneofusTreeNode> get children {
     Comp.throwIfNotReady([followNet, oneofusEquiv, oneofusNet]);
+    if (!b(token) && !b(statement)) return [];
     if (_children != null) return _children!;
     // Don't expand statements, !canoncial, or nodes already on path
     if (token == null || !canonical || path.map((n) => n.token).contains(token)) return [];

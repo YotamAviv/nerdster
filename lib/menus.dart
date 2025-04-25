@@ -163,7 +163,7 @@ $link''',
               onPressed: () {
                 // Workaround for omit=["I"] when fetching statements. We have to know our own key
                 // to get going.
-                Json centerJson = Jsonish.find(signInState.center)!.json;
+                Json centerJson = Jsonish.find(signInState.center!)!.json;
                 Jsonish.wipeCache();
                 Jsonish(centerJson);
                 BarRefresh.refresh(context);
@@ -200,7 +200,7 @@ $link''',
           //     }),
           MenuItemButton(
               onPressed: () async {
-                String oneofus = signInState.centerReset;
+                String oneofus = signInState.centerReset!;
                 var credentials = {
                   kOneofusDomain: Jsonish.find(oneofus)!.json,
                   if (b(signInState.signedInDelegateKeyPair))

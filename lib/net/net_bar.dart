@@ -194,8 +194,9 @@ class _CenterDropdownState extends State<_CenterDropdown> {
 
     List<DropdownMenuEntry<String?>> entries = label2oneofus.keys
         .map<DropdownMenuEntry<String?>>(
-            (String fcontext) => DropdownMenuEntry<String?>(value: fcontext, label: fcontext))
+            (String s) => DropdownMenuEntry<String?>(value: s, label: s))
         .toList();
+    if (!b(signInState.center)) entries = [DropdownMenuEntry<String?>(value: 'N/A', label: 'N/A')];
 
     // Special null reset marker
     if (signInState.center != signInState.centerReset) {
@@ -272,7 +273,7 @@ class _FollowDropdownState extends State<_FollowDropdown> {
         !(followNet.centerContexts.contains(initial) || kSpecialContexts.contains(initial));
 
     String message = error
-        ? '''Center ("${keyLabels.labelKey(signInState.center)}") does not use the selected follow context ("$initial")}).
+        ? '''Center ("${keyLabels.labelKey(signInState.center!)}") does not use the selected follow context ("$initial")}).
 Select an enabled follow context or <one-of-us> (everyone).'''
         : '''Choose a follow context:
 - <one-of-us>: everyone

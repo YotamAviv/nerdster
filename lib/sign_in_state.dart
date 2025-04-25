@@ -9,9 +9,8 @@ import 'package:nerdster/oneofus/util.dart';
 /// - center and signedIn are not always the same; viewing with a different center is a feature.
 /// - in case you get far from home, we want to help you get back (currently, "<reset>")
 class SignInState with ChangeNotifier {
-  static final String _dummy = Jsonish({}).token;
-  String _center = _dummy;
-  String _centerReset = _dummy;
+  String? _center;
+  String? _centerReset;
   OouKeyPair? _signedInDelegateKeyPair;
   OouPublicKey? _signedInDelegatePublicKey;
   Json? _signedInDelegatePublicKeyJson;
@@ -23,10 +22,10 @@ class SignInState with ChangeNotifier {
   SignInState._internal();
   factory SignInState() => _singleton;
 
-  set center(String oneofusToken) {
-    assert(b(Jsonish.find(oneofusToken)));
+  set center(String? oneofusToken) {
+    assert(b(Jsonish.find(oneofusToken!)));
     _center = oneofusToken;
-    if (_centerReset == _dummy) _centerReset = _center;
+    if (!b(_centerReset)) _centerReset = _center;
     notifyListeners();
   }
 
@@ -52,8 +51,8 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  String get center => _center;
-  String get centerReset => _centerReset;
+  String? get center => _center;
+  String? get centerReset => _centerReset;
   OouKeyPair? get signedInDelegateKeyPair => _signedInDelegateKeyPair;
   OouPublicKey? get signedInDelegatePublicKey => _signedInDelegatePublicKey;
   Json? get signedInDelegatePublicKeyJson => _signedInDelegatePublicKeyJson;
