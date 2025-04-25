@@ -72,9 +72,9 @@ class _NetBarState extends State<NetBar> {
                 }),
 
           const BarRefresh(),
-          const _CenterDropdown(),
-          const _FollowDropdown(),
-          if (!isSmall.value) _StructureDropdown(NetBar.bNetView.value),
+          const CenterDropdown(),
+          const FollowDropdown(),
+          if (!isSmall.value) StructureDropdown(NetBar.bNetView.value),
           if (!NetBar.bNetView.value)
             IconButton(
                 icon: const Icon(Icons.arrow_forward),
@@ -89,15 +89,15 @@ class _NetBarState extends State<NetBar> {
   }
 }
 
-class _StructureDropdown extends StatefulWidget {
+class StructureDropdown extends StatefulWidget {
   final bool bContent;
-  const _StructureDropdown(this.bContent);
+  const StructureDropdown(this.bContent, {super.key});
 
   @override
   State<StatefulWidget> createState() => _StructureDropdownState();
 }
 
-class _StructureDropdownState extends State<_StructureDropdown> {
+class _StructureDropdownState extends State<StructureDropdown> {
   @override
   void initState() {
     super.initState();
@@ -148,14 +148,14 @@ If a follow context is selected, those included in the follow network will be gr
   }
 }
 
-class _CenterDropdown extends StatefulWidget {
-  const _CenterDropdown();
+class CenterDropdown extends StatefulWidget {
+  const CenterDropdown({super.key});
 
   @override
   State<StatefulWidget> createState() => _CenterDropdownState();
 }
 
-class _CenterDropdownState extends State<_CenterDropdown> {
+class _CenterDropdownState extends State<CenterDropdown> {
   @override
   initState() {
     super.initState();
@@ -226,14 +226,14 @@ class _CenterDropdownState extends State<_CenterDropdown> {
 }
 
 // DEFER: singleton
-class _FollowDropdown extends StatefulWidget {
-  const _FollowDropdown();
+class FollowDropdown extends StatefulWidget {
+  const FollowDropdown({super.key});
 
   @override
   State<StatefulWidget> createState() => _FollowDropdownState();
 }
 
-class _FollowDropdownState extends State<_FollowDropdown> {
+class _FollowDropdownState extends State<FollowDropdown> {
   @override
   void initState() {
     super.initState();

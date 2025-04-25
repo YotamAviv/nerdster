@@ -8,6 +8,7 @@ import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/net/net_tile.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
+import 'package:nerdster/net_menu.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
@@ -132,8 +133,13 @@ class _NetTreeViewState extends State<NetTreeView> {
           ),
         ],
       ),
-      NetBar(),
-      Expanded(child: SelectionArea(child: NetTreeTree(treeController: treeController)))
+     Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Expanded(child: NetMenu()),
+        ],
+      ),
+       Expanded(child: SelectionArea(child: NetTreeTree(treeController: treeController)))
     ])));
   }
 }

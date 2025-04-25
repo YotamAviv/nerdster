@@ -7,6 +7,7 @@ import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/net/net_bar.dart';
+import 'package:nerdster/net_menu.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -114,7 +115,13 @@ class _ContentTreeState extends State<ContentTree> {
           Expanded(child: nerdsterMenu),
         ],
       ),
-      NetBar(),
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Expanded(child: NetMenu()),
+        ],
+      ),
+      // NetBar(),
       const ContentBar(),
       Expanded(
           child: SelectionArea(
