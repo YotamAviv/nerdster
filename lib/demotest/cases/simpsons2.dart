@@ -12,9 +12,14 @@ import 'package:nerdster/singletons.dart';
 /// - DEFER: Option to show statements like FakeFire which uses Prefs.labelKeys to show nice.
 ///
 /// Desires:
-/// - notification for homer losing and replacing his key but not yet recognized by all.
 /// - notification for milhouse trust sideshow / marge block sideshow.
-/// - show that marge censored porky's
+/// - marge censors porky's => can't see porky's if marge is in your network and censorship on.
+///   - can toggle censorship
+///   - can swtich follow to not have marge included
+/// - bart disses content
+/// - maybe follow degrees
+/// - maybe more...
+/// - notification for homer losing and replacing his key but not yet recognized by all.
 ///
 /// The plan was to show this on PROD using FakeFirestore, but that doesn't work in production.
 /// Since the demo will use data hosted on PROD, not FakeFirestore, I've decided to not
