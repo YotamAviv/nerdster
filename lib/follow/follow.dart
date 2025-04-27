@@ -109,7 +109,7 @@ class _FollowUiState extends State<FollowUi> {
     List<Row> rows = <Row>[];
     for (MapEntry e in widgets.entries) {
       Row row = Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        BoxLabel(e.key),
+        SizedBox(width: 80, child: Text(e.key)),
         e.value,
         IconButton(
             icon: const Icon(Icons.delete),
@@ -131,9 +131,7 @@ class _FollowUiState extends State<FollowUi> {
                 labelText: 'Follow contexts',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
               ),
-              child: Column(
-                children: rows,
-              )),
+              child: Column(children: rows)),
           const SizedBox(height: 5),
           Container(
             constraints: const BoxConstraints(maxWidth: 400),
@@ -175,22 +173,6 @@ class _FollowUiState extends State<FollowUi> {
   }
 }
 
-class BoxLabel extends StatelessWidget {
-  final String label;
-  const BoxLabel(
-    this.label, {
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 80,
-      child: Text(label),
-    );
-  }
-}
-
 class FollowWidget extends StatefulWidget {
   static final Map<double, Follow> i2follow = <double, Follow>{
     1: Follow.follow,
@@ -218,8 +200,8 @@ class _FollowWidgetState extends State<FollowWidget> {
     return Slider(
         value: FollowWidget.follow2i[widget.followNotifier.value]!,
         thumbColor: widget.followNotifier.value.color,
-        min: -1,
-        max: 1,
+        min: -1.0,
+        max: 1.0,
         divisions: 1,
         label: widget.followNotifier.value.label,
         onChanged: (x) {

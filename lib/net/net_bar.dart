@@ -6,6 +6,7 @@ import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -280,15 +281,34 @@ Select an enabled follow context or <one-of-us> (everyone).'''
 - <nerdster>: everyone with exceptions (block folks that talk too much or specifically <nerdster> follow those far on your one-of-us network that you want closer)
 - Custom contexts like 'nerd', 'social', 'family', 'local', 'geezer', etc...''';
 
+    Slider degreesSlider = Slider(
+        value: Prefs.followNetDegrees.value as double,
+        min: 1.0,
+        max: 5.0,
+        divisions: 4,
+        label: 'Degrees: ${Prefs.followNetDegrees.value}',
+        thumbColor: Colors.green,
+        onChanged: (x) {
+          print(x);
+          setState(() {
+            Prefs.followNetDegrees.value = x.round();
+          });
+        });
+    DropdownMenuEntry<String> degreesDropdownEntry = DropdownMenuEntry(
+      // labelWidget: Row(children: [const Text('Degrees:'), degreesSlider]);
+      labelWidget: SizedBox(width: 50, child: degreesSlider),
+      // labelWidget: degreesSlider,
+      enabled: false,
+      value: '',
+      label: '',
+    );
+
     return DropdownMenu<String?>(
       initialSelection: initial,
       // CONSIDER: https://pub.dev/packages/info_popup/example
       leadingIcon: Tooltip(
         message: message,
-        child: Icon(
-          Icons.help,
-          color: error ? Colors.red : linkColor,
-        ),
+        child: Icon(Icons.help, color: error ? Colors.red : linkColor),
       ),
       label: const Text('Follow'),
       textStyle: error ? TextStyle(color: Colors.red) : null,
@@ -299,7 +319,7 @@ Select an enabled follow context or <one-of-us> (everyone).'''
         }, context);
         setState(() {});
       },
-      dropdownMenuEntries: entries,
+      dropdownMenuEntries: [degreesDropdownEntry, ...entries],
     );
   }
 }
