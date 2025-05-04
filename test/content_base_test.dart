@@ -99,7 +99,7 @@ void main() async {
   // Jock see's Poser's recommend and dis.
   // Accomplished manually using the UI and dumped.
   test('rate and dis', () async {
-    timezoneOffsetKludge = -3;
+    // timezoneOffsetKludge = -3;
     Prefs.showStatements.value = true;
     Prefs.showKeys.value = true;
     Prefs.keyLabel.value = false;
@@ -109,7 +109,7 @@ void main() async {
 
   /// view as Jock using stock DemoKeys.egos.
   test('jock1', () async {
-    timezoneOffsetKludge = -3;
+    // timezoneOffsetKludge = -3;
     Prefs.showStatements.value = true;
     Prefs.showKeys.value = true;
     Prefs.keyLabel.value = false;
@@ -198,7 +198,7 @@ void main() async {
     await Comp.waitOnComps([followNet, keyLabels]);
     delegateNetwork = followNet.delegate2fetcher;
     dn = delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
-    expect(dn, {lonerD2.token: null, lonerD.token: parseIso('2024-05-01 04:02:00.000Z')});
+    expect(dn, {lonerD2.token: null, lonerD.token: parseIso('2024-05-01 07:02:00.000Z')});
     expect(keyLabels.show(dn), {'Me-delegate': null, 'Me-delegate (0)': '5/1/2024 12:02 AM'});
 
     // say something as new delegate
@@ -230,7 +230,7 @@ void main() async {
   /// - submit article 'b'
   /// - equate article 'a' to 'b'
   test('equate1', () async {
-    timezoneOffsetKludge = -3;
+    // timezoneOffsetKludge = -3;
     Prefs.showStatements.value = true;
     Prefs.showKeys.value = true;
     Prefs.keyLabel.value = false;
