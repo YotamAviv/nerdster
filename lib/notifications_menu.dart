@@ -51,8 +51,6 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
   @override
   Widget build(BuildContext context) {
     if (!Comp.compsReady([oneofusNet, followNet, oneofusEquiv])) {
-      // I'm not confident about this.
-      // print('loading..');
       SchedulerBinding.instance.addPostFrameCallback((_) {
         listen();
       });
@@ -143,16 +141,15 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
           child: Text(error));
       items.add(item);
     }
-
-    // print('NotificationsMenue.. items.. ${items.length}');
-    // print('notifications.corrupted.length.. ${notifications.corrupted.length}');
+    
+    Color? color = items.isNotEmpty ? Colors.red : null;
     return SubmenuButton(
         menuChildren: items,
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.notifications),
+            Icon(Icons.notifications, color: color),
             iconSpacer,
-            Text('Notifications'),
+            Text('Notifications', style: TextStyle(color: color)),
           ],
         ));
   }

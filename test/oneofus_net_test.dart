@@ -5,6 +5,7 @@ import 'package:nerdster/demotest/cases/block_replaced_key.dart';
 import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
+import 'package:nerdster/demotest/cases/simpsonsDemo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -753,11 +754,6 @@ void main() async {
         {'wife': 'wife'},
         {'homer2': 'hubby2'}
       ],
-      [
-        {'boy': 'boy'},
-        {'wife': 'moms'},
-        {'homer2': 'hubby2'}
-      ]
     ]);
 
     signInState.center = homer2.token;
@@ -781,6 +777,34 @@ void main() async {
 
     // CONSIDER: Test something beyond just this.
     await compareNetworkToTree(bart.token);
+  });
+
+  test('simpsons2', () async {
+    await simpsonsDemo();
+    oneofusNet.degrees = 5;
+    oneofusNet.numPaths = 1;
+
+    signInState.center = lisa.token;
+    await Comp.waitOnComps([contentBase, keyLabels]);
+    notifications.dump();
+    expect(notifications.rejected.length, 0);
+    expect(notifications.warned.length, 0);
+    expect(oneofusNet.network.keys.contains(milhouse.token), true);
+    expect(keyLabels.labelKey(milhouse.token), 'Milhouse');
+    expect(oneofusNet.network.keys.contains(bart.token), true);
+    expect(keyLabels.labelKey(bart.token), 'Bart');
+
+    signInState.center = bart.token;
+    await Comp.waitOnComps([contentBase, keyLabels]);
+    expect(notifications.rejected.length > 1, true);
+    expect(oneofusNet.network.keys.contains(milhouse.token), true);
+    expect(keyLabels.labelKey(milhouse.token), 'Milhouse');
+
+    signInState.center = milhouse.token;
+    await Comp.waitOnComps([contentBase, keyLabels]);
+    expect(notifications.rejected.length > 1, true);
+    expect(keyLabels.labelKey(milhouse.token), '4-Eyes');
+
   });
 
   /// Not particularly realistic or stressfull.
