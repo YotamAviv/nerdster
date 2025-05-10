@@ -97,7 +97,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
       moniker: 'Amanda Hugginkiss'); // Yeah, yeah, looking for Amanda Huggenkiss. What else is new?
   await sideshow.doTrust(TrustVerb.trust, seymore,
       moniker: 'Seymore Butts'); // That doesn't sound like a real name
-  await sideshow.doTrust(TrustVerb.block, marge);
+  await sideshow.doTrust(TrustVerb.block, marge, comment: 'Karen');
 
   // work
   await homer2.doTrust(TrustVerb.trust, lenny, moniker: 'Lenny');
@@ -208,6 +208,8 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
 
   return (lisa, lisaN);
 }
+
+// http://localhost:37515/?fire=emulator&demo=simpsonsDemo&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22iZsFcQvVRsZpUO9HjfxLZFIPROZ-MqTzDNdmKg8BGnc%22%7D
 
 // 4/20/2025, created demo on prod
 // from /etc => gen link..

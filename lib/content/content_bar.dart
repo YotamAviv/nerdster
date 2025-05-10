@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/content/props.dart';
+import 'package:nerdster/oneofus/ui/my_checkbox.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -117,8 +119,49 @@ class _ContentBarState extends State<ContentBar> {
                             ))
                     .toList(),
               )),
+          SizedBox(
+            width: 55,
+            height: 48,
+            child: BorderedLabeledWidget(label: 'Censor', child: MyCheckbox(Prefs.censor, '')),
+          )
         ],
       ),
+    );
+  }
+}
+
+class BorderedLabeledWidget extends StatelessWidget {
+  final Widget child;
+  final String label;
+
+  const BorderedLabeledWidget({super.key, required this.child, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          padding: const EdgeInsets.only(
+              top: 16, left: 8, right: 8, bottom: 8), // Adjust padding to accommodate label height
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+          ),
+          child: child,
+        ),
+        Positioned(
+          top: 0,
+          left: 3,
+          child: Transform.translate(
+            offset: const Offset(0, -8), // Translate label up to align with border
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Text(label, style: Theme.of(context).textTheme.labelMedium),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
