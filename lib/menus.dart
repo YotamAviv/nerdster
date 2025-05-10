@@ -100,11 +100,12 @@ class Menus {
                   'paths', Prefs.followNetPaths, List<int>.generate(2, (i) => i + 1)),
             ], child: const Text('follow network')),
             MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
-            const Text('--------- nerdier ---------'),
-            MyCheckbox(Prefs.keyLabel, 'translate gibberish'),
-            MyCheckbox(Prefs.showJson, 'show JSON'),
-            MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
-            MyCheckbox(Prefs.showStatements, 'show trust statements'),
+            // const Text('--------- nerdier ---------'),
+            // MyCheckbox(Prefs.keyLabel, 'translate gibberish'),
+            MyCheckbox(Prefs.showStuff, 'show keys and statements'),
+            // MyCheckbox(Prefs.showJson, 'show JSON'),
+            // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
+            // MyCheckbox(Prefs.showStatements, 'show trust statements'),
           ],
           child: const Row(
             children: [

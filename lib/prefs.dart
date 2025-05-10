@@ -19,10 +19,11 @@ class Prefs {
   static final ValueNotifier<int> followNetDegrees = ValueNotifier<int>(5);
   static final ValueNotifier<int> followNetPaths = ValueNotifier<int>(1);
   static final ValueNotifier<bool> keyLabel = ValueNotifier(true);
+  static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> showJson = ValueNotifier(bNerd);
   static final ValueNotifier<bool> showKeys = ValueNotifier(bNerd);
   static final ValueNotifier<bool> showStatements = ValueNotifier(bNerd);
-  static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
+  static final ValueNotifier<bool> showStuff = ValueNotifier<bool>(bNerd);
 
   // DEV:
   static final ValueNotifier<bool> dev = ValueNotifier<bool>(devDefault || bNerd);
@@ -58,6 +59,12 @@ class Prefs {
     } catch (e) {
       print(e);
     }
+
+    Prefs.showStuff.addListener(() {
+      Prefs.showJson.value = showStuff.value;
+      Prefs.showKeys.value = showStuff.value;
+      Prefs.showStatements.value = showStuff.value;
+    });
 
     Prefs.skipLgtm.addListener(listener);
   }
