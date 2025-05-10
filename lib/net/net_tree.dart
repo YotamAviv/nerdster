@@ -89,8 +89,7 @@ class _NetTreeViewState extends State<NetTreeView> {
         treeController.expand(node);
       }
     } else {
-      // Expand a little by default.
-      treeController.expand(treeController.roots.first);
+      treeController.expand(treeController.roots.first); // Expand a little by default.
     }
   }
 
@@ -101,6 +100,7 @@ class _NetTreeViewState extends State<NetTreeView> {
     // Once you have called dispose() on a TreeController<NetTreeModel>, it can no longer be used.
     treeController.roots = [NetTreeView.makeRoot()];
     treeController.rebuild();
+    treeController.expand(treeController.roots.first); // Expand a little by default.
     if (mounted) {
       setState(() {});
     }

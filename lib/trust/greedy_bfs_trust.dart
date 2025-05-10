@@ -102,6 +102,7 @@ class GreedyBfsTrust {
       for (Path path in currentLayer) {
         assert(isValidPath(path, network));
         Node n = path.last.node;
+        visited.add(n);
 
         for (Replace replace in await n.replaces) {
           assert(b(replace.revokeAt));
@@ -121,6 +122,8 @@ class GreedyBfsTrust {
             // web-of-trust equivalence [WotEquivalence], not this class.
             // That said: I don't want to implement revoking at different tokens in Fetcher,
             // and so I do enforce it here.
+
+            // BUG: Possible bug, forgot the details, oops. 
             notifier?.reject(replace.statementToken, 'Attempt to replace a replaced key.');
             continue;
           }
@@ -155,7 +158,6 @@ class GreedyBfsTrust {
       for (Path path in currentLayer) {
         assert(isValidPath(path, network));
         Node n = path.last.node;
-        visited.add(n);
 
         for (Trust trust in await n.trusts) {
           final Node other = trust.node;

@@ -11,7 +11,7 @@ import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/loner.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
-import 'package:nerdster/demotest/cases/simpsons2.dart';
+import 'package:nerdster/demotest/cases/simpsonsDemo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
@@ -46,7 +46,7 @@ class DemoKey {
   static final Map<String, DemoKey> _token2key = <String, DemoKey>{};
 
   static final dynamic demos = {
-    'simpsons2': simpsons2,
+    'simpsonsDemo': simpsonsDemo,
     'simpsons': simpsons,
     'loner': loner,
     'trustBlockConflict': trustBlockConflict,

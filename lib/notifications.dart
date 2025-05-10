@@ -3,6 +3,8 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/singletons.dart';
 
 // TODO: CODE: Something like this
 enum KString {
@@ -74,5 +76,17 @@ class Notifications with ChangeNotifier implements Corruptor {
     _corrupted[token] = (error, details);
     print('_corrupted[$token] = $error');
     notifyListeners();
+  }
+
+  void dump() {
+    for (var e in rejected.entries) {
+      print('${encoder.convert(keyLabels.show(Jsonish.find(e.key)!))}, ${e.value}');
+    }
+    for (var e in warned.entries) {
+      print('${encoder.convert(keyLabels.show(Jsonish.find(e.key)!))}, ${e.value}');
+    }
+    for (var e in corrupted.entries) {
+      print('$e.key, $e.value');
+    }
   }
 }
