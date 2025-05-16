@@ -14,6 +14,9 @@ just that data missing.
   - modifying any value in it.
 
 
+# Emulator simpsonsDemo
+?fire=emulator&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22gq5i1acRbRIRG7H9gNb3us2Zx0E2FdOj1RqGV7LZc0U%22%7D
+
 # Nice ones:
 ```
 git tag PROD-v`date2`

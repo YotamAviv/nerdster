@@ -30,13 +30,14 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   DemoKey maggie = await DemoKey.findOrCreate('maggie');
 
   DemoKey milhouse = await DemoKey.findOrCreate('milhouse');
+  DemoKey luann = await DemoKey.findOrCreate('luann');
   DemoKey ralph = await DemoKey.findOrCreate('ralph');
   DemoKey nelson = await DemoKey.findOrCreate('nelson');
+
   DemoKey lenny = await DemoKey.findOrCreate('lenny');
   DemoKey carl = await DemoKey.findOrCreate('carl');
   DemoKey burns = await DemoKey.findOrCreate('burns');
   DemoKey smithers = await DemoKey.findOrCreate('smithers');
-  DemoKey luann = await DemoKey.findOrCreate('luann');
 
   DemoKey krusty = await DemoKey.findOrCreate('krusty');
   DemoKey sideshow = await DemoKey.findOrCreate('sideshow');
@@ -196,13 +197,6 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await burnsN.doFollow(bart, {kNerdsterContext: -1});
   await burnsN.doFollow(marge, {kNerdsterContext: -1});
   await burnsN.doFollow(homer2, {kNerdsterContext: -1});
-
-  // // Access with: &followNetDegrees=2&follow=<one-of-us>
-  // oneofusNet.listen(); // KLUDGE: Workaround for the bug below.
-  // // BUG: The code below will trigger processing, and in case OneofusNet though it was
-  // // ready because !b(signInState.center), then FollowNet crashes.
-  // Prefs.followNetDegrees.value = 2;
-  // followNet.fcontext = '<one-of-us>';
 
   useClock(LiveClock());
 

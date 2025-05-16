@@ -5,7 +5,7 @@ import 'package:nerdster/demotest/cases/block_replaced_key.dart';
 import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
-import 'package:nerdster/demotest/cases/simpsonsDemo.dart';
+import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -804,7 +804,6 @@ void main() async {
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(notifications.rejected.length > 1, true);
     expect(keyLabels.labelKey(milhouse.token), '4-Eyes');
-
   });
 
   /// Not particularly realistic or stressfull.
