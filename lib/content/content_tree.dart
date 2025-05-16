@@ -11,6 +11,11 @@ import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
+/// TODO: Migrate from flutter_fancy_tree_view 1.6.0 (discontinued replaced by two_dimensional_scrollables?
+/// See: https://api.flutter.dev/flutter/widgets/TreeSliver-class.html
+/// - I do use BFS or DFS search from flutter_fancy_tree_view to highlight nodes
+
+
 /// StatefulWidget stuff...
 /// OouTop / SubjectNode / (future PersonNode) is our model (state) that needs to be listened to by the state of our tree widget.
 ///
