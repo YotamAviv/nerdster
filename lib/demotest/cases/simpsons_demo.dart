@@ -14,6 +14,24 @@ import 'package:nerdster/oneofus/util.dart';
 ///
 /// BUG: I saw all of milhouse's statements in red at some point, might be missing a clear notifications or something.
 ///
+/// Demo:
+/// - Lisa, looks fine
+///   - no notificattions
+///   - horses (Lisa), bowling, recipes, skateboards, alt movies
+/// - Bart
+///   - notifications: 
+///     - Nerdster remembers Lisa's initial sign in (<reset>), but Bart blocked for from <nerdster> follow netwok.
+///     - Bart hasn't updated to Homer's new key
+///     - Sideshow Mel trying to trust Sideshow Bob, who's already blocked
+///   - movies only: clown, skateboarding, adult comedy
+/// - Milhouse
+///   - notifications
+///     - Sideshow is trusted and is trying to block Marge
+///     - Marge is trying to block Sideshow
+///   - Milhouse called "4-Eyes"
+///   - Clown movies have likes from bogus people: Seymore Butts, Amanda Hugginkiss.
+///
+///
 /// History: The plan was to show this on PROD using FakeFirestore, but that doesn't work in production.
 /// Since the demo will use data hosted on PROD, not FakeFirestore, I've decided to not
 /// work to make it writeable by the demo'ing user (change follow contexts, submit, diss, etc..).
