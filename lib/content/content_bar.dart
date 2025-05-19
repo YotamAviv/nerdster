@@ -120,7 +120,6 @@ class _ContentBarState extends State<ContentBar> {
                     .toList(),
               )),
           SizedBox(
-            width: 55,
             height: 48,
             child: BorderedLabeledWidget(label: 'Censor', child: MyCheckbox(Prefs.censor, '')),
           )
