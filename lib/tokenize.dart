@@ -8,11 +8,17 @@ import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
 const kTokenize = 'Tokenize, verify, translate..';
+
+Size _dsize(context) {
+  Size size = MediaQuery.of(context).size;
+  return Size(size.width * 0.6, size.height * 0.8);
+}
+
+const Widget _space = SizedBox(height: 10);
 
 // DEFER: TEST
 // DEFER: Make prettier, not all text, some bold, some fixed width font..
@@ -21,16 +27,24 @@ class Tokenize {
   static final OouVerifier _oouVerifier = OouVerifier();
 
   static Future<void> make(BuildContext context) async {
-    final List words = [];
-    final List lines = [];
+    final List<String> words = [];
+    final List<Widget> lines = [];
 
     String? input = await _input(context);
     if (!b(input)) return;
 
     await _make2(input!, words, lines);
 
-    await alert(words.join(', '), lines.join('\n'), ['okay'], context);
+    String title = words.join(', ');
+    AlertDialog dialog = AlertDialog(
+      title: Text(title),
+      content: SizedBox.fromSize(size: _dsize(context), child: ListView(children: lines)),
+    );
+    await showDialog(context: context, builder: (context) => dialog);
   }
+
+  static _head(s) => Text(s, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold));
+  static _body(s) => Text(s, style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black));
 
   static Future<void> _make2(final String input, final List words, final List lines) async {
     Json json;
@@ -38,51 +52,46 @@ class Tokenize {
       json = jsonDecode(input);
     } catch (e) {
       words.add('Error');
-      lines.add('Could not parse JSON');
-      lines.add('Error $e}');
+      lines.add(_head('Could not parse JSON'));
+      lines.add(_body('Error $e}'));
       return;
     }
 
     if (json.containsKey('id')) {
       json.remove('id');
       words.add('Removed "id"');
-      lines.add('Removed "id" (server computed token, not part of the statement)');
-      lines.add('');
+      lines.add(_head('Removed "id" (server computed token, not part of the statement)'));
     }
 
     final Json ordered = Jsonish.order(json);
     final String ppJson = encoder.convert(ordered);
     words.add('Formatted');
-    lines.add('Formatted:');
-    lines.add(ppJson);
-    lines.add('');
+    lines.add(_head('Formatted:'));
+    lines.add(_body(ppJson));
+    lines.add(_space);
 
     final String token = sha1.convert(utf8.encode(ppJson)).toString();
     words.add('Tokenized');
-    lines.add('Computed token:');
-    lines.add(token);
-    lines.add('');
+    lines.add(_head('Computed SHA1 token:'));
+    lines.add(_body(token));
+    lines.add(_space);
 
     OouPublicKey? iKey;
     if (json.containsKey('I')) {
-      lines.add('''Found "I" (author's public key)''');
       try {
         iKey = await crypto.parsePublicKey(json['I']!);
-        lines.add('Parsed "I"');
-        lines.add('');
       } catch (e) {
         words.add('Error');
-        lines.add('Could not parse public key: $e');
-        lines.add('Error $e');
+        lines.add(_head('Could not parse public key'));
+        lines.add(_body('Error: $e'));
         return;
       }
     }
 
     if (json.containsKey('signature')) {
-      lines.add('Found "signature"');
       if (!b(iKey)) {
         words.add('Error');
-        lines.add('''Error: Missing "I" (author's public key)''');
+        lines.add(_head('''Error: Found "signature" but missing "I" (author's public key)'''));
         return;
       }
       var orderedWithoutSig = Map.from(ordered)..remove("signature");
@@ -90,30 +99,32 @@ class Tokenize {
       bool verified = await _oouVerifier.verify(json, ppJsonWithoutSig, json['signature']);
       if (verified) {
         words.add('Verified');
-        lines.add('Verified signature!');
-        lines.add('');
+        lines.add(_head('Signature authenticity verified'));
+        lines.add(_body(
+            'The signature was successfully verified against the statement body (with "signature" omitted) using the provided public key ("I").'));
+        lines.add(_space);
       } else {
         words.add('Error');
-        lines.add('Signature verification FAILED!');
+        lines.add(_head('Signature verification FAILED!'));
         return;
       }
     }
 
-    var show = keyLabels.show(json);
-    words.add('Translated');
-    lines.add('Translated:');
-    lines.add(encoder.convert(show));
-    lines.add('');
+    String translated = encoder.convert(keyLabels.show(json));
+    if (translated != ppJson) {
+      words.add('Translated');
+      lines.add(_head('Translated:'));
+      lines.add(_body(translated));
+    }
   }
 
   static Future<String?> _input(BuildContext context) async {
     TextEditingController controller = TextEditingController();
     return await showDialog(
         context: context,
-        barrierDismissible: false,
         builder: (context) => Dialog(
-            child: SizedBox(
-                width: (MediaQuery.of(context).size).width / 2,
+            child: SizedBox.fromSize(
+                size: _dsize(context),
                 child: Column(children: [
                   Expanded(
                     child: Stack(
@@ -137,13 +148,9 @@ class Tokenize {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  OkCancel(() {
-                    try {
-                      Navigator.of(context).pop(controller.text);
-                    } catch (e) {
-                      alert('Error', e.toString(), ['Okay'], context);
-                    }
-                  }, kTokenize),
+                  
+                  OkCancel(() => Navigator.of(context).pop(controller.text), kTokenize,
+                      showCancel: false),
                   const SizedBox(height: 5),
                 ]))));
   }
