@@ -141,7 +141,7 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
           child: Text(error));
       items.add(item);
     }
-    
+
     Color? color = items.isNotEmpty ? Colors.red : null;
     return SubmenuButton(
         menuChildren: items,
@@ -165,48 +165,49 @@ class StatementNotification extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String text = Jsonish.encoder.convert(keyLabels.show(statement));
-
+    String statementText = Jsonish.encoder.convert(keyLabels.show(statement));
     Node? iNode = oneofusNet.network[statement.iToken];
-
     Node? subjectNode = oneofusNet.network[statement.subjectToken];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          // mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Flexible(
-                child: Linky(
-                    '''A conflict was encountered during the trust network computation when processing the statement displayed to the right:
+    Size whole = MediaQuery.of(context).size;
+    Size big = Size(whole.width * 0.9, whole.height * 0.9);
 
-This doesn't necessarily require you to do anything. For example if a key you trust is blocked by another key, then it matters to you, and you'll see a notification, but when the owner of that key signs in, he'll see a notification that a key is blocking his key, and so sorting this should be more on him than on you.
+    return SizedBox.fromSize(
+        size: big,
+        child: ListView(
+          children: [
+            Row(
+              // mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Flexible(
+                    child: Linky(
+                        '''A conflict was encountered during the trust network computation when processing the statement displayed to the right:
+
+This doesn't necessarily require you to do anything. For example if a key you trust is blocked by another key, then it should matter to you, and you'll see a notification, but when the owner of that key signs in, he'll see a notification that a key is blocking his own key, and so sorting this out should be more on him than on you.
 That said, even in that situation, it may be the case that that guy never checks his notifications, and so maybe pick up the slack for him.''')),
-            Text(text,
-                style: GoogleFonts.courierPrime(
-                    fontWeight: FontWeight.w700, fontSize: 12, color: Colors.black))
+                Text(statementText,
+                    style: GoogleFonts.courierPrime(
+                        fontWeight: FontWeight.w700, fontSize: 12, color: Colors.black))
+              ],
+            ),
+            _space,
+            Linky('''Tactics for addressing this:
+- If you think you know the individuals involved, get in touch with them, figure it out, and get it straightened out by clearing trusts or blocks or stating new ones.
+- Try browsing as others (different POV). You'll see the notifications they would see, and this may shed light on the situation.
+- Email conflict-help@nerdtser.org. Include the link from the "menu => /etc => Generate link for current view".'''),
+            _space,
+            Text('''Trust paths to the statement's signing key:'''),
+            TrustRows(iNode),
+            _space,
+            Text('''Trust paths to the key the statements is trying to ${statement.verb.label}:'''),
+            TrustRows(subjectNode),
+            _space,
+            Linky('''This app obviously does not know which actual people posses which keys.
+It has labled the keys in the paths above by best guess monikers provided by your network, but those could be wrong.
+You can click on the keys on those paths to see their QR codes, and if appropriate, use your ONE-OF-US phone app and block.'''),
+            _space,
           ],
-        ),
-        _space,
-        Flexible(child: Linky('''Tactics for addressing this:
-- If you think you know the individuals involved, get in touch with them, figure it out, and get it straightened out.
-- Consider browsing as others. You'll see the notifications they would see, and this may shed light on the situation.
-- Email conflict-help@nerdtser.org. Include the link from the "menu => /etc => Generate link for current view".''')),
-        _space,
-        Text('''Trust paths to the statement's signing key:'''),
-        TrustRows(iNode),
-        _space,
-        Text('''Trust paths to the key the statements is trying to ${statement.verb.label}:'''),
-        TrustRows(subjectNode),
-        _space,
-        Flexible(
-            child: Linky('''This app obviously does not know which actual people posses which keys.
-It has labled the keys in the paths above by best guess monikers provided by your network; but they could be wrong.
-You can click on the keys on those paths to see their QR codes, and if appropriate, use your ONE-OF-US phone app and block.''')),
-        _space,
-      ],
-    );
+        ));
   }
 }
 
