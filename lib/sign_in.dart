@@ -31,6 +31,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 ///   - Oneofus public key
 ///   - (optional) encrypted Nerdster key pair (optionally encrypted, iPhone App Store restrictions.)
 /// - Nerdster web client then reads that from the database, (optionally) decrypts, and signs in.
+/// 
+/// DEFER: Add floating paste icon
 Future<void> qrSignin(BuildContext context) async {
   Map<String, dynamic> forPhone = <String, dynamic>{};
   forPhone['domain'] = kNerdsterDomain;

@@ -94,7 +94,7 @@ class DemoKey {
   DemoKey._internal(this.name, this.keyPair, this.publicKey, this.token);
 
   Future<Statement> doRate(
-      {Json? subject,
+      {dynamic subject,
       String? title,
       String? comment,
       bool? recommend,

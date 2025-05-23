@@ -175,7 +175,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await bartN.doRate(subject: dogtown, recommend: true, verb: ContentVerb.rate);
   await milhouseN.doRate(subject: superbad, recommend: true, verb: ContentVerb.rate);
   await bartN.doRate(subject: superbad, recommend: true, comment: 'rad', verb: ContentVerb.rate);
-  await margeN.doRate(subject: superbad, verb: ContentVerb.censor);
+  await margeN.doRate(subject: getToken(superbad), verb: ContentVerb.censor);
   await margeN.doRate(subject: banana, recommend: true, verb: ContentVerb.rate);
   await homer2N.doRate(subject: kingpin, recommend: true, verb: ContentVerb.rate);
   await bartN.doRate(subject: superbad, comment: 'rad', verb: ContentVerb.rate);
