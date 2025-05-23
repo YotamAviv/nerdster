@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -11,7 +12,11 @@ import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
-// TEST: ..
+const kTokenize = 'Tokenize, verify, translate..';
+
+// DEFER: TEST
+// DEFER: Make prettier, not all text, some bold, some fixed width font..
+// DEFER: Disable button if empty
 class Tokenize {
   static final OouVerifier _oouVerifier = OouVerifier();
 
@@ -111,11 +116,26 @@ class Tokenize {
                 width: (MediaQuery.of(context).size).width / 2,
                 child: Column(children: [
                   Expanded(
-                      child: TextField(
-                          controller: controller,
-                          maxLines: null,
-                          expands: true,
-                          style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black))),
+                    child: Stack(
+                      alignment: Alignment.bottomRight,
+                      children: [
+                        TextField(
+                            controller: controller,
+                            maxLines: null,
+                            expands: true,
+                            style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black)),
+                        FloatingActionButton(
+                            heroTag: 'Paste',
+                            tooltip: 'Paste',
+                            child: const Icon(Icons.paste),
+                            onPressed: () async {
+                              final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+                              String? clipboardText = clipboardData?.text;
+                              if (b(clipboardText)) controller.text = clipboardText!;
+                            }),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 10),
                   OkCancel(() {
                     try {
@@ -123,7 +143,7 @@ class Tokenize {
                     } catch (e) {
                       alert('Error', e.toString(), ['Okay'], context);
                     }
-                  }, 'Next'),
+                  }, kTokenize),
                   const SizedBox(height: 5),
                 ]))));
   }
