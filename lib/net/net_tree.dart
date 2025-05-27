@@ -69,7 +69,11 @@ class _NetTreeViewState extends State<NetTreeView> {
       childrenProvider: (NetTreeModel node) => node.children,
     );
 
-    // Expand tree to highlightToken if applicable.
+    expandToHighlightToken();
+  }
+
+  void expandToHighlightToken() {
+    treeController.expand(treeController.roots.first); // Expand a little by default.
     String? expandToToken = NetTreeView.highlightToken.value;
     if (b(expandToToken)) {
       // Tree structure could be Oneofus or Follow.
@@ -88,8 +92,6 @@ class _NetTreeViewState extends State<NetTreeView> {
         }
         treeController.expand(node);
       }
-    } else {
-      treeController.expand(treeController.roots.first); // Expand a little by default.
     }
   }
 
@@ -100,7 +102,7 @@ class _NetTreeViewState extends State<NetTreeView> {
     // Once you have called dispose() on a TreeController<NetTreeModel>, it can no longer be used.
     treeController.roots = [NetTreeView.makeRoot()];
     treeController.rebuild();
-    treeController.expand(treeController.roots.first); // Expand a little by default.
+    expandToHighlightToken();
     if (mounted) {
       setState(() {});
     }
@@ -124,14 +126,9 @@ class _NetTreeViewState extends State<NetTreeView> {
     return Scaffold(
         body: SafeArea(
             child: Column(children: [
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Expanded(
-            child: NerdsterMenu(),
-          ),
-        ],
-      ),
+      Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+        Expanded(child: NerdsterMenu()),
+      ]),
       NetBar(),
       if (b(signInState.center))
         Expanded(child: SelectionArea(child: NetTreeTree(treeController: treeController)))
