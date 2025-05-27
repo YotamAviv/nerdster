@@ -42,10 +42,10 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     "Lisa": null,
     "Bart": null,
     "Millhouse": null,
-    "Bart (0)": "5/1/2024 12:03 AM"
+    "Bart (2)": "5/1/2024 12:03 AM"
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  expectedEquivalents = { 'Bart', 'Bart (0)' };
+  expectedEquivalents = { 'Bart', 'Bart (2)' };
   jsonShowExpect(oneofusEquiv.getEquivalents(bart2.token), expectedEquivalents);
   myExpect(notifications.rejected.length, 1);
   myExpect(notifications.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');

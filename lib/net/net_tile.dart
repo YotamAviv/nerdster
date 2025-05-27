@@ -131,11 +131,15 @@ class _NetTileState extends State<NetTile> {
     }
 
     List<Shadow>? shadows;
+    final String? highlightToken = NetTreeView.highlightToken.value;
     if (b(NetTreeView.highlightToken.value)) {
-      if (node.token == NetTreeView.highlightToken.value ||
-          node.token == followNet.delegate2oneofus[NetTreeView.highlightToken.value]) {
-        // iconColor = Colors.green.shade900;
-        shadows = const <Shadow>[Shadow(color: Colors.pink, blurRadius: 5.0)];
+      assert(!oneofusNet.network.containsKey(highlightToken!),
+          'expecting delegate token, but subject to future changes..');
+      if (followNet.delegate2oneofus.containsKey(highlightToken)) {
+        if (node.token == highlightToken ||
+            node.token == followNet.delegate2oneofus[highlightToken]) {
+          shadows = const <Shadow>[Shadow(color: Colors.orange, blurRadius: 5.0)];
+        }
       }
     }
 
@@ -167,11 +171,7 @@ class _NetTileState extends State<NetTile> {
                   onPressed: widget.onTap),
             ),
             if (Prefs.showJson.value) JSWidget(jsonish),
-            if (isStatement)
-              Text(
-                text!,
-                style: TextStyle(color: statementTextColor),
-              ),
+            if (isStatement) Text(text!, style: TextStyle(color: statementTextColor)),
             if (!isStatement) _MonikerWidget(node)
           ])
         ]));
@@ -213,6 +213,7 @@ class _MonikerWidget extends StatelessWidget {
     if (value == kRecenter) {
       await progress.make(() async {
         signInState.center = node.token!;
+        // TODO: NEXT: expand to highlighted token, also when using POV dropdown
         await Comp.waitOnComps([keyLabels, contentBase]);
       }, context);
     } else if (value == kFollow) {

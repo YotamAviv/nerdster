@@ -15,7 +15,7 @@ just that data missing.
 
 
 # Emulator simpsonsDemo
-?fire=emulator&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22TnYm5vwCGtwjRWYTgIGAznEXFFuRKbogLfm5nlHTt4Q%22%7D
+?fire=emulator&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%2249TXJaRHesUCrp13HPv_rt6r529JGI6rBiUGGHfL6w4%22%7D
 
 # Nice ones:
 ```
@@ -111,9 +111,9 @@ gcloud projects list
 gcloud auth login
 
 date2
-export NOW=`date2`
+export NOW=`date3`
 # If running in 2 windows, make sure to set (export) NOW in both
-export NOW=03-12-25--09-39
+export NOW=25-05-26--11-26
 echo $NOW
 
 firebase use nerdster

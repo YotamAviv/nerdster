@@ -304,9 +304,9 @@ void main() async {
     await Comp.waitOnComps([oneofusNet, keyLabels]);
     expected = {
       "Me": null,
-      "Me (0)": "5/1/2024 12:03 AM",
+      "Me (2)": "5/1/2024 12:03 AM",
       "steve2": null,
-      "steve2 (0)": "5/1/2024 12:04 AM"
+      "steve2 (2)": "5/1/2024 12:04 AM"
     };
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);
 
@@ -364,9 +364,9 @@ void main() async {
     await Comp.waitOnComps([oneofusNet, keyLabels]);
     expected = {
       "Me": null,
-      "Me (0)": "5/1/2024 12:03 AM",
+      "Me (2)": "5/1/2024 12:03 AM",
       "steve2": null,
-      "steve2 (0)": "5/1/2024 12:04 AM"
+      "steve2 (2)": "5/1/2024 12:04 AM"
     };
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);
 
@@ -374,7 +374,7 @@ void main() async {
     signInState.center = steve2.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-delegate", "Me-delegate (0)"],
+      "Me": ["Me-delegate", "Me-delegate (2)"],
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -383,8 +383,8 @@ void main() async {
     followNet.fcontext = kOneofusContext;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-delegate", "Me-delegate (0)"],
-      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
+      "Me": ["Me-delegate", "Me-delegate (2)"],
+      "steve2": ["steve2-delegate", "steve2-delegate (2)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -392,7 +392,7 @@ void main() async {
     followNet.fcontext = 'social';
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-delegate", "Me-delegate (0)"],
+      "Me": ["Me-delegate", "Me-delegate (2)"],
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -401,8 +401,8 @@ void main() async {
     await bobN.doFollow(steve, {'social': 1}); // !canon follow !canon
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
-      "Me": ["Me-delegate", "Me-delegate (0)"],
-      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
+      "Me": ["Me-delegate", "Me-delegate (2)"],
+      "steve2": ["steve2-delegate", "steve2-delegate (2)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -489,7 +489,7 @@ void main() async {
     signInState.center = bob.token;
     await Comp.waitOnComps([oneofusNet, keyLabels, contentBase]); //
     var network = oneofusNet.network;
-    var expectedNetwork = {"Me": null, "steve2": null, "steve2 (0)": "5/1/2024 12:05 AM"};
+    var expectedNetwork = {"Me": null, "steve2": null, "steve2 (2)": "5/1/2024 12:05 AM"};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     followNet.listen();
@@ -497,7 +497,7 @@ void main() async {
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
       "Me": ["Me-delegate"],
-      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
+      "steve2": ["steve2-delegate", "steve2-delegate (2)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -506,7 +506,7 @@ void main() async {
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
       "Me": ["Me-delegate"],
-      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
+      "steve2": ["steve2-delegate", "steve2-delegate (2)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -516,7 +516,7 @@ void main() async {
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
       "Me": ["Me-delegate"],
-      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
+      "steve2": ["steve2-delegate", "steve2-delegate (2)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -537,9 +537,9 @@ void main() async {
     network = oneofusNet.network;
     expectedNetwork = {
       "Me": null,
-      "Me (0)": "5/1/2024 12:09 AM",
+      "Me (2)": "5/1/2024 12:09 AM",
       "steve2": null,
-      "steve2 (0)": "5/1/2024 12:05 AM"
+      "steve2 (2)": "5/1/2024 12:05 AM"
     };
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
@@ -552,7 +552,7 @@ void main() async {
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
       "Me": ["Me-delegate"],
-      "steve2": ["steve2-delegate", "steve2-delegate (0)"]
+      "steve2": ["steve2-delegate", "steve2-delegate (2)"]
     };
     jsonShowExpect(followNet.oneofus2delegates, expected);
   });

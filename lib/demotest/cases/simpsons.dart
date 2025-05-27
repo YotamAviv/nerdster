@@ -92,6 +92,7 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
     await delegate.doRate(title: delegate.name);
   }
 
+  // <nerdster>: bart blocks lisa
   // social: bart trusts milhouse, blocks lisa
   // nerd: bart trusts Milhouse, milhouse trusts lisa and bart.
   // family. lisa follows all family; there are other paths.

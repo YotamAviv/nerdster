@@ -279,7 +279,7 @@ void main() async {
     signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(keyLabels.labelKey(homer2.token), 'homer2');
-    expect(keyLabels.labelKey(homer.token), 'homer2 (0)');
+    expect(keyLabels.labelKey(homer.token), 'homer2 (2)');
   });
 
   test('homer2 replaces homer ago: lisa not trusted', () async {
@@ -300,7 +300,7 @@ void main() async {
     var expectedNetwork = {
       "Me": null,
       "homer2": null,
-      "homer2 (0)": "5/1/2024 12:04 AM",
+      "homer2 (2)": "5/1/2024 12:04 AM",
       "marge": null,
       "burns": null
     };
@@ -335,7 +335,7 @@ void main() async {
     var expectedNetwork = {
       "Me": null,
       "homer2": null,
-      "homer2 (0)": "5/1/2024 12:05 AM",
+      "homer2 (2)": "5/1/2024 12:05 AM",
       "lisa": null,
       "marge": null,
       "burns": null
@@ -431,7 +431,7 @@ void main() async {
     var network = oneofusNet.network;
     var expectedNetwork = {
       "Me": null,
-      "Me (0)": "5/1/2024 12:01 AM",
+      "Me (2)": "5/1/2024 12:01 AM",
       "bart": null,
       "sideshow": null
     };
@@ -472,7 +472,7 @@ void main() async {
 
     var expectedNetwork = {
       "key2": null,
-      "key2 (0)": "5/1/2024 12:03 AM",
+      "key2 (2)": "5/1/2024 12:03 AM",
       "key6": null,
       "key5": null
     };
@@ -521,7 +521,7 @@ void main() async {
       "sis": null,
       "homer2": null,
       "moms": null,
-      "homer2 (0)": "5/1/2024 12:09 AM",
+      "homer2 (2)": "5/1/2024 12:09 AM",
       "clown": null,
       "mom": null,
       "sister": null,
@@ -668,7 +668,7 @@ void main() async {
       "sis": null,
       "homer2": null,
       "moms": null,
-      "homer2 (0)": "5/1/2024 12:09 AM",
+      "homer2 (2)": "5/1/2024 12:09 AM",
       "clown": null,
       "mom": null,
       "sister": null
@@ -760,11 +760,11 @@ void main() async {
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(toJson(labelPathsX(homer.token)), [
       [
-        {'homer2 (0)': '(replaced)'}
+        {'homer2 (2)': '(replaced)'}
       ],
       [
         {'daughter': 'daughter'},
-        {'homer2 (0)': 'dad'}
+        {'homer2 (2)': 'dad'}
       ]
     ]);
   });

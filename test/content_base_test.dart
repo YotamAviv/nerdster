@@ -199,7 +199,7 @@ void main() async {
     delegateNetwork = followNet.delegate2fetcher;
     dn = delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
     expect(dn, {lonerD2.token: null, lonerD.token: parseIso('2024-05-01 07:02:00.000Z')});
-    expect(keyLabels.show(dn), {'Me-delegate': null, 'Me-delegate (0)': '5/1/2024 12:02 AM'});
+    expect(keyLabels.show(dn), {'Me-delegate': null, 'Me-delegate (2)': '5/1/2024 12:02 AM'});
 
     // say something as new delegate
     await lonerD2.doRate(title: "t3");
@@ -542,10 +542,10 @@ var jock1 = {
       "N:poser-true:Me": {
         "N:hipster-true:Me->poser": {
           "N:hipster-delegate-false:Me->poser->hipster": {},
-          "N:hipster-delegate (0)-false:10/10/2024 1:44 PM:Me->poser->hipster": {},
+          "N:hipster-delegate (2)-false:10/10/2024 1:44 PM:Me->poser->hipster": {},
           "S:1be34a1ae02178586be9cde87f01e495192e1812:@10/10/2024 1:44 PM:delegated:hipster-delegate":
               {},
-          "S:33404bc620f40ca4739f7637d308ff523948e9d0:@10/10/2024 1:44 PM:delegated:hipster-delegate (0)":
+          "S:33404bc620f40ca4739f7637d308ff523948e9d0:@10/10/2024 1:44 PM:delegated:hipster-delegate (2)":
               {}
         },
         "N:poser-delegate-false:Me->poser": {},
@@ -1036,10 +1036,10 @@ var rateAndDis = {
       "N:poser-true:Me": {
         "N:hipster-true:Me->poser": {
           "N:hipster-delegate-false:Me->poser->hipster": {},
-          "N:hipster-delegate (0)-false:10/10/2024 1:53 PM:Me->poser->hipster": {},
+          "N:hipster-delegate (2)-false:10/10/2024 1:53 PM:Me->poser->hipster": {},
           "S:f6872af18559e8e6da8b278455cc30c68ea6b5ca:@10/10/2024 1:53 PM:delegated:hipster-delegate":
               {},
-          "S:319118699fb7a63667fa4dc2e1b74f66c47e387a:@10/10/2024 1:53 PM:delegated:hipster-delegate (0)":
+          "S:319118699fb7a63667fa4dc2e1b74f66c47e387a:@10/10/2024 1:53 PM:delegated:hipster-delegate (2)":
               {}
         },
         "N:poser-delegate-false:Me->poser": {},

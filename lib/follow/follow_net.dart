@@ -137,9 +137,7 @@ class FollowNet with Comp, ChangeNotifier {
         for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
           List<List<Trust>> paths = e.value.paths;
           Iterable<List<Trust>> paths2 = paths.where((p) => (p.length <= degrees));
-          if (paths2.length >= numPaths) {
-            networkX.add(e.key);
-          }
+          if (paths2.length >= numPaths) networkX.add(e.key);
         }
         network = networkX;
       }
