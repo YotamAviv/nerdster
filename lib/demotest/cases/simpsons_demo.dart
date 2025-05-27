@@ -194,6 +194,8 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await seymoreN.doRate(subject: joker, recommend: true, verb: ContentVerb.rate);
   await seymoreN.doRate(subject: shakes, recommend: true, verb: ContentVerb.rate);
 
+  // <nerdster>: bart blocks lisa, marge
+  // <nerdster>: burns blocks multiple..
   // social: bart trusts milhouse, blocks lisa
   // nerd: bart trusts Milhouse, milhouse trusts lisa and bart.
   // family. lisa follows all family; there are other paths.

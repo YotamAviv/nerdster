@@ -35,7 +35,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     await loner2.doTrust(TrustVerb.replace, loner, revokeAt: s1.token);
     signInState.center = loner2.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expected = {"Me": null, "Me (0)": "5/1/2024 12:04 AM"};
+    expected = {"Me": null, "Me (2)": "5/1/2024 12:04 AM"};
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);
     expected = {"Me": 2};
     jsonShowExpect(
@@ -62,7 +62,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     // --- 2 equiv Oneofus, with 2 active delegates each, ready to merge.. --- //
 
     assert(oneofusNet.ready);
-    expected = {"Me": null, "Me (0)": "5/1/2024 12:04 AM"};
+    expected = {"Me": null, "Me (2)": "5/1/2024 12:04 AM"};
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);
 
     assert(followNet.ready);

@@ -284,7 +284,7 @@ Select an enabled follow context or <one-of-us> (everyone).'''
     Slider degreesSlider = Slider(
         value: Prefs.followNetDegrees.value as double,
         min: 1.0,
-        max: 5.0,
+        max: 6.0,
         divisions: 4,
         label: 'Degrees: ${Prefs.followNetDegrees.value}',
         thumbColor: Colors.green,

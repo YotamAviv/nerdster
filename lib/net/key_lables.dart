@@ -77,7 +77,7 @@ class OneofusLabels with Comp, ChangeNotifier {
       _token2name[token] = name;
       return name;
     }
-    for (int i = 0;; i++) {
+    for (int i = 2;; i++) {
       String altName = '$name ($i)';
       if (!_token2name.inverse.containsKey(altName)) {
         _token2name[token] = altName;
@@ -183,7 +183,7 @@ class KeyLabels with Comp, ChangeNotifier {
       _token2name[token] = name;
       return name;
     }
-    for (int i = 0;; i++) {
+    for (int i = 2;; i++) {
       String altName = '$name ($i)';
       if (!_token2name.inverse.containsKey(altName)) {
         _token2name[token] = altName;

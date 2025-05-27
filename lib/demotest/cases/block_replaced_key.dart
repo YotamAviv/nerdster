@@ -46,12 +46,12 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   expectedNetwork = {
     "Lisa": null,
     "Bart": null,
-    "Bart (0)": "5/1/2024 12:03 AM",
-    "Bart (1)": "5/1/2024 12:01 AM",
+    "Bart (2)": "5/1/2024 12:03 AM",
+    "Bart (3)": "5/1/2024 12:01 AM",
     "homer": null
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  expectedEquivalents = {"Bart", "Bart (0)", "Bart (1)"};
+  expectedEquivalents = {"Bart", "Bart (2)", "Bart (3)"};
   jsonShowExpect(oneofusEquiv.getEquivalents(bart3.token), expectedEquivalents);
   myExpect(notifications.rejected.length, 0);
 
@@ -69,11 +69,11 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   expectedNetwork = {
     "Me": null, // Note that I'm not labled "Lisa" any longer.
     "Bart": null,
-    "Bart (0)": "5/1/2024 12:03 AM",
+    "Bart (2)": "5/1/2024 12:03 AM",
     "homer": null,
   };
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
-  expectedEquivalents = {'Bart', 'Bart (0)'};
+  expectedEquivalents = {'Bart', 'Bart (2)'};
   jsonShowExpect(oneofusEquiv.getEquivalents(bart3.token), expectedEquivalents);
   myExpect(notifications.rejected.containsKey(r1.token), true);
   await Comp.waitOnComps([followNet]);
@@ -82,7 +82,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
     "N:Me-true:": {
       "N:Bart-true:Me": {
         "N:homer-true:Me->Bart": {},
-        "N:Bart (0)-false:5/1/2024 12:03 AM:Me->Bart": {}
+        "N:Bart (2)-false:5/1/2024 12:03 AM:Me->Bart": {}
       }
     }
   };
@@ -98,7 +98,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   expected = {
     "N:Me-true:": {
       "N:homer-true:Me": {},
-      "N:Me (0)-false:5/1/2024 12:03 AM:Me": {}
+      "N:Me (2)-false:5/1/2024 12:03 AM:Me": {}
     }
   };
   jsonShowExpect(dump, expected);
@@ -113,7 +113,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   network = oneofusNet.network;
   expectedNetwork = {
     "Me": null,
-    "Me (0)": "5/1/2024 12:01 AM",
+    "Me (2)": "5/1/2024 12:01 AM",
     "homer": null,
     "Lisa": null,
     "Bart": null
@@ -127,7 +127,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
       "N:Lisa-true:Me": {
         "N:Bart-true:Me->Lisa": {}
       },
-      "N:Me (0)-false:5/1/2024 12:01 AM:Me": {}
+      "N:Me (2)-false:5/1/2024 12:01 AM:Me": {}
     }
   };
   jsonShowExpect(dump, expected);
@@ -141,7 +141,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
       "N:Lisa-true:Me": {
         "N:Bart-true:Me->Lisa": {
           "N:homer-true:Me->Lisa->Bart": {},
-          "N:Bart (0)-false:5/1/2024 12:03 AM:Me->Lisa->Bart": {}
+          "N:Bart (2)-false:5/1/2024 12:03 AM:Me->Lisa->Bart": {}
         }
       }
     }
