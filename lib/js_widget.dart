@@ -29,7 +29,7 @@ class JSWidget extends StatelessWidget {
     // DEFER: Add a checkbox to translate. I think code to do that would go here.
 
     return InkWell(
-        onTap: () => ShowQr(jsonish.ppJson).show(context),
+        onTap: () => ShowQr(jsonish.json).show(context),
         onDoubleTap: () => ShowQr(jsonish.token).show(context),
         child: Tooltip(
             message: message,

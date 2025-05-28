@@ -255,7 +255,7 @@ class NameKeyWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        ShowQr(encoder.convert(keyJson)).show(context);
+        ShowQr(keyJson).show(context);
       },
       child: Text(
         display,

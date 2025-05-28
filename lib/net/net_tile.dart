@@ -213,7 +213,6 @@ class _MonikerWidget extends StatelessWidget {
     if (value == kRecenter) {
       await progress.make(() async {
         signInState.center = node.token!;
-        // TODO: NEXT: expand to highlighted token, also when using POV dropdown
         await Comp.waitOnComps([keyLabels, contentBase]);
       }, context);
     } else if (value == kFollow) {
@@ -241,7 +240,7 @@ $link''',
             context);
       } else {
         Iterable statements = Fetcher(token, domain).statements;
-        // TODO: Show the Prefs.keyLabel checkbox on this dialog.
+        // DEFER: Translate option on this dialog.
         List jsons = List.from(statements.map((s) => s.json));
         if (Prefs.keyLabel.value) {
           jsons = List.from(jsons.map((s) => keyLabels.show(s)));
