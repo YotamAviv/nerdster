@@ -3,12 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/dialogs/json_display.dart';
 import 'package:nerdster/content/dialogs/on_off_icon.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -175,6 +175,8 @@ class RateBodyState extends State<RateBody> {
 
     bool editingEnabled = !censor.value && !erase.value;
 
+    // TODO: NEXT: TextDecoration.lineThrough option in JsonDisplay
+    // TODO: NEXT: Pass our own ValueNotifier<bool> translate in JsonDisplay so that it doesn't forget as we setState
     TextStyle subjectStyle = !censor.value
         ? GoogleFonts.courierPrime(fontWeight: FontWeight.w700, fontSize: 14, color: Colors.black)
         : GoogleFonts.courierPrime(
@@ -207,7 +209,7 @@ class RateBodyState extends State<RateBody> {
       erase,
       Icons.cancel,
       Icons.cancel_outlined,
-      tooltipText: '''Clear (erase) my reaction''',
+      tooltipText: '''Clear (erase) my rating''',
       text: 'Clear',
       disabled: !b(widget.priorStatement),
       callback: eraseCallback,
@@ -215,9 +217,9 @@ class RateBodyState extends State<RateBody> {
     String censorTooltip;
     if (subjectIsMyStatement) {
       censorTooltip =
-          '''The subject here is your own statement. Click on the subject of this subject (its parent), and clear your reaction there instead.''';
+          '''The subject here is your own statement. Click on the subject of this subject (its parent), and clear your rating there instead.''';
     } else if (b(widget.priorStatement)) {
-      censorTooltip = 'You must clear your own reaction first in order to censor';
+      censorTooltip = 'You must clear your own rating first in order to censor';
     } else {
       censorTooltip = 'Censor this subject for everybody (who cares)';
     }
@@ -238,33 +240,20 @@ class RateBodyState extends State<RateBody> {
         width: 120.0,
         child: Tooltip(
             message:
-                '''Subjects (ex. {books, articles, or movies}) just exist, but Nerd'ster user reactions (ex. {rate, comment, dis}) are fleeting.
-A user can have one disposition on a subject, and so any newer reaction by him (including an edit to a comment) will overwrite his earlier one,
-which will make your reaction to his reaction lost.''',
-            child: Text('reacting to a reaction?', style: linkStyle)),
+                '''Subjects (ex. {books, articles, or movies}) just exist, but Nerd'ster user ratings (ex. {rate, comment, dis}) are fleeting.
+A user can have one disposition on a subject, and so any newer rating by him (including an edit to a comment) will overwrite his earlier one,
+which will make your rating of his rating lost.''',
+            child: Text('rating a rating?', style: linkStyle)),
       );
     }
 
-    ScrollController scrollController = ScrollController();
     return ListView(shrinkWrap: true, children: [
       InputDecorator(
           decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               labelText: 'Subject',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
-          child: Scrollbar(
-              controller: scrollController,
-              trackVisibility: true,
-              thumbVisibility: true,
-              child: TextField(
-                  scrollController: scrollController,
-                  controller: TextEditingController()
-                    ..text = Prefs.keyLabel.value
-                        ? encoder.convert(keyLabels.show(widget.subject))
-                        : widget.subject.ppJson,
-                  maxLines: 10,
-                  readOnly: true,
-                  style: subjectStyle))),
+          child: SizedBox(height: 200, child: JsonDisplay((widget.subject.json)))),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [

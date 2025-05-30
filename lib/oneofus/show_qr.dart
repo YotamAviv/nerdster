@@ -1,8 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/content/dialogs/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -43,42 +42,7 @@ class ShowQrState extends State<ShowQr> {
         SizedBox(
             width: size,
             height: size / 3,
-            child: Stack(
-              children: [
-                Align(
-                    alignment: Alignment.topLeft,
-                    child: IntrinsicWidth(
-                        child: TextField(
-                            controller: TextEditingController()..text = display,
-                            maxLines: null,
-                            readOnly: true,
-                            style: GoogleFonts.courierPrime(
-                                fontWeight: FontWeight.w700, fontSize: 10, color: widget.color)))),
-                Align(
-                    alignment: Alignment.bottomRight,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        FloatingActionButton(
-                            heroTag: 'Translate',
-                            tooltip: 'Translate',
-                            child: Icon(Icons.translate,
-                                color: widget.translate.value ? Colors.blue : null),
-                            onPressed: () async {
-                              widget.translate.value = !widget.translate.value;
-                              setState(() {});
-                            }),
-                        FloatingActionButton(
-                            heroTag: 'Copy',
-                            tooltip: 'Copy',
-                            child: const Icon(Icons.copy),
-                            onPressed: () async {
-                              await Clipboard.setData(ClipboardData(text: display));
-                            }),
-                      ],
-                    )),
-              ],
-            )),
+            child: JsonDisplay(widget.subject)),
       ],
     );
   }

@@ -26,8 +26,6 @@ class JSWidget extends StatelessWidget {
       throw Exception('Unexpected: ${dyn.runtimeType}, $dyn');
     }
 
-    // DEFER: Add a checkbox to translate. I think code to do that would go here.
-
     return InkWell(
         onTap: () => ShowQr(jsonish.json).show(context),
         onDoubleTap: () => ShowQr(jsonish.token).show(context),
