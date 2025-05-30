@@ -18,7 +18,8 @@ class Prefs {
   static final ValueNotifier<int> oneofusNetPaths = ValueNotifier<int>(1);
   static final ValueNotifier<int> followNetDegrees = ValueNotifier<int>(5);
   static final ValueNotifier<int> followNetPaths = ValueNotifier<int>(1);
-  static final ValueNotifier<bool> keyLabel = ValueNotifier(true);
+  static final ValueNotifier<bool> keyLabel =
+      ValueNotifier(true); // historic, deprecated, but used by tests
   static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> showJson = ValueNotifier(bNerd);
   static final ValueNotifier<bool> showKeys = ValueNotifier(bNerd);
@@ -33,7 +34,6 @@ class Prefs {
   static final ValueNotifier<bool> streamBatchFetch = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> slowFetch = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> fetchRecent = ValueNotifier<bool>(false);
-
 
   static Future<void> init() async {
     Map<String, String> params = Uri.base.queryParameters;

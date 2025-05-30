@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/dialogs/json_display.dart';
 import 'package:nerdster/follow/follow.dart';
 import 'package:nerdster/js_widget.dart';
 import 'package:nerdster/main.dart';
@@ -240,14 +243,19 @@ $link''',
             context);
       } else {
         Iterable statements = Fetcher(token, domain).statements;
-        // DEFER: Translate option on this dialog.
-        List jsons = List.from(statements.map((s) => s.json));
-        if (Prefs.keyLabel.value) {
-          jsons = List.from(jsons.map((s) => keyLabels.show(s)));
-        }
+        List<Json> jsons = List.from(statements.map((s) => s.json));
         Json j = {token: jsons};
-        String body = encoder.convert(j);
-        await alert('Statements signed by this key', body, ['Okay'], context);
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+                title: Text('Signed by this key'),
+                content: JsonDisplay(j),
+                actions: [
+                  TextButton(child: Text('Okay'), onPressed: () => Navigator.of(context).pop())
+                ]);
+          },
+        );
       }
     }
   }

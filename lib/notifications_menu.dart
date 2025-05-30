@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/content/dialogs/json_display.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -165,7 +165,6 @@ class StatementNotification extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String statementText = Jsonish.encoder.convert(keyLabels.show(statement));
     Node? iNode = oneofusNet.network[statement.iToken];
     Node? subjectNode = oneofusNet.network[statement.subjectToken];
 
@@ -177,17 +176,18 @@ class StatementNotification extends StatelessWidget {
         child: ListView(
           children: [
             Row(
-              // mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Flexible(
+                Expanded(
                     child: Linky(
                         '''A conflict was encountered during the trust network computation when processing the statement displayed to the right:
 
 This doesn't necessarily require you to do anything. For example if a key you trust is blocked by another key, then it should matter to you, and you'll see a notification, but when the owner of that key signs in, he'll see a notification that a key is blocking his own key, and so sorting this out should be more on him than on you.
 That said, even in that situation, it may be the case that that guy never checks his notifications, and so maybe pick up the slack for him.''')),
-                Text(statementText,
-                    style: GoogleFonts.courierPrime(
-                        fontWeight: FontWeight.w700, fontSize: 12, color: Colors.black))
+                SizedBox(
+                    width: big.width / 2,
+                    height: big.height / 2,
+                    child: JsonDisplay(statement.json))
               ],
             ),
             _space,
