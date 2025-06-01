@@ -16,6 +16,8 @@ just that data missing.
 
 # Emulator simpsonsDemo
 ?fire=emulator&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%2249TXJaRHesUCrp13HPv_rt6r529JGI6rBiUGGHfL6w4%22%7D
+# yotam (often hardcoded in emulator)
+?fire=prod&oneofus={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}
 
 # Nice ones:
 ```
