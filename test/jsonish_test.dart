@@ -320,7 +320,7 @@ void main() {
     Jsonish(json);
   });
 
-  test('print', () {
+  test('print key2order', () {
     print(encoder.convert(Jsonish.key2order));
   });
 }
