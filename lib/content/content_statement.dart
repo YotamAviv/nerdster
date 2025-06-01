@@ -12,8 +12,9 @@ class ContentStatement extends Statement {
 
   // with
   final dynamic other;
-  final bool? recommend; // CONSIDER: make verb
-  final bool? dismiss; // CONSIDER: make verb
+  final bool? recommend;
+  final bool? dismiss;
+  final bool? censor;
   final Json? contexts;
 
   static void init() {
@@ -42,6 +43,7 @@ class ContentStatement extends Statement {
       other: b(withx) ? withx!['otherSubject'] : null,
       recommend: b(withx) ? withx!['recommend'] : null,
       dismiss: b(withx) ? withx!['dismiss'] : null,
+      censor: b(withx) ? withx!['censor'] : null,
       contexts: b(withx) ? withx!['contexts'] : null,
     );
     _cache[s.token] = s;
@@ -57,6 +59,7 @@ class ContentStatement extends Statement {
     required this.other,
     required this.recommend,
     required this.dismiss,
+    required this.censor,
     required this.contexts,
   });
 
@@ -65,7 +68,12 @@ class ContentStatement extends Statement {
   // CONSIDER: A fancy StatementBuilder.
   // CONSIDER: Factoring a little more into parent.
   static Json make(Json iJson, ContentVerb verb, dynamic subject,
-      {String? comment, Json? other, bool? recommend, bool? dismiss, Json? contexts}) {
+      {String? comment,
+      Json? other,
+      bool? recommend,
+      bool? dismiss,
+      bool? censor,
+      Json? contexts}) {
     Json json = {
       'statement': kNerdsterType,
       'time': clock.nowIso,
@@ -79,6 +87,7 @@ class ContentStatement extends Statement {
       'otherSubject': other,
       'recommend': recommend,
       'dismiss': dismiss,
+      'censor': censor,
       'contexts': contexts,
     };
     withx.removeWhere((key, value) => !b(value));
@@ -88,16 +97,16 @@ class ContentStatement extends Statement {
     return json;
   }
 
-  // KLUDGEY, messy, possibly buggy.. 
+  // KLUDGEY, messy, possibly buggy..
   // The transformer is applied on
   // - I: always
   // - subject: never
   // The assumption is that transformer is delegate2oneofus, which I believe maps delegates to
   // canonical oneofus.
   // ContentVerb.follow statements use a Nerdster token for 'I' and a Oneofus token for 'subject'
-  // It would seem that for the Nerdster follow case this should transform 
+  // It would seem that for the Nerdster follow case this should transform
   // - I using followNet.delegate2oneofus
-  // - subject using getCanonical.getCanonical 
+  // - subject using getCanonical.getCanonical
   // This is tested in '!canon follow !canon, multiple delegates'
   // It may be the case that followNet does this without leveraging distinct/merge.
   // Smells like I could do something smart like map/reduce.

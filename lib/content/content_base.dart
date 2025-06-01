@@ -158,7 +158,7 @@ class ContentBase with Comp, ChangeNotifier {
       if (censor) {
         /// delete deletions correctly (more trusted can delete less trusted)
         for (final ContentStatement statement
-            in statements.where((s) => s.verb == ContentVerb.censor)) {
+            in statements.where((s) => s.verb == ContentVerb.rate && bb(s.censor))) {
           if (_censored.contains(statement.token)) {
             continue;
           }

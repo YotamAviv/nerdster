@@ -42,8 +42,6 @@ enum ContentVerb {
   // apply to 'subject'
   rate('rate', 'rated'), // (comment), recommend, dismiss, ..
 
-  censor('censor', 'censored'),
-
   // apply to 'subject', 'otherSubject'.
   relate('relate', 'related'),
   dontRelate('dontRelate', 'un-related'),
@@ -79,6 +77,7 @@ class Jsonish {
     'tags', // gone but may exist in old statements
     'recommend',
     'dismiss',
+    'censor',
     'stars', // gone but may exist in old statements
 
     'comment',

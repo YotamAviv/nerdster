@@ -99,6 +99,7 @@ class DemoKey {
       String? comment,
       bool? recommend,
       bool? dismiss,
+      bool? censor,
       ContentVerb? verb}) async {
     assert(i(title) + i(subject) == 1);
     if (b(title)) {
@@ -106,7 +107,7 @@ class DemoKey {
     }
     ContentVerb useVerb = verb ?? ContentVerb.rate;
     Json json = ContentStatement.make(await publicKey.json, useVerb, subject!,
-        comment: comment, recommend: recommend, dismiss: dismiss);
+        comment: comment, recommend: recommend, dismiss: dismiss, censor: censor);
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
@@ -123,13 +124,15 @@ class DemoKey {
     return statement;
   }
 
+  // NEXT: Eliminate this (use rate) or use it in more places 
   Future<Statement> doCensor({Json? subject, String? title}) async {
     assert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
-    Json json =
-        ContentStatement.make(await publicKey.json, ContentVerb.censor, Jsonish(subject!).token);
+    Json json = ContentStatement.make(
+        await publicKey.json, ContentVerb.rate, Jsonish(subject!).token,
+        censor: true);
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
