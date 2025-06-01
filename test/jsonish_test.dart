@@ -6,6 +6,7 @@ import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:test/test.dart';
 
 const String jsonSubjects = '''
@@ -317,5 +318,9 @@ void main() {
       "list": List.unmodifiable(["b", "a"])
     };
     Jsonish(json);
+  });
+
+  test('print', () {
+    print(encoder.convert(Jsonish.key2order));
   });
 }
