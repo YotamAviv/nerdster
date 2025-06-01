@@ -48,6 +48,7 @@ Future<Json?> rateDialog(BuildContext context, Jsonish subject, ContentStatement
       barrierDismissible: false,
       builder: (context) {
         final focusNode = FocusNode(); // Create a FocusNode
+        // Dismiss with Escape key (from AI). TODO: Use elsewhere.
         return KeyboardListener(
             focusNode: focusNode,
             autofocus: true,
@@ -168,8 +169,9 @@ class _State extends State<RateBody> {
 
     bool? recommendX = recommend.value ? true : null;
     bool? disX = dis.value ? true : null;
+    bool? censorX = censor.value ? true : null;
     json = ContentStatement.make(i, verb, subject,
-        recommend: recommendX, dismiss: disX, comment: comment);
+        recommend: recommendX, dismiss: disX, comment: comment, censor: censorX);
     print(Jsonish(json).ppJson);
     Navigator.pop(context, json);
   }
