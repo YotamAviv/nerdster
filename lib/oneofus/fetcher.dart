@@ -18,6 +18,8 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
+/// PERFORMANCE: Cloud copy everything to static and fetch from there.
+
 /// Now that Nerdster loads Oneofus data over HTTPS, not Firebase Cloud Functions,
 /// Fire access in OneofusFire should not be necessary.
 ///
