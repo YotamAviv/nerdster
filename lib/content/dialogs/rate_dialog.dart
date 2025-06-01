@@ -111,7 +111,7 @@ class _State extends State<RateBody> {
     if (b(widget.priorStatement)) {
       recommend.value = b(widget.priorStatement!.recommend);
       dis.value = b(widget.priorStatement!.dismiss);
-      censor.value = b(widget.priorStatement!.verb == ContentVerb.censor);
+      censor.value = b(widget.priorStatement!.censor);
       // TODO: clear?
       commentController.text = widget.priorStatement!.comment ?? '';
     }
@@ -121,7 +121,7 @@ class _State extends State<RateBody> {
     if (b(widget.priorStatement)) {
       return recommend.value == b(widget.priorStatement!.recommend) &&
           dis.value == b(widget.priorStatement!.dismiss) &&
-          censor.value == (widget.priorStatement!.verb == ContentVerb.censor) &&
+          censor.value == b(widget.priorStatement!.censor) &&
           commentController.text == (widget.priorStatement!.comment ?? '');
     } else {
       return bAllFieldsClear;
@@ -150,16 +150,14 @@ class _State extends State<RateBody> {
       assert(!censor.value);
       assert(!b(comment));
       verb = ContentVerb.clear;
-    } else if (censor.value) {
-      assert(!erase.value);
-      verb = ContentVerb.censor;
     } else {
       assert(!erase.value);
       verb = ContentVerb.rate;
     }
 
     var subject;
-    if (verb == ContentVerb.clear || verb == ContentVerb.censor) {
+    if (verb == ContentVerb.clear || censor.value) {
+      // For clear or censor, use the token instead of the entire subject.
       subject = widget.subject.token;
     } else {
       assert(verb == ContentVerb.rate);

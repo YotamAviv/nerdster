@@ -175,7 +175,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await bartN.doRate(subject: dogtown, recommend: true, verb: ContentVerb.rate);
   await milhouseN.doRate(subject: superbad, recommend: true, verb: ContentVerb.rate);
   await bartN.doRate(subject: superbad, recommend: true, comment: 'rad', verb: ContentVerb.rate);
-  await margeN.doRate(subject: getToken(superbad), verb: ContentVerb.censor);
+  await margeN.doRate(subject: getToken(superbad), censor: true);
   await margeN.doRate(subject: banana, recommend: true, verb: ContentVerb.rate);
   await homer2N.doRate(subject: kingpin, recommend: true, verb: ContentVerb.rate);
   await bartN.doRate(subject: superbad, comment: 'rad', verb: ContentVerb.rate);
@@ -223,6 +223,11 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   return (lisa, lisaN);
 }
 
+
+// 6/1/2025, created demo on emulator
+// from /etc => gen link..
+// ?fire=emulator&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%223gcFasjK_wvMZMuatbPIx_sCAU0YOfoy3CB0j4S8Y2k%22%7D
+
 // 5/10/2025, created demo on prod
 // from /etc => gen link..
-// http://localhost:37515/?oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22cj5Fg8_RxR_frKmm8BFrMQvPmSDdYmGYh_L6iVc3TuM%22%7D
+// ?oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22cj5Fg8_RxR_frKmm8BFrMQvPmSDdYmGYh_L6iVc3TuM%22%7D
