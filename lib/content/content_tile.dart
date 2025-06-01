@@ -118,8 +118,9 @@ class _ContentTileState extends State<ContentTile> {
       if (verb == ContentVerb.rate) {
         if (b(statement.recommend)) buf.write('recommended ');
         if (b(statement.dismiss)) buf.write('dismissed ');
-      } else {
-        buf.write('  ${verb.pastTense}: ');
+      } 
+      if (verb != ContentVerb.rate) {
+        buf.write('  ${verb.pastTense} ');
       }
       Color textColor =
           !contentBase.isRejected(subjectNode.subject.token) ? Colors.black : Colors.pink;

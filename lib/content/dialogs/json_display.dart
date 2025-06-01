@@ -7,9 +7,11 @@ import 'package:nerdster/singletons.dart';
 
 class JsonDisplay extends StatefulWidget {
   final Json json;
-  final ValueNotifier<bool> translate = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> translate;
+  final bool strikethrough;
 
-  JsonDisplay(this.json, {super.key});
+  JsonDisplay(this.json, {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
+      : translate = translate ?? ValueNotifier<bool>(false);
 
   @override
   State<StatefulWidget> createState() => _State();
@@ -35,7 +37,11 @@ class _State extends State<JsonDisplay> {
                 controller: TextEditingController()..text = display,
                 maxLines: null,
                 readOnly: true,
-                style: GoogleFonts.courierPrime(fontWeight: FontWeight.w700, fontSize: 10))),
+                style: GoogleFonts.courierPrime(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10,
+                  decoration: widget.strikethrough ? TextDecoration.lineThrough : null,
+                ))),
         Align(
             alignment: Alignment.bottomRight,
             child: Row(
@@ -43,7 +49,7 @@ class _State extends State<JsonDisplay> {
               children: [
                 FloatingActionButton(
                     heroTag: 'Translate',
-                    tooltip: 'Translate gibberish (public keys, tokens)',
+                    tooltip: 'Translate gibberish (known public keys)',
                     child:
                         Icon(Icons.translate, color: widget.translate.value ? Colors.blue : null),
                     onPressed: () async {
