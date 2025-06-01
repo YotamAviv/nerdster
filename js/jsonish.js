@@ -5,6 +5,8 @@ const other = require('../test/other.json');
 // Test samples from Nerdster or ONE-OF-US are not going to have any unknown fields, and so need 
 // to test on other fake samples as well.
 
+// key2order: Use jsonish_test.dart to generate this
+
 // ----- Code from jsonish.js to copy/paste into <nerdster/oneofus>/functions/index.js ----------//
 
 var key2order = {
