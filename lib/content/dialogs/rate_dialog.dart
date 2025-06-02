@@ -12,23 +12,11 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
-/// DONE:
-/// - Don't allow me to clear and censor (must do one at a time).
-/// - Don't allow me to censor if I have a priorStatement (I should clear my statement instead).
-/// - Don't allow me to censor my statement
-/// - Okay not enabled unless changed.
-/// - Don't allow rating nothing.
-/// - All controls disabled when censor or clear pressed (other than unpressing erase or censor).
-
-/// Above seem broken, here's the update I'll work towards
-///
 /// How nerdy?
 /// There may be compelling reasons to
 /// - recommend and dis (it's good, but I've seen it)
-/// - censor and dis and comment (censorship might be enabled)
+/// - censor and dis and comment (censorship might be disabled)
 /// - censor and recommened (good porn)
-///
-/// OOPS: Can't recommend and dis: different verbs: can only use one. TODO: BUG: NEXT: 
 ///
 /// There are no compelling reasons to
 /// - censor your own statement (just clear it)
@@ -39,7 +27,7 @@ import 'package:nerdster/util_ui.dart';
 ///   - Do allow me to click on clear again to un-clear
 /// - Don't allow me to censor my statement (I should clear my statement instead)
 /// - Okay not enabled unless there are changes
-/// - All controls disabled when  clear pressed (click on clear again to un-clear)
+/// - All controls disabled when clear pressed (click on clear again to un-clear)
 
 Future<Json?> rateDialog(BuildContext context, Jsonish subject, ContentStatement? priorStatement) {
   double width = max(MediaQuery.of(context).size.width / 2, 700);
@@ -48,7 +36,7 @@ Future<Json?> rateDialog(BuildContext context, Jsonish subject, ContentStatement
       barrierDismissible: false,
       builder: (context) {
         final focusNode = FocusNode(); // Create a FocusNode
-        // Dismiss with Escape key (from AI). TODO: Use elsewhere.
+        // Dismiss with Escape key (code from AI, and questionable - see commented out sections). TODO: Use elsewhere.
         return KeyboardListener(
             focusNode: focusNode,
             autofocus: true,
@@ -82,8 +70,8 @@ class _State extends State<RateBody> {
   TextEditingController commentController = TextEditingController();
   ValueNotifier<bool> recommend = ValueNotifier(false);
   ValueNotifier<bool> dis = ValueNotifier(false);
-  ValueNotifier<bool> erase = ValueNotifier(false);
   ValueNotifier<bool> censor = ValueNotifier(false);
+  ValueNotifier<bool> erase = ValueNotifier(false);
   ValueNotifier<bool> okEnabled = ValueNotifier(false);
   ValueNotifier<bool> translate = ValueNotifier<bool>(false);
 
@@ -106,6 +94,15 @@ class _State extends State<RateBody> {
       erase.value = true;
     }
     setState(() {});
+  }
+
+  void eraseListener() {
+    if (erase.value) {
+      clearFields();
+    } else {
+      if (b(widget.priorStatement)) setToPrior();
+    }
+    listener();
   }
 
   void setToPrior() {
@@ -140,7 +137,6 @@ class _State extends State<RateBody> {
       !recommend.value && !dis.value && !censor.value && commentController.text.isEmpty;
 
   Future<void> okHandler() async {
-    Json json;
     final Json i = signInState.signedInDelegatePublicKeyJson!;
     String? comment = commentController.text.isNotEmpty ? commentController.text : null;
     ContentVerb verb;
@@ -170,37 +166,23 @@ class _State extends State<RateBody> {
     bool? recommendX = recommend.value ? true : null;
     bool? disX = dis.value ? true : null;
     bool? censorX = censor.value ? true : null;
-    json = ContentStatement.make(i, verb, subject,
-        recommend: recommendX, dismiss: disX, comment: comment, censor: censorX);
+    Json json = ContentStatement.make(i, verb, subject,
+        recommend: recommendX, dismiss: disX, censor: censorX, comment: comment);
     print(Jsonish(json).ppJson);
     Navigator.pop(context, json);
-  }
-
-  void eraseCallback() {
-    if (erase.value) {
-      clearFields();
-    } else {
-      if (b(widget.priorStatement)) setToPrior();
-      // There's no need to clearFields; they should have already been cleared since I'm
-      // un-pressing either the erase or clear button.
-    }
-    listener();
-  }
-
-  void censorCallback() {
-    eraseCallback();
   }
 
   @override
   Widget build(BuildContext context) {
     // check if subject is my statement
     bool subjectIsMyStatement = false;
-    if (b(signInState.signedInDelegate)) {
-      try {
-        Statement cs = Statement.make(widget.subject);
-        subjectIsMyStatement = followNet.delegate2oneofus[cs.iToken] ==
-            followNet.delegate2oneofus[signInState.signedInDelegate!];
-      } catch (e) {}
+    try {
+      // Assume that subject is a statement, construct the Statement, and check if I'm its author.
+      Statement temp = Statement.make(widget.subject);
+      subjectIsMyStatement = followNet.delegate2oneofus[temp.iToken] ==
+          followNet.delegate2oneofus[signInState.signedInDelegate!];
+    } catch (e) {
+      // Probably not even a statement
     }
 
     bool editingEnabled = !erase.value;
@@ -217,11 +199,6 @@ class _State extends State<RateBody> {
         color: Colors.brown,
         callback: listener,
         disabled: !editingEnabled);
-    OnOffIcon eraseButton = OnOffIcon(erase, Icons.cancel, Icons.cancel_outlined,
-        tooltipText: '''Clear (erase) my rating''',
-        text: 'Clear',
-        disabled: !b(widget.priorStatement),
-        callback: eraseCallback);
     String censorTooltip;
     if (subjectIsMyStatement) {
       censorTooltip =
@@ -235,6 +212,11 @@ class _State extends State<RateBody> {
         color: Colors.red,
         disabled: subjectIsMyStatement || !editingEnabled,
         callback: listener);
+    OnOffIcon eraseButton = OnOffIcon(erase, Icons.cancel, Icons.cancel_outlined,
+        tooltipText: '''Clear (erase) my rating''',
+        text: 'Clear',
+        disabled: !b(widget.priorStatement),
+        callback: eraseListener);
 
     Widget warning = const SizedBox(width: 120.0);
     if (widget.subject['statement'] == kNerdsterType) {
@@ -242,8 +224,8 @@ class _State extends State<RateBody> {
         width: 120.0,
         child: Tooltip(
             message:
-                '''Subjects (ex. {books, articles, or movies}) just exist, but Nerd'ster user ratings (ex. {rate, comment, dis}) are fleeting.
-A user can have one disposition on a subject, and so any newer rating by him (including an edit to a comment) will overwrite his earlier one,
+                '''Subjects (ex. {books, articles, or movies}) just exist, but Nerd'ster user ratings are fleeting.
+A user can have only one disposition on a subject, and so any newer rating by him (including an edit to a comment) will overwrite his earlier one,
 which will make your rating of his rating lost.''',
             child: Text('rating a rating?', style: linkStyle)),
       );
@@ -261,7 +243,7 @@ which will make your rating of his rating lost.''',
                   translate: translate, strikethrough: censor.value))),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [recommendButton, disButton, eraseButton, censorButton],
+        children: [recommendButton, disButton, censorButton, eraseButton],
       ),
       TextField(
         enabled: editingEnabled,
@@ -282,17 +264,3 @@ which will make your rating of his rating lost.''',
     ]);
   }
 }
-
-// -- Copy paste this into main() to just show the dialog for development. --
-// Json iKey = {'iKey': 1};
-// Json subject = {'hi': 'there'};
-// ContentStatement prior = ContentStatement(Jsonish(
-//     ContentStatement.make(iKey, ContentVerb.rate, subject, comment: 'my comment', recommend: true)));
-// SignInState.init('dummy');
-// runApp(MaterialApp(
-//     home: Scaffold(
-//         body: SafeArea(
-//   child: RateBody(Jsonish(subject), prior),
-// ))));
-// return;
-// -- Copy paste this into main() to just show the dialog for development. --
