@@ -18,7 +18,7 @@ Future<(DemoKey, DemoKey?)> testDeletion1() async {
   await contentBase.waitUntilReady();
   expect(contentBase.roots.length, 1);
 
-  await lonerN.doCensor(title: 'title');
+  await lonerN.doRate(title: 'title', censor: true);
   contentBase.listen();
   await contentBase.waitUntilReady();
   expect(contentBase.roots.length, 0);
@@ -77,8 +77,8 @@ Future<(DemoKey, DemoKey?)> deletions3() async {
 
   // deleter1 delets subject; deleter2 deletes deleter1's deletion.
   Statement rating = await lonerN.doRate(title: 'title');
-  Statement deletion1 = await deleter1N.doCensor(title: 'title');
-  Statement deletion2 = await deleter2N.doCensor(subject: deletion1.json);
+  Statement deletion1 = await deleter1N.doRate(title: 'title', censor: true);
+  Statement deletion2 = await deleter2N.doRate(subject: deletion1.json, censor: true);
 
   // observer1 should be censored as per deleter1's desire.
   await signInState.signIn(observer1.token, null);

@@ -124,21 +124,6 @@ class DemoKey {
     return statement;
   }
 
-  // NEXT: Eliminate this (use rate) or use it in more places 
-  Future<Statement> doCensor({Json? subject, String? title}) async {
-    assert(i(title) + i(subject) == 1);
-    if (b(title)) {
-      subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
-    }
-    Json json = ContentStatement.make(
-        await publicKey.json, ContentVerb.rate, Jsonish(subject!).token,
-        censor: true);
-    Fetcher fetcher = Fetcher(token, kNerdsterDomain);
-    OouSigner signer = await OouSigner.make(keyPair);
-    Statement statement = await fetcher.push(json, signer);
-    return statement;
-  }
-
   Future<Statement> doRelate(ContentVerb verb,
       {Json? subject, String? title, Json? other, String? otherTitle}) async {
     assert(i(subject) + i(title) == 1);

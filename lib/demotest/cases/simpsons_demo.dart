@@ -167,32 +167,32 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   const Json shakes = {'contentType': 'movie', 'title': "Shakes the Clown", 'year': '1991'};
   const Json joker = {'contentType': 'movie', 'title': "Joker", 'year': '2019'};
 
-  await smithersN.doRate(subject: brokeback, recommend: true, verb: ContentVerb.rate);
-  await carlN.doRate(subject: brokeback, recommend: true, verb: ContentVerb.rate);
-  await sideshowN.doRate(subject: brokeback, dismiss: true, verb: ContentVerb.rate);
+  await smithersN.doRate(subject: brokeback, recommend: true);
+  await carlN.doRate(subject: brokeback, recommend: true);
+  await sideshowN.doRate(subject: brokeback, dismiss: true);
 
-  await lisaN.doRate(subject: buck, recommend: true, verb: ContentVerb.rate);
-  await bartN.doRate(subject: dogtown, recommend: true, verb: ContentVerb.rate);
-  await milhouseN.doRate(subject: superbad, recommend: true, verb: ContentVerb.rate);
-  await bartN.doRate(subject: superbad, recommend: true, comment: 'rad', verb: ContentVerb.rate);
+  await lisaN.doRate(subject: buck, recommend: true);
+  await bartN.doRate(subject: dogtown, recommend: true);
+  await milhouseN.doRate(subject: superbad, recommend: true);
+  await bartN.doRate(subject: superbad, recommend: true, comment: 'rad');
   await margeN.doRate(subject: getToken(superbad), censor: true);
-  await margeN.doRate(subject: banana, recommend: true, verb: ContentVerb.rate);
-  await homer2N.doRate(subject: kingpin, recommend: true, verb: ContentVerb.rate);
-  await bartN.doRate(subject: superbad, comment: 'rad', verb: ContentVerb.rate);
-  await bartN.doRate(subject: buck, dismiss: true, verb: ContentVerb.rate);
-  await lisaN.doRate(subject: secretariat, recommend: true, verb: ContentVerb.rate);
-  await margeN.doRate(subject: secretariat, recommend: true, verb: ContentVerb.rate);
+  await margeN.doRate(subject: banana, recommend: true);
+  await homer2N.doRate(subject: kingpin, recommend: true);
+  await bartN.doRate(subject: superbad, comment: 'rad');
+  await bartN.doRate(subject: buck, dismiss: true);
+  await lisaN.doRate(subject: secretariat, recommend: true);
+  await margeN.doRate(subject: secretariat, recommend: true);
   await carlN.doRate(
-      subject: superbad, dismiss: true, comment: 'disgusting', verb: ContentVerb.rate);
+      subject: superbad, dismiss: true, comment: 'disgusting');
 
-  await sideshowN.doRate(subject: joker, recommend: true, verb: ContentVerb.rate);
-  await sideshowN.doRate(subject: shakes, recommend: true, verb: ContentVerb.rate);
-  await melN.doRate(subject: joker, recommend: true, verb: ContentVerb.rate);
-  await melN.doRate(subject: shakes, recommend: true, verb: ContentVerb.rate);
-  await amandaN.doRate(subject: joker, recommend: true, verb: ContentVerb.rate);
-  await amandaN.doRate(subject: shakes, recommend: true, verb: ContentVerb.rate);
-  await seymoreN.doRate(subject: joker, recommend: true, verb: ContentVerb.rate);
-  await seymoreN.doRate(subject: shakes, recommend: true, verb: ContentVerb.rate);
+  await sideshowN.doRate(subject: joker, recommend: true);
+  await sideshowN.doRate(subject: shakes, recommend: true);
+  await melN.doRate(subject: joker, recommend: true);
+  await melN.doRate(subject: shakes, recommend: true);
+  await amandaN.doRate(subject: joker, recommend: true);
+  await amandaN.doRate(subject: shakes, recommend: true);
+  await seymoreN.doRate(subject: joker, recommend: true);
+  await seymoreN.doRate(subject: shakes, recommend: true);
 
   // <nerdster>: bart blocks lisa, marge
   // <nerdster>: burns blocks multiple..
