@@ -49,7 +49,7 @@ class _State extends State<JsonDisplay> {
               children: [
                 FloatingActionButton(
                     heroTag: 'Translate',
-                    tooltip: 'Translate gibberish (known public keys)',
+                    tooltip: !widget.translate.value ? 'interperate known keys, make more human readable' : 'show raw statement',
                     child:
                         Icon(Icons.translate, color: widget.translate.value ? Colors.blue : null),
                     onPressed: () async {
