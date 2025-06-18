@@ -174,7 +174,7 @@ class KeyLabels with Comp, ChangeNotifier {
 
   void _labelDelegateKeys() {
     for (MapEntry<String, String> e in followNet.delegate2oneofus.entries) {
-      _labelKey(e.key, '${labelKey(e.value)}-delegate');
+      _labelKey(e.key, '${labelKey(e.value)} on nerdster.org');
     }
   }
 

@@ -24,7 +24,7 @@ abstract class NetTreeModel {
     if (token == signInState.center) return [rootLabel];
 
     // DEFER: We don't show much for delegate keys.
-    if (followNet.delegate2oneofus.containsKey(token)) return ['delegate key'];
+    if (followNet.delegate2oneofus.containsKey(token)) return ['nerdster.org delegate'];
 
     List<String> labeledKeyPaths = <String>[];
     for (List<LabeledEdge> labeledKeyPath in labelPathsX(token!)) {
