@@ -112,10 +112,9 @@ firebase projects:list
 gcloud projects list
 gcloud auth login
 
-date2
 export NOW=`date3`
 # If running in 2 windows, make sure to set (export) NOW in both
-export NOW=25-05-26--11-26
+export NOW=25-07-03--07-30
 echo $NOW
 
 firebase use nerdster

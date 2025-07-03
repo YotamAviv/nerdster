@@ -78,7 +78,7 @@ class _ContentTileState extends State<ContentTile> {
     String rowTooltip = "Click to expand statements about this subject";
     Color? iconColor;
     if (subjectNode.equivalent) {
-      iconColor = Colors.pink;
+      iconColor = Colors.lightGreen;
       rowTooltip = 'equivalent of parent';
     } else if (subjectNode.related) {
       iconColor = Colors.lightBlue;
