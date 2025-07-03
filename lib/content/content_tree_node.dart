@@ -44,10 +44,8 @@ class ContentTreeNode {
 
     // recurse for children
     for (ContentTreeNode child in getChildren()) {
-      // KLUDGE: Don't recurse for equivalent children.
-      if (child.equivalent) {
-        continue;
-      }
+      // Don't recurse for equivalent children.
+      if (child.equivalent) continue;
 
       Iterable<Prop> recurseProps = props.where((p) => p.recurse);
       child._computePropsRecurse(recurseProps);

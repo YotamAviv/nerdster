@@ -146,7 +146,7 @@ void main() async {
     expect(roots.length, 1);
     ContentTreeNode t1Node1 = roots.first;
     expect(t1Node1.toString(), t1Node.toString());
-    expect(t1Node1.getChildren().length, 3);
+    expect(t1Node1.getChildren().length, 2);
   });
 
   test('replace delegate', () async {
@@ -723,24 +723,6 @@ var equate1 = {
       "children": [
         {
           "subject": {"contentType": "article", "title": "b", "url": ""}
-        },
-        {
-          "subject": {
-            "statement": "org.nerdster",
-            "time": "2024-10-10T20:54:58.223Z",
-            "I": {
-              "crv": "Ed25519",
-              "kty": "OKP",
-              "x": "l-SxQt89p0zdwuJBZHoZPwAT4mMS7yFZ0AFqFsOPZow"
-            },
-            "equate": {"contentType": "article", "title": "a", "url": ""},
-            "with": {
-              "otherSubject": {"contentType": "article", "title": "b", "url": ""}
-            },
-            "previous": "008986d2c184415862772443634aa0aa70ad0fb5",
-            "signature":
-                "b3f320ef30f574de9553a009b8e0175d0382a191c904efa2850635c651ec9cb9b934a45b23fb6df068165fa57f6e32ea4dc9a727a72566855939fad070348208"
-          }
         },
         {
           "subject": {

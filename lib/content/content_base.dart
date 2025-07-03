@@ -67,13 +67,9 @@ class ContentBase with Comp, ChangeNotifier {
     return statement;
   }
 
-  Iterable<ContentStatement>? getSubjectStatements(String subject) {
-    return _subject2statements[subject];
-  }
+  Iterable<ContentStatement>? getSubjectStatements(String subject) => _subject2statements[subject];
 
-  Iterable<ContentTreeNode>? getChildren(ContentTreeNode node) {
-    return _node2children[node];
-  }
+  Iterable<ContentTreeNode>? getChildren(ContentTreeNode node) => _node2children[node];
 
   @override
   Future<void> process() async {
@@ -192,9 +188,8 @@ class ContentBase with Comp, ChangeNotifier {
       // _subject2statements
       for (ContentStatement statement in statements) {
         // CONSIDER: filters only for 'rate', not equate, relate, censor
-        if (_filterByTType(statement) || _filterByTimeframe(statement)) {
-          continue;
-        }
+        if (_filterByTType(statement) || _filterByTimeframe(statement)) continue;
+
         Set<String> subjectTokens = _getSubjectTokens(statement);
         for (String subjectToken in subjectTokens) {
           _subject2statements.putIfAbsent(subjectToken, () => <ContentStatement>[]).add(statement);
@@ -289,7 +284,7 @@ class ContentBase with Comp, ChangeNotifier {
       relatedTokens = relatedTokens.where((token) => token != node.subject.token);
       for (String relatedToken in relatedTokens) {
         assert(!_isCensored(relatedToken));
-        // Skip dismissed. TEST:
+        // Skip dismissed. TODO: TEST:
         List<ContentStatement>? relatedStatements = _subject2statements[relatedToken];
         if (b(relatedStatements) &&
             relatedStatements!.any((statement) =>
@@ -321,7 +316,7 @@ class ContentBase with Comp, ChangeNotifier {
 
     for (ContentStatement statement in _subject2statements[node.subject.token] ?? []) {
       assert(!_isCensored(statement.token));
-      // Skip dismissed. TEST:
+      // Skip dismissed. TODO: TEST:
       if (b(_subject2statements[statement.token]) &&
           _subject2statements[statement.token]!.any((statement) =>
               b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.center)) {
@@ -329,7 +324,19 @@ class ContentBase with Comp, ChangeNotifier {
       }
 
       ContentTreeNode statementNode = ContentTreeNode(path, statement.jsonish);
-      _node2children[node]!.add(statementNode);
+      if (!node.equivalent && !node.related) {
+        if (!isStatementRelateOrEquate(statement)) {
+          // Top level (not here because this is related or equated):
+          // Don't show relate/equate statements; the related or equated subject should be show, 
+          // and showing those statement, too, clutters the UI.
+          _node2children[node]!.add(statementNode);
+        }
+      } else {
+        // This is here becuase it's related or equated:
+        // Do show relate/equate statements.
+        _node2children[node]!.add(statementNode);
+      }
+
       // Rare (even demented) case: statement is related to subject.
       // Why am I even working on this? Because someone might do it, and I don't want to crash (stack overflow)
       // The less demented case would be to relate (or equate) something in the tree to something else in the tree.
@@ -341,6 +348,10 @@ class ContentBase with Comp, ChangeNotifier {
       }
     }
   }
+
+  final Set<ContentVerb> relateEquate = {ContentVerb.relate, ContentVerb.equate};
+  bool isStatementRelateOrEquate(ContentStatement statement) =>
+      relateEquate.contains(statement.verb);
 
   Sort get sort => _sort;
   set sort(Sort sort) {
