@@ -50,10 +50,7 @@ class _SignInMenuState extends State<SignInMenu> {
       return MenuItemButton(
           onPressed: () async {
             await KeyStore.wipeKeys();
-            signInState.signOut(); // NEXT: context?
-            // (showTopRightDialog(context, CredentialsWidget(identityJson, delegateJson));)
-            // ignore: unawaited_futures
-            showCredentials(context);
+            signInState.signOut(context: context);
           },
           child: const Row(
             children: [Icon(Icons.logout), iconSpacer, Text('Sign out')],
@@ -69,10 +66,7 @@ class _SignInMenuState extends State<SignInMenu> {
           final OouKeyPair? nerdsterKeyPair = delegateKey?.keyPair;
           demoSignins.add(MenuItemButton(
               onPressed: () async {
-                // NEXT:
-                // showTopRightDialog(context, CredentialsWidget(identityJson, delegateJson));
-
-                await signInState.signIn(key.token, nerdsterKeyPair);
+                await signInState.signIn(key.token, nerdsterKeyPair, context: context);
 
                 await BarRefresh.refresh(context);
               },
