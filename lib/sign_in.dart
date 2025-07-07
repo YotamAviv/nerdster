@@ -35,13 +35,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 ///
 /// DEFER: Add floating paste icon
 
-Future<void> showCredentials(BuildContext context) async {
-  Json? identityJson =
-      signInState.center != null ? Jsonish.find(signInState.centerReset!)!.json : null;
-  showTopRightDialog(
-      context, CredentialsWidget(identityJson, signInState.signedInDelegatePublicKeyJson));
-}
-
 class CredentialsWidget extends StatelessWidget {
   final Json? identityJson;
   final Json? delegateJson;
@@ -74,7 +67,7 @@ class CredentialsWidget extends StatelessWidget {
   }
 }
 
-// NEXT: Move to file
+// DEFER: Move to file
 // ChatGPT: "How do I place a dialog at the top right?"
 void showTopRightDialog(BuildContext context, Widget content) {
   final overlay = Overlay.of(context);
@@ -226,10 +219,6 @@ Future<void> qrSignin(BuildContext context) async {
       // Dismiss dialog
       if (context.mounted) Navigator.of(context).pop();
 
-      // NEXT: in signIn..
-      // ignore: unawaited_futures
-      showTopRightDialog(context, CredentialsWidget(identityJson, delegateJson));
-
       // ignore: unawaited_futures
       signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
     },
@@ -276,8 +265,7 @@ The text to copy/paste here should look like this:
       }
 
       Navigator.pop(context);
-      // NEXT: In signIn
-      showTopRightDialog(context, CredentialsWidget(identityJson, delegateJson));
+      // ignore: unawaited_futures
       signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
     } catch (exception) {
       return alertException(context, exception);
@@ -326,6 +314,6 @@ Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, 
   }
 
   final String oneofusToken = getToken(await oneofusPublicKey.json);
-  await signInState.signIn(oneofusToken, nerdsterKeyPair);
+  await signInState.signIn(oneofusToken, nerdsterKeyPair, context: context);
   await BarRefresh.refresh(context);
 }

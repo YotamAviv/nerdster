@@ -80,10 +80,7 @@ class _ContentTreeState extends State<ContentTree> {
   void kludgeDelayedInit(BuildContext context) {
     ContentTree._firstTime = false;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (b(signInState.center)) {
-        // ignore: unawaited_futures
-        showCredentials(context);
-      }
+      await defaultSignIn(context);
 
       // progress will call Navigator.pop(context) asynchronously, and so can't showTree first.
       await progress.make(() async {

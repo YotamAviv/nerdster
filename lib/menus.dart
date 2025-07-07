@@ -73,7 +73,7 @@ class Menus {
             DemoKey oneofus;
             DemoKey? delegate;
             (oneofus, delegate) = await e.value();
-            await signInState.signIn(oneofus.token, delegate?.keyPair);
+            await signInState.signIn(oneofus.token, delegate?.keyPair, context: context);
           },
           child: Text(name)));
     }
@@ -152,7 +152,10 @@ $link''',
               onPressed: () => pasteSignin(context),
               child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
           MenuItemButton(
-              onPressed: () => showCredentials(context),
+              onPressed: () => showTopRightDialog(
+                  context,
+                  CredentialsWidget(
+                      signInState.centerResetJson, signInState.signedInDelegatePublicKeyJson)),
               child: Text('showCredentials')),
 
           SubmenuButton(menuChildren: [
