@@ -110,9 +110,6 @@ Future<void> main() async {
   await Prefs.init();
   await About.init();
 
-  // ------------ sign in credentials ------------
-  await defaultSignIn();
-
   isSmall.addListener(() => print('isSmall=${isSmall.value}'));
   // This doesn't work. [ContentTree] sets this using actual width (using [BuildContext]).
   isSmall.value = defaultTargetPlatform == TargetPlatform.iOS ||
@@ -122,14 +119,14 @@ Future<void> main() async {
   runApp(const MaterialApp(home: ContentTree()));
 }
 
-Future<void> defaultSignIn() async {
+Future<void> defaultSignIn(BuildContext context) async {
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
   if (b(params['oneofus'])) {
     String oneofusParam = params['oneofus']!;
     Json oneofusJson = json.decode(oneofusParam);
     String oneofus = getToken(oneofusJson);
-    await signInState.signIn(oneofus, null);
+    await signInState.signIn(oneofus, null, context: context);
     return;
   }
 
@@ -141,7 +138,7 @@ Future<void> defaultSignIn() async {
     (oneofusDemoKey, delegateDemoKey) = await DemoKey.demos[demo]();
     String oneofus = oneofusDemoKey.token;
     OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
-    await signInState.signIn(oneofus, nerdsterKeyPair);
+    await signInState.signIn(oneofus, nerdsterKeyPair, context: context);
     return;
   }
 
@@ -152,7 +149,7 @@ Future<void> defaultSignIn() async {
     (oneofusPublicKey, nerdsterKeyPair) = await KeyStore.readKeys();
     if (b(oneofusPublicKey)) {
       String oneofus = getToken(await oneofusPublicKey!.json);
-      await signInState.signIn(oneofus, nerdsterKeyPair);
+      await signInState.signIn(oneofus, nerdsterKeyPair, context: context);
       return;
     }
   }
@@ -164,7 +161,7 @@ Future<void> defaultSignIn() async {
     OouKeyPair? hardDelegate = b(hardCodedSignin[fireChoice]![kNerdsterDomain])
         ? await crypto.parseKeyPair(hardCodedSignin[fireChoice]![kNerdsterDomain]!)
         : null;
-    await signInState.signIn(oneofus, hardDelegate);
+    await signInState.signIn(oneofus, hardDelegate, context: context);
     return;
   }
 }
@@ -177,3 +174,15 @@ const Json yotam = {
 dynamic hardCodedSignin = {
   FireChoice.emulator: {"one-of-us.net": yotam},
 };
+
+Json yotamForCopyPasteSignin = 
+
+{
+  "one-of-us.net": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+  }
+}
+
+;
