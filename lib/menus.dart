@@ -151,6 +151,9 @@ $link''',
           MenuItemButton(
               onPressed: () => pasteSignin(context),
               child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
+          MenuItemButton(
+              onPressed: () => showCredentials(context),
+              child: Text('showCredentials')),
 
           SubmenuButton(menuChildren: [
             MyCheckbox(Prefs.cloudFunctionsFetch, 'cloudFunctionsFetch (goes quicker)'),

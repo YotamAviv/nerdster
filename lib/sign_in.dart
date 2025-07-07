@@ -12,6 +12,7 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
+import 'package:nerdster/oneofus/show_qr.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
@@ -31,8 +32,88 @@ import 'package:qr_flutter/qr_flutter.dart';
 ///   - Oneofus public key
 ///   - (optional) encrypted Nerdster key pair (optionally encrypted, iPhone App Store restrictions.)
 /// - Nerdster web client then reads that from the database, (optionally) decrypts, and signs in.
-/// 
+///
 /// DEFER: Add floating paste icon
+
+Future<void> showCredentials(BuildContext context) async {
+  Json? identityJson =
+      signInState.center != null ? Jsonish.find(signInState.centerReset!)!.json : null;
+  showTopRightDialog(
+      context, CredentialsWidget(identityJson, signInState.signedInDelegatePublicKeyJson));
+}
+
+class CredentialsWidget extends StatelessWidget {
+  final Json? identityJson;
+  final Json? delegateJson;
+
+  const CredentialsWidget(this.identityJson, this.delegateJson, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(children: [
+            Column(
+              children: [
+                Text('Identity'),
+                SizedBox(width: 200, height: 300, child: JsonQrDisplay(identityJson))
+              ],
+            ),
+            Column(
+              children: [
+                Text('Nerdster delegate'),
+                SizedBox(width: 200, height: 300, child: JsonQrDisplay(delegateJson))
+              ],
+            )
+          ]),
+        ],
+      );
+    });
+  }
+}
+
+// NEXT: Move to file
+// ChatGPT: "How do I place a dialog at the top right?"
+void showTopRightDialog(BuildContext context, Widget content) {
+  final overlay = Overlay.of(context);
+  late OverlayEntry overlayEntry;
+
+  overlayEntry = OverlayEntry(
+    builder: (context) {
+      return Stack(
+        children: [
+          // Transparent barrier to dismiss the dialog
+          Positioned.fill(
+            child: GestureDetector(
+                onTap: () => overlayEntry.remove(),
+                behavior: HitTestBehavior.translucent,
+                child: Container(color: Colors.transparent)),
+          ),
+
+          // Your custom dialog content at top-right
+          Positioned(
+            top: 45,
+            right: 5,
+            child: Material(
+              elevation: 8,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: EdgeInsets.all(15),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+                child: content,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  overlay.insert(overlayEntry);
+}
+
 Future<void> qrSignin(BuildContext context) async {
   Map<String, dynamic> forPhone = <String, dynamic>{};
   forPhone['domain'] = kNerdsterDomain;
@@ -56,6 +137,7 @@ Future<void> qrSignin(BuildContext context) async {
   forPhone['publicKey'] = publicKeyJson;
 
   ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
+  // DEFER: use JsonQrDisplay (WHY?)
   // ignore: unawaited_futures
   showDialog(
       context: context,
@@ -115,9 +197,11 @@ Future<void> qrSignin(BuildContext context) async {
       Map<String, dynamic>? data = docSnapshots.docs.first.data();
 
       // Unpack Oneofus public key
-      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(data[kOneofusDomain]);
+      Json identityJson = data[kOneofusDomain]!;
+      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
 
       // Optionally unpack and decrypt Nerdster private key
+      Json? delegateJson;
       OouKeyPair? nerdsterKeyPair;
       if (b(data['publicKey'])) {
         PkePublicKey phonePkePublicKey = await crypto.parsePkePublicKey(data['publicKey']);
@@ -131,18 +215,23 @@ Future<void> qrSignin(BuildContext context) async {
         } else {
           print('delegate key encrypted: NO');
         }
-        nerdsterKeyPair = await crypto.parseKeyPair(jsonDecode(delegateCleartext!));
+        delegateJson = jsonDecode(delegateCleartext!);
+        nerdsterKeyPair = await crypto.parseKeyPair(delegateJson!);
       }
 
       // Stop listening
       // ignore: unawaited_futures
       subscription!.cancel();
 
-      // ignore: unawaited_futures
-      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
-
       // Dismiss dialog
       if (context.mounted) Navigator.of(context).pop();
+
+      // NEXT: in signIn..
+      // ignore: unawaited_futures
+      showTopRightDialog(context, CredentialsWidget(identityJson, delegateJson));
+
+      // ignore: unawaited_futures
+      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
     },
   );
   // DEFER: delete session
@@ -177,16 +266,19 @@ The text to copy/paste here should look like this:
     try {
       Map<String, dynamic> json = jsonDecode(controller.text);
       // Unpack Oneofus public key
-      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(json[kOneofusDomain]!);
+      Json identityJson = json[kOneofusDomain]!;
+      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
       // Optionally unpack and decrypt Nerdster private key
+      Json? delegateJson = json[kNerdsterDomain];
       OouKeyPair? nerdsterKeyPair;
-      if (json[kNerdsterDomain] != null) {
+      if (b(delegateJson)) {
         nerdsterKeyPair = await crypto.parseKeyPair(json[kNerdsterDomain]!);
       }
 
-      await signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
-
       Navigator.pop(context);
+      // NEXT: In signIn
+      showTopRightDialog(context, CredentialsWidget(identityJson, delegateJson));
+      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
     } catch (exception) {
       return alertException(context, exception);
     }

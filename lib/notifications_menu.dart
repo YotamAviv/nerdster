@@ -254,9 +254,7 @@ class NameKeyWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
-        ShowQr(keyJson).show(context);
-      },
+      onTap: () => JsonQrDisplay(keyJson).show(context),
       child: Text(
         display,
         style: linkStyle,
