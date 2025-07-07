@@ -3,6 +3,7 @@ import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/sign_in.dart';
 
 /// This has changed much over time, and so some docs, variable names, or worse might be misleading.
 /// The idea is:
@@ -29,7 +30,10 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signIn(String center, OouKeyPair? nerdsterKeyPair) async {
+  // DEFER: "Don't show again..."
+  // CONSIDER: Show credentials when changing PoV.
+
+  Future<void> signIn(String center, OouKeyPair? nerdsterKeyPair, {BuildContext? context}) async {
     _center = center;
     _centerReset = center;
     if (b(nerdsterKeyPair)) {
@@ -39,20 +43,33 @@ class SignInState with ChangeNotifier {
       _signedInDelegate = getToken(_signedInDelegatePublicKeyJson);
       _signer = await OouSigner.make(nerdsterKeyPair);
     }
+
+    if (b(context)) {
+      showTopRightDialog(
+          context!, CredentialsWidget(centerResetJson, signedInDelegatePublicKeyJson));
+    }
+
     notifyListeners();
   }
 
-  void signOut() {
+  void signOut({BuildContext? context}) {
     _signedInDelegateKeyPair = null;
     _signedInDelegatePublicKey = null;
     _signedInDelegatePublicKeyJson = null;
     _signedInDelegate = null;
     _signer = null;
+
+    if (b(context)) {
+      showTopRightDialog(
+          context!, CredentialsWidget(centerResetJson, signedInDelegatePublicKeyJson));
+    }
+
     notifyListeners();
   }
 
-  String? get center => _center;
-  String? get centerReset => _centerReset;
+  String? get center => _center; // CODE: Maybe rename to "pov"
+  String? get centerReset => _centerReset; // CODE: Maybe rename to "identity"
+  Json? get centerResetJson => b(centerReset) ? Jsonish.find(centerReset!)!.json : null;
   OouKeyPair? get signedInDelegateKeyPair => _signedInDelegateKeyPair;
   OouPublicKey? get signedInDelegatePublicKey => _signedInDelegatePublicKey;
   Json? get signedInDelegatePublicKeyJson => _signedInDelegatePublicKeyJson;

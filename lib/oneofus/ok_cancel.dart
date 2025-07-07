@@ -48,9 +48,7 @@ class OkCancelState extends State<OkCancel> {
           ),
         if (widget.showCancel)
           OutlinedButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
       ],
