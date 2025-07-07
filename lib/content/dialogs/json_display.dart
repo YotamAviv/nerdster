@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
 class JsonDisplay extends StatefulWidget {
-  final Json json;
+  final dynamic subject; // String (ex. token) or Json (ex. key, statement)
   final ValueNotifier<bool> translate;
   final bool strikethrough;
 
-  JsonDisplay(this.json, {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
+  JsonDisplay(this.subject, {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
       : translate = translate ?? ValueNotifier<bool>(false);
 
   @override
@@ -20,7 +19,7 @@ class JsonDisplay extends StatefulWidget {
 class _State extends State<JsonDisplay> {
   @override
   Widget build(BuildContext context) {
-    var translated = widget.translate.value ? keyLabels.show(widget.json) : widget.json;
+    var translated = widget.translate.value ? keyLabels.show(widget.subject) : widget.subject;
     String display = encoder.convert(translated);
     return Stack(
       children: [
@@ -28,12 +27,11 @@ class _State extends State<JsonDisplay> {
             alignment: Alignment.topLeft,
             child: TextField(
                 decoration: InputDecoration(
-                  border: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  errorBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                ),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none),
                 controller: TextEditingController()..text = display,
                 maxLines: null,
                 readOnly: true,
@@ -49,7 +47,9 @@ class _State extends State<JsonDisplay> {
               children: [
                 FloatingActionButton(
                     heroTag: 'Translate',
-                    tooltip: !widget.translate.value ? 'interperate known keys, make more human readable' : 'show raw statement',
+                    tooltip: !widget.translate.value
+                        ? 'interperate known keys, make more human readable'
+                        : 'show raw statement',
                     child:
                         Icon(Icons.translate, color: widget.translate.value ? Colors.blue : null),
                     onPressed: () async {

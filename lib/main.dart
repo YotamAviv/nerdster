@@ -177,3 +177,11 @@ const Json yotam = {
 dynamic hardCodedSignin = {
   FireChoice.emulator: {"one-of-us.net": yotam},
 };
+
+Json yotamForCopyPasteSignin = {
+  "one-of-us.net": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+  }
+};

@@ -29,6 +29,10 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
+  // NEXT: pass in context?, show credentials
+  // NEXT: "Don't show again..."
+  // NEXT: Show for changing PoV.
+
   Future<void> signIn(String center, OouKeyPair? nerdsterKeyPair) async {
     _center = center;
     _centerReset = center;
@@ -42,6 +46,7 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
+  // NEXT: pass in context?, show credentials
   void signOut() {
     _signedInDelegateKeyPair = null;
     _signedInDelegatePublicKey = null;
@@ -51,8 +56,8 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  String? get center => _center;
-  String? get centerReset => _centerReset;
+  String? get center => _center; // CODE: Maybe rename to "pov"
+  String? get centerReset => _centerReset; // CODE: Maybe rename to "identity"
   OouKeyPair? get signedInDelegateKeyPair => _signedInDelegateKeyPair;
   OouPublicKey? get signedInDelegatePublicKey => _signedInDelegatePublicKey;
   Json? get signedInDelegatePublicKeyJson => _signedInDelegatePublicKeyJson;
