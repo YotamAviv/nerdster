@@ -67,8 +67,8 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  String? get center => _center; // CODE: Maybe rename to "pov"
-  String? get centerReset => _centerReset; // CODE: Maybe rename to "identity"
+  String? get center => _center; // PoV, CODE: Maybe rename
+  String? get centerReset => _centerReset; // signed in identity, CODE: Maybe rename
   Json? get centerResetJson => b(centerReset) ? Jsonish.find(centerReset!)!.json : null;
   OouKeyPair? get signedInDelegateKeyPair => _signedInDelegateKeyPair;
   OouPublicKey? get signedInDelegatePublicKey => _signedInDelegatePublicKey;

@@ -43,27 +43,28 @@ class CredentialsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(children: [
-            Column(
-              children: [
-                Text('Identity'),
-                SizedBox(width: 200, height: 300, child: JsonQrDisplay(identityJson))
-              ],
-            ),
-            Column(
-              children: [
-                Text('Nerdster delegate'),
-                SizedBox(width: 200, height: 300, child: JsonQrDisplay(delegateJson))
-              ],
-            )
-          ]),
-        ],
-      );
-    });
+    Size whole = MediaQuery.of(context).size;
+    double w = whole.width / 4;
+    double h = w * 3 / 2;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(children: [
+          Column(
+            children: [
+              Text('Identity'),
+              SizedBox(width: w, height: h, child: JsonQrDisplay(identityJson))
+            ],
+          ),
+          Column(
+            children: [
+              Text('Nerdster delegate'),
+              SizedBox(width: w, height: h, child: JsonQrDisplay(delegateJson))
+            ],
+          )
+        ]),
+      ],
+    );
   }
 }
 
@@ -164,6 +165,7 @@ Future<void> qrSignin(BuildContext context) async {
                             FloatingActionButton(
                                 heroTag: 'Copy',
                                 tooltip: 'Copy',
+                                mini: true, // 40x40 instead of 56x56
                                 child: const Icon(Icons.copy),
                                 onPressed: () async {
                                   await Clipboard.setData(ClipboardData(text: forPhoneString));
