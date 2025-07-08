@@ -47,6 +47,7 @@ class _State extends State<JsonDisplay> {
               children: [
                 FloatingActionButton(
                     heroTag: 'Translate',
+                    mini: true, // 40x40 instead of 56x56
                     tooltip: !widget.translate.value
                         ? 'interperate known keys, make more human readable'
                         : 'show raw statement',
@@ -58,8 +59,9 @@ class _State extends State<JsonDisplay> {
                     }),
                 FloatingActionButton(
                     heroTag: 'Copy',
+                    mini: true, // 40x40 instead of 56x56
                     tooltip: 'Copy',
-                    child: const Icon(Icons.copy),
+                    child: const Icon(Icons.copy), // , size: 16
                     onPressed: () async {
                       await Clipboard.setData(ClipboardData(text: display));
                     }),

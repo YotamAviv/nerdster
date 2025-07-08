@@ -138,6 +138,7 @@ class Tokenize {
                         FloatingActionButton(
                             heroTag: 'Paste',
                             tooltip: 'Paste',
+                            mini: true, // 40x40 instead of 56x56
                             child: const Icon(Icons.paste),
                             onPressed: () async {
                               final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
@@ -148,7 +149,6 @@ class Tokenize {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  
                   OkCancel(() => Navigator.of(context).pop(controller.text), kTokenize,
                       showCancel: false),
                   const SizedBox(height: 5),

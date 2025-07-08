@@ -6,15 +6,14 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-/// TODO: Rename file (maybe class, too)
+/// NEXT: Rename file (maybe class, too)
 /// DEFER: include "Don't show again"
 /// DEFER: Use in qrSignin(..).. (WHY? for sport?, unifomity?)
 class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null
-  final Color color; // TODO: Seems unused. Remove
   final ValueNotifier<bool> translate = ValueNotifier<bool>(false);
 
-  JsonQrDisplay(this.subject, {super.key, this.color = Colors.white});
+  JsonQrDisplay(this.subject, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +34,8 @@ class JsonQrDisplay extends StatelessWidget {
     });
   }
 
-  // // CODE: Probably remove and have callers use showDialog or embed on their own.
   Future<void> show(BuildContext context, {double reduction = 0.6}) async {
-    JsonQrDisplay jq = JsonQrDisplay(subject, color: Colors.black);
+    JsonQrDisplay jq = JsonQrDisplay(subject);
     return showDialog(
         context: context,
         builder: (context) {

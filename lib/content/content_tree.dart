@@ -77,6 +77,7 @@ class _ContentTreeState extends State<ContentTree> {
     super.dispose();
   }
 
+  // CODE: This function might belong in main.dart or elsewhere.
   void kludgeDelayedInit(BuildContext context) {
     ContentTree._firstTime = false;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
