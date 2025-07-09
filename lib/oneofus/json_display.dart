@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/singletons.dart';
+import '/main.dart';
+import 'util.dart';
+
 
 class JsonDisplay extends StatefulWidget {
   final dynamic subject; // String (ex. token) or Json (ex. key, statement)
   final ValueNotifier<bool> translate;
   final bool strikethrough;
 
-  JsonDisplay(this.subject, {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
+  JsonDisplay(this.subject,
+      {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
       : translate = translate ?? ValueNotifier<bool>(false);
 
   @override
@@ -19,7 +21,7 @@ class JsonDisplay extends StatefulWidget {
 class _State extends State<JsonDisplay> {
   @override
   Widget build(BuildContext context) {
-    var translated = widget.translate.value ? keyLabels.show(widget.subject) : widget.subject;
+    var translated = (b(translateFn) && widget.translate.value) ? translateFn!(widget.subject) : widget.subject;
     String display = encoder.convert(translated);
     return Stack(
       children: [
@@ -45,7 +47,7 @@ class _State extends State<JsonDisplay> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                FloatingActionButton(
+                if (b(translateFn)) FloatingActionButton(
                     heroTag: 'Translate',
                     mini: true, // 40x40 instead of 56x56
                     tooltip: !widget.translate.value
