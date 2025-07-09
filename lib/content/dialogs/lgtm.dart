@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/dialogs/json_display.dart';
+import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';

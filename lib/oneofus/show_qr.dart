@@ -1,14 +1,14 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/dialogs/json_display.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/util.dart';
+import 'json_display.dart';
+import 'jsonish.dart';
+import 'util.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 /// NEXT: Rename file (maybe class, too)
 /// DEFER: include "Don't show again"
-/// DEFER: Use in qrSignin(..).. (WHY? for sport?, unifomity?)
+/// DEFER: Use in qrSignin(..).. (WHY? for sport?, uniformity?)
 class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null
   final ValueNotifier<bool> translate = ValueNotifier<bool>(false);
@@ -40,7 +40,7 @@ class JsonQrDisplay extends StatelessWidget {
         context: context,
         builder: (context) {
           return LayoutBuilder(builder: (context, constraints) {
-            double x = min(constraints.maxWidth * 0.666, constraints.maxHeight) * reduction;
+            double x = min(constraints.maxWidth, constraints.maxHeight * 0.666, ) * reduction;
             return Dialog(
                 insetPadding: EdgeInsets.zero,
                 child: SizedBox(

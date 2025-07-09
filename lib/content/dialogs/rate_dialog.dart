@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/content/dialogs/json_display.dart';
+import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/content/dialogs/on_off_icon.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';

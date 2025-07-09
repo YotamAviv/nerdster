@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:nerdster/comp.dart';
-import 'package:nerdster/content/dialogs/json_display.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -13,6 +12,8 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 import 'package:nerdster/util_ui.dart';
+
+import 'oneofus/json_display.dart';
 
 class NotificationsMenu extends StatefulWidget {
   static final NotificationsMenu _singleton = NotificationsMenu._internal();
