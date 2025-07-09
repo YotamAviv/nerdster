@@ -6,7 +6,6 @@ import 'jsonish.dart';
 import 'util.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-/// NEXT: Rename file (maybe class, too)
 /// DEFER: include "Don't show again"
 /// DEFER: Use in qrSignin(..).. (WHY? for sport?, uniformity?)
 class JsonQrDisplay extends StatelessWidget {
