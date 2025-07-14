@@ -241,10 +241,10 @@ class ContentBase with Comp, ChangeNotifier {
 
       ContentTreeNode subjectNode = ContentTreeNode([], subject);
 
-      // Skip recommend < 0
+      // Skip like < 0
       if (Prefs.hideDisliked.value) {
         // CONSIDER: make this optional in settings
-        if (subjectNode.computeProps([PropType.recommend])[PropType.recommend]!.value! as int < 0) {
+        if (subjectNode.computeProps([PropType.like])[PropType.like]!.value! as int < 0) {
           continue;
         }
       }
@@ -432,11 +432,11 @@ class ContentBase with Comp, ChangeNotifier {
       Map map = {};
       out.add(map);
       map['subject'] = subjectNode.subject.json;
-      // NOTE: These props can be different from the UI props (rating here, recommend there).
+      // NOTE: These props can be different from the UI props.
       // This makes it easy to pass the tests that were scripted and recorded before the change,
       // but it's not awesome.
       Map<PropType, Prop> props = subjectNode
-          .computeProps([PropType.recommend, PropType.numComments, PropType.recentActivity]);
+          .computeProps([PropType.like, PropType.numComments, PropType.recentActivity]);
       Map<dynamic, dynamic> propsMap = {};
       for (var entry in props.entries) {
         propsMap[entry.key.label] = entry.value.value;

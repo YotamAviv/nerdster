@@ -116,7 +116,7 @@ class _ContentTileState extends State<ContentTile> {
       final ContentVerb verb = statement!.verb;
       StringBuffer buf = StringBuffer();
       if (verb == ContentVerb.rate) {
-        if (b(statement.recommend)) buf.write(statement.recommend! ? 'liked ' : 'disliked ');
+        if (b(statement.like)) buf.write(statement.like! ? 'liked ' : 'disliked ');
         if (b(statement.dismiss)) buf.write('dismissed ');
         if (b(statement.censor)) buf.write('censored ');
       }
@@ -130,9 +130,9 @@ class _ContentTileState extends State<ContentTile> {
 
     // Computed but not displayed: PropType.recentActivity
     Map<PropType, Prop> props =
-        subjectNode.computeProps([PropType.recommend, PropType.numComments]);
+        subjectNode.computeProps([PropType.like, PropType.numComments]);
     List<Widget> propWidgets = [];
-    propWidgets.add(props[PropType.recommend]!.getWidget());
+    propWidgets.add(props[PropType.like]!.getWidget());
     propWidgets.add(props[PropType.numComments]!.getWidget());
 
     return TreeIndentation(
@@ -210,7 +210,7 @@ class _ReactIconState extends State<_ReactIcon> {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 22, maxWidth: 22),
           icon: Icon(iconData, color: color),
-          tooltip: '''Click to rate (recommend, comment, dis, censor, or clear rating)
+          tooltip: '''Click to rate (like, comment, dis, censor, or clear rating)
 Double click to relate / equate''',
           onPressed: null),
     );

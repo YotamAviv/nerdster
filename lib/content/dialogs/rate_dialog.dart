@@ -15,16 +15,16 @@ import 'package:nerdster/util_ui.dart';
 
 /// How nerdy?
 /// There may be compelling reasons to
-/// - recommend and dis (it's good, but I've seen it)
+/// - like and dis (it's good, but I've seen it)
 /// - censor and dis and comment (censorship might be disabled)
 /// - censor and recommened (good porn)
 ///
 /// There are no compelling reasons to
 /// - censor your own statement (just clear it)
-/// - clear and any other thing (recommend, dis, censor, comment)
+/// - clear and any other thing (like, dis, censor, comment)
 ///
 /// Nerdy seems straight forward, and so:
-/// - Don't allow me to clear and any other thing (recommend, dis, censor, comment)
+/// - Don't allow me to clear and any other thing (like, dis, censor, comment)
 ///   - Do allow me to click on clear again to un-clear
 /// - Don't allow me to censor my statement (I should clear my statement instead)
 /// - Okay not enabled unless there are changes
@@ -69,7 +69,7 @@ class RateBody extends StatefulWidget {
 
 class _State extends State<RateBody> {
   TextEditingController commentController = TextEditingController();
-  ValueNotifier<bool?> recommend = ValueNotifier(null);
+  ValueNotifier<bool?> like = ValueNotifier(null);
   ValueNotifier<bool> dis = ValueNotifier(false);
   ValueNotifier<bool> censor = ValueNotifier(false);
   ValueNotifier<bool> erase = ValueNotifier(false);
@@ -108,7 +108,7 @@ class _State extends State<RateBody> {
 
   void setToPrior() {
     if (b(widget.priorStatement)) {
-      recommend.value = widget.priorStatement!.recommend;
+      like.value = widget.priorStatement!.like;
       dis.value = b(widget.priorStatement!.dismiss);
       censor.value = b(widget.priorStatement!.censor);
       commentController.text = widget.priorStatement!.comment ?? '';
@@ -117,7 +117,7 @@ class _State extends State<RateBody> {
 
   bool get compareToPrior {
     if (b(widget.priorStatement)) {
-      return recommend.value == widget.priorStatement!.recommend &&
+      return like.value == widget.priorStatement!.like &&
           dis.value == b(widget.priorStatement!.dismiss) &&
           censor.value == b(widget.priorStatement!.censor) &&
           commentController.text == (widget.priorStatement!.comment ?? '');
@@ -127,14 +127,14 @@ class _State extends State<RateBody> {
   }
 
   void clearFields() {
-    recommend.value = null;
+    like.value = null;
     dis.value = false;
     censor.value = false;
     commentController.text = '';
   }
 
   bool get bAllFieldsClear =>
-      !b(recommend.value) && !dis.value && !censor.value && commentController.text.isEmpty;
+      !b(like.value) && !dis.value && !censor.value && commentController.text.isEmpty;
 
   bool? trueOrNull(bool b) => b ? true : null;
 
@@ -144,7 +144,7 @@ class _State extends State<RateBody> {
     ContentVerb verb;
     if (erase.value) {
       assert(bAllFieldsClear);
-      assert(!b(recommend.value));
+      assert(!b(like.value));
       assert(!dis.value);
       assert(!censor.value);
       assert(!b(comment));
@@ -166,7 +166,7 @@ class _State extends State<RateBody> {
     }
 
     Json json = ContentStatement.make(i, verb, subject,
-        recommend: recommend.value,
+        recommend: like.value,
         dismiss: trueOrNull(dis.value),
         censor: trueOrNull(censor.value),
         comment: comment);
@@ -193,7 +193,7 @@ class _State extends State<RateBody> {
       true: (Icons.thumb_up, Icons.thumb_up_outlined),
       false: (Icons.thumb_down, Icons.thumb_down_outlined)
     };
-    OnOffIcons likeButton = OnOffIcons(recommend, key2icons,
+    OnOffIcons likeButton = OnOffIcons(like, key2icons,
         text: 'Like',
         tooltipText: 'Like or dislike',
         color: Colors.green,
