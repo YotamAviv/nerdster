@@ -19,7 +19,7 @@ import 'package:nerdster/oneofus/util.dart';
 /// PERFOMANCE: cache?
 
 enum PropType {
-  recommend('recommend'),
+  like('like'),
   recentActivity('recentActivity'),
   numComments('numComments');
 
@@ -29,7 +29,7 @@ enum PropType {
 
 // DEFER: There's probably a better way to do this (factories, enums, ...)
 Map<PropType, Prop> cloners = {
-  PropType.recommend: RecommendPropAggregator(),
+  PropType.like: RecommendPropAggregator(),
   PropType.recentActivity: RecentActivityAggregator(),
   PropType.numComments: CommentsAggregator(),
 };
@@ -57,8 +57,8 @@ class RecommendPropAggregator implements Prop {
 
   @override
   void process(ContentStatement statement) {
-    if (b(statement.recommend)) {
-      count += statement.recommend! ? 1 : -1;
+    if (b(statement.like)) {
+      count += statement.like! ? 1 : -1;
     }
   }
 
@@ -76,7 +76,7 @@ class RecommendPropAggregator implements Prop {
       s = count.toString();
     }
     return Tooltip(
-        message: 'count(recommend) = $count',
+        message: 'sum(like) = $count',
         child:
             SizedBox(width: 26, child: Text(s, style: const TextStyle(color: Colors.deepOrange))));
   }

@@ -9,7 +9,7 @@ import 'package:nerdster/util_ui.dart';
 
 enum Sort {
   // ratings('rating', PropType.rating),
-  recommend('recommend', PropType.recommend),
+  like('like', PropType.like),
   recentActivity('recent activity', PropType.recentActivity),
   comments('comments', PropType.numComments);
 

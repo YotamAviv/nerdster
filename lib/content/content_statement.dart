@@ -12,7 +12,7 @@ class ContentStatement extends Statement {
 
   // with
   final dynamic other;
-  final bool? recommend;
+  final bool? like;
   final bool? dismiss;
   final bool? censor;
   final Json? contexts;
@@ -41,7 +41,7 @@ class ContentStatement extends Statement {
       verb: verb!,
       // with (would be nice if Dart would let me pass the Map as the args)
       other: b(withx) ? withx!['otherSubject'] : null,
-      recommend: b(withx) ? withx!['recommend'] : null,
+      like: b(withx) ? withx!['recommend'] : null,
       dismiss: b(withx) ? withx!['dismiss'] : null,
       censor: b(withx) ? withx!['censor'] : null,
       contexts: b(withx) ? withx!['contexts'] : null,
@@ -57,7 +57,7 @@ class ContentStatement extends Statement {
     super.subject, {
     required this.verb,
     required this.other,
-    required this.recommend,
+    required this.like,
     required this.dismiss,
     required this.censor,
     required this.contexts,

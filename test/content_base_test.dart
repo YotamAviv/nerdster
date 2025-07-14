@@ -565,7 +565,7 @@ var jock1 = {
         "url":
             "https://thebeardclub.com/blogs/beard-culture/how-to-overcome-the-challenges-of-a-big-beard"
       },
-      "props": {"recommend": 1, "numComments": 3, "recentActivity": "10/10/2024 1:44 PM"},
+      "props": {"like": 1, "numComments": 3, "recentActivity": "10/10/2024 1:44 PM"},
       "children": [
         {
           "subject": {
@@ -596,7 +596,7 @@ var jock1 = {
         "title": "25+ Coolest Sleeve Tattoos for Men  | Man of Many",
         "url": "https://manofmany.com/entertainment/art/coolest-sleeve-tattoos"
       },
-      "props": {"recommend": 1, "numComments": 0, "recentActivity": "10/10/2024 1:44 PM"},
+      "props": {"like": 1, "numComments": 0, "recentActivity": "10/10/2024 1:44 PM"},
       "children": [
         {
           "subject": {
@@ -625,7 +625,7 @@ var jock1 = {
         "title": "Russell Wilson Top 10 Plays with Seahawks - YouTube",
         "url": "https://www.youtube.com/watch?v=CkZ8VHfmdiU"
       },
-      "props": {"recommend": 1, "numComments": 1, "recentActivity": "10/10/2024 1:44 PM"},
+      "props": {"like": 1, "numComments": 1, "recentActivity": "10/10/2024 1:44 PM"},
       "children": [
         {
           "subject": {
@@ -718,7 +718,7 @@ var equate1 = {
   "content": [
     {
       "subject": {"contentType": "article", "title": "a", "url": ""},
-      "props": {"recommend": 2, "numComments": 0, "recentActivity": "10/10/2024 1:54 PM"},
+      "props": {"like": 2, "numComments": 0, "recentActivity": "10/10/2024 1:54 PM"},
       "children": [
         {
           "subject": {"contentType": "article", "title": "b", "url": ""}
@@ -1041,7 +1041,7 @@ var rateAndDis = {
         "url":
             "https://thebeardclub.com/blogs/beard-culture/how-to-overcome-the-challenges-of-a-big-beard"
       },
-      "props": {"recommend": 2, "numComments": 3, "recentActivity": "10/10/2024 1:53 PM"},
+      "props": {"like": 2, "numComments": 3, "recentActivity": "10/10/2024 1:53 PM"},
       "children": [
         {
           "subject": {
@@ -1093,7 +1093,7 @@ var rateAndDis = {
         "title": "25+ Coolest Sleeve Tattoos for Men  | Man of Many",
         "url": "https://manofmany.com/entertainment/art/coolest-sleeve-tattoos"
       },
-      "props": {"recommend": 1, "numComments": 0, "recentActivity": "10/10/2024 1:53 PM"},
+      "props": {"like": 1, "numComments": 0, "recentActivity": "10/10/2024 1:53 PM"},
       "children": [
         {
           "subject": {
@@ -1122,7 +1122,7 @@ var rateAndDis = {
         "title": "Russell Wilson Top 10 Plays with Seahawks - YouTube",
         "url": "https://www.youtube.com/watch?v=CkZ8VHfmdiU"
       },
-      "props": {"recommend": 1, "numComments": 1, "recentActivity": "10/10/2024 1:53 PM"},
+      "props": {"like": 1, "numComments": 1, "recentActivity": "10/10/2024 1:53 PM"},
       "children": [
         {
           "subject": {
