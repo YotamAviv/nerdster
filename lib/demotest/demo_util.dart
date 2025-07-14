@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:json_diff/json_diff.dart';
-import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/singletons.dart';
 
 // CODE: Rename to test_util
 
@@ -13,13 +13,13 @@ dynamic toJson(dynamic d) => jsonDecode(jsonEncode(d));
 /// Weak!
 /// I moved code from tests to demos so that I can use the UI on the cases.
 /// I'm faking the test infrastructure's expect, but not well;)
-myExpect(dynamic actual, dynamic matcher) {
+void myExpect(dynamic actual, dynamic matcher) {
   assert(actual == matcher, '$actual != $matcher');
 }
 
-jsonShowExpect(actual, expected) {
-  final actual2 = KeyLabels().show(actual);
-  final expected2 = KeyLabels().show(expected);
+void jsonShowExpect(dynamic actual, dynamic expected) {
+  final actual2 = keyLabels.show(actual);
+  final expected2 = keyLabels.show(expected);
   JsonDiffer differ = JsonDiffer.fromJson(actual2, expected2);
   DiffNode diffNode = differ.diff();
   if (!diffNode.hasNothing) {

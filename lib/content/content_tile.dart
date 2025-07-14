@@ -116,10 +116,10 @@ class _ContentTileState extends State<ContentTile> {
       final ContentVerb verb = statement!.verb;
       StringBuffer buf = StringBuffer();
       if (verb == ContentVerb.rate) {
-        if (b(statement.recommend)) buf.write('recommended ');
+        if (b(statement.recommend)) buf.write(statement.recommend! ? 'liked ' : 'disliked ');
         if (b(statement.dismiss)) buf.write('dismissed ');
         if (b(statement.censor)) buf.write('censored ');
-      } 
+      }
       if (verb != ContentVerb.rate) {
         buf.write('  ${verb.pastTense} ');
       }

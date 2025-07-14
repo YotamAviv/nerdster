@@ -46,11 +46,6 @@ abstract class Prop {
   Widget getWidget();
 }
 
-// Could be generalized to a general counter (for dissmiss, for example)
-// Note: [recommend, dis] together is supported (with no extra work).
-// The disser no longer sees the subject, and so he won't see his recommend added to the count.
-// But others will see the recommend added to the count, diss notwithstanding.
-// Tested in 'rate and dis'
 class RecommendPropAggregator implements Prop {
   int count = 0;
 
@@ -62,8 +57,9 @@ class RecommendPropAggregator implements Prop {
 
   @override
   void process(ContentStatement statement) {
-    if (bb(statement.recommend)) count++;
-    if (bb(statement.dismiss)) count--;
+    if (b(statement.recommend)) {
+      count += statement.recommend! ? 1 : -1;
+    }
   }
 
   @override
@@ -81,12 +77,8 @@ class RecommendPropAggregator implements Prop {
     }
     return Tooltip(
         message: 'count(recommend) = $count',
-        child: SizedBox(
-            width: 26,
-            child: Text(
-              s,
-              style: const TextStyle(color: Colors.deepOrange),
-            )));
+        child:
+            SizedBox(width: 26, child: Text(s, style: const TextStyle(color: Colors.deepOrange))));
   }
 }
 

@@ -242,11 +242,8 @@ class ContentBase with Comp, ChangeNotifier {
       ContentTreeNode subjectNode = ContentTreeNode([], subject);
 
       // Skip recommend < 0
-      if (Prefs.hideDismissed.value) {
-        // CONSIDER...
-        // - make this optional in settings
-        // - count a single dis as 1/2 a recommend
-        // DEFER: Update React dialog to not allow both recommend and dis. Or not.
+      if (Prefs.hideDisliked.value) {
+        // CONSIDER: make this optional in settings
         if (subjectNode.computeProps([PropType.recommend])[PropType.recommend]!.value! as int < 0) {
           continue;
         }
@@ -518,7 +515,7 @@ class ContentBase with Comp, ChangeNotifier {
     oneofusEquiv.addListener(listen);
 
     Prefs.censor.addListener(listen);
-    Prefs.hideDismissed.addListener(listen);
+    Prefs.hideDisliked.addListener(listen);
   }
 
   void listen() {
@@ -530,7 +527,7 @@ class ContentBase with Comp, ChangeNotifier {
   void dispose() {
     followNet.removeListener(listen);
     oneofusEquiv.removeListener(listen);
-    Prefs.hideDismissed.removeListener(listen);
+    Prefs.hideDisliked.removeListener(listen);
     super.dispose();
   }
 

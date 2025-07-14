@@ -200,12 +200,12 @@ $link''',
           MenuItemButton(
               onPressed: () => CorruptionCheck.make(), child: const Text('CorruptionCheck')),
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
-          // MenuItemButton(
-          //     child: const Text('Load JSON statements'),
-          //     onPressed: () async {
-          //       await loadDumpDialog(context);
-          //       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
-          //     }),
+          MenuItemButton(
+              child: const Text('Load JSON statements'),
+              onPressed: () async {
+                await loadDumpDialog(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
+              }),
           MenuItemButton(
               onPressed: () async {
                 String oneofus = signInState.centerReset!;

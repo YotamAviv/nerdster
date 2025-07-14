@@ -31,15 +31,14 @@ import 'package:test/test.dart';
 
 // - doesn't mess with Prefs (showStatements, showEquivalentKeys, etc...)
 // - includes everything for now (content, network, nerd tree..)
-Future<void> testByDump(caseDump) async {
+Future<void> testByDump(Json caseDump) async {
   await loadDump(caseDump);
   signInState.center = getToken(caseDump['center']);
   await contentBase.waitUntilReady();
 
   // print(await dumpDump(null));
-  Json dump = await dumpDump(null);
-  jsonExpect(dump, caseDump);
-  // jsonExpect(_content.dump(), caseDump['content']);
+  Json actual = await dumpDump(null);
+  jsonExpect(actual, caseDump);
 }
 
 void main() async {
@@ -1042,7 +1041,7 @@ var rateAndDis = {
         "url":
             "https://thebeardclub.com/blogs/beard-culture/how-to-overcome-the-challenges-of-a-big-beard"
       },
-      "props": {"recommend": 1, "numComments": 3, "recentActivity": "10/10/2024 1:53 PM"},
+      "props": {"recommend": 2, "numComments": 3, "recentActivity": "10/10/2024 1:53 PM"},
       "children": [
         {
           "subject": {
