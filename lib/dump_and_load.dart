@@ -50,7 +50,7 @@ dynamic loadDumpDialog(BuildContext context) async {
   TextEditingController controller = TextEditingController();
 
   okHandler() {
-    dynamic dump = jsonDecode(controller.text);
+    Json dump = jsonDecode(controller.text);
     loadDump(dump);
     Navigator.pop(context);
   }
@@ -69,13 +69,13 @@ dynamic loadDumpDialog(BuildContext context) async {
           ])));
 }
 
-Future<void> loadDump(dump) async {
+Future<void> loadDump(Json dump) async {
   dynamic token2domain2statements = dump['domain2token2statements'];
   await loadStatements(token2domain2statements);
   signInState.center = Jsonish(dump['center']).token;
 }
 
-Future<void> loadStatements(domain2token2statements) async {
+Future<void> loadStatements(Json domain2token2statements) async {
   for (String domain in [kOneofusDomain, kNerdsterDomain]) {
     for (MapEntry e in domain2token2statements[domain]!.entries) {
       String token = e.key;

@@ -75,7 +75,7 @@ class Jsonish {
     'revokeAt',
     'domain',
     'tags', // gone but may exist in old statements
-    'recommend',
+    'recommend', // legacy.. should be called "like", (true: like, false: dislike)
     'dismiss',
     'censor',
     'stars', // gone but may exist in old statements
