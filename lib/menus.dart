@@ -86,7 +86,7 @@ class Menus {
           menuChildren: [
             // Cleaning up the UI, removing much..
             // MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
-            MyCheckbox(Prefs.hideDisliked, '''hide content where network sum(like) < 0'''),
+            // MyCheckbox(Prefs.hideDisliked, '''hide content where network sum(like) < 0'''),
             SubmenuButton(menuChildren: <Widget>[
               IntSettingDropdown(
                   'degrees', Prefs.oneofusNetDegrees, List<int>.generate(6, (i) => i + 1)),
