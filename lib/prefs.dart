@@ -13,7 +13,7 @@ class Prefs {
   // Settings
   static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> censor = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> hideDisliked = ValueNotifier<bool>(true); // TEMP:
+  static final ValueNotifier<bool> hideDisliked = ValueNotifier<bool>(false);
   static final ValueNotifier<int> oneofusNetDegrees = ValueNotifier<int>(5);
   static final ValueNotifier<int> oneofusNetPaths = ValueNotifier<int>(1);
   static final ValueNotifier<int> followNetDegrees = ValueNotifier<int>(5);
