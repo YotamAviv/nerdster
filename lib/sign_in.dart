@@ -130,7 +130,7 @@ Future<void> qrSignin(BuildContext context) async {
   forPhone['session'] = session;
   forPhone['publicKey'] = publicKeyJson;
 
-  ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
+  ValueNotifier<bool> storeKeys = ValueNotifier<bool>(true);
   // DEFER: use JsonQrDisplay (WHY?)
   // ignore: unawaited_futures
   showDialog(
