@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
-import 'package:nerdster/checker.dart';
+import 'package:nerdster/tokenize.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
@@ -138,7 +138,7 @@ $link''',
                   builder: (context) => Dialog(child: Navigator(onGenerateRoute: (settings) {
                         return MaterialPageRoute(
                             builder: (_) =>
-                                Padding(padding: const EdgeInsets.all(16.0), child: Checker()));
+                                Padding(padding: const EdgeInsets.all(16.0), child: Tokenize()));
                       })));
             }),
       ], child: const Text('/etc')),

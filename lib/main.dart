@@ -8,7 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
-import 'package:nerdster/checker.dart';
+import 'package:nerdster/tokenize.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -75,7 +75,7 @@ Future<void> main() async {
             body: SafeArea(
                 child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Checker(input2: Uri.base.queryParameters['tokenize']))))));
+                    child: Tokenize(input2: Uri.base.queryParameters['tokenize']))))));
     return;
   }
 

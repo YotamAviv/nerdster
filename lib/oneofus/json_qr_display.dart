@@ -6,9 +6,7 @@ import 'jsonish.dart';
 import 'util.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-/// CONSIDER: Launch the verify/tokenize from right here if Json is statement.
-/// CONSIDER: Code factoring between this and any verify/tokenize .
-/// DEFER: "Don't show again" for displaying sign-in credentials
+/// CONSIDER: "Don't show again" for displaying sign-in credentials
 /// DEFER: Use in qrSignin(..).. (WHY? for sport?, uniformity?)
 class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null
