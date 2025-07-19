@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
+import 'package:nerdster/checker.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
@@ -134,6 +135,21 @@ $link''',
             child: const Text(kTokenize),
             onPressed: () async {
               await Tokenize.make(context);
+            }),
+        MenuItemButton(
+            child: const Text('Checker route'),
+            onPressed: () async {
+              Checker checker = Checker();
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => Scaffold(body: SafeArea(child: checker))));
+            }),
+        MenuItemButton(
+            child: const Text('Checker dialog'),
+            onPressed: () async {
+              Checker checker = Checker();
+              showDialog(context: context, builder: (context) => AlertDialog(content: checker));
             }),
       ], child: const Text('/etc')),
 

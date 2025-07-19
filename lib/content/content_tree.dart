@@ -9,7 +9,6 @@ import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/singletons.dart';
 
 /// TODO: Migrate from flutter_fancy_tree_view 1.6.0 (discontinued replaced by two_dimensional_scrollables?

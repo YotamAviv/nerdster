@@ -44,7 +44,7 @@ class SignInState with ChangeNotifier {
       _signer = await OouSigner.make(nerdsterKeyPair);
     }
 
-    if (b(context)) {
+    if (b(context) && !b(Uri.base.queryParameters['skipCredentialsDisplay'])) {
       showTopRightDialog(
           context!, CredentialsWidget(centerResetJson, signedInDelegatePublicKeyJson));
     }
