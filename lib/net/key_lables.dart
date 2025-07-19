@@ -123,6 +123,9 @@ class KeyLabels with Comp, ChangeNotifier {
     notifyListeners();
   }
 
+  // NEXT: Rename stuff to "interpret"
+  // NEXT: label unknown keys <unknown>
+
   // Try to label (or strip):
   // - "gibberish" (crypto keys, tokens, ['signature', 'previous'] stripped)
   // - datetimes.,
