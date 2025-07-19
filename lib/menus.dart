@@ -22,7 +22,6 @@ import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/tokenize.dart';
 
 // SchedulerBinding.instance.addPostFrameCallback((_) async {
 // });
@@ -131,28 +130,16 @@ $link''',
                   context);
             },
             child: const Text('Generate link for current view..')),
-        // TEMP:
         MenuItemButton(
             child: const Text(kTokenize),
             onPressed: () async {
-              await Tokenize.make(context);
-            }),
-        // TEMP:
-        MenuItemButton(
-            child: const Text('Checker route'),
-            onPressed: () async {
-              Checker checker = Checker();
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => Scaffold(body: SafeArea(child: checker))));
-            }),
-        MenuItemButton(
-            child: const Text('Checker dialog'),
-            onPressed: () async {
-              Checker checker = Checker();
-              // NEXT: Fix size
-              showDialog(context: context, builder: (context) => AlertDialog(content: checker));
+              await showDialog(
+                  context: context,
+                  builder: (context) => Dialog(child: Navigator(onGenerateRoute: (settings) {
+                        return MaterialPageRoute(
+                            builder: (_) =>
+                                Padding(padding: const EdgeInsets.all(16.0), child: Checker()));
+                      })));
             }),
       ], child: const Text('/etc')),
 
