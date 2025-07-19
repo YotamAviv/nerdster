@@ -11,11 +11,12 @@ import 'package:nerdster/trust/trust.dart';
 import 'package:quiver/collection.dart';
 
 const kMe = 'Me';
+const kUnknown = '<unknown>';
 
 /// CODE: Code duplication from a quick separation of KeyLables to KeyLables and OneofusLables just now.
 /// The reason was so that FollowNet (which assigns delegates) can report progress with Oneofus lables.
 /// It looks like that's limited to just _labelKey(..).
-/// 
+///
 /// TODO: When making FollowNet depend on OneofusLabels, I was surprised to find that KeyLabels
 /// didn't depend on OneofusEquiv. I wonder if doing so would make the code simpler (or correct).
 class OneofusLabels with Comp, ChangeNotifier {
@@ -123,44 +124,37 @@ class KeyLabels with Comp, ChangeNotifier {
     notifyListeners();
   }
 
-  // NEXT: Rename stuff to "interpret"
-  // NEXT: label unknown keys <unknown>
-
-  // Try to label (or strip):
+  // Label, convert, strip:
   // - "gibberish" (crypto keys, tokens, ['signature', 'previous'] stripped)
   // - datetimes.,
   // - lists and maps of those above
-  dynamic show(dynamic d) {
+  dynamic interpret(dynamic d) {
     if (d is Jsonish) {
-      return show(d.json);
+      return interpret(d.json);
     } else if (d is Statement) {
-      return show(d.json);
+      return interpret(d.json);
     } else if (d is Iterable) {
-      return List.of(d.map(show)); // Json converter doesn't like Iterable, and so List.of
+      return List.of(d.map(interpret)); // Json converter doesn't like Iterable, and so List.of
     } else if (d is Json && d['crv'] == 'Ed25519') {
       try {
         String token = getToken(d);
-        if (labelKey(token) != null) {
-          return labelKey(token);
-        }
-        // ignore: empty_catches
-      } catch (e) {}
-      return d;
+        return b(labelKey(token)) ? labelKey(token) : kUnknown;
+      } catch (e) {
+        return d;
+      }
     } else if (d is Map) {
       Map out = Map.of(d);
       out.remove('signature');
       out.remove('previous');
-      return out.map((key, value) => MapEntry(show(key), show(value)));
+      return out.map((key, value) => MapEntry(interpret(key), interpret(value)));
     } else if (d is String) {
       String? keyLabel = labelKey(d);
-      if (b(keyLabel)) {
-        return keyLabel!;
-      }
+      if (b(keyLabel)) return keyLabel!;
       try {
         return formatUiDatetime(parseIso(d));
-        // ignore: empty_catches
-      } catch (e) {}
-      return d;
+      } catch (e) {
+        return d;
+      }
     } else if (d is DateTime) {
       return formatUiDatetime(d);
     } else {
@@ -177,7 +171,7 @@ class KeyLabels with Comp, ChangeNotifier {
 
   void _labelDelegateKeys() {
     for (MapEntry<String, String> e in followNet.delegate2oneofus.entries) {
-      _labelKey(e.key, '${labelKey(e.value)} on nerdster.org');
+      _labelKey(e.key, '${labelKey(e.value)}@nerdster.org');
     }
   }
 

@@ -178,14 +178,14 @@ void main() async {
 
     await signInState.signIn(loner.token, lonerD.keyPair);
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(keyLabels.show(dumpNetwork(oneofusNet.network)), {'Me': null});
+    expect(keyLabels.interpret(dumpNetwork(oneofusNet.network)), {'Me': null});
 
     Map<String, Fetcher> delegateNetwork;
     Map<String, DateTime?> dn;
     await Comp.waitOnComps([contentBase, keyLabels]);
     delegateNetwork = followNet.delegate2fetcher;
     dn = delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
-    expect(keyLabels.show(dn), {'Me on nerdster.org': '5/1/2024 12:02 AM'});
+    expect(keyLabels.interpret(dn), {'Me@nerdster.org': '5/1/2024 12:02 AM'});
     roots = contentBase.roots;
     expect(roots.length, 1);
 
@@ -198,7 +198,7 @@ void main() async {
     delegateNetwork = followNet.delegate2fetcher;
     dn = delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
     expect(dn, {lonerD2.token: null, lonerD.token: parseIso('2024-05-01 07:02:00.000Z')});
-    expect(keyLabels.show(dn), {'Me on nerdster.org': null, 'Me on nerdster.org (2)': '5/1/2024 12:02 AM'});
+    expect(keyLabels.interpret(dn), {'Me@nerdster.org': null, 'Me@nerdster.org (2)': '5/1/2024 12:02 AM'});
 
     // say something as new delegate
     await lonerD2.doRate(title: "t3");
@@ -540,20 +540,20 @@ var jock1 = {
     "N:Me-true:": {
       "N:poser-true:Me": {
         "N:hipster-true:Me->poser": {
-          "N:hipster on nerdster.org-false:Me->poser->hipster": {},
-          "N:hipster on nerdster.org (2)-false:10/10/2024 1:44 PM:Me->poser->hipster": {},
-          "S:1be34a1ae02178586be9cde87f01e495192e1812:@10/10/2024 1:44 PM:delegated:hipster on nerdster.org":
+          "N:hipster@nerdster.org-false:Me->poser->hipster": {},
+          "N:hipster@nerdster.org (2)-false:10/10/2024 1:44 PM:Me->poser->hipster": {},
+          "S:1be34a1ae02178586be9cde87f01e495192e1812:@10/10/2024 1:44 PM:delegated:hipster@nerdster.org":
               {},
-          "S:33404bc620f40ca4739f7637d308ff523948e9d0:@10/10/2024 1:44 PM:delegated:hipster on nerdster.org (2)":
+          "S:33404bc620f40ca4739f7637d308ff523948e9d0:@10/10/2024 1:44 PM:delegated:hipster@nerdster.org (2)":
               {}
         },
-        "N:poser on nerdster.org-false:Me->poser": {},
-        "S:16ced061c9251a7d1458350aca55d97886b620a8:@10/10/2024 1:44 PM:delegated:poser on nerdster.org":
+        "N:poser@nerdster.org-false:Me->poser": {},
+        "S:16ced061c9251a7d1458350aca55d97886b620a8:@10/10/2024 1:44 PM:delegated:poser@nerdster.org":
             {},
         "S:71ab5928a2070d6e521780712a86606ee64b4a12:@10/10/2024 1:44 PM:trusted:hipster": {}
       },
-      "N:Me on nerdster.org-false:Me": {},
-      "S:ca9007da20fddb2574651b9a711efccd3b9a8f89:@10/10/2024 1:44 PM:delegated:Me on nerdster.org": {},
+      "N:Me@nerdster.org-false:Me": {},
+      "S:ca9007da20fddb2574651b9a711efccd3b9a8f89:@10/10/2024 1:44 PM:delegated:Me@nerdster.org": {},
       "S:328b0c8559e33df8b21af1e7a2f1219e08ee6477:@10/10/2024 1:44 PM:trusted:poser": {}
     }
   },
@@ -711,8 +711,8 @@ var equate1 = {
   "network": {"2af42950bc87929498b72f25abc5faa90187acfb": null},
   "nerds": {
     "N:Me-true:": {
-      "N:Me on nerdster.org-false:Me": {},
-      "S:75605fa84501f7a97731514f24569bfe7475015c:@10/10/2024 1:54 PM:delegated:Me on nerdster.org": {}
+      "N:Me@nerdster.org-false:Me": {},
+      "S:75605fa84501f7a97731514f24569bfe7475015c:@10/10/2024 1:54 PM:delegated:Me@nerdster.org": {}
     }
   },
   "content": [
@@ -1016,20 +1016,20 @@ var rateAndDis = {
     "N:Me-true:": {
       "N:poser-true:Me": {
         "N:hipster-true:Me->poser": {
-          "N:hipster on nerdster.org-false:Me->poser->hipster": {},
-          "N:hipster on nerdster.org (2)-false:10/10/2024 1:53 PM:Me->poser->hipster": {},
-          "S:f6872af18559e8e6da8b278455cc30c68ea6b5ca:@10/10/2024 1:53 PM:delegated:hipster on nerdster.org":
+          "N:hipster@nerdster.org-false:Me->poser->hipster": {},
+          "N:hipster@nerdster.org (2)-false:10/10/2024 1:53 PM:Me->poser->hipster": {},
+          "S:f6872af18559e8e6da8b278455cc30c68ea6b5ca:@10/10/2024 1:53 PM:delegated:hipster@nerdster.org":
               {},
-          "S:319118699fb7a63667fa4dc2e1b74f66c47e387a:@10/10/2024 1:53 PM:delegated:hipster on nerdster.org (2)":
+          "S:319118699fb7a63667fa4dc2e1b74f66c47e387a:@10/10/2024 1:53 PM:delegated:hipster@nerdster.org (2)":
               {}
         },
-        "N:poser on nerdster.org-false:Me->poser": {},
-        "S:5780285c98235c834fa316ece86b1fcb26ed0c9b:@10/10/2024 1:53 PM:delegated:poser on nerdster.org":
+        "N:poser@nerdster.org-false:Me->poser": {},
+        "S:5780285c98235c834fa316ece86b1fcb26ed0c9b:@10/10/2024 1:53 PM:delegated:poser@nerdster.org":
             {},
         "S:3db77a56ba6ff6e21a5b0d45905779a71935ecd4:@10/10/2024 1:53 PM:trusted:hipster": {}
       },
-      "N:Me on nerdster.org-false:Me": {},
-      "S:29f02d57dc1278d46e36dccf63f46ecacdf8c4b8:@10/10/2024 1:53 PM:delegated:Me on nerdster.org": {},
+      "N:Me@nerdster.org-false:Me": {},
+      "S:29f02d57dc1278d46e36dccf63f46ecacdf8c4b8:@10/10/2024 1:53 PM:delegated:Me@nerdster.org": {},
       "S:2e37900e39773a84655584c3c8754a0c39039de0:@10/10/2024 1:53 PM:trusted:poser": {}
     }
   },

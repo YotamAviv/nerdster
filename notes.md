@@ -102,11 +102,6 @@ UI for clear relate/equate.
   - limit path length?
   - limit time?
 
-## Firebase emulators
-Run these from 'nerdster' base directory.
-$ firebase --project=nerdster emulators:start
-$ firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start
-
 ### Export PROD Firebase for use by local emulators
 firebase projects:list
 gcloud projects list

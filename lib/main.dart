@@ -52,7 +52,7 @@ const domain2statementType = {
 
 final Corruptor corruptor = Notifications();
 typedef TranslateFn = dynamic Function(dynamic);
-TranslateFn translateFn = keyLabels.show;
+TranslateFn translateFn = keyLabels.interpret;
 
 const Map<FireChoice, Map<String, (String, String)>> exportUrl = {
   FireChoice.prod: {

@@ -48,11 +48,14 @@ class _State extends State<JsonDisplay> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (b(translateFn)) FloatingActionButton(
-                    heroTag: 'Translate',
+                    heroTag: 'Interperate',
                     mini: true, // 40x40 instead of 56x56
                     tooltip: !widget.translate.value
-                        ? 'interperate known keys, make more human readable'
-                        : 'show raw statement',
+                        ? '''Interperate - make more human readable:
+- label known and unknown keys
+- convert dates to local time and format
+- strip clutter (signature, previous)'''
+                        : 'Show raw statement (not interpreted)',
                     child:
                         Icon(Icons.translate, color: widget.translate.value ? Colors.blue : null),
                     onPressed: () async {
