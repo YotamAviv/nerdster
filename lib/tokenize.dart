@@ -9,7 +9,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
-import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -29,6 +28,8 @@ class Tokenize extends StatefulWidget {
 const String kTokenize = 'Parse, tokenize, validate ...';
 const Widget _space = SizedBox(height: 20);
 Text _titleText(String s) => Text(s, style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold));
+Text _bodyBigText(String s) =>
+    Text(s, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold));
 Text _bodyText(String s) =>
     Text(s, style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black));
 
@@ -58,12 +59,21 @@ class _State extends State<Tokenize> {
                                   onPressed: () => Navigator.of(context).pop()),
                               _titleText(title),
                             ]),
-                            ProcessedDisplay(processed),
+                            Padding(
+                                padding: EdgeInsetsGeometry.all(16),
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(
+                                          4), // default for OutlineInputBorder
+                                    ),
+                                    child: ProcessedDisplay(processed))),
                           ],
                         )))));
               }),
         ],
       ),
+      _space,
       Expanded(
           child: Stack(
         alignment: Alignment.bottomRight,
@@ -99,32 +109,32 @@ class _State extends State<Tokenize> {
     Json json;
     try {
       json = jsonDecode(input);
-      out['Parsed'] = [Linky('JSON successfully parsed')];
+      out['Parsed'] = [_bodyBigText('JSON successfully parsed')];
     } catch (e) {
-      out['Error'] = [Linky('Failed to parse JSON'), _bodyText('$e}')];
+      out['Error'] = [_bodyBigText('Failed to parse JSON'), _bodyText('$e}')];
       return out;
     }
 
     if (json.containsKey('id')) {
       json.remove('id');
       out['Stripped "id"'] = [
-        Linky('Stripped "id" (server computed token, not part of the statement)')
+        _bodyBigText('Stripped "id" (server computed token, not part of the statement)')
       ];
     }
 
     final Json ordered = Jsonish.order(json);
     final String ppJson = encoder.convert(ordered);
-    out['Formatted'] = [Linky('Formatted JSON (2 spaces)'), _bodyText(ppJson)];
+    out['Formatted'] = [_bodyBigText('Formatted JSON (2 spaces)'), _bodyText(ppJson)];
 
     final String token = sha1.convert(utf8.encode(ppJson)).toString();
-    out['Tokenized'] = [Linky('Computed SHA1 hash on formatted JSON'), _bodyText(token)];
+    out['Tokenized'] = [_bodyBigText('Computed SHA1 hash on formatted JSON'), _bodyText(token)];
 
     OouPublicKey? iKey;
     if (json.containsKey('I')) {
       try {
         iKey = await crypto.parsePublicKey(json['I']!);
       } catch (e) {
-        out['Error'] = [Linky('Error parsing public key "I"'), _bodyText('Error: $e')];
+        out['Error'] = [_bodyBigText('Error parsing public key "I"'), _bodyText('Error: $e')];
         return out;
       }
     }
@@ -132,10 +142,10 @@ class _State extends State<Tokenize> {
     String? signature = json['signature'];
 
     if (b(signature) && !b(iKey)) {
-      out['Error'] = [Linky('''Found "signature" but missing "I" (author's public key)''')];
+      out['Error'] = [_bodyBigText('''Found "signature" but missing "I" (author's public key)''')];
     }
     if (b(iKey) && !b(signature)) {
-      out['Error'] = [Linky('''Found "I" (author's public key) but missing "signature"''')];
+      out['Error'] = [_bodyBigText('''Found "I" (author's public key) but missing "signature"''')];
     }
 
     if (json.containsKey('signature')) {
@@ -144,18 +154,18 @@ class _State extends State<Tokenize> {
       bool verified = await _oouVerifier.verify(json, ppJsonWithoutSig, signature);
       if (verified) {
         out['Verified'] = [
-          Linky(
+          _bodyBigText(
               'Successfully verified signature against the statement body (with "signature" omitted) and the provided signing public key ("I").')
         ];
       } else {
-        out['Error'] = [Linky('Signature verification FAILED!')];
+        out['Error'] = [_bodyBigText('Signature verification FAILED!')];
         return out;
       }
     }
 
     String translated = encoder.convert(keyLabels.interpret(json));
     if (translated != ppJson) {
-      out['Interpreted'] = [Linky('''Interpreted for readability'''), _bodyText(translated)];
+      out['Interpreted'] = [_bodyBigText('''Interpreted for readability'''), _bodyText(translated)];
     }
 
     return out;
