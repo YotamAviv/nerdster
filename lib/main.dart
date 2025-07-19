@@ -68,7 +68,7 @@ const Map<FireChoice, Map<String, (String, String)>> exportUrl = {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // TEMP: Maybe don't even load up Firebase
+  // Don't even load up Firebase if we're just showing the validate demo
   if (b(Uri.base.queryParameters['tokenize'])) {
     runApp(MaterialApp(
         home: Scaffold(
