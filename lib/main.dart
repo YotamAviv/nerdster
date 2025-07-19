@@ -68,6 +68,17 @@ const Map<FireChoice, Map<String, (String, String)>> exportUrl = {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // TEMP: Maybe don't even load up Firebase
+  if (b(Uri.base.queryParameters['tokenize'])) {
+    runApp(MaterialApp(
+        home: Scaffold(
+            body: SafeArea(
+                child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Checker(input2: Uri.base.queryParameters['tokenize']))))));
+    return;
+  }
+
   // ------------ Fire ------------
   Map<String, String> params = Uri.base.queryParameters;
   String? fireParam = params['fire'];
@@ -119,13 +130,7 @@ Future<void> main() async {
       defaultTargetPlatform == TargetPlatform.android;
 
   // -------------- run app ---------------
-  // TEMP: Maybe don't even load up Firebase
-  if (b(Uri.base.queryParameters['tokenize'])) {
-    Checker checker = Checker(input2: Uri.base.queryParameters['tokenize']);
-    runApp(MaterialApp(home: Scaffold(body: SafeArea(child: checker))));
-  } else {
-    runApp(const MaterialApp(home: ContentTree()));
-  }
+  runApp(const MaterialApp(home: ContentTree()));
 }
 
 Future<void> defaultSignIn(BuildContext context) async {
