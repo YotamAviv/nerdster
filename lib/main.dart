@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
+import 'package:nerdster/checker.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -118,7 +119,13 @@ Future<void> main() async {
       defaultTargetPlatform == TargetPlatform.android;
 
   // -------------- run app ---------------
-  runApp(const MaterialApp(home: ContentTree()));
+  // TEMP: Maybe don't even load up Firebase
+  if (b(Uri.base.queryParameters['tokenize'])) {
+    Checker checker = Checker(input2: Uri.base.queryParameters['tokenize']);
+    runApp(MaterialApp(home: Scaffold(body: SafeArea(child: checker))));
+  } else {
+    runApp(const MaterialApp(home: ContentTree()));
+  }
 }
 
 Future<void> defaultSignIn(BuildContext context) async {
@@ -177,14 +184,10 @@ dynamic hardCodedSignin = {
   FireChoice.emulator: {"one-of-us.net": yotam},
 };
 
-Json yotamForCopyPasteSignin = 
-
-{
+Json yotamForCopyPasteSignin = {
   "one-of-us.net": {
     "crv": "Ed25519",
     "kty": "OKP",
     "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
   }
-}
-
-;
+};

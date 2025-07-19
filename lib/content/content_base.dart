@@ -221,6 +221,8 @@ class ContentBase with Comp, ChangeNotifier {
     }
     _roots = <ContentTreeNode>[];
     for (String subjectToken in _subject2statements.keys) {
+      if (!b(Jsonish.find(subjectToken))) continue;
+      
       final Jsonish subject = Jsonish.find(subjectToken)!;
 
       // skip statements
