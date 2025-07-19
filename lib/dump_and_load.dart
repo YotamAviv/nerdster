@@ -37,7 +37,7 @@ Future<dynamic> dumpDump(BuildContext? context) async {
   // MAYBE: Figure out where and whether or not I use show().
   // dumpStatements() already calls it.
   if (Prefs.keyLabel.value) {
-    out = keyLabels.show(out);
+    out = keyLabels.interpret(out);
   }
 
   if (context != null) {

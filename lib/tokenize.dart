@@ -112,7 +112,7 @@ class Tokenize {
       }
     }
 
-    String translated = encoder.convert(keyLabels.show(json));
+    String translated = encoder.convert(keyLabels.interpret(json));
     if (translated != ppJson) {
       out['Translated'] = [
         Linky(

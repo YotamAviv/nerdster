@@ -80,10 +80,10 @@ class Notifications with ChangeNotifier implements Corruptor {
 
   void dump() {
     for (var e in rejected.entries) {
-      print('${encoder.convert(keyLabels.show(Jsonish.find(e.key)!))}, ${e.value}');
+      print('${encoder.convert(keyLabels.interpret(Jsonish.find(e.key)!))}, ${e.value}');
     }
     for (var e in warned.entries) {
-      print('${encoder.convert(keyLabels.show(Jsonish.find(e.key)!))}, ${e.value}');
+      print('${encoder.convert(keyLabels.interpret(Jsonish.find(e.key)!))}, ${e.value}');
     }
     for (var e in corrupted.entries) {
       print('$e.key, $e.value');

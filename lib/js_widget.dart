@@ -13,7 +13,7 @@ class JSWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    dynamic dyn = (Prefs.keyLabel.value) ? keyLabels.show(jsonish) : jsonish;
+    dynamic dyn = (Prefs.keyLabel.value) ? keyLabels.interpret(jsonish) : jsonish;
 
     String message;
     if (dyn is Jsonish) {

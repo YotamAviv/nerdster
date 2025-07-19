@@ -131,11 +131,13 @@ $link''',
                   context);
             },
             child: const Text('Generate link for current view..')),
+        // TEMP:
         MenuItemButton(
             child: const Text(kTokenize),
             onPressed: () async {
               await Tokenize.make(context);
             }),
+        // TEMP:
         MenuItemButton(
             child: const Text('Checker route'),
             onPressed: () async {
@@ -149,6 +151,7 @@ $link''',
             child: const Text('Checker dialog'),
             onPressed: () async {
               Checker checker = Checker();
+              // NEXT: Fix size
               showDialog(context: context, builder: (context) => AlertDialog(content: checker));
             }),
       ], child: const Text('/etc')),

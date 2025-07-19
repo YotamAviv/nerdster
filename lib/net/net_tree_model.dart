@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -44,7 +45,7 @@ abstract class NetTreeModel {
       // them, then we attempt to name them.
       TrustStatement ts = statement as TrustStatement;
       // return keyLabels.labelKey(ts.subjectToken) ?? DemoKey.findByToken(ts.subjectToken)!.name;
-      return keyLabels.labelKey(ts.subjectToken) ?? '<!trusted>';
+      return keyLabels.labelKey(ts.subjectToken) ?? kUnknown;
     } else {
       return keyLabels.labelKey(token!)!;
     }

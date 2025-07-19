@@ -31,7 +31,7 @@ import 'package:test/test.dart';
 
 printStatement(String statementToken) {
   TrustStatement statement = TrustStatement.find(statementToken)!;
-  String string = encoder.convert(keyLabels.show(statement));
+  String string = encoder.convert(keyLabels.interpret(statement));
   print(string);
 }
 
@@ -543,7 +543,7 @@ void main() async {
 
     expect(oneofusEquiv.getCanonical(homer2.token), homer2.token);
     expect(oneofusEquiv.getEquivalents(homer2.token), {homer.token, homer2.token});
-    expect(keyLabels.show(oneofusEquiv.getCanonical(homer.token)), keyLabels.show(homer2.token));
+    expect(keyLabels.interpret(oneofusEquiv.getCanonical(homer.token)), keyLabels.interpret(homer2.token));
   });
 
   Map<String, String?> dumpDemoNetwork(Map<String, Node> network) =>
@@ -846,6 +846,6 @@ Future<void> compareNetworkToTree(String rootToken) async {
   Set<String> networkCanon =
       Set.of(oneofusNet.network.keys.where((t) => oneofusEquiv.getCanonical(t) == t));
   Set<String> dumpedKeys = Set.of(dumped.map((n) => n.token));
-  expect(Set.of(keyLabels.show(dumpedKeys)), Set.of(keyLabels.show(networkCanon)));
+  expect(Set.of(keyLabels.interpret(dumpedKeys)), Set.of(keyLabels.interpret(networkCanon)));
   expect(dumped.length, networkCanon.length);
 }

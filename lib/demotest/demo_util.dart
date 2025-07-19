@@ -18,8 +18,8 @@ void myExpect(dynamic actual, dynamic matcher) {
 }
 
 void jsonShowExpect(dynamic actual, dynamic expected) {
-  final actual2 = keyLabels.show(actual);
-  final expected2 = keyLabels.show(expected);
+  final actual2 = keyLabels.interpret(actual);
+  final expected2 = keyLabels.interpret(expected);
   JsonDiffer differ = JsonDiffer.fromJson(actual2, expected2);
   DiffNode diffNode = differ.diff();
   if (!diffNode.hasNothing) {
