@@ -42,8 +42,7 @@ class Verify extends StatelessWidget {
           IconButton(
               icon: Icon(Icons.arrow_forward),
               onPressed: () async {
-                Map<String, List<Widget>> processed = await process(controller.text);
-                String title = processed.keys.join(', ');
+                String title = 'TODO';
                 await Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => Scaffold(
                             body: SafeArea(
@@ -63,7 +62,7 @@ class Verify extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(
                                           4), // default for OutlineInputBorder
                                     ),
-                                    child: ProcessedDisplay(processed))),
+                                    child: ProcessedPanel(controller.text))),
                           ],
                         )))));
               }),
@@ -101,94 +100,142 @@ class Verify extends StatelessWidget {
   }
 }
 
-class ProcessedDisplay extends StatelessWidget {
-  final Map<String, List<Widget>> processed;
+class ProcessedPanel extends StatefulWidget {
+  final String input;
 
-  const ProcessedDisplay(this.processed, {super.key});
+  const ProcessedPanel(this.input, {super.key});
+
+  @override
+  State<ProcessedPanel> createState() => _ProcessedPanelState();
+}
+
+class _ProcessedPanelState extends State<ProcessedPanel> {
+  Widget? _body;
+
+  @override
+  void initState() {
+    super.initState();
+    _startProcessing();
+  }
+
+  void _set(Widget child) => setState(() => _body = child);
+
+  Future<void> _startProcessing() async {
+    final input = widget.input;
+    Json json;
+
+    try {
+      json = jsonDecode(input);
+    } catch (e) {
+      _set(_error([
+        _bodyBigText('Failed to parse JSON'),
+        _bodyText('$e'),
+      ]));
+      return;
+    }
+
+    final children = <Widget>[
+      _bodyBigText('JSON successfully parsed'),
+    ];
+
+    if (json.containsKey('id')) {
+      json.remove('id');
+      children.addAll([
+        _space,
+        _bodyBigText('Stripped "id" (server computed token, not part of the statement)')
+      ]);
+    }
+
+    final Json ordered = Jsonish.order(json);
+    final String ppJson = encoder.convert(ordered);
+    if (ppJson.trim() != input.trim()) {
+      children.addAll([
+        _space,
+        _bodyBigText('Formatted JSON (2 spaces)'),
+        _bodyText(ppJson),
+      ]);
+    }
+
+    final String token = sha1.convert(utf8.encode(ppJson)).toString();
+    children.addAll([
+      _space,
+      _bodyBigText('Computed SHA1 hash on formatted JSON'),
+      _bodyText(token),
+    ]);
+
+    OouPublicKey? iKey;
+    if (json.containsKey('I')) {
+      try {
+        iKey = await crypto.parsePublicKey(json['I']!);
+      } catch (e) {
+        _set(_error([
+          _bodyBigText('Error parsing public key "I"'),
+          _bodyText('$e'),
+        ]));
+        return;
+      }
+    }
+
+    final String? signature = json['signature'];
+
+    // If only one of signature or I is present, treat as an error
+    if ((signature != null && iKey == null) || (signature == null && iKey != null)) {
+      _set(_error([
+        _bodyBigText('Invalid statement'),
+        _bodyText(
+            'Both "signature" and "I" (author\'s public key) must be present together, or neither.'),
+      ]));
+      return;
+    }
+
+    if (json.containsKey('signature')) {
+      final withoutSig = Map.from(ordered)..remove('signature');
+      final String jsonWithoutSig = encoder.convert(withoutSig);
+      final verified = await _oouVerifier.verify(json, jsonWithoutSig, signature);
+
+      if (verified) {
+        children.addAll([
+          _space,
+          _bodyBigText('✔ Verified'),
+          _bodyText('Signature successfully verified.'),
+        ]);
+      } else {
+        _set(_error([_bodyBigText('✘ Signature verification FAILED!')]));
+        return;
+      }
+    }
+
+    final String interpreted = encoder.convert(keyLabels.interpret(json));
+    if (interpreted != ppJson) {
+      children.addAll([
+        _space,
+        _bodyBigText('Interpreted for readability'),
+        _bodyText(interpreted),
+      ]);
+    }
+
+    _set(Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
+    ));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children:
-                processed.values.toList().map((l) => [...l, _space]).toList().flattened.toList()));
-  }
-}
-
-Future<Map<String, List<Widget>>> process(final String input) async {
-  LinkedHashMap<String, List<Widget>> processed = LinkedHashMap<String, List<Widget>>();
-  Json json;
-  try {
-    json = jsonDecode(input);
-    processed['Parsed'] = [_bodyBigText('JSON successfully parsed')];
-  } catch (e) {
-    processed['Error'] = [_bodyBigText('Failed to parse JSON'), _bodyText('$e}')];
-    return processed;
+    return _body ??
+        const Padding(
+          padding: EdgeInsets.all(32),
+          child: Center(child: CircularProgressIndicator()),
+        );
   }
 
-  if (json.containsKey('id')) {
-    json.remove('id');
-    processed['Stripped "id"'] = [
-      _bodyBigText('Stripped "id" (server computed token, not part of the statement)')
-    ];
-  }
-
-  final Json ordered = Jsonish.order(json);
-  final String ppJson = encoder.convert(ordered);
-  processed['Formatted'] = [_bodyBigText('Formatted JSON (2 spaces)'), _bodyText(ppJson)];
-
-  final String token = sha1.convert(utf8.encode(ppJson)).toString();
-  processed['Tokenized'] = [_bodyBigText('Computed SHA1 hash on formatted JSON'), _bodyText(token)];
-
-  OouPublicKey? iKey;
-  if (json.containsKey('I')) {
-    try {
-      iKey = await crypto.parsePublicKey(json['I']!);
-    } catch (e) {
-      processed['Error'] = [_bodyBigText('Error parsing public key "I"'), _bodyText('Error: $e')];
-      return processed;
-    }
-  }
-
-  String? signature = json['signature'];
-
-  if (b(signature) && !b(iKey)) {
-    processed['Error'] = [
-      _bodyBigText('''Found "signature" but missing "I" (author's public key)''')
-    ];
-  }
-  if (b(iKey) && !b(signature)) {
-    processed['Error'] = [
-      _bodyBigText('''Found "I" (author's public key) but missing "signature"''')
-    ];
-  }
-
-  if (json.containsKey('signature')) {
-    var orderedWithoutSig = Map.from(ordered)..remove("signature");
-    String ppJsonWithoutSig = encoder.convert(orderedWithoutSig);
-    bool verified = await _oouVerifier.verify(json, ppJsonWithoutSig, signature);
-    if (verified) {
-      processed['Verified'] = [
-        _bodyBigText(
-            'Successfully verified signature against the statement body (with "signature" omitted) and the provided signing public key ("I").')
-      ];
-    } else {
-      processed['Error'] = [_bodyBigText('Signature verification FAILED!')];
-      return processed;
-    }
-  }
-
-  String translated = encoder.convert(keyLabels.interpret(json));
-  if (translated != ppJson) {
-    processed['Interpreted'] = [
-      _bodyBigText('''Interpreted for readability'''),
-      _bodyText(translated)
-    ];
-  }
-
-  return processed;
+  Widget _error(List<Widget> content) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: content),
+      );
 }
 
 var tmp = {
