@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
-import 'package:nerdster/tokenize.dart';
+import 'package:nerdster/verify.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
@@ -129,16 +129,16 @@ $link''',
                   ['Okay'],
                   context);
             },
-            child: const Text('Generate link for current view..')),
+            child: const Text('Generate link for current view...')),
         MenuItemButton(
-            child: const Text(kTokenize),
+            child: const Text(kVerify),
             onPressed: () async {
               await showDialog(
                   context: context,
                   builder: (context) => Dialog(child: Navigator(onGenerateRoute: (settings) {
                         return MaterialPageRoute(
                             builder: (_) =>
-                                Padding(padding: const EdgeInsets.all(16.0), child: Tokenize()));
+                                Padding(padding: const EdgeInsets.all(16.0), child: Verify()));
                       })));
             }),
       ], child: const Text('/etc')),
