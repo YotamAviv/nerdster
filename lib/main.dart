@@ -8,7 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
-import 'package:nerdster/tokenize.dart';
+import 'package:nerdster/verify.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -69,13 +69,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Don't even load up Firebase if we're just showing the validate demo
-  if (b(Uri.base.queryParameters['tokenize'])) {
+  if (b(Uri.base.queryParameters['verify'])) {
     runApp(MaterialApp(
         home: Scaffold(
             body: SafeArea(
                 child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Tokenize(input2: Uri.base.queryParameters['tokenize']))))));
+                    child: Verify(input: Uri.base.queryParameters['verify']))))));
     return;
   }
 
