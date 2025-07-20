@@ -14,8 +14,12 @@ import 'package:nerdster/singletons.dart';
 // - VERIFIED! (green) / INVALID! (red) / (not signed)
 // - don't show notes that don't matter (removed id, formatted, parsed) unless they actually happened
 
+
 /// from: https://www.urlencoder.org/
 /// ?verify=%0A%7B%0A%20%20%22statement%22%3A%20%22org.nerdster%22%2C%0A%20%20%22time%22%3A%20%222025-07-03T14%3A11%3A25.901Z%22%2C%0A%20%20%22I%22%3A%20%7B%0A%20%20%20%20%22crv%22%3A%20%22Ed25519%22%2C%0A%20%20%20%20%22kty%22%3A%20%22OKP%22%2C%0A%20%20%20%20%22x%22%3A%20%22qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI%22%0A%20%20%7D%2C%0A%20%20%22rate%22%3A%20%7B%0A%20%20%20%20%22contentType%22%3A%20%22book%22%2C%0A%20%20%20%20%22author%22%3A%20%22Ring%20Lardner%22%2C%0A%20%20%20%20%22title%22%3A%20%22Champion%22%0A%20%20%7D%2C%0A%20%20%22with%22%3A%20%7B%0A%20%20%20%20%22recommend%22%3A%20true%0A%20%20%7D%2C%0A%20%20%22comment%22%3A%20%22A%20long-form%20cynical%20joke%2C%20fantastic%20counterpoint%20dessert%20piece%20to%20%5C%22Ghosts%20of%20Manila%5C%22%2C%20a%2020%20page%20setup%20to%20punch%20line%20%28no%20pun%20intended%29.%22%2C%0A%20%20%22previous%22%3A%20%226282a02d21eff999e0a3a9216a087f7a4ce79d0c%22%2C%0A%20%20%22signature%22%3A%20%22276f15ca9c32a02fcaaaec68019df09a0768ab7cd0109723811df4d7eda313fdd10afeee8a9dcf3f368f238dc2fc7543c671f3f9d855ba82573c0723ce84a107%22%0A%7D
+OouVerifier _oouVerifier = OouVerifier();
+
+
 const String kVerify = 'Verify...';
 const Widget _space = SizedBox(height: 20);
 Text _titleText(String s) => Text(s, style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold));
@@ -23,7 +27,6 @@ Text _bodyBigText(String s) =>
     Text(s, style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold));
 Text _bodyText(String s) =>
     Text(s, style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black));
-OouVerifier _oouVerifier = OouVerifier();
 
 class Verify extends StatelessWidget {
   final String? input;
@@ -40,7 +43,6 @@ class Verify extends StatelessWidget {
           IconButton(
               icon: Icon(Icons.arrow_forward),
               onPressed: () async {
-                String title = 'TODO';
                 await Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => Scaffold(
                             body: SafeArea(
@@ -50,7 +52,7 @@ class Verify extends StatelessWidget {
                               IconButton(
                                   icon: Icon(Icons.arrow_back),
                                   onPressed: () => Navigator.of(context).pop()),
-                              _titleText(title),
+                              _titleText('Back to JSON input'),
                             ]),
                             Padding(
                                 padding: EdgeInsetsGeometry.all(16),
@@ -109,6 +111,8 @@ class ProcessedPanel extends StatefulWidget {
 
 class _ProcessedPanelState extends State<ProcessedPanel> {
   Widget? _body;
+  String? _status;
+  Color? _statusColor;
 
   @override
   void initState() {
@@ -118,6 +122,18 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
 
   void _set(Widget child) => setState(() => _body = child);
 
+  Widget _statusHeader(String text, Color color) => Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 12),
+        color: color,
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+        ),
+      );
+
   Future<void> _startProcessing() async {
     final input = widget.input;
     Json json;
@@ -125,12 +141,20 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
     try {
       json = jsonDecode(input);
     } catch (e) {
+      _status = '✘ INVALID!';
+      _statusColor = Colors.red;
       _set(_error([
+        _statusHeader(_status!, _statusColor!),
+        _space,
         _bodyBigText('Failed to parse JSON'),
         _bodyText('$e'),
       ]));
       return;
     }
+
+    // Default status: Not signed
+    _status = 'Not Signed';
+    _statusColor = Colors.grey[700];
 
     final children = <Widget>[
       _bodyBigText('JSON successfully parsed'),
@@ -167,6 +191,7 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
         ),
       ]);
     }
+
     final String token = sha1.convert(utf8.encode(ppJson)).toString();
     children.addAll([
       _space,
@@ -179,7 +204,11 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
       try {
         iKey = await crypto.parsePublicKey(json['I']!);
       } catch (e) {
+        _status = '✘ INVALID!';
+        _statusColor = Colors.red;
         _set(_error([
+          _statusHeader(_status!, _statusColor!),
+          _space,
           _bodyBigText('Error parsing public key "I"'),
           _bodyText('$e'),
         ]));
@@ -189,9 +218,13 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
 
     final String? signature = json['signature'];
 
-    // If only one of signature or I is present, treat as an error
+    // If only one of signature or I is present, treat as error
     if ((signature != null && iKey == null) || (signature == null && iKey != null)) {
+      _status = '✘ INVALID!';
+      _statusColor = Colors.red;
       _set(_error([
+        _statusHeader(_status!, _statusColor!),
+        _space,
         _bodyBigText('Invalid statement'),
         _bodyText(
             'Both "signature" and "I" (author\'s public key) must be present together, or neither.'),
@@ -205,13 +238,21 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
       final verified = await _oouVerifier.verify(json, jsonWithoutSig, signature);
 
       if (verified) {
+        _status = '✔ VERIFIED!';
+        _statusColor = Colors.green[700];
         children.addAll([
           _space,
           _bodyBigText('✔ Verified'),
           _bodyText('Signature successfully verified.'),
         ]);
       } else {
-        _set(_error([_bodyBigText('✘ Signature verification FAILED!')]));
+        _status = '✘ INVALID!';
+        _statusColor = Colors.red;
+        _set(_error([
+          _statusHeader(_status!, _statusColor!),
+          _space,
+          _bodyBigText('Signature verification FAILED!'),
+        ]));
         return;
       }
     }
@@ -229,7 +270,11 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: children,
+        children: [
+          if (_status != null && _statusColor != null) _statusHeader(_status!, _statusColor!),
+          _space,
+          ...children,
+        ],
       ),
     ));
   }
@@ -248,16 +293,3 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: content),
       );
 }
-
-var tmp = {
-  "statement": "org.nerdster",
-  "time": "2025-07-03T14:11:25.901Z",
-  "I": {"crv": "Ed25519", "kty": "OKP", "x": "qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI"},
-  "rate": {"contentType": "book", "author": "Ring Lardner", "title": "Champion"},
-  "with": {"recommend": true},
-  "comment":
-      "A long-form cynical joke, fantastic counterpoint dessert piece to \"Ghosts of Manila\", a 20 page setup to punch line (no pun intended).",
-  "previous": "6282a02d21eff999e0a3a9216a087f7a4ce79d0c",
-  "signature":
-      "276f15ca9c32a02fcaaaec68019df09a0768ab7cd0109723811df4d7eda313fdd10afeee8a9dcf3f368f238dc2fc7543c671f3f9d855ba82573c0723ce84a107"
-};
