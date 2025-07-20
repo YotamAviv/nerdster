@@ -1,7 +1,5 @@
-import 'dart:collection';
 import 'dart:convert';
 
-import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -148,18 +146,31 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
 
     final Json ordered = Jsonish.order(json);
     final String ppJson = encoder.convert(ordered);
-    if (ppJson.trim() != input.trim()) {
+    final bool differs = ppJson.trim() != input.trim();
+    if (differs) {
       children.addAll([
         _space,
-        _bodyBigText('Formatted JSON (2 spaces)'),
-        _bodyText(ppJson),
+        ExpansionTile(
+          tilePadding: EdgeInsets.zero,
+          title: _bodyBigText('Formatted JSON (2 spaces)'),
+          children: [
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: _bodyText(ppJson),
+            ),
+          ],
+        ),
       ]);
     }
-
     final String token = sha1.convert(utf8.encode(ppJson)).toString();
     children.addAll([
       _space,
-      _bodyBigText('Computed SHA1 hash on formatted JSON'),
+      _bodyBigText('Tokenized (Computed SHA1 hash on formatted JSON)'),
       _bodyText(token),
     ]);
 
