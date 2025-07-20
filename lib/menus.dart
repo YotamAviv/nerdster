@@ -136,9 +136,7 @@ $link''',
               await showDialog(
                   context: context,
                   builder: (context) => Dialog(child: Navigator(onGenerateRoute: (settings) {
-                        return MaterialPageRoute(
-                            builder: (_) =>
-                                Padding(padding: const EdgeInsets.all(16.0), child: Verify()));
+                        return MaterialPageRoute(builder: (_) => Verify());
                       })));
             }),
       ], child: const Text('/etc')),
