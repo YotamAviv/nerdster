@@ -48,6 +48,11 @@ class OneofusLabels with Comp, ChangeNotifier {
     _labelKeys();
 
     assert(b(labelKey(signInState.center!)));
+    // There was a bug in JsonDisplay in CredentialsWidget where as we're loading, we don't label
+    // our own key correctly. 
+    // That's when I noticed that we don't notify upon becoming ready.
+    // That's been fixed a different way waitUntilReady..
+    // CONSIDER: notifyListeners();
   }
 
   void _labelKeys() {

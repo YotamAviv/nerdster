@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/singletons.dart';
+
 import '/main.dart';
 import 'util.dart';
-
 
 class JsonDisplay extends StatefulWidget {
   final dynamic subject; // String (ex. token) or Json (ex. key, statement)
   final ValueNotifier<bool> translate;
   final bool strikethrough;
 
-  JsonDisplay(this.subject,
-      {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
+  JsonDisplay(this.subject, {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
       : translate = translate ?? ValueNotifier<bool>(true);
 
   @override
@@ -20,8 +20,21 @@ class JsonDisplay extends StatefulWidget {
 
 class _State extends State<JsonDisplay> {
   @override
+  void initState() {
+    super.initState();
+    initAsync();
+  }
+
+  // Possible KLUDGE: repaint when keyLabels is ready, and so we should see "<unknown>" and then "tom".
+  Future<void> initAsync() async {
+    await keyLabels.waitUntilReady();
+    setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var translated = (b(translateFn) && widget.translate.value) ? translateFn!(widget.subject) : widget.subject;
+    var translated =
+        (b(translateFn) && widget.translate.value) ? translateFn!(widget.subject) : widget.subject;
     String display = encoder.convert(translated);
     return Stack(
       children: [
@@ -47,21 +60,22 @@ class _State extends State<JsonDisplay> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (b(translateFn)) FloatingActionButton(
-                    heroTag: 'Interperate',
-                    mini: true, // 40x40 instead of 56x56
-                    tooltip: !widget.translate.value
-                        ? '''Interperate - make more human readable:
+                if (b(translateFn))
+                  FloatingActionButton(
+                      heroTag: 'Interperate',
+                      mini: true, // 40x40 instead of 56x56
+                      tooltip: !widget.translate.value
+                          ? '''Interperate - make more human readable:
 - label known and unknown keys
 - convert dates to local time and format
 - strip clutter (signature, previous)'''
-                        : 'Show raw statement (not interpreted)',
-                    child:
-                        Icon(Icons.translate, color: widget.translate.value ? Colors.blue : null),
-                    onPressed: () async {
-                      widget.translate.value = !widget.translate.value;
-                      setState(() {});
-                    }),
+                          : 'Show raw statement (not interpreted)',
+                      child:
+                          Icon(Icons.translate, color: widget.translate.value ? Colors.blue : null),
+                      onPressed: () async {
+                        widget.translate.value = !widget.translate.value;
+                        setState(() {});
+                      }),
                 FloatingActionButton(
                     heroTag: 'Copy',
                     mini: true, // 40x40 instead of 56x56
