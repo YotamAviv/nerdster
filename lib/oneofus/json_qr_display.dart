@@ -33,19 +33,15 @@ class JsonQrDisplay extends StatelessWidget {
     });
   }
 
-  Future<void> show(BuildContext context, {double reduction = 0.6}) async {
-    JsonQrDisplay jq = JsonQrDisplay(subject);
+  Future<void> show(BuildContext context, {double reduction = 0.9}) async {
     return showDialog(
         context: context,
         builder: (context) {
           return LayoutBuilder(builder: (context, constraints) {
-            double x = min(constraints.maxWidth, constraints.maxHeight * 0.666, ) * reduction;
+            double x = min(constraints.maxWidth, constraints.maxHeight * (2 / 3)) * reduction;
             return Dialog(
-                insetPadding: EdgeInsets.zero,
-                child: SizedBox(
-                    width: x,
-                    height: x * 1.5,
-                    child: Padding(padding: const EdgeInsets.all(15), child: jq)));
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                child: SizedBox(width: x, height: x * 3 / 2, child: JsonQrDisplay(subject)));
           });
         });
   }
