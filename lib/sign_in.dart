@@ -92,10 +92,10 @@ void showTopRightDialog(BuildContext context, Widget content) {
             right: 5,
             child: Material(
               elevation: 8,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: kBorderRadius,
               child: Container(
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+                padding: kPadding,
+                decoration: BoxDecoration(borderRadius: kBorderRadius),
                 child: content,
               ),
             ),
