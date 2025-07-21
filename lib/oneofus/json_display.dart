@@ -12,7 +12,7 @@ class JsonDisplay extends StatefulWidget {
 
   JsonDisplay(this.subject,
       {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
-      : translate = translate ?? ValueNotifier<bool>(false);
+      : translate = translate ?? ValueNotifier<bool>(true);
 
   @override
   State<StatefulWidget> createState() => _State();
