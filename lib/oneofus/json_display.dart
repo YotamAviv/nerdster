@@ -40,16 +40,7 @@ class _State extends State<JsonDisplay> {
       children: [
         Align(
             alignment: Alignment.topLeft,
-            child: TextField(
-                decoration: InputDecoration(
-                    border: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    errorBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none),
-                controller: TextEditingController()..text = display,
-                maxLines: null,
-                readOnly: true,
+            child: SelectableText(display,
                 style: GoogleFonts.courierPrime(
                   fontWeight: FontWeight.w700,
                   fontSize: 10,
