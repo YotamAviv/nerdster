@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/main.dart';
+import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/prefs.dart';
@@ -15,8 +16,9 @@ class Lgtm {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
             child: Padding(
-                padding: const EdgeInsets.all(15),
+                padding: kPadding,
                 child: ConstrainedBox(
                     constraints: const BoxConstraints(
                       maxWidth: 700,
@@ -46,4 +48,3 @@ class Lgtm {
                     )))));
   }
 }
-

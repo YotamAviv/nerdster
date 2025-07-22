@@ -5,6 +5,7 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_tree.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
@@ -57,7 +58,7 @@ class _NetBarState extends State<NetBar> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 14, 0, 4),
+      padding: kTallPadding,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[

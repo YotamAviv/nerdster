@@ -3,16 +3,14 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
@@ -20,7 +18,6 @@ import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 /// This doc is a little stale as of the switch to HTTP POST.
 /// Nerdster web client QR sign-in:
@@ -136,42 +133,17 @@ Future<void> qrSignin(BuildContext context) async {
   showDialog(
       context: context,
       builder: (BuildContext context) {
-        final String forPhoneString = encoder.convert(forPhone);
         return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
             child: Padding(
-                padding: const EdgeInsets.all(15),
+                padding: kPadding,
                 child: SizedBox(
-                    width: (MediaQuery.of(context).size).width / 2,
+                    width: (MediaQuery.of(context).size).width * 0.4,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Linky('QR code for signing in using the one-of-us.net phone app.'),
-                        QrImageView(
-                          data: forPhoneString,
-                          version: QrVersions.auto,
-                          size: 300.0,
-                        ),
-                        Stack(
-                          alignment: Alignment.bottomRight,
-                          children: [
-                            TextField(
-                                controller: TextEditingController()..text = forPhoneString,
-                                maxLines: 10,
-                                readOnly: true,
-                                style: GoogleFonts.courierPrime(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 14,
-                                    color: Colors.black)),
-                            FloatingActionButton(
-                                heroTag: 'Copy',
-                                tooltip: 'Copy',
-                                mini: true, // 40x40 instead of 56x56
-                                child: const Icon(Icons.copy),
-                                onPressed: () async {
-                                  await Clipboard.setData(ClipboardData(text: forPhoneString));
-                                }),
-                          ],
-                        ),
+                        JsonQrDisplay(forPhone),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -278,9 +250,10 @@ The text to copy/paste here should look like this:
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
           child: SingleChildScrollView(
               child: Padding(
-                  padding: const EdgeInsets.all(15),
+                  padding: kPadding,
                   child: SizedBox(
                       width: (MediaQuery.of(context).size).width / 2,
                       child: Column(

@@ -63,8 +63,9 @@ class ProgressDialog extends StatefulWidget {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
             child: Padding(
-                padding: const EdgeInsets.all(15),
+                padding: kPadding,
                 child: ConstrainedBox(
                     constraints: const BoxConstraints(
                       maxWidth: 700,
@@ -97,19 +98,16 @@ class ProgressDialogState extends State<ProgressDialog> {
       children: [
         const Text('Loading one-of-us.net statements'),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: kPadding,
           child: LinearProgressIndicator(value: widget.oneofus.value),
         ),
         const Text('''Loading nerster.org statements'''),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: kPadding,
           child: LinearProgressIndicator(value: widget.nerdster.value),
         ),
         // if (b(widget.message.value)) const Text('''Activity'''),
-        if (b(widget.message.value))
-          Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(widget.message.value!)),
+        if (b(widget.message.value)) Padding(padding: kPadding, child: Text(widget.message.value!)),
       ],
     );
   }

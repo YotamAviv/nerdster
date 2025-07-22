@@ -129,8 +129,7 @@ class _ContentTileState extends State<ContentTile> {
     }
 
     // Computed but not displayed: PropType.recentActivity
-    Map<PropType, Prop> props =
-        subjectNode.computeProps([PropType.like, PropType.numComments]);
+    Map<PropType, Prop> props = subjectNode.computeProps([PropType.like, PropType.numComments]);
     List<Widget> propWidgets = [];
     propWidgets.add(props[PropType.like]!.getWidget());
     propWidgets.add(props[PropType.numComments]!.getWidget());
@@ -177,16 +176,39 @@ class _ReactIcon extends StatefulWidget {
 
 // Arg.. I tried listening to ContentBase but it didn't work, and
 // I added this Kludge so that ContentBase calls this directly.
-class ReactIconStateClearHelper {
-  static void clear() {
-    _ReactIconState.marked1 = null;
-    _ReactIconState.marked2 = null;
+class ReactIconSelection extends ChangeNotifier {
+  static final ReactIconSelection _singleton = ReactIconSelection._internal();
+  factory ReactIconSelection() => _singleton;
+  ReactIconSelection._internal();
+
+  List<Jsonish> selected = [];
+
+  void clear() {
+    _singleton.selected.clear();
+    notifyListeners();
+  }
+
+  void toggle(Jsonish j) {
+    selected.contains(j) ? selected.remove(j) : selected.add(j);
+    assert(selected.length <= 2);
+    notifyListeners();
   }
 }
 
 class _ReactIconState extends State<_ReactIcon> {
-  static _ReactIconState? marked1;
-  static _ReactIconState? marked2;
+  @override
+  initState() {
+    super.initState();
+    ReactIconSelection().addListener(listener);
+  }
+
+  @override
+  dispose() {
+    ReactIconSelection().removeListener(listener);
+    super.dispose();
+  }
+
+  void listener() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -196,16 +218,15 @@ class _ReactIconState extends State<_ReactIcon> {
     Color color;
     IconData iconData;
     bool iReacted = contentBase.findMyStatements(widget.subject.token).isNotEmpty;
-    bool isMarked = this == marked1 || this == marked2;
+    bool isMarked = ReactIconSelection().selected.contains(widget.subject);
     color = !iReacted ? linkColor : linkColorAlready;
     iconData = isMarked ? Icons.mark_chat_read : Icons.mark_chat_read_outlined;
     return GestureDetector(
-      onTap: () async {
-        await rate(widget.subject, context);
+      onTap: () {
+        rate(widget.subject, context);
+        ReactIconSelection().clear();
       },
-      onDoubleTap: () async {
-        await handleRelateClick(context);
-      },
+      onDoubleTap: () => handleRelateClick(context),
       child: IconButton(
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 22, maxWidth: 22),
@@ -223,25 +244,10 @@ Double click to relate / equate''',
   /// - Dialog should come up, and the selection of both should be visible.
   /// - After dismissing the dialog (relate / equate or cancel), the selections should be cleared.
   Future<void> handleRelateClick(BuildContext context) async {
-    if (marked1 == null) {
-      assert(marked2 == null);
-      marked1 = this;
-      setState(() {});
-    } else if (marked1 == this) {
-      assert(marked2 == null);
-      marked1 = null;
-      setState(() {});
-    } else {
-      assert(marked1 != null);
-      assert(marked2 == null);
-      marked2 = this;
-      setState(() {});
-      _ReactIconState? tmp1 = marked1;
-      _ReactIconState? tmp2 = marked2;
-      await relate(marked1!.widget.subject, marked2!.widget.subject, context);
-      ReactIconStateClearHelper.clear(); // in case of cancel
-      tmp1!.setState(() {});
-      tmp2!.setState(() {});
+    ReactIconSelection().toggle(widget.subject);
+    if (ReactIconSelection().selected.length == 2) {
+      await relate(ReactIconSelection().selected[0], ReactIconSelection().selected[1], context);
+      ReactIconSelection().clear();
     }
   }
 }
