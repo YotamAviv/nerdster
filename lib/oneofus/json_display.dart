@@ -28,6 +28,7 @@ class _State extends State<JsonDisplay> {
   // Possible KLUDGE: repaint when keyLabels is ready, and so we should see "<unknown>" and then "tom".
   Future<void> initAsync() async {
     await keyLabels.waitUntilReady();
+    if (!mounted) return;
     setState(() {});
   }
 
