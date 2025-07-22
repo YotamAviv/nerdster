@@ -30,6 +30,9 @@ class RelateDialog extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _State();
 
+  // CODE: This seems to be the way I like to show dialogs (my current state of the art regarding 
+  // padding, shape, ...).
+  // This should not be a specific memeber on this class.
   Future<Json?> show(BuildContext context) async {
     return await showDialog(
       context: context,
