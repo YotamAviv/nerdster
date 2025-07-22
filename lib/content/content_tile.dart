@@ -174,6 +174,10 @@ class _ReactIcon extends StatefulWidget {
   }
 }
 
+/// PERFORMANCE: All _ReactIcons listen to this, which isn't optimal.
+/// A previous implementation noted only selected the widgets, not their JSON values, and it was
+/// buggy as I'm not sure when widgets are replaced.
+/// 
 // Arg.. I tried listening to ContentBase but it didn't work, and
 // I added this Kludge so that ContentBase calls this directly.
 class ReactIconSelection extends ChangeNotifier {
