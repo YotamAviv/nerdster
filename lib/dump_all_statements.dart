@@ -3,6 +3,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -13,7 +14,9 @@ class DumpAllStatements extends StatelessWidget {
   static Future<void> show(BuildContext context) {
     return showDialog(
         context: context,
-        builder: (BuildContext context) => Dialog(child: DumpAllStatements()));
+        builder: (BuildContext context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+            child: DumpAllStatements()));
   }
 
   DumpAllStatements({super.key});
@@ -32,7 +35,7 @@ class DumpAllStatements extends StatelessWidget {
     );
 
     return Padding(
-        padding: const EdgeInsets.all(15),
+        padding: kPadding,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -57,8 +60,7 @@ class DumpAllStatements extends StatelessWidget {
 }
 
 Future<void> dump(String domain, String token) async {
-  Iterable<Statement> statements =
-      await Fetcher(token, domain).fetchAllNoVerify();
+  Iterable<Statement> statements = await Fetcher(token, domain).fetchAllNoVerify();
   for (Statement statement in statements) {
     print('${statement.token} = ${statement.jsonish.ppJson}');
   }

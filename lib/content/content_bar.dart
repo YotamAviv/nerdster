@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/content/props.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
@@ -56,7 +57,7 @@ class _ContentBarState extends State<ContentBar> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 14, 0, 4),
+      padding: kTallPadding,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[

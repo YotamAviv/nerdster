@@ -203,7 +203,7 @@ class ContentBase with Comp, ChangeNotifier {
         }
       }
 
-      ReactIconStateClearHelper.clear();
+      ReactIconSelection().clear();
     } finally {
       measure.stop();
     }
@@ -638,12 +638,11 @@ Future<Statement?> rate(Jsonish subject, BuildContext context) async {
 }
 
 Future<Statement?> relate(Jsonish subject, Jsonish otherSubject, BuildContext context) async {
-  if (await checkSignedIn(context) != true) {
-    return null;
-  }
+  assert(subject != otherSubject);
+  if (await checkSignedIn(context) != true) return null;
   ContentStatement? priorStatement =
       contentBase._findMyStatement2(subject.token, otherSubject.token);
-  Json? json = await relateDialog(context, subject.json, otherSubject.json, priorStatement);
+  Json? json = await RelateDialog(subject.json, otherSubject.json, priorStatement).show(context);
   if (json != null) {
     Statement? statement = await contentBase.insert(json, context);
     return statement;

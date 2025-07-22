@@ -9,6 +9,7 @@ import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -32,6 +33,7 @@ Future<Jsonish?> establishSubjectDialog(BuildContext context) {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
           child: SizedBox(width: width, child: SubjectFields())));
 }
 
@@ -124,7 +126,7 @@ You can include a URL in a comment or relate or equate this book to an article w
     }
 
     return Padding(
-        padding: const EdgeInsets.all(15),
+        padding: kPadding,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,

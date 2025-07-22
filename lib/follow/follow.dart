@@ -6,6 +6,7 @@ import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/statement.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -55,14 +56,15 @@ Future<Json?> showFollowDialog(String token, Json contextsIn, BuildContext conte
       barrierDismissible: false,
       builder: (context) {
         return Dialog(
+            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
             child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 400,
-              ),
-              child: FollowUi(contextsIn)),
-        ));
+              padding: kPadding,
+              child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 400,
+                  ),
+                  child: FollowUi(contextsIn)),
+            ));
       });
 }
 

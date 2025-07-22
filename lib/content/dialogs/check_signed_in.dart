@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -8,8 +9,9 @@ Future<bool?> checkSignedIn(BuildContext context) async {
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
           child: Padding(
-              padding: const EdgeInsets.all(15),
+              padding: kPadding,
               child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,

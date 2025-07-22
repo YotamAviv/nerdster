@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'json_display.dart';
@@ -9,10 +10,6 @@ import 'util.dart';
 
 /// CONSIDER: "Don't show again" for displaying sign-in credentials
 /// DEFER: Use in qrSignin(..).. (WHY? for sport?, uniformity?)
-
-// TODO: Move to different file, try to use in more places, have more dialogs look the same.
-const kPadding = EdgeInsets.all(4);
-BorderRadius kBorderRadius = BorderRadius.circular(8);
 
 class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null
@@ -33,7 +30,7 @@ class JsonQrDisplay extends StatelessWidget {
                 data: display,
                 version: QrVersions.auto,
                 size: qrSize,
-                padding: const EdgeInsets.all(4)),
+                padding: kPadding),
             SizedBox(
                 width: qrSize,
                 height: qrSize / 2,
