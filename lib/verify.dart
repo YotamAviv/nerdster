@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/editable_selectable_text_field.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
@@ -36,7 +35,6 @@ class Verify extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = TextEditingController(text: input ?? ''); // TODO: memory leak
-    final focusNode = FocusNode(); // TODO: memory leak
 
     return Scaffold(
       appBar: AppBar(
@@ -71,26 +69,6 @@ class Verify extends StatelessWidget {
           textAlignVertical: TextAlignVertical.top,
           controller: controller,
         ),
-
-        // SelectAllOnFirstFocus(
-        //     controller: controller,
-        //     focusNode: focusNode,
-        //     builder: (context, controller, focusNode) => TextField(
-        //           controller: controller,
-        //           focusNode: focusNode,
-        //           readOnly: false,
-        //           maxLines: null,
-        //           decoration: InputDecoration(
-        //             labelText:
-        //                 'JSON text to process (Use Ctrl=C / Ctrl-V to copy / paste into this area, Ctrl-A to select all)',
-        //             border: OutlineInputBorder(),
-        //             alignLabelWithHint: true,
-        //           ),
-        //           style: GoogleFonts.courierPrime(
-        //               fontWeight: FontWeight.w700, fontSize: 13, color: Colors.black),
-        //           expands: true,
-        //           textAlignVertical: TextAlignVertical.top,
-        //         )),
       ),
     );
   }
