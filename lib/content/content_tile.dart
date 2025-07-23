@@ -3,6 +3,7 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree_node.dart';
+import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/content/props.dart';
 import 'package:nerdster/js_widget.dart';
 import 'package:nerdster/content/content_types.dart';
@@ -174,10 +175,10 @@ class _ReactIcon extends StatefulWidget {
   }
 }
 
-/// PERFORMANCE: All _ReactIcons listen to this, which isn't optimal.
-/// A previous implementation noted only selected the widgets, not their JSON values, and it was
-/// buggy as I'm not sure when widgets are replaced.
-/// 
+/// Having all _ReactIcons listen to this, works but is wasteful, and so:
+/// Rep invariant:
+/// - only selected the widgets should be listening
+///
 // Arg.. I tried listening to ContentBase but it didn't work, and
 // I added this Kludge so that ContentBase calls this directly.
 class ReactIconSelection extends ChangeNotifier {
@@ -199,20 +200,30 @@ class ReactIconSelection extends ChangeNotifier {
   }
 }
 
+final ReactIconSelection reactIconSelection = ReactIconSelection();
+
 class _ReactIconState extends State<_ReactIcon> {
   @override
   initState() {
     super.initState();
-    ReactIconSelection().addListener(listener);
+    if (reactIconSelection.selected.contains(widget.subject)) {
+      reactIconSelection.addListener(listener);
+    }
   }
 
   @override
   dispose() {
-    ReactIconSelection().removeListener(listener);
+    // Just in case, could check if selected but that'd cost the same
+    reactIconSelection.removeListener(listener);
     super.dispose();
   }
 
-  void listener() => setState(() {});
+  void listener() {
+    setState(() {});
+    if (!reactIconSelection.selected.contains(widget.subject)) {
+      reactIconSelection.removeListener(listener);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -222,13 +233,13 @@ class _ReactIconState extends State<_ReactIcon> {
     Color color;
     IconData iconData;
     bool iReacted = contentBase.findMyStatements(widget.subject.token).isNotEmpty;
-    bool isMarked = ReactIconSelection().selected.contains(widget.subject);
+    bool isMarked = reactIconSelection.selected.contains(widget.subject);
     color = !iReacted ? linkColor : linkColorAlready;
     iconData = isMarked ? Icons.mark_chat_read : Icons.mark_chat_read_outlined;
     return GestureDetector(
       onTap: () {
         rate(widget.subject, context);
-        ReactIconSelection().clear();
+        reactIconSelection.clear();
       },
       onDoubleTap: () => handleRelateClick(context),
       child: IconButton(
@@ -248,10 +259,15 @@ Double click to relate / equate''',
   /// - Dialog should come up, and the selection of both should be visible.
   /// - After dismissing the dialog (relate / equate or cancel), the selections should be cleared.
   Future<void> handleRelateClick(BuildContext context) async {
-    ReactIconSelection().toggle(widget.subject);
-    if (ReactIconSelection().selected.length == 2) {
-      await relate(ReactIconSelection().selected[0], ReactIconSelection().selected[1], context);
-      ReactIconSelection().clear();
+    if (!bb(await checkSignedIn(context))) return;
+    reactIconSelection.toggle(widget.subject);
+    if (reactIconSelection.selected.contains(widget.subject)) {
+      reactIconSelection.addListener(listener);
+    }
+    listener();
+    if (reactIconSelection.selected.length == 2) {
+      await relate(reactIconSelection.selected[0], reactIconSelection.selected[1], context);
+      reactIconSelection.clear();
     }
   }
 }
