@@ -70,7 +70,7 @@ class RateBody extends StatefulWidget {
 }
 
 class _State extends State<RateBody> {
-  TextEditingController commentController = TextEditingController();
+  TextEditingController commentController = TextEditingController(); // TODO: Leak
   ValueNotifier<bool?> like = ValueNotifier(null);
   ValueNotifier<bool> dis = ValueNotifier(false);
   ValueNotifier<bool> censor = ValueNotifier(false);

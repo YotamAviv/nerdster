@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -128,17 +129,18 @@ Future<void> qrSignin(BuildContext context) async {
   forPhone['publicKey'] = publicKeyJson;
 
   ValueNotifier<bool> storeKeys = ValueNotifier<bool>(true);
-  // DEFER: use JsonQrDisplay (WHY?)
   // ignore: unawaited_futures
   showDialog(
       context: context,
       builder: (BuildContext context) {
+        Size availableSize = MediaQuery.of(context).size;
+        double width = min(availableSize.width * 0.4, availableSize.height * 0.9 / 2);
         return Dialog(
             shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
             child: Padding(
                 padding: kPadding,
                 child: SizedBox(
-                    width: (MediaQuery.of(context).size).width * 0.4,
+                    width: width,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -201,7 +203,7 @@ Future<void> qrSignin(BuildContext context) async {
 }
 
 Future<void> pasteSignin(BuildContext context) async {
-  final TextEditingController controller = TextEditingController();
+  final TextEditingController controller = TextEditingController(); // TODO: memory leak
   final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
 
   const String hintText = '''
