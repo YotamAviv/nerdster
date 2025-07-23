@@ -23,7 +23,7 @@ Future<void> alertException(BuildContext context, Object exception, {StackTrace?
         content: Column(children: [
           TextField(
             readOnly: true,
-            controller: TextEditingController()..text = exception.toString(),
+            controller: TextEditingController()..text = exception.toString(), // TODO: Leak
             maxLines: null,
           ),
           TextField(
