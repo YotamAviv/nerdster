@@ -57,13 +57,14 @@ class _State extends State<JsonDisplay> {
                       heroTag: 'Interperate',
                       mini: true, // 40x40 instead of 56x56
                       tooltip: !widget.translate.value
-                          ? '''Interperate - make more human readable:
+                          ? '''Raw JSON shown; click to interperate (make more human readable):
 - label known and unknown keys
 - convert dates to local time and format
 - strip clutter (signature, previous)'''
-                          : 'Show raw statement (not interpreted)',
+                          : 'Interpreted JSON shown; click to show the actual data',
+                      // Was "translate"
                       child:
-                          Icon(Icons.translate, color: widget.translate.value ? Colors.blue : null),
+                          Icon(Icons.transform, color: widget.translate.value ? Colors.blue : null),
                       onPressed: () async {
                         widget.translate.value = !widget.translate.value;
                         setState(() {});
