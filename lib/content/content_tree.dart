@@ -10,6 +10,7 @@ import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/verify.dart';
 
 /// TODO: Migrate from flutter_fancy_tree_view 1.6.0 (discontinued replaced by two_dimensional_scrollables?
 /// See: https://api.flutter.dev/flutter/widgets/TreeSliver-class.html
@@ -94,6 +95,18 @@ class _ContentTreeState extends State<ContentTree> {
       }, context);
 
       if (bs(Uri.base.queryParameters['netView'])) await NetBar.showTree(context);
+
+      if (b(Uri.base.queryParameters['verify2'])) {
+        // Verify(input: ))
+        await showDialog(
+            context: context,
+            builder: (context) => Dialog(
+                    // Doesn't work: shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+                    child: Navigator(onGenerateRoute: (settings) {
+                  return MaterialPageRoute(
+                      builder: (_) => Verify(input: Uri.base.queryParameters['verify2']));
+                })));
+      }
     });
   }
 

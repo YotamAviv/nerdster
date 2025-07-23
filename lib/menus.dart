@@ -135,7 +135,9 @@ $link''',
             onPressed: () async {
               await showDialog(
                   context: context,
-                  builder: (context) => Dialog(child: Navigator(onGenerateRoute: (settings) {
+                  builder: (context) => Dialog(
+                      // Doesn't work: shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+                      child: Navigator(onGenerateRoute: (settings) {
                         return MaterialPageRoute(builder: (_) => Verify());
                       })));
             }),

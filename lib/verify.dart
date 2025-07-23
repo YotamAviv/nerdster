@@ -79,16 +79,38 @@ class Verify extends StatelessWidget {
               bottom: 16,
               right: 16,
               child: FloatingActionButton(
-                heroTag: 'Paste',
-                tooltip: 'Paste from clipboard',
-                mini: true,
-                child: const Icon(Icons.paste),
-                onPressed: () async {
-                  final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-                  final clipboardText = clipboardData?.text;
-                  if (b(clipboardText)) controller.text = clipboardText!;
-                },
-              ),
+                  heroTag: 'Paste',
+                  tooltip: 'Paste from clipboard',
+                  mini: true,
+                  child: const Icon(Icons.paste),
+                  onPressed: () async {
+                    try {
+                      // TODO: NEXT: BUG: All copy/paste in other dialogs won't work in iframes.
+                      // For testing: throw 'testing';
+                      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+                      final clipboardText = clipboardData?.text;
+                      if (b(clipboardText)) controller.text = clipboardText!;
+                    } catch (e) {
+                      // Clipboard access blocked — prompt manual paste
+                      // ignore: unawaited_futures
+                      showDialog(
+                        context: context, // Will work fine if you're careful
+                        builder: (BuildContext dialogContext) {
+                          return AlertDialog(
+                            title: const Text('Paste using Ctrl+V instead'),
+                            content: const Text('''Browser / iFrame / permissions issue...
+Use Ctrl+V to paste in the text box instead Text'''),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(dialogContext).pop(),
+                                child: const Text('OK'),
+                              )
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  }),
             ),
           ],
         ),
