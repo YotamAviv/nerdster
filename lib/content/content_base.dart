@@ -625,9 +625,7 @@ Future<Statement?> submit(BuildContext context) async {
 
 // CONSIDER: Pass a constructed Jsonish? statement in and let the dialog set certain fields.
 Future<Statement?> rate(Jsonish subject, BuildContext context) async {
-  if (await checkSignedIn(context) != true) {
-    return null;
-  }
+  if (!bb(await checkSignedIn(context))) return null;
   ContentStatement? priorStatement = contentBase._findMyStatement1(subject.token);
   Json? json = await rateDialog(context, subject, priorStatement);
   if (json != null) {
@@ -639,7 +637,7 @@ Future<Statement?> rate(Jsonish subject, BuildContext context) async {
 
 Future<Statement?> relate(Jsonish subject, Jsonish otherSubject, BuildContext context) async {
   assert(subject != otherSubject);
-  if (await checkSignedIn(context) != true) return null;
+  if (!bb(await checkSignedIn(context))) return null;
   ContentStatement? priorStatement =
       contentBase._findMyStatement2(subject.token, otherSubject.token);
   Json? json = await RelateDialog(subject.json, otherSubject.json, priorStatement).show(context);
