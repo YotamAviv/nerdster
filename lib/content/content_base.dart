@@ -612,9 +612,7 @@ class _ContentRelateParser implements EquivalenceBridgeParser {
 }
 
 Future<Statement?> submit(BuildContext context) async {
-  if (await checkSignedIn(context) != true) {
-    return null;
-  }
+  if (!bb(await checkSignedIn(context))) return null;
   Jsonish? subject = await establishSubjectDialog(context);
   if (subject != null) {
     Statement? statement = await rate(subject, context);
