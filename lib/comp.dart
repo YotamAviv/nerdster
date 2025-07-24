@@ -55,7 +55,7 @@ abstract mixin class Comp {
 
   bool get invalidProcess => _invalidProcess;
 
-  setDirty() {
+  void setDirty() {
     // Ignoring setDirty() if we're already dirty breaks things; maybe the gratuitous notification
     // helps move thigs along.
     // So DON'T do this: if (!ready) return;

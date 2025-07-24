@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -107,7 +108,7 @@ class OneofusLabels with Comp, ChangeNotifier {
   }
 }
 
-class KeyLabels with Comp, ChangeNotifier {
+class KeyLabels with Comp, ChangeNotifier implements Interpreter {
   static final KeyLabels _singleton = KeyLabels._internal();
   factory KeyLabels() => _singleton;
   KeyLabels._internal() {

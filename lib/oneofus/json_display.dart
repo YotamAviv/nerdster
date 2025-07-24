@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/singletons.dart';
 
-import '/main.dart';
 import 'util.dart';
 
+abstract class Interpreter {
+  dynamic interpret(dynamic d);
+  Future<void> waitUntilReady();
+}
+
 class JsonDisplay extends StatefulWidget {
+  static Interpreter? interpreter;
+  static void set(Interpreter? interpreter) {
+    JsonDisplay.interpreter = interpreter;
+  }
+
   final dynamic subject; // String (ex. token) or Json (ex. key, statement)
   final ValueNotifier<bool> translate;
   final bool strikethrough;
-  // final ValueNotifier<bool> firstTap = ValueNotifier(true);
 
   JsonDisplay(this.subject, {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
       : translate = translate ?? ValueNotifier<bool>(true);
@@ -19,34 +26,27 @@ class JsonDisplay extends StatefulWidget {
 }
 
 class _State extends State<JsonDisplay> {
-  // final TextEditingController controller = TextEditingController();
-  // bool firstTap = true;
-
   @override
   void initState() {
     super.initState();
     initAsync();
   }
 
-  // Possible KLUDGE: repaint when keyLabels is ready, and so we should see "<unknown>" and then "tom".
   Future<void> initAsync() async {
-    await keyLabels.waitUntilReady();
-    if (!mounted) return;
-    setState(() {});
+    if (b(JsonDisplay.interpreter)) {
+      // KLUDGE: repaint when keyLabels is ready, and so we should see "<unknown>" and then "tom".
+      await JsonDisplay.interpreter!.waitUntilReady();
+      if (!mounted) return;
+      setState(() {});
+    }
   }
-
-  // @override
-  // void dispose() {
-  //   // controller.dispose();
-  //   super.dispose();
-  // }
 
   @override
   Widget build(BuildContext context) {
-    var translated =
-        (b(translateFn) && widget.translate.value) ? translateFn!(widget.subject) : widget.subject;
+    var translated = (b(JsonDisplay.interpreter) && widget.translate.value)
+        ? JsonDisplay.interpreter!.interpret(widget.subject)
+        : widget.subject;
     String display = encoder.convert(translated);
-    // controller.text = display;
     return Stack(
       children: [
         Positioned.fill(
@@ -56,30 +56,7 @@ class _State extends State<JsonDisplay> {
                   fontSize: 10,
                   decoration: widget.strikethrough ? TextDecoration.lineThrough : null,
                 ))),
-        //   child: TextField(
-        // controller: controller,
-        // readOnly: true,
-        // maxLines: null,
-        // onTap: () {
-        //   // Select all text on tap
-        //   if (firstTap) {
-        //     controller.selection =
-        //         TextSelection(baseOffset: 0, extentOffset: controller.text.length);
-        //     firstTap = false;
-        //   }
-        // },
-        //   style: GoogleFonts.courierPrime(
-        //     fontWeight: FontWeight.w700,
-        //     fontSize: 10,
-        //     decoration: widget.strikethrough ? TextDecoration.lineThrough : null,
-        //   ),
-        //   decoration: const InputDecoration(
-        //     isDense: true,
-        //     contentPadding: EdgeInsets.zero,
-        //     border: InputBorder.none,
-        //   ),
-        // )),
-        if (b(translateFn))
+        if (b(JsonDisplay.interpreter))
           Positioned(
             bottom: 0,
             right: 0,
@@ -99,16 +76,6 @@ class _State extends State<JsonDisplay> {
                   // firstTap = true;
                   setState(() {});
                 }),
-            // copy/paste doesn't work when embedded in an iFrame. Ctrl-C / Ctrl-V works,
-            // and so rather than try/catch/explain, I'll make that the only option.
-            // FloatingActionButton(
-            //     heroTag: 'Copy',
-            //     mini: true, // 40x40 instead of 56x56
-            //     tooltip: 'Copy',
-            //     child: const Icon(Icons.copy), // , size: 16
-            //     onPressed: () async {
-            //       await Clipboard.setData(ClipboardData(text: display));
-            //     }),
           ),
       ],
     );

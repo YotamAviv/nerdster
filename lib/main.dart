@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
+import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree.dart';
@@ -51,8 +52,6 @@ const domain2statementType = {
 };
 
 final Corruptor corruptor = Notifications();
-typedef TranslateFn = dynamic Function(dynamic);
-TranslateFn translateFn = keyLabels.interpret;
 
 const Map<FireChoice, Map<String, (String, String)>> exportUrl = {
   FireChoice.prod: {
@@ -115,6 +114,7 @@ Future<void> main() async {
   }
 
   ProgressDialog(); // Just to get its Measure instance to be first
+  JsonDisplay.interpreter = keyLabels;
   TrustStatement.init();
   ContentStatement.init();
   await Prefs.init();
