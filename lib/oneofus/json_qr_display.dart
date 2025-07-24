@@ -22,11 +22,19 @@ class JsonQrDisplay extends StatelessWidget {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            QrImageView(
-                data: display,
-                version: QrVersions.auto,
-                size: qrSize,
-                padding: kPadding),
+            SizedBox(
+                width: qrSize,
+                height: qrSize,
+                child: QrImageView(
+                  data: display,
+                  version: QrVersions.auto,
+                  // DEFER: I've seen issues iwth the QR image exceeding its bounds. I suspect 
+                  // that it's not my bug or usage.
+                  // size: qrSize,
+                  // size: qrSize - 8,
+                  // padding: kPadding,
+                  // also tried putting the thing in my own Padding(child: ...)
+                )),
             SizedBox(
                 width: qrSize,
                 height: qrSize / 2,
