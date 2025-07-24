@@ -14,10 +14,8 @@ just that data missing.
   - modifying any value in it.
 
 
-# Emulator simpsonsDemo
-?fire=emulator&oneofus=%7B"crv"%3A"Ed25519"%2C"kty"%3A"OKP"%2C"x"%3A"eV65603dk3PfkpwwNZLeMiBjgNgn6th2HE1avQU5GwE"%7D
-# yotam (often hardcoded in emulator)
-?fire=prod&oneofus={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}
+# Emulator simpsonsDemo from PROD
+?fire=emulator&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI%22%7D
 
 # Nice ones:
 ```

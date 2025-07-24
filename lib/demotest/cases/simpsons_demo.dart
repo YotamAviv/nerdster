@@ -226,7 +226,3 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
 // 6/1/2025, created demo on prod
 // from /etc => gen link..
 // ?oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI%22%7D
-
-// 6/1/2025, created demo on emulator
-// from /etc => gen link..
-// ?fire=emulator&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%223gcFasjK_wvMZMuatbPIx_sCAU0YOfoy3CB0j4S8Y2k%22%7D
