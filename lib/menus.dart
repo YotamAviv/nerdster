@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
+import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -62,7 +63,7 @@ class _IntSettingDropdownState extends State<IntSettingDropdown> {
 }
 
 class Menus {
-  static List<Widget> build(context) {
+  static List<Widget> build(BuildContext context) {
     List<Widget> demos = <Widget>[];
     for (final e in DemoKey.demos.entries) {
       String name = e.key;
@@ -154,6 +155,9 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
+          MenuItemButton(
+              onPressed: () => JustSign.sign(context),
+              child: const Text('sign')),
           MenuItemButton(
               onPressed: () => pasteSignin(context),
               child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
