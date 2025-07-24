@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -24,20 +23,36 @@ Widget headline(String text) => Builder(
         child: Text(text, style: Theme.of(context).textTheme.titleSmall),
       ),
     );
-Widget monospacedBlock(String text) => SelectableText(
-      text,
-      style: GoogleFonts.courierPrime(fontSize: 13),
-    );
+final TextStyle monospaceStyle =
+    GoogleFonts.courierPrime(fontWeight: FontWeight.w700, fontSize: 13);
+Widget monospacedBlock(String text) => SelectableText(text, style: monospaceStyle);
 
-class Verify extends StatelessWidget {
+class Verify extends StatefulWidget {
   final String? input;
 
   const Verify({super.key, this.input});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = TextEditingController(text: input ?? '');
+  State<Verify> createState() => _VerifyState();
+}
 
+class _VerifyState extends State<Verify> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.input ?? '');
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.indigo[700],
@@ -50,7 +65,7 @@ class Verify extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => ProcessedScreen(controller.text),
+                  builder: (_) => ProcessedScreen(_controller.text),
                 ),
               );
             },
@@ -59,60 +74,17 @@ class Verify extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: TextField(
-                decoration: InputDecoration(
-                  labelText: 'JSON text to process',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
-                ),
-                style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black),
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-                controller: controller,
-              ),
-            ),
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: FloatingActionButton(
-                  heroTag: 'Paste',
-                  tooltip: 'Paste from clipboard',
-                  mini: true,
-                  child: const Icon(Icons.paste),
-                  onPressed: () async {
-                    try {
-                      // TODO: NEXT: BUG: All copy/paste in other dialogs won't work in iframes.
-                      // For testing: throw 'testing';
-                      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
-                      final clipboardText = clipboardData?.text;
-                      if (b(clipboardText)) controller.text = clipboardText!;
-                    } catch (e) {
-                      // Clipboard access blocked — prompt manual paste
-                      // ignore: unawaited_futures
-                      showDialog(
-                        context: context, // Will work fine if you're careful
-                        builder: (BuildContext dialogContext) {
-                          return AlertDialog(
-                            title: const Text('Paste using Ctrl+V instead'),
-                            content: const Text('''Browser / iFrame / permissions issue...
-Use Ctrl+V to paste in the text box instead Text'''),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(dialogContext).pop(),
-                                child: const Text('OK'),
-                              )
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  }),
-            ),
-          ],
+        child: TextField(
+          decoration: InputDecoration(
+            labelText: 'JSON text to process. Use Ctrl-C / Ctrl-V to copy / paste, Ctrl-A to select all.',
+            border: OutlineInputBorder(),
+            alignLabelWithHint: true,
+          ),
+          style: monospaceStyle,
+          maxLines: null,
+          expands: true,
+          textAlignVertical: TextAlignVertical.top,
+          controller: _controller,
         ),
       ),
     );

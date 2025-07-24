@@ -41,36 +41,58 @@ class SubjectFields extends StatefulWidget {
   const SubjectFields({super.key});
 
   @override
-  State<StatefulWidget> createState() {
-    return _SubjectFieldsState();
-  }
+  State<SubjectFields> createState() => _SubjectFieldsState();
 }
 
 class _SubjectFieldsState extends State<SubjectFields> {
   ContentType contentType = ContentType.article;
-  List<TextField> fields = <TextField>[];
-  LinkedHashMap<String, TextEditingController> key2controller =
+  final LinkedHashMap<String, TextEditingController> key2controller =
       LinkedHashMap<String, TextEditingController>();
   final List<ContentType> typesMinusAll = List.from(ContentType.values)..removeAt(0);
-  final fetchingUrlWidget = _FetchingUrlWidget();
+  final _FetchingUrlWidget fetchingUrlWidget = _FetchingUrlWidget();
+  List<TextField> fields = [];
 
-  okHandler() async {
-    Map<String, dynamic> map = <String, dynamic>{};
-    map['contentType'] = contentType.label;
-    for (MapEntry<String, TextEditingController> e in key2controller.entries) {
-      String s = e.value.text.trim();
-      map[e.key] = s;
-    }
-    Jsonish subject = Jsonish(map);
-    Navigator.pop(context, subject);
+  @override
+  void initState() {
+    super.initState();
+    _initControllers();
   }
 
-  listen() {
-    // Special case kludge for auto-filling 'title' field from 'url' field.
-    TextEditingController urlController = key2controller['url']!;
-    TextEditingController titleController = key2controller['title']!;
-    if (urlController.text.isEmpty) return;
+  void _initControllers() {
+    key2controller.clear();
+    for (MapEntry<String, String> entry in contentType.type2field2type.entries) {
+      final key = entry.key;
+      final controller = TextEditingController();
+      key2controller[key] = controller;
+
+      // Special case: auto-fill title from url
+      if (key == 'url') {
+        controller.addListener(_listenForUrlTitle);
+      }
+    }
+    _rebuildFields();
+  }
+
+  void _rebuildFields() {
+    fields = key2controller.entries.map((entry) {
+      return TextField(
+        decoration: InputDecoration(
+          hintText: entry.key,
+          hintStyle: hintStyle,
+          border: const OutlineInputBorder(),
+        ),
+        controller: entry.value,
+      );
+    }).toList();
+  }
+
+  void _listenForUrlTitle() {
+    final urlController = key2controller['url'];
+    final titleController = key2controller['title'];
+    if (urlController == null || titleController == null || urlController.text.isEmpty) return;
+
     fetchingUrlWidget.isRunning.value = true;
+
     tryFetchTitle(urlController.text, (String url, {String? title, String? error}) {
       if (urlController.text == url) {
         fetchingUrlWidget.isRunning.value = false;
@@ -86,79 +108,88 @@ class _SubjectFieldsState extends State<SubjectFields> {
     });
   }
 
+  void _okHandler() async {
+    Map<String, dynamic> map = <String, dynamic>{};
+    map['contentType'] = contentType.label;
+    for (final entry in key2controller.entries) {
+      final value = entry.value.text.trim();
+      map[entry.key] = value;
+    }
+    final Jsonish subject = Jsonish(map);
+    Navigator.pop(context, subject);
+  }
+
   @override
   void dispose() {
-    // CONSIDER: Stop listening? Am I leaking Controllers?
+    for (final controller in key2controller.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    key2controller = LinkedHashMap<String, TextEditingController>();
-    fields = <TextField>[];
-    for (MapEntry<String, String> entry in contentType.type2field2type.entries) {
-      TextEditingController controller = TextEditingController();
-      key2controller[entry.key] = controller;
-      String hintText = entry.key;
-      TextField textField = TextField(
-          decoration: InputDecoration(
-              hintText: hintText, hintStyle: hintStyle, border: const OutlineInputBorder()),
-          controller: controller);
-      fields.add(textField);
-      // Special case kludge for auto-filling 'title' field from 'url' field.
-      if (entry.key == 'url') {
-        controller.addListener(listen);
-      }
-    }
-
     Widget cornerWidget = const SizedBox(width: 80.0);
-    if (!contentType.type2field2type.keys.any((x) => x == 'url')) {
+    if (!contentType.type2field2type.containsKey('url')) {
       cornerWidget = SizedBox(
         width: 80.0,
         child: Tooltip(
-            message: '''A ${contentType.label} doesn't have a singular URL.
+          message: '''A ${contentType.label} doesn't have a singular URL.
 In case multiple people rate a book, their ratings will be grouped correctly only if they all use the same fields and values.
 You can include a URL in a comment or relate or equate this book to an article with a URL.''',
-            child: Text('no URL?', style: linkStyle)),
+          child: Text('no URL?', style: linkStyle),
+        ),
       );
     } else {
       cornerWidget = fetchingUrlWidget;
     }
 
     return Padding(
-        padding: kPadding,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      padding: kPadding,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               const SizedBox(width: 80.0),
               DropdownMenu<ContentType>(
-                initialSelection: ContentType.article,
+                initialSelection: contentType,
                 requestFocusOnTap: true,
                 label: const Text('Type'),
-                onSelected: (ContentType? contentType) {
+                onSelected: (ContentType? newType) {
+                  if (newType == null || newType == contentType) return;
                   setState(() {
-                    this.contentType = contentType!;
+                    // Clean up old controllers
+                    for (final controller in key2controller.values) {
+                      controller.dispose();
+                    }
+                    contentType = newType;
                     fetchingUrlWidget.isError.value = false;
                     fetchingUrlWidget.isRunning.value = false;
                     fetchingUrlWidget.message.value = '';
+                    _initControllers(); // Create new controllers + fields
                   });
                 },
-                dropdownMenuEntries:
-                    typesMinusAll.map<DropdownMenuEntry<ContentType>>((ContentType type) {
-                  return DropdownMenuEntry<ContentType>(
-                      value: type, label: type.label, leadingIcon: Icon(type.iconDatas.$1));
-                }).toList(),
+                dropdownMenuEntries: typesMinusAll
+                    .map((type) => DropdownMenuEntry<ContentType>(
+                          value: type,
+                          label: type.label,
+                          leadingIcon: Icon(type.iconDatas.$1),
+                        ))
+                    .toList(),
               ),
               cornerWidget,
-            ]),
-            const SizedBox(height: 10),
-            ...fields,
-            const SizedBox(height: 10),
-            OkCancel(okHandler, 'Establish Subject'),
-          ],
-        ));
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...fields,
+          const SizedBox(height: 10),
+          OkCancel(_okHandler, 'Establish Subject'),
+        ],
+      ),
+    );
   }
 }
 

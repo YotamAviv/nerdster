@@ -6,16 +6,16 @@ typedef Transformer = String Function(String);
 abstract class Statement {
   final Jsonish jsonish;
   final DateTime time;
+  final Json i;
   final String iToken;
- 
-  final dynamic subject; // Object of verb, may be Json or a token (like, for censor) or a statement..
+
+  final dynamic
+      subject; // Object of verb, may be Json or a token (like, for censor) or a statement..
 
   final String? comment;
 
-  static registerFactory(String type, StatementFactory factory) {
-    if(_type2factory.containsKey(type)) {
-      // assert(_type2factory[type] == factory);
-    }
+  static void registerFactory(String type, StatementFactory factory) {
+    if (_type2factory.containsKey(type)) assert(_type2factory[type] == factory);
     _type2factory[type] = factory;
   }
 
@@ -26,10 +26,11 @@ abstract class Statement {
     return _type2factory[type]!.make(j);
   }
 
-  Statement(this.jsonish, this.subject) :
-      time = parseIso(jsonish['time']),
-      iToken = getToken(jsonish['I']),
-      comment = jsonish['comment'];
+  Statement(this.jsonish, this.subject)
+      : time = parseIso(jsonish['time']),
+        i = jsonish['I'],
+        iToken = getToken(jsonish['I']),
+        comment = jsonish['comment'];
 
   String get subjectToken {
     if (subject is String) {
@@ -40,21 +41,20 @@ abstract class Statement {
   }
 
   String get token => jsonish.token;
-  
-  operator [](String key) => jsonish[key];
+
+  dynamic operator [](String key) => jsonish[key];
   bool containsKey(String key) => jsonish.containsKey(key);
   Iterable get keys => jsonish.keys;
   Iterable get values => jsonish.values;
-
 
   String getDistinctSignature({Transformer? transformer});
 
   bool get isClear;
 
-  // CODE: As a lot uses either Json or a token (subject, other, iKey), it might 
+  // CODE: As a lot uses either Json or a token (subject, other, iKey), it might
   // make sense to make Jsonish be Json or a string token.
   // One challenge would be managing the cache, say we encounter a Jsonish string token and later
-  // encounter its Json equivalent. The factory methods are where these come from, and so it should 
+  // encounter its Json equivalent. The factory methods are where these come from, and so it should
   // be manageable.
   // Try to reduce uses and switch to []
   Json get json => jsonish.json;
