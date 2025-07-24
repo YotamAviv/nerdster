@@ -203,12 +203,39 @@ Future<void> qrSignin(BuildContext context) async {
 }
 
 Future<void> pasteSignin(BuildContext context) async {
-  // DEFER: I addressed these memory leaks by going Stateful, but then I ended up with different 
-  // contexts opening and closing the Progress, I believe. And so I just backed out.
-  final TextEditingController controller = TextEditingController(); // DEFER: memory leak
-  final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false); // DEFER: memory leak
+  final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
+  Json credentials = await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+            child: PasteSigninWidget(storeKeys),
+          ));
 
-  const String hintText = '''
+  Json identityJson = credentials[kOneofusDomain]!;
+  OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
+  Json? delegateJson = credentials[kNerdsterDomain];
+  OouKeyPair? nerdsterKeyPair;
+  if (b(delegateJson)) {
+    nerdsterKeyPair = await crypto.parseKeyPair(delegateJson!);
+  }
+
+  // ignore: unawaited_futures
+  signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
+}
+
+class PasteSigninWidget extends StatefulWidget {
+  final ValueNotifier<bool> storeKeys;
+  const PasteSigninWidget(this.storeKeys, {super.key});
+
+  @override
+  State<PasteSigninWidget> createState() => _PasteSigninWidgetState();
+}
+
+class _PasteSigninWidgetState extends State<PasteSigninWidget> {
+  final TextEditingController _controller = TextEditingController();
+
+  static const String hintText = '''
 Those without the phone app can sign by copy/pasting their keys here.
 Nerd'ster will need:
 - one-of-us.org public key for centering the network around you
@@ -229,59 +256,61 @@ The text to copy/paste here should look like this:
   }
 }''';
 
-  Future<void> okHandler() async {
+  Future<void> _okHandler() async {
     try {
-      Map<String, dynamic> json = jsonDecode(controller.text);
-      // Unpack Oneofus public key
+      Map<String, dynamic> json = jsonDecode(_controller.text);
       Json identityJson = json[kOneofusDomain]!;
-      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
-      // Optionally unpack and decrypt Nerdster private key
+      await crypto.parsePublicKey(identityJson);
       Json? delegateJson = json[kNerdsterDomain];
-      OouKeyPair? nerdsterKeyPair;
       if (b(delegateJson)) {
-        nerdsterKeyPair = await crypto.parseKeyPair(delegateJson!);
+        await crypto.parseKeyPair(delegateJson!);
       }
 
-      Navigator.pop(context);
-      // ignore: unawaited_futures
-      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
+      Navigator.of(context).pop(json);
     } catch (exception) {
-      return alertException(context, exception);
+      alertException(context, exception);
     }
   }
 
-  await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-          child: SingleChildScrollView(
-              child: Padding(
-                  padding: kPadding,
-                  child: SizedBox(
-                      width: (MediaQuery.of(context).size).width / 2,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            // scrollController: scrollController,
-                            decoration: const InputDecoration(
-                                hintText: hintText,
-                                hintStyle: hintStyle,
-                                border: OutlineInputBorder()),
-                            maxLines: 20,
-                            controller: controller,
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              OkCancel(okHandler, 'Sign in'),
-                              MyCheckbox(storeKeys, 'Store keys'),
-                            ],
-                          )
-                        ],
-                      ))))));
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: kPadding,
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width / 2,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: const InputDecoration(
+                  hintText: hintText,
+                  hintStyle: hintStyle,
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 20,
+                controller: _controller,
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  OkCancel(_okHandler, 'Sign in'),
+                  MyCheckbox(widget.storeKeys, 'Store keys'),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
