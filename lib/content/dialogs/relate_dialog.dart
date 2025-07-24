@@ -12,7 +12,7 @@ extension OptionalText on TextEditingController {
 }
 
 class RelateDialog extends StatefulWidget {
-  final ValueNotifier<Json> top;
+  final ValueNotifier<Json> top; // TODO: Do these need to be ValueNotifier? Memory leak?
   final ValueNotifier<Json> bottom;
   final ValueNotifier<ContentVerb> verb;
   final TextEditingController commentController;
@@ -30,7 +30,7 @@ class RelateDialog extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => _State();
 
-  // CODE: This seems to be the way I like to show dialogs (my current state of the art regarding 
+  // CODE: This seems to be the way I like to show dialogs (my current state of the art regarding
   // padding, shape, ...).
   // This should not be a specific memeber on this class.
   Future<Json?> show(BuildContext context) async {
@@ -65,7 +65,7 @@ class _State extends State<RelateDialog> {
     return ListView(
       shrinkWrap: true,
       children: [
-        JsonDisplay(widget.top.value),
+        SizedBox(height: 100, child: JsonDisplay(widget.top.value)),
         Row(
           children: [
             IconButton(onPressed: flip, icon: const Icon(Icons.swap_vert)),
@@ -87,7 +87,7 @@ class _State extends State<RelateDialog> {
             ),
           ],
         ),
-        JsonDisplay(widget.bottom.value),
+        SizedBox(height: 100, child: JsonDisplay(widget.bottom.value)),
         const SizedBox(height: 10),
         TextField(
           decoration: const InputDecoration(
