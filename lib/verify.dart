@@ -76,11 +76,11 @@ class _VerifyState extends State<Verify> {
         padding: const EdgeInsets.all(16),
         child: TextField(
           decoration: InputDecoration(
-            labelText: 'JSON text to process',
+            labelText: 'JSON text to process. Use Ctrl-C / Ctrl-V to copy / paste, Ctrl-A to select all.',
             border: OutlineInputBorder(),
             alignLabelWithHint: true,
           ),
-          style: GoogleFonts.courierPrime(fontSize: 12, color: Colors.black),
+          style: monospaceStyle,
           maxLines: null,
           expands: true,
           textAlignVertical: TextAlignVertical.top,

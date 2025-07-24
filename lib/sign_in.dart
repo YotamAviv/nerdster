@@ -258,15 +258,17 @@ The text to copy/paste here should look like this:
 
   Future<void> _okHandler() async {
     try {
-      Map<String, dynamic> json = jsonDecode(_controller.text);
-      Json identityJson = json[kOneofusDomain]!;
+      Map<String, dynamic> credentials = jsonDecode(_controller.text);
+
+      // Validate here, duplicated by caller of dialog.
+      Json identityJson = credentials[kOneofusDomain]!;
       await crypto.parsePublicKey(identityJson);
-      Json? delegateJson = json[kNerdsterDomain];
+      Json? delegateJson = credentials[kNerdsterDomain];
       if (b(delegateJson)) {
         await crypto.parseKeyPair(delegateJson!);
       }
 
-      Navigator.of(context).pop(json);
+      Navigator.of(context).pop(credentials);
     } catch (exception) {
       alertException(context, exception);
     }
