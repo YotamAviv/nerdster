@@ -27,15 +27,32 @@ final TextStyle monospaceStyle =
     GoogleFonts.courierPrime(fontWeight: FontWeight.w700, fontSize: 13);
 Widget monospacedBlock(String text) => SelectableText(text, style: monospaceStyle);
 
-class Verify extends StatelessWidget {
+class Verify extends StatefulWidget {
   final String? input;
 
   const Verify({super.key, this.input});
 
   @override
-  Widget build(BuildContext context) {
-    final controller = TextEditingController(text: input ?? ''); // TODO: memory leak
+  State<Verify> createState() => _VerifyState();
+}
 
+class _VerifyState extends State<Verify> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.input ?? '');
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.indigo[700],
@@ -48,7 +65,7 @@ class Verify extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => ProcessedScreen(controller.text),
+                  builder: (_) => ProcessedScreen(_controller.text),
                 ),
               );
             },
@@ -67,7 +84,7 @@ class Verify extends StatelessWidget {
           maxLines: null,
           expands: true,
           textAlignVertical: TextAlignVertical.top,
-          controller: controller,
+          controller: _controller,
         ),
       ),
     );
