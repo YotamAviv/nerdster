@@ -203,27 +203,10 @@ Future<void> qrSignin(BuildContext context) async {
 }
 
 Future<void> pasteSignin(BuildContext context) async {
-  await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-            child: const PasteSigninWidget(),
-          ));
-}
+  final TextEditingController controller = TextEditingController();
+  final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
 
-class PasteSigninWidget extends StatefulWidget {
-  const PasteSigninWidget({super.key});
-
-  @override
-  State<PasteSigninWidget> createState() => _PasteSigninWidgetState();
-}
-
-class _PasteSigninWidgetState extends State<PasteSigninWidget> {
-  final TextEditingController _controller = TextEditingController();
-  final ValueNotifier<bool> _storeKeys = ValueNotifier<bool>(false);
-
-  static const String hintText = '''
+  const String hintText = '''
 Those without the phone app can sign by copy/pasting their keys here.
 Nerd'ster will need:
 - one-of-us.org public key for centering the network around you
@@ -244,11 +227,13 @@ The text to copy/paste here should look like this:
   }
 }''';
 
-  Future<void> _okHandler() async {
+  Future<void> okHandler() async {
     try {
-      Map<String, dynamic> json = jsonDecode(_controller.text);
+      Map<String, dynamic> json = jsonDecode(controller.text);
+      // Unpack Oneofus public key
       Json identityJson = json[kOneofusDomain]!;
       OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
+      // Optionally unpack and decrypt Nerdster private key
       Json? delegateJson = json[kNerdsterDomain];
       OouKeyPair? nerdsterKeyPair;
       if (b(delegateJson)) {
@@ -257,52 +242,44 @@ The text to copy/paste here should look like this:
 
       Navigator.pop(context);
       // ignore: unawaited_futures
-      signIn(oneofusPublicKey, nerdsterKeyPair, _storeKeys.value, context);
+      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
     } catch (exception) {
-      alertException(context, exception);
+      return alertException(context, exception);
     }
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    _storeKeys.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: kPadding,
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width / 2,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: const InputDecoration(
-                  hintText: hintText,
-                  hintStyle: hintStyle,
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 20,
-                controller: _controller,
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  OkCancel(_okHandler, 'Sign in'),
-                  MyCheckbox(_storeKeys, 'Store keys'),
-                ],
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+          child: SingleChildScrollView(
+              child: Padding(
+                  padding: kPadding,
+                  child: SizedBox(
+                      width: (MediaQuery.of(context).size).width / 2,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            // scrollController: scrollController,
+                            decoration: const InputDecoration(
+                                hintText: hintText,
+                                hintStyle: hintStyle,
+                                border: OutlineInputBorder()),
+                            maxLines: 20,
+                            controller: controller,
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              OkCancel(okHandler, 'Sign in'),
+                              MyCheckbox(storeKeys, 'Store keys'),
+                            ],
+                          )
+                        ],
+                      ))))));
 }
 
 Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
