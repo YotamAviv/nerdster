@@ -12,16 +12,11 @@ extension OptionalText on TextEditingController {
 }
 
 class RelateDialog extends StatefulWidget {
-  final ValueNotifier<Json> top; // TODO: Do these need to be ValueNotifier? Memory leak?
-  final ValueNotifier<Json> bottom;
-  final ValueNotifier<ContentVerb> verb;
-  final TextEditingController commentController;
+  final Json subject;
+  final Json otherSubject;
+  final ContentStatement? priorStatement;
 
-  RelateDialog(Json subject, Json otherSubject, ContentStatement? priorStatement, {super.key})
-      : top = ValueNotifier(subject),
-        bottom = ValueNotifier(otherSubject),
-        verb = ValueNotifier(priorStatement?.verb ?? ContentVerb.relate),
-        commentController = TextEditingController()..text = priorStatement?.comment ?? '';
+  const RelateDialog(this.subject, this.otherSubject, this.priorStatement, {super.key});
   // CONSIDER:
   // if (priorStatement.subjectToken != subjectToken) {
   //   flip();
@@ -46,18 +41,42 @@ class RelateDialog extends StatefulWidget {
 }
 
 class _State extends State<RelateDialog> {
+  late ValueNotifier<Json> top;
+  late ValueNotifier<Json> bottom;
+  late ValueNotifier<ContentVerb> verb;
+  late TextEditingController commentController;
+
+  @override
+  void initState() {
+    super.initState();
+    top = ValueNotifier(widget.subject);
+    bottom = ValueNotifier(widget.otherSubject);
+    verb = ValueNotifier(widget.priorStatement?.verb ?? ContentVerb.relate);
+    commentController = TextEditingController()..text = widget.priorStatement?.comment ?? '';
+  }
+
+  @override
+  void dispose() {
+    top.dispose();
+    bottom.dispose();
+    verb.dispose();
+    commentController.dispose();
+    super.dispose();
+  }
+
   void okHandler() async {
     Json json = ContentStatement.make(
-        signInState.signedInDelegatePublicKeyJson!, widget.verb.value, widget.top.value,
-        other: widget.bottom.value, comment: widget.commentController.nonEmptyText);
+        signInState.signedInDelegatePublicKeyJson!, verb.value, top.value,
+        other: bottom.value, comment: commentController.nonEmptyText);
     Navigator.pop(context, json);
   }
 
   void flip() {
-    Json tmp = widget.top.value;
-    widget.top.value = widget.bottom.value;
-    widget.bottom.value = tmp;
-    setState(() {});
+    setState(() {
+      Json tmp = top.value;
+      top.value = bottom.value;
+      bottom.value = tmp;
+    });
   }
 
   @override
@@ -65,15 +84,15 @@ class _State extends State<RelateDialog> {
     return ListView(
       shrinkWrap: true,
       children: [
-        SizedBox(height: 100, child: JsonDisplay(widget.top.value)),
+        SizedBox(height: 100, child: JsonDisplay(top.value)),
         Row(
           children: [
             IconButton(onPressed: flip, icon: const Icon(Icons.swap_vert)),
             DropdownMenu(
-              initialSelection: widget.verb.value,
+              initialSelection: verb.value,
               requestFocusOnTap: true,
               onSelected: (ContentVerb? selected) {
-                widget.verb.value = selected!;
+                verb.value = selected!;
               },
               dropdownMenuEntries: const [
                 DropdownMenuEntry(label: 'is related to', value: ContentVerb.relate),
@@ -87,13 +106,13 @@ class _State extends State<RelateDialog> {
             ),
           ],
         ),
-        SizedBox(height: 100, child: JsonDisplay(widget.bottom.value)),
+        SizedBox(height: 100, child: JsonDisplay(bottom.value)),
         const SizedBox(height: 10),
         TextField(
           decoration: const InputDecoration(
               hintText: "Comment", border: OutlineInputBorder(), hintStyle: hintStyle),
           maxLines: 4,
-          controller: widget.commentController,
+          controller: commentController,
         ),
         const SizedBox(height: 10),
         OkCancel(okHandler, 'Okay'),
