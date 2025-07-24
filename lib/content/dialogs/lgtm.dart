@@ -3,9 +3,9 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 

@@ -33,6 +33,7 @@ import 'package:nerdster/util_ui.dart';
 ///
 /// DEFER: Add floating paste icon
 
+/// CONSIDER: "Don't show again" for displaying sign-in credentials
 class CredentialsWidget extends StatelessWidget {
   final Json? identityJson;
   final Json? delegateJson;

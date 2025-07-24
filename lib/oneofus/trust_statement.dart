@@ -133,6 +133,9 @@ class TrustStatement extends Statement {
 }
 
 class _TrustStatementFactory implements StatementFactory {
+  static final _TrustStatementFactory _singleton = _TrustStatementFactory._internal();
+  _TrustStatementFactory._internal();
+  factory _TrustStatementFactory() => _singleton;
   @override
   Statement make(j) => TrustStatement(j);
 }

@@ -70,7 +70,7 @@ class RateBody extends StatefulWidget {
 }
 
 class _State extends State<RateBody> {
-  TextEditingController commentController = TextEditingController(); // TODO: Leak
+  TextEditingController commentController = TextEditingController();
   ValueNotifier<bool?> like = ValueNotifier(null);
   ValueNotifier<bool> dis = ValueNotifier(false);
   ValueNotifier<bool> censor = ValueNotifier(false);
@@ -88,6 +88,13 @@ class _State extends State<RateBody> {
   @override
   void dispose() {
     commentController.removeListener(listener);
+    commentController.dispose();
+    like.dispose();
+    dis.dispose();
+    censor.dispose();
+    erase.dispose();
+    okEnabled.dispose();
+    translate.dispose();
     super.dispose();
   }
 
