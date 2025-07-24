@@ -208,18 +208,18 @@ Future<void> pasteSignin(BuildContext context) async {
       barrierDismissible: false,
       builder: (BuildContext context) => Dialog(
             shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-            child: const PasteSigninDialog(),
+            child: const PasteSigninWidget(),
           ));
 }
 
-class PasteSigninDialog extends StatefulWidget {
-  const PasteSigninDialog({super.key});
+class PasteSigninWidget extends StatefulWidget {
+  const PasteSigninWidget({super.key});
 
   @override
-  State<PasteSigninDialog> createState() => _PasteSigninDialogState();
+  State<PasteSigninWidget> createState() => _PasteSigninWidgetState();
 }
 
-class _PasteSigninDialogState extends State<PasteSigninDialog> {
+class _PasteSigninWidgetState extends State<PasteSigninWidget> {
   final TextEditingController _controller = TextEditingController();
   final ValueNotifier<bool> _storeKeys = ValueNotifier<bool>(false);
 
