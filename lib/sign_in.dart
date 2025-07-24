@@ -203,8 +203,10 @@ Future<void> qrSignin(BuildContext context) async {
 }
 
 Future<void> pasteSignin(BuildContext context) async {
-  final TextEditingController controller = TextEditingController();
-  final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
+  // DEFER: I addressed these memory leaks by going Stateful, but then I ended up with different 
+  // contexts opening and closing the Progress, I believe. And so I just backed out.
+  final TextEditingController controller = TextEditingController(); // DEFER: memory leak
+  final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false); // DEFER: memory leak
 
   const String hintText = '''
 Those without the phone app can sign by copy/pasting their keys here.
