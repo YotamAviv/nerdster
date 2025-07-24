@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,7 @@ import 'package:nerdster/util_ui.dart';
 ///
 /// DEFER: Add floating paste icon
 
+/// CONSIDER: "Don't show again" for displaying sign-in credentials
 class CredentialsWidget extends StatelessWidget {
   final Json? identityJson;
   final Json? delegateJson;
@@ -128,17 +130,18 @@ Future<void> qrSignin(BuildContext context) async {
   forPhone['publicKey'] = publicKeyJson;
 
   ValueNotifier<bool> storeKeys = ValueNotifier<bool>(true);
-  // DEFER: use JsonQrDisplay (WHY?)
   // ignore: unawaited_futures
   showDialog(
       context: context,
       builder: (BuildContext context) {
+        Size availableSize = MediaQuery.of(context).size;
+        double width = min(availableSize.width * 0.4, availableSize.height * 0.9 / 2);
         return Dialog(
             shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
             child: Padding(
                 padding: kPadding,
                 child: SizedBox(
-                    width: (MediaQuery.of(context).size).width * 0.4,
+                    width: width,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -201,10 +204,39 @@ Future<void> qrSignin(BuildContext context) async {
 }
 
 Future<void> pasteSignin(BuildContext context) async {
-  final TextEditingController controller = TextEditingController();
   final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
+  Json credentials = await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+            child: PasteSigninWidget(storeKeys),
+          ));
 
-  const String hintText = '''
+  Json identityJson = credentials[kOneofusDomain]!;
+  OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
+  Json? delegateJson = credentials[kNerdsterDomain];
+  OouKeyPair? nerdsterKeyPair;
+  if (b(delegateJson)) {
+    nerdsterKeyPair = await crypto.parseKeyPair(delegateJson!);
+  }
+
+  // ignore: unawaited_futures
+  signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
+}
+
+class PasteSigninWidget extends StatefulWidget {
+  final ValueNotifier<bool> storeKeys;
+  const PasteSigninWidget(this.storeKeys, {super.key});
+
+  @override
+  State<PasteSigninWidget> createState() => _PasteSigninWidgetState();
+}
+
+class _PasteSigninWidgetState extends State<PasteSigninWidget> {
+  final TextEditingController _controller = TextEditingController();
+
+  static const String hintText = '''
 Those without the phone app can sign by copy/pasting their keys here.
 Nerd'ster will need:
 - one-of-us.org public key for centering the network around you
@@ -225,59 +257,63 @@ The text to copy/paste here should look like this:
   }
 }''';
 
-  Future<void> okHandler() async {
+  Future<void> _okHandler() async {
     try {
-      Map<String, dynamic> json = jsonDecode(controller.text);
-      // Unpack Oneofus public key
-      Json identityJson = json[kOneofusDomain]!;
-      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
-      // Optionally unpack and decrypt Nerdster private key
-      Json? delegateJson = json[kNerdsterDomain];
-      OouKeyPair? nerdsterKeyPair;
+      Map<String, dynamic> credentials = jsonDecode(_controller.text);
+
+      // Validate here, duplicated by caller of dialog.
+      Json identityJson = credentials[kOneofusDomain]!;
+      await crypto.parsePublicKey(identityJson);
+      Json? delegateJson = credentials[kNerdsterDomain];
       if (b(delegateJson)) {
-        nerdsterKeyPair = await crypto.parseKeyPair(json[kNerdsterDomain]!);
+        await crypto.parseKeyPair(delegateJson!);
       }
 
-      Navigator.pop(context);
-      // ignore: unawaited_futures
-      signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
+      Navigator.of(context).pop(credentials);
     } catch (exception) {
-      return alertException(context, exception);
+      alertException(context, exception);
     }
   }
 
-  await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-          child: SingleChildScrollView(
-              child: Padding(
-                  padding: kPadding,
-                  child: SizedBox(
-                      width: (MediaQuery.of(context).size).width / 2,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                            // scrollController: scrollController,
-                            decoration: const InputDecoration(
-                                hintText: hintText,
-                                hintStyle: hintStyle,
-                                border: OutlineInputBorder()),
-                            maxLines: 20,
-                            controller: controller,
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              OkCancel(okHandler, 'Sign in'),
-                              MyCheckbox(storeKeys, 'Store keys'),
-                            ],
-                          )
-                        ],
-                      ))))));
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: kPadding,
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width / 2,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: const InputDecoration(
+                  hintText: hintText,
+                  hintStyle: hintStyle,
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 20,
+                controller: _controller,
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  OkCancel(_okHandler, 'Sign in'),
+                  MyCheckbox(widget.storeKeys, 'Store keys'),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 Future<void> signIn(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,

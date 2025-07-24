@@ -134,6 +134,9 @@ class ContentStatement extends Statement {
 }
 
 class _ContentStatementFactory implements StatementFactory {
+  static final _ContentStatementFactory _singleton = _ContentStatementFactory._internal();
+  _ContentStatementFactory._internal();
+  factory _ContentStatementFactory() => _singleton;
   @override
   Statement make(j) => ContentStatement(j);
 }

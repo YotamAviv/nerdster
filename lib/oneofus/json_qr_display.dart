@@ -1,15 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'json_display.dart';
 import 'jsonish.dart';
 import 'util.dart';
-
-/// CONSIDER: "Don't show again" for displaying sign-in credentials
-/// DEFER: Use in qrSignin(..).. (WHY? for sport?, uniformity?)
 
 class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null

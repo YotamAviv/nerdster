@@ -3,7 +3,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 

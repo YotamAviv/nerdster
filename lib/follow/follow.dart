@@ -91,6 +91,12 @@ class _FollowUiState extends State<FollowUi> {
     }
   }
 
+  @override
+  dispose() {
+    controller.dispose();
+    super.dispose();  
+  }
+
   Future<void> make() async {
     Json contexts = {};
     for (MapEntry e in widgets.entries) {

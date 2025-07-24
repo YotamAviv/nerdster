@@ -88,6 +88,13 @@ class _State extends State<RateBody> {
   @override
   void dispose() {
     commentController.removeListener(listener);
+    commentController.dispose();
+    like.dispose();
+    dis.dispose();
+    censor.dispose();
+    erase.dispose();
+    okEnabled.dispose();
+    translate.dispose();
     super.dispose();
   }
 

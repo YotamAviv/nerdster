@@ -1,10 +1,17 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
 import 'crypto/crypto.dart';
 import 'crypto/crypto2559.dart';
 import 'jsonish.dart';
+
+// TODO: Try to use in more places, have more dialogs look the same.
+const kPadding = EdgeInsets.all(4);
+const kTallPadding = EdgeInsets.fromLTRB(0, 8, 0, 4);
+BorderRadius kBorderRadius = BorderRadius.circular(8);
+
 
 const OouCryptoFactory crypto = CryptoFactoryEd25519();
 const JsonEncoder encoder = JsonEncoder.withIndent('  ');
