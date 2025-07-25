@@ -248,7 +248,7 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
       return;
     }
 
-    final children = <Widget>[headline('JSON successfully parsed')];
+    final children = <Widget>[];
 
     if (json.containsKey('id')) {
       json.remove('id');
