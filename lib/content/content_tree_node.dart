@@ -34,18 +34,18 @@ class ContentTreeNode {
   void _computePropsRecurse(Iterable<Prop> props) {
     // our statements
     Iterable<ContentStatement>? statements = contentBase.getSubjectStatements(subject.token);
-    if (statements != null) {
-      for (ContentStatement statement in statements) {
-        for (Prop prop in props) {
-          prop.process(statement);
-        }
+    for (ContentStatement statement in statements ?? []) {
+      for (Prop prop in props) {
+        prop.process(statement);
       }
     }
 
     // recurse for children
     for (ContentTreeNode child in getChildren()) {
-      // Don't recurse for equivalent children.
-      if (child.equivalent) continue;
+      // Don't recurse for equivalent or related children.
+      // BUG: I do want to recurse for some children; I just don't want to do it twice, and
+      // this is better than doing it twice.
+      if (child.equivalent || child.related) continue;
 
       Iterable<Prop> recurseProps = props.where((p) => p.recurse);
       child._computePropsRecurse(recurseProps);
