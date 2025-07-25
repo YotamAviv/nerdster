@@ -14,8 +14,11 @@ just that data missing.
   - modifying any value in it.
 
 
+?fire=emulator&skipCredentialsDisplay
 # Emulator simpsonsDemo from PROD
 ?fire=emulator&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI%22%7D
+
+?verify=%7B%0A%20%20"I"%3A%20%7B%0A%20%20%20%20"crv"%3A%20"Ed25519"%2C%0A%20%20%20%20"kty"%3A%20"OKP"%2C%0A%20%20%20%20"x"%3A%20"QbgvG5HoF8AYCbEvpwUoazHTt0HH3RofimIg4zFWP-A"%0A%20%20%7D%2C%0A%20%20"greeting"%3A%20"Hello%2C%20Nerd%27ster%21"%2C%0A%20%20"signature"%3A%20"42161d94204d266e84ed5dcac27c1d9a8735d81187fe36b2ea49c428eeca3da0bbd2719aa8b39b1dec9dcbcc2a83c1885ff6bfd5c96f4d28ba239d793d2d170e"%0A%7D
 
 # Nice ones:
 ```
