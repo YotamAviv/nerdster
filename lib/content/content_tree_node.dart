@@ -35,8 +35,10 @@ class ContentTreeNode {
     // our statements
     Iterable<ContentStatement>? statements = contentBase.getSubjectStatements(subject.token);
     for (ContentStatement statement in statements ?? []) {
-      for (Prop prop in props) {
-        prop.process(statement);
+      if (statement.subjectToken == subject.token) {
+        for (Prop prop in props) {
+          prop.process(statement);
+        }
       }
     }
 
@@ -45,7 +47,10 @@ class ContentTreeNode {
       // Don't recurse for equivalent or related children.
       // BUG: I do want to recurse for some children; I just don't want to do it twice, and
       // this is better than doing it twice.
-      if (child.equivalent || child.related) continue;
+      // I do believe that this fix is not hard:
+      // - There is a model that the ContentTree uses - use that!
+      // - There is a hack to not show relate statements under both nodes; that's the root of the problem. If that
+      // TEMP: if (child.equivalent || child.related) continue;
 
       Iterable<Prop> recurseProps = props.where((p) => p.recurse);
       child._computePropsRecurse(recurseProps);

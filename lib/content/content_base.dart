@@ -33,6 +33,9 @@ import '../oneofus/measure.dart';
 ///   - NerdsterFollow().token2statements
 ///   Have everything in terms of Oneofus canonical, that is.
 
+const Set<ContentVerb> relateEquate = {ContentVerb.relate, ContentVerb.equate};
+bool isStatementRelateOrEquate(ContentStatement statement) => relateEquate.contains(statement.verb);
+
 class ContentBase with Comp, ChangeNotifier {
   static final OouVerifier verifier = OouVerifier();
   static final ContentBase _singleton = ContentBase._internal();
@@ -222,7 +225,7 @@ class ContentBase with Comp, ChangeNotifier {
     _roots = <ContentTreeNode>[];
     for (String subjectToken in _subject2statements.keys) {
       if (!b(Jsonish.find(subjectToken))) continue;
-      
+
       final Jsonish subject = Jsonish.find(subjectToken)!;
 
       // skip statements
@@ -325,13 +328,14 @@ class ContentBase with Comp, ChangeNotifier {
       ContentTreeNode statementNode = ContentTreeNode(path, statement.jsonish);
       if (!node.equivalent && !node.related) {
         if (!isStatementRelateOrEquate(statement)) {
+          // TEMP: if (statement.subjectToken == statementNode.subject.token) {
           // Top level (not here because this is related or equated):
-          // Don't show relate/equate statements; the related or equated subject should be show, 
+          // Don't show relate/equate statements; the related or equated subject should be shown,
           // and showing those statement, too, clutters the UI.
           _node2children[node]!.add(statementNode);
         }
       } else {
-        // This is here becuase it's related or equated:
+        // This is here because it's related or equated:
         // Do show relate/equate statements.
         _node2children[node]!.add(statementNode);
       }
@@ -347,10 +351,6 @@ class ContentBase with Comp, ChangeNotifier {
       }
     }
   }
-
-  final Set<ContentVerb> relateEquate = {ContentVerb.relate, ContentVerb.equate};
-  bool isStatementRelateOrEquate(ContentStatement statement) =>
-      relateEquate.contains(statement.verb);
 
   Sort get sort => _sort;
   set sort(Sort sort) {
@@ -437,8 +437,8 @@ class ContentBase with Comp, ChangeNotifier {
       // NOTE: These props can be different from the UI props.
       // This makes it easy to pass the tests that were scripted and recorded before the change,
       // but it's not awesome.
-      Map<PropType, Prop> props = subjectNode
-          .computeProps([PropType.like, PropType.numComments, PropType.recentActivity]);
+      Map<PropType, Prop> props =
+          subjectNode.computeProps([PropType.like, PropType.numComments, PropType.recentActivity]);
       Map<dynamic, dynamic> propsMap = {};
       for (var entry in props.entries) {
         propsMap[entry.key.label] = entry.value.value;
