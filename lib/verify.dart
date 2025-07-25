@@ -38,11 +38,17 @@ class Verify extends StatefulWidget {
 
 class _VerifyState extends State<Verify> {
   late final TextEditingController _controller;
+  late String _initialText;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.input ?? '');
+    _initialText = widget.input ?? '';
+    _controller = TextEditingController(text: _initialText);
+
+    _controller.addListener(() {
+      setState(() {}); // Trigger rebuild to show/hide reset button
+    });
   }
 
   @override
@@ -50,6 +56,8 @@ class _VerifyState extends State<Verify> {
     _controller.dispose();
     super.dispose();
   }
+
+  bool get _hasChanged => b(widget.input) &&_controller.text != _initialText;
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +67,22 @@ class _VerifyState extends State<Verify> {
         centerTitle: true,
         title: const Text('Verify...', style: TextStyle(color: Colors.white)),
         actions: [
+          if (_hasChanged)
+            IconButton(
+              tooltip: 'Reset to original text',
+              onPressed: () {
+                _controller.text = _initialText;
+              },
+              icon: Row(
+                children: const [
+                  Icon(Icons.refresh, color: Colors.white),
+                  SizedBox(width: 4),
+                  Text('Reset', style: TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
           IconButton(
-            icon: const Icon(Icons.arrow_forward, color: Colors.white),
-            tooltip: 'Verify',
+            tooltip: 'Verify input',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -69,14 +90,22 @@ class _VerifyState extends State<Verify> {
                 ),
               );
             },
+            icon: Row(
+              children: const [
+                Text('Verify', style: TextStyle(color: Colors.white)),
+                SizedBox(width: 4),
+                Icon(Icons.arrow_forward, color: Colors.white),
+              ],
+            ),
           ),
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: TextField(
-          decoration: InputDecoration(
-            labelText: 'JSON text to process. Use Ctrl-C / Ctrl-V to copy / paste, Ctrl-A to select all.',
+          decoration: const InputDecoration(
+            labelText:
+                'JSON text to process. Use Ctrl-C / Ctrl-V to copy / paste, Ctrl-A to select all.',
             border: OutlineInputBorder(),
             alignLabelWithHint: true,
           ),
@@ -118,8 +147,15 @@ class _ProcessedScreenState extends State<ProcessedScreen> {
         title: Text(_status ?? 'Processing...', style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          tooltip: 'Back',
           onPressed: () => Navigator.of(context).pop(),
+          icon: Row(
+            children: const [
+              Icon(Icons.arrow_back, color: Colors.white),
+              SizedBox(width: 4),
+              Text('Back', style: TextStyle(color: Colors.white)),
+            ],
+          ),
         ),
       ),
       body: ProcessedPanel(widget.input, onStatusChange: _updateStatus),
