@@ -57,7 +57,7 @@ class _VerifyState extends State<Verify> {
     super.dispose();
   }
 
-  bool get _hasChanged => b(widget.input) &&_controller.text != _initialText;
+  bool get _hasChanged => b(widget.input) && _controller.text != _initialText;
 
   @override
   Widget build(BuildContext context) {
@@ -102,18 +102,61 @@ class _VerifyState extends State<Verify> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: TextField(
-          decoration: const InputDecoration(
-            labelText:
-                'JSON text to process. Use Ctrl-C / Ctrl-V to copy / paste, Ctrl-A to select all.',
-            border: OutlineInputBorder(),
-            alignLabelWithHint: true,
-          ),
-          style: monospaceStyle,
-          maxLines: null,
-          expands: true,
-          textAlignVertical: TextAlignVertical.top,
-          controller: _controller,
+        child: Column(
+          children: [
+            Expanded(
+              child: TextField(
+                decoration: const InputDecoration(
+                  labelText:
+                      'JSON text to process. Use Ctrl-C / Ctrl-V to copy / paste, Ctrl-A to select all.',
+                  border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
+                ),
+                style: monospaceStyle,
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+                controller: _controller,
+              ),
+            ),
+            ExpansionTile(
+              tilePadding: EdgeInsets.zero,
+              title: headline('Help: JSON Signature Verification'),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '''Expected fields:
+  • "I" — a JWK (JSON Web Key) object representing the signer's public key
+  • "signature" — a base64url-encoded signature
+
+The app will:
+  1. Extract and decode the public key from "I"
+  2. Extract the signature from "signature"
+  3. Validate the full JSON content (excluding "signature") using the public key''',
+                                textAlign: TextAlign.left,
+                                style: TextStyle(fontSize: 13.5),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
