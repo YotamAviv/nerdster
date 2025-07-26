@@ -65,7 +65,7 @@ class _VerifyState extends State<Verify> {
       appBar: AppBar(
         backgroundColor: Colors.indigo[700],
         centerTitle: true,
-        title: const Text('Verify...', style: TextStyle(color: Colors.white)),
+        // title: const Text('Verify...', style: TextStyle(color: Colors.white)),
         actions: [
           if (_hasChanged)
             IconButton(
@@ -187,18 +187,12 @@ class _ProcessedScreenState extends State<ProcessedScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: _statusColor ?? Colors.grey[800],
-        title: Text(_status ?? 'Processing...', style: const TextStyle(color: Colors.white)),
+        // title: Text(_status ?? 'Processing...', style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         leading: IconButton(
           tooltip: 'Back',
           onPressed: () => Navigator.of(context).pop(),
-          icon: Row(
-            children: const [
-              Icon(Icons.arrow_back, color: Colors.white),
-              SizedBox(width: 4),
-              Text('Back', style: TextStyle(color: Colors.white)),
-            ],
-          ),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
         ),
       ),
       body: ProcessedPanel(widget.input, onStatusChange: _updateStatus),
