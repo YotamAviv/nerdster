@@ -279,7 +279,7 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
     final String token = sha1.convert(utf8.encode(ppJson)).toString();
     children.addAll([
       _space,
-      headline('Tokenized (SHA1 of formatted JSON)'),
+      headline('Tokenized'),
       monospacedBlock(token),
     ]);
 
@@ -334,7 +334,7 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
     if (interpreted != ppJson) {
       children.addAll([
         _space,
-        headline('Interpreted for readability'),
+        headline('Interpreted'),
         monospacedBlock(interpreted),
       ]);
     }
