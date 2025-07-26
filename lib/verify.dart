@@ -189,7 +189,7 @@ class _ProcessedScreenState extends State<ProcessedScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: _statusColor ?? Colors.grey[800],
-        // title: Text(_status ?? 'Processing...', style: const TextStyle(color: Colors.white)),
+        title: Text(_status ?? 'Processing...', style: const TextStyle(color: Colors.white)),
         centerTitle: true,
         leading: IconButton(
           tooltip: 'Back',
@@ -318,7 +318,7 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
         ]);
       } else {
         _notifyStatus('✘ INVALID SIGNATURE', Colors.red[700]!);
-        _set(_error([headline('✘ Signature verification FAILED!')]));
+        children.addAll([_space, headline('✘ Signature verification FAILED!')]);
         // Do continue and interperate regardless return;
       }
     } else {
