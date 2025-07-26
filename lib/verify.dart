@@ -121,7 +121,7 @@ class _VerifyState extends State<Verify> {
             ),
             ExpansionTile(
               tilePadding: EdgeInsets.zero,
-              title: headline('Help: JSON Signature Verification'),
+              title: headline('Signature verification and other processing'),
               children: [
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
@@ -139,10 +139,12 @@ class _VerifyState extends State<Verify> {
   • "I" — a JWK (JSON Web Key) object representing the signer's public key
   • "signature" — a base64url-encoded signature
 
-The app will:
-  1. Extract and decode the public key from "I"
-  2. Extract the signature from "signature"
-  3. Validate the full JSON content (excluding "signature") using the public key''',
+The process will:
+  1. Extract and decode the public key from "I" (if present)
+  2. Extract the signature from "signature" (if present)
+  3. Validate the full JSON content (excluding "signature") using the public key (both must be present)
+  4. Compute token (SHA1 hash of ordered, formatted JSON). Tokens are used to identity subjects without specifying them (ex. when censored)
+  5. Interpret: Display names in place of public keys, strip or convert fields or values for readability''',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(fontSize: 13.5),
                               ),
@@ -276,13 +278,6 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
       ]);
     }
 
-    final String token = sha1.convert(utf8.encode(ppJson)).toString();
-    children.addAll([
-      _space,
-      headline('Tokenized'),
-      monospacedBlock(token),
-    ]);
-
     OouPublicKey? iKey;
     if (json.containsKey('I')) {
       try {
@@ -338,6 +333,13 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
         monospacedBlock(interpreted),
       ]);
     }
+
+    final String token = sha1.convert(utf8.encode(ppJson)).toString();
+    children.addAll([
+      _space,
+      headline('Tokenized'),
+      monospacedBlock(token),
+    ]);
 
     _set(Padding(
       padding: const EdgeInsets.all(16),
