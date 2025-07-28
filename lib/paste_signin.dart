@@ -10,7 +10,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/sign_in.dart';
+import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/util_ui.dart';
 
 Future<void> pasteSignin(BuildContext context) async {
@@ -32,7 +32,7 @@ Future<void> pasteSignin(BuildContext context) async {
   }
 
   // ignore: unawaited_futures
-  signIn(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
+  signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
 }
 
 
