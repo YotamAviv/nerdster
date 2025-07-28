@@ -27,7 +27,7 @@ import 'package:nerdster/sign_in_state.dart';
 ///   - (optional) Nerdster key pair (optionally encrypted, iPhone App Store restrictions.)
 /// Nerdster web client reads that from Firestore and signs in.
 
-Future<void> qrSignin(BuildContext context) async {
+Future<void> qrSignIn(BuildContext context) async {
   Map<String, dynamic> forPhone = <String, dynamic>{};
   forPhone['domain'] = kNerdsterDomain;
   // Getting this to work deployed at Google Cloud functions proved as fustrating as I had anticipated.

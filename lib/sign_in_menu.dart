@@ -6,7 +6,7 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/sign_in.dart';
+import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/singletons.dart';
 
 class SignInMenu extends StatefulWidget {
@@ -75,7 +75,7 @@ class _SignInMenuState extends State<SignInMenu> {
         return SubmenuButton(menuChildren: demoSignins, child: const Text('Demo sign-in'));
       } else {
         return MenuItemButton(
-            onPressed: fireChoice != FireChoice.fake ? () => qrSignin(context) : null,
+            onPressed: fireChoice != FireChoice.fake ? () => qrSignIn(context) : null,
             child: const Row(children: [Icon(Icons.qr_code), iconSpacer, Text('Sign in')]));
       }
     }

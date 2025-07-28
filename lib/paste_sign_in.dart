@@ -13,14 +13,14 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/util_ui.dart';
 
-Future<void> pasteSignin(BuildContext context) async {
+Future<void> pasteSignIn(BuildContext context) async {
   final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
   Json credentials = await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => Dialog(
             shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-            child: PasteSigninWidget(storeKeys),
+            child: PasteSignInWidget(storeKeys),
           ));
 
   Json identityJson = credentials[kOneofusDomain]!;
@@ -36,15 +36,15 @@ Future<void> pasteSignin(BuildContext context) async {
 }
 
 
-class PasteSigninWidget extends StatefulWidget {
+class PasteSignInWidget extends StatefulWidget {
   final ValueNotifier<bool> storeKeys;
-  const PasteSigninWidget(this.storeKeys, {super.key});
+  const PasteSignInWidget(this.storeKeys, {super.key});
 
   @override
-  State<PasteSigninWidget> createState() => _PasteSigninWidgetState();
+  State<PasteSignInWidget> createState() => _PasteSignInWidgetState();
 }
 
-class _PasteSigninWidgetState extends State<PasteSigninWidget> {
+class _PasteSignInWidgetState extends State<PasteSignInWidget> {
   final TextEditingController _controller = TextEditingController();
 
   static const String hintText = '''
