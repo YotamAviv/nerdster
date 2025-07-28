@@ -103,7 +103,7 @@ class Menus {
             MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             // const Text('--------- nerdier ---------'),
             // MyCheckbox(Prefs.keyLabel, 'translate gibberish'),
-            MyCheckbox(Prefs.showStuff, 'show keys and statements'),
+            MyCheckbox(Prefs.showStuff, 'show JSON, keys, and statements'),
             // MyCheckbox(Prefs.showJson, 'show JSON'),
             // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
             // MyCheckbox(Prefs.showStatements, 'show trust statements'),
