@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
@@ -46,7 +47,7 @@ class SignInState with ChangeNotifier {
 
     if (b(context) && !b(Uri.base.queryParameters['skipCredentialsDisplay'])) {
       showTopRightDialog(
-          context!, CredentialsWidget(centerResetJson, signedInDelegatePublicKeyJson));
+          context!, CredentialsDisplay(centerResetJson, signedInDelegatePublicKeyJson));
     }
 
     notifyListeners();
@@ -61,7 +62,7 @@ class SignInState with ChangeNotifier {
 
     if (b(context)) {
       showTopRightDialog(
-          context!, CredentialsWidget(centerResetJson, signedInDelegatePublicKeyJson));
+          context!, CredentialsDisplay(centerResetJson, signedInDelegatePublicKeyJson));
     }
 
     notifyListeners();
