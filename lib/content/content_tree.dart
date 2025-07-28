@@ -9,6 +9,7 @@ import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
 
@@ -81,7 +82,12 @@ class _ContentTreeState extends State<ContentTree> {
   void kludgeDelayedInit(BuildContext context) {
     ContentTree._firstTime = false;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await defaultSignIn(context);
+      // TEMP:
+      if (b(Uri.base.queryParameters['qrSignin'])) {
+        await qrSignin(context);
+      } else {
+        await defaultSignIn(context);
+      }
 
       // progress will call Navigator.pop(context) asynchronously, and so can't showTree first.
       await progress.make(() async {

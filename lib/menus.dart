@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
-import 'package:nerdster/dev/just_sign.dart';
-import 'package:nerdster/verify.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/demotest/cases/integration_tests.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dev/corruption_check.dart';
+import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/main.dart';
@@ -19,10 +19,11 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/paste_signin.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/sign_in.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/verify.dart';
 
 // SchedulerBinding.instance.addPostFrameCallback((_) async {
 // });
@@ -137,14 +138,12 @@ $link''',
               await showDialog(
                   context: context,
                   builder: (context) => Dialog(
-                      // Doesn't work: shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-                      child: Navigator(onGenerateRoute: (settings) {
+                          // Doesn't work: shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+                          child: Navigator(onGenerateRoute: (settings) {
                         return MaterialPageRoute(builder: (_) => Verify());
                       })));
             }),
-          MenuItemButton(
-              onPressed: () => JustSign.sign(context),
-              child: const Text('Just sign...')),
+        MenuItemButton(onPressed: () => JustSign.sign(context), child: const Text('Just sign...')),
       ], child: const Text('/etc')),
 
       SubmenuButton(menuChildren: <Widget>[
@@ -164,7 +163,7 @@ $link''',
           MenuItemButton(
               onPressed: () => showTopRightDialog(
                   context,
-                  CredentialsWidget(
+                  CredentialsDisplay(
                       signInState.centerResetJson, signInState.signedInDelegatePublicKeyJson)),
               child: Text('showCredentials')),
 
