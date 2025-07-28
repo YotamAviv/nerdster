@@ -1,15 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/credentials_display.dart';
+import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/sign_in.dart';
+import 'package:nerdster/singletons.dart';
 
 /// This has changed much over time, and so some docs, variable names, or worse might be misleading.
 /// The idea is:
 /// - center and signedIn are not always the same; viewing with a different center is a feature.
 /// - in case you get far from home, we want to help you get back (currently, "<reset>")
+/// 
+
+Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
+    BuildContext context) async {
+  if (store) {
+    await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
+  } else {
+    await KeyStore.wipeKeys();
+  }
+
+  final String oneofusToken = getToken(await oneofusPublicKey.json);
+  await signInState.signIn(oneofusToken, nerdsterKeyPair, context: context);
+  await BarRefresh.refresh(context);
+}
+
 class SignInState with ChangeNotifier {
   String? _center;
   String? _centerReset;
