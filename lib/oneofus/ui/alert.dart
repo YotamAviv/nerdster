@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/oneofus/json_qr_display.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 
 import '../util.dart';
 import 'linky.dart';
@@ -37,7 +39,7 @@ Future<void> alertException(BuildContext context, Object exception, {StackTrace?
   );
 }
 
-Future<String?> alert(String? title, String? content, List<String> options, BuildContext context) {
+Future<String?> alert(String? title, dynamic content, List<String> options, BuildContext context) {
   List<TextButton> buttons = <TextButton>[];
   for (String option in options) {
     buttons.add(TextButton(
@@ -45,13 +47,23 @@ Future<String?> alert(String? title, String? content, List<String> options, Buil
       onPressed: () => Navigator.of(context).pop(option),
     ));
   }
+  Widget? widget;
+  if (content is Widget) {
+    widget = content;
+  } else if (content is String) {
+    widget = Linky(content);
+  } else if (content is Json) {
+    widget = SizedBox(
+        width: MediaQuery.of(context).size.width * 0.8,
+        child: JsonQrDisplay(content, translate: ValueNotifier(false)));
+  }
   return showDialog<String?>(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
         title: b(title) ? Text(title!) : null,
-        content: b(content) ? Linky(content!) : null,
+        content: widget,
         actions: buttons,
       );
     },

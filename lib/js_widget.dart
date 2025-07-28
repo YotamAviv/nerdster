@@ -8,8 +8,9 @@ import 'package:nerdster/singletons.dart';
 
 class JSWidget extends StatelessWidget {
   final Jsonish jsonish;
+  final ValueNotifier<bool>? translate;
 
-  const JSWidget(this.jsonish, {super.key});
+  const JSWidget(this.jsonish, {super.key, this.translate});
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +28,8 @@ class JSWidget extends StatelessWidget {
     }
 
     return InkWell(
-        onTap: () => JsonQrDisplay(jsonish.json).show(context),
-        onDoubleTap: () => JsonQrDisplay(jsonish.token).show(context),
+        onTap: () => JsonQrDisplay(jsonish.json, translate: translate).show(context),
+        onDoubleTap: () => JsonQrDisplay(jsonish.token, translate: translate).show(context),
         child: Tooltip(
             message: message,
             child: Text('{JS}',

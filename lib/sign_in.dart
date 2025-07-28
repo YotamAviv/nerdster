@@ -146,7 +146,7 @@ Future<void> qrSignin(BuildContext context) async {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Linky('QR code for signing in using the one-of-us.net phone app.'),
-                        JsonQrDisplay(forPhone),
+                        JsonQrDisplay(forPhone, translate: ValueNotifier(false)),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [

@@ -8,6 +8,8 @@ abstract class Interpreter {
   Future<void> waitUntilReady();
 }
 
+Color? translatedColor = Colors.green[900];
+
 class JsonDisplay extends StatefulWidget {
   static Interpreter? interpreter;
   static void set(Interpreter? interpreter) {
@@ -55,6 +57,7 @@ class _State extends State<JsonDisplay> {
                   fontWeight: FontWeight.w700,
                   fontSize: 10,
                   decoration: widget.strikethrough ? TextDecoration.lineThrough : null,
+                  color: widget.translate.value ? translatedColor : null,
                 ))),
         if (b(JsonDisplay.interpreter))
           Positioned(
@@ -70,7 +73,8 @@ class _State extends State<JsonDisplay> {
 - strip clutter (signature, previous)'''
                     : 'Interpreted JSON shown; click to show the actual data',
                 // Was "translate"
-                child: Icon(Icons.transform, color: widget.translate.value ? Colors.blue : null),
+                child:
+                    Icon(Icons.transform, color: widget.translate.value ? translatedColor : null),
                 onPressed: () async {
                   widget.translate.value = !widget.translate.value;
                   // firstTap = true;
