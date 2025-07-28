@@ -119,13 +119,14 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
               barrierDismissible: false,
               builder: (BuildContext context) {
                 return AlertDialog(
-                    title: Text(error),
+                    shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+                    title: SelectableText(error),
                     // TODO: Better than this...
                     content: SingleChildScrollView(
                       child: Column(
                         children: [
-                          Text('''iToken: $iToken, iKey: $iKey, iLable: $iLable '''),
-                          if (b(details)) Text(details!),
+                          SelectableText('''iToken: $iToken, iKey: $iKey, iLable: $iLable '''),
+                          if (b(details)) SelectableText(details!),
                         ],
                       ),
                     ),
