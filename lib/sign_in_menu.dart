@@ -57,14 +57,14 @@ class _SignInMenuState extends State<SignInMenu> {
           ));
     } else {
       if (b(demo)) {
-        List<Widget> demoSignins = <Widget>[];
+        List<Widget> demoSignIns = <Widget>[];
         for (final DemoKey key in DemoKey.all) {
           if (key.name.contains('-nerdster')) continue; // KLUGEY: Don't center as the delegate
           final String name = key.name;
           final DemoKey? delegateKey =
               DemoKey.findByName('$name-nerdster0'); // KLUGEY: and probably wrong
           final OouKeyPair? nerdsterKeyPair = delegateKey?.keyPair;
-          demoSignins.add(MenuItemButton(
+          demoSignIns.add(MenuItemButton(
               onPressed: () async {
                 await signInState.signIn(key.token, nerdsterKeyPair, context: context);
 
@@ -72,7 +72,7 @@ class _SignInMenuState extends State<SignInMenu> {
               },
               child: Text(name)));
         }
-        return SubmenuButton(menuChildren: demoSignins, child: const Text('Demo sign-in'));
+        return SubmenuButton(menuChildren: demoSignIns, child: const Text('Demo sign-in'));
       } else {
         return MenuItemButton(
             onPressed: fireChoice != FireChoice.fake ? () => qrSignIn(context) : null,
