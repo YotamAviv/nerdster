@@ -15,8 +15,6 @@ import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in_state.dart';
 
-// NEXT: Rename to qr_sign_in.dart
-
 /// This doc is a little stale as of the switch to HTTP POST.
 /// Nerdster web client QR sign-in:
 /// - Create a PKE keyPair and a session string.
@@ -88,42 +86,55 @@ Future<void> qrSignIn(BuildContext context) async {
       // Dismiss dialog if still open
       if (context.mounted) Navigator.of(context).pop();
 
+      // DEFER: delete session
+
       await signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
     },
   );
 
   await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        Size availableSize = MediaQuery.of(context).size;
-        double width = min(availableSize.width * 0.4, availableSize.height * 0.9 / 2);
-        return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-            child: Padding(
-                padding: kPadding,
-                child: SizedBox(
-                    width: width,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Linky('QR code for signing in using the one-of-us.net phone app.'),
-                        JsonQrDisplay(forPhone, translate: ValueNotifier(false)),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [MyCheckbox(storeKeys, 'Store keys')],
-                        )
-                      ],
-                    ))));
-      }).then((_) {
+    context: context,
+    builder: (_) => QrSignInDialog(forPhone: forPhone, storeKeys: storeKeys),
+  ).then((_) {
     // If user dismissed the dialog manually, cancel listener and complete
-    if (!completer.isCompleted) {
-      completer.complete();
-    }
+    if (!completer.isCompleted) completer.complete(); // dialog was dismissed
   });
 
   // Wait for either listener or dialog dismissal
   await completer.future;
   await subscription.cancel(); // safe double cancel
+}
 
-  // DEFER: delete session
+class QrSignInDialog extends StatelessWidget {
+  final Map<String, dynamic> forPhone;
+  final ValueNotifier<bool> storeKeys;
+
+  const QrSignInDialog({required this.forPhone, required this.storeKeys, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final Size availableSize = MediaQuery.of(context).size;
+    final double width = min(availableSize.width * 0.4, availableSize.height * 0.9 / 2);
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+      child: Padding(
+        padding: kPadding,
+        child: SizedBox(
+          width: width,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Linky('QR code for signing in using the one-of-us.net phone app.'),
+              JsonQrDisplay(forPhone, translate: ValueNotifier(false)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [MyCheckbox(storeKeys, 'Store keys')],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
