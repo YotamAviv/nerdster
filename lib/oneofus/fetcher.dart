@@ -193,7 +193,7 @@ class Fetcher {
   // should be revoked and would be revoked had FollowNet or OneofusNet created it.
   //
   // If we ever fetched a statement for {domain, token}, then that statement remains correct forever.
-  // But if we change center (POV) or learn about a new trust or block, then that might change revokedAt.
+  // But if we change center (PoV) or learn about a new trust or block, then that might change revokedAt.
   static resetRevokeAt() {
     for (Fetcher f in _fetchers.values) {
       if (f._revokeAt != null) {

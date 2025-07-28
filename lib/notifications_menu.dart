@@ -194,7 +194,7 @@ That said, even in that situation, it may be the case that that guy never checks
             _space,
             Linky('''Tactics for addressing this:
 - If you think you know the individuals involved, get in touch with them, figure it out, and get it straightened out by clearing trusts or blocks or stating new ones.
-- Try browsing as others (different POV). You'll see the notifications they would see, and this may shed light on the situation.
+- Try browsing as others (different PoV). You'll see the notifications they would see, and this may shed light on the situation.
 - Email conflict-help@nerdtser.org. Include the link from the "menu => /etc => Generate link for current view".'''),
             _space,
             Text('''Trust paths to the statement's signing key:'''),
