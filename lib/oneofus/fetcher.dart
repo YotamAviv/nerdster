@@ -18,13 +18,13 @@ import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
 
-/// PERFORMANCE: Cloud copy everything to static and fetch from there.
+/// PERFORMANCE: CONSIDER: Cloud copy everything to static and fetch from there.
 
 /// Now that Nerdster loads Oneofus data over HTTPS, not Firebase Cloud Functions,
-/// Fire access in OneofusFire should not be necessary.
+/// Fire access in OneofusFire should not be necessary (but for development using FakeFirebase)
 ///
 /// Brief history:
-/// - Fetcher used direct Firebase querise
+/// - Fetcher used direct Firebase queries
 ///   - testing and development used FakeFirebase
 /// - I found Cloud Functions and used them to fetch distinct
 ///   - That had to be optional to all for testing/FakeFirebase to continue
@@ -33,8 +33,8 @@ import 'util.dart';
 /// - HTTPS functions with paralel reads on the server side and chuncked reading on the client
 ///   seem ideal, almost
 ///   - fastest
-///   - Nerdter should no longer need a back door to Oneofus
-///   - Can't be tested on Linux without emulator
+///   - Nerdster should no longer need a back door to Oneofus
+///   - Can't be tested on Linux without emulator (dough!)
 ///
 /// I'd like to settle on HTTPS functions only, but I need to keep
 /// - FakeFirebase working for unit testing on Linux.
@@ -194,7 +194,7 @@ class Fetcher {
   //
   // If we ever fetched a statement for {domain, token}, then that statement remains correct forever.
   // But if we change center (PoV) or learn about a new trust or block, then that might change revokedAt.
-  static resetRevokeAt() {
+  static void resetRevokeAt() {
     for (Fetcher f in _fetchers.values) {
       if (f._revokeAt != null) {
         f._cached = null;
@@ -339,7 +339,7 @@ class Fetcher {
         String? revokeAt = token2revokeAt[token];
         batchFetched[_key(token, revokeAt, domain)] = List<Json>.from(statements);
       }
-      print('batchFetch: ${token2revokeAt.keys.map((t) => t)}');
+      print('batchFetch: ${token2revokeAt}');
     }
 
     if (Prefs.slowFetch.value) {
@@ -349,13 +349,13 @@ class Fetcher {
 
   Future<void> fetch() async {
     if (b(_cached)) return;
+    // print('fetchx $token, $_revokeAt');
     try {
       _cached = <Statement>[];
       DateTime? time;
       if (Prefs.cloudFunctionsFetch.value && functions != null) {
         List<Json> statements;
         if (Prefs.batchFetch.value && b(batchFetched[_key(token, revokeAt, domain)])) {
-          // BUG: Key should include revokedAt, too.
           statements = batchFetched[_key(token, revokeAt, domain)]!;
         } else {
           if (Prefs.batchFetch.value) print('batcher miss $domain $token');
@@ -387,7 +387,13 @@ class Fetcher {
         }
 
         if (statements.isEmpty) return;
-        for (Json j in statements) {
+        for (Json j2 in statements) {
+          /// Creating a copy of the JSON because sometimes we're here twice, in
+          /// which case j.remove('id') causes a later assertion fire.
+          /// We shouldn't be be here twice, I don't think, and so there may be a  BUG somewhere.
+          /// The time I noticed this was with Burner's revoked delegate key. 
+          /// I suspect there may be a bug in FollowNode, not sure that thing respects revoked delegates.
+          Json j = {}..addAll(j2);
           DateTime jTime = parseIso(j['time']);
           if (time != null) assert(jTime.isBefore(time));
           time = jTime;

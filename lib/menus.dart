@@ -199,9 +199,7 @@ $link''',
           ], child: const Text('integration tests')),
           SubmenuButton(menuChildren: [
             MenuItemButton(
-                onPressed: () async {
-                  await DemoKey.showDemoCredentials(context);
-                },
+                onPressed: () => DemoKey.showDemoCredentials(context),
                 child: const Text('show all demo credentials')),
             ...demos
           ], child: const Text('demo')),
