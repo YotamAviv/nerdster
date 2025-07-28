@@ -349,7 +349,6 @@ class Fetcher {
 
   Future<void> fetch() async {
     if (b(_cached)) return;
-    // print('fetchx $token, $_revokeAt');
     try {
       _cached = <Statement>[];
       DateTime? time;
@@ -387,19 +386,13 @@ class Fetcher {
         }
 
         if (statements.isEmpty) return;
-        for (Json j2 in statements) {
-          /// Creating a copy of the JSON because sometimes we're here twice, in
-          /// which case j.remove('id') causes a later assertion fire.
-          /// We shouldn't be be here twice, I don't think, and so there may be a  BUG somewhere.
-          /// The time I noticed this was with Burner's revoked delegate key. 
-          /// I suspect there may be a bug in FollowNode, not sure that thing respects revoked delegates.
-          Json j = {}..addAll(j2);
+        for (Json j in statements) {
           DateTime jTime = parseIso(j['time']);
           if (time != null) assert(jTime.isBefore(time));
           time = jTime;
           j['statement'] = domain2statementType[domain]!;
           j['I'] = Jsonish.find(token)!.json;
-          j.remove('id');
+          j.remove('id'); // No problem, unless we end up here twice (which we shouldn't).
 
           // EXPERIMENTAL: "EXPERIMENTAL" tagged where the code allows us to not compute the tokens
           // but just use the stored values, which allows us to not ask for [signature, previous].
