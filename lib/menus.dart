@@ -19,7 +19,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/paste_signin.dart';
+import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
@@ -158,7 +158,7 @@ $link''',
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
           MenuItemButton(
-              onPressed: () => pasteSignin(context),
+              onPressed: () => pasteSignIn(context),
               child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
           MenuItemButton(
               onPressed: () => showTopRightDialog(
