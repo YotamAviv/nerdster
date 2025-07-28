@@ -102,7 +102,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   // await marge.doTrust(TrustVerb.clear, homer);
 
   // sideshow...
-  // - make Milhouse be labeled 4-Eyes from his own POV due to Sideshow... takes effort
+  // - make Milhouse be labeled 4-Eyes from his own PoV due to Sideshow... takes effort
   //   - path from mihouse to bart long
   // - bogus people (Amanda Hugginkiss...)
   await bart.doTrust(TrustVerb.trust, milhouse, moniker: 'Milhouse');

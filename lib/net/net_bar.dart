@@ -217,7 +217,7 @@ class _CenterDropdownState extends State<_CenterDropdown> {
       enableFilter: false,
       enableSearch: false,
       initialSelection: entries.first.label,
-      label: const Text('POV'),
+      label: const Text('PoV'),
       onSelected: (String? value) async {
         await progress.make(() async {
           signInState.center = b(value) ? label2oneofus[value]! : signInState.centerReset;
