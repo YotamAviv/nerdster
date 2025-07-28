@@ -1,0 +1,31 @@
+{
+  "one-of-us.net": {
+    "crv": "Ed25519",
+    "d": "5gtDkpFjIuYQluoX9QfsaylDwMX81t9CK3TlzWQnvXo",
+    "kty": "OKP",
+    "x": "uYLraLAARUZTTtuWjJPZVZJ7HIIzCkbdQCeYeDVvPZY"
+  },
+  "nerdster.org": {
+    "crv": "Ed25519",
+    "d": "qVEzYvelgcRT_weJkSkT90bXKlhyDVmEtkGOthpBQu8",
+    "kty": "OKP",
+    "x": "DG_YfOUTj3s-qKusqe0lvGXDMNINAjZrnUpvqQ9UP2M"
+  }
+}
+
+
+{
+  "one-of-us.net": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "uYLraLAARUZTTtuWjJPZVZJ7HIIzCkbdQCeYeDVvPZY"
+  },
+  "nerdster.org": {
+    "crv": "Ed25519",
+    "d": "qVEzYvelgcRT_weJkSkT90bXKlhyDVmEtkGOthpBQu8",
+    "kty": "OKP",
+    "x": "DG_YfOUTj3s-qKusqe0lvGXDMNINAjZrnUpvqQ9UP2M"
+  }
+}
+
+http://localhost:36869/?fire=emulator&oneofus={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22uYLraLAARUZTTtuWjJPZVZJ7HIIzCkbdQCeYeDVvPZY%22%20}&oneofusNetDegrees=1

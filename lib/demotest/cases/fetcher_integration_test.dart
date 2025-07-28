@@ -84,13 +84,13 @@ class FetcherTestHelper {
   int counter = DateTime.now().microsecondsSinceEpoch;
   TestClock testClock = TestClock();
 
-  Future<Json> makeI() async {
+  Json makeI() {
     counter++;
     return {'x': 'n$counter'};
   }
 
   Future<void> test2() async {
-    Json kI = await makeI();
+    Json kI = makeI();
     Fetcher fetcher = Fetcher(getToken(kI), _domain);
 
     List<Statement> js;
@@ -105,7 +105,7 @@ class FetcherTestHelper {
   Future<void> base() async {
     Prefs.skipVerify.value = true;
 
-    Json kI = await makeI();
+    Json kI = makeI();
     Fetcher fetcher = Fetcher(getToken(kI), _domain);
     Json map = {
       'statement': _type,
@@ -129,7 +129,7 @@ class FetcherTestHelper {
   Future<void> revokeAt() async {
     Prefs.skipVerify.value = true;
     for (bool doClear in [true, false]) {
-      Json kI = await makeI();
+      Json kI = makeI();
 
       TestSigner signer = TestSigner();
       Fetcher fetcher;
@@ -171,7 +171,7 @@ class FetcherTestHelper {
   Future<void> revokeAtSinceAlways() async {
     Prefs.skipVerify.value = true;
     for (bool doClear in [true, false]) {
-      Json kI = await makeI();
+      Json kI = makeI();
 
       TestSigner signer = TestSigner();
       Fetcher fetcher;
@@ -208,12 +208,15 @@ class FetcherTestHelper {
   }
 
   Future<void> notarizationBlockchainViolation() async {
+    // Test relies on not having any notifications at start.
+    expect(notifications.corrupted.length, 0);
+
     Prefs.skipVerify.value = true;
     TestSigner signer = TestSigner();
     Fetcher fetcher;
 
     List<Statement> js;
-    final Json kI = await makeI();
+    final Json kI = makeI();
     final String token = getToken(kI);
     fetcher = Fetcher(token, _domain);
 
@@ -253,7 +256,7 @@ class FetcherTestHelper {
     ContentStatement.init();
     TestSigner signer = TestSigner();
     Fetcher fetcher;
-    Json kI = await makeI();
+    Json kI = makeI();
 
     Iterable<Statement> js;
     fetcher = Fetcher(getToken(kI), kNerdsterDomain);
@@ -300,7 +303,7 @@ class FetcherTestHelper {
     Fetcher fetcher;
 
     Iterable<Statement> js;
-    Json kI = await makeI();
+    Json kI = makeI();
 
     fetcher = Fetcher(getToken(kI), kNerdsterDomain);
 
@@ -378,7 +381,7 @@ class FetcherTestHelper {
     ContentStatement.init();
     TestSigner signer = TestSigner();
     Fetcher fetcher;
-    Json kI = await makeI();
+    Json kI = makeI();
 
     Iterable<Statement> js;
     fetcher = Fetcher(getToken(kI), kNerdsterDomain);
@@ -417,9 +420,9 @@ class FetcherTestHelper {
     ContentStatement.init();
     TestSigner signer = TestSigner();
 
-    Json kI1 = await makeI();
+    Json kI1 = makeI();
     String t1 = getToken(kI1);
-    Json kI2 = await makeI();
+    Json kI2 = makeI();
     String t2 = getToken(kI2);
 
     for (bool b in [true, false]) {

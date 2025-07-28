@@ -235,6 +235,7 @@ class FollowNode extends Node {
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
         Fetcher delegateFetcher = Fetcher(delegateStatement.subjectToken, kNerdsterDomain);
+        if (b(delegateStatement.revokeAt)) delegateFetcher.setRevokeAt(delegateStatement.revokeAt!);
         // NOPE: assert(delegateFetcher.isCached, 'checking..');
         await delegateFetcher.fetch();
         delegateStatementss.add(delegateFetcher.statements);
