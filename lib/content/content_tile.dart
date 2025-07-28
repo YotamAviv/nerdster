@@ -3,10 +3,10 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree_node.dart';
+import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/content/props.dart';
 import 'package:nerdster/js_widget.dart';
-import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
@@ -155,7 +155,8 @@ class _ContentTileState extends State<ContentTile> {
                 ),
                 const SizedBox(width: 8),
                 ...propWidgets,
-                if (Prefs.showJson.value) JSWidget(subjectNode.subject),
+                if (Prefs.showJson.value)
+                  JSWidget(subjectNode.subject),
                 titleWidget,
                 if (b(statementDesc)) statementDesc!,
               ]),

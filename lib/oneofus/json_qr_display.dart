@@ -9,9 +9,9 @@ import 'util.dart';
 
 class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null
-  final ValueNotifier<bool> translate = ValueNotifier<bool>(false);
+  final ValueNotifier<bool>? translate;
 
-  JsonQrDisplay(this.subject, {super.key});
+  const JsonQrDisplay(this.subject, {super.key, this.translate});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class JsonQrDisplay extends StatelessWidget {
                 child: QrImageView(
                   data: display,
                   version: QrVersions.auto,
-                  // DEFER: I've seen issues iwth the QR image exceeding its bounds. I suspect 
+                  // DEFER: I've seen issues iwth the QR image exceeding its bounds. I suspect
                   // that it's not my bug or usage.
                   // size: qrSize,
                   // size: qrSize - 8,
@@ -38,7 +38,8 @@ class JsonQrDisplay extends StatelessWidget {
             SizedBox(
                 width: qrSize,
                 height: qrSize / 2,
-                child: Padding(padding: kPadding, child: JsonDisplay(subject))),
+                child:
+                    Padding(padding: kPadding, child: JsonDisplay(subject, translate: translate))),
           ],
         );
       } else {
@@ -55,7 +56,10 @@ class JsonQrDisplay extends StatelessWidget {
             double x = min(constraints.maxWidth, constraints.maxHeight * (2 / 3)) * reduction;
             return Dialog(
                 shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-                child: SizedBox(width: x, height: x * 3 / 2, child: JsonQrDisplay(subject)));
+                child: SizedBox(
+                    width: x,
+                    height: x * 3 / 2,
+                    child: JsonQrDisplay(subject, translate: translate)));
           });
         });
   }

@@ -142,6 +142,9 @@ $link''',
                         return MaterialPageRoute(builder: (_) => Verify());
                       })));
             }),
+          MenuItemButton(
+              onPressed: () => JustSign.sign(context),
+              child: const Text('Just sign...')),
       ], child: const Text('/etc')),
 
       SubmenuButton(menuChildren: <Widget>[
@@ -155,9 +158,6 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
-          MenuItemButton(
-              onPressed: () => JustSign.sign(context),
-              child: const Text('sign')),
           MenuItemButton(
               onPressed: () => pasteSignin(context),
               child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
