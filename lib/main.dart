@@ -165,11 +165,11 @@ Future<void> defaultSignIn(BuildContext context) async {
   }
 
   // Check for hard coded values
-  if (b(hardCodedSignin[fireChoice])) {
-    Json oneofusJson = hardCodedSignin[fireChoice]![kOneofusDomain]!;
+  if (b(hardCodedSignIn[fireChoice])) {
+    Json oneofusJson = hardCodedSignIn[fireChoice]![kOneofusDomain]!;
     String oneofus = getToken(oneofusJson);
-    OouKeyPair? hardDelegate = b(hardCodedSignin[fireChoice]![kNerdsterDomain])
-        ? await crypto.parseKeyPair(hardCodedSignin[fireChoice]![kNerdsterDomain]!)
+    OouKeyPair? hardDelegate = b(hardCodedSignIn[fireChoice]![kNerdsterDomain])
+        ? await crypto.parseKeyPair(hardCodedSignIn[fireChoice]![kNerdsterDomain]!)
         : null;
     await signInState.signIn(oneofus, hardDelegate, context: context);
     return;
@@ -181,11 +181,11 @@ const Json yotam = {
   "kty": "OKP",
   "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
 };
-dynamic hardCodedSignin = {
+dynamic hardCodedSignIn = {
   FireChoice.emulator: {"one-of-us.net": yotam},
 };
 
-Json yotamForCopyPasteSignin = {
+Json yotamForCopyPasteSignIn = {
   "one-of-us.net": {
     "crv": "Ed25519",
     "kty": "OKP",

@@ -82,7 +82,7 @@ class _ContentTreeState extends State<ContentTree> {
   void kludgeDelayedInit(BuildContext context) {
     ContentTree._firstTime = false;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // TEMP:
+      // KLUDGE: I haven't thought too much about the stored keys. This is for the web page to show the QR sign in.
       if (b(Uri.base.queryParameters['qrSignIn'])) {
         await qrSignIn(context);
       } else {
