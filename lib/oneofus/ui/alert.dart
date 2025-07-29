@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/oneofus/json_qr_display.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 
+import '../json_qr_display.dart';
+import '../jsonish.dart';
 import '../util.dart';
 import 'linky.dart';
 
