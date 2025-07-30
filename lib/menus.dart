@@ -131,7 +131,7 @@ $link''',
                   ['Okay'],
                   context);
             },
-            child: const Text('Generate link for current view...')),
+            child: const Text('Share link for this view...')),
         MenuItemButton(
             child: const Text(kVerify),
             onPressed: () async {
