@@ -76,7 +76,7 @@ class _State extends State<RateBody> {
   ValueNotifier<bool> censor = ValueNotifier(false);
   ValueNotifier<bool> erase = ValueNotifier(false);
   ValueNotifier<bool> okEnabled = ValueNotifier(false);
-  ValueNotifier<bool> translate = ValueNotifier<bool>(false);
+  ValueNotifier<bool> interpret = ValueNotifier<bool>(true);
 
   @override
   void initState() {
@@ -94,7 +94,7 @@ class _State extends State<RateBody> {
     censor.dispose();
     erase.dispose();
     okEnabled.dispose();
-    translate.dispose();
+    interpret.dispose();
     super.dispose();
   }
 
@@ -255,7 +255,7 @@ which will make your rating of his rating lost.''',
           child: SizedBox(
               height: 200,
               child: JsonDisplay(widget.subject.json,
-                  translate: translate, strikethrough: censor.value))),
+                  interpret: interpret, strikethrough: censor.value))),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [likeButton, disButton, censorButton, eraseButton],

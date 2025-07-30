@@ -7,8 +7,9 @@ import 'package:nerdster/oneofus/util.dart';
 class CredentialsDisplay extends StatelessWidget {
   final Json? identityJson;
   final Json? delegateJson;
+  final ValueNotifier<bool> interpret = ValueNotifier(true);
 
-  const CredentialsDisplay(this.identityJson, this.delegateJson, {super.key});
+  CredentialsDisplay(this.identityJson, this.delegateJson, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +23,13 @@ class CredentialsDisplay extends StatelessWidget {
           Column(
             children: [
               Text('Identity'),
-              SizedBox(width: w, height: h, child: JsonQrDisplay(identityJson))
+              SizedBox(width: w, height: h, child: JsonQrDisplay(identityJson, interpret: interpret))
             ],
           ),
           Column(
             children: [
               Text('Nerdster delegate'),
-              SizedBox(width: w, height: h, child: JsonQrDisplay(delegateJson))
+              SizedBox(width: w, height: h, child: JsonQrDisplay(delegateJson, interpret: interpret))
             ],
           )
         ]),
