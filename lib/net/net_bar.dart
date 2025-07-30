@@ -125,9 +125,12 @@ class _StructureDropdownState extends State<_StructureDropdown> {
 
     const String message =
         '''"<one-of-us>" structure will build tree accoring to who one-of-us trusts whom.
-If a follow context is selected, those included in the follow network will be green.
+In case statements are displayed, they'll be identity statements.
 
-"follow network" structure will build the tee accoring to who follows whom for the selected context.''';
+"follow network" structure will build the tree accoring to who follows whom for the selected context.
+In case statements are displayed, they'll be follow statements.
+
+People included in the follow network are displayed in green.''';
 
     bool enabled = widget.bContent;
 
