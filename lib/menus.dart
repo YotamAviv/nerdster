@@ -126,7 +126,7 @@ class Menus {
               // DEFER: copy floater
               await alert(
                   'Nerd\'ster link',
-                  '''Link for sharing or embedding with this app's current settings (one-of-us.net center, sort, type, etc...):
+                  '''Link for sharing or embedding with this app's current settings (PoV, follow context, sort, type, etc...):
 $link''',
                   ['Okay'],
                   context);
