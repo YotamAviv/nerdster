@@ -101,12 +101,13 @@ class Menus {
               IntSettingDropdown(
                   'paths', Prefs.followNetPaths, List<int>.generate(2, (i) => i + 1)),
             ], child: const Text('follow network')),
-            MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             // const Text('--------- nerdier ---------'),
             MyCheckbox(Prefs.showStuff, 'show JSON, keys, and statements'),
             // MyCheckbox(Prefs.showJson, 'show JSON'),
             // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
             // MyCheckbox(Prefs.showStatements, 'show trust statements'),
+            MyCheckbox(Prefs.skipCredentials, '''skip credentials display'''),
+            MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
           ],
           child: const Row(
             children: [

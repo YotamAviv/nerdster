@@ -6,13 +6,14 @@ import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 
 /// This has changed much over time, and so some docs, variable names, or worse might be misleading.
 /// The idea is:
 /// - center and signedIn are not always the same; viewing with a different center is a feature.
 /// - in case you get far from home, we want to help you get back (currently, "<reset>")
-/// 
+///
 
 Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
     BuildContext context) async {
@@ -48,9 +49,6 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  // DEFER: "Don't show again..."
-  // CONSIDER: Show credentials when changing PoV.
-
   Future<void> signIn(String center, OouKeyPair? nerdsterKeyPair, {BuildContext? context}) async {
     _center = center;
     _centerReset = center;
@@ -62,7 +60,9 @@ class SignInState with ChangeNotifier {
       _signer = await OouSigner.make(nerdsterKeyPair);
     }
 
-    if (b(context) && !b(Uri.base.queryParameters['skipCredentialsDisplay'])) {
+    if (b(context) &&
+        !b(Uri.base.queryParameters['skipCredentialsDisplay']) &&
+        !Prefs.skipCredentials.value) {
       showTopRightDialog(
           context!, CredentialsDisplay(centerResetJson, signedInDelegatePublicKeyJson));
     }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 
-/// CONSIDER: "Don't show again" for displaying sign-in credentials
 class CredentialsDisplay extends StatelessWidget {
   final Json? identityJson;
   final Json? delegateJson;
@@ -16,24 +17,37 @@ class CredentialsDisplay extends StatelessWidget {
     Size whole = MediaQuery.of(context).size;
     double w = whole.width / 4;
     double h = w * 3 / 2;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(children: [
-          Column(
+    return SizedBox(
+      width: w * 2,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
             children: [
-              Text('Identity'),
-              SizedBox(width: w, height: h, child: JsonQrDisplay(identityJson, interpret: interpret))
+              Column(
+                children: [
+                  Text('Identity'),
+                  SizedBox(
+                      width: w, height: h, child: JsonQrDisplay(identityJson, interpret: interpret))
+                ],
+              ),
+              Column(
+                children: [
+                  Text('Nerdster delegate'),
+                  SizedBox(
+                      width: w, height: h, child: JsonQrDisplay(delegateJson, interpret: interpret))
+                ],
+              ),
             ],
           ),
-          Column(
+          Row(
             children: [
-              Text('Nerdster delegate'),
-              SizedBox(width: w, height: h, child: JsonQrDisplay(delegateJson, interpret: interpret))
+              const Spacer(),
+              MyCheckbox(Prefs.skipCredentials, '''Don't show again'''),
             ],
-          )
-        ]),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
