@@ -103,7 +103,6 @@ class Menus {
             ], child: const Text('follow network')),
             MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
             // const Text('--------- nerdier ---------'),
-            // MyCheckbox(Prefs.keyLabel, 'translate gibberish'),
             MyCheckbox(Prefs.showStuff, 'show JSON, keys, and statements'),
             // MyCheckbox(Prefs.showJson, 'show JSON'),
             // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),

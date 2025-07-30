@@ -9,9 +9,9 @@ import 'util.dart';
 
 class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null
-  final ValueNotifier<bool>? translate;
+  final ValueNotifier<bool>? interpret;
 
-  const JsonQrDisplay(this.subject, {super.key, this.translate});
+  const JsonQrDisplay(this.subject, {super.key, this.interpret});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class JsonQrDisplay extends StatelessWidget {
                 width: qrSize,
                 height: qrSize / 2,
                 child:
-                    Padding(padding: kPadding, child: JsonDisplay(subject, translate: translate))),
+                    Padding(padding: kPadding, child: JsonDisplay(subject, interpret: interpret))),
           ],
         );
       } else {
@@ -59,7 +59,7 @@ class JsonQrDisplay extends StatelessWidget {
                 child: SizedBox(
                     width: x,
                     height: x * 3 / 2,
-                    child: JsonQrDisplay(subject, translate: translate)));
+                    child: JsonQrDisplay(subject, interpret: interpret)));
           });
         });
   }

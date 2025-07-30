@@ -30,7 +30,8 @@ class Lgtm {
                         Linky('''For your review: Nerd'ster intends to:
 - Sign the statemet below using its delegate key (which you signed using your one-of-us key)
 - Publish it at: https://export.nerdster.org/?token=${signInState.signedInDelegate}'''),
-                        SizedBox(height: 300, child: JsonDisplay(json)),
+                        SizedBox(
+                            height: 300, child: JsonDisplay(json, interpret: ValueNotifier(true))),
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

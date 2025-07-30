@@ -319,7 +319,7 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
       } else {
         _notifyStatus('✘ INVALID SIGNATURE', Colors.red[700]!);
         children.addAll([_space, headline('✘ Signature verification FAILED!')]);
-        // Do continue and interperate regardless return;
+        // Do continue and interpret regardless return;
       }
     } else {
       _notifyStatus('Not signed', Colors.grey[700]!);

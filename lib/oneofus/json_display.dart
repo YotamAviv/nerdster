@@ -8,7 +8,7 @@ abstract class Interpreter {
   Future<void> waitUntilReady();
 }
 
-Color? translatedColor = Colors.green[900];
+Color? interpretedColor = Colors.green[900];
 
 class JsonDisplay extends StatefulWidget {
   static Interpreter? interpreter;
@@ -17,11 +17,11 @@ class JsonDisplay extends StatefulWidget {
   }
 
   final dynamic subject; // String (ex. token) or Json (ex. key, statement)
-  final ValueNotifier<bool> translate;
+  final ValueNotifier<bool> interpret;
   final bool strikethrough;
 
-  JsonDisplay(this.subject, {ValueNotifier<bool>? translate, this.strikethrough = false, super.key})
-      : translate = translate ?? ValueNotifier<bool>(true);
+  JsonDisplay(this.subject, {ValueNotifier<bool>? interpret, this.strikethrough = false, super.key})
+      : interpret = interpret ?? ValueNotifier<bool>(true);
 
   @override
   State<StatefulWidget> createState() => _State();
@@ -45,10 +45,10 @@ class _State extends State<JsonDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    var translated = (b(JsonDisplay.interpreter) && widget.translate.value)
+    var interpretd = (b(JsonDisplay.interpreter) && widget.interpret.value)
         ? JsonDisplay.interpreter!.interpret(widget.subject)
         : widget.subject;
-    String display = encoder.convert(translated);
+    String display = encoder.convert(interpretd);
     return Stack(
       children: [
         Positioned.fill(
@@ -57,26 +57,26 @@ class _State extends State<JsonDisplay> {
                   fontWeight: FontWeight.w700,
                   fontSize: 10,
                   decoration: widget.strikethrough ? TextDecoration.lineThrough : null,
-                  color: widget.translate.value ? translatedColor : null,
+                  color: widget.interpret.value ? interpretedColor : null,
                 ))),
         if (b(JsonDisplay.interpreter))
           Positioned(
             bottom: 0,
             right: 0,
             child: FloatingActionButton(
-                heroTag: 'Interperate',
+                heroTag: 'Interpret',
                 mini: true, // 40x40 instead of 56x56
-                tooltip: !widget.translate.value
-                    ? '''Raw JSON shown; click to interperate (make more human readable):
+                tooltip: !widget.interpret.value
+                    ? '''Raw JSON shown; click to interpret (make more human readable):
 - label known and unknown keys
 - convert dates to local time and format
 - strip clutter (signature, previous)'''
                     : 'Interpreted JSON shown; click to show the actual data',
-                // Was "translate"
+                // Was "interpret"
                 child:
-                    Icon(Icons.transform, color: widget.translate.value ? translatedColor : null),
+                    Icon(Icons.transform, color: widget.interpret.value ? interpretedColor : null),
                 onPressed: () async {
-                  widget.translate.value = !widget.translate.value;
+                  widget.interpret.value = !widget.interpret.value;
                   // firstTap = true;
                   setState(() {});
                 }),

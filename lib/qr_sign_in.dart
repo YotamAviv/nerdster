@@ -126,7 +126,7 @@ class QrSignInDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Linky('QR code for signing in using the one-of-us.net phone app.'),
-              JsonQrDisplay(forPhone, translate: ValueNotifier(false)),
+              JsonQrDisplay(forPhone, interpret: ValueNotifier(false)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [MyCheckbox(storeKeys, 'Store keys')],

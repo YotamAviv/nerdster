@@ -55,7 +55,7 @@ Future<String?> alert(String? title, dynamic content, List<String> options, Buil
   } else if (content is Json) {
     widget = SizedBox(
         width: MediaQuery.of(context).size.width * 0.8,
-        child: JsonQrDisplay(content, translate: ValueNotifier(false)));
+        child: JsonQrDisplay(content, interpret: ValueNotifier(false)));
   }
   return showDialog<String?>(
     context: context,
