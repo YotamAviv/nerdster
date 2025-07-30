@@ -12,6 +12,7 @@ class Prefs {
 
   // Settings
   static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> skipCredentials = ValueNotifier<bool>(false);
   static final ValueNotifier<bool> censor = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> hideDisliked = ValueNotifier<bool>(false);
   static final ValueNotifier<int> oneofusNetDegrees = ValueNotifier<int>(5);
@@ -59,14 +60,24 @@ class Prefs {
     } catch (e) {
       print(e);
     }
+    Prefs.skipLgtm.addListener(() async {
+      await _storage.write(key: 'skipLgtm', value: Prefs.skipLgtm.value.toString());
+    });
+
+    try {
+      skipCredentials.value = bs(await _storage.read(key: 'skipCredentials'));
+    } catch (e) {
+      print(e);
+    }
+    Prefs.skipCredentials.addListener(() async {
+      await _storage.write(key: 'skipCredentials', value: Prefs.skipCredentials.value.toString());
+    });
 
     Prefs.showStuff.addListener(() {
       Prefs.showJson.value = showStuff.value;
       Prefs.showKeys.value = showStuff.value;
       Prefs.showStatements.value = showStuff.value;
     });
-
-    Prefs.skipLgtm.addListener(listener);
   }
 
   static void setParams(Map<String, String> params) {
@@ -84,10 +95,6 @@ class Prefs {
     if (oneofusNetPaths.value != 1) params['oneofusNetPaths'] = oneofusNetPaths.value.toString();
     if (followNetDegrees.value != 5) params['followNetDegrees'] = followNetDegrees.value.toString();
     if (followNetPaths.value != 1) params['followNetPaths'] = followNetPaths.value.toString();
-  }
-
-  static Future<void> listener() async {
-    await _storage.write(key: 'skipLgtm', value: Prefs.skipLgtm.value.toString());
   }
 
   Prefs._();
