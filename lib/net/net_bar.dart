@@ -5,7 +5,6 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/net/net_tree.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
@@ -219,7 +218,7 @@ class _CenterDropdownState extends State<_CenterDropdown> {
       requestFocusOnTap: false,
       enableFilter: false,
       enableSearch: false,
-      initialSelection: entries.first.label,
+      initialSelection: entries.isNotEmpty ? entries.first.label : null,
       label: const Text('PoV'),
       onSelected: (String? value) async {
         await progress.make(() async {

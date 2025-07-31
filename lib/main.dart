@@ -181,14 +181,24 @@ const Json yotam = {
   "kty": "OKP",
   "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
 };
-dynamic hardCodedSignIn = {
-  FireChoice.emulator: {"one-of-us.net": yotam},
-};
 
-Json yotamForCopyPasteSignIn = {
+Json yotamForCopyPasteSignIn = {"one-of-us.net": yotam};
+
+var lisa = {
   "one-of-us.net": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+    "x": "SB99cDx8TYFv141hiqPkR8l0jFVk2n1Ytl1IGDNprdE"
+  },
+  "nerdster.org": {
+    "crv": "Ed25519",
+    "d": "TRR2O7b5YrD0LXWRYq_LM_3jlBOiKy5LYe_b0hKqzq0",
+    "kty": "OKP",
+    "x": "7C01fXqTeYjzEK0tvz0f2DQ9qGkbx8-XEcDFCxo5XXo"
   }
+};
+
+dynamic hardCodedSignIn = {
+  // FireChoice.emulator: {"one-of-us.net": yotam},
+  FireChoice.emulator: lisa,
 };

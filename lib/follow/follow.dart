@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -6,7 +7,6 @@ import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -24,19 +24,16 @@ Future<Statement?> follow(String token, BuildContext context) async {
   if (await checkSignedIn(context) != true) return null;
 
   ContentStatement? priorStatement;
+  int numFound = 0;
   for (ContentStatement s in followNet.getStatements(signInState.centerReset!)) {
     if (s.subjectToken == token) {
       priorStatement = s;
+      numFound++;
     }
   }
-  Json contextsIn;
-  if (b(priorStatement)) {
-    contextsIn = priorStatement!.contexts!;
-  } else {
-    contextsIn = {
-      'social': 1,
-    };
-  }
+  assert(numFound <= 1);
+  Json contextsIn = (b(priorStatement)) ? priorStatement!.contexts! : {};
+
   Json? contextsOut = await showFollowDialog(token, contextsIn, context);
   if (contextsOut != null) {
     Json subjectPublicKey = Jsonish.find(token)!.json;
@@ -63,15 +60,16 @@ Future<Json?> showFollowDialog(String token, Json contextsIn, BuildContext conte
                   constraints: const BoxConstraints(
                     maxWidth: 400,
                   ),
-                  child: FollowUi(contextsIn)),
+                  child: FollowUi(token, contextsIn)),
             ));
       });
 }
 
 class FollowUi extends StatefulWidget {
+  final String token;
   final Json contextsIn;
 
-  const FollowUi(this.contextsIn, {super.key});
+  const FollowUi(this.token, this.contextsIn, {super.key});
 
   @override
   State<StatefulWidget> createState() => _FollowUiState();
@@ -80,6 +78,7 @@ class FollowUi extends StatefulWidget {
 class _FollowUiState extends State<FollowUi> {
   final Map<String, FollowWidget> widgets = <String, FollowWidget>{};
   final TextEditingController controller = TextEditingController();
+  final ValueNotifier<bool> okEnabled = ValueNotifier(false);
 
   _FollowUiState();
 
@@ -94,16 +93,24 @@ class _FollowUiState extends State<FollowUi> {
   @override
   dispose() {
     controller.dispose();
-    super.dispose();  
+    super.dispose();
   }
 
-  Future<void> make() async {
+  Json _computeContexts() {
     Json contexts = {};
     for (MapEntry e in widgets.entries) {
       int i = e.value.followNotifier.value == Follow.follow ? 1 : -1;
       contexts[e.key] = i;
     }
-    Navigator.pop(context, contexts);
+    return contexts;
+  }
+
+  void _refreshOkayEnabled() {
+    okEnabled.value = !DeepCollectionEquality().equals(widget.contextsIn, _computeContexts());
+  }
+
+  Future<void> okay() async {
+    Navigator.pop(context, _computeContexts());
   }
 
   @override
@@ -111,8 +118,9 @@ class _FollowUiState extends State<FollowUi> {
     List<String> dropdownContexts = [];
     dropdownContexts.add(kNerdsterContext);
     dropdownContexts.addAll(followNet.most);
-    dropdownContexts.addAll(['social', 'nerd']);
+    dropdownContexts.addAll(['social', 'family', 'local']);
     dropdownContexts.removeWhere((c) => widgets.keys.contains(c));
+    dropdownContexts = dropdownContexts.toSet().toList(); // remove duplicates
 
     List<Row> rows = <Row>[];
     for (MapEntry e in widgets.entries) {
@@ -123,11 +131,15 @@ class _FollowUiState extends State<FollowUi> {
             icon: const Icon(Icons.delete),
             onPressed: () {
               widgets.remove(e.key);
-              setState(() {});
+              setState(() {
+                _refreshOkayEnabled();
+              });
             }),
       ]);
       rows.add(row);
     }
+
+    if (rows.isEmpty) rows.add(Row(children: [Text('None specified.')]));
 
     return Column(
         mainAxisSize: MainAxisSize.min,
@@ -136,7 +148,7 @@ class _FollowUiState extends State<FollowUi> {
           InputDecorator(
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                labelText: 'Follow contexts',
+                labelText: 'Your follow/block contexts for ${keyLabels.interpret(widget.token)}',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
               ),
               child: Column(children: rows)),
@@ -157,6 +169,7 @@ class _FollowUiState extends State<FollowUi> {
                         widgets[controller.text] = FollowWidget(Follow.follow);
                         controller.text = '';
                       }
+                      _refreshOkayEnabled();
                     });
                   },
                   dropdownMenuEntries:
@@ -170,13 +183,14 @@ class _FollowUiState extends State<FollowUi> {
                         if (controller.text.isNotEmpty) {
                           widgets[controller.text] = FollowWidget(Follow.follow);
                         }
+                        _refreshOkayEnabled();
                       });
                     }),
               ],
             ),
           ),
           const SizedBox(height: 10),
-          OkCancel(make, 'Okay'),
+          OkCancel(okay, 'Okay', okEnabled: okEnabled),
         ]);
   }
 }
