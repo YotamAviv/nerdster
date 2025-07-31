@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/test_clock.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -59,6 +60,10 @@ class TestSigner implements StatementSigner {
 }
 
 Future<void> fetcherIntegrationTest() async {
+  setUp(() {
+    assert(fireChoice != FireChoice.prod);
+  });
+
   useClock(TestClock());
   FetcherTestHelper helper = FetcherTestHelper();
 

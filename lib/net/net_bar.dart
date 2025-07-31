@@ -58,7 +58,7 @@ class _NetBarState extends State<NetBar> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: kTallPadding,
+      padding: EdgeInsets.fromLTRB(0, 12, 0, 4), // kTallPadding not tall enough
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[

@@ -191,16 +191,17 @@ class _MonikerWidget extends StatelessWidget {
 
   _MonikerWidget(this.node) {
     bOneofus = oneofusNet.network.containsKey(node.token);
+    String moniker = keyLabels.interpret(node.token).toString();
     items = [
       if (bOneofus && node.token != signInState.center)
-        PopupMenuItem<String>(
-            value: kRecenter,
-            child: Text('''Use ${keyLabels.interpret(node.token).toString()}'s Point of View''')),
+        PopupMenuItem<String>(value: kRecenter, child: Text('''Use $moniker's Point of View''')),
       // Don't encourage following yourself.
       if (bOneofus && node.token != signInState.centerReset)
-        const PopupMenuItem<String>(value: kFollow, child: Text(kFollow)),
+        PopupMenuItem<String>(
+            value: kFollow, child: Text('''View/change how I follow $moniker...''')),
       if (Prefs.showStatements.value)
-        const PopupMenuItem<String>(value: kStatements, child: Text(kStatements))
+        PopupMenuItem<String>(
+            value: kStatements, child: Text('''$moniker's published statements...'''))
     ];
   }
 
@@ -234,13 +235,8 @@ class _MonikerWidget extends StatelessWidget {
             ? Uri.https(host, path, params)
             : Uri.http(host, path, params);
         link = uri.toString();
-        // DEFER: copy floater, (maybe unite with Nerdster link dialog)
-        await alert(
-            'Published statements',
-            '''Signed and published by this key:
-$link''',
-            ['Okay'],
-            context);
+        String moniker = keyLabels.interpret(node.token).toString();
+        await alert('''$moniker's signed, published statements''', link, ['Okay'], context);
       } else {
         Iterable statements = Fetcher(token, domain).statements;
         List<Json> jsons = List.from(statements.map((s) => s.json));

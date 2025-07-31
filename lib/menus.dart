@@ -191,6 +191,7 @@ $link''',
             MenuItemButton(onPressed: integrationTests, child: const Text('misc demos')),
             MenuItemButton(
                 onPressed: () {
+                  assert(fireChoice != FireChoice.prod);
                   fetcherIntegrationTest();
                   integrationTests();
                 },
@@ -210,6 +211,7 @@ $link''',
           MenuItemButton(
               child: const Text('Load JSON statements'),
               onPressed: () async {
+                assert(fireChoice != FireChoice.prod);
                 await loadDumpDialog(context);
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
               }),

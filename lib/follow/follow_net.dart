@@ -78,7 +78,7 @@ class FollowNet with Comp, ChangeNotifier {
   Map<String, Fetcher> get delegate2fetcher => UnmodifiableMapView(_delegate2fetcher);
   Iterable<ContentStatement> getStatements(String oneofus) {
     assert(oneofusNet.network.containsKey(oneofus),
-        "This used to be a bug, but I forgot the details and believe it's fixed.");
+        "TODO: Allow (write code) to allow seeing / changing follows when you're not in the network you're viewing.");
     return distinct(
         Merger(_oneofus2delegates[oneofus]!
             .map((delegate) => _delegate2fetcher[delegate]!.statements)).cast<ContentStatement>(),

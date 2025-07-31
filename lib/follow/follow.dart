@@ -58,7 +58,7 @@ Future<Json?> showFollowDialog(String token, Json contextsIn, BuildContext conte
         return Dialog(
             shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
             child: Padding(
-              padding: kPadding,
+              padding: kTallPadding,
               child: ConstrainedBox(
                   constraints: const BoxConstraints(
                     maxWidth: 400,
