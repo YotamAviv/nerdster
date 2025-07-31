@@ -184,8 +184,7 @@ const Json yotam = {
 
 Json yotamForCopyPasteSignIn = {"one-of-us.net": yotam};
 
-var lisa = {
-};
+var lisa = {};
 
 dynamic hardCodedSignIn = {
   FireChoice.emulator: {"one-of-us.net": yotam},
