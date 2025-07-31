@@ -179,8 +179,8 @@ class _NetTileState extends State<NetTile> {
   }
 }
 
+const kRecenter = "PoV";
 const kFollow = "Follow...";
-const kRecenter = "Recenter";
 const kStatements = "Statements...";
 
 // CONSIDER: more tooltips with paths.
@@ -193,7 +193,9 @@ class _MonikerWidget extends StatelessWidget {
     bOneofus = oneofusNet.network.containsKey(node.token);
     items = [
       if (bOneofus && node.token != signInState.center)
-        const PopupMenuItem<String>(value: kRecenter, child: Text(kRecenter)),
+        PopupMenuItem<String>(
+            value: kRecenter,
+            child: Text('''Use ${keyLabels.interpret(node.token).toString()}'s Point of View''')),
       // Don't encourage following yourself.
       if (bOneofus && node.token != signInState.centerReset)
         const PopupMenuItem<String>(value: kFollow, child: Text(kFollow)),
