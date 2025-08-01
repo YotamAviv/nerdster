@@ -247,7 +247,7 @@ class _ReactIconState extends State<_ReactIcon> {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 22, maxWidth: 22),
           icon: Icon(iconData, color: color),
-          tooltip: '''Click to rate (like, comment, dis, censor, or clear rating)
+          tooltip: '''Click to rate (like, comment, dis, censor, or clear your previous rating)
 Double click to relate / equate''',
           onPressed: null),
     );
