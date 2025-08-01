@@ -145,7 +145,7 @@ You can include a URL in a comment or relate or equate this book to an article w
     }
 
     return Padding(
-      padding: kPadding,
+      padding: kTallPadding,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
