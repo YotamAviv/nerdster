@@ -91,23 +91,25 @@ class Menus {
             // MyCheckbox(Prefs.hideDisliked, '''hide content where network sum(like) < 0'''),
             SubmenuButton(menuChildren: <Widget>[
               IntSettingDropdown(
-                  'degrees', Prefs.oneofusNetDegrees, List<int>.generate(6, (i) => i + 1)),
+                  'Degrees', Prefs.oneofusNetDegrees, List<int>.generate(6, (i) => i + 1)),
               IntSettingDropdown(
-                  'paths', Prefs.oneofusNetPaths, List<int>.generate(2, (i) => i + 1)),
-            ], child: const Text('one-of-us.net network')),
+                  'Paths', Prefs.oneofusNetPaths, List<int>.generate(2, (i) => i + 1)),
+            ], child: const Text('Identity network')),
             SubmenuButton(menuChildren: <Widget>[
               IntSettingDropdown(
-                  'degrees', Prefs.followNetDegrees, List<int>.generate(6, (i) => i + 1)),
+                  'Degrees', Prefs.followNetDegrees, List<int>.generate(6, (i) => i + 1)),
               IntSettingDropdown(
-                  'paths', Prefs.followNetPaths, List<int>.generate(2, (i) => i + 1)),
-            ], child: const Text('follow network')),
+                  'Paths', Prefs.followNetPaths, List<int>.generate(2, (i) => i + 1)),
+            ], child: const Text('Follow network')),
             // const Text('--------- nerdier ---------'),
-            MyCheckbox(Prefs.showStuff, 'show JSON, keys, and statements'),
-            // MyCheckbox(Prefs.showJson, 'show JSON'),
-            // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
-            // MyCheckbox(Prefs.showStatements, 'show trust statements'),
-            MyCheckbox(Prefs.skipCredentials, '''skip credentials display'''),
-            MyCheckbox(Prefs.skipLgtm, '''skip statement reviews'''),
+            SubmenuButton(menuChildren: [
+              MyCheckbox(Prefs.skipCredentials, 'Credentials upon new sign-in'),
+              MyCheckbox(Prefs.skipLgtm, 'Review upon publishing signed statements'),
+              // MyCheckbox(Prefs.showJson, 'show JSON'),
+              // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
+              // MyCheckbox(Prefs.showStatements, 'show trust statements'),
+            ], child: const Text("Don't show")),
+            MyCheckbox(Prefs.showStuff, 'Show JSON, keys, and statements'),
           ],
           child: const Row(
             children: [
