@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
 import 'util.dart';
@@ -38,7 +39,7 @@ class Measure with ChangeNotifier {
 
   static void dump() {
     print('Measures:');
-    for (Measure m in _instances) {
+    for (Measure m in _instances.sorted((x, y) => x.elapsed < y.elapsed ? 1 : -1)) {
       m._dump();
     }
   }

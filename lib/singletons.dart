@@ -1,5 +1,6 @@
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/follow/follow_net.dart';
+import 'package:nerdster/follow/my_delegate_statements.dart';
 import 'package:nerdster/net/key_lables.dart';
 import 'package:nerdster/net/oneofus_equiv.dart';
 import 'package:nerdster/net/oneofus_net.dart';
@@ -13,6 +14,7 @@ final OneofusLabels oneofusLabels = OneofusLabels();
 final KeyLabels keyLabels = KeyLabels();
 final OneofusEquiv oneofusEquiv = OneofusEquiv();
 final OneofusNet oneofusNet = OneofusNet();
+final MyDelegateStatements myDelegateStatements = MyDelegateStatements();
 final SignInState signInState = SignInState();
 final Notifications notifications = Notifications();
 final ProgressDialog progress = ProgressDialog();

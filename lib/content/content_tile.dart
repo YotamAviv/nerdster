@@ -233,7 +233,7 @@ class _ReactIconState extends State<_ReactIcon> {
 
     Color color;
     IconData iconData;
-    bool iReacted = contentBase.findMyStatements(widget.subject.token).isNotEmpty;
+    bool iReacted = contentBase.isReacted(widget.subject.token);
     bool isMarked = reactIconSelection.selected.contains(widget.subject);
     color = !iReacted ? linkColor : linkColorAlready;
     iconData = isMarked ? Icons.mark_chat_read : Icons.mark_chat_read_outlined;

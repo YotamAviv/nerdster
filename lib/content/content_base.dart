@@ -33,6 +33,15 @@ import '../oneofus/measure.dart';
 ///   - NerdsterFollow().token2statements
 ///   Have everything in terms of Oneofus canonical, that is.
 
+extension FirstWhereOrNull<T> on Iterable<T> {
+  T? firstWhereOrNull(bool Function(T) test) {
+    for (final element in this) {
+      if (test(element)) return element;
+    }
+    return null;
+  }
+}
+
 class ContentBase with Comp, ChangeNotifier {
   static final OouVerifier verifier = OouVerifier();
   static final ContentBase _singleton = ContentBase._internal();
@@ -222,7 +231,7 @@ class ContentBase with Comp, ChangeNotifier {
     _roots = <ContentTreeNode>[];
     for (String subjectToken in _subject2statements.keys) {
       if (!b(Jsonish.find(subjectToken))) continue;
-      
+
       final Jsonish subject = Jsonish.find(subjectToken)!;
 
       // skip statements
@@ -326,7 +335,7 @@ class ContentBase with Comp, ChangeNotifier {
       if (!node.equivalent && !node.related) {
         if (!isStatementRelateOrEquate(statement)) {
           // Top level (not here because this is related or equated):
-          // Don't show relate/equate statements; the related or equated subject should be show, 
+          // Don't show relate/equate statements; the related or equated subject should be show,
           // and showing those statement, too, clutters the UI.
           _node2children[node]!.add(statementNode);
         }
@@ -437,8 +446,8 @@ class ContentBase with Comp, ChangeNotifier {
       // NOTE: These props can be different from the UI props.
       // This makes it easy to pass the tests that were scripted and recorded before the change,
       // but it's not awesome.
-      Map<PropType, Prop> props = subjectNode
-          .computeProps([PropType.like, PropType.numComments, PropType.recentActivity]);
+      Map<PropType, Prop> props =
+          subjectNode.computeProps([PropType.like, PropType.numComments, PropType.recentActivity]);
       Map<dynamic, dynamic> propsMap = {};
       for (var entry in props.entries) {
         propsMap[entry.key.label] = entry.value.value;
@@ -466,51 +475,34 @@ class ContentBase with Comp, ChangeNotifier {
   // We use this helper, but a rewrite could keep the author we want instead.
   String _getOneofusI(String delegateToken) => followNet.delegate2oneofus[delegateToken]!;
 
-  Set<ContentStatement> findMyStatements(String subjectToken) {
-    Set<ContentStatement> out = <ContentStatement>{};
-    List<ContentStatement>? statements = _subject2statements[subjectToken];
-    for (ContentStatement statement in statements ?? []) {
-      if ((_getOneofusI(statement.iToken) == signInState.centerReset) &&
-          (subjectToken == statement.subjectToken ||
-              (b(statement.other) && subjectToken == getToken(statement.other)))) {
-        out.add(statement);
-      }
-    }
+  bool isReacted(String subject) {
+    throwIfSupportersNotReady();
+    Iterable<ContentStatement> ss = myDelegateStatements.statements;
+    return b(ss.firstWhereOrNull(
+        (cs) => cs.subjectToken == subject || b(cs.other) && getToken(cs.other) == subject));
+  }
+
+  ContentStatement? _findMyStatement1(String subject) {
+    throwIfSupportersNotReady();
+    Iterable<ContentStatement> ss = myDelegateStatements.statements;
+    ContentStatement? out = ss.firstWhereOrNull((cs) => cs.subjectToken == subject);
     return out;
   }
 
-  // CODE: Implement this using statement.distictSignature.
-  ContentStatement? _findMyStatement1(String subject) {
-    List<ContentStatement>? statements = _subject2statements[subject];
-    for (ContentStatement statement in statements ?? []) {
-      if (_getOneofusI(statement.iToken) == signInState.centerReset &&
-          statement.subjectToken == subject &&
-          !b(statement.other)) {
-        return statement;
-      }
-    }
-    return null;
-  }
-
-  // CODE: Implement this using statement.distictSignature.
   ContentStatement? _findMyStatement2(String subject, String other) {
-    List<ContentStatement>? statements = _subject2statements[subject];
-    for (ContentStatement statement in statements ?? []) {
-      if (_getOneofusI(statement.iToken) == signInState.centerReset && b(statement.other)) {
-        String otherToken = getToken(statement.other);
-        if ((statement.subjectToken == subject && otherToken == other) ||
-            (statement.subjectToken == other && otherToken == subject)) {
-          return statement;
-        }
-      }
-    }
-    return null;
+    throwIfSupportersNotReady();
+    Iterable<ContentStatement> ss = myDelegateStatements.statements;
+    ContentStatement? out = ss.firstWhereOrNull(
+        (cs) => cs.subjectToken == subject && cs.other != null && getToken(cs.other) == other);
+    return out;
   }
 
   ContentBase._internal() {
     _readParams();
 
     // supporters
+    addSupporter(myDelegateStatements);
+    myDelegateStatements.addListener(listen);
     addSupporter(followNet);
     followNet.addListener(listen);
     addSupporter(oneofusEquiv);
