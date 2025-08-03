@@ -7,6 +7,8 @@ const other = require('../test/other.json');
 
 // key2order: Use jsonish_test.dart to generate this
 
+// NEXT: The jsonish uses "revokeAt", not "revokedAt", and so use that everywhere as we can't change the Json.
+
 // ----- Code from jsonish.js to copy/paste into <nerdster/oneofus>/functions/index.js ----------//
 
 var key2order = {
