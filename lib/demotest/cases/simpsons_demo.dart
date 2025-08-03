@@ -12,8 +12,6 @@ import 'package:nerdster/oneofus/util.dart';
 /// - Krusty bad actor, affects Milhouses view the most
 /// - Marge censors Superbad
 ///
-/// BUG: I saw all of milhouse's statements in red at some point, might be missing a clear notifications or something.
-///
 /// Demo:
 /// - Lisa, looks fine
 ///   - no notificattions
