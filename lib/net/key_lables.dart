@@ -134,6 +134,7 @@ class KeyLabels with Comp, ChangeNotifier implements Interpreter {
   // - "gibberish" (crypto keys, tokens, ['signature', 'previous'] stripped)
   // - datetimes.,
   // - lists and maps of those above
+  @override
   dynamic interpret(dynamic d) {
     if (d is Jsonish) {
       return interpret(d.json);

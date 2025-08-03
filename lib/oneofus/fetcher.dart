@@ -13,7 +13,6 @@ import 'value_waiter.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
 import 'distincter.dart';
 import 'fire_factory.dart';
-import 'measure.dart';
 import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
@@ -178,9 +177,7 @@ class Fetcher {
 
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
   static Map<String, List<Json>> batchFetched = {};
-  static final Measure mFire = Measure('fire');
-  static final Measure mVerify = Measure('verify');
-
+  
   // DEFER: This is a placeholder for time measuremeants, not the mechanism used by Fetchers to refresh.
   static final Duration recentDuration = const Duration(days: 30);
 
@@ -343,9 +340,7 @@ class Fetcher {
       Json params = Map.of(paramsProto);
       params["token2revokeAt"] = token2revokeAt;
 
-      final results = await Fetcher.mFire.mAsync(() async {
-        return await functions!.httpsCallable('mcloudfetch').call(params);
-      }, note: mName ?? '?');
+      final results = await functions!.httpsCallable('mcloudfetch').call(params);
       // Weave tokens from token2revoked and results
       Iterable<String> tokens = token2revokeAt.keys;
       Iterator<String> tokensIterator = tokens.iterator;
@@ -384,9 +379,7 @@ class Fetcher {
             DateTime recent = DateTime.now().subtract(recentDuration);
             params['after'] = formatIso(recent);
           }
-          final result = await mFire.mAsync(() async {
-            return await functions!.httpsCallable('cloudfetch').call(params);
-          }, note: token);
+          final result = await functions!.httpsCallable('cloudfetch').call(params);
           jsons = List<Json>.from(result.data);
         }
 
@@ -422,9 +415,9 @@ class Fetcher {
           Jsonish jsonish;
           if (Prefs.skipVerify.value) {
             // DEFER: skipVerify is not necessarily compatible with some cloud functions distinct fetching.
-            jsonish = mVerify.mSync(() => Jsonish(j));
+            jsonish = Jsonish(j);
           } else {
-            jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(j, _verifier));
+            jsonish = await Jsonish.makeVerify(j, _verifier);
           }
           Statement statement = Statement.make(jsonish);
           _cached!.add(statement);
@@ -436,7 +429,7 @@ class Fetcher {
         // query _revokeAtTime
         if (_revokeAt != null && _revokeAtTime == null) {
           DocumentReference<Json> doc = collectionRef.doc(_revokeAt);
-          final DocumentSnapshot<Json> docSnap = await mFire.mAsync(doc.get);
+          final DocumentSnapshot<Json> docSnap = await doc.get();
           if (b(docSnap.data())) {
             final Json data = docSnap.data()!;
             _revokeAtTime = parseIso(data['time']);
@@ -454,7 +447,7 @@ class Fetcher {
           DateTime recent = DateTime.now().subtract(recentDuration);
           query = query.where('time', isGreaterThanOrEqualTo: formatIso(recent));
         }
-        QuerySnapshot<Json> snapshots = await mFire.mAsync(query.get);
+        QuerySnapshot<Json> snapshots = await query.get();
         bool first = true;
         String? previousToken;
         DateTime? previousTime;
@@ -463,9 +456,9 @@ class Fetcher {
           Jsonish jsonish;
           if (Prefs.skipVerify.value) {
             // DEFER: skipVerify is not necessarily compatible with some cloud functions distinct fetching.
-            jsonish = mVerify.mSync(() => Jsonish(data));
+            jsonish = Jsonish(data);
           } else {
-            jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(data, _verifier));
+            jsonish = await Jsonish.makeVerify(data, _verifier);
           }
 
           // newest to oldest
