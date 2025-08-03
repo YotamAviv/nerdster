@@ -368,9 +368,9 @@ class Fetcher {
       _cached = <Statement>[];
       DateTime? time;
       if (Prefs.cloudFunctionsFetch.value && functions != null) {
-        List<Json> statements;
+        List<Json> jsons;
         if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
-          statements = batchFetched[_key(token, domain)]!;
+          jsons = batchFetched[_key(token, domain)]!;
         } else {
           if (Prefs.batchFetch.value) print('batcher miss $domain $token');
           if (Prefs.slowFetch.value) {
@@ -387,21 +387,21 @@ class Fetcher {
           final result = await mFire.mAsync(() async {
             return await functions!.httpsCallable('cloudfetch').call(params);
           }, note: token);
-          statements = List<Json>.from(result.data);
+          jsons = List<Json>.from(result.data);
         }
 
         if (_revokeAt != null) {
-          if (statements.isNotEmpty) {
-            assert(statements.first['id'] == _revokeAt, '${statements.first['id']} == $_revokeAt');
+          if (jsons.isNotEmpty) {
+            assert(jsons.first['id'] == _revokeAt, '${jsons.first['id']} == $_revokeAt');
             // without includeId, this might work: assert(getToken(statements.first) == _revokeAt);
-            _revokeAtTime = parseIso(statements.first['time']);
+            _revokeAtTime = parseIso(jsons.first['time']);
           } else {
             _revokeAtTime = DateTime(0); // "since always" (or any unknown token);
           }
         }
 
-        if (statements.isEmpty) return;
-        for (Json j in statements) {
+        if (jsons.isEmpty) return;
+        for (Json j in jsons) {
           DateTime jTime = parseIso(j['time']);
           if (time != null) assert(jTime.isBefore(time));
           time = jTime;

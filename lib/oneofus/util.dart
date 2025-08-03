@@ -10,7 +10,7 @@ import 'jsonish.dart';
 // TODO: Try to use in more places, have more dialogs look the same.
 const kPadding = EdgeInsets.all(4);
 const kTallPadding = EdgeInsets.fromLTRB(0, 8, 0, 4);
-BorderRadius kBorderRadius = BorderRadius.circular(8);
+final BorderRadius kBorderRadius = BorderRadius.circular(8);
 
 
 const OouCryptoFactory crypto = CryptoFactoryEd25519();

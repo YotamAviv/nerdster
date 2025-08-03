@@ -7,7 +7,6 @@ import 'package:nerdster/singletons.dart';
 
 /// I had ambitions but did not achieve them. This is not well planned, well documented, or well
 /// excuted. See both Measure and Progress.
-///
 
 abstract class ProgressR {
   void report(double p, String? message);
@@ -67,10 +66,7 @@ class ProgressDialog extends StatefulWidget {
             child: Padding(
                 padding: kPadding,
                 child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 700,
-                      maxHeight: 200,
-                    ),
+                    constraints: const BoxConstraints(maxWidth: 700, maxHeight: 200),
                     child: singleton))));
   }
 }
@@ -97,16 +93,9 @@ class ProgressDialogState extends State<ProgressDialog> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text('Loading one-of-us.net statements'),
-        Padding(
-          padding: kPadding,
-          child: LinearProgressIndicator(value: widget.oneofus.value),
-        ),
+        Padding(padding: kPadding, child: LinearProgressIndicator(value: widget.oneofus.value)),
         const Text('''Loading nerster.org statements'''),
-        Padding(
-          padding: kPadding,
-          child: LinearProgressIndicator(value: widget.nerdster.value),
-        ),
-        // if (b(widget.message.value)) const Text('''Activity'''),
+        Padding(padding: kPadding, child: LinearProgressIndicator(value: widget.nerdster.value)),
         if (b(widget.message.value)) Padding(padding: kPadding, child: Text(widget.message.value!)),
       ],
     );
