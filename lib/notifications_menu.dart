@@ -237,6 +237,7 @@ class TrustRows extends StatelessWidget {
           assert(statement.verb == TrustVerb.replace);
           moniker = '(replaced)';
         }
+        moniker = moniker.trim();
         monikers.add(Text(' --"$moniker"-> '));
         monikers.add(NameKeyWidget(keyLabels.labelKey(statement.subjectToken)!, statement.subject));
       }

@@ -191,7 +191,7 @@ class _MonikerWidget extends StatelessWidget {
 
   _MonikerWidget(this.node) {
     bOneofus = oneofusNet.network.containsKey(node.token);
-    String moniker = keyLabels.interpret(node.token).toString();
+    String moniker = keyLabels.interpret(node.token).toString().trim();
     items = [
       if (bOneofus && node.token != signInState.center)
         PopupMenuItem<String>(value: kRecenter, child: Text('''Use $moniker's Point of View''')),
