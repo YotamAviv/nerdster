@@ -82,7 +82,7 @@ class Measure with ChangeNotifier {
 
   bool get isRunning => _stopwatch.isRunning;
 
-  Future mAsync(func, {String? note}) async {
+  Future mAsync(Function func, {String? note}) async {
     Duration d = _stopwatch.elapsed;
     try {
       if (_stopwatch.isRunning) {
