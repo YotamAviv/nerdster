@@ -18,8 +18,6 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/greedy_bfs_trust.dart';
 import 'package:nerdster/trust/trust.dart';
 
-import '../oneofus/measure.dart';
-
 const kNerdsterContext = '<nerdster>';
 const kOneofusContext = '<one-of-us>';
 const kSpecialContexts = {kOneofusContext, kNerdsterContext};
@@ -29,7 +27,6 @@ ProgressRX _followNetProgressR = ProgressRX(ProgressDialog.singleton.nerdster);
 
 class FollowNet with Comp, ChangeNotifier {
   static final FollowNet _singleton = FollowNet._internal();
-  static final Measure measure = Measure('FollowNet');
 
   factory FollowNet() => _singleton;
   FollowNet._internal() {
@@ -95,108 +92,103 @@ class FollowNet with Comp, ChangeNotifier {
   @override
   Future<void> process() async {
     throwIfSupportersNotReady();
-    measure.start();
-    try {
-      _mostContexts.clear();
-      _centerContexts.clear();
+    _mostContexts.clear();
+    _centerContexts.clear();
+    FollowNode.clear();
+    _delegate2fetcher.clear();
+    if (!b(signInState.center)) return;
+
+    Iterable<String> network;
+    final int degrees = Prefs.followNetDegrees.value;
+    final int numPaths = Prefs.followNetPaths.value;
+    if (_context != kOneofusContext) {
       FollowNode.clear();
-      _delegate2fetcher.clear();
-      if (!b(signInState.center)) return;
-
-      Iterable<String> network;
-      final int degrees = Prefs.followNetDegrees.value;
-      final int numPaths = Prefs.followNetPaths.value;
-      if (_context != kOneofusContext) {
-        FollowNode.clear();
-        GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
-        Future<void> batchFetch(Iterable<Node> nodes, int distance) async {
-          Map<String, String?> prefetch = {};
-          for (Node n in nodes) {
-            for (String del in oneofusEquiv.oneofus2delegates[n.token]!) {
-              prefetch[del] = oneofusEquiv.delegate2revokeAt[del];
-            }
+      GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
+      Future<void> batchFetch(Iterable<Node> nodes, int distance) async {
+        Map<String, String?> prefetch = {};
+        for (Node n in nodes) {
+          for (String del in oneofusEquiv.oneofus2delegates[n.token]!) {
+            prefetch[del] = oneofusEquiv.delegate2revokeAt[del];
           }
-          await Fetcher.batchFetch(prefetch, kNerdsterDomain, mName: 'followNet $distance');
         }
-
-        LinkedHashMap<String, Node> canonNetwork = await bfsTrust.process(
-            FollowNode(signInState.center!),
-            batchFetch: batchFetch,
-            progressR: _followNetProgressR);
-        // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
-        List<String> tmp = <String>[];
-        for (String canon in canonNetwork.keys) {
-          tmp.addAll(oneofusEquiv.getEquivalents(canon));
-        }
-        network = tmp;
-      } else {
-        // Apply [degrees, numPaths] restrictions to oneofusNet.network.
-        // TEST: (I've manually tested this; I'm missing a unit test)
-        List<String> networkX = <String>[];
-        networkX.add(oneofusNet.network.entries.first.key); // Special case for source (no paths).
-        for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
-          List<List<Trust>> paths = e.value.paths;
-          Iterable<List<Trust>> paths2 = paths.where((p) => (p.length <= degrees));
-          if (paths2.length >= numPaths) networkX.add(e.key);
-        }
-        network = networkX;
+        await Fetcher.batchFetch(prefetch, kNerdsterDomain, mName: 'followNet $distance');
       }
 
-      _delegate2oneofus = Map.from(oneofusEquiv.delegate2oneofus)
-        ..removeWhere((k, v) => !network.contains(v));
-      _oneofus2delegates = Map.from(oneofusEquiv.oneofus2delegates)
-        ..removeWhere((k, v) => !network.contains(k));
+      LinkedHashMap<String, Node> canonNetwork = await bfsTrust.process(
+          FollowNode(signInState.center!),
+          batchFetch: batchFetch,
+          progressR: _followNetProgressR);
+      // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
+      List<String> tmp = <String>[];
+      for (String canon in canonNetwork.keys) {
+        tmp.addAll(oneofusEquiv.getEquivalents(canon));
+      }
+      network = tmp;
+    } else {
+      // Apply [degrees, numPaths] restrictions to oneofusNet.network.
+      // TEST: (I've manually tested this; I'm missing a unit test)
+      List<String> networkX = <String>[];
+      networkX.add(oneofusNet.network.entries.first.key); // Special case for source (no paths).
+      for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
+        List<List<Trust>> paths = e.value.paths;
+        Iterable<List<Trust>> paths2 = paths.where((p) => (p.length <= degrees));
+        if (paths2.length >= numPaths) networkX.add(e.key);
+      }
+      network = networkX;
+    }
 
-      Map<String, String?> delegate2revokeAt = Map.from(oneofusEquiv.delegate2revokeAt)
-        ..removeWhere((k, v) => !_delegate2oneofus.containsKey(k));
+    _delegate2oneofus = Map.from(oneofusEquiv.delegate2oneofus)
+      ..removeWhere((k, v) => !network.contains(v));
+    _oneofus2delegates = Map.from(oneofusEquiv.oneofus2delegates)
+      ..removeWhere((k, v) => !network.contains(k));
 
-      // Batch pre-fetch
+    Map<String, String?> delegate2revokeAt = Map.from(oneofusEquiv.delegate2revokeAt)
+      ..removeWhere((k, v) => !_delegate2oneofus.containsKey(k));
+
+    // Batch pre-fetch
+    if (_context == kOneofusContext) {
+      await Fetcher.batchFetch(delegate2revokeAt, kNerdsterDomain,
+          mName: 'followNet ${delegate2revokeAt.keys.map((d) => keyLabels.labelKey(d))}');
+    }
+    int count = 0;
+    for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
+      String delegate = e.key;
+      String? revokeAt = e.value;
+      Fetcher fetcher = Fetcher(delegate, kNerdsterDomain);
+      if (b(revokeAt)) {
+        // NOPE: assert(fetcher.revokeAt == revokeAt, 'checking..');
+        fetcher.setRevokeAt(revokeAt!);
+      }
+      // NOPE: assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
+      await fetcher.fetch(); // fill cache, query revokeAtTime
       if (_context == kOneofusContext) {
-        await Fetcher.batchFetch(delegate2revokeAt, kNerdsterDomain,
-            mName: 'followNet ${delegate2revokeAt.keys.map((d) => keyLabels.labelKey(d))}');
+        _followNetProgressR.report(
+            count++ / delegate2revokeAt.length, keyLabels.labelKey(delegate));
       }
-      int count = 0;
-      for (MapEntry<String, String?> e in delegate2revokeAt.entries) {
-        String delegate = e.key;
-        String? revokeAt = e.value;
-        Fetcher fetcher = Fetcher(delegate, kNerdsterDomain);
-        if (b(revokeAt)) {
-          // NOPE: assert(fetcher.revokeAt == revokeAt, 'checking..');
-          fetcher.setRevokeAt(revokeAt!);
-        }
-        // NOPE: assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
-        await fetcher.fetch(); // fill cache, query revokeAtTime
-        if (_context == kOneofusContext) {
-          _followNetProgressR.report(
-              count++ / delegate2revokeAt.length, keyLabels.labelKey(delegate));
-        }
-        _delegate2fetcher[delegate] = fetcher;
-      }
+      _delegate2fetcher[delegate] = fetcher;
+    }
 
-      // Load up _mostContexts
-      for (ContentStatement s in (_delegate2fetcher.values)
-          .map((f) => f.statements)
-          .flattened
-          .cast<ContentStatement>()
-          .where((s) => s.verb == ContentVerb.follow)) {
-        _mostContexts.process(s.contexts!.keys);
-      }
+    // Load up _mostContexts
+    for (ContentStatement s in (_delegate2fetcher.values)
+        .map((f) => f.statements)
+        .flattened
+        .cast<ContentStatement>()
+        .where((s) => s.verb == ContentVerb.follow)) {
+      _mostContexts.process(s.contexts!.keys);
+    }
 
-      // Load up _centerContexts.
-      Iterable<Iterable<Statement>> delegateStatementss = oneofus2delegates[signInState.center]!
-          .map((d) => delegate2fetcher[d]!)
-          .map((f) => f.statements);
-      Merger merger = Merger(delegateStatementss);
-      Iterable<ContentStatement> dis =
-          distinct(merger.cast<ContentStatement>()).cast<ContentStatement>();
-      for (ContentStatement followStatement in dis.where((s) => s.verb == ContentVerb.follow)) {
-        Json followContextsJ = followStatement.contexts!;
-        Iterable<String> contexts =
-            followContextsJ.entries.where((e) => e.value > 0).map((e) => e.key);
-        _centerContexts.addAll(contexts.where((x) => !kSpecialContexts.contains(x)));
-      }
-    } finally {
-      measure.stop();
+    // Load up _centerContexts.
+    Iterable<Iterable<Statement>> delegateStatementss = oneofus2delegates[signInState.center]!
+        .map((d) => delegate2fetcher[d]!)
+        .map((f) => f.statements);
+    Merger merger = Merger(delegateStatementss);
+    Iterable<ContentStatement> dis =
+        distinct(merger.cast<ContentStatement>()).cast<ContentStatement>();
+    for (ContentStatement followStatement in dis.where((s) => s.verb == ContentVerb.follow)) {
+      Json followContextsJ = followStatement.contexts!;
+      Iterable<String> contexts =
+          followContextsJ.entries.where((e) => e.value > 0).map((e) => e.key);
+      _centerContexts.addAll(contexts.where((x) => !kSpecialContexts.contains(x)));
     }
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -24,7 +23,6 @@ class ProgressRX extends ProgressR {
 
 class ProgressDialog extends StatefulWidget {
   static final ProgressDialog singleton = ProgressDialog._internal();
-  final Measure measure = Measure('progress');
   final ValueNotifier<double> oneofus = ValueNotifier(0);
   final ValueNotifier<double> nerdster = ValueNotifier(0);
   final ValueNotifier<String?> message = ValueNotifier(null);
@@ -37,21 +35,14 @@ class ProgressDialog extends StatefulWidget {
   State<StatefulWidget> createState() => ProgressDialogState();
 
   Future<void> make(AsyncCallback func, BuildContext context) async {
-    if (measure.isRunning) return;
     try {
       // ignore: unawaited_futures
       _show(context);
-
-      Measure.reset();
-      measure.start();
-
       await func();
     } catch (e, stackTrace) {
       await alertException(context, e, stackTrace: stackTrace);
     } finally {
       Navigator.of(context).pop();
-      measure.stop();
-      Measure.dump();
     }
   }
 
