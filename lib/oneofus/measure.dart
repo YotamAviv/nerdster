@@ -85,6 +85,9 @@ class Measure with ChangeNotifier {
   Future mAsync(func, {String? note}) async {
     Duration d = _stopwatch.elapsed;
     try {
+      if (_stopwatch.isRunning) {
+        print('BUG: breakpoint here.');
+      }
       assert(!_stopwatch.isRunning);
       d = _stopwatch.elapsed;
       _stopwatch.start();
@@ -101,7 +104,7 @@ class Measure with ChangeNotifier {
     }
   }
 
-  dynamic mSync(func) {
+  dynamic mSync(Function func) {
     try {
       assert(!_stopwatch.isRunning);
       _stopwatch.start();

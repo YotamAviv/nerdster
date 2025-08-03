@@ -20,6 +20,8 @@ import 'util.dart';
 
 /// PERFORMANCE: CONSIDER: Cloud copy everything to static and fetch from there.
 
+// TODO: Jsonish uses "revokeAt", not "revokedAt", and so use that everywhere.
+
 /// Now that Nerdster loads Oneofus data over HTTPS, not Firebase Cloud Functions,
 /// Fire access in OneofusFire should not be necessary (but for development using FakeFirebase)
 ///
@@ -47,13 +49,30 @@ import 'util.dart';
 /// - Try to change fetch(token) to fetch(token, revoked)
 /// - Load up the fetchers after batchFetch, clean up some of the we expect with 'batcher miss'
 ///
-///
 
-/// BUG: 3/12/25: Mr. Burner Phone revoked, signed in, still managed to clear, and caused data corruption.
-/// I wasn't able to reproduce that bug (lost the private key), and I've changed the code since
-/// by adding transactions, and so that bug might be fixed.
-/// Regardless, the Fetcher factoy CTOR seems dangerous and sloppy.
-///
+/// Keep in mind:
+/// - distinct: 
+/// Cloud functions do it to reduce traffic, which makes sense. 
+/// That doesn't eliminate the need for Distincter (equilvalent keys, multiple delegates).
+/// Make sure that https functions / cloud functions / FakeFire have same semantics.
+/// - verify, checkPrevious
+/// It's optional and can't be done if we don't ask the cloud for the required data
+/// ['statement', 'I', 'signature', 'previous']
+/// - 
+
+/// TODO: Rewrite:
+/// - Fetcher factoy CTOR is dangerous and sloppy.
+///   - find to find them
+///   - create to create them
+/// - resetRevokeAt: Do a different way.
+///   - OneofusNet should unlock that ability and then lock it again.
+/// TRUE: Fetched JSON remains the same. Fetchers can cache it even if it's passed revoked and 
+/// they can use too much cache when revoked.
+/// - batchFetch doesn't result in cached Fetchers. Sloppy.
+///   - consider passing Fetcher instances to that function instead of token2revokeAt
+
+
+/// OLD: 
 /// OneofusNet / GreedyBfsTrust should be able to create and manage their own Fetchers.
 /// Those Fetchers could retain their expired state for their lifetimes.
 /// But I'm not sure that helps in any way.
@@ -67,17 +86,18 @@ import 'util.dart';
 /// - run GreedyBfsTrust and re-use what we can (non-revoked fetchers, same revoked fetchers)
 /// Same for FollowNet
 ///
-/// CODE:
+/// OLD:
 /// - remove the factory CTOR and make OneofusNet and FollowNet the source for Fetchers.
 /// - they will of course have to create Fetchers, but other code shouldn't do what they do;
 ///   instead the other code (ContentBase, various trees, ...) should get them from OneofusNet, FollowNet
 ///
 /// Options:
-/// - OneofusNet / FollowNetL either expose the Fetchers or just their statements.
+/// - OneofusNet / FollowNet either expose the Fetchers or just their statements.
 ///   Leaning Fetcher:
 ///   - revokedAt token, time
 ///   - push() (must have)
 ///
+/// OLD: 
 /// Plan:
 /// OneofusNet:
 /// getFetcher(String oneofus)
@@ -89,26 +109,23 @@ import 'util.dart';
 ///
 /// FollowNet:
 ///
-/// While I'm at it:
-/// - DONE: actual transactions (transactionally check previous and push next statement)
-/// - refresh fetchers, maybe. That'd mean calling fetch() again (or refresh()) on a non-revoked fetcher
-///   to get only newer statements.
-///   That'd make the demo a bit quicker, allow leaving the window open and just re-fetching.
-///   - Measure first, make sure it's worth the hassle.
-///
-///
+/// CONSIDER: refresh fetchers (fetch newer statements only), maybe.
+/// CONS: 
+/// - complexity
+/// - probably not much faster. I think I measured something like this and that it didn't seem to be worth the hassle.
+/// PROS:
 
-/// Cloud Functions distinct, order, tokens, checkPervious...
+/// Cloud Functions distinct, order, tokens, checkPrevious...
 ///
 /// The only reason we use Firebase Cloud Functions is performance.
-/// - distinct: send the client less data over
+/// - distinct: send the client less data
 /// - omit [I, statement]: send the client less data
 /// - (EXPERIMENTAL: send tokens, omit [signature, previous]:  measurably faster)
 ///
-/// The Cloud Functions distinct is currently not complete (does not consider "other"), and so
+/// SUSPECT: The Cloud Functions distinct is currently not complete (does not consider "other"), and so
 /// for
 ///
-/// Developing using Cloud Functions is challenging, espeically on Linux, and so I want to keep
+/// Developing using Cloud Functions is challenging, (SUSPECT: especially on Linux), and so I want to keep
 /// the other path alive and for use with unit testing use FakeFirebase which can't Cloud Functions.
 ///
 /// Integration Testing:
@@ -118,7 +135,7 @@ import 'util.dart';
 /// a test framework, and so I expect to end up somewhere in the middle (and yes, I have and will
 /// always have bugs;)
 ///
-/// Testing issues: cloud functions options, assert checka, previous token checks, revokedAt, etc...
+/// Testing issues: cloud functions options, assert checkS, previous token checks, revokedAt, etc...
 /// Cloud functions require "includeId" for "checkPrevious"
 /// I have a Fetcher integration test for checkPrevious
 /// Fetcher irl needs neither checkPrevious nor includeId.
@@ -126,7 +143,7 @@ import 'util.dart';
 ///
 /// DEFER: filters (ex, past month)
 ///
-/// DEFER: Cloud distinct to regard "other" subject.
+/// SUSPECT: DEFER: Cloud distinct to regard "other" subject.
 /// All the pieces are there, and it shouldn't be hard. That said, relate / equate are rarely used.
 
 /// EXPERIMENTAL: Get and use token from cloud instead of computing it.
@@ -207,7 +224,7 @@ class Fetcher {
   }
 
   factory Fetcher(String token, String domain) {
-    String key = _key(token, null, domain);
+    String key = _key(token, domain);
     FirebaseFirestore fire = FireFactory.find(domain);
     FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     Fetcher out;
@@ -221,7 +238,7 @@ class Fetcher {
     return out;
   }
 
-  static _key(String token, String? revokedAt, String domain) => '$token:$domain';
+  static String _key(String token, String domain) => '$token:$domain';
 
   Fetcher.internal(this.token, this.domain, this.fire, this.functions);
 
@@ -265,7 +282,7 @@ class Fetcher {
     // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
-  // BUG: I think I batchFetch over and over when nothing's changed. Note that to re-compute BFS,
+  // SUSPECT: BUG: I think I batchFetch over and over when nothing's changed. Note that to re-compute BFS,
   // cached Fetchers work, but there is no "cached batch fetcher". The different BFS layers
   // will pre-fetch different tokens, and so considering only the last one won't help.
   //
@@ -307,9 +324,8 @@ class Fetcher {
         response.stream.transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
           Json json = jsonDecode(line);
           String token = json.keys.first;
-          String? revokeAt = token2revokeAt[token];
           List statements = json.values.first;
-          batchFetched[_key(token, revokeAt, domain)] = List<Json>.from(statements);
+          batchFetched[_key(token, domain)] = List<Json>.from(statements);
           // print('batchFetched ${_key(token, revokeAt, domain)} #:${statements.length} uri=$uri');
         }, onError: (error) {
           // DEFER: Corrupt the collection. Left as is, fetch() should "miss" and do it.
@@ -336,8 +352,7 @@ class Fetcher {
       for (List statements in results.data) {
         tokensIterator.moveNext();
         String token = tokensIterator.current;
-        String? revokeAt = token2revokeAt[token];
-        batchFetched[_key(token, revokeAt, domain)] = List<Json>.from(statements);
+        batchFetched[_key(token, domain)] = List<Json>.from(statements);
       }
       print('batchFetch: ${token2revokeAt}');
     }
@@ -354,8 +369,8 @@ class Fetcher {
       DateTime? time;
       if (Prefs.cloudFunctionsFetch.value && functions != null) {
         List<Json> statements;
-        if (Prefs.batchFetch.value && b(batchFetched[_key(token, revokeAt, domain)])) {
-          statements = batchFetched[_key(token, revokeAt, domain)]!;
+        if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
+          statements = batchFetched[_key(token, domain)]!;
         } else {
           if (Prefs.batchFetch.value) print('batcher miss $domain $token');
           if (Prefs.slowFetch.value) {
