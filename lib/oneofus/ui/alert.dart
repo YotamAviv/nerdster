@@ -62,7 +62,7 @@ Future<String?> alert(String? title, dynamic content, List<String> options, Buil
     builder: (BuildContext context) {
       return AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-        title: b(title) ? Text(title!) : null,
+        title: b(title) ? SelectableText(title!) : null,
         content: widget,
         actions: buttons,
       );

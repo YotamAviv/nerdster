@@ -24,6 +24,37 @@ Future<Statement?> follow(String token, BuildContext context) async {
   if (await checkSignedIn(context) != true) return null;
 
   ContentStatement? priorStatement;
+
+  /// BUG: Can't follow (same applies to rate or anything I'd state using my delegate) when my
+  /// delegate key is not in the network. (I see
+  /// notifcation: "Your Nerdster delgate isn't in this network")
+  ///
+  /// It's not enough to just load up the Fetcher for my delegate because I may have stated using an older delegate.
+  /// It'd be great to have a Merger of my delegates but... computing my delegates is not trivial
+  /// and may conflict with this network's (my PoV is not me) delegates; a conflict would be someone in this network and me claiming the same delegate - rare.
+  ///
+  /// Notes
+  /// - Why no assert fire?
+  /// assert does fire for follow, code uses followNet.getStatements
+  /// assert doesn't fire for rate, code uses ContentBase._findMyStatement1, _findMyStatement2
+  /// 
+  /// Rate when don't have fetcher, causing notary corruption ?
+  /// No. Fetcher adds previous, fetches on demand to do so. Witnessed in log: "batcher miss nerdster.org 4534dfc8f9587bdb82a1f7d6540e91fe1e01009e"
+  /// 
+  /// Fix
+  /// - Asserts
+  /// Yes, I should add some. I'm showing a blank slate on rate/equate/relate, which is wrong in case my slate isn't blank.
+  /// 
+  /// TODO: Test
+  /// 
+  /// - Always fetch signed in delegate
+  /// This isn't as simple:
+  ///   - must compute which delegates are mine, and that may be in conflict with this PoV.
+  ///     PoV should be paramount - I do want to see exactly what PoV would see.
+  /// 
+  /// TODO: Don't allow write when revoked 
+  ///   - seems like a good idea; Fetcher already has an assert; revokedAt is not 
+
   int numFound = 0;
   for (ContentStatement s in followNet.getStatements(signInState.centerReset!)) {
     if (s.subjectToken == token) {
