@@ -21,7 +21,7 @@ enum Follow {
 }
 
 Future<Statement?> follow(String token, BuildContext context) async {
-  if (bb(await checkSignedIn(context))) return null;
+  if (!bb(await checkSignedIn(context))) return null;
   ContentStatement? priorStatement;
   await myDelegateStatements.waitUntilReady();
   Iterable<ContentStatement> ss = myDelegateStatements.statements;
