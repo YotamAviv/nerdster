@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/oneofus/value_waiter.dart';
@@ -100,7 +101,9 @@ abstract mixin class Comp {
           _invalidProcess = false;
           _exception = null;
           _processing = true;
+          Measure(runtimeType.toString()).start();
           await process();
+          Measure(runtimeType.toString()).stop();
           _processing = false;
 
           if (_invalidProcess) {
