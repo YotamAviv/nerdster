@@ -4,13 +4,13 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
-import 'package:nerdster/oneofus/measure.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
 import 'distincter.dart';
 import 'fire_factory.dart';
 import 'jsonish.dart';
+import 'measure.dart';
 import 'oou_verifier.dart';
 import 'statement.dart';
 import 'util.dart';
@@ -453,18 +453,17 @@ class Fetcher {
   String toString() => 'Fetcher: $domain $token';
 }
 
-
 // EXPERIMENTAL: "EXPERIMENTAL" tagged where the code allows us to not compute the tokens
 // but just use the stored values, which allows us to not ask for [signature, previous].
 // The changes worked, but the performance hardly changed. And with this, we wouldn't have
 // [signature, previous] locally, couldn't verify statements, and there'd be more code
 // paths. So, no.
-// 
+//
 // String serverToken = j['id'];
 // Jsonish jsonish = Jsonish(j, serverToken);
 // j.remove('id');
 // assert(jsonish.token == serverToken);
-// 
+//
 // static const Json paramsProto = {
 //   "includeId": true,
 //   "distinct": true,
