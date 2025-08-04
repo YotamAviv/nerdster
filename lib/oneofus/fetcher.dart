@@ -315,16 +315,11 @@ class Fetcher {
       // skip cached fetchers
       LinkedHashMap<String, String?> tmp = LinkedHashMap.of(token2revokeAt)
         ..removeWhere((k, v) => Fetcher(k, domain).isCached && Fetcher(k, domain).revokeAt == v);
-      if (tmp.length != token2revokeAt.length) {
-        // print('skipping ${token2revokeAt.length - tmp.length}');
-      }
-      token2revokeAt = tmp;
-      if (token2revokeAt.isNotEmpty) {
+      if (tmp.isNotEmpty) {
         Map<String, List<Json>> batchFetched = {};
         var client = http.Client();
         // specs are "token" or {"token": "revokeAt"};
-        List specs = List.from(
-            token2revokeAt.entries.map((e) => e.value == null ? e.key : {e.key: e.value}));
+        List specs = List.from(tmp.entries.map((e) => e.value == null ? e.key : {e.key: e.value}));
         try {
           final Uri uri = _makeUri(domain, specs);
           final http.Request request = http.Request('GET', uri);
@@ -348,8 +343,8 @@ class Fetcher {
           await ValueWaiter(done, true).untilReady();
 
           // process the rest (_cache, _revokeAt, _revokeAtTime..)
-          for (MapEntry<String, String?> e in token2revokeAt.entries) {
-            String? revokedAt = token2revokeAt[e.key];
+          for (MapEntry<String, String?> e in tmp.entries) {
+            String? revokedAt = tmp[e.key];
             Fetcher fetcher = Fetcher(e.key, domain);
             fetcher._cached = null;
             if (b(revokedAt)) fetcher.setRevokeAt(revokedAt!);
@@ -371,6 +366,7 @@ class Fetcher {
       assert(revokedAt == f.revokeAt, '$revokedAt == ${f.revokeAt}');
       out.add(f);
     }
+    assert(out.length == token2revokeAt.length);
     return out;
   }
 
