@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
-
-/// I had ambitions but did not achieve them. This is not well planned, well documented, or well
-/// excuted. See both Measure and Progress.
 
 abstract class ProgressR {
   void report(double p, String? message);
@@ -35,6 +33,7 @@ class ProgressDialog extends StatefulWidget {
   State<StatefulWidget> createState() => ProgressDialogState();
 
   Future<void> make(AsyncCallback func, BuildContext context) async {
+    Measure.reset();
     try {
       // ignore: unawaited_futures
       _show(context);
@@ -43,6 +42,7 @@ class ProgressDialog extends StatefulWidget {
       await alertException(context, e, stackTrace: stackTrace);
     } finally {
       Navigator.of(context).pop();
+      Measure.dump();
     }
   }
 

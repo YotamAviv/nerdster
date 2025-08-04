@@ -12,11 +12,11 @@ import 'package:nerdster/singletons.dart';
 ///
 /// Performance:
 /// - Low priority?
-/// - We should be processing after OneofusNet
-/// - Unless we're not in the network (due to PoV) we shouldn't be fetching.
-/// - In case we're not in the network, then we need to fetch everything for ourselves, oneofus and nerdster.
+/// - We should be processing after OneofusNet and FollowNet, and so unless we're not in the
+///   network (due to PoV) we shouldn't be fetching.
+/// - In case we're not in the network, then we need to fetch everything for ourselves (oneofus and
+///   nerdster statements).
 /// - Optimizations could include
-///   - batch fetch delegates (after we know them)
 ///   - fetch our Oneofus statements in the same batches with OneofusNet
 ///   - fetch our delegate statements in the same batch as FollowNet
 ///   - (can't batch fetch replaced keys, must be sequential, at most degrees, same as OneofusNet)
@@ -29,6 +29,8 @@ class MyDelegateStatements extends Comp with ChangeNotifier {
     // Changes to delegates could be sync'd (fetched), (eg. user revokes delegate using phone app).
     addSupporter(oneofusNet);
     oneofusNet.addListener(listen);
+    addSupporter(followNet);
+    followNet.addListener(listen);
     signInState.addListener(listen);
   }
 
