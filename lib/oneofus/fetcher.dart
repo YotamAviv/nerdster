@@ -357,9 +357,9 @@ class Fetcher {
   Future<void> fetch() async {
     if (b(_cached)) return;
     try {
-      _cached = <Statement>[];
       DateTime? time;
       if (fireChoice != FireChoice.fake && Prefs.httpFetch.value) {
+        _cached = <Statement>[];
         List<Json> jsons;
         if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
           jsons = batchFetched[_key(token, domain)]!;
@@ -389,7 +389,6 @@ class Fetcher {
           }
         }
 
-        if (jsons.isEmpty) return;
         for (Json j in jsons) {
           DateTime jTime = parseIso(j['time']);
           if (time != null) assert(jTime.isBefore(time));
@@ -419,6 +418,8 @@ class Fetcher {
           _cached!.add(statement);
         }
       } else {
+        List<Statement> statements = <Statement>[];
+
         final CollectionReference<Map<String, dynamic>> collectionRef =
             fire.collection(token).doc('statements').collection('statements');
 
@@ -438,7 +439,7 @@ class Fetcher {
         if (_revokeAtTime != null) {
           query = query.where('time', isLessThanOrEqualTo: formatIso(_revokeAtTime!));
         }
-        // EXPERIMENTA: Refresh - only reload what we need to.
+        // EXPERIMENTAL: Refresh - only reload what we need to.
         if (Prefs.fetchRecent.value && domain != kOneofusDomain) {
           DateTime recent = DateTime.now().subtract(recentDuration);
           query = query.where('time', isGreaterThanOrEqualTo: formatIso(recent));
@@ -480,14 +481,13 @@ class Fetcher {
           previousToken = data['previous'];
           previousTime = time;
 
-          _cached!.add(Statement.make(jsonish));
+          statements.add(Statement.make(jsonish));
         }
+        // Maintain Cloud Functions or not behave similarly.
+        assert(paramsProto.containsKey('distinct'));
+        _cached = distinct(statements);
       }
-
-      // Maintain Cloud Functions or not behave similarly.
-      assert(paramsProto.containsKey('distinct'));
-      _cached = distinct(_cached!);
-      if (_cached!.isNotEmpty) _lastToken = _cached!.first.token;
+      _lastToken = _cached!.isNotEmpty ? _cached!.first.token : null;
     } catch (e, stackTrace) {
       // print(stackTrace);
       corruptor.corrupt(token, e.toString(), stackTrace.toString());
