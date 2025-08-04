@@ -49,25 +49,9 @@ class MyDelegateStatements extends Comp with ChangeNotifier {
   Future<void> process() async {
     throwIfSupportersNotReady();
     if (!b(signInState.centerReset)) return;
-    Map<String, String?> identities = {};
     Map<String, String?> delegates = {};
-    await load(signInState.centerReset!, delegates, identities);
-
-    // read those and get delegates
-    await Fetcher.batchFetch(delegates, kNerdsterDomain, mName: 'MyDelegateStatements');
-
-    _fetchers = [];
-    for (MapEntry<String, String?> e in delegates.entries) {
-      String token = e.key;
-      String? revokeAt = e.value;
-      Fetcher f = Fetcher(token, kNerdsterDomain);
-      if (b(revokeAt)) f.setRevokeAt(revokeAt!);
-      // TODO: This is sort of a fetcher bug or confusion. batchFetch doesn't load the cache,
-      // but it preps for it. Work is done for verifying in that stage.
-      // assert(f.isCached);
-      if (!f.isCached) await f.fetch();
-      _fetchers.add(f);
-    }
+    await load(signInState.centerReset!, delegates, {});
+    _fetchers = await Fetcher.batchFetch(delegates, kNerdsterDomain, mName: 'MyDelegateStatements');
   }
 
   Future<void> load(

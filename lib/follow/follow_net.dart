@@ -155,12 +155,8 @@ class FollowNet with Comp, ChangeNotifier {
       String delegate = e.key;
       String? revokeAt = e.value;
       Fetcher fetcher = Fetcher(delegate, kNerdsterDomain);
-      if (b(revokeAt)) {
-        // NOPE: assert(fetcher.revokeAt == revokeAt, 'checking..');
-        fetcher.setRevokeAt(revokeAt!);
-      }
-      // NOPE: assert(fetcher.isCached || _context == kOneofusContext, 'checking..');
-      await fetcher.fetch(); // fill cache, query revokeAtTime
+      assert(fetcher.revokeAt == revokeAt);
+      assert(fetcher.isCached);
       if (_context == kOneofusContext) {
         _followNetProgressR.report(
             count++ / delegate2revokeAt.length, keyLabels.labelKey(delegate));
@@ -227,9 +223,8 @@ class FollowNode extends Node {
           .cast<TrustStatement>()
           .where((s) => s.verb == TrustVerb.delegate)) {
         Fetcher delegateFetcher = Fetcher(delegateStatement.subjectToken, kNerdsterDomain);
-        if (b(delegateStatement.revokeAt)) delegateFetcher.setRevokeAt(delegateStatement.revokeAt!);
-        // NOPE: assert(delegateFetcher.isCached, 'checking..');
-        await delegateFetcher.fetch();
+        assert(delegateFetcher.isCached);
+        assert(delegateFetcher.revokeAt == delegateStatement.revokeAt);
         delegateStatementss.add(delegateFetcher.statements);
       }
     }
