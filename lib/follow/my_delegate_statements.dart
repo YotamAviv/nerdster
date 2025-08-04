@@ -52,6 +52,7 @@ class MyDelegateStatements extends Comp with ChangeNotifier {
     Map<String, String?> delegates = {};
     await load(signInState.centerReset!, delegates, {});
     _fetchers = await Fetcher.batchFetch(delegates, kNerdsterDomain, mName: 'MyDelegateStatements');
+    assert(delegates.length == _fetchers.length);
   }
 
   Future<void> load(
