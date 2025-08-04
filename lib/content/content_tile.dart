@@ -155,8 +155,7 @@ class _ContentTileState extends State<ContentTile> {
                 ),
                 const SizedBox(width: 8),
                 ...propWidgets,
-                if (Prefs.showJson.value)
-                  JSWidget(subjectNode.subject),
+                if (Prefs.showJson.value) JSWidget(subjectNode.subject),
                 titleWidget,
                 if (b(statementDesc)) statementDesc!,
               ]),
@@ -231,11 +230,12 @@ class _ReactIconState extends State<_ReactIcon> {
     // assert(contentBase.ready); // Witenessed, happens often with demo "delegateMerge"
     if (!contentBase.ready) return Text('...');
 
-    Color color;
     IconData iconData;
     bool iReacted = contentBase.isReacted(widget.subject.token);
     bool isMarked = reactIconSelection.selected.contains(widget.subject);
-    color = !iReacted ? linkColor : linkColorAlready;
+    Color color = !iReacted ? linkColor : linkColorAlready;
+    // CONSIDER: List<Shadow>? shadows = !iReacted ? null : <Shadow>[Shadow(color: color, blurRadius: 5.0)];
+    List<Shadow>? shadows;
     iconData = isMarked ? Icons.mark_chat_read : Icons.mark_chat_read_outlined;
     return GestureDetector(
       onTap: () {
@@ -246,7 +246,7 @@ class _ReactIconState extends State<_ReactIcon> {
       child: IconButton(
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 22, maxWidth: 22),
-          icon: Icon(iconData, color: color),
+          icon: Icon(iconData, color: color, shadows: shadows),
           tooltip: '''Click to rate (like, comment, dis, censor, or clear your previous rating)
 Double click to relate / equate''',
           onPressed: null),
