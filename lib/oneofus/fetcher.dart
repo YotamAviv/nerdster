@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,16 +12,27 @@ import 'fire_factory.dart';
 import 'jsonish.dart';
 import 'oou_verifier.dart';
 import 'statement.dart';
-import 'trust_statement.dart';
 import 'util.dart';
 import 'value_waiter.dart';
 
 /// Rewrite!
 /// TODO:
-/// Phase 2:
-/// - change semantics of batchFetch to actually fetch
 /// Phase 3:
-/// - change factory CTOR to create / get
+/// - change factory CTOR to create / find
+///   Maybe. Important stuff works:
+///   - can't have 2 Fetchers for the same token/domain
+///   - resetRevokedAt is conservative and seems safe
+/// Phase 4:
+/// - reintroduce Measure, but use 2 groups
+///   - comps (no 2 work at the same time; they're not nested)
+///   - ops: verify, tokenize
+///   - dump both groups sorted after a refresh (only active during refresh, or PoV change)
+///
+/// "refresh" is a full refresh - wipe everything and start again.
+/// change PoV is not a full refresh, but it can change revokeAt for any Fetcher. We'd like to not fetch what we don't need to.
+/// revokeAt can actually change in a given Fetcher as we change PoV, but it's probably not worth optimizing.
+///
+///
 /// DONE:
 /// - removed Measure
 /// Phase 1:
@@ -31,6 +41,8 @@ import 'value_waiter.dart';
 ///     - QUESTION: Implement non-streamed? Why (just for old time's sake)? So no.
 ///   - implement what was httpsCallable with streamed, even if just 1
 ///   - new Prefs should be cloudFetch or no,
+/// Phase 2:
+/// - change semantics of batchFetch to actually fetch. This should help the sloppiness of neglecting to call setRevokeAt
 
 /// PERFORMANCE: CONSIDER: Cloud copy everything to static and fetch from there.
 
@@ -186,30 +198,22 @@ abstract class Corruptor {
 
 class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
-
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
-  static Map<String, List<Json>> batchFetched = {};
 
-  // DEFER: This is a placeholder for time measuremeants, not the mechanism used by Fetchers to refresh.
-  static final Duration recentDuration = const Duration(days: 30);
-
-  final FirebaseFirestore fire;
+  final FirebaseFirestore _fire;
   final String domain;
   final String token;
-
   // 3 states:
   // - not revoked : null
   // - revoked at token (last legit statement) : token
   // - blocked : any string that isn't a statement token makes this blocked (revokdAt might be "since forever")
   String? _revokeAt; // set by others to let this object know
   DateTime? _revokeAtTime; // set by this object after querying the db
-  // MAINTAIN: Cloud Functions and FakeFirestore paths should use _cached similary ({distinct, revoked}).
   List<Statement>? _cached;
   String? _lastToken;
 
   static void clear() {
     _fetchers.clear();
-    batchFetched.clear();
   }
 
   // 3/12/25: BUG: Corruption, Burner Phone pushed using a revoked delegate, not sure how (couldn't
@@ -227,18 +231,15 @@ class Fetcher {
         f._revokeAtTime = null;
       }
     }
-    // Any of these could have been revoked.
-    batchFetched.clear();
   }
 
   factory Fetcher(String token, String domain) {
     String key = _key(token, domain);
     FirebaseFirestore fire = FireFactory.find(domain);
-    FirebaseFunctions? functions = FireFactory.findFunctions(domain);
     Fetcher out;
     if (_fetchers.containsKey(key)) {
       out = _fetchers[key]!;
-      assert(out.fire == fire);
+      assert(out._fire == fire);
     } else {
       out = Fetcher.internal(token, domain, fire);
       _fetchers[key] = out;
@@ -248,16 +249,14 @@ class Fetcher {
 
   static String _key(String token, String domain) => '$token:$domain';
 
-  Fetcher.internal(this.token, this.domain, this.fire);
+  Fetcher.internal(this.token, this.domain, this._fire);
 
   // Oneofus trust does not allow 2 different keys replace a key (that's a conflict).
   // Fetcher isn't responsible for implementing that, but I am going to assume that
   // something else does and I'll rely on that, assert that, and not implement code to update
   // revokeAt.
   //
-  // Changing center is encouraged, and we'd like to make that fast (without re-fetching too much).
-  //
-  // Moving to clouddistinct... What if
+  // Changing PoV is encouraged, and we'd like to make that fast (without re-fetching too much).
   //
   void setRevokeAt(String revokeAt) {
     // CONSIDER: I don't think that even setting the same value twice should be supported.  I tried
@@ -285,12 +284,9 @@ class Fetcher {
 
     "checkPrevious": true,
     "includeId": true, // includeId required for checkPrevious, not needed but tested and liked.
-
-    // EXPERIMENTAL: "includeId": true,
-    // EXPERIMENTAL: "omit": ['statement', 'I', 'signature', 'previous']
   };
 
-  static Uri makeUri(String domain, var spec) {
+  static Uri _makeUri(String domain, var spec) {
     final String host = exportUrl[fireChoice]![domain]!.$1;
     final String path = exportUrl[fireChoice]![domain]!.$2;
     Json params = Map.of(paramsProto);
@@ -310,73 +306,87 @@ class Fetcher {
   // Skip cached fetchers?
   // - or make that the caller's responsibility?
   // Futhermore, I think that I batch fetch everyone when I'm just missing Amotz.
-  static Future<void> batchFetch(Map<String, String?> token2revokeAt, String domain,
+  static Future<List<Fetcher>> batchFetch(Map<String, String?> token2revokeAt, String domain,
       {String? mName}) async {
-    if (fireChoice == FireChoice.fake || !Prefs.batchFetch.value) return;
+    if (fireChoice == FireChoice.fake || !Prefs.batchFetch.value) {
+      // serial fetch
+      for (MapEntry e in token2revokeAt.entries) {
+        Fetcher f = Fetcher(e.key, domain);
+        if (b(e.value)) f.setRevokeAt(e.value);
+        await f.fetch();
+      }
+    } else {
+      // skip cached fetchers
+      LinkedHashMap<String, String?> tmp = LinkedHashMap.of(token2revokeAt)
+        ..removeWhere((k, v) => Fetcher(k, domain).isCached && Fetcher(k, domain).revokeAt == v);
+      if (tmp.length != token2revokeAt.length) {
+        // print('skipping ${token2revokeAt.length - tmp.length}');
+      }
+      token2revokeAt = tmp;
+      if (token2revokeAt.isNotEmpty) {
+        Map<String, List<Json>> batchFetched = {};
+        var client = http.Client();
+        // specs are "token" or {"token": "revokeAt"};
+        List specs = List.from(
+            token2revokeAt.entries.map((e) => e.value == null ? e.key : {e.key: e.value}));
+        try {
+          final Uri uri = _makeUri(domain, specs);
+          final http.Request request = http.Request('GET', uri);
+          final http.StreamedResponse response = await client.send(request);
+          assert(response.statusCode == 200, 'Request failed with status: ${response.statusCode}');
+          ValueNotifier<bool> done = ValueNotifier(false);
+          response.stream.transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
+            Json jsonToken2Statements = jsonDecode(line);
+            assert(jsonToken2Statements.length == 1);
+            String token = jsonToken2Statements.keys.first;
+            List statements = jsonToken2Statements.values.first;
+            batchFetched[_key(token, domain)] = List<Json>.from(statements);
+            // print('batchFetched ${_key(token, revokeAt, domain)} #:${statements.length} uri=$uri');
+          }, onError: (error) {
+            // DEFER: Corrupt the collection. Left as is, fetch() should "miss" and do it.
+            print('Error in stream: $specs $domain');
+          }, onDone: () {
+            client.close();
+            done.value = true;
+          });
+          await ValueWaiter(done, true).untilReady();
 
-    // skip cached fetchers
-    LinkedHashMap<String, String?> tmp = LinkedHashMap.of(token2revokeAt)
-      ..removeWhere((k, v) => Fetcher(k, domain).isCached && Fetcher(k, domain).revokeAt == v);
-    if (tmp.length != token2revokeAt.length) {
-      // print('skipping ${token2revokeAt.length - tmp.length}');
+          // process the rest (_cache, _revokeAt, _revokeAtTime..)
+          for (MapEntry<String, String?> e in token2revokeAt.entries) {
+            String? revokedAt = token2revokeAt[e.key];
+            Fetcher fetcher = Fetcher(e.key, domain);
+            fetcher._cached = null;
+            if (b(revokedAt)) fetcher.setRevokeAt(revokedAt!);
+            List<Json> jsons = batchFetched[_key(e.key, domain)]!;
+            await fetcher.fetch(jsons: jsons);
+          }
+        } catch (e, stackTrace) {
+          print('Error: $e');
+          print(stackTrace);
+        }
+      }
     }
-    token2revokeAt = tmp;
-    if (token2revokeAt.isEmpty) return;
-
-    var client = http.Client();
-    // specs are "token" or {"token": "revokeAt"};
-    List specs =
-        List.from(token2revokeAt.entries.map((e) => e.value == null ? e.key : {e.key: e.value}));
-    try {
-      final Uri uri = makeUri(domain, specs);
-      final http.Request request = http.Request('GET', uri);
-      final http.StreamedResponse response = await client.send(request);
-      assert(response.statusCode == 200, 'Request failed with status: ${response.statusCode}');
-      ValueNotifier<bool> done = ValueNotifier(false);
-      response.stream.transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
-        Json jsonToken2Statements = jsonDecode(line);
-        assert(jsonToken2Statements.length == 1);
-        String token = jsonToken2Statements.keys.first;
-        List statements = jsonToken2Statements.values.first;
-        batchFetched[_key(token, domain)] = List<Json>.from(statements);
-        // print('batchFetched ${_key(token, revokeAt, domain)} #:${statements.length} uri=$uri');
-      }, onError: (error) {
-        // DEFER: Corrupt the collection. Left as is, fetch() should "miss" and do it.
-        print('Error in stream: $specs $domain');
-      }, onDone: () {
-        client.close();
-        done.value = true;
-      });
-      await ValueWaiter(done, true).untilReady();
-    } catch (e, stackTrace) {
-      print('Error: $e');
-      print(stackTrace);
+    // return fetchers
+    List<Fetcher> out = [];
+    for (MapEntry<String, String?> e in token2revokeAt.entries) {
+      String? revokedAt = token2revokeAt[e.key];
+      Fetcher f = Fetcher(e.key, domain);
+      assert(f.isCached);
+      assert(revokedAt == f.revokeAt, '$revokedAt == ${f.revokeAt}');
+      out.add(f);
     }
+    return out;
   }
 
-  Future<void> fetch() async {
+  Future<void> fetch({List<Json>? jsons}) async {
     if (b(_cached)) return;
     try {
       DateTime? time;
       if (fireChoice != FireChoice.fake && Prefs.httpFetch.value) {
         _cached = <Statement>[];
-        List<Json> jsons;
-        if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
-          jsons = batchFetched[_key(token, domain)]!;
-        } else {
+        if (jsons == null) {
           if (Prefs.batchFetch.value) print('batcher miss $domain $token');
-          var client = http.Client();
-          var spec = {token: _revokeAt};
-          final Uri uri = makeUri(domain, spec);
-          final http.Response response = await client.get(uri);
-          assert(response.statusCode == 200, 'Request failed with status: ${response.statusCode}');
-          // Parse entire body
-          final Json jsonToken2Statements = jsonDecode(response.body);
-          assert(jsonToken2Statements.length == 1);
-          assert(token == jsonToken2Statements.keys.first);
-
-          final List statements = jsonToken2Statements.values.first;
-          jsons = List<Json>.from(statements);
+          jsons = await _httpFetchJsons();
         }
 
         if (_revokeAt != null) {
@@ -385,7 +395,7 @@ class Fetcher {
             // without includeId, this might work: assert(getToken(statements.first) == _revokeAt);
             _revokeAtTime = parseIso(jsons.first['time']);
           } else {
-            _revokeAtTime = DateTime(0); // "since always" (or any unknown token);
+            _revokeAtTime = date0; // "since always" (or any unknown token);
           }
         }
 
@@ -396,16 +406,6 @@ class Fetcher {
           j['statement'] = domain2statementType[domain]!;
           j['I'] = Jsonish.find(token)!.json;
           j.remove('id'); // No problem, unless we end up here twice (which we shouldn't).
-
-          // EXPERIMENTAL: "EXPERIMENTAL" tagged where the code allows us to not compute the tokens
-          // but just use the stored values, which allows us to not ask for [signature, previous].
-          // The changes worked, but the performance hardly changed. And with this, we wouldn't have
-          // [signature, previous] locally, couldn't verify statements, and there'd be more code
-          // paths. So, no.
-          // Jsonish jsonish = mVerify.mSync(() => Jsonish(j, serverToken));
-          // String serverToken = j['id'];
-          // j.remove('id');
-          // assert(jsonish.token == serverToken);
 
           Jsonish jsonish;
           if (Prefs.skipVerify.value) {
@@ -418,11 +418,8 @@ class Fetcher {
           _cached!.add(statement);
         }
       } else {
-        List<Statement> statements = <Statement>[];
-
         final CollectionReference<Map<String, dynamic>> collectionRef =
-            fire.collection(token).doc('statements').collection('statements');
-
+            _fire.collection(token).doc('statements').collection('statements');
         // query _revokeAtTime
         if (_revokeAt != null && _revokeAtTime == null) {
           DocumentReference<Json> doc = collectionRef.doc(_revokeAt);
@@ -431,31 +428,27 @@ class Fetcher {
             final Json data = docSnap.data()!;
             _revokeAtTime = parseIso(data['time']);
           } else {
-            _revokeAtTime = DateTime(0); // "since always" (or any unknown token)
+            _revokeAtTime = date0; // "since always" (or any unknown token)
           }
         }
 
+        List<Statement> statements2 = <Statement>[];
         Query<Json> query = collectionRef.orderBy('time', descending: true);
         if (_revokeAtTime != null) {
           query = query.where('time', isLessThanOrEqualTo: formatIso(_revokeAtTime!));
-        }
-        // EXPERIMENTAL: Refresh - only reload what we need to.
-        if (Prefs.fetchRecent.value && domain != kOneofusDomain) {
-          DateTime recent = DateTime.now().subtract(recentDuration);
-          query = query.where('time', isGreaterThanOrEqualTo: formatIso(recent));
         }
         QuerySnapshot<Json> snapshots = await query.get();
         bool first = true;
         String? previousToken;
         DateTime? previousTime;
         for (final docSnapshot in snapshots.docs) {
-          final Json data = docSnapshot.data();
+          final Json json = docSnapshot.data();
           Jsonish jsonish;
           if (Prefs.skipVerify.value) {
             // DEFER: skipVerify is not necessarily compatible with some cloud functions distinct fetching.
-            jsonish = Jsonish(data);
+            jsonish = Jsonish(json);
           } else {
-            jsonish = await Jsonish.makeVerify(data, _verifier);
+            jsonish = await Jsonish.makeVerify(json, _verifier);
           }
 
           // newest to oldest
@@ -478,20 +471,32 @@ class Fetcher {
               throw error;
             }
           }
-          previousToken = data['previous'];
+          previousToken = json['previous'];
           previousTime = time;
 
-          statements.add(Statement.make(jsonish));
+          statements2.add(Statement.make(jsonish));
         }
         // Maintain Cloud Functions or not behave similarly.
         assert(paramsProto.containsKey('distinct'));
-        _cached = distinct(statements);
+        _cached = distinct(statements2);
       }
       _lastToken = _cached!.isNotEmpty ? _cached!.first.token : null;
     } catch (e, stackTrace) {
       // print(stackTrace);
       corruptor.corrupt(token, e.toString(), stackTrace.toString());
     }
+  }
+
+  Future<List<Json>> _httpFetchJsons() async {
+    var client = http.Client();
+    final Uri uri = _makeUri(domain, {token: _revokeAt});
+    final http.Response response = await client.get(uri);
+    assert(response.statusCode == 200, 'Request failed with status: ${response.statusCode}');
+    final Json jsonToken2Statements = jsonDecode(response.body);
+    assert(jsonToken2Statements.length == 1);
+    assert(token == jsonToken2Statements.keys.first);
+    final List statements = jsonToken2Statements.values.first;
+    return List<Json>.from(statements);
   }
 
   List<Statement> get statements => _cached!;
@@ -533,10 +538,10 @@ class Fetcher {
     _cached = distinct(_cached!);
     _lastToken = jsonish.token;
 
-    final fireStatements = fire.collection(token).doc('statements').collection('statements');
+    final fireStatements = _fire.collection(token).doc('statements').collection('statements');
     // Transaction!
     // TODO: TEST: Testing might be easier after the change away from the factory CTOR.
-    await fire.runTransaction((_) async {
+    await _fire.runTransaction((_) async {
       Query<Json> query = fireStatements.orderBy('time', descending: true);
       QuerySnapshot<Json> snapshots = await query.get();
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs = snapshots.docs;
@@ -580,3 +585,23 @@ class Fetcher {
   @override
   String toString() => 'Fetcher: $domain $token';
 }
+
+
+// EXPERIMENTAL: "EXPERIMENTAL" tagged where the code allows us to not compute the tokens
+// but just use the stored values, which allows us to not ask for [signature, previous].
+// The changes worked, but the performance hardly changed. And with this, we wouldn't have
+// [signature, previous] locally, couldn't verify statements, and there'd be more code
+// paths. So, no.
+// 
+// String serverToken = j['id'];
+// Jsonish jsonish = Jsonish(j, serverToken);
+// j.remove('id');
+// assert(jsonish.token == serverToken);
+// 
+// static const Json paramsProto = {
+//   "includeId": true,
+//   "distinct": true,
+//   "checkPrevious": true,
+//   "omit": ['statement', 'I', 'signature', 'previous']
+//   "orderStatements": false,
+// };
