@@ -18,6 +18,7 @@ import 'package:nerdster/equivalence/equivalence_bridge.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -556,6 +557,9 @@ class ContentBase with Comp, ChangeNotifier {
       }
     }
   }
+
+  @override
+  Measure get measure => Measure('content');
 }
 
 class _ContentEquateParser implements EquivalenceBridgeParser {

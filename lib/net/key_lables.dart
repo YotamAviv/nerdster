@@ -4,6 +4,7 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -50,7 +51,7 @@ class OneofusLabels with Comp, ChangeNotifier {
 
     assert(b(labelKey(signInState.center!)));
     // There was a bug in JsonDisplay in CredentialsWidget where as we're loading, we don't label
-    // our own key correctly. 
+    // our own key correctly.
     // That's when I noticed that we don't notify upon becoming ready.
     // That's been fixed a different way waitUntilReady..
     // CONSIDER: notifyListeners();
@@ -195,4 +196,7 @@ class KeyLabels with Comp, ChangeNotifier implements Interpreter {
       }
     }
   }
+
+  @override
+  Measure get measure => Measure('labels');
 }

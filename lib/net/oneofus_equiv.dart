@@ -5,6 +5,7 @@ import 'package:nerdster/comp.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/wot_equivalence.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -96,4 +97,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
       }
     }
   }
+
+  @override
+  Measure get measure => Measure('equivalents');
 }
