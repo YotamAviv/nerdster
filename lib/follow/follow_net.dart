@@ -8,6 +8,7 @@ import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -187,6 +188,9 @@ class FollowNet with Comp, ChangeNotifier {
       _centerContexts.addAll(contexts.where((x) => !kSpecialContexts.contains(x)));
     }
   }
+
+  @override
+  Measure get measure => Measure('follow net');
 }
 
 // We're building the follow network on top of OneofusNet and EquivNet.

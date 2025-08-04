@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -138,6 +139,9 @@ class OneofusNet with Comp, ChangeNotifier {
       _token2keyCounter[token] = keyCounter++;
     }
   }
+
+  @override
+  Measure get measure => Measure('identity net');
 }
 
 class FetcherNode extends Node {

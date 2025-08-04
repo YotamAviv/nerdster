@@ -56,6 +56,8 @@ abstract mixin class Comp {
 
   bool get invalidProcess => _invalidProcess;
 
+  Measure? get measure => null;
+
   void setDirty() {
     // Ignoring setDirty() if we're already dirty breaks things; maybe the gratuitous notification
     // helps move thigs along.
@@ -101,15 +103,12 @@ abstract mixin class Comp {
           _invalidProcess = false;
           _exception = null;
           _processing = true;
-          // BUG: The Comp test uses nested Comps, and so mAsync complains.
-          // Take Measure out of Comp
-          // - it's kludgey
-          // - broken (when nested)
-          // - class names get mangled in release.
-          // await Measure(runtimeType.toString()).mAsync(process());
-          Measure(runtimeType.toString()).start();
-          await process();
-          Measure(runtimeType.toString()).stop();
+          Measure? m = measure;
+          if (m != null) {
+            await m.mAsync(process);
+          } else {
+            await process();
+          }
           _processing = false;
 
           if (_invalidProcess) {

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart'; // for ChangeNotifier and listEquals
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -77,4 +78,7 @@ class MyDelegateStatements extends Comp with ChangeNotifier {
       }
     }
   }
+
+  @override
+  Measure get measure => Measure('my delegates (out of network)');
 }
