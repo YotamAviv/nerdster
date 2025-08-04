@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:nerdster/oneofus/measure.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
@@ -78,6 +79,7 @@ abstract class Corruptor {
 
 class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
+  static final Measure mVerify = Measure('mVerify');
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
   static const Json _paramsProto = {
     "distinct": true,
@@ -267,7 +269,7 @@ class Fetcher {
           if (Prefs.skipVerify.value) {
             jsonish = Jsonish(j);
           } else {
-            jsonish = await Jsonish.makeVerify(j, _verifier);
+            jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(j, _verifier));
           }
           Statement statement = Statement.make(jsonish);
           _cached!.add(statement);
@@ -302,7 +304,7 @@ class Fetcher {
           if (Prefs.skipVerify.value) {
             jsonish = Jsonish(json);
           } else {
-            jsonish = await Jsonish.makeVerify(json, _verifier);
+            jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(json, _verifier));
           }
 
           // newest to oldest

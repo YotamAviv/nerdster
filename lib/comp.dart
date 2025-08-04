@@ -101,9 +101,7 @@ abstract mixin class Comp {
           _invalidProcess = false;
           _exception = null;
           _processing = true;
-          Measure(runtimeType.toString()).start();
-          await process();
-          Measure(runtimeType.toString()).stop();
+          await Measure(runtimeType.toString()).mAsync(() => process());
           _processing = false;
 
           if (_invalidProcess) {

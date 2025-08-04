@@ -44,24 +44,16 @@ class Measure {
 
   bool get isRunning => _stopwatch.isRunning;
 
-  // Future mAsync(func, {String? note}) async {
-  //   Duration d = _stopwatch.elapsed;
-  //   try {
-  //     assert(!_stopwatch.isRunning);
-  //     d = _stopwatch.elapsed;
-  //     _stopwatch.start();
-  //     final out = await func();
-  //     return out;
-  //   } finally {
-  //     _stopwatch.stop();
-  //     if (b(note)) {
-  //       Duration dd = _stopwatch.elapsed - d;
-  //       // BUG: FIRES and is really hard to find in stack trace in Chrome assert(!token2time.containsKey(token));
-  //       // Fetcher fetches once to find revokedAtTime and then again to get all earlier statements.
-  //       token2time.add((note!, dd));
-  //     }
-  //   }
-  // }
+  Future mAsync(func, {String? note}) async {
+    try {
+      assert(!_stopwatch.isRunning);
+      _stopwatch.start();
+      final out = await func();
+      return out;
+    } finally {
+      _stopwatch.stop();
+    }
+  }
 
   // dynamic mSync(func) {
   //   try {
