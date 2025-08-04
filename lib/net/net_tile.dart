@@ -226,7 +226,7 @@ class _MonikerWidget extends StatelessWidget {
       String domain = bOneofus ? kOneofusDomain : kNerdsterDomain;
       if (fireChoice != FireChoice.fake) {
         String link;
-        // DEFER: ?revokedAt=...
+        // DEFER: ?revokeAt=...
         final String host = exportUrl[fireChoice]![domain]!.$1;
         final String path = exportUrl[fireChoice]![domain]!.$2;
         Json params = {"spec": token};

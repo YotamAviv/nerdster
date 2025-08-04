@@ -170,11 +170,9 @@ $link''',
               child: Text('showCredentials')),
 
           SubmenuButton(menuChildren: [
-            MyCheckbox(Prefs.cloudFunctionsFetch, 'cloudFunctionsFetch (goes quicker)'),
+            MyCheckbox(Prefs.httpFetch, 'httpFetch'),
             MyCheckbox(Prefs.batchFetch, 'batchFetch'),
-            MyCheckbox(Prefs.streamBatchFetch, 'streamBatchFetch'),
-            MyCheckbox(Prefs.fetchRecent, '''fetchRecent'''),
-            MyCheckbox(Prefs.slowFetch, '''slowFetch'''),
+            MyCheckbox(Prefs.fetchRecent, 'fetchRecent'),
             MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
           ], child: const Text('cloud fetching')),
 
