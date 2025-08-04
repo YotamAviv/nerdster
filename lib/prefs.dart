@@ -29,10 +29,34 @@ class Prefs {
 
   // DEV:
   static final ValueNotifier<bool> dev = ValueNotifier<bool>(devDefault || bNerd);
-  // DEFER: These are not all compatible with each other, no worries..
   static final ValueNotifier<bool> httpFetch = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> batchFetch = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> fetchRecent = ValueNotifier<bool>(false);
+
+  static final List<ValueNotifier> _notifiers = [
+    skipLgtm,
+    skipCredentials,
+    censor,
+    hideDisliked,
+    oneofusNetDegrees,
+    oneofusNetPaths,
+    followNetDegrees,
+    followNetPaths,
+    keyLabel,
+    skipVerify,
+    showJson,
+    showKeys,
+    showStatements,
+    showStuff,
+    dev,
+    httpFetch,
+    batchFetch,
+  ];
+  static Map<ValueNotifier, dynamic> snapshot() => {for (var n in _notifiers) n: n.value};
+  static void restore(Map<ValueNotifier, dynamic> snapshot) {
+    for (final entry in snapshot.entries) {
+      entry.key.value = entry.value;
+    }
+  }
 
   static Future<void> init() async {
     Map<String, String> params = Uri.base.queryParameters;
