@@ -360,49 +360,37 @@ class Fetcher {
       _cached = <Statement>[];
       DateTime? time;
       if (fireChoice != FireChoice.fake && Prefs.httpFetch.value) {
-        List<Json>? jsons;
+        List<Json> jsons;
         if (Prefs.batchFetch.value && b(batchFetched[_key(token, domain)])) {
           jsons = batchFetched[_key(token, domain)]!;
         } else {
           if (Prefs.batchFetch.value) print('batcher miss $domain $token');
           var client = http.Client();
-          List specs = [
-            {token: _revokeAt}
-          ];
-          final Uri uri = makeUri(domain, specs);
-          final http.Request request = http.Request('GET', uri);
-          final http.StreamedResponse response = await client.send(request);
+          var spec = {token: _revokeAt};
+          final Uri uri = makeUri(domain, spec);
+          final http.Response response = await client.get(uri);
           assert(response.statusCode == 200, 'Request failed with status: ${response.statusCode}');
-          ValueNotifier<bool> done = ValueNotifier(false);
-          response.stream.transform(utf8.decoder).transform(const LineSplitter()).listen((line) {
-            Json jsonToken2Statements = jsonDecode(line);
-            assert(jsonToken2Statements.length == 1);
-            assert(token == jsonToken2Statements.keys.first);
-            List statements = jsonToken2Statements.values.first;
-            jsons = List<Json>.from(statements);
-            // print('batchFetched ${_key(token, revokeAt, domain)} #:${statements.length} uri=$uri');
-          }, onError: (error) {
-            // DEFER: Corrupt the collection. Left as is, fetch() should "miss" and do it.
-            print('Error in stream: $specs $domain');
-          }, onDone: () {
-            client.close();
-            done.value = true;
-          });
-          await ValueWaiter(done, true).untilReady();
+          // Parse entire body
+          final Json jsonToken2Statements = jsonDecode(response.body);
+          assert(jsonToken2Statements.length == 1);
+          assert(token == jsonToken2Statements.keys.first);
+
+          final List statements = jsonToken2Statements.values.first;
+          jsons = List<Json>.from(statements);
         }
 
         if (_revokeAt != null) {
-          if (jsons!.isNotEmpty) {
-            assert(jsons!.first['id'] == _revokeAt, '${jsons!.first['id']} == $_revokeAt');
+          if (jsons.isNotEmpty) {
+            assert(jsons.first['id'] == _revokeAt, '${jsons.first['id']} == $_revokeAt');
             // without includeId, this might work: assert(getToken(statements.first) == _revokeAt);
-            _revokeAtTime = parseIso(jsons!.first['time']);
+            _revokeAtTime = parseIso(jsons.first['time']);
           } else {
             _revokeAtTime = DateTime(0); // "since always" (or any unknown token);
           }
         }
 
-        if (jsons!.isEmpty) return;
-        for (Json j in jsons!) {
+        if (jsons.isEmpty) return;
+        for (Json j in jsons) {
           DateTime jTime = parseIso(j['time']);
           if (time != null) assert(jTime.isBefore(time));
           time = jTime;
