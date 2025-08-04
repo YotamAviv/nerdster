@@ -147,7 +147,7 @@ class GreedyBfsTrust {
             other.paths.add(newPath);
             assert(newPath.length == pass + 1);
             other.revokeAt = replace.revokeAt;
-            // QUESTIONABLE: OLD: await other.trusts; // re-fetch after setting revokedAt
+            // QUESTIONABLE: OLD: await other.trusts; // re-fetch after setting revokeAt
             // Add to queue if not already visited.
             if (!visited.contains(other)) nextLayer.addLast(newPath);
           }

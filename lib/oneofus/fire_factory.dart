@@ -5,7 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 class FireFactory {
   static final Map<String, (FirebaseFirestore, FirebaseFunctions?)> domain2fire = {};
 
-  static register(String domain, FirebaseFirestore fire, FirebaseFunctions? functions) {
+  static void register(String domain, FirebaseFirestore fire, FirebaseFunctions? functions) {
     domain2fire[domain] = (fire, functions);
   }
 

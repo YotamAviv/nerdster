@@ -116,7 +116,7 @@ class OneofusNet with Comp, ChangeNotifier {
     _network.clear();
     _token2keyCounter.clear();
     notifications.clear();
-    // No need to clear Fetcher content, just clear all Fetcher revokedAt values.
+    // No need to clear Fetcher content, just clear all Fetcher revokeAt values.
     Fetcher.resetRevokeAt();
     NetNode.clear();
     FetcherNode.clear();

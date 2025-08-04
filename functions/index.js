@@ -343,36 +343,6 @@ async function fetchh(token2revokeAt, params = {}, omit = {}) {
   return statements;
 }
 
-// ----------------------- Firebase cloud functions called by Nerdster ------------------------- //
-
-exports.cloudfetch = onCall(async (request) => {
-  const token2revokeAt = request.data.token2revokeAt;
-  try {
-    return await fetchh(token2revokeAt, request.data, request.data.omit);
-  } catch (error) {
-    console.error(error);
-    throw new HttpsError(error);
-  }
-});
-
-exports.mcloudfetch = onCall(async (request) => {
-  const token2revokeAt = request.data.token2revokeAt;
-  const params = request.data;
-  const omit = request.data.omit;
-  try {
-    var outs = [];
-    for (const [token, revokeAt] of Object.entries(token2revokeAt)) {
-      // logger.log(`token=${token}, revokeAt=${revokeAt}`);
-      var out = await fetchh({ [token]: revokeAt }, params, omit);
-      outs.push(out);
-    }
-    return outs;
-  } catch (error) {
-    console.error(error);
-    throw new HttpsError(error);
-  }
-});
-
 // ----------------------- JSON export ------------------------- //
 
 // - Emulator-Nerdster-Yotam: http://127.0.0.1:5001/nerdster/us-central1/..
