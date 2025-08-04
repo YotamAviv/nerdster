@@ -1,4 +1,5 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
@@ -56,7 +57,13 @@ void main() async {
   DemoKey luann = await DemoKey.findOrCreate('dummy');
   DemoKey sideshow = await DemoKey.findOrCreate('dummy');
 
+  // To restore Prefs changes
+  late Map<ValueNotifier, dynamic> prefsSnapshot;
+  tearDown(() {
+    Prefs.restore(prefsSnapshot);
+  });
   setUp(() async {
+    prefsSnapshot = Prefs.snapshot();
     timezoneOffsetKludge = 0;
     useClock(TestClock());
     DemoKey.clear();

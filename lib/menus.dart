@@ -172,7 +172,6 @@ $link''',
           SubmenuButton(menuChildren: [
             MyCheckbox(Prefs.httpFetch, 'httpFetch'),
             MyCheckbox(Prefs.batchFetch, 'batchFetch'),
-            MyCheckbox(Prefs.fetchRecent, 'fetchRecent'),
             MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
           ], child: const Text('cloud fetching')),
 

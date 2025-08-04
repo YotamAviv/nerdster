@@ -418,7 +418,6 @@ class FetcherTestHelper {
   }
 
   Future<void> batch() async {
-    // BUG: side effects
     Prefs.skipVerify.value = true;
     Prefs.batchFetch.value = true;
 

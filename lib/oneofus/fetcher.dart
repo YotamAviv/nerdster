@@ -17,11 +17,6 @@ import 'value_waiter.dart';
 
 /// Rewrite!
 /// TODO:
-/// Phase 3:
-/// - change factory CTOR to create / find
-///   Maybe. Important stuff works:
-///   - can't have 2 Fetchers for the same token/domain
-///   - resetRevokedAt is conservative and seems safe
 /// Phase 4:
 /// - reintroduce Measure, but use 2 groups
 ///   - comps (no 2 work at the same time; they're not nested)
@@ -43,6 +38,7 @@ import 'value_waiter.dart';
 ///   - new Prefs should be cloudFetch or no,
 /// Phase 2:
 /// - change semantics of batchFetch to actually fetch. This should help the sloppiness of neglecting to call setRevokeAt
+/// Phase 3 reconsidered and cancelled, the important stuff works
 
 /// PERFORMANCE: CONSIDER: Cloud copy everything to static and fetch from there.
 
@@ -409,7 +405,6 @@ class Fetcher {
 
           Jsonish jsonish;
           if (Prefs.skipVerify.value) {
-            // DEFER: skipVerify is not necessarily compatible with some cloud functions distinct fetching.
             jsonish = Jsonish(j);
           } else {
             jsonish = await Jsonish.makeVerify(j, _verifier);
@@ -445,7 +440,6 @@ class Fetcher {
           final Json json = docSnapshot.data();
           Jsonish jsonish;
           if (Prefs.skipVerify.value) {
-            // DEFER: skipVerify is not necessarily compatible with some cloud functions distinct fetching.
             jsonish = Jsonish(json);
           } else {
             jsonish = await Jsonish.makeVerify(json, _verifier);

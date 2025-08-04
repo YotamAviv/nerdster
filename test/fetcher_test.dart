@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/main.dart';
@@ -12,6 +13,7 @@ import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:test/test.dart';
 
 const String _domain = kOneofusDomain;
@@ -24,6 +26,15 @@ void main() async {
   FireFactory.register(_domain, FakeFirebaseFirestore(), null);
   FireFactory.register(kNerdsterDomain, FakeFirebaseFirestore(), null);
   TrustStatement.init();
+
+  // To restore Prefs changes
+  late Map<ValueNotifier, dynamic> prefsSnapshot;
+  setUp(() {
+    prefsSnapshot = Prefs.snapshot();
+  });
+  tearDown(() {
+    Prefs.restore(prefsSnapshot);
+  });
 
   test('2', helper.test2);
 
