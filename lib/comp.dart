@@ -101,7 +101,15 @@ abstract mixin class Comp {
           _invalidProcess = false;
           _exception = null;
           _processing = true;
-          await Measure(runtimeType.toString()).mAsync(() => process());
+          // BUG: The Comp test uses nested Comps, and so mAsync complains.
+          // Take Measure out of Comp
+          // - it's kludgey
+          // - broken (when nested)
+          // - class names get mangled in release.
+          // await Measure(runtimeType.toString()).mAsync(process());
+          Measure(runtimeType.toString()).start();
+          await process();
+          Measure(runtimeType.toString()).stop();
           _processing = false;
 
           if (_invalidProcess) {
