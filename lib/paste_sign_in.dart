@@ -15,14 +15,14 @@ import 'package:nerdster/util_ui.dart';
 
 Future<void> pasteSignIn(BuildContext context) async {
   final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
-  Json credentials = await showDialog(
+  Json? credentials = await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => Dialog(
             shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
             child: PasteSignInWidget(storeKeys),
           ));
-
+  if (credentials == null) return;
   Json identityJson = credentials[kOneofusDomain]!;
   OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
   Json? delegateJson = credentials[kNerdsterDomain];
