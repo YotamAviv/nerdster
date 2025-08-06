@@ -141,7 +141,7 @@ Future<void> defaultSignIn(BuildContext context) async {
   }
 
   if (b(params['demo'])) {
-    if (fireChoice == FireChoice.prod) throw "Don't create demo in production.";
+    if (fireChoice == FireChoice.prod) throw 'not on production';
     demo = params['demo']!;
     DemoKey oneofusDemoKey;
     DemoKey? delegateDemoKey;
