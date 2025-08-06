@@ -60,17 +60,19 @@ class _NotificationsMenuState extends State<NotificationsMenu> {
 
     List<MenuItemButton> items = <MenuItemButton>[];
 
-    if (b(signInState.signedInDelegate) &&
-        !b(followNet.delegate2oneofus[signInState.signedInDelegate])) {
+    if (b(signInState.centerReset) &&
+        !followNet.oneofus2delegates.containsKey(signInState.centerReset)) {
       MenuItemButton item = MenuItemButton(
           onPressed: () {
             alert(
-                '''Your Nerdster delgate isn't in this network''',
-                '''You're signed in with a Nerdster delgate key that isn't in the network you're viewing, and so your own content will not be visible.''',
+                '''You're not in this network''',
+                '''You signed in using an identity that isn't currently a member of the network you're viewing.
+Your own contributions are not be visible from this PoV (Point of View).
+You can still rate, submit, change follow settings, etc... when you use a PoV that includes you.''',
                 ['Okay'],
                 context);
           },
-          child: const Text('''Your Nerdster delgate isn't in this network.'''));
+          child: const Text('''You're not in this network.'''));
       items.add(item);
     }
     // TODO: Check if delegate revoked
