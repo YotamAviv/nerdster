@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -47,6 +48,8 @@ Future<dynamic> dumpDump(BuildContext? context) async {
 }
 
 dynamic loadDumpDialog(BuildContext context) async {
+  if (fireChoice == FireChoice.prod) throw 'not on production';
+
   TextEditingController controller = TextEditingController();
 
   okHandler() {

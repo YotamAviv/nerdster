@@ -20,8 +20,8 @@ void integrationTests() async {
     Prefs.restore(prefsSnapshot);
   });
   setUp(() {
+    if(fireChoice == FireChoice.prod) throw 'not on production';
     prefsSnapshot = Prefs.snapshot();
-    assert(fireChoice != FireChoice.prod);
     useClock(TestClock());
     DemoKey.clear();
   });
