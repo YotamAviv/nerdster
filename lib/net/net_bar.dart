@@ -46,8 +46,8 @@ class _NetBarState extends State<NetBar> {
     isSmall.addListener(listen);
 
     _popStateSub = bindPopState(() {
-      print('Back button pressed');
       setState(() {
+        print('Back button pressed');
         NetBar.bNetView.value = false;
       });
     });
