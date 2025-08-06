@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:nerdster/ui/pop_state_stub.dart'
+    if (dart.library.js_interop) 'package:nerdster/ui/pop_state_web.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:nerdster/bar_refresh.dart';
@@ -34,11 +37,20 @@ class NetBar extends StatefulWidget {
 }
 
 class _NetBarState extends State<NetBar> {
+  late final StreamSubscription<void> _popStateSub;
+
   @override
   void initState() {
     NetTreeView.bOneofus.addListener(listen);
     NetBar.bNetView.addListener(listen);
     isSmall.addListener(listen);
+
+    _popStateSub = bindPopState(() {
+      print('Back button pressed');
+      setState(() {
+        NetBar.bNetView.value = false;
+      });
+    });
     super.initState();
   }
 
@@ -47,6 +59,7 @@ class _NetBarState extends State<NetBar> {
     NetTreeView.bOneofus.removeListener(listen);
     NetBar.bNetView.removeListener(listen);
     isSmall.removeListener(listen);
+    _popStateSub.cancel();
     super.dispose();
   }
 
@@ -71,7 +84,6 @@ class _NetBarState extends State<NetBar> {
                   Navigator.pop(context);
                   NetBar.bNetView.value = false;
                 }),
-
           const BarRefresh(),
           const _CenterDropdown(),
           const _FollowDropdown(),
