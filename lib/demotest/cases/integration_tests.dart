@@ -10,8 +10,8 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:test/test.dart';
 
-/// These are not necessary, but as it was easy, I figured why not test them against 
-/// FirebaseEmulator and Cloud Functions, if I want to, every once in a while..., right? But there 
+/// These are not necessary, but as it was easy, I figured why not test them against
+/// FirebaseEmulator and Cloud Functions, if I want to, every once in a while..., right? But there
 /// is no reason.
 void integrationTests() async {
   // To restore Prefs changes
@@ -20,7 +20,7 @@ void integrationTests() async {
     Prefs.restore(prefsSnapshot);
   });
   setUp(() {
-    if(fireChoice == FireChoice.prod) throw 'not on production';
+    if (fireChoice == FireChoice.prod) throw 'not on production';
     prefsSnapshot = Prefs.snapshot();
     useClock(TestClock());
     DemoKey.clear();

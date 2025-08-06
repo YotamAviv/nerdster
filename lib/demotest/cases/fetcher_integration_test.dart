@@ -61,7 +61,7 @@ class TestSigner implements StatementSigner {
 
 Future<void> fetcherIntegrationTest() async {
   setUp(() {
-    if(fireChoice == FireChoice.prod) throw 'not on production';
+    if (fireChoice == FireChoice.prod) throw 'not on production';
   });
 
   useClock(TestClock());
