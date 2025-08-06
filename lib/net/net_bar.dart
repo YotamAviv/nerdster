@@ -37,28 +37,42 @@ class NetBar extends StatefulWidget {
 }
 
 class _NetBarState extends State<NetBar> {
+  static int instanceCount = 0;
+
   late final StreamSubscription<void> _popStateSub;
 
   @override
   void initState() {
+    instanceCount++;
+    // print(instanceCount);
+
     NetTreeView.bOneofus.addListener(listen);
     NetBar.bNetView.addListener(listen);
     isSmall.addListener(listen);
 
-    _popStateSub = bindPopState(() {
-      setState(() {
-        print('Back button pressed');
-        NetBar.bNetView.value = false;
+    final listenerId = DateTime.now().microsecondsSinceEpoch;
+    if (NetBar.bNetView.value) {
+      _popStateSub = bindPopState(() {
+        setState(() {
+          // TODO: Clean up these prints, listenerId, and instanceCount once I feel confident.
+          // print('Back button pressed from listener $listenerId');
+          NetBar.bNetView.value = false;
+        });
       });
-    });
+    }
+
     super.initState();
   }
 
   @override
   void dispose() {
+    instanceCount--;
+    // print(instanceCount);
+
     NetTreeView.bOneofus.removeListener(listen);
     NetBar.bNetView.removeListener(listen);
     isSmall.removeListener(listen);
+    // print('Disposing MyWidgetState');
     _popStateSub.cancel();
     super.dispose();
   }

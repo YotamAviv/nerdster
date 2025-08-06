@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'package:web/web.dart' as web;
 
-/// Attaches a browser popstate listener on web.
 StreamSubscription<void> bindPopState(void Function() onBack) {
+  // Create a controller for the Dart side
   final controller = StreamController<void>();
 
   // Create a JS interop callback
@@ -17,24 +17,25 @@ StreamSubscription<void> bindPopState(void Function() onBack) {
   // Subscribe Dart side
   final sub = controller.stream.listen((_) => onBack());
 
-  // Wrap so cancel removes listener too
-  return _WrappedPopStateSubscription(sub, jsListener);
+  // Ensure we clean up both Dart and JS listeners
+  return _PopStateSubscription(sub, controller, jsListener);
 }
 
-/// Wraps a Dart subscription but cleans up JS listener too.
-class _WrappedPopStateSubscription<T> implements StreamSubscription<T> {
+class _PopStateSubscription<T> implements StreamSubscription<T> {
   final StreamSubscription<T> _sub;
+  final StreamController<T> _controller;
   final JSFunction _jsListener;
 
-  _WrappedPopStateSubscription(this._sub, this._jsListener);
+  _PopStateSubscription(this._sub, this._controller, this._jsListener);
 
   @override
   Future<void> cancel() async {
     web.window.removeEventListener('popstate', _jsListener);
     await _sub.cancel();
+    await _controller.close();
   }
 
-  // Forwarding methods
+  // Forward other methods
   @override
   void onData(void Function(T data)? handleData) => _sub.onData(handleData);
   @override
