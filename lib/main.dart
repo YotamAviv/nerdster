@@ -157,7 +157,9 @@ Future<void> defaultSignIn(BuildContext context) async {
     OouPublicKey? oneofusPublicKey;
     OouKeyPair? nerdsterKeyPair;
     (oneofusPublicKey, nerdsterKeyPair) = await KeyStore.readKeys();
-    if (b(oneofusPublicKey)) {
+    // It's been annoying to not be able to sign out if I wasn't fully signed in.
+    // TODO: Don't even persist identity key if I'm not fully signed in.
+    if (b(oneofusPublicKey) && b(nerdsterKeyPair)) {
       String oneofus = getToken(await oneofusPublicKey!.json);
       await signInState.signIn(oneofus, nerdsterKeyPair, context: context);
       return;
