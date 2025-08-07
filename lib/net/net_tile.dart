@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:nerdster/comp.dart';
@@ -104,7 +106,9 @@ class _NetTileState extends State<NetTile> {
         } else {
           iconPair = revokedKeyIconPair;
           String replacedOrRevoked = isDelegate ? 'revoked' : 'replaced';
-          iconTooltip = '$iconTooltip \n$replacedOrRevoked at: ${formatUiDatetime(node.revokeAt!)}';
+          String revokeAtTime =
+              node.revokeAtTime == date0 ? '<since always>' : formatUiDatetime(node.revokeAtTime!);
+          iconTooltip = '$iconTooltip \n$replacedOrRevoked at: $revokeAtTime';
         }
         if (isDelegate) {
           // From Oneofus KeyWidget: color = local ? Colors.blue.shade700 : Colors.blue.shade100;
@@ -229,7 +233,11 @@ class _MonikerWidget extends StatelessWidget {
         // DEFER: ?revokeAt=...
         final String host = exportUrl[fireChoice]![domain]!.$1;
         final String path = exportUrl[fireChoice]![domain]!.$2;
-        Json params = {"spec": token};
+        Json params = !b(node.revokeAt)
+            ? {"spec": token}
+            : {
+                "spec": jsonEncode({token: node.revokeAt})
+              };
         // DEFER: Wierd: only http works on emulator, only https works on PROD
         final Uri uri = (fireChoice == FireChoice.prod)
             ? Uri.https(host, path, params)

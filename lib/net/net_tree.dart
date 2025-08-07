@@ -36,7 +36,7 @@ class NetTreeView extends StatefulWidget {
     NetBar.bNetView.value = true;
   }
 
-  static makeRoot() {
+  static NetTreeModel makeRoot() {
     NetTreeModel root;
     if (bOneofus.value || followNet.fcontext == kOneofusContext) {
       root = OneofusTreeNode.root;

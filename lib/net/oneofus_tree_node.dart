@@ -16,14 +16,17 @@ class OneofusTreeNode extends NetTreeModel {
   @override
   final bool canonical;
   @override
-  final DateTime? revokeAt;
+  final String? revokeAt;
+  @override
+  final DateTime? revokeAtTime;
   Iterable<OneofusTreeNode>? _children;
 
   static OneofusTreeNode get root =>
       OneofusTreeNode([], token: signInState.center, canonical: true);
 
   OneofusTreeNode(super.path,
-      {super.token, super.statement, this.canonical = false, this.revokeAt}) {
+      {super.token, super.statement, this.canonical = false, this.revokeAt, this.revokeAtTime}) {
+    assert((b(revokeAtTime) && b(revokeAt)) || (!b(revokeAtTime) && !b(revokeAt)));
     oneofusEquiv.addListener(() {
       _children = null;
     });
@@ -47,7 +50,10 @@ class OneofusTreeNode extends NetTreeModel {
       Fetcher fetcher = Fetcher(childNetNode.token, kOneofusDomain);
       assert(fetcher.isCached);
       OneofusTreeNode child = OneofusTreeNode(nextPath,
-          token: childNetNode.token, canonical: true, revokeAt: fetcher.revokeAtTime);
+          token: childNetNode.token,
+          canonical: true,
+          revokeAt: fetcher.revokeAt,
+          revokeAtTime: fetcher.revokeAtTime);
       childNerds[childNetNode.token] = child;
     }
 
@@ -61,15 +67,20 @@ class OneofusTreeNode extends NetTreeModel {
       for (String equiv in oneofusEquiv.getEquivalents(token).whereNot((s) => s == token)) {
         Node fetcherNode = oneofusNet.network[equiv]!;
         OneofusTreeNode child = OneofusTreeNode(nextPath,
-            token: equiv, canonical: false, revokeAt: fetcherNode.revokeAtTime);
+            token: equiv,
+            canonical: false,
+            revokeAt: fetcherNode.revokeAt,
+            revokeAtTime: fetcherNode.revokeAtTime);
         childKeys[equiv] = child;
       }
       if (b(followNet.oneofus2delegates[token])) {
         for (String delegate in followNet.oneofus2delegates[token]!) {
+          Fetcher fetcher = followNet.delegate2fetcher[delegate]!;
           OneofusTreeNode child = OneofusTreeNode(nextPath,
               token: delegate,
               canonical: false,
-              revokeAt: followNet.delegate2fetcher[delegate]!.revokeAtTime);
+              revokeAt: fetcher.revokeAt,
+              revokeAtTime: fetcher.revokeAtTime);
           childKeys[delegate] = child;
         }
       }

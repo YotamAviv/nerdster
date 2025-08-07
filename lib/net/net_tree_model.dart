@@ -50,12 +50,12 @@ abstract class NetTreeModel {
       return keyLabels.labelKey(token!)!;
     }
   }
+
   bool get canonical;
-  DateTime? get revokeAt;
+  String? get revokeAt;
+  DateTime? get revokeAtTime;
   String get displayStatementAtTime => '@${formatUiDatetime(statement!.time)}';
-  String get displayVerbPastTense {
-    return (statement as TrustStatement).verb.pastTense;
-  }
+  String get displayVerbPastTense => (statement as TrustStatement).verb.pastTense;
   bool get rejected => notifications.rejected.containsKey(statement!.token);
   bool get trustsNonCanonical => notifications.rejected.containsKey(statement!.token);
   bool get isCanonicalStatement =>
@@ -68,13 +68,13 @@ abstract class NetTreeModel {
     if (token != null) {
       items.add('N');
       items.add('${keyLabels.labelKey(token!)}-$canonical');
-      if (b(revokeAt)) {
-        // Timezone test issue: I think that I now use local time at both ends (state 
+      if (b(revokeAtTime)) {
+        // Timezone test issue: I think that I now use local time at both ends (state
         // and dump in local time).
-        items.add(formatUiDatetime(revokeAt!));
+        items.add(formatUiDatetime(revokeAtTime!));
       }
       items.add(labelPath());
-    } else if(b(statement)) {
+    } else if (b(statement)) {
       items.add('S');
       items.add(statement!.token);
       items.add(displayStatementAtTime);
@@ -95,7 +95,7 @@ abstract class NetTreeModel {
     return items.join(':');
   }
 
-  /// This helps the tree stay expanded to the same nodes as the user switches follow 
+  /// This helps the tree stay expanded to the same nodes as the user switches follow
   /// contexts and such.
   /// Formerly also for dumping and tests
   String hashString() {
@@ -103,11 +103,9 @@ abstract class NetTreeModel {
     if (b(token)) {
       items.add('N');
       items.add('${keyLabels.labelKey(token!)}-$canonical');
-      if (b(revokeAt)) {
-        items.add(formatIso(revokeAt!));
-      }
+      if (b(revokeAt)) items.add(revokeAt!);
       items.add(labelPath());
-    } else if(b(statement)) {
+    } else if (b(statement)) {
       items.add('S');
       items.add(statement!.token);
     } else {

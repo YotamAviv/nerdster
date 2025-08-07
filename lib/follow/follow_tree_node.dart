@@ -75,7 +75,8 @@ class FollowTreeNode extends NetTreeModel {
 
   @override
   bool get canonical => true;
-
   @override
-  DateTime? get revokeAt => null;
+  String? get revokeAt => null;
+  @override
+  DateTime? get revokeAtTime => null;
 }
