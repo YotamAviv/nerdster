@@ -236,7 +236,7 @@ void main() async {
     // Check rejection
     // (I don't have the rejected statement here because it's not returned by luke.makeDelegate)
     expect(notifications.rejected.values, {"Delegate already claimed."});
-    expect(oneofusEquiv.oneofus2delegates[luke.token], Set());
+    expect(oneofusEquiv.oneofus2delegates[luke.token], []);
     expect(oneofusEquiv.oneofus2delegates[bo.token], {boN.token, lukeN.token});
     myExpect(contentBase.roots.length, 1);
     cn = contentBase.roots.first;

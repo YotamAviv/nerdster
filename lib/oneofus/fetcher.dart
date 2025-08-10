@@ -77,8 +77,16 @@ abstract class Corruptor {
   void corrupt(String token, String error, String? details);
 }
 
+class ErrorCorruptor implements Corruptor {
+  @override
+  void corrupt(String token, String error, String? details) =>
+      throw ('Corrupt!: $token, $error, $details');
+}
+final Corruptor corruptor = ErrorCorruptor();
+
 class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
+  static Corruptor corruptor = ErrorCorruptor();
   static final Measure mVerify = Measure('mVerify');
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
   static const Json _paramsProto = {
@@ -339,6 +347,10 @@ class Fetcher {
       _lastToken = _cached!.isNotEmpty ? _cached!.first.token : null;
     } catch (e, stackTrace) {
       // print(stackTrace);
+      // CONSIDER: A more clear, elegant, or correct corrupted state.
+      // - (The exception is mostly saved in the corruptor notifciation.)
+      // - Throw when asked for statements instead of returning none?
+      _cached = []; 
       corruptor.corrupt(token, e.toString(), stackTrace.toString());
     }
   }
@@ -447,6 +459,10 @@ class Fetcher {
         ? Uri.https(host, path, params)
         : Uri.http(host, path, params);
     return uri;
+  }
+
+  static void setCorruptor(Corruptor corruptor) {
+    Fetcher.corruptor = corruptor;
   }
 
   @override

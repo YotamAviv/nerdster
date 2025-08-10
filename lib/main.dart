@@ -51,8 +51,6 @@ const domain2statementType = {
   kNerdsterDomain: kNerdsterType,
 };
 
-final Corruptor corruptor = Notifications();
-
 const Map<FireChoice, Map<String, (String, String)>> exportUrl = {
   FireChoice.prod: {
     kOneofusDomain: ('export.one-of-us.net', ''),
@@ -114,6 +112,7 @@ Future<void> main() async {
   }
 
   ProgressDialog(); // Just to get its Measure instance to be first
+  Fetcher.setCorruptor(notifications);
   JsonDisplay.interpreter = keyLabels;
   TrustStatement.init();
   ContentStatement.init();

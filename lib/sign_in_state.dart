@@ -61,7 +61,7 @@ class SignInState with ChangeNotifier {
     }
 
     if (b(context) &&
-        !b(Uri.base.queryParameters['skipCredentialsDisplay']) &&
+        !Uri.base.queryParameters.containsKey('skipCredentialsDisplay') &&
         !Prefs.skipCredentials.value) {
       showTopRightDialog(
           context!, CredentialsDisplay(centerResetJson, signedInDelegatePublicKeyJson));

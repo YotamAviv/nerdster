@@ -1,10 +1,11 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/notifications.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
@@ -15,135 +16,133 @@ import 'package:nerdster/util_ui.dart';
 
 import 'oneofus/json_display.dart';
 
+// NEXT: cleanup, renames
+
+final delegateCheck = DelegateCheck();
+final identityCheck = IdentityCheck();
+
 class NotificationsMenu extends StatefulWidget {
   static final NotificationsMenu _singleton = NotificationsMenu._internal();
-  factory NotificationsMenu() {
-    return _singleton;
-  }
+  factory NotificationsMenu() => _singleton;
   const NotificationsMenu._internal();
 
   @override
   State<StatefulWidget> createState() => _NotificationsMenuState();
 }
 
+
+abstract class _Renderer {
+  MenuItemButton make(Problem hint, BuildContext context);
+}
+
+final _renderers = {
+  // TrustProblem: PairToWidge(),
+  TitleDescProblem: _TitleDescRenderer(),
+  TrustProblem: _TrustRenderer(),
+  CorruptionProblem: _CorruptionRenderer()
+};
+
+class _TitleDescRenderer implements _Renderer {
+  @override
+  MenuItemButton make(Object hint, BuildContext context) {
+    final titleDesc = hint as TitleDescProblem;
+    MenuItemButton item = MenuItemButton(
+        onPressed: () => alert(titleDesc.title, titleDesc.desc, ['Okay'], context),
+        child: Text(titleDesc.title));
+    return item;
+  }
+}
+
+class _TrustRenderer implements _Renderer {
+  @override
+  MenuItemButton make(Object hint, BuildContext context) {
+    final TrustProblem problem = hint as TrustProblem;
+    TrustStatement statement = TrustStatement.find(problem.statementToken)!;
+    String reason = problem.problem;
+    return MenuItemButton(
+        onPressed: () {
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                  title: Text(reason),
+                  content: _StatementNotification(statement, reason),
+                  actions: [
+                    OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Okay'))
+                  ]);
+            },
+          );
+        },
+        child: Text(reason));
+  }
+}
+
+class _CorruptionRenderer implements _Renderer {
+  @override
+  MenuItemButton make(Object hint, BuildContext context) {
+    final problem = hint as CorruptionProblem;
+    Jsonish? iKey = Jsonish.find(problem.keyToken);
+    String? iLable = keyLabels.labelKey(problem.keyToken);
+    MenuItemButton item = MenuItemButton(
+        onPressed: () {
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+                  title: SelectableText(problem.error),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SelectableText('''iToken: $problem.token, iKey: $iKey, iLable: $iLable '''),
+                        if (b(problem.details)) SelectableText(problem.details!),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(), child: Text('Okay'))
+                  ]);
+            },
+          );
+        },
+        child: Text(problem.error));
+    return item;
+  }
+}
+
 class _NotificationsMenuState extends State<NotificationsMenu> {
   @override
   void initState() {
-    contentBase.addListener(listen);
-    followNet.addListener(listen);
-    signInState.addListener(listen);
-    Notifications().addListener(listen);
+    NotificationsComp().addListener(listen);
     super.initState();
   }
 
   @override
   void dispose() {
-    contentBase.removeListener(listen);
-    followNet.removeListener(listen);
-    signInState.removeListener(listen);
-    Notifications().removeListener(listen);
+    NotificationsComp().removeListener(listen);
     super.dispose();
   }
 
-  void listen() {
+  Future<void> listen() async {
+    await NotificationsComp().waitUntilReady();
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!Comp.compsReady([oneofusNet, followNet, oneofusEquiv])) {
-      SchedulerBinding.instance.addPostFrameCallback((_) {
-        listen();
-      });
-      return const Text('Loading..');
-    }
+    List<MenuItemButton> items = [];
 
-    List<MenuItemButton> items = <MenuItemButton>[];
-
-    if (b(signInState.centerReset) &&
-        !followNet.oneofus2delegates.containsKey(signInState.centerReset)) {
-      MenuItemButton item = MenuItemButton(
-          onPressed: () {
-            alert(
-                '''You're not in this network''',
-                '''You signed in using an identity that isn't currently a member of the network you're viewing.
-Your own contributions are not be visible from this PoV (Point of View).
-You can still rate, submit, change follow settings, etc... when you use a PoV that includes you.''',
-                ['Okay'],
-                context);
-          },
-          child: const Text('''You're not in this network.'''));
-      items.add(item);
-    }
-    // TODO: Check if delegate revoked
-
-    Map<String, String> statementToken2reason = {
-      ...notifications.rejected,
-      ...notifications.warned,
-      // corrupt tokens are key tokens, not statement tokens ...notifications.corrupted,
-    };
-    for (MapEntry<String, String> e in statementToken2reason.entries) {
-      TrustStatement statement = TrustStatement.find(e.key)!;
-      String reason = e.value;
-      MenuItemButton item = MenuItemButton(
-          onPressed: () {
-            showDialog<void>(
-              context: context,
-              barrierDismissible: false,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                    title: Text(reason),
-                    content: StatementNotification(statement!, reason),
-                    actions: [
-                      OutlinedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('Okay'))
-                    ]);
-              },
-            );
-          },
-          child: Text(reason));
-      items.add(item);
-    }
-
-    for (MapEntry<String, (String, String?)> e in notifications.corrupted.entries) {
-      String iToken = e.key;
-      Jsonish? iKey = Jsonish.find(iToken);
-      String? iLable = keyLabels.labelKey(e.key);
-      String error = e.value.$1;
-      String? details = e.value.$2;
-      MenuItemButton item = MenuItemButton(
-          onPressed: () {
-            showDialog<void>(
-              context: context,
-              barrierDismissible: false,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                    shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-                    title: SelectableText(error),
-                    // TODO: Better than this...
-                    content: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          SelectableText('''iToken: $iToken, iKey: $iKey, iLable: $iLable '''),
-                          if (b(details)) SelectableText(details!),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      OutlinedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('Okay'))
-                    ]);
-              },
-            );
-          },
-          child: Text(error));
-      items.add(item);
+    for (Problem hint in NotificationsComp().hints) {
+      _Renderer? widger = _renderers[hint.runtimeType];
+      assert(b(widger), 'no widger for: ${hint.runtimeType.toString()}');
+      items.add(widger!.make(hint, context));
     }
 
     Color? color = items.isNotEmpty ? Colors.red : null;
@@ -159,11 +158,11 @@ You can still rate, submit, change follow settings, etc... when you use a PoV th
   }
 }
 
-class StatementNotification extends StatelessWidget {
+class _StatementNotification extends StatelessWidget {
   final TrustStatement statement;
   final String reason;
 
-  const StatementNotification(this.statement, this.reason, {super.key});
+  const _StatementNotification(this.statement, this.reason, {super.key});
 
   static const Widget _space = SizedBox(height: 10);
 
@@ -201,10 +200,10 @@ That said, even in that situation, it may be the case that that guy never checks
 - Email conflict-help@nerdtser.org. Include the link from the "menu => /etc => Generate link for current view".'''),
             _space,
             Text('''Trust paths to the statement's signing key:'''),
-            TrustRows(iNode),
+            _TrustRows(iNode),
             _space,
             Text('''Trust paths to the key the statements is trying to ${statement.verb.label}:'''),
-            TrustRows(subjectNode),
+            _TrustRows(subjectNode),
             _space,
             Linky('''This app obviously does not know which actual people posses which keys.
 It has labled the keys in the paths above by best guess monikers provided by your network, but those could be wrong.
@@ -215,9 +214,9 @@ You can click on the keys on those paths to see their QR codes, and if appropria
   }
 }
 
-class TrustRows extends StatelessWidget {
+class _TrustRows extends StatelessWidget {
   final Node? node;
-  const TrustRows(this.node, {super.key});
+  const _TrustRows(this.node, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -241,7 +240,7 @@ class TrustRows extends StatelessWidget {
         }
         moniker = moniker.trim();
         monikers.add(Text(' --"$moniker"-> '));
-        monikers.add(NameKeyWidget(keyLabels.labelKey(statement.subjectToken)!, statement.subject));
+        monikers.add(_NameKeyWidget(keyLabels.labelKey(statement.subjectToken)!, statement.subject));
       }
       rows.add(Row(children: monikers));
     }
@@ -250,20 +249,18 @@ class TrustRows extends StatelessWidget {
   }
 }
 
-class NameKeyWidget extends StatelessWidget {
+class _NameKeyWidget extends StatelessWidget {
   final String display;
   final Json keyJson;
 
-  const NameKeyWidget(this.display, this.keyJson, {super.key});
+  const _NameKeyWidget(this.display, this.keyJson, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () => JsonQrDisplay(keyJson).show(context),
-      child: Text(
-        display,
-        style: linkStyle,
-      ),
+      child: Text(display, style: linkStyle),
     );
   }
 }
+

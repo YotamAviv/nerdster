@@ -103,7 +103,6 @@ class _ContentTreeState extends State<ContentTree> {
       if (bs(Uri.base.queryParameters['netView'])) await NetBar.showTree(context);
 
       if (b(Uri.base.queryParameters['verify2'])) {
-        // Verify(input: ))
         await showDialog(
             context: context,
             builder: (context) => Dialog(
