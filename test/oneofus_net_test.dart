@@ -786,7 +786,7 @@ void main() async {
     await compareNetworkToTree(bart.token);
   });
 
-  test('simpsons2', () async {
+  test('simpsonsDemo', () async {
     await simpsonsDemo();
     oneofusNet.degrees = 5;
     oneofusNet.numPaths = 1;

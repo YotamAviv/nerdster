@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/main.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -213,48 +214,54 @@ class FetcherTestHelper {
   }
 
   Future<void> notarizationBlockchainViolation() async {
-    // Test relies on not having any notifications at start.
-    expect(notifications.corrupted.length, 0);
+    Corruptor prevCorruptor = Fetcher.corruptor;
+    try {
+      Fetcher.setCorruptor(Notifications.singleton);
 
-    Prefs.skipVerify.value = true;
-    TestSigner signer = TestSigner();
-    Fetcher fetcher;
+      // Test relies on not having any notifications at start.
+      expect(notifications.corrupted.length, 0);
 
-    List<Statement> js;
-    final Json kI = makeI();
-    final String token = getToken(kI);
-    fetcher = Fetcher(token, _domain);
+      Prefs.skipVerify.value = true;
+      TestSigner signer = TestSigner();
+      Fetcher fetcher;
 
-    await fetcher
-        .push({'statement': _type, 'I': kI, 'trust': 'sub1', 'time': clock.nowIso}, signer);
-    await fetcher
-        .push({'statement': _type, 'I': kI, 'trust': 'sub2', 'time': clock.nowIso}, signer);
-    clock.nowIso;
-    DateTime t1 = testClock.nowClean;
-    clock.nowIso;
-    await fetcher
-        .push({'statement': _type, 'I': kI, 'trust': 'sub3', 'time': clock.nowIso}, signer);
-    await fetcher
-        .push({'statement': _type, 'I': kI, 'trust': 'sub4', 'time': clock.nowIso}, signer);
+      final Json kI = makeI();
+      final String token = getToken(kI);
+      fetcher = Fetcher(token, _domain);
 
-    Fetcher.clear();
+      await fetcher
+          .push({'statement': _type, 'I': kI, 'trust': 'sub1', 'time': clock.nowIso}, signer);
+      await fetcher
+          .push({'statement': _type, 'I': kI, 'trust': 'sub2', 'time': clock.nowIso}, signer);
+      clock.nowIso;
+      DateTime t1 = testClock.nowClean;
+      clock.nowIso;
+      await fetcher
+          .push({'statement': _type, 'I': kI, 'trust': 'sub3', 'time': clock.nowIso}, signer);
+      await fetcher
+          .push({'statement': _type, 'I': kI, 'trust': 'sub4', 'time': clock.nowIso}, signer);
 
-    Json fraudulent = {'statement': _type, 'I': kI, 'trust': 'bad-sub', 'time': formatIso(t1)};
-    Jsonish fraudJ = await Jsonish.makeSign(fraudulent, signer);
-    final fireStatements =
-        _fire.collection(getToken(kI)).doc('statements').collection('statements');
-    await fireStatements
-        .doc(fraudJ.token)
-        .set(fraudJ.json)
-        .then((doc) {}, onError: (e) => print("Error: $e"));
+      Fetcher.clear();
 
-    fetcher = Fetcher(token, _domain);
-    // notary verification is different between local and cloud (right now).
-    // Cloud functions throws error; local skips the statement.
-    await fetcher.fetch();
-    expect(notifications.corrupted.length, 1);
-    expect(notifications.corrupted.entries.first.key, token);
-    print('(500 (Internal Server Error) or "Notarization violation" above was expected)');
+      Json fraudulent = {'statement': _type, 'I': kI, 'trust': 'bad-sub', 'time': formatIso(t1)};
+      Jsonish fraudJ = await Jsonish.makeSign(fraudulent, signer);
+      final fireStatements =
+          _fire.collection(getToken(kI)).doc('statements').collection('statements');
+      await fireStatements
+          .doc(fraudJ.token)
+          .set(fraudJ.json)
+          .then((doc) {}, onError: (e) => print("Error: $e"));
+
+      fetcher = Fetcher(token, _domain);
+      // notary verification is different between local and cloud (right now).
+      // Cloud functions throws error; local skips the statement.
+      await fetcher.fetch();
+      expect(notifications.corrupted.length, 1);
+      expect(notifications.corrupted.entries.first.key, token);
+      print('(500 (Internal Server Error) or "Notarization violation" above was expected)');
+    } finally {
+      Fetcher.setCorruptor(prevCorruptor);
+    }
   }
 
   Future<void> distinctContentComment() async {

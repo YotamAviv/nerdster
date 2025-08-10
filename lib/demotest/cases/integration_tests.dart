@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
+import 'package:nerdster/demotest/cases/egos.dart';
 import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
@@ -41,4 +42,9 @@ void integrationTests() async {
   test('trustBlockConflict', () async {
     await trustBlockConflict();
   });
+
+  // Only on [FakeFirebase]
+  // test('egosCorrupt', () async {
+  //   await egosCorrupt();
+  // });
 }

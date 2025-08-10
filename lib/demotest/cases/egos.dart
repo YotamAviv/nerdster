@@ -1,7 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/notifications.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:test/test.dart';
 
 Future<(DemoKey, DemoKey?)> egos() async {
   DemoKey jock = await DemoKey.findOrCreate('jock');
@@ -56,4 +62,35 @@ Future<(DemoKey, DemoKey?)> egos() async {
   await jockN.doFollow(hipster, {'hip': 1});
 
   return (poser, poserN);
+}
+
+// This test only works in FakeFirebase where we can delete.
+// CONSIDER: TEST: Other corruption (bad signature, bad id, ...)
+Future<(DemoKey, DemoKey?)> egosCorrupt() async {
+  final (DemoKey identity, DemoKey? delegate) = await egos();
+
+  await delegate!.doRate(title: 'a');
+  Statement s = await delegate.doRate(title: 'b');
+  await delegate.doRate(title: 'c');
+
+  FirebaseFirestore fire = FireFactory.find(kNerdsterDomain);
+
+  final CollectionReference<Map<String, dynamic>> fireStatements =
+      fire.collection(delegate.token).doc('statements').collection('statements');
+  try {
+    final doc = await fireStatements.doc(s.token).get();
+    assert(doc.exists);
+    await fireStatements.doc(s.token).delete();
+    print('Deleted statement');
+  } catch (e) {
+    print('Error deleting statement: $e');
+  }
+
+  Fetcher.clear();
+
+  await NotificationsComp().waitUntilReady();
+
+  expect(notifications.corrupted.length, 1);
+
+  return (identity, delegate);
 }
