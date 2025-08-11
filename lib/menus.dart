@@ -106,7 +106,7 @@ class Menus {
               MyCheckbox(Prefs.skipCredentials, 'Credentials upon new sign-in', opposite: true),
               MyCheckbox(Prefs.skipLgtm, 'Review/confirmation before publishing signed statements',
                   opposite: true),
-              MyCheckbox(Prefs.showStuff, 'JSON, keys, and trust/follow statements'),
+              MyCheckbox(Prefs.showStuff, 'JSON, keys, and statements'),
               // MyCheckbox(Prefs.showJson, 'show JSON'),
               // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
               // MyCheckbox(Prefs.showStatements, 'show trust statements'),
