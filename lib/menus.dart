@@ -103,13 +103,14 @@ class Menus {
             ], child: const Text('Follow network')),
             // const Text('--------- nerdier ---------'),
             SubmenuButton(menuChildren: [
-              MyCheckbox(Prefs.skipCredentials, 'Credentials upon new sign-in'),
-              MyCheckbox(Prefs.skipLgtm, 'Review upon publishing signed statements'),
+              MyCheckbox(Prefs.skipCredentials, 'Credentials upon new sign-in', opposite: true),
+              MyCheckbox(Prefs.skipLgtm, 'Review/confirmation before publishing signed statements',
+                  opposite: true),
+              MyCheckbox(Prefs.showStuff, 'JSON, keys, and trust/follow statements'),
               // MyCheckbox(Prefs.showJson, 'show JSON'),
               // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
               // MyCheckbox(Prefs.showStatements, 'show trust statements'),
-            ], child: const Text("Don't show")),
-            MyCheckbox(Prefs.showStuff, 'Show JSON, keys, and statements'),
+            ], child: const Text("Show/don't show")),
           ],
           child: const Row(
             children: [

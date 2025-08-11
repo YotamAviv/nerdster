@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class MyCheckbox extends StatefulWidget {
   final ValueNotifier<bool> valueNotifier;
   final String title;
-  const MyCheckbox(this.valueNotifier, this.title, {super.key});
+  final bool opposite;
+  const MyCheckbox(this.valueNotifier, this.title, {super.key, this.opposite = false});
 
   @override
   State<StatefulWidget> createState() {
@@ -18,11 +19,9 @@ class _MyCheckboxState extends State<MyCheckbox> {
   Widget build(BuildContext context) {
     return Row(children: [
       Checkbox(
-        value: widget.valueNotifier.value,
+        value: widget.opposite ? !widget.valueNotifier.value : widget.valueNotifier.value,
         onChanged: (bool? value) {
-          setState(() {
-            widget.valueNotifier.value = value!;
-          });
+          setState(() => widget.valueNotifier.value = widget.opposite ? !value! : value!);
         },
       ),
       Text(widget.title),
