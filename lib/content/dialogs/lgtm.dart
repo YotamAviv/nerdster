@@ -28,7 +28,7 @@ class Lgtm {
                       shrinkWrap: true,
                       children: [
                         Linky('''For your review: Nerd'ster intends to:
-- Sign the statemet below using its delegate key (which you signed using your one-of-us key)
+- Sign the statemet below using its delegate key (which you signed using your identity key)
 - Publish it at: https://export.nerdster.org/?token=${signInState.signedInDelegate}'''),
                         SizedBox(
                             height: 300, child: JsonDisplay(json, interpret: ValueNotifier(true))),
