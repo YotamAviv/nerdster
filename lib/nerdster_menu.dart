@@ -38,35 +38,28 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-  color: Theme.of(context).colorScheme.surfaceContainer, // full-width bar color
-  child: SizedBox(
-    height: 40,
-    width: double.infinity, // ensure the bar paints across the row
-    child: Row(
-      children: [
-        MenuBar(
-          // Let the Material’s color show through; MenuBar won't paint gray itself
-          style: const MenuStyle(
-            backgroundColor: WidgetStatePropertyAll(Colors.transparent),
-            elevation: WidgetStatePropertyAll(0),
-            padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
-          ),
-          children: Menus.build(context),
+    return SizedBox(
+      width: double.infinity, // full width, like production
+      child: IntrinsicHeight(
+        // gives Stack a finite height based on MenuBar
+        child: Stack(
+          children: [
+            // Base layout: MenuBar stretches to full width
+            Row(children: [Expanded(child: MenuBar(children: Menus.build(context)))]),
+            // Right-edge Nerdster image, overlaid (doesn't affect MenuBar layout)
+            Positioned(
+              right: 12,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                  child: Image.asset(
+                'assets/images/nerd.png',
+                height: 38, // tweak to taste; doesn’t change MenuBar’s height
+              )),
+            )
+          ],
         ),
-        const Spacer(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          child: Image.asset(
-            'assets/images/nerd.png',
-            height: 32,
-          ),
-        ),
-      ],
-    ),
-  ),
-);
-
-
+      ),
+    );
   }
 }
