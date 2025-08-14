@@ -38,28 +38,17 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity, // full width, like production
-      child: IntrinsicHeight(
-        // gives Stack a finite height based on MenuBar
-        child: Stack(
-          children: [
-            // Base layout: MenuBar stretches to full width
-            Row(children: [Expanded(child: MenuBar(children: Menus.build(context)))]),
-            // Right-edge Nerdster image, overlaid (doesn't affect MenuBar layout)
-            Positioned(
-              right: 12,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                  child: Image.asset(
+    return IntrinsicHeight(
+        child: Stack(children: [
+      Row(children: [Expanded(child: MenuBar(children: Menus.build(context)))]),
+      Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: Image.asset(
                 'assets/images/nerd.png',
-                height: 38, // tweak to taste; doesn’t change MenuBar’s height
-              )),
-            )
-          ],
-        ),
-      ),
-    );
+                height: 38, // tweak to taste; doesn't change MenuBar height
+              )))
+    ]));
   }
 }
