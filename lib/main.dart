@@ -68,6 +68,7 @@ Future<void> main() async {
   // Don't even load up Firebase if we're just showing the validate demo
   if (b(Uri.base.queryParameters['verify'])) {
     runApp(MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: Scaffold(body: SafeArea(child: Verify(input: Uri.base.queryParameters['verify'])))));
     return;
   }
@@ -125,7 +126,7 @@ Future<void> main() async {
       defaultTargetPlatform == TargetPlatform.android;
 
   // -------------- run app ---------------
-  runApp(const MaterialApp(home: ContentTree()));
+  runApp(const MaterialApp(debugShowCheckedModeBanner: false, home: ContentTree()));
 }
 
 Future<void> defaultSignIn(BuildContext context) async {
