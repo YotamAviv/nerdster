@@ -45,10 +45,10 @@ class _State extends State<JsonDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    var interpretd = (b(JsonDisplay.interpreter) && widget.interpret.value)
+    var interpreted = (b(JsonDisplay.interpreter) && widget.interpret.value)
         ? JsonDisplay.interpreter!.interpret(widget.subject)
         : widget.subject;
-    String display = encoder.convert(interpretd);
+    String display = encoder.convert(interpreted);
     return Stack(
       children: [
         Positioned.fill(
