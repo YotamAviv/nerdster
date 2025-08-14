@@ -38,9 +38,35 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return MenuBar(
-        // style: const MenuStyle(alignment: Alignment.topRight,
-        // backgroundColor: WidgetStatePropertyAll<Color>(Colors.white)),
-        children: Menus.build(context));
+    return Material(
+  color: Theme.of(context).colorScheme.surfaceContainer, // full-width bar color
+  child: SizedBox(
+    height: 40,
+    width: double.infinity, // ensure the bar paints across the row
+    child: Row(
+      children: [
+        MenuBar(
+          // Let the Material’s color show through; MenuBar won't paint gray itself
+          style: const MenuStyle(
+            backgroundColor: WidgetStatePropertyAll(Colors.transparent),
+            elevation: WidgetStatePropertyAll(0),
+            padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
+          ),
+          children: Menus.build(context),
+        ),
+        const Spacer(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: Image.asset(
+            'assets/images/nerd.png',
+            height: 32,
+          ),
+        ),
+      ],
+    ),
+  ),
+);
+
+
   }
 }

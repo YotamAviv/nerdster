@@ -103,6 +103,7 @@ class Menus {
             ], child: const Text('Follow network')),
             // const Text('--------- nerdier ---------'),
             SubmenuButton(menuChildren: [
+              // CONSIDER: Rename to 'Credentials received', 'Credentials accepted', 
               MyCheckbox(Prefs.skipCredentials, 'Credentials upon new sign-in', opposite: true),
               MyCheckbox(Prefs.skipLgtm, 'Review/confirmation before publishing signed statements',
                   opposite: true),
