@@ -14,7 +14,7 @@ import 'package:nerdster/singletons.dart';
 
 OouVerifier _oouVerifier = OouVerifier();
 
-const String kVerify = 'Verify...';
+const String kVerify = 'Verify, Tokenize';
 const Widget _space = SizedBox(height: 20);
 
 Widget headline(String text) => Builder(
@@ -65,7 +65,6 @@ class _VerifyState extends State<Verify> {
       appBar: AppBar(
         backgroundColor: Colors.indigo[700],
         centerTitle: true,
-        // title: const Text('Verify...', style: TextStyle(color: Colors.white)),
         actions: [
           if (_hasChanged)
             IconButton(
@@ -82,7 +81,7 @@ class _VerifyState extends State<Verify> {
               ),
             ),
           IconButton(
-            tooltip: 'Verify input',
+            tooltip: 'Verify and tokenize input',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -92,7 +91,7 @@ class _VerifyState extends State<Verify> {
             },
             icon: Row(
               children: const [
-                Text('Verify', style: TextStyle(color: Colors.white)),
+                Text('Verify, Tokenize', style: TextStyle(color: Colors.white)),
                 SizedBox(width: 4),
                 Icon(Icons.arrow_forward, color: Colors.white),
               ],
@@ -121,7 +120,7 @@ class _VerifyState extends State<Verify> {
             ),
             ExpansionTile(
               tilePadding: EdgeInsets.zero,
-              title: headline('Signature verification and other processing'),
+              title: headline('Signature verification and tokenizing'),
               children: [
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
@@ -140,11 +139,15 @@ class _VerifyState extends State<Verify> {
   • "signature" — a base64url-encoded signature
 
 The process will:
-  1. Extract and decode the public key from "I" (if present)
-  2. Extract the signature from "signature" (if present)
-  3. Validate the full JSON content (excluding "signature") using the public key (both must be present)
-  4. Compute the token (SHA1 hash of ordered, formatted JSON).
-  5. Interpret: Display names in place of public keys, strip or convert fields or values for readability''',
+1. Normalize the JSON input: 
+  - Order the fields (statement, time, I, [verb], ..., signature)
+  - Format using 2 space indentation
+2. Verify:
+  - Extract and decode the public key from field "I" (if present)
+  - Extract the signature from field "signature" (if present)
+  - Validate the full JSON content excluding the signature using the public key and signature (both must be present)
+3. Tokenize: Compute the SHA1 hash of the normalized JSON.
+4. Interpret: Display names in place of public keys, strip or convert values for readability''',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(fontSize: 13.5),
                               ),
