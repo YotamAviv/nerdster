@@ -104,8 +104,8 @@ class Menus {
             // const Text('--------- nerdier ---------'),
             SubmenuButton(menuChildren: [
               // CONSIDER: Rename to 'Credentials received', 'Credentials accepted', 
-              MyCheckbox(Prefs.skipCredentials, 'Credentials upon new sign-in', opposite: true),
-              MyCheckbox(Prefs.skipLgtm, 'Review/confirmation before publishing signed statements',
+              MyCheckbox(Prefs.skipCredentials, 'Sign-in credentials accepted', opposite: true),
+              MyCheckbox(Prefs.skipLgtm, 'Statements review/confirmation',
                   opposite: true),
               MyCheckbox(Prefs.showStuff, 'JSON, keys, and statements'),
               // MyCheckbox(Prefs.showJson, 'show JSON'),
