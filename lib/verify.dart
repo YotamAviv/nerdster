@@ -143,7 +143,7 @@ The process will:
   1. Extract and decode the public key from "I" (if present)
   2. Extract the signature from "signature" (if present)
   3. Validate the full JSON content (excluding "signature") using the public key (both must be present)
-  4. Compute token (SHA1 hash of ordered, formatted JSON). Tokens are used to identity subjects without specifying them (ex. when censored)
+  4. Compute the token (SHA1 hash of ordered, formatted JSON).
   5. Interpret: Display names in place of public keys, strip or convert fields or values for readability''',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(fontSize: 13.5),
