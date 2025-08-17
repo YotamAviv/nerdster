@@ -29,6 +29,7 @@ class Prefs {
 
   // DEV:
   static final ValueNotifier<bool> dev = ValueNotifier<bool>(devDefault || bNerd);
+  static final ValueNotifier<bool> bogus = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> httpFetch = ValueNotifier<bool>(true);
   static final ValueNotifier<bool> batchFetch = ValueNotifier<bool>(true);
 

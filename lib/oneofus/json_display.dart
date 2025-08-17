@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/prefs.dart';
 
 import 'util.dart';
 
@@ -17,10 +18,12 @@ class JsonDisplay extends StatefulWidget {
   }
 
   final dynamic subject; // String (ex. token) or Json (ex. key, statement)
+  final dynamic bogusSubject;
   final ValueNotifier<bool> interpret;
   final bool strikethrough;
 
-  JsonDisplay(this.subject, {ValueNotifier<bool>? interpret, this.strikethrough = false, super.key})
+  JsonDisplay(this.subject,
+      {ValueNotifier<bool>? interpret, this.bogusSubject, this.strikethrough = false, super.key})
       : interpret = interpret ?? ValueNotifier<bool>(true);
 
   @override
@@ -32,7 +35,16 @@ class _State extends State<JsonDisplay> {
   void initState() {
     super.initState();
     initAsync();
+    Prefs.bogus.addListener(listener);
   }
+
+  @override
+  void dispose() {
+    Prefs.bogus.removeListener(listener);
+    super.dispose();
+  }
+
+  void listener() => setState(() {});
 
   Future<void> initAsync() async {
     if (b(JsonDisplay.interpreter)) {
@@ -45,9 +57,11 @@ class _State extends State<JsonDisplay> {
 
   @override
   Widget build(BuildContext context) {
+    var useSubject = !Prefs.bogus.value ? widget.subject : widget.bogusSubject ?? widget.subject;
+
     var interpreted = (b(JsonDisplay.interpreter) && widget.interpret.value)
-        ? JsonDisplay.interpreter!.interpret(widget.subject)
-        : widget.subject;
+        ? JsonDisplay.interpreter!.interpret(useSubject)
+        : useSubject;
     String display = encoder.convert(interpreted);
     return Stack(
       children: [

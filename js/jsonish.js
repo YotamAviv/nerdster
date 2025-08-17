@@ -92,7 +92,7 @@ function order(thing) {
   }
 }
 
-async function keyToken(input) {
+async function getToken(input) {
   if (typeof input === 'string') {
     return input;
   } else {
@@ -149,7 +149,7 @@ async function main() {
       // Kludge: The server communicates token as "id" to us in the statement.
       const id = statement.id;
       delete statement.id;
-      const token = await keyToken(statement);
+      const token = await getToken(statement);
       if (id != token) {
         console.log(`${id} != ${token}`);
         console.log(JSON.stringify(statement, null, 2));

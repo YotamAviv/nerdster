@@ -10,39 +10,48 @@ import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in_state.dart';
 
-/// This doc is a little stale as of the switch to HTTP POST.
-/// Nerdster web client QR sign-in:
-/// - Create a PKE keyPair and a session string.
-/// - Display QR code containing the public key and a session ID for user's phone to scan.
-/// - Wait for the phone app to POST data to your backend (which writes to Firestore).
-/// The user's phone packs these up and communicates them to the server (HTTP POST)
-///   - Oneofus public key
-///   - (optional) Nerdster key pair (optionally encrypted, iPhone App Store restrictions.)
-/// Nerdster web client reads that from Firestore and signs in.
+/// Nerdster web client / phone app QR sign-in:
+/// - Create encryption key (public key token is "session").
+/// - Display QR code with "Sign-in parameters" to phone.
+/// - Wait for the phone app to POST data Cloud function that just writes that Firestore "session"
+///   column which this app should be listening to.
+///
+/// V1: works fine, looks bad: [domain, uri, method, publicKey, session]
+/// V2: looks better: [domain, url, encryptionPK]
+/// Can't change to V1 without breaking things as there may be phones with old versions out there.
+/// Workaround is fake it:
+/// - show V1 in the QR, show V2 in the text below (just for show, "bogus")
+/// - teach phone to handle either and so that eventually we migrate to V2.
 
 Future<void> qrSignIn(BuildContext context) async {
-  Map<String, dynamic> forPhone = <String, dynamic>{};
+  Json forPhone = {};
+  Json forPhoneV2 = {};
   forPhone['domain'] = kNerdsterDomain;
+  forPhoneV2['domain'] = kNerdsterDomain;
   // Getting this to work deployed at Google Cloud functions proved as fustrating as I had anticipated.
   // Kudos: https://stackoverflow.com/questions/76306434/unpredictable-urls-with-firebase-cloud-functions-2nd-gen
   // notes that predictable URLs can still do work, but not in camelCase, yes in
   // notcamelcase, and so 'signin' (not 'signIn').
+
   forPhone['method'] = 'POST';
   forPhone['uri'] = 'https://signin.nerdster.org/signin';
+  forPhoneV2['url'] = 'https://signin.nerdster.org/signin';
   if (fireChoice == FireChoice.emulator) {
-    forPhone['uri'] = 'http://127.0.0.1:5001/nerdster/us-central1/signin)';
+    forPhone['uri'] = 'http://127.0.0.1:5001/nerdster/us-central1/signin';
+    forPhoneV2['url'] = 'http://127.0.0.1:5001/nerdster/us-central1/signin';
   }
   // disposable PKE key pair for phone to encrypt to this web app.
-  final PkeKeyPair keyPair = await crypto.createPke();
-  final PkePublicKey publicKey = await keyPair.publicKey;
-  final String session = getToken(await publicKey.json);
+  final PkeKeyPair pkeKeyPair = await crypto.createPke();
+  final PkePublicKey pkePK = await pkeKeyPair.publicKey;
+  var pkePKJson = await pkePK.json;
+  final String session = getToken(pkePKJson);
   forPhone['session'] = session;
-  forPhone['publicKey'] = await publicKey.json;
+  forPhone['publicKey'] = pkePKJson;
+  forPhoneV2['encryptionPk'] = pkePKJson;
 
   ValueNotifier<bool> storeKeys = ValueNotifier<bool>(true);
 
@@ -53,12 +62,12 @@ Future<void> qrSignIn(BuildContext context) async {
   // Listen for encrypted keypair to arrive at collection
   // Start listening BEFORE showing dialog
   subscription = firestore.collection('sessions').doc('doc').collection(session).snapshots().listen(
-    (QuerySnapshot<Map<String, dynamic>> docSnapshots) async {
+    (QuerySnapshot<Json> docSnapshots) async {
       if (docSnapshots.docs.isEmpty || completer.isCompleted) return;
       completer.complete(); // signal that something arrived
       await subscription!.cancel();
 
-      Map<String, dynamic>? data = docSnapshots.docs.first.data();
+      Json? data = docSnapshots.docs.first.data();
 
       // Unpack Oneofus public key
       Json identityJson = data[kOneofusDomain]!;
@@ -67,15 +76,16 @@ Future<void> qrSignIn(BuildContext context) async {
       // Optionally unpack and decrypt Nerdster private key
       Json? delegateJson;
       OouKeyPair? nerdsterKeyPair;
-      if (b(data['publicKey'])) {
+      if (b(data['delegateCiphertext']) || b(data['delegateCleartext'])) {
         PkePublicKey phonePkePublicKey = await crypto.parsePkePublicKey(data['publicKey']);
 
         String? delegateCiphertext = data['delegateCiphertext'];
         String? delegateCleartext = data['delegateCleartext'];
         assert(!(b(delegateCiphertext) && b(delegateCleartext)));
+        // TODO: Migrate to always encrypt, need to wait for iPhones to all be updated.
         if (b(delegateCiphertext)) {
           print('delegate key encrypted: YES');
-          delegateCleartext = await keyPair.decrypt(delegateCiphertext!, phonePkePublicKey);
+          delegateCleartext = await pkeKeyPair.decrypt(delegateCiphertext!, phonePkePublicKey);
         } else {
           print('delegate key encrypted: NO');
         }
@@ -94,7 +104,8 @@ Future<void> qrSignIn(BuildContext context) async {
 
   await showDialog(
     context: context,
-    builder: (_) => QrSignInDialog(forPhone: forPhone, storeKeys: storeKeys),
+    builder: (_) =>
+        QrSignInDialog(forPhone: forPhone, forPhoneBogus: forPhoneV2, storeKeys: storeKeys),
   ).then((_) {
     // If user dismissed the dialog manually, cancel listener and complete
     if (!completer.isCompleted) completer.complete(); // dialog was dismissed
@@ -106,10 +117,12 @@ Future<void> qrSignIn(BuildContext context) async {
 }
 
 class QrSignInDialog extends StatelessWidget {
-  final Map<String, dynamic> forPhone;
+  final Json forPhone;
+  final Json forPhoneBogus;
   final ValueNotifier<bool> storeKeys;
 
-  const QrSignInDialog({required this.forPhone, required this.storeKeys, super.key});
+  const QrSignInDialog(
+      {required this.forPhone, required this.forPhoneBogus, required this.storeKeys, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -117,29 +130,21 @@ class QrSignInDialog extends StatelessWidget {
     final double width = min(availableSize.width * 0.4, availableSize.height * 0.9 / 2);
 
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-      child: Padding(
-        padding: kPadding,
-        child: SizedBox(
-          width: width,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Sign-in Parameters',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              Text('requesting identity and/or delegate key', textAlign: TextAlign.center),
-              JsonQrDisplay(forPhone, interpret: ValueNotifier(false)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [MyCheckbox(storeKeys, 'Store keys')],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+        shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+        child: SingleChildScrollView(
+            child: Padding(
+                padding: kPadding,
+                child: SizedBox(
+                    width: width,
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text('Sign-in Parameters',
+                          style: TextStyle(fontSize: 20), textAlign: TextAlign.center),
+                      JsonQrDisplay(forPhone,
+                          bogusSubject: forPhoneBogus, interpret: ValueNotifier(false)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [MyCheckbox(storeKeys, 'Store keys')],
+                      )
+                    ])))));
   }
 }
