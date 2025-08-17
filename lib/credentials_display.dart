@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -16,7 +18,10 @@ class CredentialsDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     Size whole = MediaQuery.of(context).size;
     double w = whole.width / 4;
-    double h = w * 3 / 2;
+    // make a little smaller
+    w = w * 0.8;
+    double h = min(w * 3 / 2, whole.height - 200);
+    w = h * 2 / 3;
     return SizedBox(
       width: w * 2,
       child: Column(

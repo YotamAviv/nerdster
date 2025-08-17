@@ -169,6 +169,8 @@ $link''',
                       signInState.centerResetJson, signInState.signedInDelegatePublicKeyJson)),
               child: Text('showCredentials')),
 
+          MyCheckbox(Prefs.bogus, 'bogus'),
+
           SubmenuButton(menuChildren: [
             MyCheckbox(Prefs.httpFetch, 'httpFetch'),
             MyCheckbox(Prefs.batchFetch, 'batchFetch'),

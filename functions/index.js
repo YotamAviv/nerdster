@@ -41,7 +41,7 @@ exports.cloudfetchtitle = onCall(async (request) => {
 
   const response = await fetch(url);
   const html = await response.text();
-  
+
   // const $ = cheerio.load(html);
   // // Select the <title> tag and get its text content
   // let title = $('title').text();
@@ -69,12 +69,6 @@ exports.cloudfetchtitle = onCall(async (request) => {
   logger.log(`title=${title}`);
   return { "title": title };
 });
-
-// Jsonish.dart'ish needs here in JavaScript:
-// - sort keys for pretty exports for demo ("statement", "time", "I", "trust", "with", "previous", "signature")
-// - sort keys for distinct subjects ("contentType", "author", "title")
-// Statement.dart'ish needs here in JavaScript:
-// - get subject of verb for distinct based on subjects.
 
 // HTTP POST for QR signin (not 'signIn' (in camelCase) - that breaks things).
 // The Nerdster should be listening for a new doc at collection /sessions/doc/<session>/
@@ -176,7 +170,7 @@ function order(thing) {
   }
 }
 
-async function keyToken(input) {
+async function getToken(input) {
   if (typeof input === 'string') {
     return input;
   } else {
@@ -229,9 +223,9 @@ async function makedistinct(input) {
   for (var s of input) {
     var i = s['I'];
     const [verb, subject] = getVerbSubject(s);
-    const subjectToken = await keyToken(subject);
+    const subjectToken = await getToken(subject);
     const otherSubject = getOtherSubject(s);
-    const otherToken = otherSubject != null ? await keyToken(otherSubject) : null;
+    const otherToken = otherSubject != null ? await getToken(otherSubject) : null;
     const combinedKey = otherToken != null ?
       ((subjectToken < otherToken) ? subjectToken.concat(otherToken) : otherToken.concat(subjectToken)) :
       subjectToken;
