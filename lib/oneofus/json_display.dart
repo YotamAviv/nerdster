@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/prefs.dart';
+import '../prefs.dart';
 
 import 'util.dart';
 
