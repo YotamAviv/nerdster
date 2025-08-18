@@ -20,8 +20,10 @@ import 'package:nerdster/sign_in_state.dart';
 /// - Wait for the phone app to POST data Cloud function that just writes that Firestore "session"
 ///   column which this app should be listening to.
 ///
-/// V1: works fine, looks bad: [domain, uri, method, publicKey, session]
-/// V2: looks better: [domain, url, encryptionPK]
+/// V1: works fine, looks bad:
+///   [domain, uri, method, publicKey, session] => [one-of-us.net, publicKey, delegateCiphertext, delegateCleartext]
+/// V2: looks better: 
+///   [domain, url, encryptionPK] => [one-of-us.net, ephemeralPK, delegateCiphertext, delegateCleartext]
 /// Can't change to V1 without breaking things as there may be phones with old versions out there.
 /// Workaround is fake it:
 /// - show V1 in the QR, show V2 in the text below (just for show, "bogus")
@@ -77,7 +79,8 @@ Future<void> qrSignIn(BuildContext context) async {
       Json? delegateJson;
       OouKeyPair? nerdsterKeyPair;
       if (b(data['delegateCiphertext']) || b(data['delegateCleartext'])) {
-        PkePublicKey phonePkePublicKey = await crypto.parsePkePublicKey(data['publicKey']);
+        final String ephemeralPKKey = data.containsKey('ephemeralPK') ? 'ephemeralPK' : 'publicKey';
+        PkePublicKey phonePkePublicKey = await crypto.parsePkePublicKey(data[ephemeralPKKey]);
 
         String? delegateCiphertext = data['delegateCiphertext'];
         String? delegateCleartext = data['delegateCleartext'];
