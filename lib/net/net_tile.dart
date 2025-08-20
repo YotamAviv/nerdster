@@ -89,14 +89,7 @@ class _NetTileState extends State<NetTile> {
         // EG
         iconPair = smileyIconPair;
         if (isFollowed) iconColor = Colors.lightGreen;
-        assert(!revoked); // See discussion in GreedyBfsTrust. TODO: Remove code below.
-        if (revoked) {
-          // Can an EG (smiley) be revoked/replaced?
-          // TODO: This is confusing. Understand it and explain it better.
-          // Bart trusts Milhouse trusts Sideshow replaces Bart before Bart's trust in Milhouse.
-          // When center is Marge, Bart is decapitated, (a revoked EG with no valid replacement).
-          iconColor = Colors.pink;
-        }
+        assert(!revoked); // An EG (smiley) cannot be revoked
       } else {
         // Key (delegate or equivalent)
         iconColor = Colors.black54;
@@ -148,18 +141,9 @@ class _NetTileState extends State<NetTile> {
       }
     }
 
-    Icon openedIcon = Icon(
-      iconPair.$1,
-      color: iconColor,
-      shadows: shadows,
-    );
-    Icon closedIcon = Icon(
-      iconPair.$2,
-      color: iconColor,
-      shadows: shadows,
-    );
-
-    Jsonish jsonish = isStatement ? node.statement!.jsonish : (Jsonish.find(node.token!))!;
+    final Icon openedIcon = Icon(iconPair.$1, color: iconColor, shadows: shadows);
+    final Icon closedIcon = Icon(iconPair.$2, color: iconColor, shadows: shadows);
+    final Jsonish jsonish = isStatement ? node.statement!.jsonish : (Jsonish.find(node.token!))!;
 
     return TreeIndentation(
         entry: widget.entry,
