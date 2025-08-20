@@ -42,11 +42,27 @@ class NetTile extends StatefulWidget {
 }
 
 class _NetTileState extends State<NetTile> {
+  final GlobalKey<TooltipState> _startTipKey = GlobalKey<TooltipState>();
+  bool _highlight = false;
+
   @override
   initState() {
     super.initState();
     Prefs.showStatements.addListener(listen);
     Prefs.showJson.addListener(listen);
+
+    // Changes to support embedding Nerdster on the webpage with a tooltip (and highlighting).
+    // ChatGPT... The _startTipKey is necessary to controll Tooltip; it's not free.
+    // Show Homer:
+    // ?fire=emulator&netView=true&oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI%22%7D&skipCredentialsDisplay
+    // Show via URL param: ?tip=start
+    if (b(widget.entry.node.token) && keyLabels.labelKey(widget.entry.node.token!) == 'Homer') {
+      print(widget.entry.toString());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() => _highlight = true);
+        _startTipKey.currentState?.ensureTooltipVisible();
+      });
+    }
   }
 
   @override
@@ -148,16 +164,8 @@ class _NetTileState extends State<NetTile> {
       }
     }
 
-    Icon openedIcon = Icon(
-      iconPair.$1,
-      color: iconColor,
-      shadows: shadows,
-    );
-    Icon closedIcon = Icon(
-      iconPair.$2,
-      color: iconColor,
-      shadows: shadows,
-    );
+    Icon openedIcon = Icon(iconPair.$1, color: iconColor, shadows: shadows);
+    Icon closedIcon = Icon(iconPair.$2, color: iconColor, shadows: shadows);
 
     Jsonish jsonish = isStatement ? node.statement!.jsonish : (Jsonish.find(node.token!))!;
 
@@ -167,13 +175,28 @@ class _NetTileState extends State<NetTile> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Tooltip(
+              key: _startTipKey,
               message: iconTooltip,
-              child: FolderButton(
+              triggerMode: TooltipTriggerMode.manual,
+              showDuration: const Duration(days: 1), // keep it up a long time if needed
+              child: Container(
+                decoration: _highlight
+                    ? BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2))
+                    : null,
+                child: FolderButton(
                   icon: closedIcon,
                   openedIcon: openedIcon,
                   closedIcon: closedIcon,
                   isOpen: widget.entry.hasChildren ? widget.entry.isExpanded : null,
-                  onPressed: widget.onTap),
+                  onPressed: () {
+                    // Optional: once the user interacts, stop highlighting
+                    setState(() => _highlight = false);
+                    widget.onTap();
+                  },
+                ),
+              ),
             ),
             if (Prefs.showJson.value) JSWidget(jsonish),
             if (isStatement) Text(text!, style: TextStyle(color: statementTextColor)),
