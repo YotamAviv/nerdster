@@ -1,7 +1,6 @@
 // endpoint.dart
 import 'dart:convert';
-
-import 'package:nerdster/oneofus/jsonish.dart';
+import 'jsonish.dart';
 
 class Endpoint {
   final String scheme;
