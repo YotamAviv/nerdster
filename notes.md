@@ -25,7 +25,6 @@ just that data missing.
 ```
 git tag PROD-v`date2`
 git tag PROD-11
-code $(git diff --no-commit-id --name-only -r HEAD) -r
 diff -r lib/oneofus ../oneofus/lib/oneofus
 diff -r ../oneofus/lib/oneofus lib/oneofus
 flutter clean
