@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
+import 'package:nerdster/oneofus/endpoint.dart';
 import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -49,17 +50,6 @@ ValueNotifier<bool> isSmall = ValueNotifier<bool>(true);
 const domain2statementType = {
   kOneofusDomain: kOneofusType,
   kNerdsterDomain: kNerdsterType,
-};
-
-const Map<FireChoice, Map<String, (String, String)>> exportUrl = {
-  FireChoice.prod: {
-    kOneofusDomain: ('export.one-of-us.net', ''),
-    kNerdsterDomain: ('export.nerdster.org', '')
-  },
-  FireChoice.emulator: {
-    kOneofusDomain: ('127.0.0.1:5002', 'one-of-us-net/us-central1/export'),
-    kNerdsterDomain: ('127.0.0.1:5001', 'nerdster/us-central1/export')
-  },
 };
 
 Future<void> main() async {
@@ -110,6 +100,22 @@ Future<void> main() async {
   if (_fireCheckRead) {
     await checkRead(FireFactory.find(kNerdsterDomain), 'firecheck: web:nerdster');
     await checkRead(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
+  }
+
+  switch (fireChoice) {
+    case FireChoice.fake:
+      throw UnimplementedError();
+    case FireChoice.emulator:
+      Fetcher.initEndpoint(kOneofusDomain,
+          const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
+      Fetcher.initEndpoint(kNerdsterDomain,
+          const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
+    case FireChoice.prod:
+      /// DEFER: Get export.one-of-us.net from the QR sign in process instead of having it hard-coded here.
+      /// Furthermore, replace "one-of-us.net" with "identity" everywhere (for elegance only as
+      /// there is no other identity... but there could be)
+      Fetcher.initEndpoint(kOneofusDomain, const Endpoint('https', 'export.one-of-us.net', ''));
+      Fetcher.initEndpoint(kNerdsterDomain, const Endpoint('https', 'export.nerdster.org', ''));
   }
 
   ProgressDialog(); // Just to get its Measure instance to be first

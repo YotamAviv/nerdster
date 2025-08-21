@@ -66,7 +66,7 @@ exports.cloudfetchtitle = onCall(async (request) => {
 
   let title = myExtractTitle(html);
   title = title.trim();
-  logger.log(`title=${title}`);
+  // logger.log(`title=${title}`);
   return { "title": title };
 });
 
@@ -395,36 +395,31 @@ exports.export = functions.https.onRequest((req, res) => {
     'Connection': 'keep-alive'
   });
   try {
-    // TODO: remove token, once refrence is gone from videos
-    if (!req.query.spec && !req.query.token) throw new HttpsError('required: spec');
-    const specString = req.query.spec ? decodeURIComponent(req.query.spec) : decodeURIComponent(req.query.token);
-    logger.log(`specString=${specString}`);
-    var specs; // list of <String> or <String, String?>{}
-    if (specString.startsWith("[")) {
-      specs = JSON.parse(specString);
-    } else if (specString.startsWith("{")) {
-      specs = [JSON.parse(specString)];
-    } else {
-      specs = [specString];
-    }
-    logger.log(`specs=${JSON.stringify(specs)}`);
-
+    if (!req.query.spec) throw new HttpsError('required: spec');
+    const specString = decodeURIComponent(req.query.spec);
+    // logger.log(`specString=${specString}`);
+    // list or just 1
+    // list items are <String> or <String, String?>{}
+    var specs = JSON.parse(specString);
+    if (!Array.isArray(specs)) specs = [specs];
+    // logger.log(`specs=${JSON.stringify(specs)}`);
 
     // CODE: call decodeURIComponent on all values in params (but I don't even know what type of object params is)
     const params = req.query;
-    const omit = req.query.omit ? JSON.parse(decodeURIComponent(params.omit)) : null;
+    // const omit = req.query.omit ? JSON.parse(decodeURIComponent(params.omit)) : null;
+    const omit = req.query.omit ? params.omit: null;
 
     let count = 0;
     const all = specs.map(
       async (spec) => {
-        logger.log(`spec=${JSON.stringify(spec)}`);
+        // logger.log(`spec=${JSON.stringify(spec)}`);
         var token2revoked;
         if (typeof spec === 'string') {
           token2revoked = { [spec]: null };
         } else {
           token2revoked = spec;
         }
-        logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
+        // logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
 
         const token = Object.keys(token2revoked)[0];
         // logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
@@ -436,7 +431,7 @@ exports.export = functions.https.onRequest((req, res) => {
         if (count == specs.length) {
           res.end();
           res.status(200);
-          logger.log(`end`);
+          // logger.log(`end`);
         }
       },
     );

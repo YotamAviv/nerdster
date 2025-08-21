@@ -182,14 +182,12 @@ class _MonikerWidget extends StatelessWidget {
     String moniker = keyLabels.interpret(node.token).toString().trim();
     items = [
       if (bOneofus && node.token != signInState.center)
-        PopupMenuItem<String>(value: kRecenter, child: Text('''Use $moniker's Point of View''')),
+        PopupMenuItem<String>(value: kRecenter, child: Text("Use $moniker's Point of View")),
       // Don't encourage following yourself.
       if (bOneofus && node.token != signInState.centerReset)
-        PopupMenuItem<String>(
-            value: kFollow, child: Text('''View/change how I follow $moniker...''')),
+        PopupMenuItem<String>(value: kFollow, child: Text("View/change how I follow $moniker...")),
       if (Prefs.showStatements.value)
-        PopupMenuItem<String>(
-            value: kStatements, child: Text('''$moniker's published statements...'''))
+        PopupMenuItem<String>(value: kStatements, child: Text("$moniker's published statements..."))
     ];
   }
 
@@ -213,22 +211,10 @@ class _MonikerWidget extends StatelessWidget {
       String token = node.token!;
       String domain = bOneofus ? kOneofusDomain : kNerdsterDomain;
       if (fireChoice != FireChoice.fake) {
-        String link;
-        // DEFER: ?revokeAt=...
-        final String host = exportUrl[fireChoice]![domain]!.$1;
-        final String path = exportUrl[fireChoice]![domain]!.$2;
-        Json params = !b(node.revokeAt)
-            ? {"spec": token}
-            : {
-                "spec": jsonEncode({token: node.revokeAt})
-              };
-        // DEFER: Wierd: only http works on emulator, only https works on PROD
-        final Uri uri = (fireChoice == FireChoice.prod)
-            ? Uri.https(host, path, params)
-            : Uri.http(host, path, params);
-        link = uri.toString();
+        var spec = !b(node.revokeAt) ? token : jsonEncode({token: node.revokeAt});
+        Uri uri = Fetcher.makeSimpleUri(domain, spec);
         String moniker = keyLabels.interpret(node.token).toString();
-        await alert('''$moniker's signed, published statements''', link, ['Okay'], context);
+        await alert("$moniker's signed, published statements", uri.toString(), ['Okay'], context);
       } else {
         Iterable statements = Fetcher(token, domain).statements;
         List<Json> jsons = List.from(statements.map((s) => s.json));
