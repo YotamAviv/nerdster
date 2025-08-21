@@ -455,6 +455,8 @@ class Fetcher {
     _endpoints[domain] = endpoint;
   }
 
+  static Json getEndpoint(String domain) => _endpoints[domain]!.toJson();
+
   static Uri makeSimpleUri(String domain, var spec) {
     final endpoint = _endpoints[domain];
     if (endpoint == null) throw ArgumentError('Unknown endpoint domain: $domain');

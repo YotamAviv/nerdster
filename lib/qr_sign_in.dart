@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -28,6 +30,8 @@ import 'package:nerdster/sign_in_state.dart';
 /// Workaround is fake it:
 /// - show V1 in the QR, show V2 in the text below (just for show, "bogus")
 /// - teach phone to handle either and so that eventually we migrate to V2.
+
+final deepCollectionEquality = const DeepCollectionEquality();
 
 Future<void> qrSignIn(BuildContext context) async {
   Json forPhone = {};
@@ -70,6 +74,12 @@ Future<void> qrSignIn(BuildContext context) async {
       await subscription!.cancel();
 
       Json? data = docSnapshots.docs.first.data();
+
+      Json? endpointJson = data['endpoint'];
+      if (endpointJson != null) {
+        print('got endpoint: $endpointJson');
+        assert(deepCollectionEquality.equals(endpointJson, Fetcher.getEndpoint(kOneofusDomain)));
+      }
 
       // Unpack identity public key
       final String identityKey = data.containsKey('identity') ? 'identity' : kOneofusDomain;
