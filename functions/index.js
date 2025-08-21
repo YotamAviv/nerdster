@@ -400,14 +400,20 @@ exports.export = functions.https.onRequest((req, res) => {
     // logger.log(`specString=${specString}`);
     // list or just 1
     // list items are <String> or <String, String?>{}
-    var specs = JSON.parse(specString);
+    let specs;
+    if (/^\s*[\[{"]/.test(specString)) {
+      // starts with [, {, or " → looks like JSON
+      specs = JSON.parse(specString);
+    } else {
+      specs = specString;
+    }
     if (!Array.isArray(specs)) specs = [specs];
     // logger.log(`specs=${JSON.stringify(specs)}`);
 
     // CODE: call decodeURIComponent on all values in params (but I don't even know what type of object params is)
     const params = req.query;
     // const omit = req.query.omit ? JSON.parse(decodeURIComponent(params.omit)) : null;
-    const omit = req.query.omit ? params.omit: null;
+    const omit = req.query.omit ? params.omit : null;
 
     let count = 0;
     const all = specs.map(
