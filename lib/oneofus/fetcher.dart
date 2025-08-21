@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:nerdster/oneofus/endpoint.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
@@ -82,6 +83,7 @@ class ErrorCorruptor implements Corruptor {
   void corrupt(String token, String error, String? details) =>
       throw ('Corrupt!: $token, $error, $details');
 }
+
 final Corruptor corruptor = ErrorCorruptor();
 
 class Fetcher {
@@ -350,7 +352,7 @@ class Fetcher {
       // CONSIDER: A more clear, elegant, or correct corrupted state.
       // - (The exception is mostly saved in the corruptor notifciation.)
       // - Throw when asked for statements instead of returning none?
-      _cached = []; 
+      _cached = [];
       corruptor.corrupt(token, e.toString(), stackTrace.toString());
     }
   }
@@ -448,17 +450,27 @@ class Fetcher {
     return List<Json>.from(statements);
   }
 
+  static final Map<String, Endpoint> _endpoints = <String, Endpoint>{};
+  static void initEndpoint(String domain, Endpoint endpoint) {
+    _endpoints[domain] = endpoint;
+  }
+
+  static Uri makeSimpleUri(String domain, var spec) {
+    final endpoint = _endpoints[domain];
+    if (endpoint == null) throw ArgumentError('Unknown endpoint domain: $domain');
+    return endpoint.build({'spec': spec});
+  }
+
+
   static Uri _makeUri(String domain, var spec) {
-    final String host = exportUrl[fireChoice]![domain]!.$1;
-    final String path = exportUrl[fireChoice]![domain]!.$2;
+    final endpoint = _endpoints[domain];
+    if (endpoint == null) throw ArgumentError('Unknown endpoint domain: $domain');
+
     Json params = Map.of(_paramsProto);
     params['spec'] = spec;
-    params = params.map((k, v) => MapEntry(k, Uri.encodeComponent(JsonEncoder().convert(v))));
-    // DEFER: Wierd: only http works on emulator, only https works on PROD
-    final Uri uri = (fireChoice == FireChoice.prod)
-        ? Uri.https(host, path, params)
-        : Uri.http(host, path, params);
-    return uri;
+
+    // Delegate scheme/host/path to the endpoint
+    return endpoint.build(params);
   }
 
   static void setCorruptor(Corruptor corruptor) {
