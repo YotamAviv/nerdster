@@ -20,7 +20,6 @@ class Endpoint {
     final encodedParams = params.map(
       (k, v) => MapEntry(k, const JsonEncoder().convert(v)),
     );
-    return Uri(
-        scheme: scheme, host: host, port: port ?? 0, path: path, queryParameters: encodedParams);
+    return Uri(scheme: scheme, host: host, port: port, path: path, queryParameters: encodedParams);
   }
 }
