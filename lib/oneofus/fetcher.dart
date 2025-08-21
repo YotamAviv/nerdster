@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
-import 'package:nerdster/oneofus/endpoint.dart';
 
 import '../main.dart';
 import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
 import 'distincter.dart';
+import 'endpoint.dart';
 import 'fire_factory.dart';
 import 'jsonish.dart';
 import 'measure.dart';
@@ -89,6 +89,7 @@ final Corruptor corruptor = ErrorCorruptor();
 class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
   static Corruptor corruptor = ErrorCorruptor();
+  static final Map<String, Endpoint> _endpoints = <String, Endpoint>{};
   static final Measure mVerify = Measure('mVerify');
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
   static const Json _paramsProto = {
@@ -350,7 +351,7 @@ class Fetcher {
     } catch (e, stackTrace) {
       // print(stackTrace);
       // CONSIDER: A more clear, elegant, or correct corrupted state.
-      // - (The exception is mostly saved in the corruptor notifciation.)
+      // - (The exception is mostly saved in the corruptor notification.)
       // - Throw when asked for statements instead of returning none?
       _cached = [];
       corruptor.corrupt(token, e.toString(), stackTrace.toString());
@@ -450,7 +451,6 @@ class Fetcher {
     return List<Json>.from(statements);
   }
 
-  static final Map<String, Endpoint> _endpoints = <String, Endpoint>{};
   static void initEndpoint(String domain, Endpoint endpoint) {
     _endpoints[domain] = endpoint;
   }
@@ -460,7 +460,6 @@ class Fetcher {
     if (endpoint == null) throw ArgumentError('Unknown endpoint domain: $domain');
     return endpoint.build({'spec': spec});
   }
-
 
   static Uri _makeUri(String domain, var spec) {
     final endpoint = _endpoints[domain];

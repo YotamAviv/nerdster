@@ -8,18 +8,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
-import 'package:nerdster/oneofus/endpoint.dart';
-import 'package:nerdster/oneofus/json_display.dart';
-import 'package:nerdster/verify.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/key_store.dart';
-import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/oneofus/endpoint.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/fire_util.dart';
+import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -27,6 +25,7 @@ import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/progress.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/verify.dart';
 
 import 'firebase_options.dart';
 
