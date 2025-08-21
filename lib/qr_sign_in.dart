@@ -22,7 +22,7 @@ import 'package:nerdster/sign_in_state.dart';
 ///
 /// V1: works fine, looks bad:
 ///   [domain, uri, method, publicKey, session] => [one-of-us.net, publicKey, delegateCiphertext, delegateCleartext]
-/// V2: looks better: 
+/// V2: looks better:
 ///   [domain, url, encryptionPK] => [one-of-us.net, ephemeralPK, delegateCiphertext, delegateCleartext]
 /// Can't change to V1 without breaking things as there may be phones with old versions out there.
 /// Workaround is fake it:
@@ -71,8 +71,9 @@ Future<void> qrSignIn(BuildContext context) async {
 
       Json? data = docSnapshots.docs.first.data();
 
-      // Unpack Oneofus public key
-      Json identityJson = data[kOneofusDomain]!;
+      // Unpack identity public key
+      final String identityKey = data.containsKey('identity') ? 'identity' : kOneofusDomain;
+      Json identityJson = data[identityKey]!;
       OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
 
       // Optionally unpack and decrypt Nerdster private key
