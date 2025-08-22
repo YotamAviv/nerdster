@@ -41,11 +41,11 @@ class _SignInMenuState extends State<SignInMenu> {
 
   MenuItemButton showCredentials(BuildContext cnotext) {
     return MenuItemButton(
-      leadingIcon: const Icon(Icons.developer_mode),
+      leadingIcon: const Icon(Icons.account_circle),
       onPressed: () => showTopRightDialog(
           context,
           CredentialsDisplay(
-              signInState.centerResetJson, signInState.signedInDelegatePublicKeyJson)),
+              signInState.centerResetJson, signInState.signedInDelegatePublicKeyJson, showDontShow: false)),
       child: const Text('Show current sign-in credentials'),
     );
   }
