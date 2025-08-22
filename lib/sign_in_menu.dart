@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/bar_refresh.dart';
+import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/main.dart';
-import 'package:nerdster/menus.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/split_menu_button.dart';
 
 class SignInMenu extends StatefulWidget {
   static const SignInMenu _singleton = SignInMenu._internal();
@@ -37,9 +39,15 @@ class _SignInMenuState extends State<SignInMenu> {
     super.dispose();
   }
 
-  String label(String token) {
-    String? netBaseLable = keyLabels.labelKey(token);
-    return b(netBaseLable) ? netBaseLable! : ' ? ';
+  MenuItemButton showCredentials(BuildContext cnotext) {
+    return MenuItemButton(
+      leadingIcon: const Icon(Icons.developer_mode),
+      onPressed: () => showTopRightDialog(
+          context,
+          CredentialsDisplay(
+              signInState.centerResetJson, signInState.signedInDelegatePublicKeyJson)),
+      child: const Text('Show current sign-in credentials'),
+    );
   }
 
   @override
@@ -47,14 +55,17 @@ class _SignInMenuState extends State<SignInMenu> {
     bool signedIn = b(signInState.signedInDelegate);
 
     if (signedIn) {
-      return MenuItemButton(
-          onPressed: () async {
-            await KeyStore.wipeKeys();
-            signInState.signOut(context: context);
-          },
-          child: const Row(
-            children: [Icon(Icons.logout), iconSpacer, Text('Sign out')],
-          ));
+      return SplitMenuButton(
+        label: 'Sign out',
+        icon: const Icon(Icons.logout),
+        onPrimary: () async {
+          await KeyStore.wipeKeys();
+          signInState.signOut(context: context);
+        },
+        menuChildren: [
+          showCredentials(context),
+        ],
+      );
     } else {
       if (b(demo)) {
         List<Widget> demoSignIns = <Widget>[];
@@ -74,9 +85,19 @@ class _SignInMenuState extends State<SignInMenu> {
         }
         return SubmenuButton(menuChildren: demoSignIns, child: const Text('Demo sign-in'));
       } else {
-        return MenuItemButton(
-            onPressed: fireChoice != FireChoice.fake ? () => qrSignIn(context) : null,
-            child: const Row(children: [Icon(Icons.qr_code), iconSpacer, Text('Sign in')]));
+        return SplitMenuButton(
+          label: 'QR Sign in',
+          icon: const Icon(Icons.qr_code),
+          onPrimary: fireChoice != FireChoice.fake ? () => qrSignIn(context) : null,
+          menuChildren: [
+            MenuItemButton(
+              leadingIcon: const Icon(Icons.copy),
+              onPressed: () => pasteSignIn(context),
+              child: const Text('Paste sign-in'),
+            ),
+            if (signInState.centerReset != null) showCredentials(context),
+          ],
+        );
       }
     }
   }

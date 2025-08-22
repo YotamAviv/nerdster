@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/prefs.dart';
-import 'package:nerdster/singletons.dart';
 
 class NerdsterMenu extends StatefulWidget {
   static const NerdsterMenu _singleton = NerdsterMenu._internal();
@@ -18,13 +17,11 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
   void initState() {
     super.initState();
     Prefs.dev.addListener(listen);
-    signInState.addListener(listen);
   }
 
   @override
   void dispose() {
     Prefs.dev.removeListener(listen);
-    signInState.removeListener(listen);
     super.dispose();
   }
 
