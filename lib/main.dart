@@ -103,18 +103,20 @@ Future<void> main() async {
 
   switch (fireChoice) {
     case FireChoice.fake:
-      throw UnimplementedError();
+      break;
     case FireChoice.emulator:
       Fetcher.initEndpoint(kOneofusDomain,
           const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
       Fetcher.initEndpoint(kNerdsterDomain,
           const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
+      break;
     case FireChoice.prod:
       /// DEFER: Get export.one-of-us.net from the QR sign in process instead of having it hard-coded here.
       /// Furthermore, replace "one-of-us.net" with "identity" everywhere (for elegance only as
       /// there is no other identity... but there could be)
       Fetcher.initEndpoint(kOneofusDomain, const Endpoint('https', 'export.one-of-us.net', ''));
       Fetcher.initEndpoint(kNerdsterDomain, const Endpoint('https', 'export.nerdster.org', ''));
+      break;
   }
 
   ProgressDialog(); // Just to get its Measure instance to be first

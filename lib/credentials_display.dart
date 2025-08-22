@@ -10,9 +10,10 @@ import 'package:nerdster/prefs.dart';
 class CredentialsDisplay extends StatelessWidget {
   final Json? identityJson;
   final Json? delegateJson;
+  final bool showDontShow;
   final ValueNotifier<bool> interpret = ValueNotifier(true);
 
-  CredentialsDisplay(this.identityJson, this.delegateJson, {super.key});
+  CredentialsDisplay(this.identityJson, this.delegateJson, {super.key, this.showDontShow = true});
 
   @override
   Widget build(BuildContext context) {
@@ -45,12 +46,8 @@ class CredentialsDisplay extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            children: [
-              const Spacer(),
-              MyCheckbox(Prefs.skipCredentials, '''Don't show again'''),
-            ],
-          ),
+          if (showDontShow)
+            Row(children: [Spacer(), MyCheckbox(Prefs.skipCredentials, "Don't show again")]),
         ],
       ),
     );

@@ -3,7 +3,6 @@ import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/demotest/cases/integration_tests.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -19,11 +18,9 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/split_menu_button.dart';
 import 'package:nerdster/verify.dart';
 
 // SchedulerBinding.instance.addPostFrameCallback((_) async {
