@@ -23,6 +23,7 @@ import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/split_menu_button.dart';
 import 'package:nerdster/verify.dart';
 
 // SchedulerBinding.instance.addPostFrameCallback((_) async {
@@ -81,6 +82,7 @@ class Menus {
     }
 
     return <Widget>[
+
       SignInMenu(),
 
       // Settings
@@ -159,16 +161,6 @@ $link''',
       // Dev
       if (Prefs.dev.value)
         SubmenuButton(menuChildren: [
-          MenuItemButton(
-              onPressed: () => pasteSignIn(context),
-              child: const Row(children: [Icon(Icons.copy), iconSpacer, Text('paste sign-in')])),
-          MenuItemButton(
-              onPressed: () => showTopRightDialog(
-                  context,
-                  CredentialsDisplay(
-                      signInState.centerResetJson, signInState.signedInDelegatePublicKeyJson)),
-              child: Text('showCredentials')),
-
           MyCheckbox(Prefs.bogus, 'bogus'),
 
           SubmenuButton(menuChildren: [
