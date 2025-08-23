@@ -88,7 +88,7 @@ class _FollowUiState extends State<FollowUi> {
   initState() {
     super.initState();
     for (MapEntry e in widget.contextsIn.entries) {
-      widgets[e.key] = FollowWidget(FollowWidget.i2follow[e.value]!);
+      widgets[e.key] = FollowWidget(FollowWidget.i2follow[e.value]!, _refreshOkayEnabled);
     }
   }
 
@@ -168,7 +168,7 @@ class _FollowUiState extends State<FollowUi> {
                   onSelected: (String? s) {
                     setState(() {
                       if (controller.text.isNotEmpty) {
-                        widgets[controller.text] = FollowWidget(Follow.follow);
+                        widgets[controller.text] = FollowWidget(Follow.follow, _refreshOkayEnabled);
                         controller.text = '';
                       }
                       _refreshOkayEnabled();
@@ -183,7 +183,8 @@ class _FollowUiState extends State<FollowUi> {
                     onPressed: () {
                       setState(() {
                         if (controller.text.isNotEmpty) {
-                          widgets[controller.text] = FollowWidget(Follow.follow);
+                          widgets[controller.text] =
+                              FollowWidget(Follow.follow, _refreshOkayEnabled);
                         }
                         _refreshOkayEnabled();
                       });
@@ -208,11 +209,10 @@ class FollowWidget extends StatefulWidget {
   };
 
   late final ValueNotifier<Follow> followNotifier;
+  final Function listen;
 
-  FollowWidget(
-    Follow follow, {
-    super.key,
-  }) : followNotifier = ValueNotifier<Follow>(follow);
+  FollowWidget(Follow follow, this.listen, {super.key})
+      : followNotifier = ValueNotifier<Follow>(follow);
 
   @override
   State<StatefulWidget> createState() => _FollowWidgetState();
@@ -230,6 +230,7 @@ class _FollowWidgetState extends State<FollowWidget> {
         label: widget.followNotifier.value.label,
         onChanged: (x) {
           widget.followNotifier.value = FollowWidget.i2follow[x]!;
+          widget.listen();
           setState(() {});
         });
   }
