@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/main.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
@@ -12,6 +14,12 @@ import 'package:nerdster/singletons.dart';
 class Lgtm {
   static Future<bool?> check(Json json, BuildContext context) async {
     if (isSmall.value || Prefs.skipLgtm.value) return true;
+
+    assert(b(signInState.signedInDelegate));
+
+    var spec = signInState.signedInDelegate;
+    Uri uri = Fetcher.makeSimpleUri(kNerdsterDomain, spec);
+
     return showDialog<bool?>(
         context: context,
         barrierDismissible: false,
@@ -29,7 +37,7 @@ class Lgtm {
                       children: [
                         Linky('''For your review: Nerd'ster intends to:
 - Sign the statemet below using its delegate key (which you signed using your identity key)
-- Publish it at: https://export.nerdster.org/?token=${signInState.signedInDelegate}'''),
+- Publish it at: ${uri.toString()}'''),
                         SizedBox(
                             height: 300, child: JsonDisplay(json, interpret: ValueNotifier(true))),
                         const SizedBox(height: 10),
