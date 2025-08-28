@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/notifications_menu.dart';
+import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
-
-
 
 /// TODO: Conditions:
 /// - signInState.signedInDelegate
