@@ -108,19 +108,10 @@ class Notifications with ChangeNotifier implements Corruptor {
     _corrupted[token] = (CorruptionProblem(keyToken: token, error: error, details: details));
     notifyListeners();
   }
-
-  void dump() {
-    for (var e in rejected.entries) {
-      print('${encoder.convert(keyLabels.interpret(Jsonish.find(e.key)!))}, ${e.value}');
-    }
-    for (var e in warned.entries) {
-      print('${encoder.convert(keyLabels.interpret(Jsonish.find(e.key)!))}, ${e.value}');
-    }
-    for (var e in corrupted.entries) {
-      print('$e.key, $e.value');
-    }
-  }
 }
+
+final delegateCheck = DelegateCheck();
+final identityCheck = IdentityCheck();
 
 class NotificationsComp with Comp, ChangeNotifier {
   static final NotificationsComp _singleton = NotificationsComp._internal();
@@ -133,6 +124,8 @@ class NotificationsComp with Comp, ChangeNotifier {
     delegateCheck.addListener(listen);
     addSupporter(identityCheck);
     identityCheck.addListener(listen);
+    addSupporter(oneofusLabels);
+    oneofusLabels.addListener(listen);
 
     setDirty();
     waitUntilReady();
@@ -150,6 +143,7 @@ class NotificationsComp with Comp, ChangeNotifier {
   @override
   Future<void> process() async {
     _hints.clear();
+    if (b(oneofusLabels.issue.value)) _hints.add(oneofusLabels.issue.value!);
     if (b(identityCheck.issue.value)) _hints.add(identityCheck.issue.value!);
     if (b(delegateCheck.issue.value)) _hints.add(delegateCheck.issue.value!);
     _hints.addAll(notifications.rejectedProblems);
@@ -163,6 +157,9 @@ class TitleDescProblem implements Problem {
   final String? desc;
 
   TitleDescProblem({required this.title, this.desc});
+
+  @override
+  String toString() => '$title:$desc';
 }
 
 class IdentityCheck with Comp, ChangeNotifier {
@@ -183,6 +180,7 @@ class IdentityCheck with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
+    issue.value = null;
     if (b(signInState.centerReset) &&
         !followNet.oneofus2delegates.containsKey(signInState.centerReset)) {
       issue.value = TitleDescProblem(
@@ -191,8 +189,6 @@ class IdentityCheck with Comp, ChangeNotifier {
               '''You signed in using an identity that isn't currently a member of the network you're viewing.
 Your own contributions are not be visible from this PoV (Point of View).
 You can still rate, submit, change follow settings, etc..., and those changes will be visible when you use a PoV that includes you.''');
-    } else {
-      issue.value = null;
     }
   }
 }

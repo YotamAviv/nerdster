@@ -793,7 +793,6 @@ void main() async {
 
     signInState.center = lisa.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    notifications.dump();
     expect(notifications.rejected.length, 0);
     expect(notifications.warned.length, 0);
     expect(oneofusNet.network.keys.contains(milhouse.token), true);

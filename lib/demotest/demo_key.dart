@@ -56,6 +56,7 @@ class DemoKey {
     'loner': loner,
     'trustBlockConflict': trustBlockConflict,
     'egos': egos,
+    'egosCircle': egosCircle,
     'delegateMerge': delegateMerge,
     'delete3': deletions3,
     'blockReplacedKey': blockReplacedKey,

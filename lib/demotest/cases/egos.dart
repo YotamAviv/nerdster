@@ -94,3 +94,10 @@ Future<(DemoKey, DemoKey?)> egosCorrupt() async {
 
   return (identity, delegate);
 }
+
+Future<(DemoKey, DemoKey?)> egosCircle() async {
+  final (DemoKey identity, DemoKey? delegate) = await egos();
+  await DemoKey.findByName('hipster')!.doTrust(TrustVerb.trust, identity, moniker: 'Poser');
+  DemoKey poser = await DemoKey.findOrCreate('poser');
+  return (poser, null);
+}

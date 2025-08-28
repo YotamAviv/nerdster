@@ -18,9 +18,6 @@ import 'oneofus/json_display.dart';
 
 // NEXT: cleanup, renames
 
-final delegateCheck = DelegateCheck();
-final identityCheck = IdentityCheck();
-
 class NotificationsMenu extends StatefulWidget {
   static final NotificationsMenu _singleton = NotificationsMenu._internal();
   factory NotificationsMenu() => _singleton;
