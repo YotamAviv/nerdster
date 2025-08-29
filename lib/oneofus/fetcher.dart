@@ -74,21 +74,21 @@ import 'value_waiter.dart';
 
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 
-abstract class Corruptor {
+abstract class CorruptionProblemCollector {
   void corrupt(String token, String error, String? details);
 }
 
-class ErrorCorruptor implements Corruptor {
+class _ErrorCorruptor implements CorruptionProblemCollector {
   @override
   void corrupt(String token, String error, String? details) =>
       throw ('Corrupt!: $token, $error, $details');
 }
 
-final Corruptor corruptor = ErrorCorruptor();
+final CorruptionProblemCollector collector = _ErrorCorruptor();
 
 class Fetcher {
   static final OouVerifier _verifier = OouVerifier();
-  static Corruptor corruptor = ErrorCorruptor();
+  static CorruptionProblemCollector corruptor = _ErrorCorruptor();
   static final Map<String, Endpoint> _endpoints = <String, Endpoint>{};
   static final Measure mVerify = Measure('mVerify');
   static final Map<String, Fetcher> _fetchers = <String, Fetcher>{};
@@ -474,7 +474,7 @@ class Fetcher {
     return endpoint.build(params);
   }
 
-  static void setCorruptor(Corruptor corruptor) {
+  static void setCorruptionCollector(CorruptionProblemCollector corruptor) {
     Fetcher.corruptor = corruptor;
   }
 

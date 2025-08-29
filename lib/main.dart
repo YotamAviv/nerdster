@@ -120,7 +120,7 @@ Future<void> main() async {
   }
 
   ProgressDialog(); // Just to get its Measure instance to be first
-  Fetcher.setCorruptor(notifications);
+  Fetcher.setCorruptionCollector(baseProblemCollector);
   JsonDisplay.interpreter = keyLabels;
   TrustStatement.init();
   ContentStatement.init();

@@ -56,8 +56,8 @@ abstract class NetTreeModel {
   DateTime? get revokeAtTime;
   String get displayStatementAtTime => '@${formatUiDatetime(statement!.time)}';
   String get displayVerbPastTense => (statement as TrustStatement).verb.pastTense;
-  bool get rejected => notifications.rejected.containsKey(statement!.token);
-  bool get trustsNonCanonical => notifications.rejected.containsKey(statement!.token);
+  bool get rejected => baseProblemCollector.rejected.containsKey(statement!.token);
+  bool get trustsNonCanonical => baseProblemCollector.rejected.containsKey(statement!.token);
   bool get isCanonicalStatement =>
       oneofusEquiv.getCanonical(statement!.iToken) == statement!.iToken;
 

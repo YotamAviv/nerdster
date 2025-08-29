@@ -116,7 +116,7 @@ class OneofusNet with Comp, ChangeNotifier {
     throwIfSupportersNotReady();
     _network.clear();
     _token2keyCounter.clear();
-    notifications.clear();
+    baseProblemCollector.clear();
     // No need to clear Fetcher content, just clear all Fetcher revokeAt values.
     Fetcher.resetRevokeAt();
     NetNode.clear();
@@ -131,7 +131,7 @@ class OneofusNet with Comp, ChangeNotifier {
     }
 
     _network = await bfsTrust.process(FetcherNode(signInState.center!),
-        batchFetch: batchFetch, notifier: notifications, progressR: _oneofusNetProgressR);
+        batchFetch: batchFetch, problemCollector: baseProblemCollector, progressR: _oneofusNetProgressR);
     _token2keyCounter.clear();
 
     int keyCounter = 0;

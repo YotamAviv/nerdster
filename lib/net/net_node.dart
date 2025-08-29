@@ -48,7 +48,7 @@ class NetNode {
     Iterable<Iterable<TrustStatement>> iiStatements = oneofusEquiv.getEquivalents(token).map((t) =>
         Fetcher(t, kOneofusDomain)
             .statements
-            .where((s) => !notifications.rejected.containsKey(s.token))
+            .where((s) => !baseProblemCollector.rejected.containsKey(s.token))
             .cast<TrustStatement>()
             .where((s) => s.verb == TrustVerb.trust));
     Merger merger = Merger(iiStatements);

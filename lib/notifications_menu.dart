@@ -1,7 +1,4 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
-import 'package:nerdster/comp.dart';
 import 'package:nerdster/menus.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
@@ -16,8 +13,6 @@ import 'package:nerdster/util_ui.dart';
 
 import 'oneofus/json_display.dart';
 
-// NEXT: cleanup, renames
-
 class NotificationsMenu extends StatefulWidget {
   static final NotificationsMenu _singleton = NotificationsMenu._internal();
   factory NotificationsMenu() => _singleton;
@@ -27,18 +22,56 @@ class NotificationsMenu extends StatefulWidget {
   State<StatefulWidget> createState() => _NotificationsMenuState();
 }
 
-
 abstract class _Renderer {
   MenuItemButton make(Problem hint, BuildContext context);
 }
 
 final _renderers = {
-  // TrustProblem: PairToWidge(),
   TitleDescProblem: _TitleDescRenderer(),
   TrustProblem: _TrustRenderer(),
   CorruptionProblem: _CorruptionRenderer()
 };
 
+
+class _NotificationsMenuState extends State<NotificationsMenu> {
+  @override
+  void initState() {
+    notifications.addListener(listen);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    notifications.removeListener(listen);
+    super.dispose();
+  }
+
+  Future<void> listen() async {
+    await notifications.waitUntilReady();
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<MenuItemButton> items = [];
+    for (Problem hint in notifications.problems) {
+      _Renderer? renderer = _renderers[hint.runtimeType];
+      assert(b(renderer), 'no renderer for: ${hint.runtimeType.toString()}');
+      items.add(renderer!.make(hint, context));
+    }
+
+    Color? color = items.isNotEmpty ? Colors.red : null;
+    return SubmenuButton(
+        menuChildren: items,
+        child: Row(
+          children: [
+            Icon(Icons.notifications, color: color),
+            iconSpacer,
+            Text('Notifications', style: TextStyle(color: color)),
+          ],
+        ));
+  }
+}
 class _TitleDescRenderer implements _Renderer {
   @override
   MenuItemButton make(Object hint, BuildContext context) {
@@ -67,10 +100,9 @@ class _TrustRenderer implements _Renderer {
                   content: _StatementNotification(statement, reason),
                   actions: [
                     OutlinedButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: Text('Okay'))
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('Okay'),
+                    )
                   ]);
             },
           );
@@ -104,7 +136,9 @@ class _CorruptionRenderer implements _Renderer {
                   ),
                   actions: [
                     OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(), child: Text('Okay'))
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text('Okay'),
+                    )
                   ]);
             },
           );
@@ -114,52 +148,11 @@ class _CorruptionRenderer implements _Renderer {
   }
 }
 
-class _NotificationsMenuState extends State<NotificationsMenu> {
-  @override
-  void initState() {
-    NotificationsComp().addListener(listen);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    NotificationsComp().removeListener(listen);
-    super.dispose();
-  }
-
-  Future<void> listen() async {
-    await NotificationsComp().waitUntilReady();
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    List<MenuItemButton> items = [];
-
-    for (Problem hint in NotificationsComp().hints) {
-      _Renderer? widger = _renderers[hint.runtimeType];
-      assert(b(widger), 'no widger for: ${hint.runtimeType.toString()}');
-      items.add(widger!.make(hint, context));
-    }
-
-    Color? color = items.isNotEmpty ? Colors.red : null;
-    return SubmenuButton(
-        menuChildren: items,
-        child: Row(
-          children: [
-            Icon(Icons.notifications, color: color),
-            iconSpacer,
-            Text('Notifications', style: TextStyle(color: color)),
-          ],
-        ));
-  }
-}
-
 class _StatementNotification extends StatelessWidget {
   final TrustStatement statement;
   final String reason;
 
-  const _StatementNotification(this.statement, this.reason, {super.key});
+  const _StatementNotification(this.statement, this.reason);
 
   static const Widget _space = SizedBox(height: 10);
 
@@ -213,7 +206,7 @@ You can click on the keys on those paths to see their QR codes, and if appropria
 
 class _TrustRows extends StatelessWidget {
   final Node? node;
-  const _TrustRows(this.node, {super.key});
+  const _TrustRows(this.node);
 
   @override
   Widget build(BuildContext context) {
@@ -237,7 +230,8 @@ class _TrustRows extends StatelessWidget {
         }
         moniker = moniker.trim();
         monikers.add(Text(' --"$moniker"-> '));
-        monikers.add(_NameKeyWidget(keyLabels.labelKey(statement.subjectToken)!, statement.subject));
+        monikers
+            .add(_NameKeyWidget(keyLabels.labelKey(statement.subjectToken)!, statement.subject));
       }
       rows.add(Row(children: monikers));
     }
@@ -250,7 +244,7 @@ class _NameKeyWidget extends StatelessWidget {
   final String display;
   final Json keyJson;
 
-  const _NameKeyWidget(this.display, this.keyJson, {super.key});
+  const _NameKeyWidget(this.display, this.keyJson);
 
   @override
   Widget build(BuildContext context) {
@@ -260,4 +254,3 @@ class _NameKeyWidget extends StatelessWidget {
     );
   }
 }
-

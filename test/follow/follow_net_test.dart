@@ -235,7 +235,7 @@ void main() async {
     expect(oneofusNet.network.keys, [bo.token, luke.token]);
     // Check rejection
     // (I don't have the rejected statement here because it's not returned by luke.makeDelegate)
-    expect(notifications.rejected.values, {"Delegate already claimed."});
+    expect(baseProblemCollector.rejected.values, {"Delegate already claimed."});
     expect(oneofusEquiv.oneofus2delegates[luke.token], []);
     expect(oneofusEquiv.oneofus2delegates[bo.token], {boN.token, lukeN.token});
     myExpect(contentBase.roots.length, 1);
@@ -245,7 +245,7 @@ void main() async {
     //
     signInState.center = luke.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(notifications.rejected, {boClaimsLukes.token: "Delegate already claimed."});
+    expect(baseProblemCollector.rejected, {boClaimsLukes.token: "Delegate already claimed."});
   });
 
   test('clear, 2 equivs', () async {
@@ -429,7 +429,7 @@ void main() async {
     expect(followNet.oneofus2delegates[bob.token], null);
     // We don't have the delegate statements right here (not returned by luke.makeDelegate), and
     // so I'll just count them  instead of comparing them
-    expect(notifications.rejected.length, 2);
+    expect(baseProblemCollector.rejected.length, 2);
   });
 
   test('follow !oneofus', () async {

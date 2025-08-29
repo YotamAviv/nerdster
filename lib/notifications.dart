@@ -3,14 +3,11 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
-
-// NEXT: Rename file, maybe Notifications to NotificationsStore and NotificationsComp to Notifications.
 
 // TODO: CODE: Something like this
 enum KString {
@@ -65,12 +62,12 @@ class CorruptionProblem extends Problem {
   CorruptionProblem({required this.keyToken, required this.error, this.details});
 }
 
-/// Place where problems encoutered during OneofusNet process (Fetcher corruption,
-/// GreedyBfsTrust conflicts, equivalence conflicts, I'm not even sure)
-class Notifications with ChangeNotifier implements Corruptor {
-  static final Notifications singleton = Notifications._internal();
-  factory Notifications() => singleton;
-  Notifications._internal();
+/// Place where problems encoutered during OneofusNet process are collected (Fetcher corruption,
+/// GreedyBfsTrust conflicts, equivalence conflicts, I'm not even sure..)
+class BaseProblemCollector with ChangeNotifier implements CorruptionProblemCollector {
+  static final BaseProblemCollector singleton = BaseProblemCollector._internal();
+  factory BaseProblemCollector() => singleton;
+  BaseProblemCollector._internal();
 
   final LinkedHashMap<String, String> _rejected = LinkedHashMap<String, String>();
   final LinkedHashMap<String, String> _warned = LinkedHashMap<String, String>();
@@ -113,11 +110,11 @@ class Notifications with ChangeNotifier implements Corruptor {
 final delegateCheck = DelegateCheck();
 final identityCheck = IdentityCheck();
 
-class NotificationsComp with Comp, ChangeNotifier {
-  static final NotificationsComp _singleton = NotificationsComp._internal();
-  factory NotificationsComp() => _singleton;
-  NotificationsComp._internal() {
-    notifications.addListener(listen);
+class Notifications with Comp, ChangeNotifier {
+  static final Notifications _singleton = Notifications._internal();
+  factory Notifications() => _singleton;
+  Notifications._internal() {
+    baseProblemCollector.addListener(listen);
     addSupporter(followNet);
     followNet.addListener(listen);
     addSupporter(delegateCheck);
@@ -131,9 +128,9 @@ class NotificationsComp with Comp, ChangeNotifier {
     waitUntilReady();
   }
 
-  final List<Problem> _hints = <Problem>[];
+  final List<Problem> _problems = <Problem>[];
 
-  List get hints => UnmodifiableListView(_hints);
+  List get problems => UnmodifiableListView(_problems);
 
   void listen() {
     setDirty();
@@ -142,13 +139,13 @@ class NotificationsComp with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    _hints.clear();
-    if (b(oneofusLabels.issue.value)) _hints.add(oneofusLabels.issue.value!);
-    if (b(identityCheck.issue.value)) _hints.add(identityCheck.issue.value!);
-    if (b(delegateCheck.issue.value)) _hints.add(delegateCheck.issue.value!);
-    _hints.addAll(notifications.rejectedProblems);
-    _hints.addAll(notifications.warnedProblems);
-    _hints.addAll(notifications.corrupted.values);
+    _problems.clear();
+    if (b(oneofusLabels.problem.value)) _problems.add(oneofusLabels.problem.value!);
+    if (b(identityCheck.problem.value)) _problems.add(identityCheck.problem.value!);
+    if (b(delegateCheck.problem.value)) _problems.add(delegateCheck.problem.value!);
+    _problems.addAll(baseProblemCollector.rejectedProblems);
+    _problems.addAll(baseProblemCollector.warnedProblems);
+    _problems.addAll(baseProblemCollector.corrupted.values);
   }
 }
 
@@ -166,7 +163,7 @@ class IdentityCheck with Comp, ChangeNotifier {
   static final IdentityCheck _singleton = IdentityCheck._internal();
   factory IdentityCheck() => _singleton;
 
-  final ValueNotifier<TitleDescProblem?> issue = ValueNotifier(null);
+  final ValueNotifier<TitleDescProblem?> problem = ValueNotifier(null);
 
   IdentityCheck._internal() {
     addSupporter(followNet);
@@ -180,10 +177,10 @@ class IdentityCheck with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    issue.value = null;
+    problem.value = null;
     if (b(signInState.centerReset) &&
         !followNet.oneofus2delegates.containsKey(signInState.centerReset)) {
-      issue.value = TitleDescProblem(
+      problem.value = TitleDescProblem(
           title: '''You're not in this network''',
           desc:
               '''You signed in using an identity that isn't currently a member of the network you're viewing.
@@ -197,7 +194,7 @@ class DelegateCheck with Comp, ChangeNotifier {
   static final DelegateCheck _singleton = DelegateCheck._internal();
   factory DelegateCheck() => _singleton;
 
-  final ValueNotifier<TitleDescProblem?> issue = ValueNotifier(null);
+  final ValueNotifier<TitleDescProblem?> problem = ValueNotifier(null);
 
   DelegateCheck._internal() {
     addSupporter(myDelegateStatements);
@@ -214,7 +211,7 @@ class DelegateCheck with Comp, ChangeNotifier {
     assert(myDelegateStatements.ready);
 
     if (!b(signInState.signedInDelegate)) {
-      issue.value = null;
+      problem.value = null;
       return;
     }
 
@@ -227,15 +224,15 @@ class DelegateCheck with Comp, ChangeNotifier {
           s.subjectToken == signInState.signedInDelegate) {
         // delegate is associated with me
         if (s.revokeAt != null) {
-          issue.value = TitleDescProblem(title: 'Your Nerdster delegate is revoked');
+          problem.value = TitleDescProblem(title: 'Your Nerdster delegate is revoked');
           return;
         } else {
-          issue.value = null;
+          problem.value = null;
           return;
         }
       }
     }
-    issue.value = TitleDescProblem(
+    problem.value = TitleDescProblem(
         title: 'Your Nerdster delegate is not associated with your signed in identity');
   }
 }

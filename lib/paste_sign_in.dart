@@ -128,14 +128,15 @@ Or just the identity key, like this:
             const SizedBox(height: 10),
             Row(children: [
               // left filler
-              const Expanded(child: Spacer()),
+              const Spacer(),
               // center OkCancel
               OkCancel(_okHandler, 'Sign in', showCancel: false),
               // right side
               Expanded(
-                  child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                MyCheckbox(widget.storeKeys, 'Store keys'),
-              ]))
+                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  MyCheckbox(widget.storeKeys, 'Store keys'),
+                ]),
+              )
             ])
           ]),
         ),

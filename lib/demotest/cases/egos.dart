@@ -88,9 +88,9 @@ Future<(DemoKey, DemoKey?)> egosCorrupt() async {
 
   Fetcher.clear();
 
-  await NotificationsComp().waitUntilReady();
+  await notifications.waitUntilReady();
 
-  expect(notifications.corrupted.length, 1);
+  expect(baseProblemCollector.corrupted.length, 1);
 
   return (identity, delegate);
 }

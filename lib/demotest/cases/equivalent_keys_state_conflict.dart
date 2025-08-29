@@ -47,16 +47,16 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   expectedEquivalents = { 'Bart', 'Bart (2)' };
   jsonShowExpect(oneofusEquiv.getEquivalents(bart2.token), expectedEquivalents);
-  myExpect(notifications.rejected.length, 1);
-  myExpect(notifications.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
+  myExpect(baseProblemCollector.rejected.length, 1);
+  myExpect(baseProblemCollector.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
   
   // Bart (bart2) now decides that 'bart' no longer represents him and blocks
   Statement b1 = await bart2.doTrust(TrustVerb.block, bart);
   
   signInState.center = lisa.token;
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
-  myExpect(notifications.rejected.length, 1);
-  myExpect(notifications.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
+  myExpect(baseProblemCollector.rejected.length, 1);
+  myExpect(baseProblemCollector.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
   network = oneofusNet.network;
   expectedNetwork = {
     "Me": null,
@@ -74,9 +74,9 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     }
   };
   jsonShowExpect(dump, expected);
-  myExpect(notifications.rejected.length, 1);
+  myExpect(baseProblemCollector.rejected.length, 1);
   // printStatement(notifications.rejected.keys.first);
-  myExpect(notifications.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
+  myExpect(baseProblemCollector.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
 
   signInState.center = bart2.token;
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
@@ -85,7 +85,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     "N:Me-true:": {}  
   };
   jsonShowExpect(dump, expected);
-  myExpect(notifications.rejected.isEmpty, true);
+  myExpect(baseProblemCollector.rejected.isEmpty, true);
 
   await signInState.signIn(bart.token, null);
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
@@ -100,8 +100,8 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
     }
   };
   jsonShowExpect(dump, expected);
-  myExpect(notifications.rejected.length, 2);
-  jsonShowExpect(notifications.rejected, {
+  myExpect(baseProblemCollector.rejected.length, 2);
+  jsonShowExpect(baseProblemCollector.rejected, {
     b1.token:'Attempt to block your key.', 
     bart2blocksMilhouse.token: 'Attempt to block trusted key.'
   });

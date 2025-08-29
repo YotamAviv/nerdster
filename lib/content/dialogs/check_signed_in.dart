@@ -15,7 +15,7 @@ Future<bool?> checkSignedIn(BuildContext? context) async {
     issue = 'You are not signed in';
   } else {
     await delegateCheck.waitUntilReady();
-    issue = delegateCheck.issue.value?.title;
+    issue = delegateCheck.problem.value?.title;
   }
 
   if (!b(issue)) return true;
