@@ -25,26 +25,25 @@ void main() async {
     DemoKey.clear();
     Fetcher.clear();
     await FireFactory.clearPersistence();
-    // TEMP: Unnecesary: notifications.clear();
   });
 
   test('egos', () async {
     var (identity, delegate) = await egos();
     await signInState.signIn(identity.token, null);
-    await Comp.waitOnComps([NotificationsComp()]);
-    expect(NotificationsComp().hints.length, 1);
-    TitleDescProblem issue = NotificationsComp().hints.first;
+    await Comp.waitOnComps([notifications]);
+    expect(notifications.problems.length, 1);
+    TitleDescProblem issue = notifications.problems.first;
     expect(issue.title, "You're invisible to others");
   });
 
   test('egos circle', () async {
     var (identity, delegate) = await egosCircle();
     await signInState.signIn(identity.token, null);
-    await Comp.waitOnComps([NotificationsComp()]);
-    var x = NotificationsComp().hints;
-    if (NotificationsComp().hints.isNotEmpty) {
-      print(NotificationsComp().hints.first);
+    await Comp.waitOnComps([notifications]);
+    var x = notifications.problems;
+    if (notifications.problems.isNotEmpty) {
+      print(notifications.problems.first);
     }
-    expect(NotificationsComp().hints.isEmpty, true);
+    expect(notifications.problems.isEmpty, true);
   });
 }

@@ -41,7 +41,7 @@ void main() async {
 
     await signInState.signIn(oneofus.token, delegate.keyPair);
     await delegateCheck.waitUntilReady();
-    expect(delegateCheck.issue.value, null);
+    expect(delegateCheck.problem.value, null);
   });
 
   test('revoked', () async {
@@ -52,7 +52,7 @@ void main() async {
     await oneofus.doTrust(TrustVerb.delegate, delegate, domain: kNerdsterDomain, revokeAt: 'yup');
 
     await delegateCheck.waitUntilReady();
-    expect(delegateCheck.issue.value!.title, 'Your Nerdster delegate is revoked');
+    expect(delegateCheck.problem.value!.title, 'Your Nerdster delegate is revoked');
   });
 
   test('not associated', () async {
@@ -63,7 +63,7 @@ void main() async {
     await oneofus.doTrust(TrustVerb.clear, delegate);
 
     await delegateCheck.waitUntilReady();
-    expect(delegateCheck.issue.value!.title,
+    expect(delegateCheck.problem.value!.title,
         'Your Nerdster delegate is not associated with your signed in identity');
   });
 }

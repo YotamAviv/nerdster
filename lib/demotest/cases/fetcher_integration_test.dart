@@ -214,12 +214,12 @@ class FetcherTestHelper {
   }
 
   Future<void> notarizationBlockchainViolation() async {
-    Corruptor prevCorruptor = Fetcher.corruptor;
+    CorruptionProblemCollector prevCorruptor = Fetcher.corruptor;
     try {
-      Fetcher.setCorruptor(Notifications.singleton);
+      Fetcher.setCorruptionCollector(BaseProblemCollector.singleton);
 
       // Test relies on not having any notifications at start.
-      expect(notifications.corrupted.length, 0);
+      expect(baseProblemCollector.corrupted.length, 0);
 
       Prefs.skipVerify.value = true;
       TestSigner signer = TestSigner();
@@ -256,11 +256,11 @@ class FetcherTestHelper {
       // notary verification is different between local and cloud (right now).
       // Cloud functions throws error; local skips the statement.
       await fetcher.fetch();
-      expect(notifications.corrupted.length, 1);
-      expect(notifications.corrupted.entries.first.key, token);
+      expect(baseProblemCollector.corrupted.length, 1);
+      expect(baseProblemCollector.corrupted.entries.first.key, token);
       print('(500 (Internal Server Error) or "Notarization violation" above was expected)');
     } finally {
-      Fetcher.setCorruptor(prevCorruptor);
+      Fetcher.setCorruptionCollector(prevCorruptor);
     }
   }
 

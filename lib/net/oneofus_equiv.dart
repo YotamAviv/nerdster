@@ -51,12 +51,12 @@ class OneofusEquiv with Comp, ChangeNotifier {
     for (String token in oneofusNet.network.keys) {
       for (TrustStatement statement
           in (Fetcher(token, kOneofusDomain).statements).cast<TrustStatement>()) {
-        if (notifications.rejected.containsKey(statement.token)) continue;
+        if (baseProblemCollector.rejected.containsKey(statement.token)) continue;
         EquateStatement? es = equateParser.parse(statement);
         if (es != null) {
           String? rejection = _equivalence!.process(es);
           if (b(rejection)) {
-            notifications.reject(statement.token, rejection!);
+            baseProblemCollector.reject(statement.token, rejection!);
           }
         }
       }
@@ -69,8 +69,8 @@ class OneofusEquiv with Comp, ChangeNotifier {
       if (trustStatement.verb == TrustVerb.trust) {
         String subjectToken = trustStatement.subjectToken;
         if (getCanonical(subjectToken) != subjectToken) {
-          assert(!notifications.rejected.containsKey(subjectToken), 'might need multiple');
-          notifications.warn(trustStatement.token, 'You trust a non-canonical key directly.');
+          assert(!baseProblemCollector.rejected.containsKey(subjectToken), 'might need multiple');
+          baseProblemCollector.warn(trustStatement.token, 'You trust a non-canonical key directly.');
         }
       }
     }
@@ -92,7 +92,7 @@ class OneofusEquiv with Comp, ChangeNotifier {
           _delegate2oneofus[delegateToken] = oneofusCanonicalKey;
           _oneofus2delegates[oneofusCanonicalKey]!.add(delegateToken);
         } else {
-          notifications.reject(s.token, 'Delegate already claimed.');
+          baseProblemCollector.reject(s.token, 'Delegate already claimed.');
         }
       }
     }

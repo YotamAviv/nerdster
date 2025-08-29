@@ -142,8 +142,8 @@ void main() async {
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     // expect a rejected statement.
-    expect(notifications.rejected.length, 1);
-    expect(notifications.rejected.keys.first, replaceStatement.token);
+    expect(baseProblemCollector.rejected.length, 1);
+    expect(baseProblemCollector.rejected.keys.first, replaceStatement.token);
     // homer remains canonical
     expect(oneofusEquiv.getCanonical(homer.token), homer.token);
 
@@ -166,7 +166,7 @@ void main() async {
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
     // expect a rejected statement.
-    expect(notifications.rejected.length, 1);
+    expect(baseProblemCollector.rejected.length, 1);
 
     dynamic dump = await OneofusTreeNode.root.dump();
     var expectedTree = {"N:Me-true:": {}};
@@ -181,7 +181,7 @@ void main() async {
 
     signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    jsonExpect(notifications.rejected, {lisaBlocksHomer.token: 'Attempt to block trusted key.'});
+    jsonExpect(baseProblemCollector.rejected, {lisaBlocksHomer.token: 'Attempt to block trusted key.'});
   });
 
   test('diamond trust', () async {
@@ -407,7 +407,7 @@ void main() async {
     signInState.center = homer.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
-    expect(notifications.rejected.keys, {s3.token});
+    expect(baseProblemCollector.rejected.keys, {s3.token});
     dynamic dump = await OneofusTreeNode.root.dump();
     var expected = {
       "N:Me-true:": {
@@ -429,7 +429,7 @@ void main() async {
     signInState.center = homer2.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
 
-    expect(notifications.rejected.containsKey(s4.token), true);
+    expect(baseProblemCollector.rejected.containsKey(s4.token), true);
     expect(oneofusEquiv.getCanonical(homer.token), homer2.token);
     expect(oneofusEquiv.getCanonical(homer2.token), homer2.token);
     expect(oneofusEquiv.getEquivalents(homer2.token), {homer2.token, homer.token});
@@ -571,14 +571,14 @@ void main() async {
 
     FetcherNode.clear();
     trust1 = GreedyBfsTrust(degrees: 1);
-    network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
+    network = await trust1.process(FetcherNode(d1.token), problemCollector: baseProblemCollector);
     expect(network.length, 1);
     expect(network.keys, [d1.token]);
     expect(network.values.first.paths.length, 0);
 
     FetcherNode.clear();
     trust1 = GreedyBfsTrust(degrees: 2);
-    network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
+    network = await trust1.process(FetcherNode(d1.token), problemCollector: baseProblemCollector);
     expect(network.length, 2);
     expect(network.keys, [d1.token, d2.token]);
     expect(network.values.first.paths.length, 0);
@@ -589,7 +589,7 @@ void main() async {
     FetcherNode
         .clear(); // TODO: Document, FIX: This shouldn't be required but is to clear the paths cached on the Node.
     trust1 = GreedyBfsTrust(degrees: 3);
-    network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
+    network = await trust1.process(FetcherNode(d1.token), problemCollector: baseProblemCollector);
     expect(network.length, 3);
     expect(network.keys, [d1.token, d2.token, d3.token]);
     expect(network.values.first.paths.length, 0);
@@ -618,21 +618,21 @@ void main() async {
     Map<String, Node> network;
 
     trust1 = GreedyBfsTrust(degrees: 1);
-    notifications.clear();
-    network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
+    baseProblemCollector.clear();
+    network = await trust1.process(FetcherNode(d1.token), problemCollector: baseProblemCollector);
     expect(network.keys, [d1.token]);
-    expect(notifications.rejected.length, 0);
+    expect(baseProblemCollector.rejected.length, 0);
 
     trust1 = GreedyBfsTrust(degrees: 2);
-    notifications.clear();
-    network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
-    jsonExpect(notifications.rejected, {block.token: "Attempt to block trusted key."});
+    baseProblemCollector.clear();
+    network = await trust1.process(FetcherNode(d1.token), problemCollector: baseProblemCollector);
+    jsonExpect(baseProblemCollector.rejected, {block.token: "Attempt to block trusted key."});
     expect(network.keys, [d1.token, d22.token, d21.token]);
 
     trust1 = GreedyBfsTrust(degrees: 3);
-    notifications.clear();
-    network = await trust1.process(FetcherNode(d1.token), notifier: notifications);
-    jsonExpect(notifications.rejected, {block.token: "Attempt to block trusted key."});
+    baseProblemCollector.clear();
+    network = await trust1.process(FetcherNode(d1.token), problemCollector: baseProblemCollector);
+    jsonExpect(baseProblemCollector.rejected, {block.token: "Attempt to block trusted key."});
     expect(network.keys, [d1.token, d22.token, d21.token, d3.token]);
   });
 
@@ -648,8 +648,8 @@ void main() async {
     var expectedNetwork = {"son": null, "friend": null, "sis": null, "homer2": null, "moms": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
-    expect(notifications.rejected.length, 1);
-    MapEntry e = notifications.rejected.entries.first;
+    expect(baseProblemCollector.rejected.length, 1);
+    MapEntry e = baseProblemCollector.rejected.entries.first;
     String rejectedToken = e.key;
     String reason = e.value;
     // printStatement(rejectedToken);
@@ -682,8 +682,8 @@ void main() async {
     };
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
 
-    expect(notifications.rejected.length, 1);
-    MapEntry e = notifications.rejected.entries.first;
+    expect(baseProblemCollector.rejected.length, 1);
+    MapEntry e = baseProblemCollector.rejected.entries.first;
     String rejectedToken = e.key;
     String reason = e.value;
     // printStatement(rejectedToken);
@@ -702,8 +702,8 @@ void main() async {
 
     signInState.center = marge.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(notifications.rejected.length, 1);
-    MapEntry e = notifications.rejected.entries.first;
+    expect(baseProblemCollector.rejected.length, 1);
+    MapEntry e = baseProblemCollector.rejected.entries.first;
     String rejectedToken = e.key;
     String reason = e.value;
     expect(lisaBlocksMarge.token, rejectedToken);
@@ -719,8 +719,8 @@ void main() async {
 
     signInState.center = homer2.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(notifications.rejected.length, 1);
-    MapEntry e = notifications.rejected.entries.first;
+    expect(baseProblemCollector.rejected.length, 1);
+    MapEntry e = baseProblemCollector.rejected.entries.first;
     String rejectedToken = e.key;
     String reason = e.value;
     expect(rejected.token, rejectedToken);
@@ -793,8 +793,8 @@ void main() async {
 
     signInState.center = lisa.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(notifications.rejected.length, 0);
-    expect(notifications.warned.length, 0);
+    expect(baseProblemCollector.rejected.length, 0);
+    expect(baseProblemCollector.warned.length, 0);
     expect(oneofusNet.network.keys.contains(milhouse.token), true);
     expect(keyLabels.labelKey(milhouse.token), 'Milhouse');
     expect(oneofusNet.network.keys.contains(bart.token), true);
@@ -802,13 +802,13 @@ void main() async {
 
     signInState.center = bart.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(notifications.rejected.length > 1, true);
+    expect(baseProblemCollector.rejected.length > 1, true);
     expect(oneofusNet.network.keys.contains(milhouse.token), true);
     expect(keyLabels.labelKey(milhouse.token), 'Milhouse');
 
     signInState.center = milhouse.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
-    expect(notifications.rejected.length > 1, true);
+    expect(baseProblemCollector.rejected.length > 1, true);
     expect(keyLabels.labelKey(milhouse.token), '4-Eyes');
   });
 

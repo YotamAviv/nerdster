@@ -38,7 +38,7 @@ class GreedyBfsTrust {
   GreedyBfsTrust({this.degrees = 6, this.numPaths = 1});
 
   Future<LinkedHashMap<String, Node>> process(Node source,
-      {Notifications? notifier,
+      {BaseProblemCollector? problemCollector,
       ProgressR? progressR,
       Future<void> Function(Iterable<Node> tokens, int distance)? batchFetch}) async {
     LinkedHashMap<String, Node> network = LinkedHashMap<String, Node>();
@@ -70,7 +70,7 @@ class GreedyBfsTrust {
           Node other = block.node;
           if (other.blocked) continue;
           if (other == n) {
-            notifier?.reject(block.statementToken, '''Don't block yourself.''');
+            problemCollector?.reject(block.statementToken, '''Don't block yourself.''');
             continue;
           }
           // Block the other node if allowed (not already trusted).
@@ -78,14 +78,14 @@ class GreedyBfsTrust {
           /// Greedy approach, briefly, simplified: If trusted then can't block.
           if (other == source) {
             // Special case, no paths
-            notifier?.reject(block.statementToken, 'Attempt to block your key.');
+            problemCollector?.reject(block.statementToken, 'Attempt to block your key.');
             continue;
           }
           if (other.paths.isNotEmpty) {
             // Already trusted (not blocked, has paths, isn't blocked)
             assert(!other.blocked);
             assert(network.containsKey(other.token));
-            notifier?.reject(block.statementToken, 'Attempt to block trusted key.');
+            problemCollector?.reject(block.statementToken, 'Attempt to block trusted key.');
             continue;
           }
 
@@ -109,11 +109,11 @@ class GreedyBfsTrust {
           Node other = replace.node;
           // Replace the other node if allowed.
           if (other == n) {
-            notifier?.reject(replace.statementToken, '''Don't replace yourself''');
+            problemCollector?.reject(replace.statementToken, '''Don't replace yourself''');
             continue;
           }
           if (other == source) {
-            notifier?.reject(replace.statementToken, 'Attempt to replace your key.');
+            problemCollector?.reject(replace.statementToken, 'Attempt to replace your key.');
             continue;
           }
           if (other.revokeAt != null) {
@@ -123,20 +123,20 @@ class GreedyBfsTrust {
             // That said: I don't want to implement revoking at different tokens in Fetcher,
             // and so I do enforce it here.
 
-            // BUG: Possible bug, forgot the details, oops. 
-            notifier?.reject(replace.statementToken, 'Attempt to replace a replaced key.');
+            // BUG: Possible bug, forgot the details, oops.
+            problemCollector?.reject(replace.statementToken, 'Attempt to replace a replaced key.');
             continue;
           }
           if (other.blocked) {
             // Hmm.. if someone blocks your old key, you should probably be informed about it.
             // This might be that rejected replace (otherwise, it'd be a rejected block)
-            notifier?.reject(replace.statementToken, 'Attempt to replace a blocked key.');
+            problemCollector?.reject(replace.statementToken, 'Attempt to replace a blocked key.');
             continue;
           }
           if (other.paths.isNotEmpty) {
             assert(!other.blocked);
             assert(network.containsKey(other.token));
-            notifier?.reject(replace.statementToken, 'Attempt to replace trusted key.');
+            problemCollector?.reject(replace.statementToken, 'Attempt to replace trusted key.');
             continue;
           }
 
@@ -162,11 +162,11 @@ class GreedyBfsTrust {
         for (Trust trust in await n.trusts) {
           final Node other = trust.node;
           if (other == n) {
-            notifier?.reject(trust.statementToken, '''Don't trust yourself.''');
+            problemCollector?.reject(trust.statementToken, '''Don't trust yourself.''');
             continue;
           }
           if (other.blocked) {
-            notifier?.reject(trust.statementToken, '''Attempt to trust blocked key.''');
+            problemCollector?.reject(trust.statementToken, '''Attempt to trust blocked key.''');
             continue;
           }
           if (path.where((pathEdge) => pathEdge.node == other).isNotEmpty) continue; // cycle

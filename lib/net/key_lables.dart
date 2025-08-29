@@ -33,7 +33,7 @@ class OneofusLabels with Comp, ChangeNotifier {
 
   // vars
   final BiMap<String, String> _token2name = BiMap<String, String>();
-  final ValueNotifier<TitleDescProblem?> issue = ValueNotifier(null);
+  final ValueNotifier<TitleDescProblem?> problem = ValueNotifier(null);
 
   // interface
   String? labelKey(String token) => _token2name[token];
@@ -47,7 +47,7 @@ class OneofusLabels with Comp, ChangeNotifier {
   Future<void> process() async {
     throwIfSupportersNotReady();
     _token2name.clear();
-    issue.value = null;
+    problem.value = null;
     if (!b(signInState.center)) return;
 
     _labelKeys();
@@ -103,18 +103,20 @@ class OneofusLabels with Comp, ChangeNotifier {
           .statements
           .cast<TrustStatement>()
           .firstWhereOrNull((ts) =>
-              !notifications.rejected.containsKey(ts.token) &&
+              !baseProblemCollector.rejected.containsKey(ts.token) &&
               ts.verb == TrustVerb.trust &&
               ts.subjectToken == signInState.center);
       if (b(ts)) return _labelKey(signInState.center!, ts!.moniker!);
     }
 
     if (signInState.center == signInState.centerReset) {
-      issue.value = TitleDescProblem(
+      problem.value = TitleDescProblem(
           title: "You're invisible to others",
           desc:
               '''You're labeled "Me" because no one in your network has vouched for your identity (you're not in their identity network), which means they can't see you.
-Share your identity key with someone (email them a screenshot of your ONE-OF-US.NET phone app or use the phone app's menu at /etc => Share my public key.
+
+Share your identity key with someone (email them a screenshot of your ONE-OF-US.NET phone app or use the phone app's menu at /etc => Share my public key) so that they can trust you (vouch for your humanity and identity).
+
 It's good practice to occasionally use others' POV to check how they see you.''');
     }
 
