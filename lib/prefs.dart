@@ -3,6 +3,23 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
+/// New direction
+/// - Setting object
+/// - name (used by query parameters)
+/// - default value 
+/// - maybe enum (used by code), maybe a reference to the Setting object is enough, but avoid thestring name
+/// - restoreDefaultValues..
+/// - ValueListenable.. either extends ChangeNotifier implements ValueListenable<T>
+/// - 
+/// - 
+/// 
+/// Specific changes
+/// - s/oneofus/identity
+/// 
+/// 
+
+
+
 bool devDefault = fireChoice != FireChoice.prod;
 bool bNerd = devDefault;
 // bool bNerd = true;

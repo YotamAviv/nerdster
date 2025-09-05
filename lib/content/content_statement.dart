@@ -15,7 +15,7 @@ class ContentStatement extends Statement {
   final bool? like;
   final bool? dismiss;
   final bool? censor;
-  final Json? contexts;
+  final Json? contexts; // (verb == follow)
 
   static void init() {
     Statement.registerFactory(kNerdsterType, _ContentStatementFactory());

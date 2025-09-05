@@ -31,6 +31,8 @@ import 'package:nerdster/singletons.dart';
 ///   - Censored().token2statements
 ///   - NerdsterFollow().token2statements
 ///   Have everything in terms of Oneofus canonical, that is.
+/// 
+/// CONSIDER: Bug or feature: When I dis (dismiss), that moves it up for others in "recent activity". 
 
 extension FirstWhereOrNull<T> on Iterable<T> {
   T? firstWhereOrNull(bool Function(T) test) {

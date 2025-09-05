@@ -33,6 +33,8 @@ class ContentTile extends StatefulWidget {
   }
 }
 
+const space = SizedBox(width: 4);
+
 class _ContentTileState extends State<ContentTile> {
   Icon relateIcon = const Icon(Icons.balance);
 
@@ -115,18 +117,28 @@ class _ContentTileState extends State<ContentTile> {
     Widget? statementDesc;
     if (isStatement) {
       final ContentVerb verb = statement!.verb;
-      StringBuffer buf = StringBuffer();
-      if (verb == ContentVerb.rate) {
-        if (b(statement.like)) buf.write(statement.like! ? 'liked ' : 'disliked ');
-        if (b(statement.dismiss)) buf.write('dismissed ');
-        if (b(statement.censor)) buf.write('censored ');
-      }
-      if (verb != ContentVerb.rate) {
-        buf.write('  ${verb.pastTense} ');
-      }
+      // OLD: TODO: Clean up.
+      // StringBuffer buf = StringBuffer();
+      // buf.write('  ${verb.pastTense} ');
+      // if (verb == ContentVerb.rate) {
+      //   if (b(statement.like)) buf.write(statement.like! ? 'liked ' : 'disliked ');
+      //   if (b(statement.dismiss)) buf.write('dismissed ');
+      //   if (b(statement.censor)) buf.write('censored ');
+      // }
       Color textColor =
           !contentBase.isRejected(subjectNode.subject.token) ? Colors.black : Colors.pink;
-      statementDesc = Text('  ${buf.toString()}', style: TextStyle(color: textColor));
+      // TODO: Get icons, colors, and tooltips from a common place with [RateDialog].
+      statementDesc = Row(
+        children: [
+          space,
+          Text(style: TextStyle(color: textColor), verb.pastTense),
+          space,
+          if (b(statement.like))
+            (statement.like! ? Icon(color: Colors.green, Icons.thumb_up) : Icon(Icons.thumb_down)),
+          if (b(statement.dismiss)) Icon(color: Colors.brown, Icons.swipe_left),
+          if (b(statement.censor)) Icon(color: Colors.red, Icons.delete),
+        ],
+      );
     }
 
     // Computed but not displayed: PropType.recentActivity
