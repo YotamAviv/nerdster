@@ -103,10 +103,10 @@ Future<void> main() async {
 
   switch (fireChoice) {
     case FireChoice.fake:
-      Fetcher.initEndpoint(kOneofusDomain,
-          const Endpoint('http', '127.0.0.1', 'bogus/export', port: 5002));
-      Fetcher.initEndpoint(kNerdsterDomain,
-          const Endpoint('http', '127.0.0.1', 'bogus/export', port: 5001));
+      Fetcher.initEndpoint(
+          kOneofusDomain, const Endpoint('http', '127.0.0.1', 'bogus/export', port: 5002));
+      Fetcher.initEndpoint(
+          kNerdsterDomain, const Endpoint('http', '127.0.0.1', 'bogus/export', port: 5001));
       break;
     case FireChoice.emulator:
       Fetcher.initEndpoint(kOneofusDomain,
@@ -115,6 +115,7 @@ Future<void> main() async {
           const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
       break;
     case FireChoice.prod:
+
       /// DEFER: Get export.one-of-us.net from the QR sign in process instead of having it hard-coded here.
       /// Furthermore, replace "one-of-us.net" with "identity" everywhere (for elegance only as
       /// there is no other identity... but there could be)
@@ -143,12 +144,13 @@ Future<void> main() async {
 Future<void> defaultSignIn(BuildContext context) async {
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
-  // TODO: Leverage Prefs Settings for identity/oneofus
-  if (b(params['oneofus'])) {
-    String oneofusParam = params['oneofus']!;
-    Json oneofusJson = json.decode(oneofusParam);
-    String oneofus = getToken(oneofusJson);
-    await signInState.signIn(oneofus, null, context: context);
+  // CONSIDER: Leverage Prefs Settings for identity/oneofus. Then again, the keys...
+  String? identityParam = params['identity'];
+  String? oneofusParam = params['oneofus']; // alias, deprecated.
+  if (b(identityParam) || b(oneofusParam)) {
+    Json identityJson = json.decode(b(identityParam) ? identityParam! : oneofusParam!);
+    String identityToken = getToken(identityJson);
+    await signInState.signIn(identityToken, null, context: context);
     return;
   }
 
