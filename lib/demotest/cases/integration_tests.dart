@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
-import 'package:nerdster/demotest/cases/egos.dart';
 import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
@@ -16,7 +14,7 @@ import 'package:test/test.dart';
 /// is no reason.
 void integrationTests() async {
   // To restore Prefs changes
-  late Map<ValueNotifier, dynamic> prefsSnapshot;
+  late Map<Setting, dynamic> prefsSnapshot;
   tearDown(() {
     Prefs.restore(prefsSnapshot);
   });

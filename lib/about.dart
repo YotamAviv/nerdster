@@ -51,8 +51,8 @@ class About extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 taps++;
-                if (taps >= 7 && !Prefs.dev.value) {
-                  Prefs.dev.value = true;
+                if (taps >= 7 && !Setting.get<bool>(SettingType.dev).value) {
+                  Setting.get<bool>(SettingType.dev).value = true;
                   const String message = 'You are now a developer.';
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text(message)),

@@ -103,6 +103,10 @@ Future<void> main() async {
 
   switch (fireChoice) {
     case FireChoice.fake:
+      Fetcher.initEndpoint(kOneofusDomain,
+          const Endpoint('http', '127.0.0.1', 'bogus/export', port: 5002));
+      Fetcher.initEndpoint(kNerdsterDomain,
+          const Endpoint('http', '127.0.0.1', 'bogus/export', port: 5001));
       break;
     case FireChoice.emulator:
       Fetcher.initEndpoint(kOneofusDomain,

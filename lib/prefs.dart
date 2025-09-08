@@ -1,140 +1,203 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
-/// New direction
-/// - Setting object
-/// - name (used by query parameters)
-/// - default value 
-/// - maybe enum (used by code), maybe a reference to the Setting object is enough, but avoid thestring name
-/// - restoreDefaultValues..
-/// - ValueListenable.. either extends ChangeNotifier implements ValueListenable<T>
-/// - 
-/// - 
-/// 
-/// Specific changes
-/// - s/oneofus/identity
-/// 
-/// 
+enum SettingType {
+  skipLgtm(bool, false, persist: true),
+  skipCredentials(bool, false, persist: true),
+  censor(bool, true),
+  hideDisliked(bool, false),
+  identityNetDegrees(int, 5, aliases: ['oneofusNetDegrees']),
+  identityNetPaths(int, 1, aliases: ['oneofusNetPaths']),
+  followNetDegrees(int, 5),
+  followNetPaths(int, 1),
 
+  skipVerify(bool, true),
+  httpFetch(bool, true),
+  batchFetch(bool, true),
 
+  showJson(bool, false),
+  showKeys(bool, false),
+  showStatements(bool, false),
+  showStuff(bool, false),
+  dev(bool, false),
+  bogus(bool, true),
+  preferredTags(List<String>, <String>[], persist: true);
 
-bool devDefault = fireChoice != FireChoice.prod;
-bool bNerd = devDefault;
-// bool bNerd = true;
+  final Type type;
+  final dynamic defaultValue;
+  final List<String> aliases;
+  final bool persist;
+
+  const SettingType(this.type, this.defaultValue, {this.aliases = const [], this.persist = false});
+}
+
+class Setting<T> implements ValueListenable<T> {
+  final SettingType type; // Enum for type-safe code references
+  final ValueNotifier<T> _notifier;
+
+  Setting._(this.type) : _notifier = ValueNotifier<T>(type.defaultValue);
+
+  static Setting<T> get<T>(SettingType type) => _instances[type]! as Setting<T>;
+  static final List<Setting> all = _instances.values.toList();
+
+  String get name => type.name;
+  ValueNotifier<T> get notifier => _notifier;
+  List<String> get aliases => type.aliases;
+  T get defaultValue => type.defaultValue;
+  bool get persist => type.persist;
+
+  @override
+  T get value => _notifier.value;
+
+  set value(T newValue) => _notifier.value = newValue;
+
+  @override
+  void addListener(VoidCallback listener) => _notifier.addListener(listener);
+
+  @override
+  void removeListener(VoidCallback listener) => _notifier.removeListener(listener);
+
+  // Helper method to parse string values into type T
+  T _parseValue(String value) {
+    if (T == bool) return bs(value) as T;
+    if (T == int) return int.parse(value) as T;
+    if (T == List<String>) return value.split(',') as T;
+    throw Exception('Unsupported type: $T');
+  }
+
+  void updateFromQueryParam(Map<String, String> params) {
+    String? paramValue;
+    if (b(params[name])) {
+      paramValue = params[name];
+    } else {
+      for (String alias in aliases) {
+        if (b(params[alias])) {
+          paramValue = params[alias];
+          break;
+        }
+      }
+    }
+    if (paramValue != null) _notifier.value = _parseValue(paramValue);
+  }
+
+  void addToParams(Map<String, String> params) {
+    if (_notifier.value != defaultValue) {
+      if (T == List<String>) {
+        params[name] = (_notifier.value as List<String>).join(',');
+      } else {
+        params[name] = _notifier.value.toString();
+      }
+    }
+  }
+
+  Future<void> loadFromStorage(FlutterSecureStorage storage) async {
+    if (!persist) return;
+    try {
+      String? value = await storage.read(key: name);
+      if (!b(value)) {
+        for (String alias in aliases) {
+          value = await storage.read(key: alias);
+          if (b(value)) break;
+        }
+      }
+      if (b(value)) {
+        _notifier.value = _parseValue(value!);
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void addStorageListener(FlutterSecureStorage storage) {
+    if (!persist) return;
+    _notifier.addListener(() async {
+      if (T == List<String>) {
+        await storage.write(key: name, value: (_notifier.value as List<String>).join(','));
+      } else {
+        await storage.write(key: name, value: _notifier.value.toString());
+      }
+    });
+  }
+
+  // Cache for singleton Setting instances
+  static final Map<SettingType, Setting> _instances = {
+    for (var type in SettingType.values) type: _createSetting(type),
+  };
+
+  // Private factory method for creating instances
+  static Setting _createSetting(SettingType type) {
+    if (type.type == bool) {
+      return Setting<bool>._(type);
+    } else if (type.type == int) {
+      return Setting<int>._(type);
+    } else if (type.type == List<String>) {
+      return Setting<List<String>>._(type);
+    }
+    throw Exception('Unauthorized type for SettingType: ${type.type}');
+  }
+}
 
 class Prefs {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
-  // Settings
-  static final ValueNotifier<bool> skipLgtm = ValueNotifier<bool>(false);
-  static final ValueNotifier<bool> skipCredentials = ValueNotifier<bool>(false);
-  static final ValueNotifier<bool> censor = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> hideDisliked = ValueNotifier<bool>(false);
-  static final ValueNotifier<int> oneofusNetDegrees = ValueNotifier<int>(5);
-  static final ValueNotifier<int> oneofusNetPaths = ValueNotifier<int>(1);
-  static final ValueNotifier<int> followNetDegrees = ValueNotifier<int>(5);
-  static final ValueNotifier<int> followNetPaths = ValueNotifier<int>(1);
-  static final ValueNotifier<bool> keyLabel =
-      ValueNotifier(true); // historic, deprecated, but used by tests
-  static final ValueNotifier<bool> skipVerify = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> showJson = ValueNotifier(bNerd);
-  static final ValueNotifier<bool> showKeys = ValueNotifier(bNerd);
-  static final ValueNotifier<bool> showStatements = ValueNotifier(bNerd);
-  static final ValueNotifier<bool> showStuff = ValueNotifier<bool>(bNerd);
+  static Map<Setting, dynamic> snapshot() {
+    return {for (var setting in Setting.all) setting: setting.value};
+  }
 
-  // DEV:
-  static final ValueNotifier<bool> dev = ValueNotifier<bool>(devDefault || bNerd);
-  static final ValueNotifier<bool> bogus = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> httpFetch = ValueNotifier<bool>(true);
-  static final ValueNotifier<bool> batchFetch = ValueNotifier<bool>(true);
-
-  static final List<ValueNotifier> _notifiers = [
-    skipLgtm,
-    skipCredentials,
-    censor,
-    hideDisliked,
-    oneofusNetDegrees,
-    oneofusNetPaths,
-    followNetDegrees,
-    followNetPaths,
-    keyLabel,
-    skipVerify,
-    showJson,
-    showKeys,
-    showStatements,
-    showStuff,
-    dev,
-    httpFetch,
-    batchFetch,
-  ];
-  static Map<ValueNotifier, dynamic> snapshot() => {for (var n in _notifiers) n: n.value};
-  static void restore(Map<ValueNotifier, dynamic> snapshot) {
+  static void restore(Map<Setting, dynamic> snapshot) {
     for (final entry in snapshot.entries) {
       entry.key.value = entry.value;
     }
   }
 
+  static void restoreDefaultValues() {
+    for (final setting in Setting.all) {
+      setting.value = setting.defaultValue;
+    }
+  }
+
   static Future<void> init() async {
+    // Set dynamic defaults based on fireChoice
+    final bool devDefault = fireChoice != FireChoice.prod;
+    Setting.get<bool>(SettingType.showJson).value = devDefault;
+    Setting.get<bool>(SettingType.showKeys).value = devDefault;
+    Setting.get<bool>(SettingType.showStatements).value = devDefault;
+    Setting.get<bool>(SettingType.showStuff).value = devDefault;
+    Setting.get<bool>(SettingType.dev).value = devDefault;
+
+    // Load persistent settings from storage
+    await Future.wait(
+      Setting.all
+          .where((setting) => setting.persist)
+          .map((setting) => setting.loadFromStorage(_storage)),
+    );
+
+    // Load settings from query parameters
     Map<String, String> params = Uri.base.queryParameters;
-    if (b(params['keyLabel'])) keyLabel.value = bs(params['keyLabel']);
-    if (b(params['showJson'])) showJson.value = bs(params['showJson']);
-    if (b(params['showStatements'])) showStatements.value = bs(params['showStatements']);
-    if (b(params['showKeys'])) showKeys.value = bs(params['showKeys']);
-    if (b(params['censor'])) censor.value = bs(params['censor']);
-    if (b(params['hideDismissed'])) hideDisliked.value = bs(params['hideDismissed']);
-
-    if (b(params['oneofusNetDegrees'])) {
-      oneofusNetDegrees.value = int.parse(params['oneofusNetDegrees']!);
+    for (final setting in Setting.all) {
+      setting.updateFromQueryParam(params);
     }
-    if (b(params['oneofusNetPaths'])) oneofusNetPaths.value = int.parse(params['oneofusNetPaths']!);
-    if (b(params['followNetDegrees'])) {
-      followNetDegrees.value = int.parse(params['followNetDegrees']!);
-    }
-    if (b(params['followNetPaths'])) followNetPaths.value = int.parse(params['followNetPaths']!);
 
-    try {
-      String? skipLgtmS = await _storage.read(key: 'skipLgtm');
-      if (b(skipLgtmS)) skipLgtm.value = bool.parse(skipLgtmS!);
-    } catch (e) {
-      print(e);
+    // Set up listeners for persistent settings
+    for (final setting in Setting.all.where((setting) => setting.persist)) {
+      setting.addStorageListener(_storage);
     }
-    Prefs.skipLgtm.addListener(() async {
-      await _storage.write(key: 'skipLgtm', value: Prefs.skipLgtm.value.toString());
-    });
 
-    try {
-      skipCredentials.value = bs(await _storage.read(key: 'skipCredentials'));
-    } catch (e) {
-      print(e);
-    }
-    Prefs.skipCredentials.addListener(() async {
-      await _storage.write(key: 'skipCredentials', value: Prefs.skipCredentials.value.toString());
-    });
-
-    Prefs.showStuff.addListener(() {
-      Prefs.showJson.value = showStuff.value;
-      Prefs.showKeys.value = showStuff.value;
-      Prefs.showStatements.value = showStuff.value;
+    // Sync showStuff with dependent settings
+    Setting.get<bool>(SettingType.showStuff).addListener(() {
+      final showStuffValue = Setting.get<bool>(SettingType.showStuff).value;
+      Setting.get<bool>(SettingType.showJson).value = showStuffValue;
+      Setting.get<bool>(SettingType.showKeys).value = showStuffValue;
+      Setting.get<bool>(SettingType.showStatements).value = showStuffValue;
     });
   }
 
   static void setParams(Map<String, String> params) {
-    // include when not the default value
-    if (!keyLabel.value) params['keyLabel'] = keyLabel.value.toString();
-    if (showJson.value) params['showJson'] = showJson.value.toString();
-    if (showStatements.value) params['showStatements'] = showStatements.value.toString();
-    if (showKeys.value) params['showKeys'] = showKeys.value.toString();
-    if (!skipVerify.value) params['skipVerify'] = skipVerify.value.toString();
-    if (!censor.value) params['censor'] = censor.value.toString();
-    if (!hideDisliked.value) params['hideDismissed'] = hideDisliked.value.toString();
-
-    if (oneofusNetDegrees.value != 5)
-      params['oneofusNetDegrees'] = oneofusNetDegrees.value.toString();
-    if (oneofusNetPaths.value != 1) params['oneofusNetPaths'] = oneofusNetPaths.value.toString();
-    if (followNetDegrees.value != 5) params['followNetDegrees'] = followNetDegrees.value.toString();
-    if (followNetPaths.value != 1) params['followNetPaths'] = followNetPaths.value.toString();
+    for (final setting in Setting.all) {
+      setting.addToParams(params);
+    }
   }
 
   Prefs._();

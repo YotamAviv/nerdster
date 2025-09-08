@@ -1,5 +1,4 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -50,7 +49,7 @@ void main() async {
   ContentStatement.init();
 
   // To restore Prefs changes
-  late Map<ValueNotifier, dynamic> prefsSnapshot;
+  late Map<Setting, dynamic> prefsSnapshot;
   tearDown(() {
     Prefs.restore(prefsSnapshot);
   });
@@ -64,8 +63,8 @@ void main() async {
     contentBase.censor = true;
     followNet.fcontext = kOneofusContext;
     oneofusNet.numPaths = 1;
-    Prefs.showKeys.value = false;
-    Prefs.showStatements.value = false;
+    Setting.get<bool>(SettingType.showKeys).value = false;
+    Setting.get<bool>(SettingType.showStatements).value = false;
     for (final fire in FireFactory.domain2fire.values) {
       await fire.$1.clearPersistence();
     }
@@ -106,9 +105,8 @@ void main() async {
   // Accomplished manually using the UI and dumped.
   test('rate and dis', () async {
     // timezoneOffsetKludge = -3;
-    Prefs.showStatements.value = true;
-    Prefs.showKeys.value = true;
-    Prefs.keyLabel.value = false;
+    Setting.get<bool>(SettingType.showStatements).value = true;
+    Setting.get<bool>(SettingType.showKeys).value = true;
     await contentBase.waitUntilReady();
     await testByDump(rateAndDis);
   });
@@ -116,9 +114,8 @@ void main() async {
   /// view as Jock using stock DemoKeys.egos.
   test('jock1', () async {
     // timezoneOffsetKludge = -3;
-    Prefs.showStatements.value = true;
-    Prefs.showKeys.value = true;
-    Prefs.keyLabel.value = false;
+    Setting.get<bool>(SettingType.showStatements).value = true;
+    Setting.get<bool>(SettingType.showKeys).value = true;
     await testByDump(jock1);
   });
 
@@ -237,9 +234,8 @@ void main() async {
   /// - equate article 'a' to 'b'
   test('equate1', () async {
     // timezoneOffsetKludge = -3;
-    Prefs.showStatements.value = true;
-    Prefs.showKeys.value = true;
-    Prefs.keyLabel.value = false;
+    Setting.get<bool>(SettingType.showStatements).value = true;
+    Setting.get<bool>(SettingType.showKeys).value = true;
     await testByDump(equate1);
   });
 

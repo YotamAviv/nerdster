@@ -1,5 +1,4 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
@@ -58,7 +57,7 @@ void main() async {
   DemoKey sideshow = await DemoKey.findOrCreate('dummy');
 
   // To restore Prefs changes
-  late Map<ValueNotifier, dynamic> prefsSnapshot;
+  late Map<Setting, dynamic> prefsSnapshot;
   tearDown(() {
     Prefs.restore(prefsSnapshot);
   });
@@ -72,8 +71,8 @@ void main() async {
     oneofusNet.degrees = 6;
     oneofusNet.numPaths = 1;
     followNet.fcontext = kOneofusContext;
-    Prefs.showKeys.value = false;
-    Prefs.showStatements.value = false;
+    Setting.get<bool>(SettingType.showKeys).value = false;
+    Setting.get<bool>(SettingType.showStatements).value = false;
     await FireFactory.clearPersistence();
 
     homer = await DemoKey.findOrCreate('homer');
@@ -503,8 +502,6 @@ void main() async {
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null, "hipster": null};
     jsonShowExpect(dumpNetwork(network), expectedNetwork);
-
-    Prefs.keyLabel.value = true;
 
     await followNet.waitUntilReady();
     dynamic dump = await OneofusTreeNode.root.dump();

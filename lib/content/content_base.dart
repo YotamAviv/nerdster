@@ -247,8 +247,8 @@ class ContentBase with Comp, ChangeNotifier {
 
       ContentTreeNode subjectNode = ContentTreeNode([], subject);
 
-      // Skip like < 0
-      if (Prefs.hideDisliked.value) {
+      // Skip sum(like) < 0
+      if (Setting.get<bool>(SettingType.hideDisliked).value) {
         // CONSIDER: make this optional in settings
         if (subjectNode.computeProps([PropType.like])[PropType.like]!.value! as int < 0) {
           continue;
@@ -374,9 +374,9 @@ class ContentBase with Comp, ChangeNotifier {
     listen();
   }
 
-  bool get censor => Prefs.censor.value;
+  bool get censor => Setting.get<bool>(SettingType.censor).value;
   set censor(bool censor) {
-    Prefs.censor.value = censor;
+    Setting.get<bool>(SettingType.censor).value = censor;
   }
 
   // returns if we should filter this one out
@@ -503,8 +503,8 @@ class ContentBase with Comp, ChangeNotifier {
     addSupporter(oneofusEquiv);
     oneofusEquiv.addListener(listen);
 
-    Prefs.censor.addListener(listen);
-    Prefs.hideDisliked.addListener(listen);
+    Setting.get<bool>(SettingType.censor).addListener(listen);
+    Setting.get<bool>(SettingType.hideDisliked).addListener(listen);
   }
 
   void listen() {
@@ -516,7 +516,7 @@ class ContentBase with Comp, ChangeNotifier {
   void dispose() {
     followNet.removeListener(listen);
     oneofusEquiv.removeListener(listen);
-    Prefs.hideDisliked.removeListener(listen);
+    Setting.get<bool>(SettingType.hideDisliked).removeListener(listen);
     super.dispose();
   }
 

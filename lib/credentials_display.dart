@@ -47,7 +47,11 @@ class CredentialsDisplay extends StatelessWidget {
             ],
           ),
           if (showDontShow)
-            Row(children: [Spacer(), MyCheckbox(Prefs.skipCredentials, "Don't show again")]),
+            Row(children: [
+              Spacer(),
+              MyCheckbox(
+                  Setting.get<bool>(SettingType.skipCredentials).notifier, "Don't show again")
+            ]),
         ],
       ),
     );

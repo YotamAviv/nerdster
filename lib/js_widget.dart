@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 
 class JSWidget extends StatelessWidget {
@@ -15,8 +14,7 @@ class JSWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    dynamic dyn = (Prefs.keyLabel.value) ? keyLabels.interpret(jsonish) : jsonish;
-
+    var dyn = keyLabels.interpret(jsonish);
     String message;
     if (dyn is Jsonish) {
       message = encoder.convert(dyn.json);

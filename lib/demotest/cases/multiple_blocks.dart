@@ -10,8 +10,8 @@ import 'package:nerdster/singletons.dart';
 
 Future<(DemoKey, DemoKey?)> multipleBlocks() async {
   useClock(TestClock());
-
-  Prefs.showKeys.value = true;
+  late Map<Setting, dynamic> prefsSnapshot = Prefs.snapshot();
+  Setting.get<bool>(SettingType.showKeys).value = true;
 
   DemoKey bart = await DemoKey.findOrCreate('bart');
   DemoKey lisa = await DemoKey.findOrCreate('lisa');
@@ -40,6 +40,7 @@ Future<(DemoKey, DemoKey?)> multipleBlocks() async {
   jsonShowExpect(dumpNetwork(network), expectedNetwork);
   
   useClock(LiveClock());
+  Prefs.restore(prefsSnapshot);
   return (bart, null);
 }
 

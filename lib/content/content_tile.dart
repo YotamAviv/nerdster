@@ -41,16 +41,14 @@ class _ContentTileState extends State<ContentTile> {
   @override
   initState() {
     super.initState();
-    Prefs.keyLabel.addListener(listener);
-    Prefs.showStatements.addListener(listener);
-    Prefs.showJson.addListener(listener);
+    Setting.get<bool>(SettingType.showStatements).addListener(listener);
+    Setting.get<bool>(SettingType.showJson).addListener(listener);
   }
 
   @override
   dispose() {
-    Prefs.keyLabel.removeListener(listener);
-    Prefs.showStatements.removeListener(listener);
-    Prefs.showJson.removeListener(listener);
+    Setting.get<bool>(SettingType.showStatements).removeListener(listener);
+    Setting.get<bool>(SettingType.showJson).removeListener(listener);
     super.dispose();
   }
 
@@ -167,7 +165,7 @@ class _ContentTileState extends State<ContentTile> {
                 ),
                 const SizedBox(width: 8),
                 ...propWidgets,
-                if (Prefs.showJson.value) JSWidget(subjectNode.subject),
+                if (Setting.get<bool>(SettingType.showJson).value) JSWidget(subjectNode.subject),
                 titleWidget,
                 if (b(statementDesc)) statementDesc!,
               ]),
