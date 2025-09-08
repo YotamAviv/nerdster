@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart'; // You have to add this manually, for some reason it cannot be added automatically
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/main.dart';
@@ -28,7 +27,7 @@ void main() async {
   TrustStatement.init();
 
   // To restore Prefs changes
-  late Map<ValueNotifier, dynamic> prefsSnapshot;
+  late Map<Setting, dynamic> prefsSnapshot;
   setUp(() {
     prefsSnapshot = Prefs.snapshot();
   });

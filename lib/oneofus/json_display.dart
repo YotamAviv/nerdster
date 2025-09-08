@@ -35,12 +35,12 @@ class _State extends State<JsonDisplay> {
   void initState() {
     super.initState();
     initAsync();
-    Prefs.bogus.addListener(listener);
+    Setting.get<bool>(SettingType.bogus).addListener(listener);
   }
 
   @override
   void dispose() {
-    Prefs.bogus.removeListener(listener);
+    Setting.get<bool>(SettingType.bogus).removeListener(listener);
     super.dispose();
   }
 
@@ -57,7 +57,7 @@ class _State extends State<JsonDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    var useSubject = !Prefs.bogus.value ? widget.subject : widget.bogusSubject ?? widget.subject;
+    var useSubject = !Setting.get<bool>(SettingType.bogus).value ? widget.subject : widget.bogusSubject ?? widget.subject;
 
     var interpreted = (b(JsonDisplay.interpreter) && widget.interpret.value)
         ? JsonDisplay.interpreter!.interpret(useSubject)

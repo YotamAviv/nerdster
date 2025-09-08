@@ -85,8 +85,8 @@ class OneofusNet with Comp, ChangeNotifier {
   factory OneofusNet() => _singleton;
   OneofusNet._internal() {
     signInState.addListener(listen);
-    Prefs.oneofusNetDegrees.addListener(listen);
-    Prefs.oneofusNetPaths.addListener(listen);
+    Setting.get<int>(SettingType.identityNetDegrees).addListener(listen);
+    Setting.get<int>(SettingType.identityNetPaths).addListener(listen);
   }
 
   LinkedHashMap<String, Node> _network = LinkedHashMap<String, Node>();
@@ -94,14 +94,14 @@ class OneofusNet with Comp, ChangeNotifier {
 
   int? getPosition(token) => _token2keyCounter[token];
 
-  int get degrees => Prefs.oneofusNetDegrees.value;
+  int get degrees => Setting.get<int>(SettingType.identityNetDegrees).value;
   set degrees(int degrees) {
-    Prefs.oneofusNetDegrees.value = degrees;
+    Setting.get<int>(SettingType.identityNetDegrees).value = degrees;
   }
 
-  int get numPaths => Prefs.oneofusNetPaths.value;
+  int get numPaths => Setting.get<int>(SettingType.identityNetPaths).value;
   set numPaths(int numPaths) {
-    Prefs.oneofusNetPaths.value = numPaths;
+    Setting.get<int>(SettingType.identityNetPaths).value = numPaths;
   }
 
   LinkedHashMap<String, Node> get network => _network;
@@ -131,7 +131,9 @@ class OneofusNet with Comp, ChangeNotifier {
     }
 
     _network = await bfsTrust.process(FetcherNode(signInState.center!),
-        batchFetch: batchFetch, problemCollector: baseProblemCollector, progressR: _oneofusNetProgressR);
+        batchFetch: batchFetch,
+        problemCollector: baseProblemCollector,
+        progressR: _oneofusNetProgressR);
     _token2keyCounter.clear();
 
     int keyCounter = 0;

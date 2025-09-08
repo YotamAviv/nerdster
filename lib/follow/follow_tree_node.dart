@@ -52,7 +52,7 @@ class FollowTreeNode extends NetTreeModel {
     }
 
     List<FollowTreeNode> childStatements = <FollowTreeNode>[];
-    if (Prefs.showStatements.value) {
+    if (Setting.get<bool>(SettingType.showStatements).value) {
       for (Trust trust in followNode.cachedTrusts) {
         ContentStatement? followStatement = ContentStatement.find(trust.statementToken);
         if (followStatement == null) continue; // assume TrustStatement for default context.

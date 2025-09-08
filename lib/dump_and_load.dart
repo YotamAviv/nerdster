@@ -12,7 +12,6 @@ import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 
@@ -20,10 +19,10 @@ import 'package:nerdster/trust/trust.dart';
 Map<String, String?> dumpNetwork(Map<String, Node> network) => network.map((token, node) =>
     MapEntry(token, b(node.revokeAtTime) ? formatUiDatetime(node.revokeAtTime!) : null));
 
-Future<dynamic> dumpDump(BuildContext? context) async {
+Future<Json> dumpDump(BuildContext? context) async {
   await Comp.waitOnComps([keyLabels, contentBase]);
 
-  dynamic out = {
+  Json out = {
     'center': Jsonish.find(signInState.center!)!.json,
     'domain2token2statements': await dumpStatements(),
     // Above is required for importing.
@@ -34,12 +33,6 @@ Future<dynamic> dumpDump(BuildContext? context) async {
     // 'netTree': NetTreeNode.root.dump(),
     // 'contentTree': contentBase.dump(),
   };
-
-  // MAYBE: Figure out where and whether or not I use show().
-  // dumpStatements() already calls it.
-  if (Prefs.keyLabel.value) {
-    out = keyLabels.interpret(out);
-  }
 
   if (context != null) {
     _showDump(context, out);

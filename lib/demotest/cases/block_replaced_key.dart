@@ -14,11 +14,9 @@ import 'package:nerdster/singletons.dart';
 
 Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
-
-  bool showEquivalentKeysBefore = Prefs.showKeys.value;
-  bool showTrustStatementsBefore = Prefs.showStatements.value;
-  Prefs.showKeys.value = true;
-  Prefs.showStatements.value = false;
+  Map<Setting, dynamic> prefsSnapshot = Prefs.snapshot();
+  Setting.get<bool>(SettingType.showKeys).value = true;
+  Setting.get<bool>(SettingType.showStatements).value = false;
 
   DemoKey bart = await DemoKey.findOrCreate('bart');
   DemoKey bart2 = await DemoKey.findOrCreate('bart2');
@@ -39,7 +37,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   await lisa.doTrust(TrustVerb.trust, bart3, moniker: 'Bart');
   // Lisa has not cleared trust in bart or ever trusted bart2
 
-  signInState.center  = lisa.token;
+  signInState.center = lisa.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
 
   network = oneofusNet.network;
@@ -60,7 +58,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   // ------------------------------------------------------------------------------------
   Statement bart3blocksBart = await bart3.doTrust(TrustVerb.block, bart);
 
-  signInState.center  = lisa.token;
+  signInState.center = lisa.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
   myExpect(baseProblemCollector.rejected.length, 1);
   myExpect(baseProblemCollector.rejected.keys.first, r1.token);
@@ -88,7 +86,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   };
   jsonShowExpect(dump, expected);
 
-  signInState.center  = bart3.token;
+  signInState.center = bart3.token;
   await Comp.waitOnComps([keyLabels]);
   myExpect(baseProblemCollector.rejected.length, 1);
   myExpect(baseProblemCollector.rejected.length, 1);
@@ -107,8 +105,8 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
   myExpect(baseProblemCollector.rejected.length, 2);
   jsonShowExpect(baseProblemCollector.rejected, {
-    r2.token:'Attempt to replace your key.', 
-    bart3blocksBart.token:'Attempt to block trusted key.', 
+    r2.token: 'Attempt to replace your key.',
+    bart3blocksBart.token: 'Attempt to block trusted key.',
   });
   network = oneofusNet.network;
   expectedNetwork = {
@@ -132,7 +130,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   };
   jsonShowExpect(dump, expected);
 
-  signInState.center  = bart.token;
+  signInState.center = bart.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
 
   dump = await OneofusTreeNode.root.dump();
@@ -148,8 +146,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   };
   jsonShowExpect(dump, expected);
 
-  Prefs.showKeys.value = showEquivalentKeysBefore;
-  Prefs.showStatements.value = showTrustStatementsBefore;
+  Prefs.restore(prefsSnapshot);
   useClock(LiveClock());
   return (DemoKey.findByName('bart3')!, null);
 }

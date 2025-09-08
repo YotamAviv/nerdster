@@ -58,8 +58,8 @@ void main() async {
     signInState.signOut();
     oneofusNet.numPaths = 1;
     followNet.fcontext = kOneofusContext;
-    Prefs.showKeys.value = false;
-    Prefs.showStatements.value = false;
+    Setting.get<bool>(SettingType.showKeys).value = false;
+    Setting.get<bool>(SettingType.showStatements).value = false;
     await FireFactory.clearPersistence();
   });
 
@@ -651,8 +651,8 @@ void main() async {
     await simpsons();
     loadSimpsons();
 
-    Prefs.oneofusNetDegrees.value = 2;
-    Prefs.followNetDegrees.value = 3;
+    Setting.get<int>(SettingType.identityNetDegrees).value = 2;
+    Setting.get<int>(SettingType.followNetDegrees).value = 3;
     followNet.fcontext = kNerdsterContext;
 
     signInState.center = bart.token;

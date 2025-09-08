@@ -16,12 +16,12 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
   @override
   void initState() {
     super.initState();
-    Prefs.dev.addListener(listen);
+    Setting.get<bool>(SettingType.dev).addListener(listen);
   }
 
   @override
   void dispose() {
-    Prefs.dev.removeListener(listen);
+    Setting.get<bool>(SettingType.dev).removeListener(listen);
     super.dispose();
   }
 

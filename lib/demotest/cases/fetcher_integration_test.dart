@@ -61,8 +61,13 @@ class TestSigner implements StatementSigner {
 }
 
 Future<void> fetcherIntegrationTest() async {
+  late Map<Setting, dynamic> prefsSnapshot;
+  tearDown(() {
+    Prefs.restore(prefsSnapshot);
+  });
   setUp(() {
     if (fireChoice == FireChoice.prod) throw 'not on production';
+    prefsSnapshot = Prefs.snapshot();
   });
 
   useClock(TestClock());
@@ -109,7 +114,7 @@ class FetcherTestHelper {
   }
 
   Future<void> base() async {
-    Prefs.skipVerify.value = true;
+    Setting.get<bool>(SettingType.skipVerify).value = true;
 
     Json kI = makeI();
     Fetcher fetcher = Fetcher(getToken(kI), _domain);
@@ -133,7 +138,7 @@ class FetcherTestHelper {
   }
 
   Future<void> revokeAt() async {
-    Prefs.skipVerify.value = true;
+    Setting.get<bool>(SettingType.skipVerify).value = true;
     for (bool doClear in [true, false]) {
       Json kI = makeI();
 
@@ -175,7 +180,7 @@ class FetcherTestHelper {
   }
 
   Future<void> revokeAtSinceAlways() async {
-    Prefs.skipVerify.value = true;
+    Setting.get<bool>(SettingType.skipVerify).value = true;
     for (bool doClear in [true, false]) {
       Json kI = makeI();
 
@@ -221,7 +226,7 @@ class FetcherTestHelper {
       // Test relies on not having any notifications at start.
       expect(baseProblemCollector.corrupted.length, 0);
 
-      Prefs.skipVerify.value = true;
+      Setting.get<bool>(SettingType.skipVerify).value = true;
       TestSigner signer = TestSigner();
       Fetcher fetcher;
 
@@ -425,8 +430,8 @@ class FetcherTestHelper {
   }
 
   Future<void> batch() async {
-    Prefs.skipVerify.value = true;
-    Prefs.batchFetch.value = true;
+    Setting.get<bool>(SettingType.skipVerify).value = true;
+    Setting.get<bool>(SettingType.batchFetch).value = true;
 
     // write data
     ContentStatement.init();

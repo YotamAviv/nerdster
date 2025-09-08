@@ -41,14 +41,14 @@ class FollowNet with Comp, ChangeNotifier {
     oneofusLabels.addListener(listen);
 
     // Prefs
-    Prefs.followNetDegrees.addListener(listen);
-    Prefs.followNetPaths.addListener(listen);
+    Setting.get<int>(SettingType.followNetDegrees).addListener(listen);
+    Setting.get<int>(SettingType.followNetPaths).addListener(listen);
   }
 
+  // CONSIDER: Make this a Prefs Setting
   void _readParams() {
     _context = Uri.base.queryParameters['follow'] ?? kNerdsterContext;
   }
-
   void setParams(Map<String, String> params) {
     params['follow'] = _context;
   }
@@ -100,8 +100,8 @@ class FollowNet with Comp, ChangeNotifier {
     if (!b(signInState.center)) return;
 
     Iterable<String> network;
-    final int degrees = Prefs.followNetDegrees.value;
-    final int numPaths = Prefs.followNetPaths.value;
+    final int degrees = Setting.get<int>(SettingType.followNetDegrees).value;
+    final int numPaths = Setting.get<int>(SettingType.followNetPaths).value;
     if (_context != kOneofusContext) {
       FollowNode.clear();
       GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);

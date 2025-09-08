@@ -179,7 +179,7 @@ class Fetcher {
   // Futhermore, I think that I batch fetch everyone when I'm just missing Amotz.
   static Future<List<Fetcher>> batchFetch(Map<String, String?> token2revokeAt, String domain,
       {String? mName}) async {
-    if (fireChoice == FireChoice.fake || !Prefs.batchFetch.value) {
+    if (fireChoice == FireChoice.fake || !Setting.get<bool>(SettingType.batchFetch).value) {
       // serial fetch
       for (MapEntry e in token2revokeAt.entries) {
         Fetcher f = Fetcher(e.key, domain);
@@ -251,10 +251,10 @@ class Fetcher {
     if (b(_cached)) return;
     try {
       DateTime? time;
-      if (fireChoice != FireChoice.fake && Prefs.httpFetch.value) {
+      if (fireChoice != FireChoice.fake && Setting.get<bool>(SettingType.httpFetch).value) {
         _cached = <Statement>[];
         if (jsons == null) {
-          if (Prefs.batchFetch.value) print('batcher miss $domain $token');
+          if (Setting.get<bool>(SettingType.batchFetch).value) print('batcher miss $domain $token');
           jsons = await _httpFetchJsons();
         }
 
@@ -277,7 +277,7 @@ class Fetcher {
           j.remove('id'); // No problem, unless we end up here twice (which we shouldn't).
 
           Jsonish jsonish;
-          if (Prefs.skipVerify.value) {
+          if (Setting.get<bool>(SettingType.skipVerify).value) {
             jsonish = Jsonish(j);
           } else {
             jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(j, _verifier));
@@ -312,7 +312,7 @@ class Fetcher {
         for (final docSnapshot in snapshots.docs) {
           final Json json = docSnapshot.data();
           Jsonish jsonish;
-          if (Prefs.skipVerify.value) {
+          if (Setting.get<bool>(SettingType.skipVerify).value) {
             jsonish = Jsonish(json);
           } else {
             jsonish = await mVerify.mAsync(() => Jsonish.makeVerify(json, _verifier));

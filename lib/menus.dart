@@ -79,7 +79,6 @@ class Menus {
     }
 
     return <Widget>[
-
       SignInMenu(),
 
       // Settings
@@ -87,24 +86,30 @@ class Menus {
           menuChildren: [
             // Cleaning up the UI, removing much..
             // MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
-            // MyCheckbox(Prefs.hideDisliked, '''hide content where network sum(like) < 0'''),
             SubmenuButton(menuChildren: <Widget>[
               IntSettingDropdown(
-                  'Degrees', Prefs.oneofusNetDegrees, List<int>.generate(6, (i) => i + 1)),
-              IntSettingDropdown(
-                  'Paths', Prefs.oneofusNetPaths, List<int>.generate(2, (i) => i + 1)),
+                  'Degrees',
+                  Setting.get<int>(SettingType.identityNetDegrees).notifier,
+                  List<int>.generate(6, (i) => i + 1)),
+              IntSettingDropdown('Paths', Setting.get<int>(SettingType.identityNetPaths).notifier,
+                  List<int>.generate(2, (i) => i + 1)),
             ], child: const Text('Identity network')),
             SubmenuButton(menuChildren: <Widget>[
-              IntSettingDropdown(
-                  'Degrees', Prefs.followNetDegrees, List<int>.generate(6, (i) => i + 1)),
-              IntSettingDropdown(
-                  'Paths', Prefs.followNetPaths, List<int>.generate(2, (i) => i + 1)),
+              IntSettingDropdown('Degrees', Setting.get<int>(SettingType.followNetDegrees).notifier,
+                  List<int>.generate(6, (i) => i + 1)),
+              IntSettingDropdown('Paths', Setting.get<int>(SettingType.followNetPaths).notifier,
+                  List<int>.generate(2, (i) => i + 1)),
             ], child: const Text('Follow network')),
             // const Text('--------- nerdier ---------'),
             SubmenuButton(menuChildren: [
-              MyCheckbox(Prefs.showStuff, 'JSON, keys, and statements'),
-              MyCheckbox(Prefs.skipLgtm, 'Statements review/confirmation', opposite: true),
-              MyCheckbox(Prefs.skipCredentials, 'Sign-in credentials accepted', opposite: true),
+              MyCheckbox(
+                  Setting.get<bool>(SettingType.showStuff).notifier, 'JSON, keys, and statements'),
+              MyCheckbox(Setting.get<bool>(SettingType.skipLgtm).notifier,
+                  'Statements review/confirmation',
+                  opposite: true),
+              MyCheckbox(Setting.get<bool>(SettingType.skipCredentials).notifier,
+                  'Sign-in credentials accepted',
+                  opposite: true),
               // MyCheckbox(Prefs.showJson, 'show JSON'),
               // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
               // MyCheckbox(Prefs.showStatements, 'show trust statements'),
@@ -156,14 +161,15 @@ $link''',
       ], child: const Text('?')),
 
       // Dev
-      if (Prefs.dev.value)
+      if (Setting.get<bool>(SettingType.dev).value)
         SubmenuButton(menuChildren: [
-          MyCheckbox(Prefs.bogus, 'bogus'),
+          MyCheckbox(Setting.get<bool>(SettingType.bogus).notifier, 'bogus'),
 
           SubmenuButton(menuChildren: [
-            MyCheckbox(Prefs.httpFetch, 'httpFetch'),
-            MyCheckbox(Prefs.batchFetch, 'batchFetch'),
-            MyCheckbox(Prefs.skipVerify, 'skip actually verifying (goes quicker)'),
+            MyCheckbox(Setting.get<bool>(SettingType.httpFetch).notifier, 'httpFetch'),
+            MyCheckbox(Setting.get<bool>(SettingType.batchFetch).notifier, 'batchFetch'),
+            MyCheckbox(Setting.get<bool>(SettingType.skipVerify).notifier,
+                'skip actually verifying (goes quicker)'),
           ], child: const Text('cloud fetching')),
 
           MenuItemButton(

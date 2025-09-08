@@ -1,5 +1,4 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
@@ -20,7 +19,7 @@ void main() async {
   ContentStatement.init();
 
   // To restore Prefs changes
-  late Map<ValueNotifier, dynamic> prefsSnapshot;
+  late Map<Setting, dynamic> prefsSnapshot;
   tearDown(() {
     Prefs.restore(prefsSnapshot);
   });

@@ -13,7 +13,7 @@ import 'package:nerdster/singletons.dart';
 
 class Lgtm {
   static Future<bool?> check(Json json, BuildContext context) async {
-    if (isSmall.value || Prefs.skipLgtm.value) return true;
+    if (isSmall.value || Setting.get<bool>(SettingType.skipLgtm).value) return true;
 
     assert(b(signInState.signedInDelegate));
 
@@ -50,7 +50,8 @@ class Lgtm {
                             }, 'Looks Good To Me'),
                             SizedBox(
                                 width: 200.0,
-                                child: MyCheckbox(Prefs.skipLgtm, '''Don't show again''')),
+                                child: MyCheckbox(Setting.get<bool>(SettingType.skipLgtm).notifier,
+                                    '''Don't show again''')),
                           ],
                         ),
                       ],

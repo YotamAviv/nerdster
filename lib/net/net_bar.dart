@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'package:nerdster/ui/pop_state_stub.dart'
-    if (dart.library.js_interop) 'package:nerdster/ui/pop_state_web.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:nerdster/bar_refresh.dart';
@@ -11,6 +10,8 @@ import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/ui/pop_state_stub.dart'
+    if (dart.library.js_interop) 'package:nerdster/ui/pop_state_web.dart';
 import 'package:nerdster/util_ui.dart';
 
 class NetBar extends StatefulWidget {
@@ -311,16 +312,16 @@ Select an enabled follow context or <one-of-us> (everyone).'''
 - Custom contexts like 'nerd', 'social', 'family', 'local', 'geezer', etc...''';
 
     Slider degreesSlider = Slider(
-        value: Prefs.followNetDegrees.value as double,
+        value: Setting.get<int>(SettingType.followNetDegrees).value as double,
         min: 1.0,
         max: 6.0,
         divisions: 4,
-        label: 'Degrees: ${Prefs.followNetDegrees.value}',
+        label: 'Degrees: ${Setting.get<int>(SettingType.followNetDegrees).value}',
         thumbColor: Colors.green,
         onChanged: (x) {
           print(x);
           setState(() {
-            Prefs.followNetDegrees.value = x.round();
+            Setting.get<int>(SettingType.followNetDegrees).value = x.round();
           });
         });
     DropdownMenuEntry<String> degreesDropdownEntry = DropdownMenuEntry(

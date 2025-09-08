@@ -60,8 +60,8 @@ class _NetTreeViewState extends State<NetTreeView> {
     followNet.addListener(listen);
     keyLabels.addListener(listen);
 
-    Prefs.showKeys.addListener(listen);
-    Prefs.showStatements.addListener(listen);
+    Setting.get<bool>(SettingType.showKeys).addListener(listen);
+    Setting.get<bool>(SettingType.showStatements).addListener(listen);
 
     NetTreeModel root = widget.root;
     treeController = TreeController<NetTreeModel>(
@@ -114,8 +114,8 @@ class _NetTreeViewState extends State<NetTreeView> {
     followNet.removeListener(listen);
     keyLabels.removeListener(listen);
 
-    Prefs.showKeys.removeListener(listen);
-    Prefs.showStatements.removeListener(listen);
+    Setting.get<bool>(SettingType.showKeys).removeListener(listen);
+    Setting.get<bool>(SettingType.showStatements).removeListener(listen);
 
     treeController.dispose();
     super.dispose();
