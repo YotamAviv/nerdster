@@ -77,7 +77,7 @@ class SignInState with ChangeNotifier {
     _signedInDelegate = null;
     _signer = null;
 
-    if (b(context)) {
+    if (b(context) && !Setting.get<bool>(SettingType.skipCredentials).value) {
       showTopRightDialog(
           context!, CredentialsDisplay(centerResetJson, signedInDelegatePublicKeyJson));
     }
