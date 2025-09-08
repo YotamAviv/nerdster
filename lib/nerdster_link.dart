@@ -11,6 +11,7 @@ import 'package:nerdster/singletons.dart';
 String generateLink() {
   Map<String, String> params = <String, String>{};
 
+  // TODO: Leverage Prefs Settings identity/oneofus
   params['fire'] = fireChoice.name;
   if (fireChoice != FireChoice.fake && b(signInState.center)) {
     params['oneofus'] = JsonEncoder().convert(Jsonish.find(signInState.center!)!.json);
