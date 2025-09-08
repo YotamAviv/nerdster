@@ -143,6 +143,7 @@ Future<void> main() async {
 Future<void> defaultSignIn(BuildContext context) async {
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
+  // TODO: Leverage Prefs Settings for identity/oneofus
   if (b(params['oneofus'])) {
     String oneofusParam = params['oneofus']!;
     Json oneofusJson = json.decode(oneofusParam);
