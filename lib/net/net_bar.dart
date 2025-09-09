@@ -303,8 +303,9 @@ class _FollowDropdownState extends State<_FollowDropdown> {
     bool error =
         !(followNet.centerContexts.contains(initial) || kSpecialContexts.contains(initial));
 
+    String center = b(signInState.center) ? ("${keyLabels.labelKey(signInState.center!)}") : 'This PoV';
     String message = error
-        ? '''Center ("${keyLabels.labelKey(signInState.center!)}") does not use the selected follow context ("$initial")}).
+        ? '''$center does not use the selected follow context ("$initial")}).
 Select an enabled follow context or <one-of-us> (everyone).'''
         : '''Choose a follow context:
 - <one-of-us>: everyone
