@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test Flutter</title>
+    <script>
+        function sendMessage(action, data) {
+            const iframe = document.getElementById('flutterApp');
+            iframe.contentWindow.postMessage({
+                "identity": {
+                    "crv": "Ed25519",
+                    "kty": "OKP",
+                    "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+                }
+            }, '*');
+            iframe.contentWindow.postMessage({
+                "followNetDegrees": "1",
+            }, '*');
+        }
+
+        window.addEventListener('message', (event) => {
+            console.log('Message from Flutter:', event.data);
+            alert('Flutter says: ' + event.data.message);
+        });
+    </script>
+</head>
+
+<body>
+    <button onclick="sendMessage('showMessage', 'Hello from Test Page!')">Send Test Message</button>
+    <br />
+    <!-- NOTE: Manaully change the port -->
+    <iframe id="flutterApp" src="http://localhost:44637/" width="900" height="500"></iframe>
+</body>
+
+</html>

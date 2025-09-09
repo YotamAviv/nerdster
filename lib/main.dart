@@ -28,6 +28,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
 
 import 'firebase_options.dart';
+import 'message_handler.dart' if (dart.library.io) 'stub_message_handler.dart';
 
 enum FireChoice {
   fake,
@@ -132,10 +133,18 @@ Future<void> main() async {
   await Prefs.init();
   await About.init();
 
+  // ----
+  // This didn't work. [ContentTree] sets this using actual width (using [BuildContext]).
+  // isSmall.value = defaultTargetPlatform == TargetPlatform.iOS ||
+  //     defaultTargetPlatform == TargetPlatform.android;
   isSmall.addListener(() => print('isSmall=${isSmall.value}'));
-  // This doesn't work. [ContentTree] sets this using actual width (using [BuildContext]).
-  isSmall.value = defaultTargetPlatform == TargetPlatform.iOS ||
-      defaultTargetPlatform == TargetPlatform.android;
+
+  // ----
+  // Stream to communicate messages from JavaScript to Flutter
+  // Add message listener
+  if (kIsWeb) {
+    initMessageListener();
+  }
 
   // -------------- run app ---------------
   runApp(const MaterialApp(debugShowCheckedModeBanner: false, home: ContentTree()));
