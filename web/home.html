@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>nerdster.org</title>
+    <link rel="icon" href="img/nerd.png" />
+    <style>
+      body {
+        font-family: "Courier New", Courier, monospace;
+        background: #ffffff;
+        color: #202124;
+        margin: 0;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #dadce0;
+        padding: 8px 16px;
+      }
+      header img {
+        height: 24px;
+        margin-right: 8px;
+      }
+      header h1 {
+        font-size: 14pt;
+        margin: 0;
+        font-weight: normal;
+        color: #202124;
+      }
+      main {
+        margin: auto;
+        padding: 48px 32px 62px 48px;
+      }
+      h2 {
+        font-size: 34pt;
+        margin: 32px 0 16px;
+        font-weight: bold;
+        color: #188038;
+      }
+      ul {
+        list-style-type: square;
+        margin: 0 0 20px 24px;
+        padding: 0;
+      }
+      p {
+        margin: 12px 0;
+        font-size: 12pt;
+        color: #202124;
+      }
+      a {
+        color: #1155cc;
+        text-decoration: underline;
+      }
+      iframe {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #dadce0;
+        margin: 24px 0;
+      }
+      footer {
+        text-align: center;
+        padding: 24px;
+        font-size: 12pt;
+        border-top: 1px solid #dadce0;
+        margin-top: 48px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img src="img/nerd.png" alt="logo" />
+      <h1>nerdster.org</h1>
+    </header>
+    <main>
+      <h2>The Nerd'ster!</h2>
+      <ul>
+        <li>
+          A demo / reference implmentation / proof of concept of the paradigm,
+          works with the
+          <a href="http://one-of-us.net" target="_blank">ONE-OF-US.NET</a> phone
+          app.
+          <ul>
+            <li>
+              Identify yourself using your public key to use trusted content
+              from your Point of View.
+            </li>
+            <li>
+              Sign in with a delegate key to publish your contributions as
+              yourself.
+            </li>
+          </ul>
+        </li>
+        <li>
+          <b>Show</b> everything that's going on (statements, signatures,
+          identity keys, delegate keys, identity network conflicts, 3rd party
+          verification, etc..)
+        </li>
+        <li>
+          <b>Puny and weak</b>, won't handle thousands of anything (people,
+          posts) around you (or any particular PoV, but you can shift Pov).
+        </li>
+        <li><b>Purist: naked, fully open</b></li>
+        <li>
+          Dime-a-dozen forum like web app to submit links, like, comment, and
+          facilitate following others... all the stuff we could do 30 years ago,
+          but different (not the killer app;)
+        </li>
+      </ul>
+
+      <p>
+        The bigger picture is at
+        <a href="https://one-of-us.net" target="_blank"
+          >https://one-of-us.net</a
+        >
+      </p>
+
+      <iframe
+        id="flutterApp"
+        src="https://nerdster.web.app"
+        title="Nerdster app"
+      ></iframe>
+
+      <ul>
+        <li>
+          Check out my own embedded usage at
+          <a href="https://aviv.net">https://aviv.net</a> or
+          <a
+            href="#"
+            onclick="event.preventDefault(); document.getElementById('flutterApp').contentWindow.postMessage({
+       'identity': {
+         'crv': 'Ed25519',
+         'kty': 'OKP',
+         'x': 'Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo'
+       },
+       'type': 'book',
+       'sort': 'like',
+       'follow': 'nerd',
+     }, '*')"
+            >load that view here.</a
+          >
+        </li>
+        <li>
+          Access the Nerdster here or on its own at:
+          <a href="https://nerdster.org">https://nerdster.org</a>.<br />
+        </li>
+        <li>
+          Generate a link for your Nerdster using your PoV and settings using
+          the menu: <strong>/etc ⇒ Share link for this view</strong>.
+        </li>
+        <li>
+          Open source:
+          <a href="https://github.com/YotamAviv/nerdster" target="_blank"
+            >https://github.com/YotamAviv/nerdster</a
+          >
+        </li>
+        <li>
+          Open data (signed and portable). My own statements for example:
+          <a
+            href="https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b"
+            target="_blank"
+            >https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b</a
+          >
+        </li>
+      </ul>
+    </main>
+    <footer>
+      Contact <a href="mailto:contact@nerdster.org">contact@nerdster.org</a>,
+      <a href="mailto:yotam@aviv.net">yotam@aviv.net</a>
+    </footer>
+  </body>
+</html>
