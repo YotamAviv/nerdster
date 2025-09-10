@@ -7,6 +7,7 @@ import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/demotest/cases/integration_tests.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dev/corruption_check.dart';
+import 'package:nerdster/dev/find_new.dart';
 import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
@@ -202,6 +203,8 @@ $link''',
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
           MenuItemButton(
               onPressed: () => CorruptionCheck.make(), child: const Text('CorruptionCheck')),
+          MenuItemButton(
+              onPressed: () => FindNew.make(), child: const Text('FindNew')),
           MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
           MenuItemButton(
               child: const Text('Load JSON statements'),

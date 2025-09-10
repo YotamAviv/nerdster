@@ -479,3 +479,11 @@ exports.streamnums = functions.https.onRequest((req, res) => {
     }
   }, 300);
 });
+
+
+exports.listCollections = functions.https.onRequest(async (req, res) => {
+  const db = admin.firestore();
+  const collections = await db.listCollections();
+  const collectionIds = collections.map((col) => col.id);
+  res.status(200).json({ collections: collectionIds });
+});
