@@ -43,6 +43,9 @@
         margin: 0 0 20px 24px;
         padding: 0;
       }
+      ul ul {
+        margin-bottom: 0; /* Remove bottom margin for nested lists */
+      }
       p {
         margin: 12px 0;
         font-size: 12pt;
@@ -123,11 +126,20 @@
 
       <ul>
         <li>
-          Check out my own embedded usage at
-          <a href="https://aviv.net">https://aviv.net</a> or
-          <a
-            href="#"
-            onclick="event.preventDefault(); document.getElementById('flutterApp').contentWindow.postMessage({
+          Access the Nerdster here or on its own at:
+          <a href="https://nerdster.org">https://nerdster.org</a>.<br />
+        </li>
+        <li>
+          Generate a link for your Nerdster using your PoV and settings using
+          the menu: <strong>/etc ⇒ Share link for this view</strong>.
+        </li>
+        <ul>
+          <li>
+            Check out my own embedded usage at
+            <a href="https://aviv.net">https://aviv.net</a> or
+            <a
+              href="#"
+              onclick="event.preventDefault(); document.getElementById('flutterApp').contentWindow.postMessage({
        'identity': {
          'crv': 'Ed25519',
          'kty': 'OKP',
@@ -137,17 +149,10 @@
        'sort': 'like',
        'follow': 'nerd',
      }, '*')"
-            >load that view here.</a
-          >
-        </li>
-        <li>
-          Access the Nerdster here or on its own at:
-          <a href="https://nerdster.org">https://nerdster.org</a>.<br />
-        </li>
-        <li>
-          Generate a link for your Nerdster using your PoV and settings using
-          the menu: <strong>/etc ⇒ Share link for this view</strong>.
-        </li>
+              >load that view here.</a
+            >
+          </li>
+        </ul>
         <li>
           Open source:
           <a href="https://github.com/YotamAviv/nerdster" target="_blank"
