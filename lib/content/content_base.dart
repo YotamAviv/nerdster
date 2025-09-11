@@ -31,8 +31,8 @@ import 'package:nerdster/singletons.dart';
 ///   - Censored().token2statements
 ///   - NerdsterFollow().token2statements
 ///   Have everything in terms of Oneofus canonical, that is.
-/// 
-/// CONSIDER: Bug or feature: When I dis (dismiss), that moves it up for others in "recent activity". 
+///
+/// CONSIDER: Bug or feature: When I dis (dismiss), that moves it up for others in "recent activity".
 
 extension FirstWhereOrNull<T> on Iterable<T> {
   T? firstWhereOrNull(bool Function(T) test) {
@@ -56,11 +56,6 @@ class ContentBase with Comp, ChangeNotifier {
   List<ContentTreeNode>? _roots;
   final Map<ContentTreeNode, List<ContentTreeNode>> _node2children =
       <ContentTreeNode, List<ContentTreeNode>>{};
-
-  // Bar filters, sort, ...
-  Sort _sort = Sort.recentActivity;
-  ContentType _type = ContentType.all;
-  Timeframe _timeframe = Timeframe.all;
 
   Future<Statement?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
@@ -265,11 +260,11 @@ class ContentBase with Comp, ChangeNotifier {
     }
 
     _roots!.sort((a, b) {
-      PropType sort = _sort.propType;
+      PropType sortPropType = sort.propType;
       return b
-          .computeProps([sort])[_sort.propType]!
+          .computeProps([sortPropType])[sort.propType]!
           .value!
-          .compareTo(a.computeProps([_sort.propType])[_sort.propType]!.value);
+          .compareTo(a.computeProps([sort.propType])[sort.propType]!.value);
     });
 
     return _roots!;
@@ -356,22 +351,21 @@ class ContentBase with Comp, ChangeNotifier {
   bool isStatementRelateOrEquate(ContentStatement statement) =>
       relateEquate.contains(statement.verb);
 
-  Sort get sort => _sort;
+  Sort get sort => Sort.values.byName(Setting.get<String>(SettingType.sort).value);
   set sort(Sort sort) {
-    _sort = sort;
-    listen();
+    Setting.get<String>(SettingType.sort).value = sort.name;
   }
 
-  ContentType get type => _type;
+  ContentType get type =>
+      ContentType.values.byName(Setting.get<String>(SettingType.contentType).value);
   set type(ContentType type) {
-    _type = type;
-    listen();
+    Setting.get<String>(SettingType.contentType).value = type.name;
   }
 
-  Timeframe get timeframe => _timeframe;
+  Timeframe get timeframe =>
+      Timeframe.values.byName(Setting.get<String>(SettingType.timeframe).value);
   set timeframe(Timeframe timeframe) {
-    _timeframe = timeframe;
-    listen();
+    Setting.get<String>(SettingType.timeframe).value = timeframe.name;
   }
 
   bool get censor => Setting.get<bool>(SettingType.censor).value;
@@ -381,13 +375,13 @@ class ContentBase with Comp, ChangeNotifier {
 
   // returns if we should filter this one out
   bool _filterByTimeframe(Statement statement) {
-    return _timeframe != Timeframe.all &&
-        DateTime.now().subtract(_timeframe.duration!).isAfter(statement.time);
+    return timeframe != Timeframe.all &&
+        DateTime.now().subtract(timeframe.duration!).isAfter(statement.time);
   }
 
   // returns if we should filter this one out
   bool _filterByTType(ContentStatement statement) {
-    return _type != ContentType.all && !findContentTypes(statement.json).contains(_type);
+    return type != ContentType.all && !findContentTypes(statement.json).contains(type);
   }
 
   /// Delete/Censor statements are about subjects, but they don't contain the subjects (as that'd
@@ -493,8 +487,6 @@ class ContentBase with Comp, ChangeNotifier {
   }
 
   ContentBase._internal() {
-    _readParams();
-
     // supporters
     addSupporter(myDelegateStatements);
     myDelegateStatements.addListener(listen);
@@ -505,6 +497,9 @@ class ContentBase with Comp, ChangeNotifier {
 
     Setting.get<bool>(SettingType.censor).addListener(listen);
     Setting.get<bool>(SettingType.hideDisliked).addListener(listen);
+    Setting.get<String>(SettingType.sort).addListener(listen);
+    Setting.get<String>(SettingType.contentType).addListener(listen);
+    Setting.get<String>(SettingType.timeframe).addListener(listen);
   }
 
   void listen() {
@@ -518,46 +513,6 @@ class ContentBase with Comp, ChangeNotifier {
     oneofusEquiv.removeListener(listen);
     Setting.get<bool>(SettingType.hideDisliked).removeListener(listen);
     super.dispose();
-  }
-
-  void setParams(Map<String, String> params) {
-    params['sort'] = sort.name;
-    params['type'] = type.name;
-    params['timeframe'] = timeframe.name;
-  }
-
-  void _readParams() {
-    Map<String, String> params = Uri.base.queryParameters;
-
-    String? sortParam = params['sort'];
-    if (b(sortParam)) {
-      try {
-        sort = Sort.values.byName(sortParam!);
-        print('sort=$sort');
-      } catch (e) {
-        print(e);
-      }
-    }
-
-    String? typeParam = params['type'];
-    if (b(typeParam)) {
-      try {
-        type = ContentType.values.byName(typeParam!);
-        print('type=$type');
-      } catch (e) {
-        print(e);
-      }
-    }
-
-    String? timeframeParam = params['timeframe'];
-    if (b(timeframeParam)) {
-      try {
-        timeframe = Timeframe.values.byName(timeframeParam!);
-        print('timeframe=$timeframe');
-      } catch (e) {
-        print(e);
-      }
-    }
   }
 
   @override

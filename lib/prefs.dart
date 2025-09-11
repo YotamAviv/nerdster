@@ -17,6 +17,10 @@ enum SettingType {
   httpFetch(bool, true),
   batchFetch(bool, true),
 
+  sort(String, 'recentActivity'),
+  contentType(String, 'all', aliases: ['type']),
+  timeframe(String, 'all'),
+
   showJson(bool, false),
   showKeys(bool, false),
   showStatements(bool, false),
@@ -63,6 +67,7 @@ class Setting<T> implements ValueListenable<T> {
   T _parseValue(String value) {
     if (T == bool) return bs(value) as T;
     if (T == int) return int.parse(value) as T;
+    if (T == String) return value as T;
     if (T == List<String>) return value.split(',') as T;
     throw Exception('Unsupported type: $T');
   }
@@ -132,6 +137,8 @@ class Setting<T> implements ValueListenable<T> {
       return Setting<bool>._(type);
     } else if (type.type == int) {
       return Setting<int>._(type);
+    } else if (type.type == String) {
+      return Setting<String>._(type);
     } else if (type.type == List<String>) {
       return Setting<List<String>>._(type);
     }
