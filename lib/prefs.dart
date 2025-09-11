@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 
@@ -20,6 +21,8 @@ enum SettingType {
   sort(String, 'recentActivity'),
   contentType(String, 'all', aliases: ['type']),
   timeframe(String, 'all'),
+
+  fcontext(String, kNerdsterContext, aliases: ['follow']),
 
   showJson(bool, false),
   showKeys(bool, false),

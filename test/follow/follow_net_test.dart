@@ -399,6 +399,8 @@ void main() async {
     // (signInState.center = bob2.token;)
     followNet.fcontext = 'social';
     await bobN.doFollow(steve, {'social': 1}); // !canon follow !canon
+    assert(!followNet.ready);
+    assert(!keyLabels.ready);
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "Me": ["Me@nerdster.org", "Me@nerdster.org (2)"],
@@ -522,6 +524,7 @@ void main() async {
 
     await bobN.doFollow(steve2, {}, verb: ContentVerb.clear);
     followNet.fcontext = 'social';
+    assert(!followNet.ready);
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
       "Me": ["Me@nerdster.org"]
