@@ -31,30 +31,19 @@ class FollowNet with Comp, ChangeNotifier {
 
   factory FollowNet() => _singleton;
   FollowNet._internal() {
-    _readParams();
     // // supporters
-    // addSupporter(oneofusNet);
-    // oneofusNet.addListener(listen);
     addSupporter(oneofusEquiv);
     oneofusEquiv.addListener(listen);
     addSupporter(oneofusLabels);
     oneofusLabels.addListener(listen);
 
     // Prefs
+    Setting.get<String>(SettingType.fcontext).addListener(listen);
     Setting.get<int>(SettingType.followNetDegrees).addListener(listen);
     Setting.get<int>(SettingType.followNetPaths).addListener(listen);
   }
 
-  // CONSIDER: Make this a Prefs Setting
-  void _readParams() {
-    _context = Uri.base.queryParameters['follow'] ?? kNerdsterContext;
-  }
-  void setParams(Map<String, String> params) {
-    params['follow'] = _context;
-  }
-
   // vars
-  String _context = kNerdsterContext;
   final _MostContexts _mostContexts = _MostContexts();
   final Set<String> _centerContexts = <String>{};
   Map<String, Set<String>> _oneofus2delegates = <String, Set<String>>{};
@@ -62,10 +51,9 @@ class FollowNet with Comp, ChangeNotifier {
   final Map<String, Fetcher> _delegate2fetcher = <String, Fetcher>{};
 
   // interface
-  String get fcontext => _context;
+  String get fcontext => Setting.get<String>(SettingType.fcontext).value;
   set fcontext(String context) {
-    _context = context;
-    listen();
+    (Setting.get<String>(SettingType.fcontext)).value = context;
   }
 
   Iterable<String> get most => _mostContexts.most();
@@ -102,7 +90,7 @@ class FollowNet with Comp, ChangeNotifier {
     Iterable<String> network;
     final int degrees = Setting.get<int>(SettingType.followNetDegrees).value;
     final int numPaths = Setting.get<int>(SettingType.followNetPaths).value;
-    if (_context != kOneofusContext) {
+    if (fcontext != kOneofusContext) {
       FollowNode.clear();
       GreedyBfsTrust bfsTrust = GreedyBfsTrust(degrees: degrees, numPaths: numPaths);
       Future<void> batchFetch(Iterable<Node> nodes, int distance) async {
@@ -147,7 +135,7 @@ class FollowNet with Comp, ChangeNotifier {
       ..removeWhere((k, v) => !_delegate2oneofus.containsKey(k));
 
     // Batch pre-fetch
-    if (_context == kOneofusContext) {
+    if (fcontext == kOneofusContext) {
       await Fetcher.batchFetch(delegate2revokeAt, kNerdsterDomain,
           mName: 'followNet ${delegate2revokeAt.keys.map((d) => keyLabels.labelKey(d))}');
     }
@@ -158,7 +146,7 @@ class FollowNet with Comp, ChangeNotifier {
       Fetcher fetcher = Fetcher(delegate, kNerdsterDomain);
       assert(fetcher.revokeAt == revokeAt);
       assert(fetcher.isCached);
-      if (_context == kOneofusContext) {
+      if (fcontext == kOneofusContext) {
         _followNetProgressR.report(
             count++ / delegate2revokeAt.length, keyLabels.labelKey(delegate));
       }

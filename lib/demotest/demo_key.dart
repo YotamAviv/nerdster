@@ -23,6 +23,7 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/singletons.dart';
 
 /// For testing, development, and maybe demo.
 ///
@@ -127,6 +128,7 @@ class DemoKey {
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
+    followNet.listen();
     return statement;
   }
 
