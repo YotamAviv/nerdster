@@ -37,7 +37,7 @@ tar -czf ~/backups/nerdster.git.`date2`.tgz .git
 
 ```
 Push to PROD:
-./bin/copy-static.sh
+./bin/copy-static.sh; firebase deploy --only hosting --project=nerdster
 flutter build web --release; firebase --project=nerdster deploy --except functions
 firebase --project=nerdster deploy --only functions
 firebase --project=nerdster deploy --only functions:streamstatements
