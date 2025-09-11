@@ -19,7 +19,6 @@ String generateLink() {
   
   Prefs.setParams(params);
   followNet.setParams(params);
-  contentBase.setParams(params);
   NetBar.setParams(params);
 
   String url = buildUrlWithQueryParams(Uri.base, params);
