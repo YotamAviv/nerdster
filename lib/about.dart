@@ -43,7 +43,8 @@ class About extends StatelessWidget {
           children: [
             const Text('Nerd\'ster!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            Linky('Home: https://nerdster.org'),
+            Linky('Directly embed or access: https://nerdster.org'),
+            Linky('Home: https://nerdster.org/home.html'),
             Linky('Contact: contact@nerdster.org'),
             const SizedBox(height: 10),
             Text('Package name: ${_packageInfo.packageName}'),
