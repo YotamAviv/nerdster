@@ -33,7 +33,7 @@ import 'package:test/test.dart';
 // - includes everything for now (content, network, nerd tree..)
 Future<void> testByDump(Json caseDump) async {
   await loadDump(caseDump);
-  signInState.center = getToken(caseDump['center']);
+  signInState.pov = getToken(caseDump['center']);
   await contentBase.waitUntilReady();
 
   // print(await dumpDump(null));

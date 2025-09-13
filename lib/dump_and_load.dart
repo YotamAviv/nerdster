@@ -23,7 +23,7 @@ Future<Json> dumpDump(BuildContext? context) async {
   await Comp.waitOnComps([keyLabels, contentBase]);
 
   Json out = {
-    'center': Jsonish.find(signInState.center!)!.json,
+    'center': Jsonish.find(signInState.pov!)!.json,
     'domain2token2statements': await dumpStatements(),
     // Above is required for importing.
     // Below is for strictly for testing / viewing.
@@ -68,7 +68,7 @@ dynamic loadDumpDialog(BuildContext context) async {
 Future<void> loadDump(Json dump) async {
   dynamic token2domain2statements = dump['domain2token2statements'];
   await loadStatements(token2domain2statements);
-  signInState.center = Jsonish(dump['center']).token;
+  signInState.pov = Jsonish(dump['center']).token;
 }
 
 Future<void> loadStatements(Json domain2token2statements) async {

@@ -9,11 +9,24 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
 
-/// This has changed much over time, and so some docs, variable names, or worse might be misleading.
-/// The idea is:
-/// - center and signedIn are not always the same; viewing with a different center is a feature.
-/// - in case you get far from home, we want to help you get back (currently, "<reset>")
-///
+/// Considerations:
+/// - Signing in is signing in. The user clicked "sign-in", and submitted an identity. We have 
+///   identity and PoV.
+/// - Loading a page that passes in the PoV is not signing in. We have a PoV for sure, but maybe 
+///   we shouldn't assume that we have identity.
+/// - In case you get far from home or reach a dead end (PoV trusts no one), we want to help you
+///   get back (currently, "<reset>")
+/// It seems that we only use identity for notifications, and some of those might be suspect. PoV
+/// rules.
+/// <reset> currently brings you back to identity, but I'm contemplating allowing that to be null, 
+/// in which case we might need a "firstPov" or "povReset"
+/// 
+/// UI tech
+/// I'm considering making PoV and maybe even identity a Setting. This might add elegence or 
+/// klugeyness.
+/// I'd like to allow a page (nerdster.org/home.html, aviv.net) let you change settings, and it'd be 
+/// nice to have Progress. One way to achieve that would be to have the UI watch those notifiers in 
+/// StatefulWidgets.
 
 Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
     BuildContext context) async {
@@ -29,12 +42,11 @@ Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterK
 }
 
 class SignInState with ChangeNotifier {
-  String? _center;
-  String? _centerReset;
-  OouKeyPair? _signedInDelegateKeyPair;
-  OouPublicKey? _signedInDelegatePublicKey;
-  Json? _signedInDelegatePublicKeyJson;
-  String? _signedInDelegate;
+  String? _pov;
+  String? _identity;
+  OouKeyPair? _delegateKeyPair;
+  Json? _delegatePublicKeyJson;
+  String? _delegate;
   StatementSigner? _signer;
 
   static final SignInState _singleton = SignInState._internal();
@@ -42,55 +54,59 @@ class SignInState with ChangeNotifier {
   SignInState._internal();
   factory SignInState() => _singleton;
 
-  set center(String? oneofusToken) {
+  set pov(String? oneofusToken) {
     assert(b(Jsonish.find(oneofusToken!)));
-    _center = oneofusToken;
-    if (!b(_centerReset)) _centerReset = _center;
+    _pov = oneofusToken;
+    // NEXT: Reconsider. Sometimes no one is signed in.
+    // NEXT: show [pov, identity, delegate] in credentials display
+    // if (!b(_identity)) _identity = _pov; 
     notifyListeners();
   }
 
-  Future<void> signIn(String center, OouKeyPair? nerdsterKeyPair, {BuildContext? context}) async {
-    _center = center;
-    _centerReset = center;
-    if (b(nerdsterKeyPair)) {
-      _signedInDelegateKeyPair = nerdsterKeyPair;
-      _signedInDelegatePublicKey = await nerdsterKeyPair!.publicKey;
-      _signedInDelegatePublicKeyJson = await _signedInDelegatePublicKey!.json;
-      _signedInDelegate = getToken(_signedInDelegatePublicKeyJson);
-      _signer = await OouSigner.make(nerdsterKeyPair);
+  Future<void> signIn(String identity, OouKeyPair? delegateKeyPair,
+      {BuildContext? context}) async {
+    _identity = identity;
+    _pov = identity;
+    if (b(delegateKeyPair)) {
+      _delegateKeyPair = delegateKeyPair;
+      OouPublicKey delegatePublicKey = await delegateKeyPair!.publicKey;
+      _delegatePublicKeyJson = await delegatePublicKey!.json;
+      _delegate = getToken(_delegatePublicKeyJson);
+      _signer = await OouSigner.make(delegateKeyPair);
     }
 
     if (b(context) &&
         !Uri.base.queryParameters.containsKey('skipCredentialsDisplay') &&
         !Setting.get<bool>(SettingType.skipCredentials).value) {
       showTopRightDialog(
-          context!, CredentialsDisplay(centerResetJson, signedInDelegatePublicKeyJson));
+          context!, CredentialsDisplay(identityJson, delegatePublicKeyJson));
     }
 
     notifyListeners();
   }
 
   void signOut({BuildContext? context}) {
-    _signedInDelegateKeyPair = null;
-    _signedInDelegatePublicKey = null;
-    _signedInDelegatePublicKeyJson = null;
-    _signedInDelegate = null;
+    _delegateKeyPair = null;
+    _delegatePublicKeyJson = null;
+    _delegate = null;
     _signer = null;
 
     if (b(context) && !Setting.get<bool>(SettingType.skipCredentials).value) {
       showTopRightDialog(
-          context!, CredentialsDisplay(centerResetJson, signedInDelegatePublicKeyJson));
+          context!, CredentialsDisplay(identityJson, delegatePublicKeyJson));
     }
 
     notifyListeners();
   }
 
-  String? get center => _center; // PoV, CODE: Maybe rename
-  String? get centerReset => _centerReset; // signed in identity, CODE: Maybe rename
-  Json? get centerResetJson => b(centerReset) ? Jsonish.find(centerReset!)!.json : null;
-  OouKeyPair? get signedInDelegateKeyPair => _signedInDelegateKeyPair;
-  OouPublicKey? get signedInDelegatePublicKey => _signedInDelegatePublicKey;
-  Json? get signedInDelegatePublicKeyJson => _signedInDelegatePublicKeyJson;
-  String? get signedInDelegate => _signedInDelegate;
+  // inputs
+  String? get pov => _pov; // PoV, CODE: Maybe rename
+  Json? get identityJson => b(identity) ? Jsonish.find(identity!)!.json : null;
+  OouKeyPair? get signedInDelegateKeyPair => _delegateKeyPair; // demo, CONSIDER: Eliminate
+
+  // derived
+  String? get identity => _identity;
+  Json? get delegatePublicKeyJson => _delegatePublicKeyJson;
+  String? get delegate => _delegate;
   StatementSigner? get signer => _signer;
 }

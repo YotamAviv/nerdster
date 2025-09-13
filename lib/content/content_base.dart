@@ -59,7 +59,7 @@ class ContentBase with Comp, ChangeNotifier {
 
   Future<Statement?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
-    assert(signInState.signedInDelegate == iToken);
+    assert(signInState.delegate == iToken);
     Fetcher fetcher = Fetcher(iToken, kNerdsterDomain);
 
     bool? proceed = await Lgtm.check(json, context);
@@ -236,7 +236,7 @@ class ContentBase with Comp, ChangeNotifier {
 
       // Skip dismissed
       if (_subject2statements[subjectToken]!.any((statement) =>
-          b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.center)) {
+          b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.pov)) {
         continue;
       }
 
@@ -286,7 +286,7 @@ class ContentBase with Comp, ChangeNotifier {
         List<ContentStatement>? relatedStatements = _subject2statements[relatedToken];
         if (b(relatedStatements) &&
             relatedStatements!.any((statement) =>
-                b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.center)) {
+                b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.pov)) {
           continue;
         }
 
@@ -317,7 +317,7 @@ class ContentBase with Comp, ChangeNotifier {
       // Skip dismissed. TODO: TEST:
       if (b(_subject2statements[statement.token]) &&
           _subject2statements[statement.token]!.any((statement) =>
-              b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.center)) {
+              b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.pov)) {
         continue;
       }
 

@@ -13,8 +13,9 @@ String generateLink() {
 
   // TODO: Leverage Prefs Settings identity/oneofus
   params['fire'] = fireChoice.name;
-  if (fireChoice != FireChoice.fake && b(signInState.center)) {
-    params['oneofus'] = JsonEncoder().convert(Jsonish.find(signInState.center!)!.json);
+  if (fireChoice != FireChoice.fake && b(signInState.pov)) {
+    // TODO: pov
+    params['identity'] = JsonEncoder().convert(Jsonish.find(signInState.pov!)!.json);
   }
   
   Prefs.setParams(params);

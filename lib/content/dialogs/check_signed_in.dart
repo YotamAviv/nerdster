@@ -11,7 +11,7 @@ import 'package:nerdster/singletons.dart';
 /// - myDelegateStatements is ready
 Future<bool?> checkSignedIn(BuildContext? context) async {
   String? issue;
-  if (!b(signInState.signedInDelegate)) {
+  if (!b(signInState.delegate)) {
     issue = 'You are not signed in';
   } else {
     await delegateCheck.waitUntilReady();

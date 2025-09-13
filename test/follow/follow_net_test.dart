@@ -91,7 +91,7 @@ void main() async {
     await simpsons();
     loadSimpsons();
     Fetcher.clear();
-    signInState.center = bart.token;
+    signInState.pov = bart.token;
 
     // maggie isn't in because she doesn't have a delegate
     followNet.fcontext = 'family';
@@ -148,7 +148,7 @@ void main() async {
     await nerd1.doTrust(TrustVerb.trust, nerd2);
     await nerd1N.doFollow(nerd2, {'nerd': 1});
     followNet.fcontext = 'nerd';
-    signInState.center = nerd1.token;
+    signInState.pov = nerd1.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     Json expected = {
       "Me": ["Me@nerdster.org"],
@@ -171,7 +171,7 @@ void main() async {
     Statement n1 = await lonerN.doRate(title: 't');
     Statement n2 = await lonerN2.doRate(title: 't');
 
-    signInState.center = loner.token;
+    signInState.pov = loner.token;
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
     myExpect(contentBase.roots.length, 1);
@@ -195,7 +195,7 @@ void main() async {
     Statement n1 = await lonerN.doRate(title: 't1');
     Statement n2 = await lonerN2.doRate(title: 't2');
 
-    signInState.center = loner.token;
+    signInState.pov = loner.token;
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
     myExpect(contentBase.roots.length, 2);
@@ -222,7 +222,7 @@ void main() async {
     await boN.doRate(title: 't', recommend: true);
     await lukeN.doRate(title: 't', recommend: true);
 
-    signInState.center = bo.token;
+    signInState.pov = bo.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     myExpect(contentBase.roots.length, 1);
     ContentTreeNode cn = contentBase.roots.first;
@@ -230,7 +230,7 @@ void main() async {
 
     Statement boClaimsLukes = await bo.doTrust(TrustVerb.delegate, lukeN);
 
-    signInState.center = bo.token;
+    signInState.pov = bo.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(oneofusNet.network.keys, [bo.token, luke.token]);
     // Check rejection
@@ -243,7 +243,7 @@ void main() async {
     expect(cn.getChildren().length, 1); // 2 ratings
 
     //
-    signInState.center = luke.token;
+    signInState.pov = luke.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expect(baseProblemCollector.rejected, {boClaimsLukes.token: "Delegate already claimed."});
   });
@@ -261,7 +261,7 @@ void main() async {
     DemoKey loner2N = await loner2.makeDelegate();
     Statement n2 = await loner2N.doRate(title: 't');
 
-    signInState.center = loner2.token;
+    signInState.pov = loner2.token;
     followNet.listen();
     contentBase.listen();
     await Comp.waitOnComps([contentBase, keyLabels]);
@@ -300,7 +300,7 @@ void main() async {
 
     // (bob2 replaced bob; steve2 replaced steve; bob2 trusts steve2
     // all 4 in oneofus; each has 2 delegates.)
-    signInState.center = bob2.token;
+    signInState.pov = bob2.token;
     await Comp.waitOnComps([oneofusNet, keyLabels]);
     expected = {
       "Me": null,
@@ -311,7 +311,7 @@ void main() async {
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);
 
     // steve doesn't trust bob and has 1 delegate
-    signInState.center = steve2.token;
+    signInState.pov = steve2.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "Me": ["Me@nerdster.org"]
@@ -319,7 +319,7 @@ void main() async {
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     // Now the test: fcontext = null
-    signInState.center = bob2.token;
+    signInState.pov = bob2.token;
     followNet.fcontext = kOneofusContext;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
@@ -329,7 +329,7 @@ void main() async {
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     // Now the test: fcontext = social
-    signInState.center = bob2.token;
+    signInState.pov = bob2.token;
     followNet.fcontext = 'social';
     await bobN.doFollow(steve, {'social': 1});
     await Comp.waitOnComps([followNet, keyLabels]);
@@ -360,7 +360,7 @@ void main() async {
 
     // (bob2 replaced bob; steve2 replaced steve; bob2 trusts steve2
     // all 4 in oneofus; each has 2 delegates.)
-    signInState.center = bob2.token;
+    signInState.pov = bob2.token;
     await Comp.waitOnComps([oneofusNet, keyLabels]);
     expected = {
       "Me": null,
@@ -371,7 +371,7 @@ void main() async {
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);
 
     // (steve doesn't trust bob and has 2 delegates)
-    signInState.center = steve2.token;
+    signInState.pov = steve2.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "Me": ["Me@nerdster.org", "Me@nerdster.org (2)"],
@@ -379,7 +379,7 @@ void main() async {
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     // Now the test: fcontext = null
-    signInState.center = bob2.token;
+    signInState.pov = bob2.token;
     followNet.fcontext = kOneofusContext;
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
@@ -443,7 +443,7 @@ void main() async {
     DemoKey steveN = await steve.makeDelegate();
     await steveN.doRate(title: 't');
 
-    signInState.center = bob.token;
+    signInState.pov = bob.token;
     await Comp.waitOnComps([oneofusNet, keyLabels]);
     var network = oneofusNet.network;
     var expectedNetwork = {
@@ -488,7 +488,7 @@ void main() async {
     await steve2N.doRate(title: 'steve2N');
     Statement s2 = await bob.doTrust(TrustVerb.trust, steve2);
 
-    signInState.center = bob.token;
+    signInState.pov = bob.token;
     await Comp.waitOnComps([oneofusNet, keyLabels, contentBase]); //
     var network = oneofusNet.network;
     var expectedNetwork = {"Me": null, "steve2": null, "steve2 (2)": "5/1/2024 12:05 AM"};
@@ -534,7 +534,7 @@ void main() async {
     // Now replace bob so that he's also !canon
     DemoKey bob2 = await DemoKey.findOrCreate('bob2');
     await bob2.doTrust(TrustVerb.replace, bob, revokeAt: s2.token);
-    signInState.center = bob2.token;
+    signInState.pov = bob2.token;
     followNet.fcontext = 'social';
     await Comp.waitOnComps([oneofusNet, keyLabels, contentBase]);
     network = oneofusNet.network;
@@ -569,7 +569,7 @@ void main() async {
     DemoKey hipDel0 = DemoKey.findByName('hipster-nerdster0')!;
     DemoKey hipDel1 = DemoKey.findByName('hipster-nerdster1')!;
 
-    signInState.center = poser.token;
+    signInState.pov = poser.token;
     await contentBase.waitUntilReady();
     expect(contentBase.roots.length, 2);
     Map<String, String?> delegate2revokedAt =
@@ -622,13 +622,13 @@ void main() async {
     loadSimpsons();
 
     followNet.fcontext = 'family';
-    signInState.center = lisa.token;
+    signInState.pov = lisa.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus,
         {"daughter@nerdster.org": "daughter", "mom@nerdster.org": "mom", "son@nerdster.org": "son"});
 
     followNet.fcontext = 'social';
-    signInState.center = lisa.token;
+    signInState.pov = lisa.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus,
         {"daughter@nerdster.org": "daughter", "son@nerdster.org": "son", "friend@nerdster.org": "friend"});
@@ -639,7 +639,7 @@ void main() async {
     loadSimpsons();
 
     followNet.fcontext = kNerdsterContext;
-    signInState.center = bart.token;
+    signInState.pov = bart.token;
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.delegate2oneofus, {
       "son@nerdster.org": "son",
@@ -658,7 +658,7 @@ void main() async {
     Setting.get<int>(SettingType.followNetDegrees).value = 3;
     followNet.fcontext = kNerdsterContext;
 
-    signInState.center = bart.token;
+    signInState.pov = bart.token;
     await Comp.waitOnComps([followNet, keyLabels]);
 
     expect((Set.of(oneofusNet.network.keys)).containsAll(followNet.oneofus2delegates.keys), true);

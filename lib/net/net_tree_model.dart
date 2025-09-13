@@ -20,9 +20,9 @@ abstract class NetTreeModel {
 
   List<String> labelKeyPaths() {
     assert(b(token));
-    String rootLabel = keyLabels.labelKey(signInState.center!)!;
+    String rootLabel = keyLabels.labelKey(signInState.pov!)!;
     // Special case for me. no paths.
-    if (token == signInState.center) return [rootLabel];
+    if (token == signInState.pov) return [rootLabel];
 
     // DEFER: We don't show much for delegate keys.
     if (followNet.delegate2oneofus.containsKey(token)) return ['nerdster.org delegate'];

@@ -157,46 +157,47 @@ Future<void> defaultSignIn(BuildContext context) async {
   String? identityParam = params['identity'];
   String? oneofusParam = params['oneofus']; // alias, deprecated.
   if (b(identityParam) || b(oneofusParam)) {
-    Json identityJson = json.decode(b(identityParam) ? identityParam! : oneofusParam!);
-    String identityToken = getToken(identityJson);
-    await signInState.signIn(identityToken, null, context: context);
+    Json povJson = json.decode(b(identityParam) ? identityParam! : oneofusParam!);
+    String pov = getToken(povJson);
+    await signInState.signIn(pov, null, context: context);
+    // NEXT: signInState.pov = pov; // Add stack of visitors
     return;
   }
 
   if (b(params['demo'])) {
     if (fireChoice == FireChoice.prod) throw 'not on production';
     demo = params['demo']!;
-    DemoKey oneofusDemoKey;
+    DemoKey identityDemoKey;
     DemoKey? delegateDemoKey;
-    (oneofusDemoKey, delegateDemoKey) = await DemoKey.demos[demo]();
-    String oneofus = oneofusDemoKey.token;
+    (identityDemoKey, delegateDemoKey) = await DemoKey.demos[demo]();
+    String identity = identityDemoKey.token;
     OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
-    await signInState.signIn(oneofus, nerdsterKeyPair, context: context);
+    await signInState.signIn(identity, nerdsterKeyPair, context: context);
     return;
   }
 
   // Check secure browswer storage
   if (fireChoice == FireChoice.prod) {
-    OouPublicKey? oneofusPublicKey;
+    OouPublicKey? identityPublicKey;
     OouKeyPair? nerdsterKeyPair;
-    (oneofusPublicKey, nerdsterKeyPair) = await KeyStore.readKeys();
+    (identityPublicKey, nerdsterKeyPair) = await KeyStore.readKeys();
     // It's been annoying to not be able to sign out if I wasn't fully signed in.
     // TODO: Don't even persist identity key if I'm not fully signed in.
-    if (b(oneofusPublicKey) && b(nerdsterKeyPair)) {
-      String oneofus = getToken(await oneofusPublicKey!.json);
-      await signInState.signIn(oneofus, nerdsterKeyPair, context: context);
+    if (b(identityPublicKey) && b(nerdsterKeyPair)) {
+      String identity = getToken(await identityPublicKey!.json);
+      await signInState.signIn(identity, nerdsterKeyPair, context: context);
       return;
     }
   }
 
   // Check for hard coded values
   if (b(hardCodedSignIn[fireChoice])) {
-    Json oneofusJson = hardCodedSignIn[fireChoice]![kOneofusDomain]!;
-    String oneofus = getToken(oneofusJson);
+    Json identityJson = hardCodedSignIn[fireChoice]![kOneofusDomain]!;
+    String identity = getToken(identityJson);
     OouKeyPair? hardDelegate = b(hardCodedSignIn[fireChoice]![kNerdsterDomain])
         ? await crypto.parseKeyPair(hardCodedSignIn[fireChoice]![kNerdsterDomain]!)
         : null;
-    await signInState.signIn(oneofus, hardDelegate, context: context);
+    await signInState.signIn(identity, hardDelegate, context: context);
     return;
   }
 }

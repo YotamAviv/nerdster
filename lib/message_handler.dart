@@ -20,7 +20,7 @@ void initMessageListener() {
             final token = getToken(identity);
             print('Token: $token');
             // TODO: Show progress
-            signInState.center = token;
+            signInState.pov = token;
           }
 
           for (final setting in Setting.all) {

@@ -22,7 +22,7 @@ class OneofusTreeNode extends NetTreeModel {
   Iterable<OneofusTreeNode>? _children;
 
   static OneofusTreeNode get root =>
-      OneofusTreeNode([], token: signInState.center, canonical: true);
+      OneofusTreeNode([], token: signInState.pov, canonical: true);
 
   OneofusTreeNode(super.path,
       {super.token, super.statement, this.canonical = false, this.revokeAt, this.revokeAtTime}) {

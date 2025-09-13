@@ -48,11 +48,11 @@ class OneofusLabels with Comp, ChangeNotifier {
     throwIfSupportersNotReady();
     _token2name.clear();
     problem.value = null;
-    if (!b(signInState.center)) return;
+    if (!b(signInState.pov)) return;
 
     _labelKeys();
 
-    assert(b(labelKey(signInState.center!)));
+    assert(b(labelKey(signInState.pov!)));
     // There was a bug in JsonDisplay in CredentialsWidget where as we're loading, we don't label
     // our own key correctly.
     // That's when I noticed that we don't notify upon becoming ready.
@@ -62,7 +62,7 @@ class OneofusLabels with Comp, ChangeNotifier {
 
   void _labelKeys() {
     _labelMe();
-    String meLabel = labelKey(signInState.center!)!;
+    String meLabel = labelKey(signInState.pov!)!;
     for (MapEntry<String, Node> e in oneofusNet.network.entries.skip(1)) {
       String token = e.key;
       Path path = e.value.paths.first;
@@ -70,7 +70,7 @@ class OneofusLabels with Comp, ChangeNotifier {
       for (Trust edge in path.reversed) {
         String statementToken = edge.statementToken;
         TrustStatement statement = TrustStatement.find(statementToken)!;
-        if (statement.verb == TrustVerb.replace && statement.iToken == signInState.center) {
+        if (statement.verb == TrustVerb.replace && statement.iToken == signInState.pov) {
           _labelKey(token, meLabel);
           break;
         }
@@ -105,11 +105,12 @@ class OneofusLabels with Comp, ChangeNotifier {
           .firstWhereOrNull((ts) =>
               !baseProblemCollector.rejected.containsKey(ts.token) &&
               ts.verb == TrustVerb.trust &&
-              ts.subjectToken == signInState.center);
-      if (b(ts)) return _labelKey(signInState.center!, ts!.moniker!);
+              ts.subjectToken == signInState.pov);
+      if (b(ts)) return _labelKey(signInState.pov!, ts!.moniker!);
     }
 
-    if (signInState.center == signInState.centerReset) {
+    // TODO: Consider and document why we don't show this when pov != identity.
+    if (signInState.pov == signInState.identity) {
       problem.value = TitleDescProblem(
           title: "You're invisible to others",
           desc:
@@ -120,7 +121,7 @@ Share your identity key with someone (email them a screenshot of your ONE-OF-US.
 It's good practice to occasionally use others' POV to check how they see you.''');
     }
 
-    return _labelKey(signInState.center!, kMe);
+    return _labelKey(signInState.pov!, kMe);
   }
 }
 

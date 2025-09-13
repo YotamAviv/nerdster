@@ -23,7 +23,7 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   Statement listTrustMilhouse = await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Milhouse');
   Statement bartBlocMilhouse = await bart.doTrust(TrustVerb.block, milhouse);
 
-  signInState.center = lisa.token;
+  signInState.pov = lisa.token;
   await Comp.waitOnComps([contentBase, keyLabels]);
   network = oneofusNet.network;
   expectedNetwork = {
@@ -35,7 +35,7 @@ Future<(DemoKey, DemoKey?)> trustBlockConflict() async {
   jsonExpect(baseProblemCollector.rejected, {bartBlocMilhouse.token: 'Attempt to block trusted key.'});
 
 
-  signInState.center = bart.token;
+  signInState.pov = bart.token;
   await Comp.waitOnComps([contentBase, keyLabels]);
   network = oneofusNet.network;
   expectedNetwork = {

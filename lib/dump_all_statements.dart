@@ -8,7 +8,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 class DumpAllStatements extends StatelessWidget {
-  final TextEditingController controller = TextEditingController()..text = signInState.center!;
+  final TextEditingController controller = TextEditingController()..text = signInState.pov!;
   final TextEditingController dropController = TextEditingController()..text = kOneofusDomain;
 
   static Future<void> show(BuildContext context) {
