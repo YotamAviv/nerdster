@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
-import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/demotest/cases/integration_tests.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -14,19 +13,12 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
-
-// SchedulerBinding.instance.addPostFrameCallback((_) async {
-// });
-// Future.delayed(const Duration(seconds: 1), () async {
-// });
 
 const iconSpacer = SizedBox(width: 3);
 
@@ -132,7 +124,7 @@ class Menus {
               // DEFER: copy floater
               await alert(
                   'Nerd\'ster link',
-                  '''Link for sharing, bookmarking, or embedding with this app's current settings (PoV, follow context, sort, type, etc...):
+                  '''Sharing, bookmark, or embed with your current settings (PoV, follow context, sort, type, etc...):
 $link''',
                   ['Okay'],
                   context);
@@ -194,8 +186,8 @@ $link''',
           ], child: const Text('integration tests')),
           SubmenuButton(menuChildren: [
             MenuItemButton(
-                onPressed: () => DemoKey.showDemoCredentials(context),
-                child: const Text('show all demo credentials')),
+                onPressed: DemoKey.dumpDemoCredentials,
+                child: const Text('dumpDemoCredentials')),
             ...demos
           ], child: const Text('demo')),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
@@ -209,18 +201,6 @@ $link''',
                 await loadDumpDialog(context);
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
               }),
-          MenuItemButton(
-              onPressed: () async {
-                String identity = signInState.identity!;
-                var credentials = {
-                  kOneofusDomain: Jsonish.find(identity)!.json,
-                  if (b(signInState.signedInDelegateKeyPair))
-                    kNerdsterDomain: await signInState.signedInDelegateKeyPair!.json,
-                };
-                print(identity);
-                print(Jsonish.encoder.convert(credentials));
-              },
-              child: const Text('dump signed-in credentials')),
           MenuItemButton(
               child: const Text('dump all statements'),
               onPressed: () async {

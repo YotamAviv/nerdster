@@ -51,10 +51,11 @@ class MyDelegateStatements extends Comp with ChangeNotifier {
   @override
   Future<void> process() async {
     throwIfSupportersNotReady();
-    if (!b(signInState.identity)) return;
     Map<String, String?> delegates = {};
+    if (!b(signInState.pov)) return;
+
     await load(signInState.identity!, delegates, {});
-    _fetchers = await Fetcher.batchFetch(delegates, kNerdsterDomain, mName: 'MyDelegateStatements');
+    _fetchers = await Fetcher.batchFetch(delegates, kNerdsterDomain);
     assert(delegates.length == _fetchers.length);
   }
 

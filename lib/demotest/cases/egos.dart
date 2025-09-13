@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/statement.dart';
@@ -28,7 +27,7 @@ Future<(DemoKey, DemoKey?)> egos() async {
     "contentType": "video",
     "title": "Russell Wilson Top 10 Plays with Seahawks - YouTube",
     "url": "https://www.youtube.com/watch?v=CkZ8VHfmdiU"
-  }, comment: 'Sick!', recommend: true);
+  }, comment: '#Sick!', recommend: true);
 
   Statement h1 = await hipsterN.doRate(subject: {
     "contentType": "article",
@@ -97,7 +96,8 @@ Future<(DemoKey, DemoKey?)> egosCorrupt() async {
 
 Future<(DemoKey, DemoKey?)> egosCircle() async {
   final (DemoKey identity, DemoKey? delegate) = await egos();
-  await DemoKey.findByName('hipster')!.doTrust(TrustVerb.trust, identity, moniker: 'Poser');
-  DemoKey poser = await DemoKey.findOrCreate('poser');
-  return (poser, null);
+  DemoKey hipster = DemoKey.findByName('hipster')!;
+  DemoKey jock = DemoKey.findByName('jock')!;
+  await hipster.doTrust(TrustVerb.trust, jock);
+  return (identity, delegate);
 }

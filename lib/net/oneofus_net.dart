@@ -127,7 +127,7 @@ class OneofusNet with Comp, ChangeNotifier {
     Future<void> batchFetch(Iterable<Node> nodes, int distance) async {
       Map<String, String?> prefetch =
           Map.fromEntries(nodes.map((n) => MapEntry(n.token, n.revokeAt)));
-      await Fetcher.batchFetch(prefetch, kOneofusDomain, mName: 'oneofusNet $distance');
+      await Fetcher.batchFetch(prefetch, kOneofusDomain);
     }
 
     _network = await bfsTrust.process(FetcherNode(signInState.pov!),

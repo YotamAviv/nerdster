@@ -7,20 +7,17 @@ import 'package:nerdster/oneofus/util.dart';
 enum SettingType {
   skipLgtm(bool, false, persist: true),
   skipCredentials(bool, false, persist: true),
-  censor(bool, true),
-  hideDisliked(bool, false),
   identityNetDegrees(int, 5, aliases: ['oneofusNetDegrees']),
   identityNetPaths(int, 1, aliases: ['oneofusNetPaths']),
   followNetDegrees(int, 5),
   followNetPaths(int, 1),
 
-  skipVerify(bool, true),
-  httpFetch(bool, true),
-  batchFetch(bool, true),
-
+  censor(bool, true),
+  hideDisliked(bool, false),
   sort(String, 'recentActivity'),
   contentType(String, 'all', aliases: ['type']),
   timeframe(String, 'all'),
+  tag(String, '-'),
 
   fcontext(String, kNerdsterContext, aliases: ['follow']),
 
@@ -30,7 +27,10 @@ enum SettingType {
   showStuff(bool, false),
   dev(bool, false),
   bogus(bool, true),
-  preferredTags(List<String>, <String>[], persist: true);
+
+  skipVerify(bool, true),
+  httpFetch(bool, true),
+  batchFetch(bool, true);
 
   final Type type;
   final dynamic defaultValue;

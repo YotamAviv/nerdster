@@ -15,6 +15,7 @@ just that data missing.
 
 # Misc...
 ?fire=emulator&skipCredentialsDisplay
+?fire=fake&demo=egosCircle
 &netView=true
 
 # Emulator simpsonsDemo from PROD

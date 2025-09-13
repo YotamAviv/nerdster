@@ -147,6 +147,7 @@ void main() async {
     // Should not be needed. DemoKey nerd2N = await nerd2.makeDelegate();
     await nerd1.doTrust(TrustVerb.trust, nerd2);
     await nerd1N.doFollow(nerd2, {'nerd': 1});
+    followNet.listen();
     followNet.fcontext = 'nerd';
     signInState.pov = nerd1.token;
     await Comp.waitOnComps([followNet, keyLabels]);
@@ -332,6 +333,7 @@ void main() async {
     signInState.pov = bob2.token;
     followNet.fcontext = 'social';
     await bobN.doFollow(steve, {'social': 1});
+    followNet.listen();
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
       "Me": ["Me@nerdster.org"],
@@ -399,6 +401,7 @@ void main() async {
     // (signInState.center = bob2.token;)
     followNet.fcontext = 'social';
     await bobN.doFollow(steve, {'social': 1}); // !canon follow !canon
+    followNet.listen();
     assert(!followNet.ready);
     assert(!keyLabels.ready);
     await Comp.waitOnComps([followNet, keyLabels]);
@@ -420,7 +423,6 @@ void main() async {
 
     // (signInState.center = bob2.token;)
     followNet.fcontext = 'social';
-    // (await bobN.doFollow(steve, {'social': 1});)
     await Comp.waitOnComps([followNet, keyLabels]);
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
@@ -461,6 +463,7 @@ void main() async {
 
     // bob doesn't trust steve, but bobN follows steve.
     await bobN.doFollow(steve, {'social': 1});
+    followNet.listen();
     followNet.fcontext = 'social';
     await Comp.waitOnComps([followNet, keyLabels]);
     expected = {
@@ -504,6 +507,7 @@ void main() async {
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     await bobN.doFollow(steve, {'social': 1});
+    followNet.listen();
     followNet.fcontext = 'social';
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
@@ -514,6 +518,7 @@ void main() async {
 
     await bobN.doFollow(steve, {}, verb: ContentVerb.clear);
     await bobN.doFollow(steve2, {'social': 1});
+    followNet.listen();
     followNet.fcontext = 'social';
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);
     expected = {
@@ -523,6 +528,7 @@ void main() async {
     jsonShowExpect(followNet.oneofus2delegates, expected);
 
     await bobN.doFollow(steve2, {}, verb: ContentVerb.clear);
+    followNet.listen();
     followNet.fcontext = 'social';
     assert(!followNet.ready);
     await Comp.waitOnComps([followNet, keyLabels, contentBase]);

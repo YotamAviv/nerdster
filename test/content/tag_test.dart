@@ -9,6 +9,7 @@ void main() async {
     expect(extractTags('comment #Word'), {'#word'});
     expect(extractTags('comment # #Word'), {'#word'});
     expect(extractTags('comment #Word'), {'#word'});
+    expect(extractTags('comment #Word #5'), {'#word'});
     expect(extractTags('comment #Word123abc'), {'#word123abc'});
     expect(extractTags('comment #Word #word'), {'#word'});
     expect(extractTags('comment #Word stuff #otherword'), {'#word', '#otherword'});
