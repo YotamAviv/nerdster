@@ -106,7 +106,7 @@ class _NetTileState extends State<NetTile> {
         if (isDelegate) {
           // From Oneofus KeyWidget: color = local ? Colors.blue.shade700 : Colors.blue.shade100;
           assert(b(widget.entry.node.token));
-          iconColor = (widget.entry.node.token == signInState.signedInDelegate)
+          iconColor = (widget.entry.node.token == signInState.delegate)
               ? Colors.blue.shade700
               : iconColor = Colors.blue.shade100;
         }
@@ -181,10 +181,10 @@ class _MonikerWidget extends StatelessWidget {
     bOneofus = oneofusNet.network.containsKey(node.token);
     String moniker = keyLabels.interpret(node.token).toString().trim();
     items = [
-      if (bOneofus && node.token != signInState.center)
+      if (bOneofus && node.token != signInState.pov)
         PopupMenuItem<String>(value: kRecenter, child: Text("Use $moniker's Point of View")),
       // Don't encourage following yourself.
-      if (bOneofus && node.token != signInState.centerReset)
+      if (bOneofus && node.token != signInState.identity)
         PopupMenuItem<String>(value: kFollow, child: Text("View/change how I follow $moniker...")),
       if (Setting.get<bool>(SettingType.showStatements).value)
         PopupMenuItem<String>(value: kStatements, child: Text("$moniker's published statements..."))
@@ -202,7 +202,7 @@ class _MonikerWidget extends StatelessWidget {
     );
     if (value == kRecenter) {
       await progress.make(() async {
-        signInState.center = node.token!;
+        signInState.pov = node.token!;
         await Comp.waitOnComps([keyLabels, contentBase]);
       }, context);
     } else if (value == kFollow) {

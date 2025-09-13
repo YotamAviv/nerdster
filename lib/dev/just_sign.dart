@@ -15,7 +15,7 @@ class JustSign {
     Json? x = await showKeyValueDialog(context);
     if (!b(x)) return;
     Json json = {}..addAll(x!);
-    json['I'] = signInState.signedInDelegatePublicKeyJson!;
+    json['I'] = signInState.delegatePublicKeyJson!;
     json = LinkedHashMap()..addAll(Jsonish(json).json); // order
     String signature = await signInState.signer!.sign(json, encoder.convert(json));
     json['signature'] = signature;

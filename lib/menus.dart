@@ -132,12 +132,12 @@ class Menus {
               // DEFER: copy floater
               await alert(
                   'Nerd\'ster link',
-                  '''Link for sharing or embedding with this app's current settings (PoV, follow context, sort, type, etc...):
+                  '''Link for sharing, bookmarking, or embedding with this app's current settings (PoV, follow context, sort, type, etc...):
 $link''',
                   ['Okay'],
                   context);
             },
-            child: const Text('Share link for this view...')),
+            child: const Text('Generate link for this view...')),
         MenuItemButton(
             child: const Text(kVerify),
             onPressed: () async {
@@ -176,7 +176,7 @@ $link''',
               onPressed: () {
                 // Workaround for omit=["I"] when fetching statements. We have to know our own key
                 // to get going.
-                Json centerJson = Jsonish.find(signInState.center!)!.json;
+                Json centerJson = Jsonish.find(signInState.pov!)!.json;
                 Jsonish.wipeCache();
                 Jsonish(centerJson);
                 BarRefresh.refresh(context);
@@ -211,13 +211,13 @@ $link''',
               }),
           MenuItemButton(
               onPressed: () async {
-                String oneofus = signInState.centerReset!;
+                String identity = signInState.identity!;
                 var credentials = {
-                  kOneofusDomain: Jsonish.find(oneofus)!.json,
+                  kOneofusDomain: Jsonish.find(identity)!.json,
                   if (b(signInState.signedInDelegateKeyPair))
                     kNerdsterDomain: await signInState.signedInDelegateKeyPair!.json,
                 };
-                print(oneofus);
+                print(identity);
                 print(Jsonish.encoder.convert(credentials));
               },
               child: const Text('dump signed-in credentials')),

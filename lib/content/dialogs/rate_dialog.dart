@@ -147,7 +147,7 @@ class _State extends State<RateBody> {
   bool? trueOrNull(bool b) => b ? true : null;
 
   Future<void> okHandler() async {
-    final Json i = signInState.signedInDelegatePublicKeyJson!;
+    final Json i = signInState.delegatePublicKeyJson!;
     String? comment = commentController.text.isNotEmpty ? commentController.text : null;
     ContentVerb verb;
     if (erase.value) {
@@ -190,7 +190,7 @@ class _State extends State<RateBody> {
       // Assume that subject is a statement, construct the Statement, and check if I'm its author.
       Statement temp = Statement.make(widget.subject);
       subjectIsMyStatement = followNet.delegate2oneofus[temp.iToken] ==
-          followNet.delegate2oneofus[signInState.signedInDelegate!];
+          followNet.delegate2oneofus[signInState.delegate!];
     } catch (e) {
       // Probably not even a statement
     }

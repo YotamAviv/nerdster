@@ -227,10 +227,10 @@ class _CenterDropdownState extends State<_CenterDropdown> {
         .map<DropdownMenuEntry<String?>>(
             (String s) => DropdownMenuEntry<String?>(value: s, label: s))
         .toList();
-    if (!b(signInState.center)) entries = [DropdownMenuEntry<String?>(value: 'N/A', label: 'N/A')];
+    if (!b(signInState.pov)) entries = [DropdownMenuEntry<String?>(value: 'N/A', label: 'N/A')];
 
     // Special null reset marker
-    if (signInState.center != signInState.centerReset) {
+    if (signInState.pov != signInState.identity && b(signInState.identity)) {
       DropdownMenuEntry<String?> reset = DropdownMenuEntry<String?>(value: null, label: '<reset>');
       entries.add(reset);
       // TODO: Put <reset> at top instead of bottom.
@@ -248,8 +248,9 @@ class _CenterDropdownState extends State<_CenterDropdown> {
       initialSelection: entries.isNotEmpty ? entries.first.label : null,
       label: const Text('PoV'),
       onSelected: (String? value) async {
+        // NEXT: progress listen to signInState.center
         await progress.make(() async {
-          signInState.center = b(value) ? label2oneofus[value]! : signInState.centerReset;
+          signInState.pov = b(value) ? label2oneofus[value]! : signInState.identity;
           await Comp.waitOnComps([keyLabels, contentBase]);
         }, context);
       },
@@ -303,7 +304,7 @@ class _FollowDropdownState extends State<_FollowDropdown> {
     bool error =
         !(followNet.centerContexts.contains(initial) || kSpecialContexts.contains(initial));
 
-    String center = b(signInState.center) ? ("${keyLabels.labelKey(signInState.center!)}") : 'This PoV';
+    String center = b(signInState.pov) ? ("${keyLabels.labelKey(signInState.pov!)}") : 'This PoV';
     String message = error
         ? '''$center does not use the selected follow context ("$initial")}).
 Select an enabled follow context or <one-of-us> (everyone).'''

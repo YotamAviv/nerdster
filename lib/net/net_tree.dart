@@ -130,7 +130,7 @@ class _NetTreeViewState extends State<NetTreeView> {
         Expanded(child: NerdsterMenu()),
       ]),
       NetBar(),
-      if (b(signInState.center))
+      if (b(signInState.pov))
         Expanded(child: SelectionArea(child: NetTreeTree(treeController: treeController)))
     ])));
   }

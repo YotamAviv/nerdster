@@ -44,15 +44,15 @@ class _SignInMenuState extends State<SignInMenu> {
       leadingIcon: const Icon(Icons.account_circle),
       onPressed: () => showTopRightDialog(
           context,
-          CredentialsDisplay(
-              signInState.centerResetJson, signInState.signedInDelegatePublicKeyJson, showDontShow: false)),
+          CredentialsDisplay(signInState.identityJson, signInState.delegatePublicKeyJson,
+              showDontShow: false)),
       child: const Text('Show current sign-in credentials'),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    bool signedIn = b(signInState.signedInDelegate);
+    bool signedIn = b(signInState.delegate);
 
     if (signedIn) {
       return SplitMenuButton(
@@ -95,7 +95,7 @@ class _SignInMenuState extends State<SignInMenu> {
               onPressed: () => pasteSignIn(context),
               child: const Text('Paste sign-in'),
             ),
-            if (signInState.centerReset != null) showCredentials(context),
+            if (signInState.identity != null) showCredentials(context),
           ],
         );
       }

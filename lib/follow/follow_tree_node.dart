@@ -12,7 +12,7 @@ class FollowTreeNode extends NetTreeModel {
   Iterable<FollowTreeNode>? _children;
   final String? verbPastTense;
 
-  static FollowTreeNode get root => FollowTreeNode([], token: signInState.center);
+  static FollowTreeNode get root => FollowTreeNode([], token: signInState.pov);
 
   FollowTreeNode(super.path, {super.token, super.statement, this.verbPastTense}) {
     followNet.addListener(() {

@@ -37,7 +37,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   Statement bart2blocksMilhouse = await bart2.doTrust(TrustVerb.block, milhouse);
   await lisa.doTrust(TrustVerb.trust, bart2, moniker: 'Bart');
 
-  signInState.center = lisa.token;
+  signInState.pov = lisa.token;
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
   network = oneofusNet.network;
   expectedNetwork = {
@@ -56,7 +56,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   // Bart (bart2) now decides that 'bart' no longer represents him and blocks
   Statement b1 = await bart2.doTrust(TrustVerb.block, bart);
 
-  signInState.center = lisa.token;
+  signInState.pov = lisa.token;
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
   myExpect(baseProblemCollector.rejected.length, 1);
   myExpect(
@@ -83,7 +83,7 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   myExpect(
       baseProblemCollector.rejected[bart2blocksMilhouse.token], 'Attempt to block trusted key.');
 
-  signInState.center = bart2.token;
+  signInState.pov = bart2.token;
   await Comp.waitOnComps([oneofusEquiv, keyLabels]);
   dump = await OneofusTreeNode.root.dump();
   expected = {

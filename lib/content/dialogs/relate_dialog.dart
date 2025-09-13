@@ -66,7 +66,7 @@ class _State extends State<RelateDialog> {
 
   void okHandler() async {
     Json json = ContentStatement.make(
-        signInState.signedInDelegatePublicKeyJson!, verb.value, top.value,
+        signInState.delegatePublicKeyJson!, verb.value, top.value,
         other: bottom.value, comment: commentController.nonEmptyText);
     Navigator.pop(context, json);
   }

@@ -85,7 +85,7 @@ class FollowNet with Comp, ChangeNotifier {
     _centerContexts.clear();
     FollowNode.clear();
     _delegate2fetcher.clear();
-    if (!b(signInState.center)) return;
+    if (!b(signInState.pov)) return;
 
     Iterable<String> network;
     final int degrees = Setting.get<int>(SettingType.followNetDegrees).value;
@@ -104,7 +104,7 @@ class FollowNet with Comp, ChangeNotifier {
       }
 
       LinkedHashMap<String, Node> canonNetwork = await bfsTrust.process(
-          FollowNode(signInState.center!),
+          FollowNode(signInState.pov!),
           batchFetch: batchFetch,
           progressR: _followNetProgressR);
       // This network doesn't have equivalent keys whereas oneofusNet.network does, and add them here.
@@ -163,7 +163,7 @@ class FollowNet with Comp, ChangeNotifier {
     }
 
     // Load up _centerContexts.
-    Iterable<Iterable<Statement>> delegateStatementss = oneofus2delegates[signInState.center]!
+    Iterable<Iterable<Statement>> delegateStatementss = oneofus2delegates[signInState.pov]!
         .map((d) => delegate2fetcher[d]!)
         .map((f) => f.statements);
     Merger merger = Merger(delegateStatementss);

@@ -15,9 +15,9 @@ class Lgtm {
   static Future<bool?> check(Json json, BuildContext context) async {
     if (isSmall.value || Setting.get<bool>(SettingType.skipLgtm).value) return true;
 
-    assert(b(signInState.signedInDelegate));
+    assert(b(signInState.delegate));
 
-    var spec = signInState.signedInDelegate;
+    var spec = signInState.delegate;
     Uri uri = Fetcher.makeSimpleUri(kNerdsterDomain, spec);
 
     return showDialog<bool?>(

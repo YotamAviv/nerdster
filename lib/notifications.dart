@@ -178,8 +178,8 @@ class IdentityCheck with Comp, ChangeNotifier {
   @override
   Future<void> process() async {
     problem.value = null;
-    if (b(signInState.centerReset) &&
-        !followNet.oneofus2delegates.containsKey(signInState.centerReset)) {
+    if (b(signInState.identity) &&
+        !followNet.oneofus2delegates.containsKey(signInState.identity)) {
       problem.value = TitleDescProblem(
           title: '''You're not in this network''',
           desc:
@@ -210,18 +210,18 @@ class DelegateCheck with Comp, ChangeNotifier {
   Future<void> process() async {
     assert(myDelegateStatements.ready);
 
-    if (!b(signInState.signedInDelegate)) {
+    if (!b(signInState.delegate)) {
       problem.value = null;
       return;
     }
 
-    Fetcher fetcher = Fetcher(signInState.centerReset!, kOneofusDomain);
+    Fetcher fetcher = Fetcher(signInState.identity!, kOneofusDomain);
     assert(fetcher.isCached);
 
     for (TrustStatement s in fetcher.statements.cast<TrustStatement>()) {
       if (s.verb == TrustVerb.delegate &&
           s['with']['domain'] == kNerdsterDomain &&
-          s.subjectToken == signInState.signedInDelegate) {
+          s.subjectToken == signInState.delegate) {
         // delegate is associated with me
         if (s.revokeAt != null) {
           problem.value = TitleDescProblem(title: 'Your Nerdster delegate is revoked');

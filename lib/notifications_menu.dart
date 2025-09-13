@@ -213,7 +213,7 @@ class _TrustRows extends StatelessWidget {
     if (!b(node)) return Text('Unknown, untrusted, unsure... ;(');
 
     // Special case for me. no paths.
-    if (node!.token == signInState.center) return Text('- Me');
+    if (node!.token == signInState.pov) return Text('- Me');
 
     List<Row> rows = <Row>[];
     for (List<Trust> path in node!.paths) {

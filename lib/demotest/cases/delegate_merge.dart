@@ -24,7 +24,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     Statement s1 = await loner.doTrust(TrustVerb.block, somebodyElse);
     Statement n2 = await lonerN2.doRate(title: 't2');
 
-    signInState.center = loner.token;
+    signInState.pov = loner.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expected = {"Me": null};
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);
@@ -33,7 +33,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
 
     DemoKey loner2 = await DemoKey.findOrCreate('loner2');
     await loner2.doTrust(TrustVerb.replace, loner, revokeAt: s1.token);
-    signInState.center = loner2.token;
+    signInState.pov = loner2.token;
     await Comp.waitOnComps([contentBase, keyLabels]);
     expected = {"Me": null, "Me (2)": "5/1/2024 12:04 AM"};
     jsonShowExpect(dumpNetwork(oneofusNet.network), expected);

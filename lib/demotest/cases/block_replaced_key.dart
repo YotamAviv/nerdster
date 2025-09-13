@@ -37,7 +37,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   await lisa.doTrust(TrustVerb.trust, bart3, moniker: 'Bart');
   // Lisa has not cleared trust in bart or ever trusted bart2
 
-  signInState.center = lisa.token;
+  signInState.pov = lisa.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
 
   network = oneofusNet.network;
@@ -58,7 +58,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   // ------------------------------------------------------------------------------------
   Statement bart3blocksBart = await bart3.doTrust(TrustVerb.block, bart);
 
-  signInState.center = lisa.token;
+  signInState.pov = lisa.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
   myExpect(baseProblemCollector.rejected.length, 1);
   myExpect(baseProblemCollector.rejected.keys.first, r1.token);
@@ -86,7 +86,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   };
   jsonShowExpect(dump, expected);
 
-  signInState.center = bart3.token;
+  signInState.pov = bart3.token;
   await Comp.waitOnComps([keyLabels]);
   myExpect(baseProblemCollector.rejected.length, 1);
   myExpect(baseProblemCollector.rejected.length, 1);
@@ -101,7 +101,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   };
   jsonShowExpect(dump, expected);
 
-  signInState.center = bart2.token;
+  signInState.pov = bart2.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
   myExpect(baseProblemCollector.rejected.length, 2);
   jsonShowExpect(baseProblemCollector.rejected, {
@@ -130,7 +130,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   };
   jsonShowExpect(dump, expected);
 
-  signInState.center = bart.token;
+  signInState.pov = bart.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
 
   dump = await OneofusTreeNode.root.dump();
