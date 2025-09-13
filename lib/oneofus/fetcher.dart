@@ -177,8 +177,7 @@ class Fetcher {
   // Skip cached fetchers?
   // - or make that the caller's responsibility?
   // Futhermore, I think that I batch fetch everyone when I'm just missing Amotz.
-  static Future<List<Fetcher>> batchFetch(Map<String, String?> token2revokeAt, String domain,
-      {String? mName}) async {
+  static Future<List<Fetcher>> batchFetch(Map<String, String?> token2revokeAt, String domain) async {
     if (fireChoice == FireChoice.fake || !Setting.get<bool>(SettingType.batchFetch).value) {
       // serial fetch
       for (MapEntry e in token2revokeAt.entries) {

@@ -167,11 +167,10 @@ Future<void> defaultSignIn(BuildContext context) async {
   if (b(params['demo'])) {
     if (fireChoice == FireChoice.prod) throw 'not on production';
     demo = params['demo']!;
-    DemoKey identityDemoKey;
-    DemoKey? delegateDemoKey;
-    (identityDemoKey, delegateDemoKey) = await DemoKey.demos[demo]();
+    final (DemoKey identityDemoKey, DemoKey? delegateDemoKey) = await DemoKey.demos[demo]();
     String identity = identityDemoKey.token;
     OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
+    DemoKey.dumpDemoCredentials();
     await signInState.signIn(identity, nerdsterKeyPair, context: context);
     return;
   }

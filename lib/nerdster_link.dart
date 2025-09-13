@@ -11,34 +11,17 @@ import 'package:nerdster/singletons.dart';
 String generateLink() {
   Map<String, String> params = <String, String>{};
 
-  // TODO: Leverage Prefs Settings identity/oneofus
+  assert(fireChoice != FireChoice.fake, "Doesn't work with fake");
   params['fire'] = fireChoice.name;
-  if (fireChoice != FireChoice.fake && b(signInState.pov)) {
-    // TODO: pov
+
+  // TODO: Leverage Prefs Settings identity/oneofus or pov
+  if (b(signInState.pov)) {
+    // TODO: pov instead
     params['identity'] = JsonEncoder().convert(Jsonish.find(signInState.pov!)!.json);
   }
-  
+
   Prefs.setParams(params);
   NetBar.setParams(params);
-
-  String url = buildUrlWithQueryParams(Uri.base, params);
-  return url;
-}
-
-// Kudos: https://gist.github.com/danielgomezrico/f0af61d40f37360e051e7bedde273541
-String buildUrlWithQueryParams(Uri uri, Map<String, dynamic> queryParams) {
-  final Uri fullUri = uri.replace(
-    queryParameters: {
-      ...uri.queryParameters,
-      ...queryParams,
-    },
-  );
-
-  final String parsedUrl = fullUri.toString();
-
-  if (parsedUrl[parsedUrl.length - 1] == '?') {
-    return parsedUrl.substring(0, parsedUrl.length - 1);
-  } else {
-    return parsedUrl;
-  }
+  Uri uri = Uri.base.replace(queryParameters: params);
+  return uri.toString();
 }

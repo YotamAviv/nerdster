@@ -190,6 +190,8 @@ class KeyLabels with Comp, ChangeNotifier implements Interpreter {
   Future<void> process() async {
     throwIfSupportersNotReady();
     _token2name.clear();
+    if (!b(signInState.pov)) return;
+
     _labelDelegateKeys();
   }
 

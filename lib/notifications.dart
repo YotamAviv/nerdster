@@ -178,8 +178,7 @@ class IdentityCheck with Comp, ChangeNotifier {
   @override
   Future<void> process() async {
     problem.value = null;
-    if (b(signInState.identity) &&
-        !followNet.oneofus2delegates.containsKey(signInState.identity)) {
+    if (b(signInState.identity) && !followNet.oneofus2delegates.containsKey(signInState.identity)) {
       problem.value = TitleDescProblem(
           title: '''You're not in this network''',
           desc:
@@ -208,7 +207,7 @@ class DelegateCheck with Comp, ChangeNotifier {
 
   @override
   Future<void> process() async {
-    assert(myDelegateStatements.ready);
+    throwIfSupportersNotReady();
 
     if (!b(signInState.delegate)) {
       problem.value = null;

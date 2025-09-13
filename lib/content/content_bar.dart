@@ -40,18 +40,21 @@ class ContentBar extends StatefulWidget {
 
 class _ContentBarState extends State<ContentBar> {
   _ContentBarState() {
-    ContentBase().addListener(listen);
+    contentBase.addListener(listen);
+    Setting.get(SettingType.tag).addListener(listen);
   }
 
-  void listen() {
+  void listen() async {
     // This is to refresh MostTags.
+    await contentBase.waitUntilReady();
     setState(() {});
   }
 
   @override
   void dispose() {
+    contentBase.removeListener(listen);
+    Setting.get(SettingType.tag).removeListener(listen);
     super.dispose();
-    ContentBase().removeListener(listen);
   }
 
   @override
@@ -99,6 +102,24 @@ class _ContentBarState extends State<ContentBar> {
                     .map<DropdownMenuEntry<ContentType>>((ContentType type) =>
                         DropdownMenuEntry<ContentType>(
                             value: type, label: type.label, leadingIcon: Icon(type.iconDatas.$1)))
+                    .toList(),
+              )),
+          SizedBox(
+              width: 100,
+              child: DropdownMenu<String>(
+                initialSelection: Setting.get(SettingType.tag).value,
+                requestFocusOnTap: true,
+                label: const Text('Tags'),
+                onSelected: (String? tag) {
+                  setState(() {
+                    Setting.get(SettingType.tag).value = tag!;
+                  });
+                },
+                dropdownMenuEntries: ['-', ...contentBase.mostTags]
+                    .map<DropdownMenuEntry<String>>((String tag) => DropdownMenuEntry<String>(
+                          value: tag,
+                          label: tag,
+                        ))
                     .toList(),
               )),
           SizedBox(

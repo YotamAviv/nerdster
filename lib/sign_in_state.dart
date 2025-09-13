@@ -59,7 +59,7 @@ class SignInState with ChangeNotifier {
     _pov = oneofusToken;
     // NEXT: Reconsider. Sometimes no one is signed in.
     // NEXT: show [pov, identity, delegate] in credentials display
-    // if (!b(_identity)) _identity = _pov; 
+    if (!b(_identity)) _identity = _pov; 
     notifyListeners();
   }
 
@@ -70,7 +70,7 @@ class SignInState with ChangeNotifier {
     if (b(delegateKeyPair)) {
       _delegateKeyPair = delegateKeyPair;
       OouPublicKey delegatePublicKey = await delegateKeyPair!.publicKey;
-      _delegatePublicKeyJson = await delegatePublicKey!.json;
+      _delegatePublicKeyJson = await delegatePublicKey.json;
       _delegate = getToken(_delegatePublicKeyJson);
       _signer = await OouSigner.make(delegateKeyPair);
     }
@@ -102,7 +102,6 @@ class SignInState with ChangeNotifier {
   // inputs
   String? get pov => _pov; // PoV, CODE: Maybe rename
   Json? get identityJson => b(identity) ? Jsonish.find(identity!)!.json : null;
-  OouKeyPair? get signedInDelegateKeyPair => _delegateKeyPair; // demo, CONSIDER: Eliminate
 
   // derived
   String? get identity => _identity;

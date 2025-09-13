@@ -13,8 +13,10 @@ import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/content/dialogs/rate_dialog.dart';
 import 'package:nerdster/content/dialogs/relate_dialog.dart';
 import 'package:nerdster/content/props.dart';
+import 'package:nerdster/content/tag.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/equivalence_bridge.dart';
+import 'package:nerdster/most_strings.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -56,6 +58,7 @@ class ContentBase with Comp, ChangeNotifier {
   List<ContentTreeNode>? _roots;
   final Map<ContentTreeNode, List<ContentTreeNode>> _node2children =
       <ContentTreeNode, List<ContentTreeNode>>{};
+  MostStrings _mostTags = MostStrings(<String>{});
 
   Future<Statement?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
@@ -75,6 +78,8 @@ class ContentBase with Comp, ChangeNotifier {
 
   Iterable<ContentTreeNode>? getChildren(ContentTreeNode node) => _node2children[node];
 
+  Iterable<String> get mostTags => _mostTags.most();
+
   @override
   Future<void> process() async {
     throwIfSupportersNotReady();
@@ -84,6 +89,8 @@ class ContentBase with Comp, ChangeNotifier {
     _subject2statements.clear();
     _node2children.clear();
     _roots = null;
+    _mostTags = MostStrings(<String>{});
+    if (!b(signInState.pov)) return;
 
     List<ContentStatement> statements = <ContentStatement>[];
     for (String oneofus in followNet.oneofus2delegates.keys) {
@@ -152,7 +159,6 @@ class ContentBase with Comp, ChangeNotifier {
     ///   If not allowed then:
     ///     do include it as usual (and also display the censorship statement about it)
     /// - Hide things whose only children are censor/delete statements.
-
     if (censor) {
       /// delete deletions correctly (more trusted can delete less trusted)
       for (final ContentStatement statement
@@ -187,20 +193,33 @@ class ContentBase with Comp, ChangeNotifier {
             .cast<ContentStatement>();
     statements = distinctStatements;
 
+    String? tagSetting = Setting.get(SettingType.tag).value;
+    if (tagSetting == '-') tagSetting = null;
+
     // _subject2statements
     for (ContentStatement statement in statements) {
       // CONSIDER: filters only for 'rate', not equate, relate, censor
       if (_filterByTType(statement) || _filterByTimeframe(statement)) continue;
 
+      // Compmute most tags
+      if (b(statement.comment)) {
+        _mostTags.process(extractTags(statement.comment!));
+      }
+
+      // Filter by tags
+      if (tagSetting != null) {
+        if (!b(statement.comment)) continue;
+        Set<String> ts = extractTags(statement.comment!);
+        if (!ts.contains(tagSetting)) continue;
+      }
+
       Set<String> subjectTokens = _getSubjectTokens(statement);
       for (String subjectToken in subjectTokens) {
-        _subject2statements.putIfAbsent(subjectToken, () => <ContentStatement>[]).add(statement);
+        _subject2statements.putIfAbsent(subjectToken, () => []).add(statement);
         // Also use canonical subject
         String canonicalSubjectToken = _equivalence.getCanonical(subjectToken);
         if (!subjectTokens.contains(canonicalSubjectToken)) {
-          _subject2statements
-              .putIfAbsent(canonicalSubjectToken, () => <ContentStatement>[])
-              .add(statement);
+          _subject2statements.putIfAbsent(canonicalSubjectToken, () => []).add(statement);
         }
       }
     }
@@ -215,9 +234,7 @@ class ContentBase with Comp, ChangeNotifier {
   bool _isCensored(String subject) => censor && _censored.contains(subject);
 
   Iterable<ContentTreeNode> get roots {
-    if (b(_roots)) {
-      return _roots!;
-    }
+    if (b(_roots)) return _roots!;
     _roots = <ContentTreeNode>[];
     for (String subjectToken in _subject2statements.keys) {
       if (!b(Jsonish.find(subjectToken))) continue;
@@ -225,14 +242,10 @@ class ContentBase with Comp, ChangeNotifier {
       final Jsonish subject = Jsonish.find(subjectToken)!;
 
       // skip statements
-      if (subject.containsKey('statement')) {
-        continue;
-      }
+      if (subject.containsKey('statement')) continue;
 
       // skip non-canonicals
-      if (_equivalence.getCanonical(subjectToken) != subjectToken) {
-        continue;
-      }
+      if (_equivalence.getCanonical(subjectToken) != subjectToken) continue;
 
       // Skip dismissed
       if (_subject2statements[subjectToken]!.any((statement) =>
@@ -244,10 +257,8 @@ class ContentBase with Comp, ChangeNotifier {
 
       // Skip sum(like) < 0
       if (Setting.get<bool>(SettingType.hideDisliked).value) {
-        // CONSIDER: make this optional in settings
-        if (subjectNode.computeProps([PropType.like])[PropType.like]!.value! as int < 0) {
-          continue;
-        }
+        // CONSIDER: show this setting
+        if (subjectNode.computeProps([PropType.like])[PropType.like]!.value! as int < 0) continue;
       }
 
       _roots!.add(subjectNode);
@@ -500,6 +511,7 @@ class ContentBase with Comp, ChangeNotifier {
     Setting.get<String>(SettingType.sort).addListener(listen);
     Setting.get<String>(SettingType.contentType).addListener(listen);
     Setting.get<String>(SettingType.timeframe).addListener(listen);
+    Setting.get(SettingType.tag).addListener(listen);
   }
 
   void listen() {

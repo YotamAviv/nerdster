@@ -128,7 +128,7 @@ class DemoKey {
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
-    followNet.listen();
+    // CONSIDER: followNet.listen(); // Problematic
     return statement;
   }
 
@@ -172,6 +172,7 @@ class DemoKey {
     Fetcher fetcher = Fetcher(token, kOneofusDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
+    // CONSIDER: oneofusNet.listen(); // Problematic
     return statement;
   }
 
@@ -198,13 +199,12 @@ class DemoKey {
     return {'token': token, 'keyPair': await keyPair.json};
   }
 
-  static Future<void> showDemoCredentials(BuildContext context) async {
+  static void dumpDemoCredentials() async {
     Json x = {};
     for (MapEntry e in _name2key.entries) {
       x[e.key] = await e.value.toJson();
     }
     var z = encoder.convert(x);
-    await alert('all demo credentials', z, ['Okay'], context);
     print(z);
   }
 }
