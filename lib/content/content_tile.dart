@@ -132,9 +132,22 @@ class _ContentTileState extends State<ContentTile> {
           Text(style: TextStyle(color: textColor), verb.pastTense),
           space,
           if (b(statement.like))
-            (statement.like! ? Icon(color: Colors.green, Icons.thumb_up) : Icon(Icons.thumb_down)),
-          if (b(statement.dismiss)) Icon(color: Colors.brown, Icons.swipe_left),
-          if (b(statement.censor)) Icon(color: Colors.red, Icons.delete),
+            (statement.like!
+                ? Tooltip(
+                    message: 'Like',
+                    child: Icon(color: Colors.green, Icons.thumb_up),
+                  )
+                : Tooltip(
+                    message: 'Dislike',
+                    child: Icon(color: Colors.green, Icons.thumb_down),
+                  )),
+          if (b(statement.dismiss))
+            Tooltip(message: 'Dismiss', child: Icon(color: Colors.brown, Icons.swipe_left)),
+          if (b(statement.censor))
+            Tooltip(
+              message: 'Censor',
+              child: Icon(color: Colors.red, Icons.delete),
+            ),
         ],
       );
     }
