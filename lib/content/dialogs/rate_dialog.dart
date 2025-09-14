@@ -262,7 +262,8 @@ which will make your rating of his rating lost.''',
       TextField(
         enabled: editingEnabled,
         decoration: const InputDecoration(
-            hintText: "Comment", border: OutlineInputBorder(), hintStyle: hintStyle),
+            hintText: '''Blah, blah, blah, ...
+#hashtag, #hashtag''', border: OutlineInputBorder(), hintStyle: hintStyle),
         maxLines: 4,
         controller: commentController,
       ),
