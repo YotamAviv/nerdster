@@ -3,6 +3,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
@@ -23,18 +24,20 @@ Future<(DemoKey, DemoKey?)> egos() async {
   DemoKey poserN = await poser.makeDelegate();
   DemoKey hipsterN = await hipster.makeDelegate();
 
-  await jockN.doRate(subject: {
+  final Json russ = {
     "contentType": "video",
     "title": "Russell Wilson Top 10 Plays with Seahawks - YouTube",
     "url": "https://www.youtube.com/watch?v=CkZ8VHfmdiU"
-  }, comment: '#Sick!', recommend: true);
+  };
+  await jockN.doRate(subject: russ, comment: '#Sick!', recommend: true);
+  await poserN.doRate(subject: russ, recommend: true);
 
   Statement h1 = await hipsterN.doRate(subject: {
     "contentType": "article",
     "title": "Big Beard: Growing and Managing Unruly, Big Beards",
     "url":
         "https://thebeardclub.com/blogs/beard-culture/how-to-overcome-the-challenges-of-a-big-beard"
-  }, comment: 'Rad!', recommend: true);
+  }, comment: '#Rad!', recommend: true);
   Statement h2 = await hipsterN.doRate(subject: {
     "contentType": "article",
     "title":

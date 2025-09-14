@@ -193,9 +193,6 @@ class ContentBase with Comp, ChangeNotifier {
             .cast<ContentStatement>();
     statements = distinctStatements;
 
-    String? tagSetting = Setting.get(SettingType.tag).value;
-    if (tagSetting == '-') tagSetting = null;
-
     // _subject2statements
     for (ContentStatement statement in statements) {
       // CONSIDER: filters only for 'rate', not equate, relate, censor
@@ -204,13 +201,6 @@ class ContentBase with Comp, ChangeNotifier {
       // Compmute most tags
       if (b(statement.comment)) {
         _mostTags.process(extractTags(statement.comment!));
-      }
-
-      // Filter by tags
-      if (tagSetting != null) {
-        if (!b(statement.comment)) continue;
-        Set<String> ts = extractTags(statement.comment!);
-        if (!ts.contains(tagSetting)) continue;
       }
 
       Set<String> subjectTokens = _getSubjectTokens(statement);
@@ -270,6 +260,10 @@ class ContentBase with Comp, ChangeNotifier {
       _addChildren(node);
     }
 
+    // Filter by tags
+    String? tagSetting = Setting.get(SettingType.tag).value;
+    if (tagSetting != '-') _roots!.removeWhere((node) => !_keep(node, tagSetting));
+
     _roots!.sort((a, b) {
       PropType sortPropType = sort.propType;
       return b
@@ -279,6 +273,19 @@ class ContentBase with Comp, ChangeNotifier {
     });
 
     return _roots!;
+  }
+
+  bool _keep(ContentTreeNode node, String? tagSetting) {
+    Jsonish subject = node.subject;
+    String? comment = subject['comment'];
+    if (comment != null) {
+      Set<String> ts = extractTags(comment);
+      if (ts.contains(tagSetting)) return true;
+    }
+    for (ContentTreeNode child in node.getChildren()) {
+      if (_keep(child, tagSetting)) return true;
+    }
+    return false;
   }
 
   void _addChildren(ContentTreeNode node) {
@@ -352,9 +359,7 @@ class ContentBase with Comp, ChangeNotifier {
       // The code now does show 2 child statements in case a statement is about the subject and is also related to it;
       // but they're different SubjectTreeNode instances because one has related=true, and the other doesn't.
       // It's fine; I'm leaving it.
-      if (!_node2children.containsKey(statementNode)) {
-        _addChildren(statementNode);
-      }
+      if (!_node2children.containsKey(statementNode)) _addChildren(statementNode);
     }
   }
 

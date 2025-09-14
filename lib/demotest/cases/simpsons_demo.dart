@@ -169,28 +169,27 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await carlN.doRate(subject: brokeback, recommend: true);
   await sideshowN.doRate(subject: brokeback, dismiss: true);
 
-  await lisaN.doRate(subject: buck, recommend: true);
-  await bartN.doRate(subject: dogtown, recommend: true);
-  await milhouseN.doRate(subject: superbad, recommend: true);
-  await bartN.doRate(subject: superbad, recommend: true, comment: 'rad');
+  await lisaN.doRate(subject: buck, recommend: true, comment: 'instant #classic');
+  await bartN.doRate(subject: dogtown, recommend: true, comment: 'instant #classic');
+  await milhouseN.doRate(subject: superbad, recommend: true, comment: 'two thumbs way up');
+  await bartN.doRate(subject: superbad, recommend: true, comment: '#rad #sick meisterpeace');
   await margeN.doRate(subject: getToken(superbad), censor: true);
-  await margeN.doRate(subject: banana, recommend: true);
-  await homer2N.doRate(subject: kingpin, recommend: true);
-  await bartN.doRate(subject: superbad, comment: 'rad');
-  await bartN.doRate(subject: buck, dismiss: true);
-  await lisaN.doRate(subject: secretariat, recommend: true);
+  await margeN.doRate(subject: banana, recommend: true, comment: '#nutritious and #delicious');
+  await homer2N.doRate(subject: kingpin, recommend: true, comment: '#rad');
+  await bartN.doRate(subject: buck, dismiss: true, recommend: false, comment: '#barf');
+  await lisaN.doRate(subject: secretariat, recommend: true, comment: '#poignant');
   await margeN.doRate(subject: secretariat, recommend: true);
   await carlN.doRate(
-      subject: superbad, dismiss: true, comment: 'disgusting');
+      subject: superbad, dismiss: true, comment: '#disgusting');
 
-  await sideshowN.doRate(subject: joker, recommend: true);
-  await sideshowN.doRate(subject: shakes, recommend: true);
-  await melN.doRate(subject: joker, recommend: true);
-  await melN.doRate(subject: shakes, recommend: true);
-  await amandaN.doRate(subject: joker, recommend: true);
-  await amandaN.doRate(subject: shakes, recommend: true);
-  await seymoreN.doRate(subject: joker, recommend: true);
-  await seymoreN.doRate(subject: shakes, recommend: true);
+  await sideshowN.doRate(subject: joker, recommend: true, comment: 'instant #classic');
+  await sideshowN.doRate(subject: shakes, recommend: true, comment: 'instant #classic');
+  await melN.doRate(subject: joker, recommend: true, comment: 'instant #classic');
+  await melN.doRate(subject: shakes, recommend: true, comment: 'instant #classic');
+  await amandaN.doRate(subject: joker, recommend: true, comment: 'instant #classic');
+  await amandaN.doRate(subject: shakes, recommend: true, comment: 'instant #classic');
+  await seymoreN.doRate(subject: joker, recommend: true, comment: 'instant #classic');
+  await seymoreN.doRate(subject: shakes, recommend: true, comment: 'instant #classic');
 
   // <nerdster>: bart blocks lisa, marge
   // <nerdster>: burns blocks multiple..

@@ -5,6 +5,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree_node.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/demotest/cases/deletions.dart';
+import 'package:nerdster/demotest/cases/egos.dart';
 import 'package:nerdster/demotest/cases/loner.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
@@ -15,6 +16,7 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/measure.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -71,8 +73,7 @@ void main() async {
   });
 
   test('base rate', () async {
-    DemoKey? oneofus, delegate;
-    (oneofus, delegate) = await DemoKey.demos['loner']();
+    final (DemoKey oneofus, DemoKey? delegate) = await loner();
     DemoKey lonerD = DemoKey.findByName('loner-nerdster0')!;
     expect(delegate!.token, lonerD.token);
 
@@ -139,8 +140,8 @@ void main() async {
     ContentTreeNode t1Node = roots.first;
     expect(t1Node.getChildren().length, 1);
 
-    ContentStatement relateStatement = 
-        await lonerD.doRelate(ContentVerb.relate, title: "t1", other: rateStatement.json) as ContentStatement;
+    ContentStatement relateStatement = await lonerD.doRelate(ContentVerb.relate,
+        title: "t1", other: rateStatement.json) as ContentStatement;
     contentBase.listen();
     expect(relateStatement.subject, rateStatement.subject);
     expect(relateStatement.other, rateStatement.json);
@@ -202,7 +203,8 @@ void main() async {
     delegateNetwork = followNet.delegate2fetcher;
     dn = delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
     expect(dn, {lonerD2.token: null, lonerD.token: parseIso('2024-05-01 07:02:00.000Z')});
-    expect(keyLabels.interpret(dn), {'Me@nerdster.org': null, 'Me@nerdster.org (2)': '5/1/2024 12:02 AM'});
+    expect(keyLabels.interpret(dn),
+        {'Me@nerdster.org': null, 'Me@nerdster.org (2)': '5/1/2024 12:02 AM'});
 
     // say something as new delegate
     await lonerD2.doRate(title: "t3");
@@ -298,6 +300,39 @@ void main() async {
     };
     Set<ContentType> types = ContentBase.findContentTypes(json);
     expect(types, {ContentType.book, ContentType.video, ContentType.article});
+  });
+
+  test('tags', () async {
+    // Too long
+    // Measure sim = Measure('sim');
+    // await sim.mAsync(simpsonsDemo);
+    // print(sim.elapsed);
+
+    Measure egos = Measure('egos');
+    final (DemoKey identity, DemoKey? delegate) = await egos.mAsync(egosCircle);
+    // print(egos.elapsed);
+
+    signInState.pov = identity.token;
+
+    Setting.get(SettingType.tag).value = '-';
+    await contentBase.waitUntilReady();
+    expect(contentBase.roots.length, 3);
+
+    Setting.get(SettingType.tag).value = '#rad';
+    await contentBase.waitUntilReady();
+    Iterable<ContentTreeNode> radRoots = List.of( contentBase.roots);
+    expect(radRoots.length, 1);
+    expect(radRoots.first.getChildren().length, 1);
+
+    Setting.get(SettingType.tag).value = '#sick';
+    await contentBase.waitUntilReady();
+    Iterable<ContentTreeNode> sickRoots = List.of( contentBase.roots);
+    expect(sickRoots.length, 1);
+    expect(sickRoots.first.getChildren().length, 2);
+
+    Setting.get(SettingType.tag).value = '#foo';
+    await contentBase.waitUntilReady();
+    expect(contentBase.roots.length, 0);
   });
 }
 
