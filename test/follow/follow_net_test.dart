@@ -577,7 +577,7 @@ void main() async {
 
     signInState.pov = poser.token;
     await contentBase.waitUntilReady();
-    expect(contentBase.roots.length, 2);
+    expect(contentBase.roots.length, 3);
     Map<String, String?> delegate2revokedAt =
         followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
     List<String> ss = List.of(followNet.getStatements(hipster.token).map((s) => s.token));
@@ -591,7 +591,7 @@ void main() async {
 
     followNet.fcontext = 'social';
     await contentBase.waitUntilReady();
-    expect(contentBase.roots.length, 2);
+    expect(contentBase.roots.length, 3);
     Map<String, String?> delegate2revokedAt2 =
         followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
     expect(delegate2revokedAt2, delegate2revokedAt);
@@ -602,7 +602,7 @@ void main() async {
 
     oneofusNet.listen();
     await contentBase.waitUntilReady();
-    expect(contentBase.roots.length, 2);
+    expect(contentBase.roots.length, 3);
     Map<String, String?> delegate2revokedAt3 =
         followNet.delegate2fetcher.map((d, f) => MapEntry(d, f.revokeAt));
     expect(delegate2revokedAt3, delegate2revokedAt);
