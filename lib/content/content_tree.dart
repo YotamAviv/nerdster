@@ -9,6 +9,7 @@ import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/prefs.dart';
 import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
@@ -100,7 +101,7 @@ class _ContentTreeState extends State<ContentTree> {
         await Comp.waitOnComps([contentBase, keyLabels]);
       }, context);
 
-      if (bs(Uri.base.queryParameters['netView'])) await NetBar.showTree(context);
+      if (Setting.get(SettingType.netView).value) await NetBar.showTree(context);
 
       if (b(Uri.base.queryParameters['verify2'])) {
         await showDialog(

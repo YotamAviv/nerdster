@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:nerdster/main.dart';
-import 'package:nerdster/net/net_bar.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
@@ -22,7 +21,6 @@ String generateLink() {
   }
 
   Prefs.setParams(params);
-  NetBar.setParams(params);
   Uri uri = Uri.base.replace(queryParameters: params);
   return uri.toString();
 }
