@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
@@ -67,8 +66,7 @@ class ContentBase with Comp, ChangeNotifier {
   final Map<ContentTreeNode, List<ContentTreeNode>> _node2children =
       <ContentTreeNode, List<ContentTreeNode>>{};
   MostStrings _mostTags = MostStrings(<String>{});
-  final Map<String, Set<String>> _canon2equivTags = <String, Set<String>>{};
-  final Map<String, String> _equiv2canonTags = <String, String>{};
+  final Map<String, Set<String>> _equiv2equivsTags = <String, Set<String>>{};
 
   Future<Statement?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
@@ -100,8 +98,7 @@ class ContentBase with Comp, ChangeNotifier {
     _node2children.clear();
     _roots = null;
     _mostTags = MostStrings(<String>{});
-    _canon2equivTags.clear();
-    _equiv2canonTags.clear();
+    _equiv2equivsTags.clear();
     if (!b(signInState.pov)) return;
 
     List<ContentStatement> statements = <ContentStatement>[];
@@ -237,10 +234,8 @@ class ContentBase with Comp, ChangeNotifier {
 
     Set<EquivalenceGroup> egs = relatedTags.createGroups();
     for (EquivalenceGroup eg in egs) {
-      _canon2equivTags[eg.canonical] = UnmodifiableSetView(eg.all);
-      print('_canon2equivTags[${eg.canonical}] = UnmodifiableSetView${eg.all})');
       for (String equiv in eg.all) {
-        _equiv2canonTags[equiv] = eg.canonical;
+        _equiv2equivsTags[equiv] = eg.all;
       }
     }
 
@@ -291,9 +286,9 @@ class ContentBase with Comp, ChangeNotifier {
     }
 
     // Filter by tags. TODO: TEST: 
-    String? tagSetting = Setting.get(SettingType.tag).value;
+    String tagSetting = Setting.get(SettingType.tag).value;
     if (tagSetting != '-') {
-      Set<String> tags = _canon2equivTags[_equiv2canonTags[tagSetting]] ?? {tagSetting!};
+      Set<String> tags = _equiv2equivsTags[tagSetting] ?? {tagSetting};
       _roots!.removeWhere((node) => !_keep(node, tags));
     }
 
