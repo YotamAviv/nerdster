@@ -15,11 +15,11 @@ import 'package:nerdster/ui/pop_state_stub.dart'
 import 'package:nerdster/util_ui.dart';
 
 class NetBar extends StatefulWidget {
-  // Rep invariant:
+  // Rep invariant: (exception for when loading and reacting to param settings)
   // bNetView true: the NetTreeView MaterialPageRoute is pushed
   // bNetView false: not the above.
   // see NetTreeView.show()
-  static final ValueNotifier<bool> bNetView = ValueNotifier<bool>(false);
+  static final ValueNotifier<bool> bNetView = Setting.get<bool>(SettingType.netView).notifier;
   static final NetBar _singleton = NetBar._internal();
   factory NetBar() => _singleton;
   const NetBar._internal();
@@ -28,12 +28,7 @@ class NetBar extends StatefulWidget {
   State<NetBar> createState() => _NetBarState();
 
   static Future<void> showTree(BuildContext context) async {
-    assert(!bNetView.value);
     await NetTreeView.show(context);
-  }
-
-  static void setParams(Map<String, String> params) {
-    if (bNetView.value) params['netView'] = true.toString();
   }
 }
 

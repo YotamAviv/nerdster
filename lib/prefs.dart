@@ -21,6 +21,8 @@ enum SettingType {
 
   fcontext(String, kNerdsterContext, aliases: ['follow']),
 
+  netView(bool, false),
+
   showJson(bool, false),
   showKeys(bool, false),
   showStatements(bool, false),
