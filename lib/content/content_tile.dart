@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+import 'package:nerdster/comment_widget.dart';
+import 'package:nerdster/content/content_bar.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_tree_node.dart';
@@ -9,7 +11,6 @@ import 'package:nerdster/content/props.dart';
 import 'package:nerdster/js_widget.dart';
 import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/prefs.dart';
 import 'package:nerdster/singletons.dart';
@@ -105,7 +106,21 @@ class _ContentTileState extends State<ContentTile> {
             contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             labelText: 'Comment',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(5))),
-        child: Linky(comment),
+        child: CommentWidget(
+          text: comment,
+          onHashtagTap: (hashtag, context) {
+            if (Setting.get(SettingType.tag).value != hashtag) {
+              Setting.get(SettingType.tag).value = hashtag;
+              tagFlashNotifier.value = true;
+              Future.delayed(Duration.zero, () {
+                tagFlashNotifier.value = false;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Tag $hashtag selected.')),
+              );
+            }
+          },
+        ),
       );
     }
 
@@ -115,17 +130,9 @@ class _ContentTileState extends State<ContentTile> {
     Widget? statementDesc;
     if (isStatement) {
       final ContentVerb verb = statement!.verb;
-      // OLD: TODO: Clean up.
-      // StringBuffer buf = StringBuffer();
-      // buf.write('  ${verb.pastTense} ');
-      // if (verb == ContentVerb.rate) {
-      //   if (b(statement.like)) buf.write(statement.like! ? 'liked ' : 'disliked ');
-      //   if (b(statement.dismiss)) buf.write('dismissed ');
-      //   if (b(statement.censor)) buf.write('censored ');
-      // }
       Color textColor =
           !contentBase.isRejected(subjectNode.subject.token) ? Colors.black : Colors.pink;
-      // TODO: Get icons, colors, and tooltips from a common place with [RateDialog].
+      // DEFER: Get icons, colors, and tooltips from a common place with [RateDialog].
       statementDesc = Row(
         children: [
           space,
@@ -298,24 +305,17 @@ Double click to relate / equate''',
 
 class _StatementTitle extends StatelessWidget {
   final ContentStatement statement;
-
   const _StatementTitle(this.statement);
-
   @override
   Widget build(BuildContext context) {
     String token = statement.iToken;
     String label = keyLabels.labelKey(followNet.delegate2oneofus[token]!)!;
     var time = statement.time;
     return InkWell(
-        onTap: () {
-          NetTreeView.show(context, highlightToken: token);
-        },
+        onTap: () => NetTreeView.show(context, highlightToken: token),
         child: Row(children: [
           Text(label, style: linkStyle),
-          Tooltip(
-            message: formatUiDatetime(time),
-            child: Text('@${formatUiDate(time)}'),
-          ),
+          Tooltip(message: formatUiDatetime(time), child: Text('@${formatUiDate(time)}')),
         ]));
   }
 }
@@ -323,10 +323,7 @@ class _StatementTitle extends StatelessWidget {
 class SubjectTitle extends StatelessWidget {
   final Jsonish subject;
 
-  const SubjectTitle(
-    this.subject, {
-    super.key,
-  });
+  const SubjectTitle(this.subject, {super.key});
 
   @override
   Widget build(BuildContext context) {

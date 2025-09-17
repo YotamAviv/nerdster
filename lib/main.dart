@@ -208,8 +208,13 @@ const Json yotam = {
 };
 
 var lisa = {"crv": "Ed25519", "kty": "OKP", "x": "cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE"};
+var lisaEmulator = {
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "24pUZag3dUUKPttLAyI1bv8tJBkjS6lqOa9brgnkrOw"
+};
 
 dynamic hardCodedSignIn = {
   // FireChoice.emulator: {'identity': yotam},
-  FireChoice.emulator: {'identity': lisa},
+  FireChoice.emulator: {'identity': lisaEmulator},
 };

@@ -31,6 +31,10 @@ enum Timeframe {
   final Duration? duration;
 }
 
+// KLUDGE: Or not.. This is to notify Tags dropdown to animate because the user clicked a hashtag
+// link in a comment [CommentWidget].
+final ValueNotifier<bool> tagFlashNotifier = ValueNotifier<bool>(false);
+
 class ContentBar extends StatefulWidget {
   const ContentBar({super.key});
 
@@ -39,9 +43,12 @@ class ContentBar extends StatefulWidget {
 }
 
 class _ContentBarState extends State<ContentBar> {
+  bool _highlightTagDropdown = false;
+
   _ContentBarState() {
     contentBase.addListener(listen);
     Setting.get(SettingType.tag).addListener(listen);
+    tagFlashNotifier.addListener(flashListener);
   }
 
   void listen() async {
@@ -50,10 +57,26 @@ class _ContentBarState extends State<ContentBar> {
     setState(() {});
   }
 
+  void flashListener() {
+    if (tagFlashNotifier.value) _repeatFlash();
+  }
+
+  void _repeatFlash() {
+    for (int i = 0; i < 3; i++) {
+      Future.delayed(Duration(milliseconds: i * 300), () {
+        if (mounted) setState(() => _highlightTagDropdown = true);
+      });
+      Future.delayed(Duration(milliseconds: i * 300 + 150), () {
+        if (mounted) setState(() => _highlightTagDropdown = false);
+      });
+    }
+  }
+
   @override
   void dispose() {
     contentBase.removeListener(listen);
     Setting.get(SettingType.tag).removeListener(listen);
+    tagFlashNotifier.removeListener(flashListener);
     super.dispose();
   }
 
@@ -106,21 +129,27 @@ class _ContentBarState extends State<ContentBar> {
               )),
           SizedBox(
               width: 100,
-              child: DropdownMenu<String>(
-                initialSelection: Setting.get(SettingType.tag).value,
-                requestFocusOnTap: true,
-                label: const Text('Tags'),
-                onSelected: (String? tag) {
-                  setState(() {
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                decoration: BoxDecoration(
+                  color: _highlightTagDropdown ? Colors.blue.withOpacity(0.2) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(4.0),
+                ),
+                padding: EdgeInsets.zero,
+                child: DropdownMenu<String>(
+                  initialSelection: Setting.get(SettingType.tag).value,
+                  requestFocusOnTap: true,
+                  label: const Text('Tags'),
+                  onSelected: (String? tag) {
                     Setting.get(SettingType.tag).value = tag!;
-                  });
-                },
-                dropdownMenuEntries: ['-', ...contentBase.mostTags]
-                    .map<DropdownMenuEntry<String>>((String tag) => DropdownMenuEntry<String>(
-                          value: tag,
-                          label: tag,
-                        ))
-                    .toList(),
+                  },
+                  dropdownMenuEntries: ['-', ...contentBase.mostTags]
+                      .map<DropdownMenuEntry<String>>((String tag) => DropdownMenuEntry<String>(
+                            value: tag,
+                            label: tag,
+                          ))
+                      .toList(),
+                ),
               )),
           SizedBox(
               width: 100,

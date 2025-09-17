@@ -168,6 +168,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await smithersN.doRate(subject: brokeback, recommend: true);
   await carlN.doRate(subject: brokeback, recommend: true);
   await sideshowN.doRate(subject: brokeback, dismiss: true);
+  await margeN.doRate(subject: brokeback, recommend: true, comment: '#horses');
 
   await lisaN.doRate(subject: buck, recommend: true, comment: 'instant #classic');
   await bartN.doRate(subject: dogtown, recommend: true, comment: 'instant #classic');
@@ -178,7 +179,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await homer2N.doRate(subject: kingpin, recommend: true, comment: '#rad');
   await bartN.doRate(subject: buck, dismiss: true, recommend: false, comment: '#barf');
   await bartN.doRate(subject: banana, dismiss: true);
-  await lisaN.doRate(subject: secretariat, recommend: true, comment: '#poignant');
+  await lisaN.doRate(subject: secretariat, recommend: true, comment: '#poignant #horses');
   await margeN.doRate(subject: secretariat, recommend: true);
   await carlN.doRate(
       subject: superbad, dismiss: true, comment: '#disgusting', recommend: false);
