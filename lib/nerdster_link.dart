@@ -12,7 +12,8 @@ String generateLink() {
   Map<String, String> params = <String, String>{};
 
   assert(fireChoice != FireChoice.fake, "Doesn't work with fake");
-  params['fire'] = fireChoice.name;
+  // TODO: Leverage Prefs Settings identity/oneofus or pov
+  if (fireChoice.name != FireChoice.prod.name) params['fire'] = fireChoice.name;
 
   // TODO: Leverage Prefs Settings identity/oneofus or pov
   if (b(signInState.pov)) {
