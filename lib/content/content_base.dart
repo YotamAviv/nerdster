@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
@@ -14,7 +15,9 @@ import 'package:nerdster/content/dialogs/rate_dialog.dart';
 import 'package:nerdster/content/dialogs/relate_dialog.dart';
 import 'package:nerdster/content/props.dart';
 import 'package:nerdster/content/tag.dart';
+import 'package:nerdster/equivalence/eg.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
+import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/equivalence/equivalence_bridge.dart';
 import 'package:nerdster/most_strings.dart';
 import 'package:nerdster/oneofus/distincter.dart';
@@ -35,6 +38,11 @@ import 'package:nerdster/singletons.dart';
 ///   Have everything in terms of Oneofus canonical, that is.
 ///
 /// CONSIDER: Bug or feature: When I dis (dismiss), that moves it up for others in "recent activity".
+
+/// Related tags is half baked, atm, ngl
+/// Ambitions included allowing users to explicitly express related and unrelated tags.
+/// For now, all tags in a single comment are related to each other (specifically, tags #1-#n
+/// are related to tag #0)
 
 extension FirstWhereOrNull<T> on Iterable<T> {
   T? firstWhereOrNull(bool Function(T) test) {
@@ -59,6 +67,7 @@ class ContentBase with Comp, ChangeNotifier {
   final Map<ContentTreeNode, List<ContentTreeNode>> _node2children =
       <ContentTreeNode, List<ContentTreeNode>>{};
   MostStrings _mostTags = MostStrings(<String>{});
+  final Map<String, Set<String>> _canon2equivTags = <String, Set<String>>{};
 
   Future<Statement?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
@@ -90,6 +99,7 @@ class ContentBase with Comp, ChangeNotifier {
     _node2children.clear();
     _roots = null;
     _mostTags = MostStrings(<String>{});
+    _canon2equivTags.clear();
     if (!b(signInState.pov)) return;
 
     List<ContentStatement> statements = <ContentStatement>[];
@@ -194,13 +204,22 @@ class ContentBase with Comp, ChangeNotifier {
     statements = distinctStatements;
 
     // _subject2statements
+    Equivalence relatedTags = Equivalence();
     for (ContentStatement statement in statements) {
       // CONSIDER: filters only for 'rate', not equate, relate, censor
       if (_filterByTType(statement) || _filterByTimeframe(statement)) continue;
 
-      // Compmute most tags
+      // Compute most tags, related tags
       if (b(statement.comment)) {
-        _mostTags.process(extractTags(statement.comment!));
+        List<String> tags = List.of(extractTags(statement.comment!));
+        if (tags.isNotEmpty) {
+          _mostTags.process(tags);
+        }
+        if (tags.length > 1) {
+          for (int i = 1; i < tags.length; i++) {
+            relatedTags.process(EquateStatement(tags[0], tags[i]));
+          }
+        }
       }
 
       Set<String> subjectTokens = _getSubjectTokens(statement);
@@ -212,6 +231,12 @@ class ContentBase with Comp, ChangeNotifier {
           _subject2statements.putIfAbsent(canonicalSubjectToken, () => []).add(statement);
         }
       }
+    }
+
+    Set<EquivalenceGroup> egs = relatedTags.createGroups();
+    for (EquivalenceGroup eg in egs) {
+      _canon2equivTags[eg.canonical] = UnmodifiableSetView(eg.all);
+      assert(eg.all.contains(eg.canonical));
     }
 
     ReactIconSelection().clear();
@@ -262,7 +287,10 @@ class ContentBase with Comp, ChangeNotifier {
 
     // Filter by tags
     String? tagSetting = Setting.get(SettingType.tag).value;
-    if (tagSetting != '-') _roots!.removeWhere((node) => !_keep(node, tagSetting));
+    if (tagSetting != '-') {
+      Set<String> tags = _canon2equivTags[tagSetting] ?? {tagSetting!};
+      _roots!.removeWhere((node) => !_keep(node, tags));
+    }
 
     _roots!.sort((a, b) {
       PropType sortPropType = sort.propType;
@@ -275,15 +303,15 @@ class ContentBase with Comp, ChangeNotifier {
     return _roots!;
   }
 
-  bool _keep(ContentTreeNode node, String? tagSetting) {
+  bool _keep(ContentTreeNode node, Set<String> tags) {
     Jsonish subject = node.subject;
     String? comment = subject['comment'];
     if (comment != null) {
-      Set<String> ts = extractTags(comment);
-      if (ts.contains(tagSetting)) return true;
+      Set<String> ts = extractTags(comment).toSet();
+      if (ts.intersection(tags).isNotEmpty) return true;
     }
     for (ContentTreeNode child in node.getChildren()) {
-      if (_keep(child, tagSetting)) return true;
+      if (_keep(child, tags)) return true;
     }
     return false;
   }
