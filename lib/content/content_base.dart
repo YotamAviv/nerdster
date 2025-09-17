@@ -68,6 +68,7 @@ class ContentBase with Comp, ChangeNotifier {
       <ContentTreeNode, List<ContentTreeNode>>{};
   MostStrings _mostTags = MostStrings(<String>{});
   final Map<String, Set<String>> _canon2equivTags = <String, Set<String>>{};
+  final Map<String, String> _equiv2canonTags = <String, String>{};
 
   Future<Statement?> insert(Json json, BuildContext context) async {
     String iToken = getToken(json['I']);
@@ -100,6 +101,7 @@ class ContentBase with Comp, ChangeNotifier {
     _roots = null;
     _mostTags = MostStrings(<String>{});
     _canon2equivTags.clear();
+    _equiv2canonTags.clear();
     if (!b(signInState.pov)) return;
 
     List<ContentStatement> statements = <ContentStatement>[];
@@ -236,7 +238,10 @@ class ContentBase with Comp, ChangeNotifier {
     Set<EquivalenceGroup> egs = relatedTags.createGroups();
     for (EquivalenceGroup eg in egs) {
       _canon2equivTags[eg.canonical] = UnmodifiableSetView(eg.all);
-      assert(eg.all.contains(eg.canonical));
+      print('_canon2equivTags[${eg.canonical}] = UnmodifiableSetView${eg.all})');
+      for (String equiv in eg.all) {
+        _equiv2canonTags[equiv] = eg.canonical;
+      }
     }
 
     ReactIconSelection().clear();
@@ -285,10 +290,10 @@ class ContentBase with Comp, ChangeNotifier {
       _addChildren(node);
     }
 
-    // Filter by tags
+    // Filter by tags. TODO: TEST: 
     String? tagSetting = Setting.get(SettingType.tag).value;
     if (tagSetting != '-') {
-      Set<String> tags = _canon2equivTags[tagSetting] ?? {tagSetting!};
+      Set<String> tags = _canon2equivTags[_equiv2canonTags[tagSetting]] ?? {tagSetting!};
       _roots!.removeWhere((node) => !_keep(node, tags));
     }
 
