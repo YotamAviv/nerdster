@@ -17,11 +17,6 @@ class RelateDialog extends StatefulWidget {
   final ContentStatement? priorStatement;
 
   const RelateDialog(this.subject, this.otherSubject, this.priorStatement, {super.key});
-  // CONSIDER:
-  // if (priorStatement.subjectToken != subjectToken) {
-  //   flip();
-  // }
-
   @override
   State<StatefulWidget> createState() => _State();
 
@@ -49,10 +44,17 @@ class _State extends State<RelateDialog> {
   @override
   void initState() {
     super.initState();
+
     top = ValueNotifier(widget.subject);
     bottom = ValueNotifier(widget.otherSubject);
     verb = ValueNotifier(widget.priorStatement?.verb ?? ContentVerb.relate);
     commentController = TextEditingController()..text = widget.priorStatement?.comment ?? '';
+
+    // Klunky: Could just get them right before flipping.
+    if (b(widget.priorStatement) &&
+        widget.priorStatement!.subjectToken != getToken(widget.subject)) {
+      flip();
+    }
   }
 
   @override
@@ -65,8 +67,7 @@ class _State extends State<RelateDialog> {
   }
 
   void okHandler() async {
-    Json json = ContentStatement.make(
-        signInState.delegatePublicKeyJson!, verb.value, top.value,
+    Json json = ContentStatement.make(signInState.delegatePublicKeyJson!, verb.value, top.value,
         other: bottom.value, comment: commentController.nonEmptyText);
     Navigator.pop(context, json);
   }
@@ -94,7 +95,7 @@ class _State extends State<RelateDialog> {
               onSelected: (ContentVerb? selected) {
                 verb.value = selected!;
               },
-              dropdownMenuEntries: const [
+              dropdownMenuEntries: [
                 DropdownMenuEntry(label: 'is related to', value: ContentVerb.relate),
                 DropdownMenuEntry(label: 'is not related to', value: ContentVerb.dontRelate),
                 DropdownMenuEntry(
@@ -102,6 +103,9 @@ class _State extends State<RelateDialog> {
                 DropdownMenuEntry(
                     label: 'is not equivalent to (not a duplicate of)',
                     value: ContentVerb.dontEquate),
+                // TODO: Disable the choice and the Okay button when nothing's changed from prior
+                DropdownMenuEntry(
+                    label: 'clear', value: ContentVerb.clear, enabled: b(widget.priorStatement)),
               ],
             ),
           ],
