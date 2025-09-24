@@ -18,9 +18,6 @@ just that data missing.
 ?fire=fake&demo=egosCircle
 &netView=true
 
-#
-http://localhost:45463/?fire=emulator&identity=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%2224pUZag3dUUKPttLAyI1bv8tJBkjS6lqOa9brgnkrOw%22%7D
-
 # Emulator simpsonsDemo from PROD
 ?fire=emulator&identity=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI%22%7D&skipCredentialsDisplay
 

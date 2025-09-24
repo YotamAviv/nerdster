@@ -24,9 +24,9 @@ enum SettingType {
   netView(bool, false),
 
   showCrypto(bool, false, aliases: ['showStuff']),
-  showJson(bool, false),
-  showKeys(bool, false),
-  showStatements(bool, false),
+  showJson(bool, false, param: false),
+  showKeys(bool, false, param: false),
+  showStatements(bool, false, param: false),
   dev(bool, false),
   bogus(bool, true),
 
@@ -38,8 +38,10 @@ enum SettingType {
   final dynamic defaultValue;
   final List<String> aliases;
   final bool persist;
+  final bool param;
 
-  const SettingType(this.type, this.defaultValue, {this.aliases = const [], this.persist = false});
+  const SettingType(this.type, this.defaultValue,
+      {this.aliases = const [], this.persist = false, this.param = true});
 }
 
 class Setting<T> implements ValueListenable<T> {
@@ -56,6 +58,7 @@ class Setting<T> implements ValueListenable<T> {
   List<String> get aliases => type.aliases;
   T get defaultValue => type.defaultValue;
   bool get persist => type.persist;
+  bool get param => type.param;
 
   @override
   T get value => _notifier.value;
@@ -78,6 +81,7 @@ class Setting<T> implements ValueListenable<T> {
   }
 
   void updateFromQueryParam(Map<String, String> params) {
+    if (!param) return;
     String? paramValue;
     if (b(params[name])) {
       paramValue = params[name];
@@ -93,6 +97,7 @@ class Setting<T> implements ValueListenable<T> {
   }
 
   void addToParams(Map<String, String> params) {
+    if (!param) return;
     if (_notifier.value != defaultValue) {
       if (T == List<String>) {
         params[name] = (_notifier.value as List<String>).join(',');
