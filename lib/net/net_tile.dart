@@ -45,14 +45,12 @@ class _NetTileState extends State<NetTile> {
   @override
   initState() {
     super.initState();
-    Setting.get<bool>(SettingType.showStatements).addListener(listen);
-    Setting.get<bool>(SettingType.showJson).addListener(listen);
+    Setting.get<bool>(SettingType.showCrypto).addListener(listen);
   }
 
   @override
   dispose() {
-    Setting.get<bool>(SettingType.showStatements).removeListener(listen);
-    Setting.get<bool>(SettingType.showJson).removeListener(listen);
+    Setting.get<bool>(SettingType.showCrypto).removeListener(listen);
     super.dispose();
   }
 
@@ -159,7 +157,7 @@ class _NetTileState extends State<NetTile> {
                   isOpen: widget.entry.hasChildren ? widget.entry.isExpanded : null,
                   onPressed: widget.onTap),
             ),
-            if (Setting.get<bool>(SettingType.showJson).value) JSWidget(jsonish),
+            if (Setting.get<bool>(SettingType.showCrypto).value) JSWidget(jsonish),
             if (isStatement) Text(text!, style: TextStyle(color: statementTextColor)),
             if (!isStatement) _MonikerWidget(node)
           ])
@@ -186,7 +184,7 @@ class _MonikerWidget extends StatelessWidget {
       // Don't encourage following yourself.
       if (bOneofus && node.token != signInState.identity)
         PopupMenuItem<String>(value: kFollow, child: Text("View/change how I follow $moniker...")),
-      if (Setting.get<bool>(SettingType.showStatements).value)
+      if (Setting.get<bool>(SettingType.showCrypto).value)
         PopupMenuItem<String>(value: kStatements, child: Text("$moniker's published statements..."))
     ];
   }

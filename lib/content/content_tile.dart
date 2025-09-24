@@ -42,14 +42,12 @@ class _ContentTileState extends State<ContentTile> {
   @override
   initState() {
     super.initState();
-    Setting.get<bool>(SettingType.showStatements).addListener(listener);
-    Setting.get<bool>(SettingType.showJson).addListener(listener);
+    Setting.get<bool>(SettingType.showCrypto).addListener(listener);
   }
 
   @override
   dispose() {
-    Setting.get<bool>(SettingType.showStatements).removeListener(listener);
-    Setting.get<bool>(SettingType.showJson).removeListener(listener);
+    Setting.get<bool>(SettingType.showCrypto).removeListener(listener);
     super.dispose();
   }
 
@@ -185,7 +183,7 @@ class _ContentTileState extends State<ContentTile> {
                 ),
                 const SizedBox(width: 8),
                 ...propWidgets,
-                if (Setting.get<bool>(SettingType.showJson).value) JSWidget(subjectNode.subject),
+                if (Setting.get<bool>(SettingType.showCrypto).value) JSWidget(subjectNode.subject),
                 titleWidget,
                 if (b(statementDesc)) statementDesc!,
               ]),
