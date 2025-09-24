@@ -9,7 +9,6 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 
 enum Sort {
-  // ratings('rating', PropType.rating),
   like('like', PropType.like),
   recentActivity('recent activity', PropType.recentActivity),
   comments('comments', PropType.numComments);
@@ -31,8 +30,8 @@ enum Timeframe {
   final Duration? duration;
 }
 
-// KLUDGE: Or not.. This is to notify Tags dropdown to animate because the user clicked a hashtag
-// link in a comment [CommentWidget].
+enum DisOption { pov, mine, both, neither }
+
 final ValueNotifier<bool> tagFlashNotifier = ValueNotifier<bool>(false);
 
 class ContentBar extends StatefulWidget {
@@ -44,6 +43,7 @@ class ContentBar extends StatefulWidget {
 
 class _ContentBarState extends State<ContentBar> {
   bool _highlightTagDropdown = false;
+  final DisOption _selectedDisOption = DisOption.mine;
 
   _ContentBarState() {
     contentBase.addListener(listen);
@@ -52,7 +52,6 @@ class _ContentBarState extends State<ContentBar> {
   }
 
   void listen() async {
-    // This is to refresh MostTags.
     await contentBase.waitUntilReady();
     setState(() {});
   }
@@ -82,16 +81,19 @@ class _ContentBarState extends State<ContentBar> {
 
   @override
   Widget build(BuildContext context) {
+    bool isSignedIn = true; // Replace with auth check
+
     return Padding(
       padding: kTallPadding,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           IconButton(
-              icon: const Icon(Icons.add),
-              color: linkColor,
-              tooltip: 'Submit',
-              onPressed: () => submit(context)),
+            icon: const Icon(Icons.add),
+            color: linkColor,
+            tooltip: 'Submit',
+            onPressed: () => submit(context),
+          ),
           DropdownMenu<Sort>(
             initialSelection: contentBase.sort,
             requestFocusOnTap: true,
@@ -109,73 +111,124 @@ class _ContentBarState extends State<ContentBar> {
                 .toList(),
           ),
           SizedBox(
-              width: 100,
-              child: DropdownMenu<ContentType>(
-                initialSelection: contentBase.type,
-                requestFocusOnTap: true,
-                label: const Text('Type'),
-                onSelected: (ContentType? type) {
-                  setState(() {
-                    if (type != null) {
-                      contentBase.type = type;
-                    }
-                  });
-                },
-                dropdownMenuEntries: ContentType.values
-                    .map<DropdownMenuEntry<ContentType>>((ContentType type) =>
-                        DropdownMenuEntry<ContentType>(
-                            value: type, label: type.label, leadingIcon: Icon(type.iconDatas.$1)))
-                    .toList(),
-              )),
+            width: 100,
+            child: DropdownMenu<ContentType>(
+              initialSelection: contentBase.type,
+              requestFocusOnTap: true,
+              label: const Text('Type'),
+              onSelected: (ContentType? type) {
+                setState(() {
+                  if (type != null) {
+                    contentBase.type = type;
+                  }
+                });
+              },
+              dropdownMenuEntries: ContentType.values
+                  .map<DropdownMenuEntry<ContentType>>((ContentType type) =>
+                      DropdownMenuEntry<ContentType>(
+                          value: type, label: type.label, leadingIcon: Icon(type.iconDatas.$1)))
+                  .toList(),
+            ),
+          ),
           SizedBox(
-              width: 100,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                decoration: BoxDecoration(
-                  color: _highlightTagDropdown ? Colors.blue.withOpacity(0.2) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4.0),
-                ),
-                padding: EdgeInsets.zero,
-                child: DropdownMenu<String>(
-                  initialSelection: Setting.get(SettingType.tag).value,
-                  requestFocusOnTap: true,
-                  label: const Text('Tags'),
-                  onSelected: (String? tag) {
-                    Setting.get(SettingType.tag).value = tag!;
-                  },
-                  dropdownMenuEntries: ['-', ...contentBase.mostTags]
-                      .map<DropdownMenuEntry<String>>((String tag) => DropdownMenuEntry<String>(
-                            value: tag,
-                            label: tag,
+            width: 100,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              decoration: BoxDecoration(
+                color: _highlightTagDropdown ? Colors.blue.withOpacity(0.2) : Colors.transparent,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              padding: EdgeInsets.zero,
+              child: DropdownMenu<String>(
+                initialSelection: Setting.get(SettingType.tag).value,
+                requestFocusOnTap: true,
+                label: const Text('Tags'),
+                onSelected: (String? tag) {
+                  Setting.get(SettingType.tag).value = tag!;
+                },
+                dropdownMenuEntries: ['-', ...contentBase.mostTags]
+                    .map<DropdownMenuEntry<String>>((String tag) => DropdownMenuEntry<String>(
+                          value: tag,
+                          label: tag,
+                        ))
+                    .toList(),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 100,
+            child: DropdownMenu<Timeframe>(
+              initialSelection: contentBase.timeframe,
+              requestFocusOnTap: true,
+              label: const Text('Timeframe'),
+              onSelected: (Timeframe? timeframe) {
+                setState(() {
+                  contentBase.timeframe = timeframe!;
+                });
+              },
+              dropdownMenuEntries: Timeframe.values
+                  .map<DropdownMenuEntry<Timeframe>>(
+                      (Timeframe timeframe) => DropdownMenuEntry<Timeframe>(
+                            value: timeframe,
+                            label: timeframe.label,
                           ))
-                      .toList(),
-                ),
-              )),
-          SizedBox(
-              width: 100,
-              child: DropdownMenu<Timeframe>(
-                initialSelection: contentBase.timeframe,
-                requestFocusOnTap: true,
-                label: const Text('Timeframe'),
-                onSelected: (Timeframe? timeframe) {
-                  setState(() {
-                    contentBase.timeframe = timeframe!;
-                  });
-                },
-                dropdownMenuEntries: Timeframe.values
-                    .map<DropdownMenuEntry<Timeframe>>(
-                        (Timeframe timeframe) => DropdownMenuEntry<Timeframe>(
-                              value: timeframe,
-                              label: timeframe.label,
-                            ))
-                    .toList(),
-              )),
+                  .toList(),
+            ),
+          ),
           SizedBox(
             height: 48,
             child: BorderedLabeledWidget(
-                label: 'Censor',
-                child: MyCheckbox(Setting.get<bool>(SettingType.censor).notifier, '')),
-          )
+              label: 'Censor',
+              child: MyCheckbox(Setting.get<bool>(SettingType.censor).notifier, ''),
+            ),
+          ),
+          SizedBox(
+            width: 90,
+            // height: 48,
+            child: BorderedLabeledWidget(
+              label: 'Dis',
+              child: PopupMenuButton<DisOption>(
+                initialValue: _selectedDisOption,
+                onSelected: (DisOption value) => print('Selected: $value'),
+                child: Text(
+                  {
+                    DisOption.pov: 'PoV\'s',
+                    DisOption.mine: 'Mine',
+                    DisOption.both: 'Both',
+                    DisOption.neither: 'Ignored',
+                  }[_selectedDisOption]!,
+                  style: linkStyle,
+                ),
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<DisOption>>[
+                  const PopupMenuItem<DisOption>(
+                    value: DisOption.pov,
+                    child: Text('Hide what PoV has dismissed'),
+                  ),
+                  PopupMenuItem<DisOption>(
+                    value: DisOption.mine,
+                    child: Text('Hide what I\'ve dismissed'),
+                    enabled: true, // Replace with auth check
+                  ),
+                  const PopupMenuItem<DisOption>(
+                    value: DisOption.both,
+                    child: Text('Hide both what I\'ve dismissed and what PoV has dismissed'),
+                  ),
+                  const PopupMenuItem<DisOption>(
+                    value: DisOption.neither,
+                    child: Text('Ignore all dismiss statements'),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem<DisOption>(
+                    enabled: false,
+                    child: Text(
+                      'TODO: Help text.. blah, blah, blah, blah, blah, blah...',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -194,8 +247,7 @@ class BorderedLabeledWidget extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         Container(
-          padding: const EdgeInsets.only(
-              top: 16, left: 8, right: 8, bottom: 8), // Adjust padding to accommodate label height
+          padding: const EdgeInsets.only(top: 16, left: 8, right: 8, bottom: 8),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey),
           ),
@@ -205,7 +257,7 @@ class BorderedLabeledWidget extends StatelessWidget {
           top: 0,
           left: 3,
           child: Transform.translate(
-            offset: const Offset(0, -8), // Translate label up to align with border
+            offset: const Offset(0, -8),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4.0),
               color: Theme.of(context).scaffoldBackgroundColor,
