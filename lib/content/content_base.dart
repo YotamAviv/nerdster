@@ -285,7 +285,7 @@ class ContentBase with Comp, ChangeNotifier {
       _addChildren(node);
     }
 
-    // Filter by tags. TODO: TEST: 
+    // Filter by tags. TODO: TEST:
     String tagSetting = Setting.get(SettingType.tag).value;
     if (tagSetting != '-') {
       Set<String> tags = _equiv2equivsTags[tagSetting] ?? {tagSetting};
@@ -628,6 +628,10 @@ Future<Statement?> relate(Jsonish subject, Jsonish otherSubject, BuildContext co
   if (!bb(await checkSignedIn(context))) return null;
   ContentStatement? priorStatement =
       contentBase._findMyStatement2(subject.token, otherSubject.token);
+  if (!b(priorStatement)) {
+    // A klunky way to find prior statement when subject and otherSubject are reversed.
+    priorStatement = contentBase._findMyStatement2(otherSubject.token, subject.token);
+  }
   Json? json = await RelateDialog(subject.json, otherSubject.json, priorStatement).show(context);
   if (json != null) {
     Statement? statement = await contentBase.insert(json, context);
