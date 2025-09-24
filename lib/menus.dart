@@ -94,17 +94,14 @@ class Menus {
             ], child: const Text('Follow network')),
             // const Text('--------- nerdier ---------'),
             SubmenuButton(menuChildren: [
-              MyCheckbox(
-                  Setting.get<bool>(SettingType.showStuff).notifier, 'JSON, keys, and statements'),
+              MyCheckbox(Setting.get<bool>(SettingType.skipCredentials).notifier,
+                  'Sign-in credentials received',
+                  opposite: true),
               MyCheckbox(Setting.get<bool>(SettingType.skipLgtm).notifier,
                   'Statements review/confirmation',
                   opposite: true),
-              MyCheckbox(Setting.get<bool>(SettingType.skipCredentials).notifier,
-                  'Sign-in credentials accepted',
-                  opposite: true),
-              // MyCheckbox(Prefs.showJson, 'show JSON'),
-              // MyCheckbox(Prefs.showKeys, 'show equivalent keys'),
-              // MyCheckbox(Prefs.showStatements, 'show trust statements'),
+              MyCheckbox(Setting.get<bool>(SettingType.showCrypto).notifier,
+                  'Crypto (JSON, keys, and statements)'),
             ], child: const Text("Show/don't show")),
           ],
           child: const Row(
@@ -186,8 +183,7 @@ $link''',
           ], child: const Text('integration tests')),
           SubmenuButton(menuChildren: [
             MenuItemButton(
-                onPressed: DemoKey.dumpDemoCredentials,
-                child: const Text('dumpDemoCredentials')),
+                onPressed: DemoKey.dumpDemoCredentials, child: const Text('dumpDemoCredentials')),
             ...demos
           ], child: const Text('demo')),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),

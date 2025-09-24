@@ -23,10 +23,10 @@ enum SettingType {
 
   netView(bool, false),
 
+  showCrypto(bool, false, aliases: ['showStuff']),
   showJson(bool, false),
   showKeys(bool, false),
   showStatements(bool, false),
-  showStuff(bool, false),
   dev(bool, false),
   bogus(bool, true),
 
@@ -173,10 +173,10 @@ class Prefs {
   static Future<void> init() async {
     // Set dynamic defaults based on fireChoice
     final bool devDefault = fireChoice != FireChoice.prod;
+    Setting.get<bool>(SettingType.showCrypto).value = devDefault;
     Setting.get<bool>(SettingType.showJson).value = devDefault;
     Setting.get<bool>(SettingType.showKeys).value = devDefault;
     Setting.get<bool>(SettingType.showStatements).value = devDefault;
-    Setting.get<bool>(SettingType.showStuff).value = devDefault;
     Setting.get<bool>(SettingType.dev).value = devDefault;
 
     // Load persistent settings from storage
@@ -198,8 +198,8 @@ class Prefs {
     }
 
     // Sync showStuff with dependent settings
-    Setting.get<bool>(SettingType.showStuff).addListener(() {
-      final showStuffValue = Setting.get<bool>(SettingType.showStuff).value;
+    Setting.get<bool>(SettingType.showCrypto).addListener(() {
+      final showStuffValue = Setting.get<bool>(SettingType.showCrypto).value;
       Setting.get<bool>(SettingType.showJson).value = showStuffValue;
       Setting.get<bool>(SettingType.showKeys).value = showStuffValue;
       Setting.get<bool>(SettingType.showStatements).value = showStuffValue;

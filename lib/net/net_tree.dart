@@ -60,8 +60,7 @@ class _NetTreeViewState extends State<NetTreeView> {
     followNet.addListener(listen);
     keyLabels.addListener(listen);
 
-    Setting.get<bool>(SettingType.showKeys).addListener(listen);
-    Setting.get<bool>(SettingType.showStatements).addListener(listen);
+    Setting.get<bool>(SettingType.showCrypto).addListener(listen);
 
     NetTreeModel root = widget.root;
     treeController = TreeController<NetTreeModel>(
@@ -113,10 +112,7 @@ class _NetTreeViewState extends State<NetTreeView> {
     NetTreeView.bOneofus.removeListener(listen);
     followNet.removeListener(listen);
     keyLabels.removeListener(listen);
-
-    Setting.get<bool>(SettingType.showKeys).removeListener(listen);
-    Setting.get<bool>(SettingType.showStatements).removeListener(listen);
-
+    Setting.get<bool>(SettingType.showCrypto).removeListener(listen);
     treeController.dispose();
     super.dispose();
   }
