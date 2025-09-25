@@ -248,6 +248,18 @@ class ContentBase with Comp, ChangeNotifier {
   /// - (Gone: author of this censored it himself.. Gone because author can clear his own stuff anyway.)
   bool _isCensored(String subject) => censor && _censored.contains(subject);
 
+  // TODO: TEST:
+  bool _dis(ContentStatement statement, DisOption option) {
+    final String i = _getOneofusI(statement.iToken);
+    if (option == DisOption.mine) {
+      return i == signInState.identity;
+    } else if (option == DisOption.pov) {
+      return i == signInState.pov;
+    }
+    assert(option == DisOption.either);
+    return i == signInState.identity || i == signInState.pov;
+  }
+
   Iterable<ContentTreeNode> get roots {
     if (b(_roots)) return _roots!;
     _roots = <ContentTreeNode>[];
@@ -263,9 +275,13 @@ class ContentBase with Comp, ChangeNotifier {
       if (_equivalence.getCanonical(subjectToken) != subjectToken) continue;
 
       // Skip dismissed
-      if (_subject2statements[subjectToken]!.any((statement) =>
-          b(statement.dismiss) && _getOneofusI(statement.iToken) == signInState.pov)) {
-        continue;
+      final DisOption disOption =
+          DisOption.values.byName(Setting.get<String>(SettingType.dis).value);
+      if (disOption != DisOption.ignore) {
+        if (_subject2statements[subjectToken]!
+            .any((statement) => b(statement.dismiss) && _dis(statement, disOption))) {
+          continue;
+        }
       }
 
       ContentTreeNode subjectNode = ContentTreeNode([], subject);
@@ -395,27 +411,20 @@ class ContentBase with Comp, ChangeNotifier {
   bool isStatementRelateOrEquate(ContentStatement statement) =>
       relateEquate.contains(statement.verb);
 
-  Sort get sort => Sort.values.byName(Setting.get<String>(SettingType.sort).value);
-  set sort(Sort sort) {
-    Setting.get<String>(SettingType.sort).value = sort.name;
-  }
+  Sort get sort => Sort.values.byName(Setting.get(SettingType.sort).value);
+  set sort(Sort sort) => Setting.get<String>(SettingType.sort).value = sort.name;
 
   ContentType get type =>
       ContentType.values.byName(Setting.get<String>(SettingType.contentType).value);
-  set type(ContentType type) {
-    Setting.get<String>(SettingType.contentType).value = type.name;
-  }
+  set type(ContentType type) => Setting.get<String>(SettingType.contentType).value = type.name;
 
   Timeframe get timeframe =>
       Timeframe.values.byName(Setting.get<String>(SettingType.timeframe).value);
-  set timeframe(Timeframe timeframe) {
-    Setting.get<String>(SettingType.timeframe).value = timeframe.name;
-  }
+  set timeframe(Timeframe timeframe) =>
+      Setting.get<String>(SettingType.timeframe).value = timeframe.name;
 
   bool get censor => Setting.get<bool>(SettingType.censor).value;
-  set censor(bool censor) {
-    Setting.get<bool>(SettingType.censor).value = censor;
-  }
+  set censor(bool censor) => Setting.get<bool>(SettingType.censor).value = censor;
 
   // returns if we should filter this one out
   bool _filterByTimeframe(Statement statement) {
@@ -539,8 +548,9 @@ class ContentBase with Comp, ChangeNotifier {
     addSupporter(oneofusEquiv);
     oneofusEquiv.addListener(listen);
 
-    Setting.get<bool>(SettingType.censor).addListener(listen);
-    Setting.get<bool>(SettingType.hideDisliked).addListener(listen);
+    Setting.get(SettingType.censor).addListener(listen);
+    Setting.get(SettingType.dis).addListener(listen);
+    Setting.get(SettingType.hideDisliked).addListener(listen);
     Setting.get<String>(SettingType.sort).addListener(listen);
     Setting.get<String>(SettingType.contentType).addListener(listen);
     Setting.get<String>(SettingType.timeframe).addListener(listen);
@@ -554,9 +564,18 @@ class ContentBase with Comp, ChangeNotifier {
 
   @override
   void dispose() {
+    myDelegateStatements.removeListener(listen);
     followNet.removeListener(listen);
     oneofusEquiv.removeListener(listen);
-    Setting.get<bool>(SettingType.hideDisliked).removeListener(listen);
+
+    Setting.get(SettingType.censor).removeListener(listen);
+    Setting.get(SettingType.dis).removeListener(listen);
+    Setting.get(SettingType.hideDisliked).removeListener(listen);
+    Setting.get<String>(SettingType.sort).removeListener(listen);
+    Setting.get<String>(SettingType.contentType).removeListener(listen);
+    Setting.get<String>(SettingType.timeframe).removeListener(listen);
+    Setting.get(SettingType.tag).removeListener(listen);
+
     super.dispose();
   }
 
