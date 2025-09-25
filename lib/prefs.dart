@@ -14,6 +14,7 @@ enum SettingType {
 
   censor(bool, true),
   hideDisliked(bool, false),
+  dis(String, 'pov'),
   sort(String, 'recentActivity'),
   contentType(String, 'all', aliases: ['type']),
   timeframe(String, 'all'),
