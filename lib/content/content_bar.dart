@@ -43,12 +43,15 @@ enum DisOption {
   const DisOption(this.short, this.long);
 }
 
+/// DEFER: REFACTOR:
 final helpStyle = TextStyle(
   fontSize: 12,
   color: Colors.grey.shade800,
   fontStyle: FontStyle.italic,
 );
 
+/// DEFER: REFACTOR:
+/// maybe support disabling, help text, etc...
 class PopupMenuHelpItem<T> extends PopupMenuEntry<T> {
   final Widget child;
 
