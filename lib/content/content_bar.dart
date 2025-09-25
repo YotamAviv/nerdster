@@ -25,12 +25,54 @@ enum Timeframe {
   week('past week', Duration(days: 7)),
   day('today', Duration(days: 1));
 
-  const Timeframe(this.label, this.duration);
   final String label;
   final Duration? duration;
+
+  const Timeframe(this.label, this.duration);
 }
 
-enum DisOption { pov, mine, both, neither }
+enum DisOption {
+  pov("PoV's", "PoV's"),
+  mine('Mine', "Mine"),
+  either('Either', "Hide content dismissed by either me or PoV"),
+  ignore('Ignore', 'Ignore all dismiss statements');
+
+  final String short;
+  final String long;
+
+  const DisOption(this.short, this.long);
+}
+
+final helpStyle = TextStyle(
+  fontSize: 12,
+  color: Colors.grey.shade800,
+  fontStyle: FontStyle.italic,
+);
+
+class PopupMenuHelpItem<T> extends PopupMenuEntry<T> {
+  final Widget child;
+
+  const PopupMenuHelpItem({required this.child});
+
+  @override
+  double get height => 0; // no enforced height
+
+  @override
+  bool represents(T? value) => false;
+
+  @override
+  State<PopupMenuHelpItem<T>> createState() => _PopupMenuHelpItemState<T>();
+}
+
+class _PopupMenuHelpItemState<T> extends State<PopupMenuHelpItem<T>> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: widget.child,
+    );
+  }
+}
 
 final ValueNotifier<bool> tagFlashNotifier = ValueNotifier<bool>(false);
 
@@ -160,52 +202,40 @@ class _ContentBarState extends State<ContentBar> {
                 child: MyCheckbox(Setting.get<bool>(SettingType.censor).notifier, null)),
           ),
           BorderedLabeledWidget(
-            label: 'Dis',
-            child: PopupMenuButton<DisOption>(
-              initialValue: _selectedDisOption,
-              onSelected: (DisOption value) {
-                setState(() {
-                  _selectedDisOption = value;
-                });
-              },
-              child: Text(
-                {
-                  DisOption.pov: "PoV's",
-                  DisOption.mine: 'Mine',
-                  DisOption.both: 'Both',
-                  DisOption.neither: 'Ignore',
-                }[_selectedDisOption]!,
-                style: linkStyle,
-              ),
-              itemBuilder: (BuildContext context) => <PopupMenuEntry<DisOption>>[
-                const PopupMenuItem<DisOption>(
-                  value: DisOption.pov,
-                  child: Text('Hide what PoV has dismissed'),
-                ),
-                PopupMenuItem<DisOption>(
-                  value: DisOption.mine,
-                  enabled: true,
-                  child: Text('Hide what I\'ve dismissed'), // Replace with auth check
-                ),
-                const PopupMenuItem<DisOption>(
-                  value: DisOption.both,
-                  child: Text('Hide both what I\'ve dismissed and what PoV has dismissed'),
-                ),
-                const PopupMenuItem<DisOption>(
-                  value: DisOption.neither,
-                  child: Text('Ignore all dismiss statements'),
-                ),
-                const PopupMenuDivider(),
-                PopupMenuItem<DisOption>(
-                  enabled: false,
-                  child: Text(
-                    'TODO: Help text.. blah, blah, blah, blah, blah, blah...',
-                    style: TextStyle(color: Colors.black),
+              label: 'Dis',
+              child: PopupMenuButton<DisOption>(
+                initialValue: _selectedDisOption,
+                onSelected: (value) => setState(() => _selectedDisOption = value),
+                child: Text(_selectedDisOption.short, style: linkStyle),
+                itemBuilder: (context) => [
+                  PopupMenuHelpItem<DisOption>(
+                    child: Text(
+                      "Who's disses should be respected:",
+                      style: helpStyle,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                  const PopupMenuDivider(height: 4),
+                  ...DisOption.values.map(
+                    (opt) => PopupMenuItem<DisOption>(
+                      value: opt,
+                      child: Text(
+                        opt.long,
+                        style: opt == DisOption.mine && !b(signInState.delegate)
+                            ? TextStyle(color: Theme.of(context).disabledColor)
+                            : null,
+                      ),
+                    ),
+                  ),
+                  const PopupMenuDivider(height: 4),
+                  PopupMenuHelpItem<DisOption>(
+                    child: Text(
+                      '''Reacting to content with a "Dis" (Dismiss) means you don't want to see it again (not necessarily that you dislike it).
+When browsing content from other points of view (PoV), you can choose to honor their disses, yours, both, or neither.''',
+                      style: helpStyle,
+                    ),
+                  ),
+                ],
+              )),
         ],
       ),
     );
