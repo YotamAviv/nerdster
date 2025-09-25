@@ -285,7 +285,7 @@ class ContentBase with Comp, ChangeNotifier {
       _addChildren(node);
     }
 
-    // Filter by tags. TODO: TEST: 
+    // Filter by tags. TODO: TEST:
     String tagSetting = Setting.get(SettingType.tag).value;
     if (tagSetting != '-') {
       Set<String> tags = _equiv2equivsTags[tagSetting] ?? {tagSetting};
@@ -395,27 +395,20 @@ class ContentBase with Comp, ChangeNotifier {
   bool isStatementRelateOrEquate(ContentStatement statement) =>
       relateEquate.contains(statement.verb);
 
-  Sort get sort => Sort.values.byName(Setting.get<String>(SettingType.sort).value);
-  set sort(Sort sort) {
-    Setting.get<String>(SettingType.sort).value = sort.name;
-  }
+  Sort get sort => Sort.values.byName(Setting.get(SettingType.sort).value);
+  set sort(Sort sort) => Setting.get<String>(SettingType.sort).value = sort.name;
 
   ContentType get type =>
       ContentType.values.byName(Setting.get<String>(SettingType.contentType).value);
-  set type(ContentType type) {
-    Setting.get<String>(SettingType.contentType).value = type.name;
-  }
+  set type(ContentType type) => Setting.get<String>(SettingType.contentType).value = type.name;
 
   Timeframe get timeframe =>
       Timeframe.values.byName(Setting.get<String>(SettingType.timeframe).value);
-  set timeframe(Timeframe timeframe) {
-    Setting.get<String>(SettingType.timeframe).value = timeframe.name;
-  }
+  set timeframe(Timeframe timeframe) =>
+      Setting.get<String>(SettingType.timeframe).value = timeframe.name;
 
   bool get censor => Setting.get<bool>(SettingType.censor).value;
-  set censor(bool censor) {
-    Setting.get<bool>(SettingType.censor).value = censor;
-  }
+  set censor(bool censor) => Setting.get<bool>(SettingType.censor).value = censor;
 
   // returns if we should filter this one out
   bool _filterByTimeframe(Statement statement) {
