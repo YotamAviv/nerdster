@@ -85,7 +85,6 @@ class ContentBar extends StatefulWidget {
 
 class _ContentBarState extends State<ContentBar> {
   bool _highlightTagDropdown = false;
-  DisOption _selectedDisOption = DisOption.mine;
 
   _ContentBarState() {
     contentBase.addListener(listen);
@@ -123,7 +122,8 @@ class _ContentBarState extends State<ContentBar> {
 
   @override
   Widget build(BuildContext context) {
-    bool isSignedIn = true; // Replace with auth check
+    Setting disSetting = Setting.get<String>(SettingType.dis);
+    DisOption disOption = DisOption.values.byName(disSetting.value);
 
     return Padding(
       padding: kTallPadding,
@@ -204,9 +204,9 @@ class _ContentBarState extends State<ContentBar> {
           BorderedLabeledWidget(
               label: 'Dis',
               child: PopupMenuButton<DisOption>(
-                initialValue: _selectedDisOption,
-                onSelected: (value) => setState(() => _selectedDisOption = value),
-                child: Text(_selectedDisOption.short, style: linkStyle),
+                initialValue: disOption,
+                onSelected: (value) => setState(() => disSetting.value = value.name),
+                child: Text(disOption.short, style: linkStyle),
                 itemBuilder: (context) => [
                   PopupMenuHelpItem<DisOption>(
                     child: Text(
@@ -220,7 +220,7 @@ class _ContentBarState extends State<ContentBar> {
                       value: opt,
                       child: Text(
                         opt.long,
-                        style: opt == DisOption.mine && !b(signInState.delegate)
+                        style: opt == DisOption.mine && !b(signInState.identity)
                             ? TextStyle(color: Theme.of(context).disabledColor)
                             : null,
                       ),
