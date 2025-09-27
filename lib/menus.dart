@@ -32,27 +32,6 @@ class IntSettingDropdown extends StatefulWidget {
   State<StatefulWidget> createState() => _IntSettingDropdownState();
 }
 
-class _IntSettingDropdownState extends State<IntSettingDropdown> {
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButton<int>(
-      alignment: AlignmentDirectional.centerEnd,
-      isExpanded: true,
-      value: widget.setting.value,
-      onChanged: (int? val) {
-        progress.make(() async {
-          setState(() {
-            widget.setting.value = val!;
-          });
-          await Comp.waitOnComps([keyLabels, contentBase]);
-        }, context);
-      },
-      items: List.of(widget.values
-          .map((i) => DropdownMenuItem<int>(value: i, child: Text('$i ${widget.label}')))),
-    );
-  }
-}
-
 class Menus {
   static List<Widget> build(BuildContext context) {
     List<Widget> demos = <Widget>[];
@@ -71,49 +50,42 @@ class Menus {
     }
 
     return <Widget>[
+      // Sign in
       SignInMenu(),
 
       // Settings
-      SubmenuButton(
-          menuChildren: [
-            // Cleaning up the UI, removing much..
-            // MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
-            SubmenuButton(menuChildren: <Widget>[
-              IntSettingDropdown(
-                  'Degrees',
-                  Setting.get<int>(SettingType.identityNetDegrees).notifier,
-                  List<int>.generate(6, (i) => i + 1)),
-              IntSettingDropdown('Paths', Setting.get<int>(SettingType.identityNetPaths).notifier,
-                  List<int>.generate(2, (i) => i + 1)),
-            ], child: const Text('Identity network')),
-            SubmenuButton(menuChildren: <Widget>[
-              IntSettingDropdown('Degrees', Setting.get<int>(SettingType.followNetDegrees).notifier,
-                  List<int>.generate(6, (i) => i + 1)),
-              IntSettingDropdown('Paths', Setting.get<int>(SettingType.followNetPaths).notifier,
-                  List<int>.generate(2, (i) => i + 1)),
-            ], child: const Text('Follow network')),
-            // const Text('--------- nerdier ---------'),
-            SubmenuButton(menuChildren: [
-              MyCheckbox(Setting.get<bool>(SettingType.skipCredentials).notifier,
-                  'Sign-in credentials received',
-                  opposite: true),
-              MyCheckbox(Setting.get<bool>(SettingType.skipLgtm).notifier,
-                  'Statements review/confirmation',
-                  opposite: true),
-              MyCheckbox(Setting.get<bool>(SettingType.showCrypto).notifier,
-                  'Crypto (JSON, keys, and statements)'),
-            ], child: const Text("Show/don't show")),
-          ],
-          child: const Row(
-            children: [
-              Icon(Icons.settings),
-              iconSpacer,
-              Text('Settings'),
-            ],
-          )),
+      SubmenuButton(menuChildren: [
+        // Cleaning up the UI, removing much..
+        // MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
+        SubmenuButton(menuChildren: <Widget>[
+          IntSettingDropdown('Degrees', Setting.get<int>(SettingType.identityNetDegrees).notifier,
+              List<int>.generate(6, (i) => i + 1)),
+          IntSettingDropdown('Paths', Setting.get<int>(SettingType.identityNetPaths).notifier,
+              List<int>.generate(2, (i) => i + 1)),
+        ], child: const Text('Identity network')),
+        SubmenuButton(menuChildren: <Widget>[
+          IntSettingDropdown('Degrees', Setting.get<int>(SettingType.followNetDegrees).notifier,
+              List<int>.generate(6, (i) => i + 1)),
+          IntSettingDropdown('Paths', Setting.get<int>(SettingType.followNetPaths).notifier,
+              List<int>.generate(2, (i) => i + 1)),
+        ], child: const Text('Follow network')),
+        // const Text('--------- nerdier ---------'),
+        SubmenuButton(menuChildren: [
+          MyCheckbox(Setting.get<bool>(SettingType.skipCredentials).notifier,
+              'Sign-in credentials received',
+              opposite: true),
+          MyCheckbox(
+              Setting.get<bool>(SettingType.skipLgtm).notifier, 'Statements review/confirmation',
+              opposite: true),
+          MyCheckbox(Setting.get<bool>(SettingType.showCrypto).notifier,
+              'Crypto (JSON, keys, and statements)'),
+        ], child: const Text("Show/don't show")),
+      ], child: const Row(children: [Icon(Icons.settings), iconSpacer, Text('Settings')])),
 
+      // Notifications
       NotificationsMenu(),
 
+      // Share
       SubmenuButton(menuChildren: <Widget>[
         MenuItemButton(
             onPressed: () async {
@@ -121,12 +93,16 @@ class Menus {
               // DEFER: copy floater
               await alert(
                   'Nerd\'ster link',
-                  '''Sharing, bookmark, or embed with your current settings (PoV, follow context, sort, type, etc...):
+                  '''Share, bookmark, or embed with your current settings (PoV, follow context, tags, sort, type, etc...):
 $link''',
                   ['Okay'],
                   context);
             },
             child: const Text('Generate link for this view...')),
+      ], child: const Row(children: [Icon(Icons.share), iconSpacer, Text('Share')])),
+
+      // /etc
+      SubmenuButton(menuChildren: <Widget>[
         MenuItemButton(
             child: const Text(kVerify),
             onPressed: () async {
@@ -141,13 +117,14 @@ $link''',
         MenuItemButton(onPressed: () => JustSign.sign(context), child: const Text('Just sign...')),
       ], child: const Text('/etc')),
 
+      // ?
       SubmenuButton(menuChildren: <Widget>[
         MenuItemButton(
             onPressed: () async {
               await About.show(context);
             },
             child: const Text('About')),
-      ], child: const Text('?')),
+      ], child: const Row(children: [Icon(Icons.help)])),
 
       // Dev
       if (Setting.get<bool>(SettingType.dev).value)
@@ -212,4 +189,25 @@ $link''',
   }
 
   Menus._();
+}
+
+class _IntSettingDropdownState extends State<IntSettingDropdown> {
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<int>(
+      alignment: AlignmentDirectional.centerEnd,
+      isExpanded: true,
+      value: widget.setting.value,
+      onChanged: (int? val) {
+        progress.make(() async {
+          setState(() {
+            widget.setting.value = val!;
+          });
+          await Comp.waitOnComps([keyLabels, contentBase]);
+        }, context);
+      },
+      items: List.of(widget.values
+          .map((i) => DropdownMenuItem<int>(value: i, child: Text('$i ${widget.label}')))),
+    );
+  }
 }
