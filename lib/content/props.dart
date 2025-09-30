@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 /// compute aggregates
@@ -93,7 +94,11 @@ class RecentActivityAggregator implements Prop {
 
   @override
   void process(ContentStatement statement) {
-    DateTime datetime = statement.time;
+    if (b(statement.dismiss)) {
+      recent ??= date0; // KLUDGE: ContentBase should deal with nulls.
+      return;
+    }
+    final DateTime datetime = statement.time;
     if (recent == null || datetime.isAfter(recent!)) {
       recent = datetime;
     }
@@ -107,12 +112,7 @@ class RecentActivityAggregator implements Prop {
     String s = recent != null ? formatUiDatetime(recent!) : '';
     return Tooltip(
         message: "recent activity",
-        child: SizedBox(
-            width: 100,
-            child: Text(
-              s,
-              style: const TextStyle(color: Colors.green),
-            )));
+        child: SizedBox(width: 100, child: Text(s, style: const TextStyle(color: Colors.green))));
   }
 }
 
