@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/util.dart';
+
+import '../../oneofus/util.dart';
+
 
 class MyCheckbox extends StatefulWidget {
   final ValueNotifier<bool> valueNotifier;

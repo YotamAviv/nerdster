@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:nerdster/oneofus/util.dart';
 
+import '../oneofus/util.dart';
 import '../setting_type.dart';
 
 class Setting<T> implements ValueListenable<T> {

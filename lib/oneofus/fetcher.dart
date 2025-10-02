@@ -4,16 +4,16 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
-import 'package:nerdster/setting_type.dart';
 
 import '../main.dart';
-import 'prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
+import '../setting_type.dart';
 import 'distincter.dart';
 import 'endpoint.dart';
 import 'fire_factory.dart';
 import 'jsonish.dart';
 import 'measure.dart';
 import 'oou_verifier.dart';
+import 'prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
 import 'statement.dart';
 import 'util.dart';
 import 'value_waiter.dart';
@@ -178,7 +178,8 @@ class Fetcher {
   // Skip cached fetchers?
   // - or make that the caller's responsibility?
   // Futhermore, I think that I batch fetch everyone when I'm just missing Amotz.
-  static Future<List<Fetcher>> batchFetch(Map<String, String?> token2revokeAt, String domain) async {
+  static Future<List<Fetcher>> batchFetch(
+      Map<String, String?> token2revokeAt, String domain) async {
     if (fireChoice == FireChoice.fake || !Setting.get<bool>(SettingType.batchFetch).value) {
       // serial fetch
       for (MapEntry e in token2revokeAt.entries) {
