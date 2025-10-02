@@ -7,7 +7,8 @@ import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
 /// I loose track at times of what tests were meant to test. As the implementation evolves (like

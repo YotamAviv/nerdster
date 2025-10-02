@@ -4,7 +4,8 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/trust.dart';
 

@@ -6,7 +6,8 @@ import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
 /// Considerations:

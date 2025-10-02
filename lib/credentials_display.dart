@@ -5,7 +5,8 @@ import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 
 class CredentialsDisplay extends StatelessWidget {
   final Json? identityJson;

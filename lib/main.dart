@@ -22,8 +22,9 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus_fire.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/progress.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
 
@@ -131,6 +132,7 @@ Future<void> main() async {
   TrustStatement.init();
   ContentStatement.init();
   await Prefs.init();
+  await initPrefs2();
   await About.init();
 
   // ----
@@ -200,6 +202,25 @@ Future<void> defaultSignIn(BuildContext context) async {
     return;
   }
 }
+
+Future<void> initPrefs2() async {
+    final bool devDefault = fireChoice != FireChoice.prod;
+    Setting.get<bool>(SettingType.showCrypto).value = devDefault;
+    Setting.get<bool>(SettingType.showJson).value = devDefault;
+    Setting.get<bool>(SettingType.showKeys).value = devDefault;
+    Setting.get<bool>(SettingType.showStatements).value = devDefault;
+    Setting.get<bool>(SettingType.dev).value = devDefault;
+
+    // Sync showStuff with dependent settings
+    Setting.get<bool>(SettingType.showCrypto).addListener(() {
+      final showStuffValue = Setting.get<bool>(SettingType.showCrypto).value;
+      Setting.get<bool>(SettingType.showJson).value = showStuffValue;
+      Setting.get<bool>(SettingType.showKeys).value = showStuffValue;
+      Setting.get<bool>(SettingType.showStatements).value = showStuffValue;
+    });
+  }
+
+
 
 const Json yotam = {
   "crv": "Ed25519",

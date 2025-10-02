@@ -9,7 +9,8 @@ import 'package:nerdster/net/net_tile.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
 /// 2 structural views are supported: <oneofus> [NetTreeView].bOneofus or 'follow network'.

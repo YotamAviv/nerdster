@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/singletons.dart';
 
 // DEFER: add other network settings: degrees? (statements?, numOneofus?, numFollow?, )

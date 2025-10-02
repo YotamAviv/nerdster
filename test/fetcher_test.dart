@@ -12,7 +12,7 @@ import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:test/test.dart';
 
 const String _domain = kOneofusDomain;
