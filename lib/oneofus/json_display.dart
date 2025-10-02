@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/setting_type.dart';
-import 'prefs.dart';
 
+import '../setting_type.dart';
+import 'prefs.dart';
 import 'util.dart';
 
 abstract class Interpreter {
