@@ -4,9 +4,10 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:nerdster/setting_type.dart';
 
 import '../main.dart';
-import '../prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
+import 'prefs.dart'; // CODE: Kludgey way to include, but works with phone codebase.
 import 'distincter.dart';
 import 'endpoint.dart';
 import 'fire_factory.dart';

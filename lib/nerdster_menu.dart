@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:nerdster/menus.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 
 class NerdsterMenu extends StatefulWidget {
   static const NerdsterMenu _singleton = NerdsterMenu._internal();

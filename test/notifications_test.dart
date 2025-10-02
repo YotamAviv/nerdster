@@ -7,7 +7,7 @@ import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:test/test.dart';
 

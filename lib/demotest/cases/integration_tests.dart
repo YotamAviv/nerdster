@@ -6,7 +6,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:test/test.dart';
 
 /// These are not necessary, but as it was easy, I figured why not test them against

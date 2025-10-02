@@ -1,7 +1,7 @@
 import 'dart:js_interop';
 
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:web/web.dart' as web;
 

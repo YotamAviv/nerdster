@@ -8,7 +8,8 @@ import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/prefs.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
 class Lgtm {
