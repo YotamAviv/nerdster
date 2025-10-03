@@ -45,7 +45,7 @@ class MyDelegateStatements extends Comp with ChangeNotifier {
   // (We don't cache the contents of fetchers, but if there was a way to listen for pushes, we could).
   Iterable<ContentStatement> get statements {
     assert(ready);
-    return Merger(_fetchers.map((f) => f.statements)).toList().cast();
+    return Merger.merge(_fetchers.map((f) => f.statements)).cast<ContentStatement>();
   }
 
   @override

@@ -68,7 +68,7 @@ class FollowNet with Comp, ChangeNotifier {
     assert(oneofusNet.network.containsKey(oneofus),
         "TODO: Allow (write code) to allow seeing / changing follows when you're not in the network you're viewing.");
     return distinct(
-        Merger(_oneofus2delegates[oneofus]!
+        Merger.merge(_oneofus2delegates[oneofus]!
             .map((delegate) => _delegate2fetcher[delegate]!.statements)).cast<ContentStatement>(),
         transformer: (delegate) => followNet.delegate2oneofus[delegate]!).cast<ContentStatement>();
   }
@@ -155,21 +155,17 @@ class FollowNet with Comp, ChangeNotifier {
     }
 
     // Load up _mostContexts
-    for (ContentStatement s in (_delegate2fetcher.values)
-        .map((f) => f.statements)
-        .flattened
-        .cast<ContentStatement>()
-        .where((s) => s.verb == ContentVerb.follow)) {
-      _mostContexts.process(s.contexts!.keys);
-    }
+    _delegate2fetcher.values
+        .expand((f) => f.statements.cast<ContentStatement>())
+        .where((s) => s.verb == ContentVerb.follow)
+        .forEach((s) => _mostContexts.process(s.contexts!.keys));
 
     // Load up _centerContexts.
     Iterable<Iterable<Statement>> delegateStatementss = oneofus2delegates[signInState.pov]!
         .map((d) => delegate2fetcher[d]!)
         .map((f) => f.statements);
-    Merger merger = Merger(delegateStatementss);
     Iterable<ContentStatement> dis =
-        distinct(merger.cast<ContentStatement>()).cast<ContentStatement>();
+        distinct(Merger.merge(delegateStatementss)).cast<ContentStatement>();
     for (ContentStatement followStatement in dis.where((s) => s.verb == ContentVerb.follow)) {
       Json followContextsJ = followStatement.contexts!;
       Iterable<String> contexts =
@@ -221,7 +217,6 @@ class FollowNode extends Node {
         delegateStatementss.add(delegateFetcher.statements);
       }
     }
-    Merger merger = Merger(delegateStatementss);
     // QUESTIONABLE:
     // Below is a distinct/merger combo with no transformer.
     // The ContentStatements are presumably stated by ...
@@ -232,7 +227,7 @@ class FollowNode extends Node {
     // TEST: d1 follows x; d2 follows x; d3 blocks x; d4 blocks x. The desired result is probably
     //   just one block
     Iterable<ContentStatement> dis =
-        distinct(merger.cast<ContentStatement>()).cast<ContentStatement>();
+        distinct(Merger.merge(delegateStatementss)).cast<ContentStatement>();
     for (ContentStatement followStatement in dis.where((s) => s.verb == ContentVerb.follow)) {
       assert(followStatement.verb == ContentVerb.follow);
       if (!oneofusNet.network.containsKey(followStatement.subjectToken)) continue; // not Oneofus
