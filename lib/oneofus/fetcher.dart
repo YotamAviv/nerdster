@@ -346,7 +346,7 @@ class Fetcher {
         }
         // Maintain Cloud Functions or not behave similarly.
         assert(_paramsProto.containsKey('distinct'));
-        _cached = distinct(statements2);
+        _cached = distinct(statements2).toList();
       }
       _lastToken = _cached!.isNotEmpty ? _cached!.first.token : null;
     } catch (e, stackTrace) {
@@ -393,7 +393,7 @@ class Fetcher {
 
     Statement statement = Statement.make(jsonish);
     _cached!.insert(0, statement);
-    _cached = distinct(_cached!);
+    _cached = distinct(_cached!).toList();
     _lastToken = jsonish.token;
 
     final fireStatements = _fire.collection(token).doc('statements').collection('statements');
