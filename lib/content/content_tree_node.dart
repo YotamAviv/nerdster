@@ -3,6 +3,10 @@ import 'package:nerdster/content/props.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/singletons.dart';
 
+import 'package:collection/collection.dart';
+
+final listEq = ListEquality<String>();
+
 /// Like [NerdTreeNode]:
 /// - represents a node in the content tree. There may be more than one of these for a single logical subject.
 /// - sometimes about a subject (book, movie, ...), sometimes about a statement.
@@ -23,10 +27,9 @@ class ContentTreeNode {
 
   // PERFORMANCE: We shouldn't compute props for each SubjectTreeNode but rather for each SubjectNode (doesn't exist (yet)).
   Map<PropType, Prop> computeProps(Iterable<PropType> propTypes) {
-    Map<PropType, Prop> out = {};
-    for (PropType propType in propTypes) {
-      out[propType] = cloners[propType]!.clone();
-    }
+    final out = {
+      for (final propType in propTypes) propType: cloners[propType]!.clone(),
+    };
     _computePropsRecurse(out.values);
     return out;
   }
@@ -54,15 +57,13 @@ class ContentTreeNode {
 
   // I'm not sure I need this as instances of these things should all be distinct, never equal, never hash the same...
   @override
-  String toString() {
-    String p = path.join(':');
-    String s = [p, subject.token, related, equivalent].join(':');
-    return s;
-  }
+  bool operator ==(Object other) =>
+      other is ContentTreeNode &&
+      listEq.equals(path, other.path) &&
+      subject.token == other.subject.token &&
+      related == other.related &&
+      equivalent == other.equivalent;
 
   @override
-  bool operator ==(other) => toString() == other.toString();
-
-  @override
-  int get hashCode => toString().hashCode;
+  int get hashCode => Object.hash(Object.hashAll(path), subject.token, related, equivalent);
 }

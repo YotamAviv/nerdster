@@ -51,9 +51,9 @@ class NetNode {
             .where((s) => !baseProblemCollector.rejected.containsKey(s.token))
             .cast<TrustStatement>()
             .where((s) => s.verb == TrustVerb.trust));
-    Merger merger = Merger(iiStatements);
     Iterable<TrustStatement> dis =
-        distinct(merger.cast(), transformer: oneofusEquiv.getCanonical).cast<TrustStatement>();
+        distinct(Merger.merge(iiStatements), transformer: oneofusEquiv.getCanonical)
+            .cast<TrustStatement>();
     return dis;
   }
 }
