@@ -1,16 +1,19 @@
 import 'statement.dart';
 
-/// CONSIDER: Eliminate this and move to where neeced. 
+/// CONSIDER: Eliminate this and move to where neeced.
 
-List<Statement> distinct(Iterable<Statement> source, {Transformer? transformer}) {
-  final Set<String> already = <String>{};
-  List<Statement> distinct = <Statement>[];
-  for (Statement s in source) {
-    String key = s.getDistinctSignature(transformer: transformer);
-    if (!already.contains(key)) {
-      already.add(key);
-      distinct.add(s);
+// Careful: This used to return a List, and so callers could have iterated twice.
+
+Iterable<T> distinct<T extends Statement>(
+  Iterable<T> source, {
+  Transformer? transformer,
+}) sync* {
+  final seen = <String>{};
+
+  for (final s in source) {
+    final key = s.getDistinctSignature(transformer: transformer);
+    if (seen.add(key)) {
+      yield s;
     }
   }
-  return distinct;
 }

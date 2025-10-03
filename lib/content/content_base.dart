@@ -200,7 +200,7 @@ class ContentBase with Comp, ChangeNotifier {
     // distinct.. (1 per author per subject)
     List<ContentStatement> distinctStatements =
         distinct(statements, transformer: (t) => followNet.delegate2oneofus[t]!)
-            .cast<ContentStatement>();
+            .cast<ContentStatement>().toList();
     statements = distinctStatements;
 
     // _subject2statements
