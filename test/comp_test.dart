@@ -59,7 +59,7 @@ class Summer with Comp, ChangeNotifier {
     _result = _n;
     for (Summer summer in supporters.cast<Summer>()) {
       if (!summer.ready) {
-        assert(invalidProcess);
+        assert(dirtyDuringProcess);
         invalidProcessHappened = true;
         return;
       }
