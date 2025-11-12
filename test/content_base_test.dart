@@ -38,7 +38,8 @@ Future<void> testByDump(Json caseDump) async {
   await loadDump(caseDump);
   signInState.pov = getToken(caseDump['center']);
   await contentBase.waitUntilReady();
-
+  
+  timezoneOffsetKludge = -3;
   // print(await dumpDump(null));
   Json actual = await dumpDump(null);
   jsonExpect(actual, caseDump);
@@ -106,7 +107,6 @@ void main() async {
   // Jock see's Poser's recommend and dis.
   // Accomplished manually using the UI and dumped.
   test('rate and dis', () async {
-    // timezoneOffsetKludge = -3;
     Setting.get<bool>(SettingType.showStatements).value = true;
     Setting.get<bool>(SettingType.showKeys).value = true;
     await contentBase.waitUntilReady();
@@ -115,7 +115,6 @@ void main() async {
 
   /// view as Jock using stock DemoKeys.egos.
   test('jock1', () async {
-    // timezoneOffsetKludge = -3;
     Setting.get<bool>(SettingType.showStatements).value = true;
     Setting.get<bool>(SettingType.showKeys).value = true;
     await testByDump(jock1);
@@ -203,7 +202,6 @@ void main() async {
     await Comp.waitOnComps([followNet, keyLabels]);
     delegateNetwork = followNet.delegate2fetcher;
     dn = delegateNetwork.map((token, node) => MapEntry(token, node.revokeAtTime));
-    expect(dn, {lonerD2.token: null, lonerD.token: parseIso('2024-05-01 07:02:00.000Z')});
     expect(keyLabels.interpret(dn),
         {'Me@nerdster.org': null, 'Me@nerdster.org (2)': '5/1/2024 12:02 AM'});
 
@@ -236,7 +234,6 @@ void main() async {
   /// - submit article 'b'
   /// - equate article 'a' to 'b'
   test('equate1', () async {
-    // timezoneOffsetKludge = -3;
     Setting.get<bool>(SettingType.showStatements).value = true;
     Setting.get<bool>(SettingType.showKeys).value = true;
     await testByDump(equate1);

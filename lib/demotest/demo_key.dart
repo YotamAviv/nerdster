@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/block_replaced_key.dart';
 import 'package:nerdster/demotest/cases/decapitate.dart';
@@ -21,9 +20,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/singletons.dart';
 
 /// For testing, development, and maybe demo.
 ///
@@ -70,7 +67,7 @@ class DemoKey {
     'stress': stress,
   };
 
-  static clear() {
+  static void clear() {
     _name2key.clear();
     _token2key.clear();
   }
