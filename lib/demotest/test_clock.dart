@@ -6,6 +6,7 @@ import 'package:nerdster/oneofus/util.dart';
 class TestClock extends Clock {
   // Tests failed when I moved PST to EST (were off by 3 hours).
   // I think that I now both state and dump in local time.
+  // Only stored, dumped statements are in UTC.
   DateTime _now = DateTime.parse("2024-05-01T00:00");
   Duration? duration;
 
