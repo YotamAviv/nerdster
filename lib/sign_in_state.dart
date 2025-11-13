@@ -86,7 +86,8 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  void signOut({BuildContext? context}) {
+  void signOut({bool? clearIdentity = false, BuildContext? context}) {
+    if (clearIdentity == true) _identity = null;
     _delegateKeyPair = null;
     _delegatePublicKeyJson = null;
     _delegate = null;
