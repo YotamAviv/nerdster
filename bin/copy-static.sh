@@ -1,3 +1,3 @@
 #!/bin/bash
-cp web/home.html build/web/
+cp web/home.* build/web/
 cp -r web/img build/web/
