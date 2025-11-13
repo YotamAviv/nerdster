@@ -1,7 +1,26 @@
-// Attach event listeners for controls that post messages to the embedded app.
-// Uses explicit targetOrigin and validates incoming messages.
+/**
+ * home.js
+ *
+ * Small, unobtrusive glue code for the landing page that posts messages to the
+ * embedded Nerdster app iframe. This file intentionally keeps the runtime
+ * behaviour minimal and documents the message contract for maintainers.
+ *
+ * IFRAME_ORIGIN: the expected origin of the embedded app used when calling
+ * window.postMessage(msg, IFRAME_ORIGIN) and when validating incoming messages.
+ *
+ * Outgoing message shape (example):
+ * {
+ *   identity: { crv: 'Ed25519', kty: 'OKP', x: 'BASE64URL' },
+ *   contentType?: 'book',
+ *   sort?: 'like',
+ *   follow?: 'nerd'
+ * }
+ *
+ * Incoming messages: only objects from IFRAME_ORIGIN are accepted; handlers
+ * should validate the structure before acting.
+ */
 (function () {
-  const IFRAME_ORIGIN = 'https://nerdster.web.app';
+  const IFRAME_ORIGIN = 'https://nerdster.org';
   const iframe = document.getElementById('flutterApp');
   if (!iframe) return;
 
