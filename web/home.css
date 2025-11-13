@@ -1,7 +1,17 @@
+:root{
+  --font-family-mono: "Courier New", Courier, monospace;
+  --font-size-h1: 19px; /* was 14pt (~18.67px) */
+  --font-size-h2: 45px; /* was 34pt (~45.33px) */
+  --font-size-body: 16px; /* was 12pt (~16px) */
+  --font-size-small: 13px;
+  --bg: #ffffff;
+  --text: #202124;
+}
+
 body {
-  font-family: "Courier New", Courier, monospace;
-  background: #ffffff;
-  color: #202124;
+  font-family: var(--font-family-mono);
+  background: var(--bg);
+  color: var(--text);
   margin: 0;
 }
 header {
@@ -15,17 +25,17 @@ header img {
   margin-right: 8px;
 }
 header h1 {
-  font-size: 14pt;
+  font-size: var(--font-size-h1);
   margin: 0;
   font-weight: normal;
-  color: #202124;
+  color: var(--text);
 }
 main {
   margin: auto;
   padding: 48px 32px 62px 48px;
 }
 h2 {
-  font-size: 34pt;
+  font-size: var(--font-size-h2);
   margin: 32px 0 16px;
   font-weight: bold;
   color: #188038;
@@ -40,8 +50,8 @@ ul ul {
 }
 p {
   margin: 12px 0;
-  font-size: 12pt;
-  color: #202124;
+  font-size: var(--font-size-body);
+  color: var(--text);
 }
 a {
   color: #1155cc;
@@ -56,7 +66,7 @@ iframe {
 footer {
   text-align: center;
   padding: 24px;
-  font-size: 12pt;
+  font-size: var(--font-size-body);
   border-top: 1px solid #dadce0;
   margin-top: 48px;
 }

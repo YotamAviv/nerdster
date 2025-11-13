@@ -71,41 +71,18 @@
           the menu: <strong>/etc ⇒ Share link for this view</strong>.
         </li>
         <ul>
-          <li>
+            <li>
             Check out my own embedded usage at
             <a href="https://aviv.net">https://aviv.net</a> or
-            <a
-              href="#"
-              onclick="event.preventDefault(); document.getElementById('flutterApp').contentWindow.postMessage({
-       'identity': {
-         'crv': 'Ed25519',
-         'kty': 'OKP',
-         'x': 'Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo'
-       },
-       'contentType': 'book',
-       'sort': 'like',
-       'follow': 'nerd',
-     }, '*')"
-              >load that view here.</a
-            >
+            <a href="#" id="load-aviv">load that view here.</a>
           </li>
           <li>
             Check out
             <a href="https://www.one-of-us.net/in-depth/nerdster"
               >the Simpsons Bot Farm demo</a
-            >
-            or
-            <a
-              href="#"
-              onclick="event.preventDefault(); document.getElementById('flutterApp').contentWindow.postMessage({
-       'identity': {
-  'crv': 'Ed25519',
-  'kty': 'OKP',
-  'x': 'Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI'
-}
-     }, '*')"
-              >load Lisa's PoV here</a
-            >.
+            > or
+            <a href="#" id="load-lisa">load Lisa's PoV here</a>.
+          </li>
           </li>
         </ul>
         <li>
@@ -128,5 +105,6 @@
       Contact <a href="mailto:contact@nerdster.org">contact@nerdster.org</a>,
       <a href="mailto:yotam@aviv.net">yotam@aviv.net</a>
     </footer>
+    <script src="home.js"></script>
   </body>
 </html>
