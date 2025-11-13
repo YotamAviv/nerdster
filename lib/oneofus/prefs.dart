@@ -25,6 +25,8 @@ class Setting<T> implements ValueListenable<T> {
 
   set value(T newValue) => _notifier.value = newValue;
 
+  void resetToDefault() => _notifier.value = defaultValue;
+
   @override
   void addListener(VoidCallback listener) => _notifier.addListener(listener);
 

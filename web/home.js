@@ -5,8 +5,18 @@
 
   const iframe = document.getElementById('flutterApp');
   assert(iframe, 'home.js: iframe #flutterApp not found');
-  assert(iframe.contentWindow, 'home.js: iframe has no contentWindow');
 
+  // Choose iframe src at runtime. Useful so you don't have to edit HTML to
+  // point at localhost during development.
+  const origin = location.origin;
+  // Forward all query params from the parent URL to the iframe so any dev
+  // flags (like ?fire=emulator) are preserved automatically.
+  const search = location.search || '';
+  const iframeUrl = search ? `${origin}${search}` : `${origin}/`;
+  iframe.src = iframeUrl;
+  console.info('home.js: iframe src set to', iframeUrl);
+
+  // existing demo handlers
   const aviv = document.getElementById('load-aviv');
   assert(aviv, 'home.js: #load-aviv not found');
   aviv.addEventListener('click', function (ev) {
