@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Nerdster — identity demo</title>
+    <link rel="stylesheet" href="/web/home2.css">
+  </head>
+  <body data-theme="default">
+    <header class="site-header">
+      <div class="top-row">
+        <div class="container">
+          <div class="header-band">
+            <div class="left-group">
+              <button id="drawer-open" class="icon-btn" aria-label="Open menu">☰</button>
+              <img src="/web/img/nerd.png" alt="Nerdster" class="logo" />
+              <div class="brand">
+                <h1>Nerdster</h1>
+                <p class="tagline">Identity & delegation demo</p>
+              </div>
+            </div>
+            <div class="header-actions">
+              <select id="theme-select" aria-label="Theme selector">
+                <option value="default">Default</option>
+                <option value="dark">Dark</option>
+                <option value="serif">Serif</option>
+                <option value="contrast">High contrast</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <aside id="app-drawer" class="drawer" hidden>
+      <nav>
+        <a href="#demo">Demo</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#web-of-trust">Web-of-trust</a>
+        <a href="https://github.com/YotamAviv/nerdster" target="_blank">GitHub</a>
+      </nav>
+      <button id="drawer-close" class="drawer-close">Close</button>
+    </aside>
+
+    <div id="overlay" class="overlay" hidden></div>
+
+    <main class="container">
+      <section id="intro" class="lead">
+        <p>People have fragmented identities across services and can't carry reputation. This demo shows a phone-held identity, per-service delegate keys, and a QR sign-in flow.</p>
+      </section>
+
+      <section id="boxes" class="boxes" aria-live="polite">
+        <div class="box">
+          <h3>Phone app <button class="more-ellipsis" data-detail="d-phone" aria-label="More">…</button></h3>
+          <p class="muted">Holds your private identity key and issues delegates.</p>
+        </div>
+        <div class="box">
+          <h3>Delegate keys <button class="more-ellipsis" data-detail="d-delegate" aria-label="More">…</button></h3>
+          <p class="muted">Per-service disposable keys to reduce risk.</p>
+        </div>
+        <div class="box">
+          <h3>QR sign-in <button class="more-ellipsis" data-detail="d-qr" aria-label="More">…</button></h3>
+          <p class="muted">Scan a QR to authorize a delegate key for a service.</p>
+        </div>
+        <div class="box">
+          <h3>Web-of-trust <button class="more-ellipsis" data-detail="d-wot" aria-label="More">…</button></h3>
+          <p class="muted">People vouch or block keys so signatures are meaningful.</p>
+        </div>
+      </section>
+
+      <!-- single replaceable detail block appears here -->
+      <section id="detail-container" class="detail-container" aria-live="polite"></section>
+
+      <section id="demo" style="margin-top:18px">
+        <!-- Embedded Nerdster app (like in web/home.html) -->
+        <div class="embed-area">
+          <iframe id="flutterApp" title="Nerdster app" src="https://nerdster.org" loading="lazy"></iframe>
+        </div>
+
+        <div class="demo-controls below">
+          <button id="load-aviv" class="btn btn-primary">Load Aviv view</button>
+          <button id="load-lisa" class="btn">Load Lisa view</button>
+        </div>
+      </section>
+
+      <!-- hidden detail fragments that will be rendered into the detail container -->
+      <div id="d-phone" hidden>
+        <h3>Phone app</h3>
+        <p>Your phone holds the long-term identity key. It creates short-lived delegate keys for each service so you don't give away your master key.</p>
+      </div>
+      <div id="d-delegate" hidden>
+        <h3>Delegate keys</h3>
+        <p>Delegates are per-service keys signed by your phone. They reduce risk and make key rotation simple.</p>
+      </div>
+      <div id="d-qr" hidden>
+        <h3>QR sign-in</h3>
+        <p>Services show a QR that your phone scans. After you approve, the phone signs a delegate and sends it back to the service.</p>
+      </div>
+      <div id="d-wot" hidden>
+        <h3>Web-of-trust</h3>
+        <p>People can vouch for or block keys, making signatures meaningful across contexts.</p>
+      </div>
+
+      <section id="extra">
+        <h2 id="how-it-works">How it works</h2>
+        <ul>
+          <li>Phone app: holds identity key and vouches for delegates.</li>
+          <li>Delegates: disposable keys per service.</li>
+          <li>QR Sign-in: delegates are authorized by a signature from your identity key.</li>
+        </ul>
+      </section>
+    </main>
+
+    <div id="modal" class="modal" role="dialog" aria-modal="true" hidden>
+      <div class="modal-inner">
+        <button id="modalClose" class="modal-close" aria-label="Close">✕</button>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p class="muted">Prototype — not a production system.</p>
+        <p>Contact <a href="mailto:contact@nerdster.org">contact@nerdster.org</a>, <a href="mailto:yotam@aviv.net">yotam@aviv.net</a></p>
+        <p>Open source: <a href="https://github.com/YotamAviv/nerdster" target="_blank">github.com/YotamAviv/nerdster</a></p>
+      </div>
+    </footer>
+
+    <script src="/web/home2.js" defer></script>
+  </body>
+</html>
+  </header>
+
+
