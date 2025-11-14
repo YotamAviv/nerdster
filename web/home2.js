@@ -35,22 +35,53 @@
   });
 
   // Modal handling — use the hidden attribute so CSS respects visibility rules
+  let _prevActive = null;
+  let _scrollY = 0;
+  function _lockScroll(){
+    try{
+      // Freeze the viewport by fixing the body at the current scroll Y.
+      // This prevents the scrollbar disappearing from nudging content.
+      _scrollY = window.scrollY || window.pageYOffset || 0;
+      document.body.style.position = 'fixed';
+      document.body.style.top = '-' + _scrollY + 'px';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+    }catch(e){}
+  }
+  function _unlockScroll(){
+    try{
+      // restore original flow and scroll position
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      window.scrollTo(0, _scrollY || 0);
+      _scrollY = 0;
+    }catch(e){}
+  }
+
   function openModal(html){
     if(!modal || !modalContent) return
+    _prevActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     modalContent.innerHTML = html;
     modal.hidden = false;
     modal.setAttribute('aria-hidden','false');
-    modalContent.focus && modalContent.focus();
     if(overlay) overlay.hidden = false;
-    // prevent background scrolling while modal is open
-    try{ document.body.style.overflow = 'hidden'; }catch(e){}
+    _lockScroll();
+    // focus without scrolling the page (preventScroll where supported)
+    try{ modalContent.focus({preventScroll:true}); }catch(e){ try{ modalContent.focus(); }catch(e){} }
   }
   function closeModal(){
     if(!modal) return
     modal.hidden = true;
     modal.setAttribute('aria-hidden','true');
     if(overlay) overlay.hidden = true;
-    try{ document.body.style.overflow = ''; }catch(e){}
+    _unlockScroll();
+    // restore previous focus if possible
+    try{ _prevActive && _prevActive.focus && _prevActive.focus({preventScroll:true}); }catch(e){ try{ _prevActive && _prevActive.focus && _prevActive.focus(); }catch(e){} }
+    _prevActive = null;
   }
   modalClose?.addEventListener('click', closeModal);
   modal?.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
