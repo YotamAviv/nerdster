@@ -59,6 +59,140 @@ body[data-theme="contrast"]{--bg:#000;--fg:#fff;--muted:#ddd;--card:#111;--accen
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
+/* ---------- Experimental theme tokens: fonts, sizes and color tokens ---------- */
+:root{
+  --font-family-base: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+  --fs-base: 16px;
+  --fs-lg: 20px;
+  --fs-sm: 13px;
+  --lh: 1.55;
+}
+
+/* Base application of font sizing and family using variables */
+body{font-family:var(--font-family-base);font-size:var(--fs-base);line-height:var(--lh)}
+
+/* Theme: default */
+body[data-theme="default"]{
+  --bg:#ffffff;--fg:#0f172a;--muted:#6b7280;--accent:#0b71ff;--card:#fbfdff;
+  --font-family-base: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+  --fs-base:16px;--fs-lg:20px;--fs-sm:13px;
+}
+
+/* Theme: dark (uses Inter with adjusted sizes) */
+body[data-theme="dark"]{
+  --bg:#07101a;--fg:#e9eef6;--muted:#9aa4b2;--accent:#3da3ff;--card:#07101a;
+  --font-family-base: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+  --fs-base:16px;--fs-lg:20px;--fs-sm:13px;
+}
+
+/* Theme: serif (Merriweather, slightly larger reading size) */
+body[data-theme="serif"]{
+  --font-family-base: 'Merriweather', Georgia, serif;
+  --fs-base:17px;--fs-lg:21px;--fs-sm:14px;
+  --bg:#ffffff;--fg:#0e1720;--muted:#6b7280;--accent:#7b3fe4;--card:#fffafc;
+}
+
+/* Theme: display (Space Grotesk for headings + bigger sizes) */
+body[data-theme="display"]{
+  --font-family-base: 'Space Grotesk', 'Inter', system-ui;
+  --fs-base:17px;--fs-lg:22px;--fs-sm:13px;
+  --bg:#fbfdff;--fg:#07101a;--muted:#415061;--accent:#ff6b6b;--card:#ffffff;
+}
+
+/* Theme: high contrast */
+body[data-theme="contrast"]{
+  --bg:#000;--fg:#fff;--muted:#ddd;--card:#111;--accent:#ffd700;
+  --font-family-base: 'Inter', system-ui;--fs-base:18px;--fs-lg:22px;--fs-sm:14px;
+}
+
+/* Scale some elements using font-size variables */
+.brand h1{font-size:calc(var(--fs-lg) + 2px)}
+.brand .tagline{font-size:var(--fs-sm)}
+.box h3{font-size:calc(var(--fs-sm) + 2px)}
+p, li, .muted{font-size:var(--fs-base)}
+
+/* Slightly bolder headings in display mode */
+body[data-theme="display"] .brand h1{letter-spacing:0.6px}
+
+/* Small helper to preview the current theme visually (temporary) */
+.theme-swatch{display:inline-block;padding:6px 10px;border-radius:8px;font-size:13px}
+
+/* End experimental theme tokens */
+
+/* ---------- Modern polish overrides (appended to override earlier rules) ---------- */
+:root{
+  --panel-shadow: 0 14px 40px rgba(2,6,23,0.08);
+  --soft-shadow: 0 8px 28px rgba(2,6,23,0.06);
+}
+
+/* slightly wider comfortable reading width */
+.container{max-width:1040px}
+
+/* Constrained header band centered with the content width */
+.site-header{background:transparent}
+.site-header .header-band{
+  background: linear-gradient(180deg, rgba(11,113,255,0.03), rgba(11,113,255,0.005)) !important;
+  border-bottom: 1px solid rgba(11,113,255,0.04) !important;
+  padding: 14px calc(var(--gap) * 1.2) !important;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  max-width:1040px;margin:0 auto;border-radius:0
+}
+.top-row-inner{max-width:100%;margin:0;padding:0}
+
+/* Brand and logo */
+.left-group{display:flex;align-items:center;gap:12px}
+.logo{width:46px;height:46px;border-radius:10px;margin-left:0;padding:6px;background:var(--card);box-shadow:var(--soft-shadow)}
+.brand h1{font-size:18px;margin:0;font-weight:700}
+.brand .tagline{font-size:13px;color:var(--muted);margin:0}
+
+/* Header actions on the right */
+.header-actions{display:flex;align-items:center;gap:10px}
+.icon-btn{background:transparent;border:0;font-size:18px;cursor:pointer;color:var(--fg);padding:8px;border-radius:8px}
+.icon-btn:hover{background:rgba(11,113,255,0.04)}
+
+/* Card and box polish */
+.box{background:linear-gradient(180deg,var(--card),rgba(0,0,0,0.01));padding:18px;border-radius:14px;box-shadow:var(--soft-shadow);border:1px solid rgba(11,113,255,0.03)}
+.box h3{font-weight:600;margin:0}
+
+/* Modal overlay and inner card */
+.modal{z-index:120}
+.modal::before{background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.55))}
+.modal-inner{border-radius:12px;padding:20px;max-width:760px;width:94%;box-shadow:var(--panel-shadow);border:1px solid rgba(255,255,255,0.03)}
+.modal-close{right:12px;top:10px}
+
+/* Embed styling */
+.embed-area iframe{height:540px;border-radius:14px;box-shadow:var(--panel-shadow);border:1px solid rgba(11,113,255,0.04)}
+
+/* Buttons */
+.btn{border-radius:12px;padding:10px 16px;font-weight:700;transition:transform .18s cubic-bezier(.2,.9,.2,1),box-shadow .18s}
+.btn:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(2,6,23,0.08)}
+.btn-primary{padding:10px 16px;border-radius:12px}
+
+/* subtle footer spacing */
+.site-footer{padding:22px;margin-top:26px}
+
+@media (max-width:900px){
+  .boxes{grid-template-columns:repeat(2,1fr)}
+  .embed-area iframe{height:420px}
+}
+
+@media (max-width:560px){
+  .site-header .header-band{padding-left:16px;padding-right:16px}
+  .boxes{grid-template-columns:1fr}
+  .embed-area iframe{height:360px}
+}
+
+/* small visual diagnostic utility (remove if not needed) */
+.header-band-debug{outline:2px dashed rgba(11,113,255,0.08);}
+
+/* End polish overrides */
+
+/* Prevent layout shift when scrollbars are toggled */
+html{scrollbar-gutter:stable}
+
+/* Force a persistent vertical scrollbar to avoid layout shift on Chrome/Linux */
+html{overflow-y:scroll !important}
+
 :root{
   --bg: #ffffff;
   --fg: #0f172a;
