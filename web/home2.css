@@ -119,6 +119,51 @@ body[data-theme="display"] .brand h1{letter-spacing:0.6px}
 
 /* End experimental theme tokens */
 
+/* ---------- Dramatic experimental themes ---------- */
+
+/* Neon: dark background + glowing accents, condensed display font */
+body[data-theme="neon"]{
+  --bg: #04050a;
+  --fg: #e6fbff;
+  --muted: #9adbf2;
+  --accent: #00ffd1;
+  --card: rgba(8,10,20,0.6);
+  --glass: rgba(255,255,255,0.03);
+  --font-family-base: 'Space Grotesk', 'Inter', system-ui;
+  --fs-base:17px;--fs-lg:24px;--fs-sm:13px;
+}
+body[data-theme="neon"] .site-header .header-band{background:linear-gradient(90deg, rgba(0,255,209,0.06), rgba(0,122,255,0.02));border-bottom:1px solid rgba(0,255,209,0.06)}
+body[data-theme="neon"] .brand h1{color:var(--accent);text-shadow:0 6px 18px rgba(0,255,209,0.08);}
+body[data-theme="neon"] .box{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(0,255,209,0.06);box-shadow:0 12px 40px rgba(0, 222, 180, 0.04)}
+body[data-theme="neon"] .btn-primary{background:linear-gradient(90deg,#00ffd1,#00b3ff);color:#001217}
+
+/* Glass: frosted panels, soft pastel accents */
+body[data-theme="glass"]{
+  --bg: linear-gradient(180deg,#eaf2ff, #f7fbff);
+  --fg:#052028;--muted:#6b7b86;--accent:#6aa6ff;--card:rgba(255,255,255,0.65);
+  --font-family-base: 'Inter', system-ui;--fs-base:16px;--fs-lg:20px;
+}
+body[data-theme="glass"] body, body[data-theme="glass"] .container{background:transparent}
+body[data-theme="glass"] .site-header .header-band{background:rgba(255,255,255,0.6);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.6)}
+body[data-theme="glass"] .box{background:linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.6));box-shadow:0 8px 30px rgba(6,22,47,0.06);border:1px solid rgba(255,255,255,0.6)}
+body[data-theme="glass"] .brand h1{color:#06425a}
+
+/* Retro: warm paper tones and serif headings */
+body[data-theme="retro"]{
+  --bg:#fff7ef;--fg:#2b1f1a;--muted:#7a6a5f;--accent:#c8572b;--card:#fff6ef;
+  --font-family-base: 'Merriweather', Georgia, serif;--fs-base:17px;--fs-lg:24px;
+}
+body[data-theme="retro"] .site-header .header-band{background:linear-gradient(180deg,#fff7ef,#fff2e6);border-bottom:2px solid rgba(200,120,80,0.08)}
+body[data-theme="retro"] .brand h1{font-family:'Merriweather',serif;color:var(--accent);font-weight:700}
+body[data-theme="retro"] .box{background:linear-gradient(180deg,#fffaf2,#fff6ed);border:1px solid rgba(200,140,100,0.04);box-shadow:0 8px 24px rgba(30,20,15,0.03)}
+
+/* Make experiment themes punchier across the page */
+.brand h1{transition:color .22s ease, text-shadow .22s ease}
+.box, .card{transition:transform .2s ease, box-shadow .22s ease, border-color .18s ease}
+.box:hover{transform:translateY(-6px)}
+
+/* End dramatic themes */
+
 /* ---------- Modern polish overrides (appended to override earlier rules) ---------- */
 :root{
   --panel-shadow: 0 14px 40px rgba(2,6,23,0.08);

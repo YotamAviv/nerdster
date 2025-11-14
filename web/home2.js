@@ -122,6 +122,18 @@
   }
   try{ const saved = localStorage.getItem('nerd-theme') || 'default'; setTheme(saved); if(themeSelect) themeSelect.value = saved }catch(e){}
   themeSelect?.addEventListener('change', e=> setTheme(e.target.value));
+  
+  // Experiment button: cycle through bold experimental themes
+  const experimentBtn = d.getElementById('theme-experiment');
+  const experimentalThemes = ['neon','glass','retro','display','serif','dark','contrast','default'];
+  experimentBtn?.addEventListener('click', ()=>{
+    const current = document.body.getAttribute('data-theme') || 'default';
+    let i = experimentalThemes.indexOf(current);
+    i = (i + 1) % experimentalThemes.length;
+    const next = experimentalThemes[i];
+    setTheme(next);
+    if(themeSelect) themeSelect.value = next;
+  });
 
   // Keyboard
   document.addEventListener('keydown', e=>{
