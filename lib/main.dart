@@ -149,7 +149,7 @@ Future<void> main() async {
   }
 
   // -------------- run app ---------------
-  runApp(const MaterialApp(debugShowCheckedModeBanner: false, home: ContentTree()));
+  runApp(MaterialApp(debugShowCheckedModeBanner: false, home: ContentTree()));
 }
 
 Future<void> defaultSignIn(BuildContext context) async {

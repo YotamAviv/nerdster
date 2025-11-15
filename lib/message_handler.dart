@@ -1,7 +1,9 @@
 import 'dart:js_interop';
 
+import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:web/web.dart' as web;
 
@@ -19,11 +21,15 @@ void initMessageListener() {
             print('Identity: $identity');
             final token = getToken(identity);
             print('Token: $token');
-            // TODO: Show progress
-            signInState.signOut(clearIdentity: true);
-            signInState.pov = token;
-            // DEFER: BUG: Things look screwy if we had saved your keys from a past session.
-            // You'll still be your old identity and not in this network with, say, Lisa's POV.
+
+            final context = ContentTree.rootContext;
+            final state = ContentTree.contentKey.currentState;
+            if (!(state != null && state.mounted && context != null)) return;
+            Future.microtask(() async {
+              if (!state.mounted) return;
+              await signInState.signIn(token, null, context: context);
+              await BarRefresh.refresh(context);
+            });
           }
 
           for (final Setting setting in Setting.all) {

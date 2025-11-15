@@ -8,6 +8,8 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 
+OverlayEntry? _topRightOverlayEntry;
+
 class CredentialsDisplay extends StatelessWidget {
   final Json? identityJson;
   final Json? delegateJson;
@@ -63,6 +65,13 @@ class CredentialsDisplay extends StatelessWidget {
 // ChatGPT: "How do I place a dialog at the top right?"
 void showTopRightDialog(BuildContext context, Widget content) {
   final overlay = Overlay.of(context);
+  if (_topRightOverlayEntry != null) {
+    try {
+      _topRightOverlayEntry!.remove();
+    } catch (_) {}
+    _topRightOverlayEntry = null;
+  }
+
   late OverlayEntry overlayEntry;
 
   overlayEntry = OverlayEntry(
@@ -72,7 +81,11 @@ void showTopRightDialog(BuildContext context, Widget content) {
           // Transparent barrier to dismiss the dialog
           Positioned.fill(
             child: GestureDetector(
-                onTap: () => overlayEntry.remove(),
+                onTap: () {
+                  overlayEntry.remove();
+                  assert(_topRightOverlayEntry == overlayEntry);
+                  _topRightOverlayEntry = null;
+                },
                 behavior: HitTestBehavior.translucent,
                 child: Container(color: Colors.transparent)),
           ),
@@ -96,5 +109,6 @@ void showTopRightDialog(BuildContext context, Widget content) {
     },
   );
 
+  _topRightOverlayEntry = overlayEntry;
   overlay.insert(overlayEntry);
 }
