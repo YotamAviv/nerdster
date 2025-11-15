@@ -42,7 +42,11 @@ import 'package:nerdster/verify.dart';
 class ContentTree extends StatefulWidget {
   static bool _firstTime = true;
 
-  const ContentTree({super.key});
+  // So `message_handler` can obtain this widget's BuildContext
+  static final GlobalKey<_ContentTreeState> contentKey = GlobalKey<_ContentTreeState>();
+  static BuildContext? get rootContext => contentKey.currentContext;
+
+  ContentTree({Key? key}) : super(key: key ?? contentKey);
 
   @override
   State<ContentTree> createState() => _ContentTreeState();

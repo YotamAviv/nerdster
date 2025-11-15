@@ -19,20 +19,6 @@
 
   // (QR/status controls removed; demo now uses the embedded iframe controls)
 
-  // Embedded iframe controls: load example views for Aviv or Lisa (postMessage)
-  const iframe = d.getElementById('flutterApp');
-  const avivBtn = d.getElementById('load-aviv');
-  const lisaBtn = d.getElementById('load-lisa');
-  avivBtn?.addEventListener('click', function(ev){
-    ev.preventDefault();
-    const AVIV = { crv: 'Ed25519', kty: 'OKP', x: 'Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo' };
-    try{ iframe && iframe.contentWindow && iframe.contentWindow.postMessage({ identity: AVIV, contentType: 'book', sort: 'like', follow: 'nerd' }, '*'); }catch(e){}
-  });
-  lisaBtn?.addEventListener('click', function(ev){
-    ev.preventDefault();
-    const LISA = { crv: 'Ed25519', kty: 'OKP', x: 'Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI' };
-    try{ iframe && iframe.contentWindow && iframe.contentWindow.postMessage({ identity: LISA }, '*'); }catch(e){}
-  });
 
   // Modal handling — use the hidden attribute so CSS respects visibility rules
   let _prevActive = null;
