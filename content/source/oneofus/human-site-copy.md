@@ -46,7 +46,7 @@ Use img/jones.png
 
 - Text in a comic font to say:
 Farmers' market today, hmm... They don't like me over there..
-Wait! Maybe I'll go using an incogneto window. That way
+Wait! Maybe I'll go using an incogneto browser. That way
 - I can be totally annoying, and they won't know it's me.
 - I could come again next week, and they won't even know it's the same dude.
 If everyone went using incogneto windows, no-one would know who's who or who's even a person.
