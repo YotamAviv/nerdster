@@ -236,6 +236,6 @@ var lisaEmulator = {
 };
 
 dynamic hardCodedSignIn = {
-  FireChoice.emulator: {'identity': yotam},
+  // FireChoice.emulator: {'identity': yotam},
   // FireChoice.emulator: {'identity': lisaEmulator},
 };
