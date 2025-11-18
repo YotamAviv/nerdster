@@ -101,12 +101,14 @@
     });
   });
 
-  // Theme handling
+  // Theme handling (no persistence)
   function setTheme(name){
     if(name) document.body.setAttribute('data-theme', name);
-    try{ localStorage.setItem('nerd-theme', name) }catch(e){}
   }
-  try{ const saved = localStorage.getItem('nerd-theme') || 'eclipse'; setTheme(saved); if(themeSelect) themeSelect.value = saved }catch(e){}
+  // Always initialize to 'eclipse' on each load. Do not persist selection.
+  const initialTheme = 'eclipse';
+  setTheme(initialTheme);
+  if(themeSelect) themeSelect.value = initialTheme;
   themeSelect?.addEventListener('change', e=> setTheme(e.target.value));
   
   // Experiment button: cycle through bold experimental themes

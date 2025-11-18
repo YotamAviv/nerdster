@@ -55,7 +55,11 @@ body[data-theme="contrast"]{--bg:#000;--fg:#fff;--muted:#ddd;--card:#111;--accen
 
 @media (max-width:900px){.boxes{grid-template-columns:repeat(2,1fr)} }
 
-@media (max-width:560px){.boxes{grid-template-columns:1fr}}
+@media (max-width:560px){
+  .boxes{grid-template-columns:1fr}
+  /* Hide the long tagline on narrow (phone) screens to reduce clutter */
+  .brand .tagline{display:none}
+}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
