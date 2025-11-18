@@ -106,12 +106,16 @@
     if(name) document.body.setAttribute('data-theme', name);
     try{ localStorage.setItem('nerd-theme', name) }catch(e){}
   }
-  try{ const saved = localStorage.getItem('nerd-theme') || 'default'; setTheme(saved); if(themeSelect) themeSelect.value = saved }catch(e){}
+  try{ const saved = localStorage.getItem('nerd-theme') || 'eclipse'; setTheme(saved); if(themeSelect) themeSelect.value = saved }catch(e){}
   themeSelect?.addEventListener('change', e=> setTheme(e.target.value));
   
   // Experiment button: cycle through bold experimental themes
   const experimentBtn = d.getElementById('theme-experiment');
-  const experimentalThemes = ['neon','glass','retro','display','serif','dark','contrast','default'];
+  // Add the darker/inverse themes to the experiment cycle so the Experiment
+  // button will showcase them as well.
+  // Include a mix of slightly lighter darks and richer darks so Experiment
+  // cycles through softer darks first.
+  const experimentalThemes = ['dusk','twilight','slate','smoke','eclipse','charcoal','raven','amoled','dark','contrast','default'];
   experimentBtn?.addEventListener('click', ()=>{
     const current = document.body.getAttribute('data-theme') || 'default';
     let i = experimentalThemes.indexOf(current);
