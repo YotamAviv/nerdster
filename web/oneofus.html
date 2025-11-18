@@ -87,10 +87,10 @@
         gap: 18px;
         align-items: flex-start;
         background: #fff;
-        border: 6px solid #000;
+        border: none;
         padding: 14px;
         border-radius: 6px;
-        box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.12);
+        box-shadow: none;
         width: 100%;
       }
       .comic-image {
@@ -99,7 +99,7 @@
         overflow: hidden;
       }
       .comic img {
-        max-width: 360px;
+        max-width: 200px;
         height: auto;
         display: block;
         border: 4px solid #000;
@@ -150,8 +150,12 @@
         border-bottom: 8px solid transparent;
         border-right: 11px solid #fff;
       }
-      footer {
-        margin-top: 28px;
+      /* Footer styling aligned with home2.css */
+      .site-footer {
+        border-top: 1px solid #eef2ff;
+        padding: 18px;
+        margin-top: 18px;
+        text-align: center;
         color: #666;
         font-size: 0.95rem;
       }
@@ -169,6 +173,13 @@
         }
         .hero {
           flex-direction: column;
+        }
+        /* make comic images a bit smaller on small screens and reduce padding */
+        .comic img {
+          max-width: 100px;
+        }
+        .comic {
+          padding: 8px;
         }
       }
       /* reversed comic: image on right, bubble on left */
@@ -263,7 +274,7 @@
             </p>
             <p>
               Wait! Maybe I'll go using an incogneto browser. That way I can be
-              totally annoying, and they won't know it's me. I could come again
+              totally annoying, and they won't know it's me. I could go again
               next week, and they won't even know it's the same dude.
             </p>
             <p>
@@ -296,26 +307,13 @@
       </div>
     </section>
 
-    <main class="container">
-      <section id="contact" style="margin-top: 28px">
+    <footer class="site-footer">
+      <div class="container">
         <p>
-          Contact:
-          <a href="mailto:contact@one-of-us.net">contact@one-of-us.net</a>
+          <a href="mailto:contact@one-of-us.net">Contact</a>,
+          <a href="https://github.com/YotamAviv/oneofus" target="_blank">Source</a>
         </p>
-        <p>
-          Source:
-          <a href="https://github.com/YotamAviv/oneofus" target="_blank"
-            >github.com/YotamAviv/oneofus</a
-          >
-        </p>
-      </section>
-    </main>
-
-    <footer class="container">
-      <p class="muted">
-        Prototype — content originates from
-        <code>content/source/oneofus/human-site-copy.md</code>.
-      </p>
+      </div>
     </footer>
   </body>
 </html>
