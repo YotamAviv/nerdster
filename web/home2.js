@@ -68,6 +68,8 @@
     // restore previous focus if possible
     try{ _prevActive && _prevActive.focus && _prevActive.focus({preventScroll:true}); }catch(e){ try{ _prevActive && _prevActive.focus && _prevActive.focus(); }catch(e){} }
     _prevActive = null;
+    // remove visual selection from any boxes when modal closes
+    try{ document.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected')); }catch(e){}
   }
   modalClose?.addEventListener('click', closeModal);
   modal?.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
@@ -88,16 +90,26 @@
     closeModal();
   }
 
-  // Wire up ellipsis buttons
-  d.querySelectorAll('.more-ellipsis').forEach(btn=>{
-    btn.addEventListener('click', e=>{
-      // prevent default focus/scroll; open detail in modal overlay instead
-      e.preventDefault();
-      try{ e.currentTarget.blur(); }catch(e){}
-      const id = e.currentTarget.dataset.detail;
+  // Make the boxes themselves interactive: click or keyboard (Enter/Space)
+  d.querySelectorAll('.box[data-detail]').forEach(box=>{
+    // ensure keyboard focusability (role/tabindex added in HTML)
+    box.addEventListener('click', e=>{
+      // ignore clicks that originate from an interactive element inside the box
+      const target = e.target;
+      if(target && (target.tagName==='A' || target.tagName==='BUTTON' || target.closest('a') || target.closest('button'))) return;
+      const id = box.dataset.detail;
       const ref = id && d.getElementById(id);
       if(!ref) return;
+      // mark this box as selected and clear others
+      try{ document.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected')); }catch(e){}
+      try{ box.classList.add('selected'); }catch(e){}
       openDetail(ref.innerHTML);
+    });
+    box.addEventListener('keydown', e=>{
+      if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+        e.preventDefault();
+        box.click();
+      }
     });
   });
 
