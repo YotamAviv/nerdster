@@ -91,6 +91,7 @@
         padding: 14px;
         border-radius: 6px;
         box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.12);
+        width: 100%;
       }
       .comic-image {
         flex: 0 0 auto;
@@ -116,6 +117,7 @@
         border: 3px solid #000;
         position: relative;
         flex: 1;
+        min-width: 0;
       }
       /* remove default paragraph margins inside the bubble */
       .bubble p {
@@ -168,6 +170,22 @@
         .hero {
           flex-direction: column;
         }
+      }
+      /* reversed comic: image on right, bubble on left */
+      .comic.rev {
+        flex-direction: row;
+      }
+      .comic.rev .bubble:before {
+        left: auto;
+        right: -18px;
+        border-right: none;
+        border-left: 15px solid #000;
+      }
+      .comic.rev .bubble:after {
+        left: auto;
+        right: -14px;
+        border-right: none;
+        border-left: 11px solid #fff;
       }
     </style>
   </head>
@@ -255,6 +273,24 @@
               >
             </p>
             <p>SicK!</p>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- full-width comic band (Sheila) -->
+    <section class="hero">
+      <div class="hero-inner">
+        <section class="comic rev">
+          <div class="bubble">
+            <p><em>Catching up on the lastest, scrolling...</em></p>
+            <p>
+              ad, promoted content, psuedonymous fakenews meme repost, ad, promoted content, psuedonymous fakenews meme repost, ...
+            </p>
+            <p><strong>Shocking! I better repost this one, myself (using my own psuedonymous account;).</strong></p>
+          </div>
+          <div class="comic-image">
+            <img src="img/sheila-sm-flip.png" alt="Sheila comic" />
           </div>
         </section>
       </div>
