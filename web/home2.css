@@ -162,6 +162,59 @@ body[data-theme="retro"] .box{background:linear-gradient(180deg,#fffaf2,#fff6ed)
 .box, .card{transition:transform .2s ease, box-shadow .22s ease, border-color .18s ease}
 .box:hover{transform:translateY(-6px)}
 
+/* ---------- New dark / inverse theme tokens ---------- */
+/* These provide several mostly-inverse, fairly dark palettes requested by the user.
+   They are intentionally tokenized so the rest of the stylesheet picks up colors via
+   the --bg/--fg/--accent variables. */
+body[data-theme="inverse"]{
+  --bg:#0a0d0f; --fg:#f6f7f9; --muted:#9aa3ad; --card:#0b0f12; --accent:#66b2ff;
+}
+body[data-theme="dusk"]{
+  --bg:#0f1820; --fg:#f1f6f9; --muted:#9fb0bb; --card:#121921; --accent:#7fbfff;
+}
+body[data-theme="twilight"]{
+  --bg:#0d1720; --fg:#eef6fb; --muted:#9fb7c6; --card:#0b161e; --accent:#86c6ff;
+}
+body[data-theme="slate"]{
+  --bg:#0e1a23; --fg:#e9f2fb; --muted:#9aa6b3; --card:#081219; --accent:#5aa0ff;
+}
+body[data-theme="smoke"]{
+  --bg:#121416; --fg:#eef1f3; --muted:#9aa0a6; --card:#15181a; --accent:#78b8ff;
+}
+body[data-theme="eclipse"]{
+  --bg:#08101a; --fg:#eef6ff; --muted:#9fb7c9; --card:#071018; --accent:#7bdcff;
+}
+body[data-theme="obsidian"]{
+  --bg:#04061a; --fg:#e9eef6; --muted:#95a1b0; --card:#050718; --accent:#5be3ff;
+}
+body[data-theme="midnight"]{
+  --bg:#0b1222; --fg:#eef6ff; --muted:#9aa6bb; --card:#071023; --accent:#8aa7ff;
+}
+body[data-theme="amoled"]{
+  --bg:#050505; --fg:#fbfbfb; --muted:#9aa4b2; --card:#050505; --accent:#2dd4bf;
+}
+body[data-theme="charcoal"]{
+  --bg:#13171a; --fg:#eef2f6; --muted:#98a0a6; --card:#121417; --accent:#4db0ff;
+}
+body[data-theme="raven"]{
+  --bg:#09090d; --fg:#f2f5f8; --muted:#9ea7b0; --card:#0b0b0e; --accent:#9bdcff;
+}
+
+/* Ensure logo is visible in the darker themes by inverting/brightening it. */
+body[data-theme="inverse"] .logo,
+body[data-theme="dusk"] .logo,
+body[data-theme="twilight"] .logo,
+body[data-theme="smoke"] .logo,
+body[data-theme="eclipse"] .logo,
+body[data-theme="obsidian"] .logo,
+body[data-theme="midnight"] .logo,
+body[data-theme="amoled"] .logo,
+body[data-theme="charcoal"] .logo,
+body[data-theme="raven"] .logo,
+body[data-theme="slate"] .logo{
+  filter: invert(1) brightness(1.8) contrast(1.05);
+}
+
 /* End dramatic themes */
 
 /* ---------- Modern polish overrides (appended to override earlier rules) ---------- */
