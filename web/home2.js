@@ -62,11 +62,30 @@
     modal.setAttribute('aria-hidden','true');
     if(overlay) overlay.hidden = true;
     _unlockScroll();
-    // restore previous focus if possible
-    try{ _prevActive && _prevActive.focus && _prevActive.focus({preventScroll:true}); }catch(e){ try{ _prevActive && _prevActive.focus && _prevActive.focus(); }catch(e){} }
-    _prevActive = null;
-    // remove visual selection from any boxes when modal closes
+    // remove visual selection from any boxes when modal closes first,
+    // so focus styles (like :focus-within) don't keep the card visually lifted.
     try{ document.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected')); }catch(e){}
+    // restore previous focus if possible — but avoid returning focus to the
+    // original box that opened the modal (it would re-trigger :focus styles).
+    try{
+      if(_prevActive && _prevActive instanceof HTMLElement){
+        const insideBox = _prevActive.closest && _prevActive.closest('.box');
+        if(!insideBox){
+          try{ _prevActive.focus({preventScroll:true}); }
+          catch(e){ try{ _prevActive.focus(); }catch(e){} }
+        } else {
+          // focus a sensible container instead of the box to avoid re-lifting it
+          const container = document.querySelector('.container');
+          if(container){
+            const hadTab = container.hasAttribute('tabindex');
+            if(!hadTab) container.setAttribute('tabindex','-1');
+            try{ container.focus({preventScroll:true}); }catch(e){ try{ container.focus(); }catch(e){} }
+            if(!hadTab) container.removeAttribute('tabindex');
+          }
+        }
+      }
+    }catch(e){}
+    _prevActive = null;
   }
   modalClose?.addEventListener('click', closeModal);
   modal?.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });

@@ -128,7 +128,9 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 6px 18px rgba(12, 25, 42, 0.04)
+  box-shadow: 0 6px 18px rgba(12, 25, 42, 0.04);
+  /* enable subtle lift on hover/focus for interactivity */
+  transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s;
 }
 
 .box h3 {
@@ -137,6 +139,31 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 15px
+}
+
+/* Hover and keyboard focus states: lift the card slightly */
+.box:hover,
+.box:focus-within,
+.box:focus-visible {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(2,6,23,0.08);
+}
+
+/* When user prefers reduced motion, disable the transform */
+@media (prefers-reduced-motion:reduce){
+  .box{ transition: none !important; transform: none !important }
+}
+
+/* Selected state: keep the visual highlight visible while the modal is open.
+   Raise the selected box above the overlay but keep it non-interactive so
+   overlay clicks still reach the backdrop to dismiss the modal. */
+.box.selected {
+  position: relative;
+  z-index: 110; /* above overlay (70) but below modal (120) */
+  transform: translateY(-6px);
+  box-shadow: 0 22px 50px rgba(2,6,23,0.12);
+  border: 2px solid var(--accent);
+  pointer-events: none; /* allow clicks to pass through to the overlay */
 }
 
 .more-ellipsis {
@@ -400,7 +427,13 @@ li,
 }
 
 .modal::before {
-  background: linear-gradient(180deg, rgba(2, 6, 23, 0.6), rgba(2, 6, 23, 0.55))
+  /* visual backdrop removed here to avoid duplicating the overlay element.
+     The overlay div (#overlay) is used as the single clickable backdrop. */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  pointer-events: none;
 }
 
 .modal-inner {
@@ -577,14 +610,17 @@ main#content {
   align-items: center;
   justify-content: center;
   background: transparent;
-  z-index: 80
+  z-index: 120; /* ensure modal sits above the page overlay */
 }
 
 .modal::before {
+  /* keep this pseudo-element inert; the #overlay element provides the
+     clickable backdrop and visual dimming. */
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: transparent;
+  pointer-events: none;
 }
 
 .modal-inner {
