@@ -17,81 +17,12 @@
   // (QR/status controls removed; demo now uses the embedded iframe controls)
 
 
-  // Modal handling — use the hidden attribute so CSS respects visibility rules
-  let _prevActive = null;
-  let _scrollY = 0;
-  function _lockScroll(){
-    try{
-      // Freeze the viewport by fixing the body at the current scroll Y.
-      // This prevents the scrollbar disappearing from nudging content.
-      _scrollY = window.scrollY || window.pageYOffset || 0;
-      document.body.style.position = 'fixed';
-      document.body.style.top = '-' + _scrollY + 'px';
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.width = '100%';
-    }catch(e){}
+  // Modal and box behavior delegated to shared `boxes.js` module.
+  // `boxes.js` implements modal open/close, scroll-lock and focus restoration
+  // and wires `.box` elements. Initialize it here to ensure unified behavior.
+  if(window.boxes && typeof window.boxes.init === 'function'){
+    try{ window.boxes.init(); }catch(e){}
   }
-  function _unlockScroll(){
-    try{
-      // restore original flow and scroll position
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.width = '';
-      window.scrollTo(0, _scrollY || 0);
-      _scrollY = 0;
-    }catch(e){}
-  }
-
-  function openModal(html){
-    if(!modal || !modalContent) return
-    _prevActive = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    modalContent.innerHTML = html;
-    modal.hidden = false;
-    modal.setAttribute('aria-hidden','false');
-    if(overlay) overlay.hidden = false;
-    _lockScroll();
-    // focus without scrolling the page (preventScroll where supported)
-    try{ modalContent.focus({preventScroll:true}); }catch(e){ try{ modalContent.focus(); }catch(e){} }
-  }
-  function closeModal(){
-    if(!modal) return
-    modal.hidden = true;
-    modal.setAttribute('aria-hidden','true');
-    if(overlay) overlay.hidden = true;
-    _unlockScroll();
-    // remove visual selection from any boxes when modal closes first,
-    // so focus styles (like :focus-within) don't keep the card visually lifted.
-    try{ document.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected')); }catch(e){}
-    // restore previous focus if possible — but avoid returning focus to the
-    // original box that opened the modal (it would re-trigger :focus styles).
-    try{
-      if(_prevActive && _prevActive instanceof HTMLElement){
-        const insideBox = _prevActive.closest && _prevActive.closest('.box');
-        if(!insideBox){
-          try{ _prevActive.focus({preventScroll:true}); }
-          catch(e){ try{ _prevActive.focus(); }catch(e){} }
-        } else {
-          // focus a sensible container instead of the box to avoid re-lifting it
-          const container = document.querySelector('.container');
-          if(container){
-            const hadTab = container.hasAttribute('tabindex');
-            if(!hadTab) container.setAttribute('tabindex','-1');
-            try{ container.focus({preventScroll:true}); }catch(e){ try{ container.focus(); }catch(e){} }
-            if(!hadTab) container.removeAttribute('tabindex');
-          }
-        }
-      }
-    }catch(e){}
-    _prevActive = null;
-  }
-  modalClose?.addEventListener('click', closeModal);
-  modal?.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
-
-  // overlay click closes modal/detail (drawer removed)
-  overlay?.addEventListener('click', ()=>{ closeDetail(); closeModal(); });
 
   // Detail block: show content in the modal overlay so it appears above the iframe
   function openDetail(content){
@@ -101,42 +32,7 @@
     closeModal();
   }
 
-  // Make the boxes themselves interactive: click or keyboard (Enter/Space)
-  d.querySelectorAll('.box[data-detail]').forEach(box=>{
-    // ensure keyboard focusability (role/tabindex added in HTML)
-    box.addEventListener('click', e=>{
-      // ignore clicks that originate from an interactive element inside the box
-      const target = e.target;
-      if(target && (target.tagName==='A' || target.tagName==='BUTTON' || target.closest('a') || target.closest('button'))) return;
-      // Prefer a colocated <template class="box-detail"> inside the box.
-      // Fall back to the legacy id-based fragment (data-detail -> element id).
-      const tmpl = box.querySelector && box.querySelector('template.box-detail');
-      let content = null;
-      if(tmpl && tmpl.content){
-        // template.innerHTML isn't standardized across all browsers; use
-        // a DocumentFragment clone for robust behavior.
-        const frag = tmpl.content.cloneNode(true);
-        const container = document.createElement('div');
-        container.appendChild(frag);
-        content = container.innerHTML;
-      } else {
-        const id = box.dataset.detail;
-        const ref = id && d.getElementById(id);
-        if(ref) content = ref.innerHTML;
-      }
-      if(!content) return;
-      // mark this box as selected and clear others
-      try{ document.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected')); }catch(e){}
-      try{ box.classList.add('selected'); }catch(e){}
-      openDetail(content);
-    });
-    box.addEventListener('keydown', e=>{
-      if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
-        e.preventDefault();
-        box.click();
-      }
-    });
-  });
+  // Boxes are wired via the shared `boxes` module (initialized above).
 
   // Theme handling removed — site is fixed to a single Eclipse-style palette.
 

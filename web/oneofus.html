@@ -202,7 +202,9 @@
         border-right: none;
         border-left: 11px solid #fff;
       }
+      /* Boxes and modal styles have been moved to a shared stylesheet: boxes.css */
     </style>
+    <link rel="stylesheet" href="boxes.css" />
   </head>
   <body>
     <header class="site-header container">
@@ -291,7 +293,6 @@ A network of the people, by the people, for the people.
         </section>
       </div>
     </section>
-
     <!-- full-width comic band (Sheila) -->
     <section class="hero">
       <div class="hero-inner">
@@ -316,6 +317,44 @@ A network of the people, by the people, for the people.
       </div>
     </section>
 
+    <!-- sample boxes row inserted between comic bands -->
+    <section class="container">
+      <section class="boxes" aria-live="polite">
+        <div class="box" role="button" tabindex="0" data-detail="oneofus-what">
+          <h3>Identity</h3>
+          <p class="muted">Own your cryptographic identity across services.</p>
+          <template class="box-detail">
+            <h3>Identity</h3>
+            <p>The network lets individuals hold and use cryptographic keys that represent them, not an account owned by a corporation.</p>
+          </template>
+        </div>
+        <div class="box" role="button" tabindex="0" data-detail="oneofus-delegate">
+          <h3>Delegates</h3>
+          <p class="muted">Short-lived per-service keys you control.</p>
+          <template class="box-detail">
+            <h3>Delegates</h3>
+            <p>Delegates are disposable keys issued by your identity device so services never see your long-term key.</p>
+          </template>
+        </div>
+        <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
+          <h3>Web-of-trust</h3>
+          <p class="muted">People vouch for each other.</p>
+          <template class="box-detail">
+            <h3>Web-of-trust</h3>
+            <p>Trust decisions are expressed as vouches or blocks between participants so signatures carry local meaning.</p>
+          </template>
+        </div>
+        <div class="box" role="button" tabindex="0" data-detail="oneofus-qr">
+          <h3>QR Sign-in</h3>
+          <p class="muted">Approve sessions with a simple scan.</p>
+          <template class="box-detail">
+            <h3>QR Sign-in</h3>
+            <p>Authenticate a service by scanning a QR with your device; approve the delegate and you're signed in without sharing your master key.</p>
+          </template>
+        </div>
+      </section>
+    </section>
+
     <footer class="site-footer">
       <div class="container">
         <p>
@@ -326,5 +365,15 @@ A network of the people, by the people, for the people.
         </p>
       </div>
     </footer>
+    <!-- modal and overlay for box details -->
+    <div id="overlay" class="overlay" aria-hidden="true"></div>
+    <div id="modal" class="modal" aria-hidden="true">
+      <div class="modal-inner" role="dialog" aria-modal="true">
+        <button id="modalClose" class="modal-close" aria-label="Close">✕</button>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+
+    <script src="boxes.js" defer></script>
   </body>
 </html>
