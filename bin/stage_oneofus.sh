@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 mkdir -p build/web
-rsync -a --delete web/ build/web/
+# TEMP: TODO: rsync -a --delete web/ build/web/
 cp web/oneofus.html build/web/index.html
 
 if [[ "${1:-}" == "deploy" ]]; then
