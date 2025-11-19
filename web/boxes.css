@@ -1,0 +1,81 @@
+/* Minimal boxes and modal styles extracted from home2.css (shared) */
+.boxes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.box {
+  background: #fff;
+  padding: 14px;
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(2,6,23,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+  transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.box h3 { margin: 0 0 8px 0; font-size: 1rem; }
+.box .muted { color: #666; font-size: 0.95rem; margin: 0; }
+
+.box:hover, .box:focus-within { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(2,6,23,0.08); }
+
+.box.selected { position: relative; z-index: 110; transform: translateY(-6px); border: 2px solid #0b6bff; pointer-events: none; }
+
+/* modal/overlay for showing details */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: none; }
+.overlay[aria-hidden="false"] { display: block; }
+
+/* Hide modal by default; show only when aria-hidden is false. Modal must sit
+   above the overlay so its content remains interactive and visible. */
+.modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 1100; }
+.modal[aria-hidden="false"] { display: flex; pointer-events: auto; }
+
+.modal-inner {
+  background: #fff;
+  color: #111;
+  border-radius: 10px;
+  padding: 18px;
+  max-width: 720px;
+  width: 92%;
+  box-shadow: 0 14px 40px rgba(2,6,23,0.12);
+  position: relative;
+  z-index: 1101; /* ensure it paints above overlay */
+}
+
+/* Make the close control highly visible across themes and ensure it's clickable */
+.modal-close {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  border: 0;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1101;
+}
+
+/* light variant when modal-inner is dark-themed (useful for home2.css) */
+.modal-inner.dark-theme .modal-close {
+  background: rgba(255,255,255,0.08);
+  color: #eef6ff;
+}
+
+@media (max-width: 900px) {
+  .boxes { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .boxes { grid-template-columns: 1fr; }
+}
