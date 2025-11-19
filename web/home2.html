@@ -14,28 +14,25 @@
         <div class="container">
           <div class="header-band">
             <div class="left-group">
-              <button id="drawer-open" class="icon-btn" aria-label="Open menu">☰</button>
               <img src="img/nerd.png" alt="Nerdster" class="logo" />
               <div class="brand">
                 <h1>Nerdster</h1>
                 <p class="tagline">Demo / proof of concept / reference for the ONE-OF-US.NET paradigm</p>
               </div>
             </div>
-            
+            <div class="header-actions">
+              <div class="nav-dropdown" id="navDropdown">
+                <button id="navDropdownToggle" class="icon-btn" aria-haspopup="true" aria-expanded="false" aria-controls="navDropdownMenu">Menu ▾</button>
+                <div id="navDropdownMenu" class="dropdown-menu" role="menu" hidden>
+                  <a href="#one" role="menuitem" class="dropdown-item">one</a>
+                  <a href="#two" role="menuitem" class="dropdown-item">two</a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </header>
-
-    <aside id="app-drawer" class="drawer" hidden>
-      <nav>
-        <a href="#demo">Demo</a>
-        <a href="#how-it-works">How it works</a>
-        <a href="#web-of-trust">Web-of-trust</a>
-        <a href="https://github.com/YotamAviv/nerdster" target="_blank">GitHub</a>
-      </nav>
-      <button id="drawer-close" class="drawer-close">Close</button>
-    </aside>
 
     <div id="overlay" class="overlay" hidden></div>
 

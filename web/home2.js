@@ -7,12 +7,9 @@
   const modalContent = d.getElementById('modalContent');
   const modalClose = d.getElementById('modalClose');
 
-  const drawer = d.getElementById('app-drawer');
-  const drawerOpen = d.getElementById('drawer-open');
-  const drawerClose = d.getElementById('drawer-close');
   const overlay = d.getElementById('overlay');
   const detailContainer = d.getElementById('detail-container');
-  const themeSelect = d.getElementById('theme-select');
+  
   // ensure modal content can receive focus (for accessibility and to avoid
   // focus-driven scrolling). We'll make it programmatically focusable.
   if(modalContent) modalContent.tabIndex = -1;
@@ -74,13 +71,8 @@
   modalClose?.addEventListener('click', closeModal);
   modal?.addEventListener('click', e=>{ if(e.target===modal) closeModal(); });
 
-  // Drawer handling
-  function showDrawer(){ if(drawer) drawer.hidden = false; if(overlay) overlay.hidden = false }
-  function hideDrawer(){ if(drawer) drawer.hidden = true; if(overlay) overlay.hidden = true }
-  drawerOpen?.addEventListener('click', showDrawer);
-  drawerClose?.addEventListener('click', hideDrawer);
-
-  overlay?.addEventListener('click', ()=>{ hideDrawer(); closeDetail(); closeModal(); });
+  // overlay click closes modal/detail (drawer removed)
+  overlay?.addEventListener('click', ()=>{ closeDetail(); closeModal(); });
 
   // Detail block: show content in the modal overlay so it appears above the iframe
   function openDetail(content){
@@ -115,9 +107,31 @@
 
   // Theme handling removed — site is fixed to a single Eclipse-style palette.
 
+  // Header nav dropdown (top-right)
+  const navToggle = d.getElementById('navDropdownToggle');
+  const navMenu = d.getElementById('navDropdownMenu');
+  function closeNav(){ try{ if(navToggle) navToggle.setAttribute('aria-expanded','false'); if(navMenu) navMenu.hidden = true; }catch(e){} }
+  function openNav(){ try{ if(navToggle) navToggle.setAttribute('aria-expanded','true'); if(navMenu) navMenu.hidden = false; }catch(e){} }
+  navToggle?.addEventListener('click', e=>{
+    const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+    if(expanded) closeNav(); else openNav();
+  });
+  // close nav when clicking outside
+  document.addEventListener('click', e=>{
+    try{
+      const dd = d.getElementById('navDropdown');
+      if(!dd) return;
+      if(!dd.contains(e.target)) closeNav();
+    }catch(e){}
+  });
+  // allow opening via ArrowDown and focus first item
+  navToggle?.addEventListener('keydown', e=>{
+    if(e.key==='ArrowDown'){ e.preventDefault(); openNav(); try{ const first = navMenu && navMenu.querySelector('[role="menuitem"]'); if(first) first.focus(); }catch(e){} }
+  });
+
   // Keyboard
   document.addEventListener('keydown', e=>{
-    if(e.key==='Escape'){ hideDrawer(); closeDetail(); closeModal(); }
+    if(e.key==='Escape'){ closeDetail(); closeModal(); closeNav(); }
   });
 
   // postMessage hook (optional)
@@ -125,7 +139,6 @@
     try{
       const m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
   if(m?.action==='open' && m.detailId){ const ref = document.getElementById(m.detailId); if(ref) openDetail(ref.innerHTML); }
-  if(m?.action==='theme' && m.theme) setTheme(m.theme);
     }catch(e){}
   });
 
