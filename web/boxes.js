@@ -128,7 +128,6 @@
 
   window.boxes = { init, openModal, closeModal };
 
-  strictGuard(()=>{ document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init(); }, 'boxes.js');
-
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();
 })();
 
