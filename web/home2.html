@@ -17,7 +17,7 @@
               <img src="img/nerd.png" alt="Nerdster" class="logo" />
               <div class="brand">
                 <h1>Nerdster</h1>
-                <p class="tagline">Demo / proof of concept / reference for the ONE-OF-US.NET paradigm</p>
+                <p class="tagline">Demo / proof of concept / reference implementation for the ONE-OF-US.NET paradigm</p>
               </div>
             </div>
             <div class="header-actions">
@@ -45,18 +45,31 @@
         <div class="box" data-detail="d-phone" role="button" tabindex="0">
           <h3>Phone app</h3>
           <p class="muted">Holds your private identity key and issues delegates.</p>
+          <template class="box-detail">
+            <p>Your phone holds the long-term identity key. It creates short-lived delegate keys for each service so you don't give away your master key.</p>
+          </template>
         </div>
         <div class="box" data-detail="d-delegate" role="button" tabindex="0">
           <h3>Delegate keys</h3>
           <p class="muted">Per-service disposable keys to reduce risk.</p>
+          <template class="box-detail">
+            <p>Delegates are per-service keys signed by your phone. They reduce risk and make key rotation simple.</p>
+          </template>
         </div>
         <div class="box" data-detail="d-qr" role="button" tabindex="0">
           <h3>QR sign-in</h3>
           <p class="muted">Scan a QR to authorize a delegate key for a service.</p>
+          <template class="box-detail">
+            <p>Services show a QR that your phone scans. After you approve, the phone signs a delegate and sends it back to the service.</p>
+          </template>
         </div>
         <div class="box" data-detail="d-wot" role="button" tabindex="0">
           <h3>Web-of-trust</h3>
           <p class="muted">People vouch or block keys so signatures are meaningful.</p>
+          <template class="box-detail">
+            <h2>h2 sample</h2>
+            <p>People can vouch for or block keys, making signatures meaningful across contexts.</p>
+          </template>
         </div>
       </section>
 
@@ -74,24 +87,6 @@
           <button id="load-lisa" class="btn">Load Lisa view</button>
         </div>
       </section>
-
-      <!-- hidden detail fragments that will be rendered into the detail container -->
-      <div id="d-phone" hidden>
-        <h3>Phone app</h3>
-        <p>Your phone holds the long-term identity key. It creates short-lived delegate keys for each service so you don't give away your master key.</p>
-      </div>
-      <div id="d-delegate" hidden>
-        <h3>Delegate keys</h3>
-        <p>Delegates are per-service keys signed by your phone. They reduce risk and make key rotation simple.</p>
-      </div>
-      <div id="d-qr" hidden>
-        <h3>QR sign-in</h3>
-        <p>Services show a QR that your phone scans. After you approve, the phone signs a delegate and sends it back to the service.</p>
-      </div>
-      <div id="d-wot" hidden>
-        <h3>Web-of-trust</h3>
-        <p>People can vouch for or block keys, making signatures meaningful across contexts.</p>
-      </div>
 
       <section id="extra">
         <h2 id="how-it-works">How it works</h2>
@@ -118,8 +113,6 @@
         </p>
       </div>
     </footer>
-
-    <!-- themes removed; page is fixed to Eclipse look -->
 
     <script src="embed.js" defer></script>
     <script src="home2.js" defer></script>
