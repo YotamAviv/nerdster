@@ -108,13 +108,27 @@
       // ignore clicks that originate from an interactive element inside the box
       const target = e.target;
       if(target && (target.tagName==='A' || target.tagName==='BUTTON' || target.closest('a') || target.closest('button'))) return;
-      const id = box.dataset.detail;
-      const ref = id && d.getElementById(id);
-      if(!ref) return;
+      // Prefer a colocated <template class="box-detail"> inside the box.
+      // Fall back to the legacy id-based fragment (data-detail -> element id).
+      const tmpl = box.querySelector && box.querySelector('template.box-detail');
+      let content = null;
+      if(tmpl && tmpl.content){
+        // template.innerHTML isn't standardized across all browsers; use
+        // a DocumentFragment clone for robust behavior.
+        const frag = tmpl.content.cloneNode(true);
+        const container = document.createElement('div');
+        container.appendChild(frag);
+        content = container.innerHTML;
+      } else {
+        const id = box.dataset.detail;
+        const ref = id && d.getElementById(id);
+        if(ref) content = ref.innerHTML;
+      }
+      if(!content) return;
       // mark this box as selected and clear others
       try{ document.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected')); }catch(e){}
       try{ box.classList.add('selected'); }catch(e){}
-      openDetail(ref.innerHTML);
+      openDetail(content);
     });
     box.addEventListener('keydown', e=>{
       if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
@@ -158,6 +172,30 @@
     try{
       const m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
   if(m?.action==='open' && m.detailId){ const ref = document.getElementById(m.detailId); if(ref) openDetail(ref.innerHTML); }
+    }catch(e){}
+  });
+
+  // Support postMessage requests that reference a detail id moved inside a box.
+  // If the id lookup fails, try to find a box with data-detail === detailId
+  // and open its colocated template content.
+  window.addEventListener('message', ev=>{
+    try{
+      const m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
+      if(m?.action==='open' && m.detailId){
+        let ref = document.getElementById(m.detailId);
+        if(ref) return openDetail(ref.innerHTML);
+        // find a box that declares that detail id
+        const box = document.querySelector('.box[data-detail="' + m.detailId + '"]');
+        if(box){
+          const tmpl = box.querySelector && box.querySelector('template.box-detail');
+          if(tmpl && tmpl.content){
+            const frag = tmpl.content.cloneNode(true);
+            const container = document.createElement('div');
+            container.appendChild(frag);
+            return openDetail(container.innerHTML);
+          }
+        }
+      }
     }catch(e){}
   });
 
