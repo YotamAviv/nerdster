@@ -13,14 +13,14 @@
   const demoKeys = await response.json();
 
   const aviv = document.getElementById('load-aviv');
-  aviv?.addEventListener('click', function (ev) {
+  aviv.addEventListener('click', function (ev) {
     ev.preventDefault();
     const AVIV = { crv: 'Ed25519', kty: 'OKP', x: 'Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo' };
     iframe.contentWindow.postMessage({ identity: AVIV, contentType: 'book', sort: 'like', follow: 'nerd' }, '*');
   });
 
   const lisa = document.getElementById('load-lisa');
-  lisa?.addEventListener('click', function (ev) {
+  lisa.addEventListener('click', function (ev) {
     ev.preventDefault();
     iframe.contentWindow.postMessage({ identity: demoKeys.lisa }, '*');
   });
