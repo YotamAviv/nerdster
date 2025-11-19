@@ -113,31 +113,7 @@
     });
   });
 
-  // Theme handling (no persistence)
-  function setTheme(name){
-    if(name) document.body.setAttribute('data-theme', name);
-  }
-  // Always initialize to 'eclipse' on each load. Do not persist selection.
-  const initialTheme = 'eclipse';
-  setTheme(initialTheme);
-  if(themeSelect) themeSelect.value = initialTheme;
-  themeSelect?.addEventListener('change', e=> setTheme(e.target.value));
-  
-  // Experiment button: cycle through bold experimental themes
-  const experimentBtn = d.getElementById('theme-experiment');
-  // Add the darker/inverse themes to the experiment cycle so the Experiment
-  // button will showcase them as well.
-  // Include a mix of slightly lighter darks and richer darks so Experiment
-  // cycles through softer darks first.
-  const experimentalThemes = ['dusk','twilight','slate','smoke','eclipse','charcoal','raven','amoled','dark','contrast','default'];
-  experimentBtn?.addEventListener('click', ()=>{
-    const current = document.body.getAttribute('data-theme') || 'default';
-    let i = experimentalThemes.indexOf(current);
-    i = (i + 1) % experimentalThemes.length;
-    const next = experimentalThemes[i];
-    setTheme(next);
-    if(themeSelect) themeSelect.value = next;
-  });
+  // Theme handling removed — site is fixed to a single Eclipse-style palette.
 
   // Keyboard
   document.addEventListener('keydown', e=>{

@@ -1,6 +1,6 @@
 :root{
-  --bg:#fff; --fg:#0f172a; --muted:#6b7280; --accent:#0b71ff; --surface:#fbfdff;
-  --card:#ffffff; --radius:12px; --gap:18px;
+  --bg:#08101a; --fg:#eef6ff; --muted:#9fb7c9; --accent:#7bdcff; --surface:#071018;
+  --card:#071018; --radius:12px; --gap:18px;
 }
 
 body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;line-height:1.5;color:var(--fg);background:var(--bg);margin:0}
@@ -15,12 +15,8 @@ body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;line
 .left-group{display:flex;align-items:center;gap:10px}
 .brand .tagline{margin:0;color:var(--muted);font-size:13px}
 .header-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
-.icon-btn{background:transparent;border:0;font-size:18px;cursor:pointer;color:var(--fg)}
-.logo{width:40px;height:40px;border-radius:6px;margin-left:6px}
 
-/* Ensure logo remains visible in dark themes by inverting / brightening it.
-  If you prefer a dedicated white logo, replace this with an alternate image. */
-body[data-theme="dark"] .logo{filter:invert(1) brightness(1.8) contrast(1.05)}
+.icon-btn{background:transparent;border:0;font-size:18px;cursor:pointer;color:var(--fg)}
 
 .drawer{position:fixed;left:0;top:0;bottom:0;width:260px;background:var(--card);box-shadow:2px 0 18px rgba(2,6,23,0.12);padding:16px;z-index:60}
 .drawer nav{display:flex;flex-direction:column;gap:8px}
@@ -48,10 +44,7 @@ body[data-theme="dark"] .logo{filter:invert(1) brightness(1.8) contrast(1.05)}
 
 .site-footer{border-top:1px solid #eef2ff;padding:18px;margin-top:18px;text-align:center}
 
-/* themes */
-body[data-theme="dark"]{--bg:#07101a;--fg:#e9eef6;--muted:#9aa4b2;--card:#07101a;--accent:#3da3ff}
-body[data-theme="serif"]{font-family: Georgia, 'Times New Roman', serif;--accent:#7b3fe4}
-body[data-theme="contrast"]{--bg:#000;--fg:#fff;--muted:#ddd;--card:#111;--accent:#ffd700}
+/* themes removed — site is hard-coded to Eclipse palette below */
 
 @media (max-width:900px){.boxes{grid-template-columns:repeat(2,1fr)} }
 
@@ -63,51 +56,16 @@ body[data-theme="contrast"]{--bg:#000;--fg:#fff;--muted:#ddd;--card:#111;--accen
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-/* ---------- Experimental theme tokens: fonts, sizes and color tokens ---------- */
+/* Theme tokens — simplified and fixed to Eclipse look to reduce complexity */
 :root{
+  --bg:#08101a; --fg:#eef6ff; --muted:#9fb7c9; --accent:#7bdcff; --card:#071018;
   --font-family-base: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
-  --fs-base: 16px;
-  --fs-lg: 20px;
-  --fs-sm: 13px;
-  --lh: 1.55;
+  --fs-base:16px; --fs-lg:20px; --fs-sm:13px; --lh:1.55;
+  --gap:18px; --radius:12px;
 }
 
 /* Base application of font sizing and family using variables */
-body{font-family:var(--font-family-base);font-size:var(--fs-base);line-height:var(--lh)}
-
-/* Theme: default */
-body[data-theme="default"]{
-  --bg:#ffffff;--fg:#0f172a;--muted:#6b7280;--accent:#0b71ff;--card:#fbfdff;
-  --font-family-base: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
-  --fs-base:16px;--fs-lg:20px;--fs-sm:13px;
-}
-
-/* Theme: dark (uses Inter with adjusted sizes) */
-body[data-theme="dark"]{
-  --bg:#07101a;--fg:#e9eef6;--muted:#9aa4b2;--accent:#3da3ff;--card:#07101a;
-  --font-family-base: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
-  --fs-base:16px;--fs-lg:20px;--fs-sm:13px;
-}
-
-/* Theme: serif (Merriweather, slightly larger reading size) */
-body[data-theme="serif"]{
-  --font-family-base: 'Merriweather', Georgia, serif;
-  --fs-base:17px;--fs-lg:21px;--fs-sm:14px;
-  --bg:#ffffff;--fg:#0e1720;--muted:#6b7280;--accent:#7b3fe4;--card:#fffafc;
-}
-
-/* Theme: display (Space Grotesk for headings + bigger sizes) */
-body[data-theme="display"]{
-  --font-family-base: 'Space Grotesk', 'Inter', system-ui;
-  --fs-base:17px;--fs-lg:22px;--fs-sm:13px;
-  --bg:#fbfdff;--fg:#07101a;--muted:#415061;--accent:#ff6b6b;--card:#ffffff;
-}
-
-/* Theme: high contrast */
-body[data-theme="contrast"]{
-  --bg:#000;--fg:#fff;--muted:#ddd;--card:#111;--accent:#ffd700;
-  --font-family-base: 'Inter', system-ui;--fs-base:18px;--fs-lg:22px;--fs-sm:14px;
-}
+body{font-family:var(--font-family-base);font-size:var(--fs-base);line-height:var(--lh);background:var(--bg);color:var(--fg)}
 
 /* Scale some elements using font-size variables */
 .brand h1{font-size:calc(var(--fs-lg) + 2px)}
@@ -115,118 +73,11 @@ body[data-theme="contrast"]{
 .box h3{font-size:calc(var(--fs-sm) + 2px)}
 p, li, .muted{font-size:var(--fs-base)}
 
-/* Slightly bolder headings in display mode */
-body[data-theme="display"] .brand h1{letter-spacing:0.6px}
+/* Slightly bolder headings */
+.brand h1{letter-spacing:0.2px}
 
-/* Small helper to preview the current theme visually (temporary) */
-.theme-swatch{display:inline-block;padding:6px 10px;border-radius:8px;font-size:13px}
-
-/* End experimental theme tokens */
-
-/* ---------- Dramatic experimental themes ---------- */
-
-/* Neon: dark background + glowing accents, condensed display font */
-body[data-theme="neon"]{
-  --bg: #04050a;
-  --fg: #e6fbff;
-  --muted: #9adbf2;
-  --accent: #00ffd1;
-  --card: rgba(8,10,20,0.6);
-  --glass: rgba(255,255,255,0.03);
-  --font-family-base: 'Space Grotesk', 'Inter', system-ui;
-  --fs-base:17px;--fs-lg:24px;--fs-sm:13px;
-}
-body[data-theme="neon"] .site-header .header-band{background:linear-gradient(90deg, rgba(0,255,209,0.06), rgba(0,122,255,0.02));border-bottom:1px solid rgba(0,255,209,0.06)}
-body[data-theme="neon"] .brand h1{color:var(--accent);text-shadow:0 6px 18px rgba(0,255,209,0.08);}
-body[data-theme="neon"] .box{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(0,255,209,0.06);box-shadow:0 12px 40px rgba(0, 222, 180, 0.04)}
-body[data-theme="neon"] .btn-primary{background:linear-gradient(90deg,#00ffd1,#00b3ff);color:#001217}
-
-/* Glass: frosted panels, soft pastel accents */
-body[data-theme="glass"]{
-  --bg: linear-gradient(180deg,#eaf2ff, #f7fbff);
-  --fg:#052028;--muted:#6b7b86;--accent:#6aa6ff;--card:rgba(255,255,255,0.65);
-  --font-family-base: 'Inter', system-ui;--fs-base:16px;--fs-lg:20px;
-}
-body[data-theme="glass"] body, body[data-theme="glass"] .container{background:transparent}
-body[data-theme="glass"] .site-header .header-band{background:rgba(255,255,255,0.6);backdrop-filter:blur(6px);border-bottom:1px solid rgba(255,255,255,0.6)}
-body[data-theme="glass"] .box{background:linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.6));box-shadow:0 8px 30px rgba(6,22,47,0.06);border:1px solid rgba(255,255,255,0.6)}
-body[data-theme="glass"] .brand h1{color:#06425a}
-
-/* Retro: warm paper tones and serif headings */
-body[data-theme="retro"]{
-  --bg:#fff7ef;--fg:#2b1f1a;--muted:#7a6a5f;--accent:#c8572b;--card:#fff6ef;
-  --font-family-base: 'Merriweather', Georgia, serif;--fs-base:17px;--fs-lg:24px;
-}
-body[data-theme="retro"] .site-header .header-band{background:linear-gradient(180deg,#fff7ef,#fff2e6);border-bottom:2px solid rgba(200,120,80,0.08)}
-body[data-theme="retro"] .brand h1{font-family:'Merriweather',serif;color:var(--accent);font-weight:700}
-body[data-theme="retro"] .box{background:linear-gradient(180deg,#fffaf2,#fff6ed);border:1px solid rgba(200,140,100,0.04);box-shadow:0 8px 24px rgba(30,20,15,0.03)}
-
-/* Make experiment themes punchier across the page */
-.brand h1{transition:color .22s ease, text-shadow .22s ease}
-.box, .card{transition:transform .2s ease, box-shadow .22s ease, border-color .18s ease}
-.box:hover{transform:translateY(-6px)}
-
-/* Visually indicate the currently-selected box (when user opens its detail) */
-.box.selected{
-  border:2px solid var(--accent);
-  box-shadow:0 20px 50px rgba(11,113,255,0.12), 0 6px 18px rgba(2,6,23,0.06);
-  transform:translateY(-6px);
-}
-
-/* ---------- New dark / inverse theme tokens ---------- */
-/* These provide several mostly-inverse, fairly dark palettes requested by the user.
-   They are intentionally tokenized so the rest of the stylesheet picks up colors via
-   the --bg/--fg/--accent variables. */
-body[data-theme="inverse"]{
-  --bg:#0a0d0f; --fg:#f6f7f9; --muted:#9aa3ad; --card:#0b0f12; --accent:#66b2ff;
-}
-body[data-theme="dusk"]{
-  --bg:#0f1820; --fg:#f1f6f9; --muted:#9fb0bb; --card:#121921; --accent:#7fbfff;
-}
-body[data-theme="twilight"]{
-  --bg:#0d1720; --fg:#eef6fb; --muted:#9fb7c6; --card:#0b161e; --accent:#86c6ff;
-}
-body[data-theme="slate"]{
-  --bg:#0e1a23; --fg:#e9f2fb; --muted:#9aa6b3; --card:#081219; --accent:#5aa0ff;
-}
-body[data-theme="smoke"]{
-  --bg:#121416; --fg:#eef1f3; --muted:#9aa0a6; --card:#15181a; --accent:#78b8ff;
-}
-body[data-theme="eclipse"]{
-  --bg:#08101a; --fg:#eef6ff; --muted:#9fb7c9; --card:#071018; --accent:#7bdcff;
-}
-body[data-theme="obsidian"]{
-  --bg:#04061a; --fg:#e9eef6; --muted:#95a1b0; --card:#050718; --accent:#5be3ff;
-}
-body[data-theme="midnight"]{
-  --bg:#0b1222; --fg:#eef6ff; --muted:#9aa6bb; --card:#071023; --accent:#8aa7ff;
-}
-body[data-theme="amoled"]{
-  --bg:#050505; --fg:#fbfbfb; --muted:#9aa4b2; --card:#050505; --accent:#2dd4bf;
-}
-body[data-theme="charcoal"]{
-  --bg:#13171a; --fg:#eef2f6; --muted:#98a0a6; --card:#121417; --accent:#4db0ff;
-}
-body[data-theme="raven"]{
-  --bg:#09090d; --fg:#f2f5f8; --muted:#9ea7b0; --card:#0b0b0e; --accent:#9bdcff;
-}
-
-/* Ensure logo is visible in the darker themes by inverting/brightening it. */
-body[data-theme="inverse"] .logo,
-body[data-theme="dusk"] .logo,
-body[data-theme="twilight"] .logo,
-body[data-theme="smoke"] .logo,
-body[data-theme="eclipse"] .logo,
-body[data-theme="obsidian"] .logo,
-body[data-theme="midnight"] .logo,
-body[data-theme="amoled"] .logo,
-body[data-theme="charcoal"] .logo,
-body[data-theme="raven"] .logo,
-body[data-theme="slate"] .logo{
-  filter: invert(1) brightness(1.8) contrast(1.05);
-}
-
-/* End dramatic themes */
+/* Keep a single, size-only logo rule (no color filters) */
+/* removed — polished rule below includes size and filter */
 
 /* ---------- Modern polish overrides (appended to override earlier rules) ---------- */
 :root{
@@ -250,7 +101,7 @@ body[data-theme="slate"] .logo{
 
 /* Brand and logo */
 .left-group{display:flex;align-items:center;gap:12px}
-.logo{width:46px;height:46px;border-radius:10px;margin-left:0;padding:6px;background:var(--card);box-shadow:var(--soft-shadow)}
+.logo{width:46px;height:46px;border-radius:10px;margin-left:0;padding:6px;filter:invert(1)}
 .brand h1{font-size:18px;margin:0;font-weight:700}
 .brand .tagline{font-size:13px;color:var(--muted);margin:0}
 
@@ -302,16 +153,7 @@ html{scrollbar-gutter:stable}
 /* Force a persistent vertical scrollbar to avoid layout shift on Chrome/Linux */
 html{overflow-y:scroll !important}
 
-:root{
-  --bg: #ffffff;
-  --fg: #0f172a;
-  --muted: #6b7280;
-  --accent: #0b71ff;
-  --card: #fbfdff;
-  --surface: #f7f8fb;
-  --gap: 18px;
-  --radius: 10px;
-}
+/* removed additional root defaults — site uses the Eclipse palette defined above */
 
 html,body{height:100%}
 body{
@@ -352,8 +194,7 @@ main#content{display:grid;grid-template-columns:1fr;gap:16px;margin-top:12px}
 
 .ghost{background:transparent;border:1px dashed rgba(0,0,0,0.08);padding:8px 12px;border-radius:8px}
 
-/* Theme: dark */
-body.dark{--bg:#0b0f14;--fg:#e9eef6;--muted:#9aa4b2;--card:#07101a;--surface:#07101a;--accent:#3da3ff}
+/* removed legacy .dark class-based theme */
 
 @media (max-width:600px){
   .site-header{flex-direction:column;align-items:flex-start}
