@@ -37,25 +37,21 @@
   }
 
   function _lockScroll(){
-    try{
-      _scrollY = window.scrollY || window.pageYOffset || 0;
-      document.body.style.position = 'fixed';
-      document.body.style.top = '-' + _scrollY + 'px';
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.width = '100%';
-    }catch(e){}
+    _scrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = '-' + _scrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
   }
   function _unlockScroll(){
-    try{
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.width = '';
-      window.scrollTo(0, _scrollY || 0);
-      _scrollY = 0;
-    }catch(e){}
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, _scrollY || 0);
+    _scrollY = 0;
   }
 
   function openModal(html){
@@ -68,30 +64,32 @@
     modal.hidden = false;
     if(overlay) { overlay.setAttribute('aria-hidden','false'); overlay.hidden = false; }
     _lockScroll();
-    try{ modalContent.focus({preventScroll:true}); }catch(e){ try{ modalContent.focus(); }catch(e){} }
-    try{ setTimeout(()=>{ const c = d.getElementById('modalClose'); if(c) c.focus(); }, 30); }catch(e){}
+  modalContent.focus({preventScroll:true});
+  setTimeout(()=>{ const c = d.getElementById('modalClose'); if(c) c.focus(); }, 30);
   }
 
   function closeModal(){
     if(!_elements) _elements = ensureModal();
     const { modal, modalContent, overlay } = _elements;
     if(!modal) return;
-    try{ d.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected')); }catch(e){}
+  d.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected'));
     modal.setAttribute('aria-hidden','true');
     modal.hidden = true;
     if(overlay){ overlay.setAttribute('aria-hidden','true'); overlay.hidden = true; }
     _unlockScroll();
     if(modalContent) modalContent.innerHTML = '';
-    try{
-      if(_prevActive && _prevActive instanceof HTMLElement){
-        const insideBox = _prevActive.closest && _prevActive.closest('.box');
-        if(!insideBox){ try{ _prevActive.focus({preventScroll:true}); }catch(e){ try{ _prevActive.focus(); }catch(e){} } }
-        else {
-          const container = d.querySelector('.container');
-          if(container){ const hadTab = container.hasAttribute('tabindex'); if(!hadTab) container.setAttribute('tabindex','-1'); try{ container.focus({preventScroll:true}); }catch(e){ try{ container.focus(); }catch(e){} } if(!hadTab) container.removeAttribute('tabindex'); }
-        }
+    if(_prevActive && _prevActive instanceof HTMLElement){
+      const insideBox = _prevActive.closest && _prevActive.closest('.box');
+      if(!insideBox){
+        _prevActive.focus({preventScroll:true});
+      } else {
+        const container = d.querySelector('.container');
+        const hadTab = container.hasAttribute('tabindex');
+        if(!hadTab) container.setAttribute('tabindex','-1');
+        container.focus({preventScroll:true});
+        if(!hadTab) container.removeAttribute('tabindex');
       }
-    }catch(e){}
+    }
     _prevActive = null;
   }
 
@@ -116,9 +114,9 @@
         const tmpl = box.querySelector && box.querySelector('template.box-detail');
         let content = null;
         if(tmpl && tmpl.content){ const frag = tmpl.content.cloneNode(true); const c = document.createElement('div'); c.appendChild(frag); content = c.innerHTML; }
-        if(!content) return;
-        try{ d.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected')); }catch(e){}
-        try{ box.classList.add('selected'); }catch(e){}
+    if(!content) return;
+    d.querySelectorAll('.box.selected').forEach(b=>b.classList.remove('selected'));
+    box.classList.add('selected');
         openModal(content);
       };
       box.addEventListener('click', onClick);
@@ -130,7 +128,7 @@
 
   window.boxes = { init, openModal, closeModal };
 
-  try{ document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init(); }catch(e){ init(); }
+  strictGuard(()=>{ document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init(); }, 'boxes.js');
 
 })();
 

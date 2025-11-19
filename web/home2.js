@@ -20,9 +20,7 @@
   // Modal and box behavior delegated to shared `boxes.js` module.
   // `boxes.js` implements modal open/close, scroll-lock and focus restoration
   // and wires `.box` elements. Initialize it here to ensure unified behavior.
-  if(window.boxes && typeof window.boxes.init === 'function'){
-    try{ window.boxes.init(); }catch(e){}
-  }
+  window.boxes.init();
 
   // Detail block: show content in the modal overlay so it appears above the iframe
   function openDetail(content){
@@ -39,23 +37,21 @@
   // Header nav dropdown (top-right)
   const navToggle = d.getElementById('navDropdownToggle');
   const navMenu = d.getElementById('navDropdownMenu');
-  function closeNav(){ try{ if(navToggle) navToggle.setAttribute('aria-expanded','false'); if(navMenu) navMenu.hidden = true; }catch(e){} }
-  function openNav(){ try{ if(navToggle) navToggle.setAttribute('aria-expanded','true'); if(navMenu) navMenu.hidden = false; }catch(e){} }
-  navToggle?.addEventListener('click', e=>{
+  function closeNav(){ navToggle.setAttribute('aria-expanded','false'); navMenu.hidden = true; }
+  function openNav(){ navToggle.setAttribute('aria-expanded','true'); navMenu.hidden = false; }
+  navToggle.addEventListener('click', e=>{
     const expanded = navToggle.getAttribute('aria-expanded') === 'true';
     if(expanded) closeNav(); else openNav();
   });
   // close nav when clicking outside
   document.addEventListener('click', e=>{
-    try{
-      const dd = d.getElementById('navDropdown');
-      if(!dd) return;
-      if(!dd.contains(e.target)) closeNav();
-    }catch(e){}
+    const dd = d.getElementById('navDropdown');
+    if(!dd) return;
+    if(!dd.contains(e.target)) closeNav();
   });
   // allow opening via ArrowDown and focus first item
-  navToggle?.addEventListener('keydown', e=>{
-    if(e.key==='ArrowDown'){ e.preventDefault(); openNav(); try{ const first = navMenu && navMenu.querySelector('[role="menuitem"]'); if(first) first.focus(); }catch(e){} }
+  navToggle.addEventListener('keydown', e=>{
+  if(e.key==='ArrowDown'){ e.preventDefault(); openNav(); const first = navMenu.querySelector('[role="menuitem"]'); if(first) first.focus(); }
   });
 
   // Keyboard
@@ -65,17 +61,17 @@
 
   // postMessage hook (optional)
   window.addEventListener('message', ev=>{
-    try{
+    strictGuard(()=>{
       const m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
-  if(m?.action==='open' && m.detailId){ const ref = document.getElementById(m.detailId); if(ref) openDetail(ref.innerHTML); }
-    }catch(e){}
+      if(m?.action==='open' && m.detailId){ const ref = document.getElementById(m.detailId); if(ref) openDetail(ref.innerHTML); }
+    }, 'home2.js');
   });
 
   // Support postMessage requests that reference a detail id moved inside a box.
   // If the id lookup fails, try to find a box with data-detail === detailId
   // and open its colocated template content.
   window.addEventListener('message', ev=>{
-    try{
+    strictGuard(()=>{
       const m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
       if(m?.action==='open' && m.detailId){
         let ref = document.getElementById(m.detailId);
@@ -92,7 +88,7 @@
           }
         }
       }
-    }catch(e){}
+    }, 'home2.js');
   });
 
 })();
