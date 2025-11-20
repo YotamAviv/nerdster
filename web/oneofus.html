@@ -8,202 +8,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Comic+Neue:wght@400;700&family=Bangers&display=swap"
       rel="stylesheet"
     />
-    <style>
-      body {
-        font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
-          "Helvetica Neue", Arial;
-        color: #222;
-        margin: 0;
-      }
-      .container {
-        max-width: 980px;
-        margin: 0 auto;
-        padding: 18px;
-      }
-      .site-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-      }
-      .site-header .logo {
-        width: 80px;
-        height: 80px;
-      }
-      .brand {
-        font-weight: 300;
-      }
-      h1 {
-        margin: 0;
-        font-size: 1.25rem;
-      }
-      .tagline-pre {
-        white-space: pre-wrap;
-        font-family: monospace;
-        margin: 8px 0 0 0;
-        color: #222;
-      }
-      .header-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-end;
-      }
-      /* Stack app store links vertically at the top-right */
-      .app-links {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-end;
-      }
-      .app-links a {
-        display: block;
-      }
-      .app-links img {
-        display: block;
-        width: 180px;
-        height: auto;
-      }
-      .lead {
-        margin-top: 20px;
-      }
-      /* Make the hero/comic sections full-bleed (width of the page) */
-      .hero {
-        width: 100vw;
-        position: relative;
-        left: 50%;
-        right: 50%;
-        margin-left: -50vw;
-        margin-right: -50vw;
-        box-sizing: border-box;
-        padding: 28px 0;
-      }
-      .hero .hero-inner {
-        max-width: 980px;
-        margin: 0 auto;
-        padding: 0 18px;
-        display: flex;
-        gap: 18px;
-        align-items: flex-start;
-      }
-      /* Comic-strip styling */
-      .comic {
-        display: flex;
-        gap: 18px;
-        align-items: flex-start;
-        background: #fff;
-        border: none;
-        padding: 14px;
-        border-radius: 6px;
-        box-shadow: none;
-        width: 100%;
-      }
-      .comic-image {
-        flex: 0 0 auto;
-        border-radius: 10px;
-        overflow: hidden;
-      }
-      .comic img {
-        max-width: 200px;
-        height: auto;
-        display: block;
-        border: 4px solid #000;
-        border-radius: 10px;
-        box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.06);
-      }
-      /* keep bubble full-width but make it less tall and avoid scrollbars */
-      .bubble {
-        background: #fff;
-        padding: 6px 8px;
-        border-radius: 6px;
-        font-family: "Comic Neue", Bangers, "Comic Sans MS", cursive, "Inter";
-        font-size: 1.05rem;
-        line-height: 1.12;
-        border: 3px solid #000;
-        position: relative;
-        flex: 1;
-        min-width: 0;
-      }
-      /* remove default paragraph margins inside the bubble */
-      .bubble p {
-        margin: 0 0 0.4rem;
-      }
-      .bubble p:last-child {
-        margin-bottom: 0;
-      }
-
-      /* speech-tail: a black outline behind and white fill in front */
-      .bubble:before {
-        content: "";
-        position: absolute;
-        left: -18px;
-        top: 32px;
-        width: 0;
-        height: 0;
-        border-top: 11px solid transparent;
-        border-bottom: 11px solid transparent;
-        border-right: 15px solid #000;
-      }
-      .bubble:after {
-        content: "";
-        position: absolute;
-        left: -14px;
-        top: 34px;
-        width: 0;
-        height: 0;
-        border-top: 8px solid transparent;
-        border-bottom: 8px solid transparent;
-        border-right: 11px solid #fff;
-      }
-      /* Footer styling aligned with home2.css */
-      .site-footer {
-        border-top: 1px solid #eef2ff;
-        padding: 18px;
-        margin-top: 18px;
-        text-align: center;
-        color: #666;
-        font-size: 0.95rem;
-      }
-      @media (max-width: 700px) {
-        .site-header {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .header-actions {
-          flex-direction: row;
-          justify-content: flex-start;
-        }
-        .app-links img {
-          width: 140px;
-        }
-        .hero {
-          flex-direction: column;
-        }
-        /* make comic images a bit smaller on small screens and reduce padding */
-        .comic img {
-          max-width: 100px;
-        }
-        .comic {
-          padding: 8px;
-        }
-      }
-      /* reversed comic: image on right, bubble on left */
-      .comic.rev {
-        flex-direction: row;
-      }
-      .comic.rev .bubble:before {
-        left: auto;
-        right: -18px;
-        border-right: none;
-        border-left: 15px solid #000;
-      }
-      .comic.rev .bubble:after {
-        left: auto;
-        right: -14px;
-        border-right: none;
-        border-left: 11px solid #fff;
-      }
-      /* Boxes and modal styles have been moved to a shared stylesheet: boxes.css */
-    </style>
+    <link rel="stylesheet" href="oneofus.css" />
     <link rel="stylesheet" href="boxes.css" />
   </head>
   <!-- http://localhost:37549/ TEMP: one-of-us.net? one-of-us-net.web.app? nerdster.org? -->
@@ -246,13 +51,7 @@ A network of the people, by the people, for the people.
     <section class="hero">
       <div class="hero-inner">
         <div class="lead">
-          <h2>Our own identity network</h2>
-          <p>
-            Tech advances have made it possible for us to own and manage our own
-            identities without relying on any authority or service. By
-            cryptographically vouching for each other, we could know who's who
-            on any service.
-          </p>
+          <h1>Our own identity network</h1>
           <p>
             If you believe that knowing who's who is important, who should be
             the authority? Google? Elon? The Gov't? Or us.
@@ -294,11 +93,27 @@ A network of the people, by the people, for the people.
       </div>
     </section>
 
+    <!-- full-width hero (lead) -->
+    <!-- section class="hero" -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="lead">
+          <h2>Crypto</h2>
+          <p>
+            Tech advances have made it possible for us to own and manage our own
+            identities without relying on any authority or service. By
+            cryptographically vouching for each other, we could know who's who
+            on any service.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- boxes row -->
     <section class="container">
       <section class="boxes" aria-live="polite">
         <div class="box" role="button" tabindex="0" data-detail="oneofus-what">
-          <h3>Crypto works</h3>
+          <h3>Crypto</h3>
           <p class="muted">ChatGPT can't steal your Bitcoin.</p>
           <template class="box-detail">
             <div>
@@ -314,7 +129,7 @@ A network of the people, by the people, for the people.
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
-          <h3>Crypto Identity</h3>
+          <h3>Identity</h3>
           <p class="muted">Your public key is your identity.</p>
           <template class="box-detail">
             <div>
@@ -327,8 +142,8 @@ A network of the people, by the people, for the people.
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
-          <h3>Crypto Trust</h3>
-          <p class="muted">People use their keys to vouch for each other.</p>
+          <h3>Trust</h3>
+          <p class="muted">People vouch for each other.</p>
           <template class="box-detail">
             <div>
               <iframe
@@ -340,8 +155,10 @@ A network of the people, by the people, for the people.
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-qr">
-          <h3>Crypto Delegation</h3>
-          <p class="muted">People authorize disposable crypto key pairs for other services to use.</p>
+          <h3>Delegation</h3>
+          <p class="muted">
+            People authorize disposable crypto key pairs for other services' use.
+          </p>
           <template class="box-detail">
             <div>
               <!-- 
