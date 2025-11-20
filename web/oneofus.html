@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="oneofus.css" />
     <link rel="stylesheet" href="boxes.css" />
   </head>
-  <!-- http://localhost:37549/ TEMP: one-of-us.net? one-of-us-net.web.app? nerdster.org? -->
+  <!-- http://localhost:45073/ TEMP: one-of-us.net? one-of-us-net.web.app? nerdster.org? -->
   <body>
     <header class="site-header container">
       <div class="left" style="display: flex; align-items: center; gap: 12px">
@@ -67,7 +67,7 @@ A network of the people, by the people, for the people.
       <div class="hero-inner">
         <section class="comic">
           <div class="comic-image">
-            <img src="img/jones.png" alt="comic" />
+            <img src="img/jones.png" />
           </div>
           <div class="bubble">
             <p>
@@ -93,8 +93,6 @@ A network of the people, by the people, for the people.
       </div>
     </section>
 
-    <!-- full-width hero (lead) -->
-    <!-- section class="hero" -->
     <section class="hero">
       <div class="hero-inner">
         <div class="lead">
@@ -122,7 +120,7 @@ A network of the people, by the people, for the people.
                 srcdoc='<base href="."><script>location.replace("delegate.html" + parent.location.search)</script>' -->
               <iframe
                 title="Crypto detail"
-                src="http://localhost:37549/crypto.html"
+                src="http://localhost:45073/crypto.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>
@@ -135,7 +133,7 @@ A network of the people, by the people, for the people.
             <div>
               <iframe
                 title="Crypto identity"
-                src="http://localhost:37549/crypto_identity.html"
+                src="http://localhost:45073/crypto_identity.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>
@@ -143,12 +141,12 @@ A network of the people, by the people, for the people.
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
           <h3>Trust</h3>
-          <p class="muted">People vouch for each other.</p>
+          <p class="muted">Vouch for one another.</p>
           <template class="box-detail">
             <div>
               <iframe
                 title="Crypto trust"
-                src="http://localhost:37549/crypto_trust.html"
+                src="http://localhost:45073/crypto_trust.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>
@@ -156,9 +154,7 @@ A network of the people, by the people, for the people.
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-qr">
           <h3>Delegation</h3>
-          <p class="muted">
-            People authorize disposable crypto key pairs for other services' use.
-          </p>
+          <p class="muted">Own your identity across services.</p>
           <template class="box-detail">
             <div>
               <!-- 
@@ -168,7 +164,7 @@ A network of the people, by the people, for the people.
               -->
               <iframe
                 title="Delegate detail"
-                src="http://localhost:37549/delegate.html"
+                src="http://localhost:45073/delegate.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>
@@ -195,23 +191,100 @@ A network of the people, by the people, for the people.
             </p>
           </div>
           <div class="comic-image">
-            <img src="img/sheila-sm-flip.png" alt="Sheila comic" />
+            <img src="img/sheila-sm-flip.png" />
           </div>
         </section>
       </div>
     </section>
 
-    <!-- sample boxes row inserted between comic bands -->
+    <!-- boxes row -->
     <section class="container">
       <section class="boxes" aria-live="polite">
         <div class="box" role="button" tabindex="0" data-detail="oneofus-what">
-          <h3>Identity</h3>
+          <h3>Decentralized</h3>
           <p class="muted">Own your cryptographic identity across services.</p>
           <template class="box-detail">
-            <h3>Identity</h3>
+            <h3>Decentralized</h3>
             <p>
-              The network lets individuals hold and use cryptographic keys that
-              represent them, not an account owned by a corporation.
+              TODO: No center, you're the center TODO: Not ONE-OF-US.NET's, Not
+              mine
+            </p>
+            <ul>
+              <li>Robust. Resistant to shutdowns or censorship.</li>
+              <li>Corruption-resistant</li>
+            </ul>
+          </template>
+        </div>
+        <div
+          class="box"
+          role="button"
+          tabindex="0"
+          data-detail="oneofus-delegate"
+        >
+          <h3>Heterogeneous</h3>
+          <p class="muted">TODO:</p>
+          <template class="box-detail">
+            <h3>Heterogeneous</h3>
+            <p>
+              TODO: Open like the Internet.. Evolution.. TODO: Auditing TODO: QR
+              sign-in
+            </p>
+          </template>
+        </div>
+        <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
+          <h3>Ours</h3>
+          <p class="muted">TODO:</p>
+          <template class="box-detail"> </template>
+        </div>
+        <div class="box" role="button" tabindex="0" data-detail="oneofus-qr">
+          <h3>Opt-in</h3>
+          <p class="muted">TODO:.</p>
+          <template class="box-detail">
+            <h3>Privacy, TODO:</h3>
+            <p></p>
+          </template>
+        </div>
+      </section>
+    </section>
+
+    <!-- full-width comic band (punk2) -->
+    <section class="hero">
+      <div class="hero-inner">
+        <section class="comic rev">
+          <div class="bubble">
+            <p><em>All right... Cop Cam YouTube Comments...</em></p>
+            <p>
+              Kick back, relax, and get radicalized..
+              <br />
+              Sweet. Nice one! Yeah, get 'im. Sick! But wait..
+              <br />
+              What's this? Compassion? empathy? .. Seems human generated
+            </p>
+            <p>
+              <strong>
+                Honestly, there should literally be a way to filter those out,
+                Right?
+              </strong>
+            </p>
+          </div>
+          <div class="comic-image">
+            <img src="img/punk2.png" style="max-width:160px; height:auto;" />
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- boxes row -->
+    <section class="container">
+      <section class="boxes" aria-live="polite">
+        <div class="box" role="button" tabindex="0" data-detail="oneofus-what">
+          <h3>Authenticity</h3>
+          <p class="muted">identity, reputation, respect, community.</p>
+          <template class="box-detail">
+            <h3>TODO:</h3>
+            <p>
+              Instead of littering the Internet with anonymous data, litter it
+              with signed
             </p>
           </template>
         </div>
@@ -221,39 +294,36 @@ A network of the people, by the people, for the people.
           tabindex="0"
           data-detail="oneofus-delegate"
         >
-          <h3>Delegates</h3>
-          <p class="muted">Short-lived per-service keys you control.</p>
+          <h3>TODO:</h3>
+          <p class="muted">TODO:</p>
           <template class="box-detail">
-            <h3>Delegates</h3>
-            <p>
-              Delegates are disposable keys issued by your identity device so
-              services never see your long-term key.
-            </p>
+            <h3>TODO:</h3>
+            <p>TODO:</p>
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
-          <h3>Web-of-trust</h3>
-          <p class="muted">People vouch for each other.</p>
-          <template class="box-detail">
-            <h3>Web-of-trust</h3>
-            <p>
-              Trust decisions are expressed as vouches or blocks between
-              participants so signatures carry local meaning.
-            </p>
-          </template>
+          <h3>TODO:</h3>
+          <p class="muted">TODO:</p>
+          <template class="box-detail"> </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-qr">
-          <h3>QR Sign-in</h3>
-          <p class="muted">Approve sessions with a simple scan.</p>
+          <h3>Possibilities</h3>
+          <p class="muted">Killer apps ...</p>
           <template class="box-detail">
-            <h3>QR Sign-in</h3>
-            <p>
-              Authenticate a service by scanning a QR with your device; approve
-              the delegate and you're signed in without sharing your master key.
-            </p>
+            <h3>TODO:</h3>
+            <p></p>
           </template>
         </div>
       </section>
+    </section>
+
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="lead">
+          <h2>1 Paradigm, 2 Demo Apps</h2>
+          <p>TODO:</p>
+        </div>
+      </div>
     </section>
 
     <footer class="site-footer">
