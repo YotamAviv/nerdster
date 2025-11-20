@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cryptography: Signing, Hashing</title>
+    <style>
+      body {
+        font-family: system-ui, Arial, Helvetica, sans-serif;
+        margin: 28px;
+        color: #111;
+      }
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      pre {
+        background: #f4f4f6;
+        padding: 12px;
+        border-radius: 6px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+      .embed-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 18px 0;
+      }
+      .embed-area iframe {
+        width: 100%;
+        height: 520px; /* increased ~20% from 432px */
+        border: 1px solid #ddd;
+      }
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 576px; /* increased ~20% from 480px */
+        gap: 18px;
+        align-items: start;
+      }
+      /* right column is fixed-width (576px); iframe fills that column */
+      .two-col .embed iframe {
+        width: 100%;
+        height: 460px; /* increased ~20% from 384px */
+        border: 1px solid #ddd;
+      }
+      @media (max-width: 760px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+      .controls {
+        margin: 8px 0 18px;
+      }
+      .controls button {
+        margin-right: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Cryptography: Signing, Hashing</h1>
+      <ul>
+        <li>
+          <p>
+            Public key cryptography is solid, mature, and well-documented. (Hash
+            codes have been around forever.) This project uses standard
+            open-source implementations and formats.
+          </p>
+          <ul>
+            <li><p>The public key is shared openly, like a username.</p></li>
+            <li><p>The private key is kept secret, like a password.</p></li>
+          </ul>
+        </li>
+        <li><p>The key holder can "sign" data using his private key.</p></li>
+        <li>
+          <p>
+            The signature can be verified by anyone with the signer’s public
+            key, ensuring:
+          </p>
+          <ul>
+            <li>
+              <p>
+                the data was genuinely signed by the holder of the corresponding
+                private key and has not been modified.
+              </p>
+            </li>
+          </ul>
+        </li>
+        <li><p>No usernames or passwords are required.</p></li>
+      </ul>
+
+      <div class="two-col">
+        <div class="content">
+          <h2>Demo: Signature Verification</h2>
+          <ul>
+            <li><p>Click the right arrow to verify the signature</p></li>
+            <li>
+              <p>
+                Go back, change or remove any part of this (public key, content,
+                signature), and verify again; the signature will be detected as
+                INVALID.
+              </p>
+            </li>
+          </ul>
+
+          <h2>Who said that?</h2>
+          <p>
+            Unless we know who's key that is, the whole thing is vapid. (A robot
+            can sign, but a robot can't get me to vouch for its humanity;)
+          </p>
+        </div>
+
+        <div class="embed">
+          <iframe id="flutterApp"></iframe>
+        </div>
+      </div>
+
+      <h1>Cryptographic Keys are Cryptic</h1>
+      <p>
+        Unlike the usernames and passwords were used to, public/private
+        cryptographic key pair are long and cryptic and can't practically be
+        spoken or memorized. This is why we use QR codes (or occasionally
+        copy/paste) to communicate them.
+      </p>
+
+      <h2>Sample public key</h2>
+      <ul>
+        <li>
+          <p>QR code allows us to communicate public keys using our phones.</p>
+        </li>
+        <li>
+          <p>JSON format is used when computers communicate with each other.</p>
+        </li>
+      </ul>
+
+      <img src="img/sample.png" alt="sample public key" />
+
+      <pre><code>{
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ"
+}
+      </code></pre>
+
+      <h2>Sample public/private key pair</h2>
+      <p>(We don't scan each other's private keys)</p>
+
+      <pre><code>{
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ",
+  "d": "_MaCrtWx2jHTOrujWXVeihaBBJHF09QUxzwnk6GGiEQ"
+}
+      </code></pre>
+
+      <h2>They come in Pairs</h2>
+      <p>
+        Lose your private key and your public key is now abandoned. You'll have
+        to get a new pair, can't just replace the private key. (We address this
+        with the "replace" statement; it's complicated.)
+      </p>
+
+      <h1>Hash codes, Tokens</h1>
+      <p>
+        Consider a hash code of data as a keyless signature. A hash is short
+        regardless of the amount of data. That's why we use them as tokens of
+        keys as well as of statements.
+      </p>
+
+
+      <h1>Our use</h1>
+      <h3>--Keys</h3>
+      <ul>
+        <li>
+          <p>
+            Identity Layer: You have a public/private key pair; the public key
+            is your identity. You vouch for another's identity (and humanity) by
+            signing a statement that includes their identity.
+          </p>
+        </li>
+        <li>
+          <p>
+            Delegate Keys: You create and give other services disposable
+            public/private key pairs and use your private identity key to sign
+            statements stating that these key pairs represent you on those
+            services.
+          </p>
+        </li>
+      </ul>
+
+      <h3>--Tokens</h3>
+      <ul>
+        <li>
+          <p>
+            A key token is used to form the URL for requesting statements signed
+            by that key over our HTTP interface.
+          </p>
+        </li>
+        <li>
+          <p>Statement tokens</p>
+          <ul>
+            <li>
+              <p>
+                We chain all statements signed by a key to prevent back-dating
+                in case a key is compromised. The "previous" field of a signed
+                statement is the token of the previous statement signed by that
+                key.
+              </p>
+            </li>
+            <li>
+              <p>
+                We identify the last valid statement signed by a key that is
+                revoked by that statement's token.
+              </p>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </main>
+
+    <script src="guard.js" defer></script>
+    <script src="boxes.js" defer></script>
+    <script src="crypto.js" defer></script>
+  </body>
+</html>
