@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Delegate Keys</title>
+    <style>
+      body {
+        font-family: system-ui, Arial, Helvetica, sans-serif;
+        margin: 28px;
+        color: #111;
+      }
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      pre {
+        background: #f4f4f6;
+        padding: 12px;
+        border-radius: 6px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+      .embed-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 18px 0;
+      }
+
+      .embed-area iframe {
+        width: 100%;
+        height: 520px;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+        border-radius: 6px;
+      }
+
+      .text-iframe-2col {
+        display: grid;
+        grid-template-columns: 1fr minmax(320px, 576px);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .text-iframe-2col .embed {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .text-iframe-2col .embed iframe {
+        width: 100%;
+        max-width: 576px;
+        height: 460px;
+        border: 1px solid #ddd;
+        box-sizing: border-box;
+        border-radius: 6px;
+      }
+      /* Stack columns on narrow screens so content flows vertically */
+      @media (max-width: 760px) {
+        .text-iframe-2col {
+          grid-template-columns: 1fr !important;
+        }
+        .embed-area {
+          grid-template-columns: 1fr !important;
+        }
+        .text-iframe-2col .embed iframe,
+        .embed-area iframe {
+          max-width: 100%;
+          height: 460px;
+        }
+      }
+      /* 30% / 70% layout for QR image (left) and JSON (right) */
+      .qr-json-2col {
+        display: grid;
+        grid-template-columns: 30% 70%;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .qr-json-2col img,
+      .qr-json-2col pre,
+      .qr-json-2col p {
+        margin: 0;
+      }
+
+      @media (max-width: 760px) {
+        .qr-json-2col {
+          grid-template-columns: 1fr !important;
+        }
+        .qr-json-2col img,
+        .qr-json-2col pre {
+          width: 100%;
+        }
+      }
+      .controls {
+        margin: 8px 0 18px;
+      }
+      .controls button {
+        margin-right: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Delegate Keys</h1>
+
+      <div class="text-iframe-2col">
+        <div class="content">
+          <h2>Demo: Delegate recognized</h2>
+        </div>
+
+        <div class="embed">
+          <iframe id="flutterApp"></iframe>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Inline replacement for crypto.js: set the iframe src and append a
+      // `verify` query parameter containing encoded JSON. Kept inline so this
+      // page is self-contained (no external crypto.js).
+      (function () {
+        const iframe = document.getElementById("flutterApp");
+        if (!iframe) return;
+
+        const origin = location.origin;
+        const search = location.search || "";
+        const iframeUrl = search ? `${origin}${search}` : `${origin}/`;
+
+        const identity = `{
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE"
+  }`;
+
+        const verify = `{
+  "statement": "net.one-of-us",
+  "time": "2024-06-22T07:00:00.000Z",
+  "I": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "mEwiqG7o46sVysAtb5z4x-jLfIIW_YnWH3Y5yMhPBcg"
+  },
+  "delegate": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "xrRGbgdaLOGphzM1BnOjvYvWjRoGeQYcDaHHVjPROpo"
+  },
+  "with": {
+    "domain": "nerdster.org"
+  },
+  "previous": "b0a3b4c11c0a8652a14fdf99fcb656f4c6a96940",
+  "signature": "785def8d9ffaf2e5a26717fe10cfc09c3c1889e8afb914c1415f4e5101b12e42afda50a55bf3076c0b1a66f7df0e08464868db3bbb635449bc8322945931fb09"
+}`;
+
+        const verfyParam = encodeURIComponent(verify);
+        const sep = iframeUrl.includes("?") ? "&" : "?";
+        iframe.src = iframeUrl + sep + "identity=" + encodeURIComponent(identity) + "&verify2=" + verfyParam + "&" + 'skipCredentialsDisplay';
+      })();
+    </script>
+  </body>
+</html>
