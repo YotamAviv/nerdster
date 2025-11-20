@@ -1,9 +1,11 @@
 /* Styles extracted from oneofus.html <head> to separate file
    Purpose: keep page HTML slim and allow caching/reuse. */
 body {
+  /* keep Inter for UI but lean into a warmer serif for headings via fallbacks */
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial;
-  color: #222;
+  color: #3b2f2f; /* warm dark brown for text */
+  background: #FBF5EE; /* warm cream background */
   margin: 0;
 }
 
@@ -32,7 +34,7 @@ body {
   white-space: pre-wrap;
   font-family: monospace;
   margin: 8px 0 0 0;
-  color: #222;
+  color: #6b4f3b; /* softer brown */
 }
 
 .header-actions {
@@ -96,11 +98,11 @@ body {
   display: flex;
   gap: 18px;
   align-items: flex-start;
-  background: #fff;
+  background: #fff8ef; /* warm off-white card */
   border: none;
   padding: 14px;
   border-radius: 6px;
-  box-shadow: none;
+  box-shadow: 0 6px 18px rgba(91, 64, 46, 0.06);
   width: 100%;
 }
 
@@ -114,35 +116,26 @@ body {
   max-width: 200px;
   height: auto;
   display: block;
-  border: 4px solid #000;
+  border: 4px solid #6b4f3b; /* warm brown frame */
   border-radius: 10px;
-  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: 6px 6px 0 rgba(107, 79, 59, 0.06);
 }
 
 /* keep bubble full-width but make it less tall and avoid scrollbars */
 .bubble {
-  background: #fff;
+  background: #fffef9; /* slightly warmer interior */
   padding: 6px 8px;
   border-radius: 6px;
   font-family: "Comic Neue", Bangers, "Comic Sans MS", cursive, "Inter";
   font-size: 1.05rem;
   line-height: 1.12;
-  border: 3px solid #000;
+  border: 3px solid #6b4f3b; /* warm brown outline */
   position: relative;
   flex: 1;
   min-width: 0;
 }
 
 /* remove default paragraph margins inside the bubble */
-.bubble p {
-  margin: 0 0 0.4rem;
-}
-
-.bubble p:last-child {
-  margin-bottom: 0;
-}
-
-/* speech-tail: a black outline behind and white fill in front */
 .bubble:before {
   content: "";
   position: absolute;
@@ -152,9 +145,8 @@ body {
   height: 0;
   border-top: 11px solid transparent;
   border-bottom: 11px solid transparent;
-  border-right: 15px solid #000;
+  border-right: 15px solid #6b4f3b;
 }
-
 .bubble:after {
   content: "";
   position: absolute;
@@ -164,16 +156,16 @@ body {
   height: 0;
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-right: 11px solid #fff;
+  border-right: 11px solid #fffef9;
 }
 
 /* Footer styling aligned with home2.css */
 .site-footer {
-  border-top: 1px solid #eef2ff;
+  border-top: 1px solid #efe3d8;
   padding: 18px;
   margin-top: 18px;
   text-align: center;
-  color: #666;
+  color: #6b5a4a;
   font-size: 0.95rem;
 }
 
@@ -215,14 +207,14 @@ body {
   left: auto;
   right: -18px;
   border-right: none;
-  border-left: 15px solid #000;
+  border-left: 15px solid #6b4f3b;
 }
 
 .comic.rev .bubble:after {
   left: auto;
   right: -14px;
   border-right: none;
-  border-left: 11px solid #fff;
+  border-left: 11px solid #fffef9;
 }
 
 /* Boxes and modal styles have been moved to a shared stylesheet: boxes.css */
