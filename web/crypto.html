@@ -31,27 +31,42 @@
         gap: 12px;
         margin: 18px 0;
       }
+
       .embed-area iframe {
         width: 100%;
-        height: 520px; /* increased ~20% from 432px */
+        height: 520px;
         border: 1px solid #ddd;
+        box-sizing: border-box;
+        border-radius: 6px;
       }
+
       .two-col {
         display: grid;
-        grid-template-columns: 1fr 576px; /* increased ~20% from 480px */
+        grid-template-columns: 1fr minmax(320px, 576px);
         gap: 18px;
         align-items: start;
       }
-      /* right column is fixed-width (576px); iframe fills that column */
+
+      .two-col .embed {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
       .two-col .embed iframe {
         width: 100%;
-        height: 460px; /* increased ~20% from 384px */
+        max-width: 576px;
+        height: 460px;
         border: 1px solid #ddd;
+        box-sizing: border-box;
+        border-radius: 6px;
       }
+      /* Stack columns on narrow screens so content flows vertically */
       @media (max-width: 760px) {
-        .two-col {
-          grid-template-columns: 1fr;
-        }
+        .two-col { grid-template-columns: 1fr !important; }
+        .embed-area { grid-template-columns: 1fr !important; }
+        .two-col .embed iframe,
+        .embed-area iframe { max-width: 100%; height: 460px; }
       }
       .controls {
         margin: 8px 0 18px;

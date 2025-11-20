@@ -9,6 +9,7 @@
   iframe.src = iframeUrl;
   console.info('embed.js: iframe src set to', iframeUrl);
 
+  // TODO: create a JS file to include instead of this asyc stuff.
   const response = await fetch('/data/simpsonsDemo.json');
   const demoKeys = await response.json();
 
