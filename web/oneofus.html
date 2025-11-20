@@ -206,6 +206,7 @@
     </style>
     <link rel="stylesheet" href="boxes.css" />
   </head>
+  <!-- http://localhost:37549/ TEMP: one-of-us.net? one-of-us-net.web.app? nerdster.org? -->
   <body>
     <header class="site-header container">
       <div class="left" style="display: flex; align-items: center; gap: 12px">
@@ -293,7 +294,7 @@ A network of the people, by the people, for the people.
       </div>
     </section>
 
-    <!-- sample boxes row inserted between comic bands -->
+    <!-- boxes row -->
     <section class="container">
       <section class="boxes" aria-live="polite">
         <div class="box" role="button" tabindex="0" data-detail="oneofus-what">
@@ -301,14 +302,12 @@ A network of the people, by the people, for the people.
           <p class="muted">ChatGPT can't steal your Bitcoin.</p>
           <template class="box-detail">
             <div>
-              <!-- 
-                Not sure why VSCode shows a red warning. 
+              <!--  Not sure why VSCode shows a red warning. 
                 Not sure if src or srcdoc is preferred.  
-                srcdoc='<base href="."><script>location.replace("delegate.html" + parent.location.search)</script>'
-              -->
+                srcdoc='<base href="."><script>location.replace("delegate.html" + parent.location.search)</script>' -->
               <iframe
                 title="Crypto detail"
-                src="https://nerdster.org/crypto.html"
+                src="http://localhost:37549/crypto.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>
@@ -316,24 +315,28 @@ A network of the people, by the people, for the people.
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
           <h3>Crypto Identity</h3>
-          <p class="muted">People vouch for each other.</p>
+          <p class="muted">Your public key is your identity.</p>
           <template class="box-detail">
-            <h3>Web-of-trust</h3>
-            <p>
-              Trust decisions are expressed as vouches or blocks between
-              participants so signatures carry local meaning.
-            </p>
+            <div>
+              <iframe
+                title="Crypto identity"
+                src="http://localhost:37549/crypto_identity.html"
+                style="width: 100%; height: 460px; border: 0"
+              ></iframe>
+            </div>
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
           <h3>Crypto Trust</h3>
-          <p class="muted">People vouch for each other.</p>
+          <p class="muted">People use their keys to vouch for each other.</p>
           <template class="box-detail">
-            <h3>Web-of-trust</h3>
-            <p>
-              Trust decisions are expressed as vouches or blocks between
-              participants so signatures carry local meaning.
-            </p>
+            <div>
+              <iframe
+                title="Crypto trust"
+                src="http://localhost:37549/crypto_trust.html"
+                style="width: 100%; height: 460px; border: 0"
+              ></iframe>
+            </div>
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-qr">
@@ -347,7 +350,7 @@ A network of the people, by the people, for the people.
               -->
               <iframe
                 title="Delegate detail"
-                src="https://nerdster.org/delegate.html"
+                src="http://localhost:37549/delegate.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>

@@ -165,55 +165,6 @@
         </div>
       </div>
 
-      <h1>Cryptographic Keys are Cryptic</h1>
-      <p>
-        Unlike the usernames and passwords were used to, public/private
-        cryptographic key pair are long and cryptic and can't practically be
-        spoken or memorized. This is why we use QR codes (or occasionally
-        copy/paste) to communicate them.
-      </p>
-
-      <ul>
-        <li>
-          <p>QR code allows us to communicate public keys using our phones.</p>
-        </li>
-        <li>
-          <p>JSON format is used when computers communicate with each other.</p>
-        </li>
-      </ul>
-
-      <h2>Sample public key</h2>
-
-      <div class="qr-json-2col">
-        <img src="img/sample.png" alt="sample public key" />
-
-        <pre><code>{
-  "crv": "Ed25519",
-  "kty": "OKP",
-  "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ"
-}
-        </code></pre>
-      </div>
-
-      <h2>Sample public/private key pair</h2>
-      <div class="qr-json-2col">
-        <p>(We don't scan each other's private keys)</p>
-
-        <pre><code>{
-  "crv": "Ed25519",
-  "kty": "OKP",
-  "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ",
-  "d": "_MaCrtWx2jHTOrujWXVeihaBBJHF09QUxzwnk6GGiEQ"
-}
-        </code></pre>
-      </div>
-
-      <h2>They come in Pairs</h2>
-      <p>
-        Lose your private key and your public key is now abandoned. You'll have
-        to get a new pair, can't just replace the private key. (We address this
-        with the "replace" statement; it's complicated.)
-      </p>
 
       <h1>Hash codes, Tokens</h1>
       <p>
