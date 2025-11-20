@@ -50,10 +50,17 @@ body {
   flex-direction: column;
   gap: 10px;
   align-items: flex-end;
+  /* keep the store badges visually grouped with padding and a soft background */
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255, 248, 239, 0.9); /* warm translucent card */
+  border: 1px solid rgba(107,79,59,0.06);
 }
 
 .app-links a {
   display: block;
+  /* give each badge a little breathing room so they don't touch the container edges */
+  padding: 4px 2px;
 }
 
 .app-links img {
