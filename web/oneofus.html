@@ -247,12 +247,14 @@ A network of the people, by the people, for the people.
         <div class="lead">
           <h2>Our own identity network</h2>
           <p>
-            Tech advances have made it possible for us to own and manage our own identities without
-            relying on any authority or service.
-            By cryptographically vouching for each other, we could know who's who on any service.
+            Tech advances have made it possible for us to own and manage our own
+            identities without relying on any authority or service. By
+            cryptographically vouching for each other, we could know who's who
+            on any service.
           </p>
           <p>
-            If you believe that knowing who's who is important, who should be the authority? Google? Elon? The Gov't? Or us.
+            If you believe that knowing who's who is important, who should be
+            the authority? Google? Elon? The Gov't? Or us.
           </p>
           <h3>-- I am not a robot</h3>
           <p>You reading this now are either one of us or one of them.</p>
@@ -291,36 +293,66 @@ A network of the people, by the people, for the people.
       </div>
     </section>
 
-   <!-- sample boxes row inserted between comic bands -->
+    <!-- sample boxes row inserted between comic bands -->
     <section class="container">
       <section class="boxes" aria-live="polite">
         <div class="box" role="button" tabindex="0" data-detail="oneofus-what">
-          <h3>Crypto</h3>
-          <p class="muted">Own your cryptographic identity across services.</p>
+          <h3>Crypto works</h3>
+          <p class="muted">ChatGPT can't steal your Bitcoin.</p>
           <template class="box-detail">
-            <h3>xxx</h3>
-            <p>The network lets individuals hold and use cryptographic keys that represent them, not an account owned by a corporation.</p>
+            <div>
+              <!-- 
+                Not sure why VSCode shows a red warning. 
+                Not sure if src or srcdoc is preferred.  
+              -->
+              <iframe
+                title="Crypto detail"
+                srcdoc='<base href="."><script>location.replace("delegate.html" + parent.location.search)</script>'
+                style="width: 100%; height: 460px; border: 0"
+              ></iframe>
+            </div>
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
-          <h3>Web-of-trust</h3>
+          <h3>Crypto Identity</h3>
           <p class="muted">People vouch for each other.</p>
           <template class="box-detail">
             <h3>Web-of-trust</h3>
-            <p>Trust decisions are expressed as vouches or blocks between participants so signatures carry local meaning.</p>
+            <p>
+              Trust decisions are expressed as vouches or blocks between
+              participants so signatures carry local meaning.
+            </p>
+          </template>
+        </div>
+        <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
+          <h3>Crypto Trust</h3>
+          <p class="muted">People vouch for each other.</p>
+          <template class="box-detail">
+            <h3>Web-of-trust</h3>
+            <p>
+              Trust decisions are expressed as vouches or blocks between
+              participants so signatures carry local meaning.
+            </p>
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-qr">
-          <h3>QR Sign-in</h3>
-          <p class="muted">Approve sessions with a simple scan.</p>
+          <h3>Crypto Delegation</h3>
           <template class="box-detail">
-            <h3>QR Sign-in</h3>
-            <p>Authenticate a service by scanning a QR with your device; approve the delegate and you're signed in without sharing your master key.</p>
+            <div>
+              <!-- 
+                Not sure why VSCode shows a red warning. 
+                Not sure if src or srcdoc is preferred.  
+              -->
+              <iframe
+                title="Delegate detail"
+                srcdoc='<base href="."><script>location.replace("delegate.html" + parent.location.search)</script>'
+                style="width: 100%; height: 460px; border: 0"
+              ></iframe>
+            </div>
           </template>
         </div>
       </section>
     </section>
-
 
     <!-- full-width comic band (Sheila) -->
     <section class="hero">
@@ -354,15 +386,26 @@ A network of the people, by the people, for the people.
           <p class="muted">Own your cryptographic identity across services.</p>
           <template class="box-detail">
             <h3>Identity</h3>
-            <p>The network lets individuals hold and use cryptographic keys that represent them, not an account owned by a corporation.</p>
+            <p>
+              The network lets individuals hold and use cryptographic keys that
+              represent them, not an account owned by a corporation.
+            </p>
           </template>
         </div>
-        <div class="box" role="button" tabindex="0" data-detail="oneofus-delegate">
+        <div
+          class="box"
+          role="button"
+          tabindex="0"
+          data-detail="oneofus-delegate"
+        >
           <h3>Delegates</h3>
           <p class="muted">Short-lived per-service keys you control.</p>
           <template class="box-detail">
             <h3>Delegates</h3>
-            <p>Delegates are disposable keys issued by your identity device so services never see your long-term key.</p>
+            <p>
+              Delegates are disposable keys issued by your identity device so
+              services never see your long-term key.
+            </p>
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-wot">
@@ -370,7 +413,10 @@ A network of the people, by the people, for the people.
           <p class="muted">People vouch for each other.</p>
           <template class="box-detail">
             <h3>Web-of-trust</h3>
-            <p>Trust decisions are expressed as vouches or blocks between participants so signatures carry local meaning.</p>
+            <p>
+              Trust decisions are expressed as vouches or blocks between
+              participants so signatures carry local meaning.
+            </p>
           </template>
         </div>
         <div class="box" role="button" tabindex="0" data-detail="oneofus-qr">
@@ -378,7 +424,10 @@ A network of the people, by the people, for the people.
           <p class="muted">Approve sessions with a simple scan.</p>
           <template class="box-detail">
             <h3>QR Sign-in</h3>
-            <p>Authenticate a service by scanning a QR with your device; approve the delegate and you're signed in without sharing your master key.</p>
+            <p>
+              Authenticate a service by scanning a QR with your device; approve
+              the delegate and you're signed in without sharing your master key.
+            </p>
           </template>
         </div>
       </section>
@@ -398,7 +447,9 @@ A network of the people, by the people, for the people.
     <div id="overlay" class="overlay" aria-hidden="true"></div>
     <div id="modal" class="modal" aria-hidden="true">
       <div class="modal-inner" role="dialog" aria-modal="true">
-        <button id="modalClose" class="modal-close" aria-label="Close">✕</button>
+        <button id="modalClose" class="modal-close" aria-label="Close">
+          ✕
+        </button>
         <div id="modalContent"></div>
       </div>
     </div>
