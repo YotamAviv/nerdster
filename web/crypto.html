@@ -40,20 +40,20 @@
         border-radius: 6px;
       }
 
-      .two-col {
+      .text-iframe-2col {
         display: grid;
         grid-template-columns: 1fr minmax(320px, 576px);
         gap: 18px;
         align-items: start;
       }
 
-      .two-col .embed {
+      .text-iframe-2col .embed {
         display: flex;
         justify-content: center;
         align-items: flex-start;
       }
 
-      .two-col .embed iframe {
+      .text-iframe-2col .embed iframe {
         width: 100%;
         max-width: 576px;
         height: 460px;
@@ -63,10 +63,40 @@
       }
       /* Stack columns on narrow screens so content flows vertically */
       @media (max-width: 760px) {
-        .two-col { grid-template-columns: 1fr !important; }
-        .embed-area { grid-template-columns: 1fr !important; }
-        .two-col .embed iframe,
-        .embed-area iframe { max-width: 100%; height: 460px; }
+        .text-iframe-2col {
+          grid-template-columns: 1fr !important;
+        }
+        .embed-area {
+          grid-template-columns: 1fr !important;
+        }
+        .text-iframe-2col .embed iframe,
+        .embed-area iframe {
+          max-width: 100%;
+          height: 460px;
+        }
+      }
+      /* 30% / 70% layout for QR image (left) and JSON (right) */
+      .qr-json-2col {
+        display: grid;
+        grid-template-columns: 30% 70%;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .qr-json-2col img,
+      .qr-json-2col pre,
+      .qr-json-2col p {
+        margin: 0;
+      }
+
+      @media (max-width: 760px) {
+        .qr-json-2col {
+          grid-template-columns: 1fr !important;
+        }
+        .qr-json-2col img,
+        .qr-json-2col pre {
+          width: 100%;
+        }
       }
       .controls {
         margin: 8px 0 18px;
@@ -109,7 +139,7 @@
         <li><p>No usernames or passwords are required.</p></li>
       </ul>
 
-      <div class="two-col">
+      <div class="text-iframe-2col">
         <div class="content">
           <h2>Demo: Signature Verification</h2>
           <ul>
@@ -143,7 +173,6 @@
         copy/paste) to communicate them.
       </p>
 
-      <h2>Sample public key</h2>
       <ul>
         <li>
           <p>QR code allows us to communicate public keys using our phones.</p>
@@ -153,25 +182,31 @@
         </li>
       </ul>
 
-      <img src="img/sample.png" alt="sample public key" />
+      <h2>Sample public key</h2>
 
-      <pre><code>{
+      <div class="qr-json-2col">
+        <img src="img/sample.png" alt="sample public key" />
+
+        <pre><code>{
   "crv": "Ed25519",
   "kty": "OKP",
   "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ"
 }
-      </code></pre>
+        </code></pre>
+      </div>
 
       <h2>Sample public/private key pair</h2>
-      <p>(We don't scan each other's private keys)</p>
+      <div class="qr-json-2col">
+        <p>(We don't scan each other's private keys)</p>
 
-      <pre><code>{
+        <pre><code>{
   "crv": "Ed25519",
   "kty": "OKP",
   "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ",
   "d": "_MaCrtWx2jHTOrujWXVeihaBBJHF09QUxzwnk6GGiEQ"
 }
-      </code></pre>
+        </code></pre>
+      </div>
 
       <h2>They come in Pairs</h2>
       <p>
@@ -186,7 +221,6 @@
         regardless of the amount of data. That's why we use them as tokens of
         keys as well as of statements.
       </p>
-
 
       <h1>Our use</h1>
       <h3>--Keys</h3>
