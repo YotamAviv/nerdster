@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Delegate Keys</title>
+    <link rel="stylesheet" href="box.css" />
+    <link rel="stylesheet" href="oneofus.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Crypto Trust</h1>
+
+      <div class="text-iframe-2col">
+        <div class="content">
+          <h2>Demo: Trust verified</h2>
+        </div>
+
+        <div class="embed">
+          <iframe id="flutterApp"></iframe>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        const iframe = document.getElementById("flutterApp");
+        if (!iframe) return;
+
+        const origin = location.origin;
+        const search = location.search || "";
+        const iframeUrl = search ? `${origin}${search}` : `${origin}/`;
+
+        const identity = `{
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE"
+  }`;
+
+        const verify = `{
+  "statement": "net.one-of-us",
+  "time": "2024-05-27T07:00:00.000Z",
+  "I": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "0MBet7XnUVw-kZsAe23vQSpUmoURK0VGXh10umUev-4"
+  },
+  "trust": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "mEwiqG7o46sVysAtb5z4x-jLfIIW_YnWH3Y5yMhPBcg"
+  },
+  "with": {
+    "moniker": "Milhouse"
+  },
+  "previous": "b48b6928eb521633ad3bf1e52e6a835dda227744",
+  "signature": "80f2509d04fb3471db1f0195c15600cf46957635b9b50475ee4ded0b0035cee22855db296a35c303a40806504afaf4ae8364565085dce15545b1a625a888d100"
+}`;
+
+        const verfyParam = encodeURIComponent(verify);
+        const sep = iframeUrl.includes("?") ? "&" : "?";
+        iframe.src = iframeUrl + sep + "identity=" + encodeURIComponent(identity) + "&verify2=" + verfyParam + "&" + 'skipCredentialsDisplay';
+      })();
+    </script>
+  </body>
+</html>

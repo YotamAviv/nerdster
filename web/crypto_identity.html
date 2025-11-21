@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cryptography: Signing, Hashing</title>
+    <link rel="stylesheet" href="box.css" />
+    <link rel="stylesheet" href="oneofus.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Your public key is your identity</h1>
+      <p>
+        The public component of your own public/private cryptographic key pair
+        is your identity.
+        <br />
+        It's yours, you own it, use it to sign whatever you want.
+      </p>
+
+      <h2>Crypto Keys are Cryptic</h2>
+      <p>
+        Unlike the usernames and passwords were used to, public/private
+        cryptographic key pair are long and cryptic and can't practically be
+        spoken or memorized. This is why we use QR codes (or occasionally
+        copy/paste) to communicate them.
+      </p>
+
+      <ul>
+        <li>QR code allows us to communicate public keys using our phones.</li>
+        <li>JSON format is used when computers communicate with each other.</li>
+      </ul>
+
+      <h2>Sample public key</h2>
+
+      <div class="qr-json-2col">
+        <img src="img/sample.png" alt="sample public key" />
+
+        <pre><code>{
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ"
+}
+        </code></pre>
+      </div>
+
+      <h2>Sample public/private key pair</h2>
+      <div class="qr-json-2col">
+        <p>(We don't scan each other's private keys)</p>
+
+        <pre><code>{
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ",
+  "d": "_MaCrtWx2jHTOrujWXVeihaBBJHF09QUxzwnk6GGiEQ"
+}
+        </code></pre>
+      </div>
+
+      <h2>They come in Pairs</h2>
+      <p>
+        Lose your private key and your public key is now abandoned. You'll have
+        to get a new pair, can't just replace the private key. (We address this
+        with the "replace" statement; it's complicated.)
+      </p>
+    </main>
+
+    <script>
+      // Inline replacement for crypto.js: set the iframe src and append a
+      // `verify` query parameter containing encoded JSON. Kept inline so this
+      // page is self-contained (no external crypto.js).
+      (function () {
+        const iframe = document.getElementById("flutterApp");
+        if (!iframe) return;
+
+        const origin = location.origin;
+        const search = location.search || "";
+        const iframeUrl = search ? `${origin}${search}` : `${origin}/`;
+
+        const verify = `{
+  "I": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "zL9yVkfRj6Pt4qWy9KoUq_p0ff7s4p-Qm1aeGghlJGU"
+  },
+  "declaration": "I am not a robot!",
+  "signature": "51b0c2ea2554c42a2f6ef3aa47cd54d864da66d1ff40da21b94c5062a2b03eb9f5b3eb79b1a2515ae2e1699583dc9222c8f5a309bb3bf33d101e2e3ea3bc8804"
+}`;
+
+        const verfyParam = encodeURIComponent(verify);
+        const sep = iframeUrl.includes("?") ? "&" : "?";
+        iframe.src = iframeUrl + sep + "verify=" + verfyParam;
+      })();
+    </script>
+  </body>
+</html>
