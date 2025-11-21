@@ -35,37 +35,117 @@ Demo / proof of concept / reference implementation for the ONE-OF-US.NET paradig
 
     <main class="container">
       <section class="lead">
-        <p>TODO:</p>
+        <p>
+          The bigger picture is at
+          <a href="https://one-of-us.net">https://one-of-us.net</a>
+        </p>
       </section>
 
       <section class="boxes" aria-live="polite">
         <div class="box" role="button" tabindex="0">
-          <h3>TODO</h3>
-          <p class="muted">TODO</p>
+          <h3>Reference implementation</h3>
+          <p class="muted">Works with the ONE-OF-US.NET phone app</p>
           <template class="box-detail">
-            <p>TODO</p>
+            <h3>
+              Reference implementation, works with the ONE-OF-US.NET phone app.
+            </h3>
+            <ul>
+              <li>
+                Identify yourself using your public key to use trusted content
+                from your Point of View.
+              </li>
+              <li>
+                Sign in with a delegate key to publish your contributions as
+                yourself.
+              </li>
+            </ul>
           </template>
         </div>
         <div class="box" role="button" tabindex="0">
-          <h3>TODO</h3>
-          <p class="muted">TODO.</p>
+          <h3>Demo crypto identities, signed contributions</h3>
+          <p class="muted"></p>
           <template class="box-detail">
-            <p>TODO</p>
+            <p>
+              Shows off the crypto: signed statements, signatures, identity
+              keys, delegate keys, identity conflicts, auditing tools, etc..
+            </p>
+            <p>
+              Use menu Settings => "Show/don't show" / "Crypto (JSON, keys, and
+              statements)" to see.
+            </p>
+            <p>
+              Check out Bart's view to see conflicts in the made up Simpson's
+              Bot Farm demo (Sideshow Mel was acting in bad faith; Marge blocked
+              him, Milhouse trusted him, conflict!).
+            </p>
           </template>
         </div>
         <div class="box" role="button" tabindex="0">
-          <h3>TODO</h3>
-          <p class="muted">TODO</p>
+          <h3>Fully Transparent</h3>
+          <p class="muted"></p>
           <template class="box-detail">
-            <p>TODO</p>
+            <h3>Purist: naked, fully open</h3>
+            <p>
+              Everything you do on the Nerdster leads to a publishing a
+              statement signed by your delegate key (which is you).
+            </p>
+            <p>
+              View from anyone else's PoV is also fully transparent, respecting
+              their follows, blocks, likes, disses, .. Wouldn't it be nice to
+              know what other, real people read, like, believe? Might that help
+              us all?
+            </p>
+            <p>
+              Not all apps are expected to do this. For example, Yelp could let
+              people author reviews without revealing their identities and still
+              leverage the ONE-OF-US.NET network to only show you
+              recommendations made by folks that either you or they belive are
+              humans (one-of-us).
+              <br />
+              You'd have to trust them to not be cheating, but for services like
+              the Nerdster auditing is supported as the signed content is fully
+              portable and can be verified by any one or any thing.
+            </p>
+            <p>
+              Open data (signed and portable). My own statements for example:
+              <a
+                href="https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b"
+                >https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b</a
+              >
+            </p>
           </template>
         </div>
         <div class="box" role="button" tabindex="0">
-          <h3>TODO</h3>
-          <p class="muted">TODO</p>
+          <h3>Post, like, comment, follow, block, censor, ..</h3>
+          <p class="muted"></p>
           <template class="box-detail">
-            <h2>h2 sample</h2>
-            <p>TODO</p>
+            <h3>Dime-a-dozen forum like web app</h3>
+            <ul>
+              <li>Submit links, like, comment, following/block, ...</li>
+              <li>
+                Experimental censorship feature (allow your network to filter
+                content). Even the censorship is transparent.
+              </li>
+              <li>
+                All the stuff we could do 30 years ago, but different -
+                <em
+                  >all signed by your delegate key,
+                  <strong>which is you!</strong></em
+                >
+              </li>
+              <li>
+                Puny and weak, won't handle content from thousands around you
+                (but you can shift Pov to see any content).
+              </li>
+              <li>
+                Generate a link for your Nerdster using your PoV and settings
+                using the menu: "Share" ⇒ "Generate link for this view". Check
+                out my own embedded usage at
+                <a href="https://aviv.net">https://aviv.net</a> or load that
+                view here using the button below the embedded Nerdster app.
+              </li>
+              <li>(not the killer app ;)</li>
+            </ul>
           </template>
         </div>
       </section>
@@ -84,16 +164,10 @@ Demo / proof of concept / reference implementation for the ONE-OF-US.NET paradig
         </div>
 
         <div class="demo-controls below">
-          <button id="load-aviv" class="btn btn-primary">Load Aviv view</button>
-          <button id="load-lisa" class="btn">Load Lisa view</button>
+          <button id="load-lisa" class="btn">Lisa's view</button>
+          <button id="load-bart" class="btn">Bart's view</button>
+          <button id="load-aviv" class="btn btn-primary">My view</button>
         </div>
-      </section>
-
-      <section>
-        <h2>TODO</h2>
-        <ul>
-          <li>TODO.</li>
-        </ul>
       </section>
     </main>
 
