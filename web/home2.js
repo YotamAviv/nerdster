@@ -30,33 +30,10 @@
     closeModal();
   }
 
-  // Boxes are wired via the shared `boxes` module (initialized above).
-
-  // Theme handling removed — site is fixed to a single Eclipse-style palette.
-
-  // Header nav dropdown (top-right)
-  const navToggle = d.getElementById('navDropdownToggle');
-  const navMenu = d.getElementById('navDropdownMenu');
-  function closeNav(){ navToggle.setAttribute('aria-expanded','false'); navMenu.hidden = true; }
-  function openNav(){ navToggle.setAttribute('aria-expanded','true'); navMenu.hidden = false; }
-  navToggle.addEventListener('click', e=>{
-    const expanded = navToggle.getAttribute('aria-expanded') === 'true';
-    if(expanded) closeNav(); else openNav();
-  });
-  // close nav when clicking outside
-  document.addEventListener('click', e=>{
-    const dd = d.getElementById('navDropdown');
-    if(!dd) return;
-    if(!dd.contains(e.target)) closeNav();
-  });
-  // allow opening via ArrowDown and focus first item
-  navToggle.addEventListener('keydown', e=>{
-  if(e.key==='ArrowDown'){ e.preventDefault(); openNav(); const first = navMenu.querySelector('[role="menuitem"]'); if(first) first.focus(); }
-  });
 
   // Keyboard
   document.addEventListener('keydown', e=>{
-    if(e.key==='Escape'){ closeDetail(); closeModal(); closeNav(); }
+    if(e.key==='Escape'){ closeDetail(); closeModal(); }
   });
 
   // postMessage hook (optional)

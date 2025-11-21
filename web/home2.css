@@ -100,9 +100,8 @@ main#content {
   border-radius: 10px;
   margin-left: 0;
   padding: 6px;
-  /* give the logo a subtle neon edge to match the theme */
-  filter: none;
-  box-shadow: 0 0 8px rgba(124,252,0,0.08), 0 0 18px rgba(124,252,0,0.04);
+  filter: invert(1) brightness(1.05) contrast(1.02);
+  box-shadow: 0 0 8px rgba(124,252,0,0.06), 0 0 12px rgba(124,252,0,0.03);
 }
 
 .brand h1 {
@@ -137,26 +136,6 @@ main#content {
 }
 
 .icon-btn:hover { background: rgba(11, 113, 255, 0.04); }
-
-/* -------------------- Dropdown / Controls -------------------- */
-.nav-dropdown { position: relative; }
-
-.dropdown-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  background: var(--card);
-  border-radius: 10px;
-  padding: 8px;
-  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.12);
-  min-width: 140px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  z-index: 200;
-}
-
-.dropdown-item { display: block; padding: 8px 10px; color: var(--fg); text-decoration: none; border-radius: 8px; }
-.dropdown-item:hover, .dropdown-item:focus { background: rgba(124,252,0,0.04); outline: none; }
-.nav-dropdown [hidden] { display: none !important; }
 
 /* -------------------- Boxes / Cards -------------------- */
 .boxes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
