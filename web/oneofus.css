@@ -33,7 +33,6 @@ body {
 .tagline-pre {
   white-space: pre-wrap;
   font-family: monospace;
-  margin: 8px 0 0 0;
   color: #6b4f3b; /* softer brown */
 }
 
