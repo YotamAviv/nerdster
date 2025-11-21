@@ -260,7 +260,8 @@ main#content {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  /* stronger backdrop to improve contrast for modal content */
+  background: rgba(0, 0, 0, 0.65);
   z-index: 70;
 }
 
@@ -289,15 +290,36 @@ main#content {
 }
 
 .modal-inner {
-  background: linear-gradient(180deg, rgba(6, 18, 20, 0.6), var(--bg));
+  /* darker modal panel for legibility on the dim overlay */
+  background: linear-gradient(180deg, rgba(6, 18, 20, 0.92), var(--bg));
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px 16px;
   max-width: 840px;
   width: 94%;
-  box-shadow: 0 18px 60px rgba(2, 6, 23, 0.25);
+  box-shadow: 0 18px 60px rgba(2, 6, 23, 0.32);
   border: 1px solid rgba(124, 252, 0, 0.04);
   position: relative;
   z-index: 120;
+  /* slightly reduce interior type scale for better fit and readability */
+  font-size: 0.95rem;
+}
+
+/* Modal-specific typography: slightly smaller headings and body text */
+.modal-inner h2 {
+  font-size: 1.05rem; /* ~16.8px */
+  margin-top: 0;
+}
+
+.modal-inner h3 {
+  font-size: 0.95rem; /* ~15.2px */
+  margin-top: 0;
+}
+
+.modal-inner p,
+.modal-inner li,
+.modal-inner .muted {
+  font-size: 0.95rem;
+  line-height: 1.45;
 }
 
 .modal-close {
