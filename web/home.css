@@ -16,6 +16,8 @@
   /* near-black teal */
   --fg: #cfeee0;
   /* pale mint for readable text */
+  /* slightly toned-down foreground for headings (midpoint between --fg and the previous dim) */
+  --fg-dim: #b7d6c8;
   --muted: #7f9ea6;
   /* desaturated cyan */
   --accent: #7CFC00;
@@ -113,10 +115,10 @@ main#content {
 .brand h1 {
   margin: 0;
   font-size: 1.7em;
-  font-weight: 700;
+  font-weight: 650;
   font-family: var(--mono-font);
   letter-spacing: 0.6px;
-  color: var(--fg);
+  color: var(--fg-dim);
 }
 
 .brand .tagline {
@@ -181,9 +183,9 @@ main#content {
   align-items: center;
   gap: 8px;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 650;
   font-family: var(--mono-font);
-  color: var(--fg);
+  color: var(--fg-dim);
 }
 
 .box h3::before {
@@ -409,6 +411,17 @@ main#content {
   color: var(--accent);
   font-size: 20px;
   font-family: var(--mono-font);
+}
+
+/* Tone down heading brightness and heavy boldness site-wide (keep sizes) */
+h1,
+h2,
+h3,
+.modal-inner h2,
+.modal-inner h3,
+.card header h2 {
+  color: var(--fg-dim);
+  font-weight: 600;
 }
 
 .demo-controls {
