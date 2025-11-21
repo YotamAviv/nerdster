@@ -1,4 +1,4 @@
-// Lightweight interactive behavior for home2.html
+// Lightweight interactive behavior for home.html
 (()=>{
   const d = document;
 
@@ -41,7 +41,7 @@
     strictGuard(()=>{
       const m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
       if(m?.action==='open' && m.detailId){ const ref = document.getElementById(m.detailId); if(ref) openDetail(ref.innerHTML); }
-    }, 'home2.js');
+    }, 'home.js');
   });
 
   // Support postMessage requests that reference a detail id moved inside a box.
@@ -65,7 +65,7 @@
           }
         }
       }
-    }, 'home2.js');
+    }, 'home.js');
   });
 
 })();
