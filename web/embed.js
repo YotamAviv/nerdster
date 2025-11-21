@@ -17,12 +17,18 @@
   aviv.addEventListener('click', function (ev) {
     ev.preventDefault();
     const AVIV = { crv: 'Ed25519', kty: 'OKP', x: 'Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo' };
-    iframe.contentWindow.postMessage({ identity: AVIV, contentType: 'book', sort: 'like', follow: 'nerd' }, '*');
+    // iframe.contentWindow.postMessage({ identity: AVIV, contentType: 'book', sort: 'like', follow: 'nerd' }, '*');
+    iframe.contentWindow.postMessage({ identity: AVIV }, '*');
   });
 
   const lisa = document.getElementById('load-lisa');
   lisa.addEventListener('click', function (ev) {
     ev.preventDefault();
     iframe.contentWindow.postMessage({ identity: demoKeys.lisa }, '*');
+  });
+  const bart = document.getElementById('load-bart');
+  bart.addEventListener('click', function (ev) {
+    ev.preventDefault();
+    iframe.contentWindow.postMessage({ identity: demoKeys.bart }, '*');
   });
 })();
