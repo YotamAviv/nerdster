@@ -79,6 +79,14 @@ body {
   /* remove paragraph top margin for immediate sibling */
 }
 
+/* layout helper: lead with a small image on the left (marketing / badge) */
+.lead-image-row { display: flex; align-items: center; gap: 12px; }
+.side-logo { width: 80px; height: auto; border-radius: 8px; display: block; }
+@media (max-width: 600px) {
+  .lead-image-row { flex-direction: row; }
+  .side-logo { width: 56px; }
+}
+
 /* Make the hero/comic sections full-bleed (width of the page) */
 .hero {
   width: 100vw;
