@@ -104,18 +104,4 @@ img {
   margin-right: 8px;
 }
 
-/* Make all lists compact on pages that include box.css (detail pages) */
-ul,
-ol {
-  margin: 0.45rem 0;
-  padding-left: 1.15rem;
-}
-li {
-  margin: 0.18rem 0;
-  line-height: 1.25;
-}
-ul li::marker {
-  font-size: 0.98em;
-}
-
 
