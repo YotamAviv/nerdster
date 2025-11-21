@@ -1,12 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nerdster — identity demo</title>
-  <!-- Inter + Merriweather + Space Grotesk for theme experiments -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Merriweather:wght@300;400;700&family=Space+Grotesk:wght@300;400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="home2.css">
+    <title>Nerdster — identity demo</title>
+    <!-- Add monospace/code fonts for a nerdy, terminal-like UI (Fira Code, JetBrains Mono) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="home2.css" />
   </head>
   <body>
     <header class="site-header">
@@ -17,16 +20,10 @@
               <img src="img/nerd.png" alt="Nerdster" class="logo" />
               <div class="brand">
                 <h1>Nerdster</h1>
-                <p class="tagline">Demo / proof of concept / reference implementation for the ONE-OF-US.NET paradigm</p>
-              </div>
-            </div>
-            <div class="header-actions">
-              <div class="nav-dropdown" id="navDropdown">
-                <button id="navDropdownToggle" class="icon-btn" aria-haspopup="true" aria-expanded="false" aria-controls="navDropdownMenu">Menu ▾</button>
-                <div id="navDropdownMenu" class="dropdown-menu" role="menu" hidden>
-                  <a href="#one" role="menuitem" class="dropdown-item">one</a>
-                  <a href="#two" role="menuitem" class="dropdown-item">two</a>
-                </div>
+                <pre class="tagline-pre">
+Demo / proof of concept / reference implementation for the ONE-OF-US.NET paradigm
+  All your likes are belong to us.</pre
+                >
               </div>
             </div>
           </div>
@@ -38,45 +35,72 @@
 
     <main class="container">
       <section id="intro" class="lead">
-        <p>People have fragmented identities across services and can't carry reputation. This demo shows a phone-held identity, per-service delegate keys, and a QR sign-in flow.</p>
+        <p>
+          People have fragmented identities across services and can't carry
+          reputation. This demo shows a phone-held identity, per-service
+          delegate keys, and a QR sign-in flow.
+        </p>
       </section>
 
       <section id="boxes" class="boxes" aria-live="polite">
         <div class="box" data-detail="d-phone" role="button" tabindex="0">
           <h3>Phone app</h3>
-          <p class="muted">Holds your private identity key and issues delegates.</p>
+          <p class="muted">
+            Holds your private identity key and issues delegates.
+          </p>
           <template class="box-detail">
-            <p>Your phone holds the long-term identity key. It creates short-lived delegate keys for each service so you don't give away your master key.</p>
+            <p>
+              Your phone holds the long-term identity key. It creates
+              short-lived delegate keys for each service so you don't give away
+              your master key.
+            </p>
           </template>
         </div>
         <div class="box" data-detail="d-delegate" role="button" tabindex="0">
           <h3>Delegate keys</h3>
           <p class="muted">Per-service disposable keys to reduce risk.</p>
           <template class="box-detail">
-            <p>Delegates are per-service keys signed by your phone. They reduce risk and make key rotation simple.</p>
+            <p>
+              Delegates are per-service keys signed by your phone. They reduce
+              risk and make key rotation simple.
+            </p>
           </template>
         </div>
         <div class="box" data-detail="d-qr" role="button" tabindex="0">
           <h3>QR sign-in</h3>
-          <p class="muted">Scan a QR to authorize a delegate key for a service.</p>
+          <p class="muted">
+            Scan a QR to authorize a delegate key for a service.
+          </p>
           <template class="box-detail">
-            <p>Services show a QR that your phone scans. After you approve, the phone signs a delegate and sends it back to the service.</p>
+            <p>
+              Services show a QR that your phone scans. After you approve, the
+              phone signs a delegate and sends it back to the service.
+            </p>
           </template>
         </div>
         <div class="box" data-detail="d-wot" role="button" tabindex="0">
           <h3>Web-of-trust</h3>
-          <p class="muted">People vouch or block keys so signatures are meaningful.</p>
+          <p class="muted">
+            People vouch or block keys so signatures are meaningful.
+          </p>
           <template class="box-detail">
             <h2>h2 sample</h2>
-            <p>People can vouch for or block keys, making signatures meaningful across contexts.</p>
+            <p>
+              People can vouch for or block keys, making signatures meaningful
+              across contexts.
+            </p>
           </template>
         </div>
       </section>
 
       <!-- single replaceable detail block appears here -->
-      <section id="detail-container" class="detail-container" aria-live="polite"></section>
+      <section
+        id="detail-container"
+        class="detail-container"
+        aria-live="polite"
+      ></section>
 
-      <section id="demo" style="margin-top:18px">
+      <section id="demo" style="margin-top: 18px">
         <!-- Embedded Nerdster app (like in web/home.html) -->
         <div class="embed-area">
           <iframe id="flutterApp" title="Nerdster app"></iframe>
@@ -93,14 +117,19 @@
         <ul>
           <li>Phone app: holds identity key and vouches for delegates.</li>
           <li>Delegates: disposable keys per service.</li>
-          <li>QR Sign-in: delegates are authorized by a signature from your identity key.</li>
+          <li>
+            QR Sign-in: delegates are authorized by a signature from your
+            identity key.
+          </li>
         </ul>
       </section>
     </main>
 
     <div id="modal" class="modal" role="dialog" aria-modal="true" hidden>
       <div class="modal-inner">
-        <button id="modalClose" class="modal-close" aria-label="Close">✕</button>
+        <button id="modalClose" class="modal-close" aria-label="Close">
+          ✕
+        </button>
         <div id="modalContent"></div>
       </div>
     </div>
@@ -108,8 +137,10 @@
     <footer class="site-footer">
       <div class="container">
         <p>
-          <a href="mailto:contact@nerdster.org">Contact</a>, 
-          <a href="https://github.com/YotamAviv/nerdster" target="_blank">Source</a>
+          <a href="mailto:contact@nerdster.org">Contact</a>,
+          <a href="https://github.com/YotamAviv/nerdster" target="_blank"
+            >Source</a
+          >
         </p>
       </div>
     </footer>
@@ -120,5 +151,3 @@
     <script src="home2.js" defer></script>
   </body>
 </html>
-
-

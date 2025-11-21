@@ -1,4 +1,3 @@
-/* Minimal boxes and modal styles extracted from home2.css (shared) */
 .boxes {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -7,11 +6,12 @@
 }
 
 .box {
-  background: #fff;
+  /* warm interior to match oneofus.css palette */
+  background: #dbd4e0;
   padding: 14px;
   border-radius: 12px;
-  box-shadow: 0 8px 22px rgba(2,6,23,0.06);
-  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 22px rgba(91,64,46,0.06);
+  border: 1px solid rgba(107,79,59,0.08);
   transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s;
   min-height: 96px;
   display: flex;
@@ -19,8 +19,8 @@
   justify-content: space-between;
 }
 
-.box h3 { margin: 0 0 8px 0; font-size: 1rem; }
-.box .muted { color: #666; font-size: 0.95rem; margin: 0; }
+.box h3 { margin: 0 0 8px 0; font-size: 1rem; color: #3b2f2f; }
+.box .muted { color: #6b5a4a; font-size: 0.95rem; margin: 0; }
 
 .box:hover, .box:focus-within { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(2,6,23,0.08); }
 
@@ -40,7 +40,7 @@
   color: #111;
   border-radius: 10px;
   padding: 18px;
-  max-width: 720px;
+  max-width: 980px;
   width: 92%;
   box-shadow: 0 14px 40px rgba(2,6,23,0.12);
   position: relative;
