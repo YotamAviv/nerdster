@@ -2,102 +2,197 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>nerdster.org</title>
-    <link rel="icon" href="img/nerd.png" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Nerdster — identity demo</title>
+    <!-- Add monospace/code fonts for a nerdy, terminal-like UI (Fira Code, JetBrains Mono) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="home.css" />
   </head>
   <body>
-    <header>
-      <img src="img/nerd.png" alt="logo" />
-      <h1>nerdster.org</h1>
+    <header class="site-header">
+      <div class="top-row">
+        <div class="container">
+          <div class="header-band">
+            <div class="left-group">
+              <img src="img/nerd.png" alt="Nerdster" class="logo" />
+              <div class="brand">
+                <h1>Nerdster</h1>
+                <pre class="tagline-pre">
+Demo / proof of concept / reference implementation for the ONE-OF-US.NET paradigm
+  All your likes are belong to us.</pre
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
-    <main>
-      <h2>The Nerd'ster!</h2>
-      <ul>
-        <li>
-          A demo / reference implementation / <strong>proof of concept of the paradigm</strong>,
-          works with the
-          <a href="http://one-of-us.net" target="_blank">ONE-OF-US.NET</a> phone
-          app.
-          <ul>
-            <li>
-              <strong>Identify yourself</strong> using your public key to use trusted content
-              from your Point of View.
-            </li>
-            <li>
-              <strong>Sign in with a delegate key</strong> to publish your contributions as
-              yourself.
-            </li>
-          </ul>
-        </li>
-        <li>
-          <strong>Show off the crypto</strong> (statements, signatures,
-          identity keys, delegate keys, identity conflicts, auditing tools, etc..)
-        </li>
-        <li><strong>Purist: naked, fully open</strong></li>
-        <li>
-          Dime-a-dozen forum like web app to submit links, like, comment, and
-          facilitate following others... 
-          <ul>
-            <li>All the stuff we could do 30 years ago, but different (not the killer app ;)</li>
-            <li>Puny and weak, won't handle content from thousands around you (but you can shift Pov).</li>
-          </ul>
-        </li>
-      </ul>
-      <p>
-        The bigger picture is at
-        <a href="https://one-of-us.net" target="_blank"
-          >https://one-of-us.net</a
-        >
-      </p>
 
-      <iframe id="flutterApp" title="Nerdster app"></iframe>
+    <div id="overlay" class="overlay" hidden></div>
 
-      <ul>
-        <li>
-          Access the Nerdster here or on its own at:
-          <a href="https://nerdster.org">https://nerdster.org</a>.<br />
-        </li>
-        <li>
-          Generate a link for your Nerdster using your PoV and settings using
-          the menu: <strong>/etc ⇒ Share link for this view</strong>.
-        </li>
-        <ul>
-            <li>
-            Check out my own embedded usage at
-            <a href="https://aviv.net">https://aviv.net</a> or
-            <button id="load-aviv" class="ghost">load that view here.</button>
-          </li>
-          <li>
-            Check out
-            <a href="https://www.one-of-us.net/in-depth/nerdster"
-              >the Simpsons Bot Farm demo</a
-            > or
-            <button id="load-lisa" class="ghost">load Lisa's PoV here</button>.
-          </li>
-          </li>
-        </ul>
-        <li>
-          Open source:
-          <a href="https://github.com/YotamAviv/nerdster" target="_blank"
-            >https://github.com/YotamAviv/nerdster</a
-          >
-        </li>
-        <li>
-          Open data (signed and portable). My own statements for example:
-          <a
-            href="https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b"
-            target="_blank"
-            >https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b</a
-          >
-        </li>
-      </ul>
+    <main class="container">
+      <section class="lead">
+        <p>
+          The bigger picture is at
+          <a href="https://one-of-us.net">https://one-of-us.net</a>
+        </p>
+      </section>
+
+      <section class="boxes" aria-live="polite">
+        <div class="box" role="button" tabindex="0">
+          <h3>Reference implementation</h3>
+          <p class="muted">Works with the ONE-OF-US.NET phone app</p>
+          <template class="box-detail">
+            <h3>
+              Reference implementation, works with the ONE-OF-US.NET phone app.
+            </h3>
+            <ul>
+              <li>
+                Identify yourself using your public key to use trusted content
+                from your Point of View.
+              </li>
+              <li>
+                Sign in with a delegate key to publish your contributions as
+                yourself.
+              </li>
+            </ul>
+          </template>
+        </div>
+        <div class="box" role="button" tabindex="0">
+          <h3>Demo crypto identities, signed contributions</h3>
+          <p class="muted"></p>
+          <template class="box-detail">
+            <p>
+              Shows off the crypto: signed statements, signatures, identity
+              keys, delegate keys, identity conflicts, auditing tools, etc..
+            </p>
+            <p>
+              Use menu Settings => "Show/don't show" / "Crypto (JSON, keys, and
+              statements)" to see.
+            </p>
+            <p>
+              Check out Bart's view to see conflicts in the made up Simpson's
+              Bot Farm demo (Sideshow Mel was acting in bad faith; Marge blocked
+              him, Milhouse trusted him, conflict!).
+            </p>
+          </template>
+        </div>
+        <div class="box" role="button" tabindex="0">
+          <h3>Fully Transparent</h3>
+          <p class="muted"></p>
+          <template class="box-detail">
+            <h3>Purist: naked, fully open</h3>
+            <p>
+              Everything you do on the Nerdster leads to a publishing a
+              statement signed by your delegate key (which is you).
+            </p>
+            <p>
+              View from anyone else's PoV is also fully transparent, respecting
+              their follows, blocks, likes, disses, .. Wouldn't it be nice to
+              know what other, real people read, like, believe? Might that help
+              us all?
+            </p>
+            <p>
+              Not all apps are expected to do this. For example, Yelp could let
+              people author reviews without revealing their identities and still
+              leverage the ONE-OF-US.NET network to only show you
+              recommendations made by folks that either you or they belive are
+              humans (one-of-us).
+              <br />
+              You'd have to trust them to not be cheating, but for services like
+              the Nerdster auditing is supported as the signed content is fully
+              portable and can be verified by any one or any thing.
+            </p>
+            <p>
+              Open data (signed and portable). My own statements for example:
+              <a
+                href="https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b"
+                >https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b</a
+              >
+            </p>
+          </template>
+        </div>
+        <div class="box" role="button" tabindex="0">
+          <h3>Post, like, comment, follow, block, censor, ..</h3>
+          <p class="muted"></p>
+          <template class="box-detail">
+            <h3>Dime-a-dozen forum like web app</h3>
+            <ul>
+              <li>Submit links, like, comment, following/block, ...</li>
+              <li>
+                Experimental censorship feature (allow your network to filter
+                content). Even the censorship is transparent.
+              </li>
+              <li>
+                All the stuff we could do 30 years ago, but different -
+                <em
+                  >all signed by your delegate key,
+                  <strong>which is you!</strong></em
+                >
+              </li>
+              <li>
+                Puny and weak, won't handle content from thousands around you
+                (but you can shift Pov to see any content).
+              </li>
+              <li>
+                Generate a link for your Nerdster using your PoV and settings
+                using the menu: "Share" ⇒ "Generate link for this view". Check
+                out my own embedded usage at
+                <a href="https://aviv.net">https://aviv.net</a> or load that
+                view here using the button below the embedded Nerdster app.
+              </li>
+              <li>(not the killer app ;)</li>
+            </ul>
+          </template>
+        </div>
+      </section>
+
+      <!-- single replaceable detail block appears here -->
+      <section
+        id="detail-container"
+        class="detail-container"
+        aria-live="polite"
+      ></section>
+
+      <section style="margin-top: 18px">
+        <div class="embed-area">
+          <iframe id="flutterApp" title="Nerdster app"></iframe>
+        </div>
+
+        <div class="demo-controls below">
+          <button id="load-lisa" class="btn">Lisa's view</button>
+          <button id="load-bart" class="btn">Bart's view</button>
+          <button id="load-aviv" class="btn btn-primary">My view</button>
+        </div>
+      </section>
     </main>
-    <footer>
-      Contact <a href="mailto:contact@nerdster.org">contact@nerdster.org</a>,
-      <a href="mailto:yotam@aviv.net">yotam@aviv.net</a>
+
+    <div id="modal" class="modal" role="dialog" aria-modal="true" hidden>
+      <div class="modal-inner">
+        <button id="modalClose" class="modal-close" aria-label="Close">
+          ✕
+        </button>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>
+          <a href="mailto:contact@nerdster.org">Contact</a>,
+          <a href="https://github.com/YotamAviv/nerdster" target="_blank"
+            >Source</a
+          >
+        </p>
+      </div>
     </footer>
+
+    <script src="guard.js" defer></script>
     <script src="embed.js" defer></script>
+    <script src="boxes.js" defer></script>
+    <script src="home.js" defer></script>
   </body>
 </html>
