@@ -1,18 +1,9 @@
 ### Examples
-- Like a Wall Street Journal post, follow the author, and it'll be the same person on Reddit, NYT, etc...
-- Your Pandora likes could make my Spotify better</li>
 
-We build the network (decentralized) and let them use it.
 
-I am who your network says I am
 
 
 ### Quotes
-- "First Amendment 2.0"
-- "Democracy 2.0"
-  - 1 man, 1 like
-- "Liberated trust"
-  - The Internet liberated lies and pornography. Crypto can liberate trust.
 
 ### Crypto / tech
 - sign
@@ -28,23 +19,37 @@ I am who your network says I am
 - auditable
   - Complete cryptographicly signed chain 
   - Signatures are publicly verifiable independent of who stores or serves the data. (You don’t have to trust one-of-us.net or nerdster.org)
-- opt-in, privacy
-  - An ability, not a requirement, to voice authentically
-    - "First Amendment 2.0"
-  - Identity revisited: you, irl
-- control
-  No special access. (Nerdster.org and ONE-OF-US.NET do not have any.)
-(The Nerdster doesn't know what was is used to sign in.)
-(ONE-OF-US.NET doesn't know what reads signed statements it published.)
-You don't have an account with ONE-OF-US.NET or Nerdster.org. If anything, you have an account with those who vouched for you.
+- control (ownership?)
+  - No special access.
+    Nerdster.org and ONE-OF-US.NET do not have any.
+    The Nerdster doesn't know what was is used to sign in.
+    ONE-OF-US.NET doesn't know what reads signed statements it published.
+  - no accounts
+    You don't have an account with ONE-OF-US.NET or Nerdster.org. If anything, you have an account with those who vouched for you.
+  - We build the network (decentralized) and **let** them use it.
 
 
 ### Organization, culture, behavior
 - decentralized (You, we. Not I, not them)
-- authenticity
+  - "Democracy 2.0"
+    - 1 man, 1 like
+  - 
+- authentic
   - reputation, decency, community. truth
+  - "Liberated trust"
+    - The Internet liberated lies and pornography. Crypto can liberate trust.
+- opt-in (and privacy)
+  - An ability, not a requirement, to voice authentically
+    - "First Amendment 2.0"
+  - Identity revisited: you, irl
+    - I am who your network says I am
 - future
-
+  - Like a Wall Street Journal post, follow the author, and it'll be the same person on Reddit, NYT, etc...
+  - Your Pandora likes (or even, say, your Nerdster music context blocks) could make my Spotify better
+  - Robots can't make my phone ring
+    - Gmail human folder
+  - start a movement, vote for a 3'rd part
+  - 
 
 
 ## TODO
