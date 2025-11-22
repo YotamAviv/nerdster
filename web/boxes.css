@@ -19,7 +19,17 @@
 }
 
 .box h3 { margin: 0 0 0.5rem 0; font-size: 1rem; color: #3b2f2f; }
-.box .muted { color: #6b5a4a; font-size: 0.95rem; margin: 0; }
+.box .muted {
+  color: #6b5a4a;
+  font-size: 0.95rem;
+  margin: 0;
+  /* Truncate text after 4 lines to keep boxes uniform */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 .box:hover, .box:focus-within { transform: translateY(-0.375rem); box-shadow: 0 18px 40px rgba(2,6,23,0.08); }
 
