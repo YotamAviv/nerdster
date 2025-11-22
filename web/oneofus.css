@@ -114,7 +114,7 @@ body {
   align-items: flex-start;
   background: #fff8ef; /* warm off-white card */
   border: none;
-  padding: 0.875rem;
+  padding: 0.5rem;
   border-radius: 0.375rem;
   box-shadow: 0 6px 18px rgba(91, 64, 46, 0.06);
   width: 100%;
