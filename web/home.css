@@ -26,15 +26,19 @@
   /* slightly lighter than background for panels */
 
   /* Layout tokens */
-  --radius: 12px;
-  --gap: 18px;
+  --radius: 0.75rem; /* 12px */
+  --gap: 1.125rem;   /* 18px */
 
   /* Typography tokens */
   --mono-font: 'Fira Code', 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, monospace;
   --font-family-base: var(--mono-font);
-  --fs-base: 16px;
-  --fs-lg: 20px;
-  --fs-sm: 14px;
+  /* Base font sizes (use rem so scaling follows the root font-size)
+    ordered smallest → largest for readability */
+  --fs-sm: 0.875rem;      /* 14px */
+  --fs-md: 0.9375rem;     /* 15px */
+  --fs-base: 1rem;        /* 16px */
+  --fs-18: 1.125rem;      /* 18px */
+  --fs-lg: 1.25rem;       /* 20px */
   --lh: 1.55;
 
   /* Shadows */
@@ -61,15 +65,15 @@ body {
 }
 
 .container {
-  max-width: 1040px;
+  max-width: 65rem;
   margin: 0 auto;
   padding: calc(var(--gap) * 1.2);
 }
 
 main#content {
   display: grid;
-  gap: 16px;
-  margin-top: 12px;
+  gap: 1rem;
+  margin-top: 0.75rem;
 }
 
 /* -------------------- Header / Brand -------------------- */
@@ -80,11 +84,11 @@ main#content {
 .site-header .header-band {
   background: linear-gradient(180deg, rgba(124, 252, 0, 0.02), rgba(124, 252, 0, 0.004));
   border-bottom: 1px solid rgba(124, 252, 0, 0.03);
-  padding: 14px calc(var(--gap) * 1.2);
+  padding: 0.875rem calc(var(--gap) * 1.2);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .top-row-inner {
@@ -99,15 +103,15 @@ main#content {
 .left-group {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .logo {
-  width: 80px;
-  height: 80px;
-  border-radius: 10px;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 0.625rem;
   margin-left: 0;
-  padding: 6px;
+  padding: 0.375rem;
   filter: invert(1) brightness(1.05) contrast(1.02);
   box-shadow: 0 0 8px rgba(124, 252, 0, 0.06), 0 0 12px rgba(124, 252, 0, 0.03);
 }
@@ -124,13 +128,13 @@ main#content {
 .brand .tagline {
   margin: 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--fs-sm);
 }
 
 .tagline-pre {
   white-space: pre-wrap;
   font-family: monospace;
-  margin: 8px 0 0 0;
+  margin: 0.5rem 0 0 0;
   color: #ca8e63;
   font-size: 0.8em;
 }
@@ -138,17 +142,17 @@ main#content {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .icon-btn {
   background: transparent;
   border: 0;
-  font-size: 18px;
+  font-size: var(--fs-18);
   cursor: pointer;
   color: var(--fg);
-  padding: 8px;
-  border-radius: 8px;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
 }
 
 .icon-btn:hover {
@@ -159,15 +163,15 @@ main#content {
 .boxes {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
 }
 
 .box {
   background: linear-gradient(180deg, rgba(36, 68, 71, 0.96), rgba(2, 6, 8, 0.02));
-  padding: 18px;
-  border-radius: 10px;
-  min-height: 120px;
+  padding: 1.125rem;
+  border-radius: var(--radius);
+  min-height: 7.5rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -182,7 +186,7 @@ main#content {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: 650;
   font-family: var(--mono-font);
   color: var(--fg-dim);
@@ -190,15 +194,15 @@ main#content {
 
 .box h3::before {
   content: '▸';
-  margin-right: 8px;
+  margin-right: 0.5rem;
   color: rgba(124, 252, 0, 0.9);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .box:hover,
 .box:focus-within,
 .box:focus-visible {
-  transform: translateY(-6px);
+  transform: translateY(-0.375rem);
   box-shadow: 0 18px 40px rgba(2, 6, 23, 0.08);
 }
 
@@ -215,7 +219,7 @@ main#content {
 .box.selected {
   position: relative;
   z-index: 110;
-  transform: translateY(-6px);
+  transform: translateY(-0.375rem);
   box-shadow: 0 26px 60px rgba(2, 6, 23, 0.16);
   border-left: 3px solid var(--accent);
   pointer-events: none;
@@ -225,7 +229,7 @@ main#content {
   background: transparent;
   border: 0;
   color: var(--muted);
-  font-size: 18px;
+  font-size: var(--fs-18);
   line-height: 1;
   cursor: pointer;
   margin-left: auto;
@@ -233,7 +237,7 @@ main#content {
 
 .muted {
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--fs-sm);
 }
 
 .detail-container {
@@ -242,20 +246,20 @@ main#content {
 
 .detail-block {
   background: var(--card);
-  border-radius: 10px;
-  padding: 16px;
-  margin-top: 8px;
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-top: 0.5rem;
   box-shadow: 0 10px 30px rgba(2, 6, 23, 0.12);
   position: relative;
 }
 
 .detail-close {
   position: absolute;
-  right: 10px;
-  top: 8px;
+  right: 0.625rem;
+  top: 0.5rem;
   border: 0;
   background: transparent;
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 /* -------------------- Modal / Overlay -------------------- */
@@ -294,9 +298,9 @@ main#content {
 .modal-inner {
   /* darker modal panel for legibility on the dim overlay */
   background: linear-gradient(180deg, rgba(6, 18, 20, 0.92), var(--bg));
-  border-radius: 10px;
-  padding: 14px 16px;
-  max-width: 840px;
+  border-radius: var(--radius);
+  padding: 0.875rem 1rem;
+  max-width: 52.5rem;
   width: 94%;
   box-shadow: 0 18px 60px rgba(2, 6, 23, 0.32);
   border: 1px solid rgba(124, 252, 0, 0.04);
@@ -343,7 +347,7 @@ main#content {
 @media (max-width: 600px) {
   .modal-inner {
     width: 94%;
-    padding: 10px 12px;
+    padding: 0.625rem 0.75rem;
     font-size: 0.92rem;
   }
 
@@ -351,23 +355,23 @@ main#content {
   .modal-inner h3 { font-size: 0.95rem; }
 
   .modal-inner .embed-area iframe {
-    height: 260px;
+    height: 16.25rem;
     max-height: 45vh;
   }
 }
 
 .modal-close {
   position: absolute;
-  right: 12px;
-  top: 10px;
+  right: 0.75rem;
+  top: 0.625rem;
   z-index: 121;
   border: 0;
   background: transparent;
-  font-size: 18px;
+  font-size: var(--fs-18);
   color: #fff; /* make the close X visible on dark modal backgrounds */
   /* make it a circular tap target on touch devices */
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -380,8 +384,8 @@ main#content {
   appearance: none;
   border: 1px solid rgba(124, 252, 0, 0.08);
   background: transparent;
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius);
   cursor: pointer;
   font-weight: 700;
   color: var(--fg);
@@ -404,21 +408,21 @@ main#content {
 }
 
 .embed-area {
-  margin-top: 12px;
+  margin-top: 0.75rem;
 }
 
 .embed-area iframe {
   width: 100%;
-  height: 480px;
-  border-radius: 10px;
+  height: 30rem;
+  border-radius: var(--radius);
   box-shadow: 0 8px 30px rgba(2, 6, 23, 0.08);
   border: 0;
 }
 
 .site-footer {
   border-top: 1px solid rgba(124, 252, 0, 0.04);
-  padding: 18px;
-  margin-top: 18px;
+  padding: 1.125rem;
+  margin-top: 1.125rem;
   text-align: center;
   color: var(--muted);
 }
@@ -444,23 +448,23 @@ main#content {
 
 /* -------------------- Utilities / Misc -------------------- */
 .lead {
-  padding: 20px;
+  padding: 1.25rem;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(124, 252, 0, 0.02));
-  margin-bottom: 12px;
-  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  border-radius: 0.5rem;
 }
 
 .card {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 1rem;
   box-shadow: 0 6px 18px rgba(12, 25, 42, 0.04);
 }
 
 .card header h2 {
   margin: 0;
   color: var(--accent);
-  font-size: 20px;
+  font-size: var(--fs-lg);
   font-family: var(--mono-font);
 }
 
@@ -477,24 +481,24 @@ h3,
 
 .demo-controls {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .ghost {
   background: transparent;
   border: 1px dashed rgba(0, 0, 0, 0.08);
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
 }
 
 .more-btn {
-  margin-top: 8px;
+  margin-top: 0.5rem;
 }
 
 .detail {
-  margin-top: 8px;
-  padding: 10px;
+  margin-top: 0.5rem;
+  padding: 0.625rem;
   background: #fcfdff;
   border-left: 3px solid var(--accent);
 }
@@ -510,7 +514,7 @@ h3,
   }
 
   .embed-area iframe {
-    height: 420px;
+    height: 26.25rem;
   }
 }
 
@@ -521,8 +525,8 @@ h3,
   }
 
   .site-header img {
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   main#content {
@@ -536,7 +540,7 @@ h3,
   }
 
   .embed-area iframe {
-    height: 360px;
+    height: 22.5rem;
   }
 
   .brand .tagline {

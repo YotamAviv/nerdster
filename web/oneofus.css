@@ -10,9 +10,9 @@ body {
 }
 
 .container {
-  max-width: 980px;
+  max-width: 61.25rem;
   margin: 0 auto;
-  padding: 18px;
+  padding: 1.125rem;
 }
 
 .site-header {
@@ -22,8 +22,8 @@ body {
 }
 
 .site-header .logo {
-  width: 80px;
-  height: 80px;
+  width: 5rem;
+  height: 5rem;
 }
 
 .brand {
@@ -39,7 +39,7 @@ body {
 .header-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
   align-items: flex-end;
 }
 
@@ -47,11 +47,11 @@ body {
 .app-links {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0.625rem;
   align-items: flex-end;
   /* keep the store badges visually grouped with padding and a soft background */
-  padding: 8px;
-  border-radius: 10px;
+  padding: 0.5rem;
+  border-radius: 0.625rem;
   background: rgba(255, 248, 239, 0.9); /* warm translucent card */
   border: 1px solid rgba(107,79,59,0.06);
 }
@@ -59,12 +59,12 @@ body {
 .app-links a {
   display: block;
   /* give each badge a little breathing room so they don't touch the container edges */
-  padding: 4px 2px;
+  padding: 0.25rem 0.125rem;
 }
 
 .app-links img {
   display: block;
-  width: 180px;
+  width: 11.25rem;
   height: auto;
 }
 
@@ -80,8 +80,8 @@ body {
 }
 
 /* layout helper: lead with a small image on the left (marketing / badge) */
-.lead-image-row { display: flex; align-items: center; gap: 12px; }
-.side-logo { width: 80px; height: auto; border-radius: 8px; display: block; }
+.lead-image-row { display: flex; align-items: center; gap: 0.75rem; }
+.side-logo { width: 5rem; height: auto; border-radius: 0.5rem; display: block; }
 @media (max-width: 600px) {
   .lead-image-row { flex-direction: row; }
   .side-logo { width: 56px; }
@@ -99,47 +99,47 @@ body {
 }
 
 .hero .hero-inner {
-  max-width: 980px;
+  max-width: 61.25rem;
   margin: 0 auto;
-  padding: 0 18px;
+  padding: 0 1.125rem;
   display: flex;
-  gap: 18px;
+  gap: 1.125rem;
   align-items: flex-start;
 }
 
 /* Comic-strip styling */
 .comic {
   display: flex;
-  gap: 18px;
+  gap: 1.125rem;
   align-items: flex-start;
   background: #fff8ef; /* warm off-white card */
   border: none;
-  padding: 14px;
-  border-radius: 6px;
+  padding: 0.875rem;
+  border-radius: 0.375rem;
   box-shadow: 0 6px 18px rgba(91, 64, 46, 0.06);
   width: 100%;
 }
 
 .comic-image {
   flex: 0 0 auto;
-  border-radius: 10px;
+  border-radius: 0.625rem;
   overflow: hidden;
 }
 
 .comic img {
-  max-width: 200px;
+  max-width: 12.5rem;
   height: auto;
   display: block;
-  border: 4px solid #6b4f3b; /* warm brown frame */
-  border-radius: 10px;
+  border: 0.25rem solid #6b4f3b; /* warm brown frame */
+  border-radius: 0.625rem;
   box-shadow: 6px 6px 0 rgba(107, 79, 59, 0.06);
 }
 
 /* keep bubble full-width but make it less tall and avoid scrollbars */
 .bubble {
   background: #fffef9; /* slightly warmer interior */
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.375rem;
   font-family: "Comic Neue", Bangers, "Comic Sans MS", cursive, "Inter";
   font-size: 1.05rem;
   line-height: 1.12;
@@ -153,31 +153,31 @@ body {
 .bubble:before {
   content: "";
   position: absolute;
-  left: -18px;
-  top: 32px;
+  left: -1.125rem;
+  top: 2rem;
   width: 0;
   height: 0;
-  border-top: 11px solid transparent;
-  border-bottom: 11px solid transparent;
-  border-right: 15px solid #6b4f3b;
+  border-top: 0.6875rem solid transparent;
+  border-bottom: 0.6875rem solid transparent;
+  border-right: 0.9375rem solid #6b4f3b;
 }
 .bubble:after {
   content: "";
   position: absolute;
-  left: -14px;
-  top: 34px;
+  left: -0.875rem;
+  top: 2.125rem;
   width: 0;
   height: 0;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-right: 11px solid #fffef9;
+  border-top: 0.5rem solid transparent;
+  border-bottom: 0.5rem solid transparent;
+  border-right: 0.6875rem solid #fffef9;
 }
 
 /* Footer styling aligned with home2.css */
 .site-footer {
   border-top: 1px solid #efe3d8;
-  padding: 18px;
-  margin-top: 18px;
+  padding: 1.125rem;
+  margin-top: 1.125rem;
   text-align: center;
   color: #6b5a4a;
   font-size: 0.95rem;
@@ -195,7 +195,7 @@ body {
   }
 
   .app-links img {
-    width: 140px;
+    width: 8.75rem;
   }
 
   .hero {
@@ -204,11 +204,11 @@ body {
 
   /* make comic images a bit smaller on small screens and reduce padding */
   .comic img {
-    max-width: 100px;
+    max-width: 6.25rem;
   }
 
   .comic {
-    padding: 8px;
+    padding: 0.5rem;
   }
 }
 
@@ -219,16 +219,16 @@ body {
 
 .comic.rev .bubble:before {
   left: auto;
-  right: -18px;
+  right: -1.125rem;
   border-right: none;
-  border-left: 15px solid #6b4f3b;
+  border-left: 0.9375rem solid #6b4f3b;
 }
 
 .comic.rev .bubble:after {
   left: auto;
-  right: -14px;
+  right: -0.875rem;
   border-right: none;
-  border-left: 11px solid #fffef9;
+  border-left: 0.6875rem solid #fffef9;
 }
 
 /* Make all lists compact on pages that include box.css (detail pages) */
