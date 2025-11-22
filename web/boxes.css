@@ -6,12 +6,11 @@
 }
 
 .box {
-  /* warm interior to match oneofus.css palette */
-  background: #dbd4e0;
+  background: #efe9f5;
   padding: 14px;
   border-radius: 12px;
   box-shadow: 0 8px 22px rgba(91,64,46,0.06);
-  border: 1px solid rgba(107,79,59,0.08);
+  border: 1px solid rgba(107,79,59,0.12);
   transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s;
   min-height: 96px;
   display: flex;

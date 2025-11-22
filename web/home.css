@@ -34,7 +34,7 @@
   --font-family-base: var(--mono-font);
   --fs-base: 16px;
   --fs-lg: 20px;
-  --fs-sm: 13px;
+  --fs-sm: 14px;
   --lh: 1.55;
 
   /* Shadows */
@@ -124,16 +124,15 @@ main#content {
 .brand .tagline {
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .tagline-pre {
   white-space: pre-wrap;
   font-family: monospace;
   margin: 8px 0 0 0;
-  color: #6b4f3b;
+  color: #ca8e63;
   font-size: 0.8em;
-  /* softer brown */
 }
 
 .header-actions {
@@ -165,15 +164,16 @@ main#content {
 }
 
 .box {
-  background: linear-gradient(180deg, var(--card), rgba(0, 0, 0, 0.02));
+  background: linear-gradient(180deg, rgba(36, 68, 71, 0.96), rgba(2, 6, 8, 0.02));
   padding: 18px;
   border-radius: 10px;
   min-height: 120px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.12);
-  border-left: 3px solid rgba(124, 252, 0, 0.08);
+  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-left: 3px solid rgba(124, 252, 0, 0.22);
   transition: transform .12s cubic-bezier(.2, .9, .2, 1), box-shadow .12s;
 }
 
@@ -233,7 +233,7 @@ main#content {
 
 .muted {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .detail-container {
@@ -426,6 +426,16 @@ main#content {
 .site-footer a {
   color: var(--accent);
   text-decoration: none;
+}
+
+.container a,
+.modal-inner a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.container a:visited,
+.modal-inner a:visited {
+  color: rgba(124,252,0,0.65);
 }
 
 .site-footer a:hover {
