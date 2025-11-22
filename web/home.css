@@ -324,6 +324,38 @@ main#content {
   line-height: 1.45;
 }
 
+/* Mobile-friendly modal sizing and content limits */
+.modal-inner {
+  /* Ensure modal never exceeds the viewport height and becomes scrollable */
+  max-width: min(94%, 560px);
+  max-height: 90vh;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+.modal-inner .embed-area iframe,
+.modal-inner img {
+  max-width: 100%;
+  height: auto;
+  max-height: 55vh;
+}
+
+@media (max-width: 600px) {
+  .modal-inner {
+    width: 94%;
+    padding: 10px 12px;
+    font-size: 0.92rem;
+  }
+
+  .modal-inner h2 { font-size: 1rem; }
+  .modal-inner h3 { font-size: 0.95rem; }
+
+  .modal-inner .embed-area iframe {
+    height: 260px;
+    max-height: 45vh;
+  }
+}
+
 .modal-close {
   position: absolute;
   right: 12px;
@@ -332,6 +364,15 @@ main#content {
   border: 0;
   background: transparent;
   font-size: 18px;
+  color: #fff; /* make the close X visible on dark modal backgrounds */
+  /* make it a circular tap target on touch devices */
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.35);
 }
 
 /* -------------------- Buttons / Embeds / Footer -------------------- */
