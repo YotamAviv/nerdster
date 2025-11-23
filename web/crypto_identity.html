@@ -70,9 +70,6 @@
 
     <script src="iframe_helper.js"></script>
     <script>
-      // Inline replacement for crypto.js: set the iframe src and append a
-      // `verify` query parameter containing encoded JSON. Kept inline so this
-      // page is self-contained (no external crypto.js).
       (function () {
         const iframe = document.getElementById("flutterApp");
         if (!iframe) return;

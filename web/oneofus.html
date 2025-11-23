@@ -427,37 +427,6 @@ A network of the people, by the people, for the people.
       </div>
     </div>
 
-    <script>
-      // Pass query parameters (e.g. ?fire=emulator) to iframes in the modal
-      (function() {
-        const search = window.location.search;
-        if (!search) return;
-
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            mutation.addedNodes.forEach((node) => {
-              if (node.tagName === 'IFRAME' || (node.querySelector && node.querySelector('iframe'))) {
-                const iframe = node.tagName === 'IFRAME' ? node : node.querySelector('iframe');
-                if (iframe && !iframe.src.includes(search)) {
-                  // Append search params, handling existing query params in src
-                  const separator = iframe.src.includes('?') ? '&' : '?';
-                  // Avoid duplicating if already present (simple check)
-                  if (!iframe.src.includes(search)) {
-                     iframe.src = iframe.src + separator + search.substring(1);
-                  }
-                }
-              }
-            });
-          });
-        });
-
-        const modalContent = document.getElementById('modalContent');
-        if (modalContent) {
-          observer.observe(modalContent, { childList: true, subtree: true });
-        }
-      })();
-    </script>
-
     <script src="guard.js" defer></script>
     <script src="boxes.js" defer></script>
   </body>
