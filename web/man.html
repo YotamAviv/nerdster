@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>one-of-us.net — manual</title>
+    <link rel="stylesheet" href="oneofus.css" />
+    <style>
+      body {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: sans-serif;
+        line-height: 1.6;
+      }
+      h1 {
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 10px;
+        margin-top: 40px;
+      }
+      h2 {
+        margin-top: 30px;
+        color: #333;
+      }
+      h3 {
+        margin-top: 20px;
+        color: #555;
+      }
+      p {
+        margin-bottom: 15px;
+      }
+      ul {
+        margin-bottom: 15px;
+      }
+      li {
+        margin-bottom: 5px;
+      }
+      code {
+        background: #f4f4f4;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+      a {
+        color: #0066cc;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="left" style="display: flex; align-items: center; gap: 12px">
+        <img src="img/oneofus_1024.png" alt="ONE-OF-US.NET" class="logo" />
+        <div class="brand">
+          <h1>ONE-OF-US.NET</h1>
+          <pre class="tagline-pre">
+A network of the people, by the people, for the people.
+ Retis, ergo sum. (I network, therefore I am)
+          </pre>
+        </div>
+      </div>
+    </header>
+
+    <h1>one-of-us.net — manual</h1>
+
+    <p>
+      The one-of-us.net phone app is meant to be simple. It creates, stores, and
+      lets you to sign statements with your cryptographic public/private key
+      pair. The private key never leaves your phone (only delegate keys do).
+    </p>
+
+    <ul>
+      <li>
+        Sign and publish trust statements referencing other folks' public keys
+        thus forming our cryptographically secure, web-of-trust.
+      </li>
+      <li>
+        Create disposable, delegate key pairs and allow other services (<a
+          href="http://nerdster.org/"
+          >the Nerd'ster</a
+        >) to state stuff on your behalf.
+      </li>
+    </ul>
+
+    <p>
+      The statements are replicated to the cloud and are meant to be portable
+      and available to be read and trusted by any one or any service. For
+      example, my one-of-us statements are here:
+      <a
+        href="https://export.one-of-us.net/?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431"
+        >https://export.one-of-us.net/?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431</a
+      >
+    </p>
+
+    <h1>Beginner: Trust folks (join the network), Sign in to the Nerd'ster!</h1>
+
+    <p>
+      Until you trust someone else on the network, your network will be empty
+      (and useless). Until someone else on the network trusts you, you'll be
+      invisible to the network (and useless).
+    </p>
+
+    <h2>Trust someone</h2>
+
+    <p>Options:</p>
+
+    <ol>
+      <li>
+        <strong>Meet them in person:</strong> Click on the
+        <a
+          href="https://fonts.google.com/icons?selected=Material+Symbols+Outlined:person_add:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=add&icon.size=24&icon.color=%235f6368"
+          >"person add" icon</a
+        >
+        on the main screen of the ONE-OF-US phone app, and use your phone's
+        camera to scan the QR code on the main screen of their ONE-OF-US phone
+        app.
+      </li>
+      <li>
+        <strong
+          >Use email, text, or something else to share public keys:</strong
+        >
+        Folks can share their public key through the menu "/etc/Share my public
+        key/QR code". Ask your comrades and associates to share their public key
+        with you. View the QR code they sent with you on your big computer and
+        scan it with your one-of-us phone app.
+      </li>
+    </ol>
+
+    <p>
+      Once the app has initiated the process of signing a trust statement, fill
+      in the field "moniker" (typically first name) and optionally "comment",
+      click trust, approve, congratulations!
+    </p>
+
+    <h3>-- let your associates trust you</h3>
+
+    <p>Do the reverse of the above.</p>
+    <p>
+      Until someone on the network trusts you, you'll be invisible to the entire
+      network, and so this is important.
+    </p>
+
+    <h2>Delegate sign in to the Nerdster</h2>
+
+    <p>Access the Nerdster on a computer web browser:</p>
+
+    <ol>
+      <li>
+        Find it at
+        <a href="https://nerdster.web.app/">https://nerdster.web.app/</a> or
+        wherever else it may be embedded, such as
+        <a href="https://aviv.net">https://aviv.net/</a>,
+        <a href="https://nerdster.org">https://nerdster.org/</a>, etc...
+      </li>
+      <li>
+        Find the top left menu (it should say something like "Viewing as Tom")
+        and choose "QR sign-in".
+      </li>
+      <li>
+        The Nerdster should now display a QR code to be scanned by your
+        ONE-OF-US phone app.
+      </li>
+    </ol>
+
+    <p>Use your ONE-OF-US phone app:</p>
+
+    <ol>
+      <li>
+        Click the sign-in icon on the bottom right of your ONE-OF-US phone's
+        main screen.
+      </li>
+      <li>Your phone may ask you for camera permission, allow it.</li>
+      <li>
+        Use your phone's camera to scan the code on your computer with your
+        phone.
+      </li>
+      <li>
+        If this is your first time signing in, the app may ask you if you want
+        to create a "delegate key" for the Nerdster. Do that, and confirm the
+        process.
+      </li>
+    </ol>
+
+    <p>You should now be signed in and centered as yourself on the Nerdster.</p>
+    <p>
+      In case you don't see any content, you probably don't one-of-us trust
+      anyone, and so your network is empty.
+    </p>
+
+    <h1>Statement types</h1>
+
+    <p>
+      Statements are signed by your active ONE-OF-US public/private key pair.
+    </p>
+    <p>The subject of these statements is always another public key.</p>
+    <p>
+      The verb tells us what you are stating about that other key: trust, block,
+      delegate, or replace.
+    </p>
+
+    <h2>Form the network: {trust, block}</h2>
+
+    <p>The trust network is defined by the trust relationships.</p>
+    <p>In case of fraud or mistakes, a block may be required.</p>
+
+    <h3>--moniker</h3>
+    <p>A moniker, typically a first name, is required in trust statements.</p>
+
+    <h2>Authorize other services: {delegate}</h2>
+
+    <p>
+      Your ONE-OF-US key pair is your identity, but you can also create
+      disposable "delegate" keys to hand over to other services to state stuff
+      on your behalf.
+    </p>
+
+    <h3>--revokeAt</h3>
+    <p>
+      In case of lost or compromised keys, or in case a delegate service
+      misbehaves, you can revoke the key you gave it.
+    </p>
+    <p>
+      That is done by issuing an overriding delegate statement, this time with
+      revokeAt set to the last valid statement so that whatever statements that
+      key signs after its been revoked is not to be considered as valid.
+    </p>
+
+    <h2>Maintain your identity {replace}</h2>
+
+    <p>
+      In case you lose your phone, reinstall the app, or have your key
+      compromised, you can replace your key.
+    </p>
+    <p>
+      The goal is to maintain your identity even though you'll be using a new
+      key. The statement you'll state with your new key is something like, "This
+      new key of mine replaces my old key as of this particular time".
+    </p>
+    <p>
+      All of those you've trusted or blocked with your old key will be
+      understood to be trusted or blocked by your new key, and the goes for
+      delegate keys, folks who've trusted you, and even older keys which you've
+      replaced before.
+    </p>
+
+    <h3>--revokeAt</h3>
+    <p>
+      A revoked at last statement token is always required for replace
+      statements.
+    </p>
+
+    <h1>Mechanics of using the app</h1>
+
+    <p>
+      The app lists all statements made by your active and replaced keys in 3
+      groups:
+    </p>
+    <ul>
+      <li>{trust, block}: the subject of these is someone else's key</li>
+      <li>
+        {delegate}: the subject of these is a key you've handed over to another
+        service.
+      </li>
+      <li>
+        {replace}: the subject of these is an old key of yours which you've lost
+        or retired.
+      </li>
+    </ul>
+
+    <h2>Overwrite (re-state) or clear (erase) statements</h2>
+
+    <p>
+      One key's disposition towards another is singular, and so if you trust a
+      key and then block it, only the most recent statement is your key's
+      disposition towards the other. The "clear" verb acts as "erase", and so if
+      you trust a key and the clear the key, it's like you never said nothin' at
+      all.
+    </p>
+    <p>And so whatever you do can always be undone.</p>
+    <p>
+      (If you lose your private key, then it's more complicated, but there's a
+      path for that, too.)
+    </p>
+    <p>
+      You can re-state any statement by finding it under the "state" menu,
+      clicking its box, and updating its fields ("moniker", "revokedAt", or
+      "comment").
+    </p>
+    <p>This will override whatever you previously stated.</p>
+    <p>
+      You can also clear any statement (similarly, find the statement and the
+      choose "clear").
+    </p>
+
+    <h1>Novice: Maintain your own keys</h1>
+
+    <p>Phones and keys can get lost or hacked.</p>
+    <p>
+      When you create replacement keys, you need to take a few steps so that
+      your network understands that your new key still represents you.
+    </p>
+
+    <h2>your one-of-us identity keys</h2>
+
+    <p>Don't lose your one-of-us key and don't get hacked.</p>
+    <p>
+      In case you lose your one-of-us key or get hacked, you can replace your
+      one-of-us key.
+    </p>
+    <p>You do this by:</p>
+    <ul>
+      <li>creating a new one-of-us key and</li>
+      <li>
+        using your new key to sign and publish a statement that it is a
+        replacement of your lost key
+      </li>
+    </ul>
+    <p>
+      But immediately after you do this, no-one will know that you've replaced
+      your key. You'll need to reach out the folks who trusted your old key and
+      ask them to trust your new key.
+    </p>
+    <p>
+      Once some of them have done that, the others should see a notification on
+      their Nerdster that an attempt has been made to replace a key that they
+      trust directly, and so they may possibly reach out to you to confirm that
+      before you reach out to them.
+    </p>
+    <p>
+      To actually get started on this, use the state / replace menu on your
+      one-of-us phone app.
+    </p>
+
+    <h2>your delegate keys</h2>
+
+    <p>
+      In case you had to replace your one-of-us key, then you should use your
+      new key to state that your old delegate keys are associated with your new
+      one-of-us identity key.
+    </p>
+    <p>
+      Delegate keys for which you still have the private keys can be used by
+      importing them.
+    </p>
+    <p>
+      Delegate keys which you don't have the private keys for can and should
+      still be claimed by your active one-of-us identity key.
+    </p>
+    <p>
+      In case you suspect that a delegate key has been compromised, then you can
+      re-delegate it and revoke it as you do.
+    </p>
+
+    <h1>Advanced: Maintain your network</h1>
+
+    <h2>Identify and block bots, bad actors, or careless humans</h2>
+
+    <p>This is your network.</p>
+    <p>Blocking a one-of-us key is harsh!</p>
+    <p>
+      You should only block a key in case you have strong reason to believe that
+      the key:
+    </p>
+    <ul>
+      <li>does not represent a real person</li>
+      <li>
+        or maybe it does represent a person, but that person is not acting in
+        good faith (eg. blocks indiscriminately, trusts fake "Elon", etc..)
+      </li>
+      <li>
+        or maybe that person trusts too carelessly or just doesn't get it (eg.
+        scans QR keys from Instagram)
+      </li>
+    </ul>
+
+    <h2>Help folks you trust maintain their keys</h2>
+
+    <p>
+      If and when one of your trusted associates loses their key, they'll need
+      for you to:
+    </p>
+    <ul>
+      <li>create a new key</li>
+      <li>
+        use their new key to state that their new key replaces their old key
+      </li>
+    </ul>
+    <p>You'll need to:</p>
+    <ul>
+      <li>trust their new key</li>
+      <li>clear your trust in their old key</li>
+      <li>and possibly to advise them on how to do all this. Please do.</li>
+    </ul>
+
+    <h1>/etc</h1>
+
+    <h2>Copy/paste instead of QR</h2>
+
+    <p>
+      I use copy/paste instead of QR mostly during development, but there may be
+      times when the text version of the key is more useful (maybe hard to point
+      the phone camera at the same phone's display, for example).
+    </p>
+    <p>
+      Most UI gestures that scan for a QR code also have a paste icon to
+      accomplish the same.
+    </p>
+
+    <h1>Pitfalls</h1>
+
+    <h3>--DO NOT: Block people you dislike</h3>
+    <p>or those views you don't appreciate.</p>
+    <p>
+      Those are real people, and they belong in the ONE-OF-US network. Instead,
+      block them for Nerdster-follow, censor their content, etc...
+    </p>
+
+    <h3>--DO NOT: Trust folks by scanning their QR codes from the Nerdster</h3>
+    <p>
+      If I get a text from an unknown number saying, "Hey, Tom. This is John. I
+      had to get a new phone plan, please update my number in your contacts.",
+      I'll want to speak to him first, right?
+    </p>
+    <p>
+      If you need this explained further, then sorry, buddy, you ain't nerd!
+    </p>
+  </body>
+</html>
