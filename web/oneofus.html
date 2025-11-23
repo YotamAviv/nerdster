@@ -122,12 +122,9 @@ A network of the people, by the people, for the people.
           <p class="muted">ChatGPT can't steal your Bitcoin.</p>
           <template class="box-detail">
             <div>
-              <!--  Not sure why VSCode shows a red warning. 
-                Not sure if src or srcdoc is preferred.  
-                srcdoc='<base href="."><script>location.replace("delegate.html" + parent.location.search)</script>' -->
               <iframe
                 title="Crypto detail"
-                src="https://nerdster.org/crypto.html"
+                src="crypto.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>
@@ -140,7 +137,7 @@ A network of the people, by the people, for the people.
             <div>
               <iframe
                 title="Crypto identity"
-                src="https://nerdster.org/crypto_identity.html"
+                src="crypto_identity.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>
@@ -153,7 +150,7 @@ A network of the people, by the people, for the people.
             <div>
               <iframe
                 title="Crypto trust"
-                src="https://nerdster.org/crypto_trust.html"
+                src="crypto_trust.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>
@@ -164,14 +161,9 @@ A network of the people, by the people, for the people.
           <p class="muted">Own your identity across services.</p>
           <template class="box-detail">
             <div>
-              <!-- 
-                Not sure why VSCode shows a red warning. 
-                Not sure if src or srcdoc is preferred.  
-                srcdoc='<base href="."><script>location.replace("delegate.html" + parent.location.search)</script>'
-              -->
               <iframe
                 title="Delegate detail"
-                src="https://nerdster.org/delegate.html"
+                src="delegate.html"
                 style="width: 100%; height: 460px; border: 0"
               ></iframe>
             </div>
@@ -435,91 +427,36 @@ A network of the people, by the people, for the people.
       </div>
     </div>
 
-    <!-- iframe embedding script.. works, but not bothering with it for now.
-     It is useful for detetecting ?fire=emulator when running locally.
-     It won't work when pushed to one-of-us.net as it is now.
     <script>
-      // Observe modalContent for inserted iframe[data-embed="crypto"]
-      // and set its src to crypto.html + the parent page's query string.
-      (function () {
-        const parentSearch = location.search || "";
+      // Pass query parameters (e.g. ?fire=emulator) to iframes in the modal
+      (function() {
+        const search = window.location.search;
+        if (!search) return;
 
-        function setIframeSrcOnce(iframe) {
-          if (!iframe || iframe.dataset.__cryptoSrcSet) return;
-          iframe.dataset.__cryptoSrcSet = "1";
-          try {
-            // Prefer any explicit src on the iframe tag (this supports delegate.html
-            // or other per-template embeds). If no src attribute, fall back to
-            // the default crypto.html base.
-            const declared = iframe.getAttribute("src");
-            const baseSrc = declared;
-
-            // Append parent's search (location.search) to the declared base.
-            // parentSearch starts with '?' when non-empty.
-            let newSrc = baseSrc;
-            if (parentSearch) {
-              if (baseSrc.includes("?")) {
-                // base already has query params, append with &
-                newSrc = baseSrc + "&" + parentSearch.slice(1);
-              } else {
-                newSrc = baseSrc + parentSearch;
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+              if (node.tagName === 'IFRAME' || (node.querySelector && node.querySelector('iframe'))) {
+                const iframe = node.tagName === 'IFRAME' ? node : node.querySelector('iframe');
+                if (iframe && !iframe.src.includes(search)) {
+                  // Append search params, handling existing query params in src
+                  const separator = iframe.src.includes('?') ? '&' : '?';
+                  // Avoid duplicating if already present (simple check)
+                  if (!iframe.src.includes(search)) {
+                     iframe.src = iframe.src + separator + search.substring(1);
+                  }
+                }
               }
-            }
-
-            // Resolve relative URL to absolute for logging; but set the iframe src
-            // exactly to newSrc so we preserve relative behavior.
-            try {
-              console.info(
-                "oneofus: set crypto iframe src ->",
-                new URL(newSrc, location.href).href
-              );
-            } catch (e) {
-              console.info("oneofus: set crypto iframe src ->", newSrc);
-            }
-            iframe.src = newSrc;
-          } catch (err) {
-            console.warn("oneofus: failed to set crypto iframe src", err);
-          }
-        }
-
-        function observeModal() {
-          const modalContent = document.getElementById("modalContent");
-          if (!modalContent) return setTimeout(observeModal, 100);
-
-          // If iframe already present (e.g., template was injected), set src now
-          const existing = modalContent.querySelector(
-            'iframe[data-embed="crypto"]'
-          );
-          if (existing) setIframeSrcOnce(existing);
-
-          const mo = new MutationObserver((muts) => {
-            for (const m of muts) {
-              if (m.type === "childList" && m.addedNodes.length) {
-                m.addedNodes.forEach((node) => {
-                  if (!(node instanceof Element)) return;
-                  const iframe =
-                    node.querySelector &&
-                    node.querySelector('iframe[data-embed="crypto"]');
-                  if (iframe) setIframeSrcOnce(iframe);
-                  // Also if the added node itself is the iframe
-                  if (
-                    node.matches &&
-                    node.matches('iframe[data-embed="crypto"]')
-                  )
-                    setIframeSrcOnce(node);
-                });
-              }
-            }
+            });
           });
-          mo.observe(modalContent, { childList: true, subtree: true });
-        }
+        });
 
-        if (document.readyState === "loading")
-          document.addEventListener("DOMContentLoaded", observeModal);
-        else observeModal();
+        const modalContent = document.getElementById('modalContent');
+        if (modalContent) {
+          observer.observe(modalContent, { childList: true, subtree: true });
+        }
       })();
     </script>
-    -->
 
     <script src="guard.js" defer></script>
     <script src="boxes.js" defer></script>
