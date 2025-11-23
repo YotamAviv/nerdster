@@ -15,7 +15,7 @@
         background-color: #ffffff;
         color: #000000;
       }
-      
+
       /* Header overrides to match man page theme */
       .site-header {
         margin-bottom: 40px;
@@ -44,7 +44,7 @@
         border-bottom: none;
         padding: 0;
       }
-      
+
       h2 {
         font-size: 1.1rem;
         font-weight: bold;
@@ -60,7 +60,9 @@
         margin-left: 4ch;
       }
 
-      p, ul, ol {
+      p,
+      ul,
+      ol {
         margin-left: 8ch;
         margin-bottom: 15px;
         max-width: 75ch;
@@ -74,7 +76,7 @@
         color: #000;
         text-decoration: underline;
       }
-      
+
       a:hover {
         background-color: #000;
         color: #fff;
@@ -109,18 +111,18 @@ A network of the people, by the people, for the people.
     <p>
       The one-of-us.net phone app is meant to be simple. It creates, stores, and
       lets you to sign statements with your cryptographic public/private key
-      pair. The private key never leaves your phone (only delegate keys do).
+      pairs (a single identity key pair; as many delegate keys as you want).
     </p>
 
     <ul>
       <li>
-        Sign and publish trust statements referencing other folks' public keys
-        thus forming our cryptographically secure, web-of-trust.
+        Sign and publish trust/block statements referencing other keys thus
+        forming our cryptographically secure, web-of-trust.
       </li>
       <li>
-        Create disposable, delegate key pairs and allow other services (<a
-          href="http://nerdster.org/"
-          >the Nerd'ster</a
+        Create disposable, delegate key pairs, associate them with your
+        identity, and allow other services (<a href="http://nerdster.org/"
+          >the Nerdster</a
         >) to state stuff on your behalf.
       </li>
     </ul>
@@ -135,7 +137,10 @@ A network of the people, by the people, for the people.
       >
     </p>
 
-    <h1>Beginner: Trust folks (join the network), Sign in to the Nerd'ster!</h1>
+    <h1>
+      Beginner: Trust folks and have them trust you (join the network), Sign in
+      to the <a href="nerdster.org">Nerdster</a>
+    </h1>
 
     <p>
       Until you trust someone else on the network, your network will be empty
@@ -149,23 +154,20 @@ A network of the people, by the people, for the people.
 
     <ol>
       <li>
-        <strong>Meet them in person:</strong> Click on the
-        <a
-          href="https://fonts.google.com/icons?selected=Material+Symbols+Outlined:person_add:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=add&icon.size=24&icon.color=%235f6368"
-          >"person add" icon</a
-        >
-        on the main screen of the ONE-OF-US phone app, and use your phone's
-        camera to scan the QR code on the main screen of their ONE-OF-US phone
-        app.
+        <strong>Meet them in person:</strong> Click on the QR code icon on the
+        bottom right of the main screen of the ONE-OF-US.NET phone app, and use
+        your phone's camera to scan the QR code on the main screen of the other
+        person's ONE-OF-US.NET phone app.
       </li>
       <li>
         <strong
           >Use email, text, or something else to share public keys:</strong
         >
-        Folks can share their public key through the menu "/etc/Share my public
-        key/QR code". Ask your comrades and associates to share their public key
-        with you. View the QR code they sent with you on your big computer and
-        scan it with your one-of-us phone app.
+        Folks can share their public key through Share menu. Ask your comrades
+        and associates to share their public key with you. View the QR code they
+        sent with you on your big computer and scan it with your ONE-OF-US.NET
+        phone app. (Your public key is not a secret, so sharing it this way is
+        safe.)
       </li>
     </ol>
 
@@ -190,37 +192,31 @@ A network of the people, by the people, for the people.
     <ol>
       <li>
         Find it at
-        <a href="https://nerdster.web.app/">https://nerdster.web.app/</a> or
-        wherever else it may be embedded, such as
-        <a href="https://aviv.net">https://aviv.net/</a>,
-        <a href="https://nerdster.org">https://nerdster.org/</a>, etc...
+        <a href="https://nerdster.org/">https://nerdster.org/</a> or wherever
+        else it may be embedded, such as
+        <a href="https://aviv.net">https://aviv.net/</a>.
       </li>
-      <li>
-        Find the top left menu (it should say something like "Viewing as Tom")
-        and choose "QR sign-in".
-      </li>
-      <li>
-        The Nerdster should now display a QR code to be scanned by your
-        ONE-OF-US phone app.
-      </li>
+      <li>Click "QR sign-in" to display the Nerdster's sign in parameters.</li>
     </ol>
 
     <p>Use your ONE-OF-US phone app:</p>
 
     <ol>
       <li>
-        Click the sign-in icon on the bottom right of your ONE-OF-US phone's
-        main screen.
+        Click the QR icon on the bottom right of your ONE-OF-US phone's main
+        screen.
       </li>
       <li>Your phone may ask you for camera permission, allow it.</li>
       <li>
-        Use your phone's camera to scan the code on your computer with your
-        phone.
+        Use your phone's camera to scan the Nerdster's sign-in parameters.
       </li>
       <li>
         If this is your first time signing in, the app may ask you if you want
         to create a "delegate key" for the Nerdster. Do that, and confirm the
-        process.
+        process. (You don't have to create a delegate key. Without one, you'll
+        still be able to use the Nerdster to view content from your point of
+        view (PoV), but you won't be able to post anything or interact
+        otherwise.)
       </li>
     </ol>
 
@@ -238,7 +234,8 @@ A network of the people, by the people, for the people.
     <p>The subject of these statements is always another public key.</p>
     <p>
       The verb tells us what you are stating about that other key: trust, block,
-      delegate, or replace.
+      delegate, or replace. The 'clear' verb is a special verb that erases any
+      previous statement you've made about that key.
     </p>
 
     <h2>Form the network: {trust, block}</h2>
@@ -452,20 +449,17 @@ A network of the people, by the people, for the people.
     <h1>Pitfalls</h1>
 
     <h3>--DO NOT: Block people you dislike</h3>
-    <p>or those views you don't appreciate.</p>
     <p>
       Those are real people, and they belong in the ONE-OF-US network. Instead,
-      block them for Nerdster-follow, censor their content, etc...
+      block them for &lt;Nerdster&gt; follow, censor their content, etc...
     </p>
 
     <h3>--DO NOT: Trust folks by scanning their QR codes from the Nerdster</h3>
     <p>
-      If I get a text from an unknown number saying, "Hey, Tom. This is John. I
-      had to get a new phone plan, please update my number in your contacts.",
-      I'll want to speak to him first, right?
+      Suppose I receive a text from an unknown number saying, "Hey, Tom. This is
+      John. I had to get a new phone plan, please update my number in your
+      contacts.", I'd want to speak to him first, right?
     </p>
-    <p>
-      If you need this explained further, then sorry, buddy, you ain't nerd!
-    </p>
+    <p>If you need this explained further, then sorry, bud, you ain't nerd!</p>
   </body>
 </html>
