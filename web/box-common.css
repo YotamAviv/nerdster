@@ -1,0 +1,39 @@
+/*
+ * box-common.css
+ * Shared structural styles for boxes (grid layout, flex behavior, truncation).
+ * Theme-specific colors and fonts should remain in theme CSS files.
+ */
+
+.boxes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  /* margin can be overridden by theme if needed */
+  margin: 1.125rem 0;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* min-height ensures consistent row height */
+  min-height: 6rem; 
+}
+
+/* Truncation for .muted text inside boxes */
+.box .muted {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 900px) {
+  .boxes { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .boxes { grid-template-columns: 1fr; }
+}

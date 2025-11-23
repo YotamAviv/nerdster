@@ -1,9 +1,8 @@
-.boxes {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
-  margin: 1.125rem 0;
-}
+/*
+ * boxes.css
+ * Theme-specific styles for boxes (Light Theme).
+ * Structural styles are imported from box-common.css (or should be included in HTML).
+ */
 
 .box {
   background: #efe9f5;
@@ -12,10 +11,6 @@
   box-shadow: 0 8px 22px rgba(91,64,46,0.06);
   border: 1px solid rgba(107,79,59,0.12);
   transition: transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s;
-  min-height: 6rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
 .box h3 { margin: 0 0 0.5rem 0; font-size: 1rem; color: #3b2f2f; }
@@ -23,17 +18,12 @@
   color: #6b5a4a;
   font-size: 0.95rem;
   margin: 0;
-  /* Truncate text after 4 lines to keep boxes uniform */
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .box:hover, .box:focus-within { transform: translateY(-0.375rem); box-shadow: 0 18px 40px rgba(2,6,23,0.08); }
 
 .box.selected { position: relative; z-index: 110; transform: translateY(-0.375rem); border: 0.125rem solid #0b6bff; pointer-events: none; }
+
 
 /* modal/overlay for showing details */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: none; }
@@ -81,10 +71,3 @@
   color: #eef6ff;
 }
 
-@media (max-width: 900px) {
-  .boxes { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 560px) {
-  .boxes { grid-template-columns: 1fr; }
-}
