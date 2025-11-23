@@ -160,21 +160,14 @@ main#content {
 }
 
 /* -------------------- Boxes / Cards -------------------- */
-.boxes {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
+/* Grid layout and basic box structure are handled by box-common.css */
 
 .box {
   background: linear-gradient(180deg, rgba(36, 68, 71, 0.96), rgba(2, 6, 8, 0.02));
   padding: 1.125rem;
   border-radius: var(--radius);
+  /* min-height: 7.5rem;  <-- overridden by box-common.css default, but can be kept if needed */
   min-height: 7.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   box-shadow: 0 12px 30px rgba(2, 6, 23, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.03);
   border-left: 3px solid rgba(124, 252, 0, 0.22);
@@ -509,9 +502,7 @@ h3,
 
 /* -------------------- Responsive -------------------- */
 @media (max-width: 900px) {
-  .boxes {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  /* .boxes grid layout handled by box-common.css */
 
   .embed-area iframe {
     height: 26.25rem;
@@ -535,9 +526,7 @@ h3,
 }
 
 @media (max-width: 560px) {
-  .boxes {
-    grid-template-columns: 1fr;
-  }
+  /* .boxes grid layout handled by box-common.css */
 
   .embed-area iframe {
     height: 22.5rem;
