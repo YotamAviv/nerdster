@@ -25,7 +25,17 @@
    */
   function constructUrl(params = {}) {
     const base = getBaseUrl();
-    const currentSearch = window.location.search; // e.g. ?fire=emulator
+    let currentSearch = window.location.search; // e.g. ?fire=emulator
+
+    // If no search params on current window, try the parent window (for nested iframes like crypto.html)
+    if (!currentSearch && window.parent !== window) {
+      try {
+        currentSearch = window.parent.location.search;
+      } catch (e) {
+        // Ignore cross-origin access errors
+        console.debug("IframeHelper: Cannot access parent location", e);
+      }
+    }
 
     // Start with base + current search params
     // If currentSearch exists, it starts with '?', so just append it.
