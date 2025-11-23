@@ -26,17 +26,14 @@
       </div>
     </main>
 
+    <script src="iframe_helper.js"></script>
     <script>
-      // Inline replacement for crypto.js: set the iframe src and append a
-      // `verify` query parameter containing encoded JSON. Kept inline so this
-      // page is self-contained (no external crypto.js).
+      /* 
+      Embed the Flutter app in the iframe 
+      */
       (function () {
         const iframe = document.getElementById("flutterApp");
         if (!iframe) return;
-
-        const origin = location.origin;
-        const search = location.search || "";
-        const iframeUrl = search ? `${origin}${search}` : `${origin}/`;
 
         const identity = `{
     "crv": "Ed25519",
@@ -64,17 +61,11 @@
   "signature": "785def8d9ffaf2e5a26717fe10cfc09c3c1889e8afb914c1415f4e5101b12e42afda50a55bf3076c0b1a66f7df0e08464868db3bbb635449bc8322945931fb09"
 }`;
 
-        const verfyParam = encodeURIComponent(verify);
-        const sep = iframeUrl.includes("?") ? "&" : "?";
-        iframe.src =
-          iframeUrl +
-          sep +
-          "identity=" +
-          encodeURIComponent(identity) +
-          "&verify2=" +
-          verfyParam +
-          "&" +
-          "skipCredentialsDisplay";
+        iframe.src = IframeHelper.constructUrl({
+          identity: identity,
+          verify2: verify,
+          skipCredentialsDisplay: "true"
+        });
       })();
     </script>
   </body>
