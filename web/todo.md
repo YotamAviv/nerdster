@@ -40,12 +40,12 @@
   - reputation, decency, community. truth
   - "Liberated trust"
     - The Internet liberated lies and pornography. Crypto can liberate trust.
-- opt-in (and privacy)
+- Identity revisited, (opt-in, privacy)
   - An ability, not a requirement, to voice authentically
     - "First Amendment 2.0"
   - Identity revisited: you, irl
     - I am who your network says I am
-- decentralized
+- decentralized revisited
   - "Democracy 2.0"
     ? "One man, one vote." => "One person, one like."
 - future
