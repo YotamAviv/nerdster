@@ -1,41 +1,40 @@
-
-
 # video
 
 # 2 apps? screenshot of phone app? something to hint/clarify that the Nerdster is a different thing?
 
 ### Examples
 
-
-
-
 ### Quotes
 
 ### Crypto / tech
+
 - sign
 - be (identity)
 - vouch
 - delegate
 
-### The Open Web
+### The Open Web that Evolved
+
 - heterogeneous (open, ready for evolution)
   - interoperable, non-proprietary (standard cryptographic keys, common JSON formats).
 - portable, auditable
-  - litter the Interweb with signed content
-  - Complete cryptographicly signed chain 
   - Signatures are publicly verifiable independent of who stores or serves the data. (You don’t have to trust one-of-us.net or nerdster.org)
+  - Complete cryptographicly signed chain
+  - litter the Interweb with signed content
 - control, ownership
   - No special access.
     Nerdster.org and ONE-OF-US.NET do not have any.
     The Nerdster doesn't know what was is used to sign in.
     ONE-OF-US.NET doesn't know what reads signed statements it published.
   - no accounts
-    You don't have an account with ONE-OF-US.NET or Nerdster.org. If anything, you have an account with those who vouched for you.
+    - You don't have an account with ONE-OF-US.NET. If anything, you have an account with those who vouched for you.
+    - You don't have an account with  Nerdster.org. If anything, it has an account with you.
 - decentralized
   - We build the network (decentralized) and **let** them use it.
   - not ONE-OF-US.NET's, not mine. Yours, ours.
 
-### Decentralized Organization.. Culture, Behavior
+### Implications and Aspirations: Organization, Culture, Behavior
+
 - authentic
   - reputation, decency, community. truth
   - "Liberated trust"
@@ -47,22 +46,31 @@
     - I am who your network says I am
 - decentralized revisited
   - "Democracy 2.0"
+    - No dictators. But you are dictator of who you trust.
+    - If some fraudster calls you fraudster, you can block him out of your network.
     ? "One man, one vote." => "One person, one like."
 - future
   - Like a Wall Street Journal post, follow the author, and it'll be the same person on Reddit, NYT, etc...
   - Your Pandora likes (or even, say, your Nerdster music context blocks) could make my Spotify better
   - Robots can't make my phone ring
     - Gmail human folder
-  - start a movement, vote for a 3'rd part
-  - 
+  - start a movement, vote for a 3'rd party
+  - A whitelisted Internet (content signed by humans, no bots, no spam)
 
+## Nerdster
+
+- difference of opinion vs. conflict
+- Simpsons Bot Farm
+  - differences of opinion, conflicts, lost keys, replaced keys, hijacked keys, bogus identities, multiple moms, oh my..
 
 ## TODO
 
 The Nerdster whitelists (no blacklisting / spam detection) - only trusted, authentic content is shown.
 
 ### Why?
+
 Because you believe.
 Same human identities and reputations across Craigslist, Yelp, Maps, eBay, Airbnb, Marketface, VRBO, NYT, WSJ, Reddit, all 4 twitters, ...
 In case you do, grow the network.
+
 #### We build it and let them use it. They want to it as much as we do.
