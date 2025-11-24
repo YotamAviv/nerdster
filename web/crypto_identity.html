@@ -13,12 +13,33 @@
    -->
   <body>
     <main>
+      <h1>Lisa recognizes: Bart, Milhouse</h1>
+      <div class="text-iframe-2col">
+        <div class="content">
+          <p>
+            "Milhouse" is not an available username that some user picked on the
+            Nerster service. It's how Lisa's network identifies the owner of
+            that key.
+          </p>
+          <p>"Bart@nerdster.org" is Bart.</p>
+          <p>
+            I am who <strong>your network</strong> says I am (across all
+            services).
+          </p>
+        </div>
+
+        <div class="embed">
+          <iframe id="flutterApp"></iframe>
+        </div>
+      </div>
+
       <h1>Your public key is your identity</h1>
       <p>
+        You own your crypto key pair. It's yours, you own it. Use it to sign
+        whatever you want.
+        <br />
         The public component of your own public/private cryptographic key pair
         is your identity.
-        <br />
-        It's yours, you own it, use it to sign whatever you want.
       </p>
 
       <h2>Crypto Keys are Cryptic</h2>
@@ -74,18 +95,39 @@
         const iframe = document.getElementById("flutterApp");
         if (!iframe) return;
 
-        const verify = `{
+        const identity = {
+          crv: "Ed25519",
+          kty: "OKP",
+          x: "cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE",
+        };
+
+        const verify2 = `{
+  "statement": "org.nerdster",
+  "time": "2024-07-23T07:00:00.000Z",
   "I": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "zL9yVkfRj6Pt4qWy9KoUq_p0ff7s4p-Qm1aeGghlJGU"
+    "x": "B-mZ-Ydp8WY0u5yt1WytnsUeE0wYnntZxGbr81Enwp4"
   },
-  "declaration": "I am not a robot!",
-  "signature": "51b0c2ea2554c42a2f6ef3aa47cd54d864da66d1ff40da21b94c5062a2b03eb9f5b3eb79b1a2515ae2e1699583dc9222c8f5a309bb3bf33d101e2e3ea3bc8804"
+  "follow": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "mEwiqG7o46sVysAtb5z4x-jLfIIW_YnWH3Y5yMhPBcg"
+  },
+  "with": {
+    "contexts": {
+      "social": 1
+    }
+  },
+  "previous": "2ff7cf81d7023453d9d9eb3a4b2dc591a9e8e9e9",
+  "signature": "0c671a18e2ffe9ee82eb5b3b1ef75329b107a4e091f628a667a6d161a55b3289e0840ac25323e6af90a09b0e0dad2fddd7b578423a40ec91c3211371278e8c0f"
 }`;
 
         iframe.src = IframeHelper.constructUrl({
-          verify: verify
+          identity: JSON.stringify(identity),
+          verify2: verify2,
+          showCrypto: "true",
+          skipCredentialsDisplay: "true",
         });
       })();
     </script>
