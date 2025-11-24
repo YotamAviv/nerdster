@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/content/props.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
@@ -94,6 +95,7 @@ class _ContentBarState extends State<ContentBar> {
     contentBase.addListener(listen);
     Setting.get(SettingType.tag).addListener(listen);
     tagFlashNotifier.addListener(flashListener);
+    isSmall.addListener(listen);
   }
 
   void listen() async {
@@ -121,6 +123,7 @@ class _ContentBarState extends State<ContentBar> {
     contentBase.removeListener(listen);
     Setting.get(SettingType.tag).removeListener(listen);
     tagFlashNotifier.removeListener(flashListener);
+    isSmall.removeListener(listen);
     super.dispose();
   }
 
@@ -141,22 +144,23 @@ class _ContentBarState extends State<ContentBar> {
             tooltip: 'Submit',
             onPressed: () => submit(context),
           ),
-          DropdownMenu<Sort>(
-            initialSelection: contentBase.sort,
-            requestFocusOnTap: true,
-            label: const Text('Sort'),
-            onSelected: (Sort? sort) {
-              setState(() {
-                if (sort != null) {
-                  contentBase.sort = sort;
-                }
-              });
-            },
-            dropdownMenuEntries: Sort.values
-                .map<DropdownMenuEntry<Sort>>(
-                    (Sort sort) => DropdownMenuEntry<Sort>(value: sort, label: sort.label))
-                .toList(),
-          ),
+          if (!isSmall.value)
+            DropdownMenu<Sort>(
+              initialSelection: contentBase.sort,
+              requestFocusOnTap: true,
+              label: const Text('Sort'),
+              onSelected: (Sort? sort) {
+                setState(() {
+                  if (sort != null) {
+                    contentBase.sort = sort;
+                  }
+                });
+              },
+              dropdownMenuEntries: Sort.values
+                  .map<DropdownMenuEntry<Sort>>(
+                      (Sort sort) => DropdownMenuEntry<Sort>(value: sort, label: sort.label))
+                  .toList(),
+            ),
           DropdownMenu<ContentType>(
             width: 90,
             initialSelection: contentBase.type,
@@ -188,17 +192,18 @@ class _ContentBarState extends State<ContentBar> {
                   .toList(),
             ),
           ),
-          DropdownMenu<Timeframe>(
-            initialSelection: contentBase.timeframe,
-            requestFocusOnTap: true,
-            label: const Text('Timeframe'),
-            onSelected: (Timeframe? timeframe) =>
-                setState(() => contentBase.timeframe = timeframe!),
-            dropdownMenuEntries: Timeframe.values
-                .map<DropdownMenuEntry<Timeframe>>((Timeframe timeframe) =>
-                    DropdownMenuEntry<Timeframe>(value: timeframe, label: timeframe.label))
-                .toList(),
-          ),
+          if (!isSmall.value)
+            DropdownMenu<Timeframe>(
+              initialSelection: contentBase.timeframe,
+              requestFocusOnTap: true,
+              label: const Text('Timeframe'),
+              onSelected: (Timeframe? timeframe) =>
+                  setState(() => contentBase.timeframe = timeframe!),
+              dropdownMenuEntries: Timeframe.values
+                  .map<DropdownMenuEntry<Timeframe>>((Timeframe timeframe) =>
+                      DropdownMenuEntry<Timeframe>(value: timeframe, label: timeframe.label))
+                  .toList(),
+            ),
           SizedBox(
             height: 48,
             child: BorderedLabeledWidget(
