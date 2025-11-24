@@ -17,7 +17,7 @@
 - vouch
 - delegate
 
-### Open, Decentralized 
+### The Open Web
 - heterogeneous (open, ready for evolution)
   - interoperable, non-proprietary (standard cryptographic keys, common JSON formats).
 - portable, auditable
@@ -34,10 +34,8 @@
   - We build the network (decentralized) and **let** them use it.
   - not ONE-OF-US.NET's, not mine. Yours, ours.
 - decentralized
-  - "Democracy 2.0"
-    ? "One man, one vote." => "One person, one like."
 
-### Organization, culture, behavior
+### Decentralized Organization.. Culture, Behavior
 - authentic
   - reputation, decency, community. truth
   - "Liberated trust"
@@ -47,6 +45,9 @@
     - "First Amendment 2.0"
   - Identity revisited: you, irl
     - I am who your network says I am
+- decentralized
+  - "Democracy 2.0"
+    ? "One man, one vote." => "One person, one like."
 - future
   - Like a Wall Street Journal post, follow the author, and it'll be the same person on Reddit, NYT, etc...
   - Your Pandora likes (or even, say, your Nerdster music context blocks) could make my Spotify better
