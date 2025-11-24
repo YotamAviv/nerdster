@@ -27,8 +27,26 @@
         scrollbar-width: thin;
       }
       .horizontal-scroll .box {
+        width: 200px;
         min-width: 200px;
+        max-width: 200px;
         flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .horizontal-scroll .box h3,
+      .horizontal-scroll .box p {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .horizontal-scroll .box h3 {
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+      }
+      .horizontal-scroll .box p {
+        -webkit-line-clamp: 4;
+        line-clamp: 4;
       }
       /* Ensure boxes container takes full width */
       .boxes {
@@ -40,65 +58,55 @@
   <body>
     <section class="boxes horizontal-scroll" aria-live="polite">
       <div class="box" role="button" tabindex="0">
-        <h3>Example Box 1</h3>
-        <p class="muted">Description for example box 1.</p>
+        <h3>Same people across services</h3>
+        <p class="muted">
+          Like a Wall Street Journal post, follow the author, and it'll be the
+          same person on Reddit, NYT, etc...
+        </p>
         <template class="box-detail">
           <h3>Detail 1</h3>
-          <p>More details about example 1.</p>
+          <p>
+            Like a Wall Street Journal post, follow the author, and it'll be the
+            same person on Reddit, NYT, etc... Ditto for Uber, Lyft, Airbnb, and
+            any service where you have an account.
+          </p>
+          <p>
+            And even if it's not about a car ride, a transaction, or a comment,
+            you can still choose to say that someone else is reputable, just
+            because you know them, IRL.
+          </p>
         </template>
       </div>
       <div class="box" role="button" tabindex="0">
-        <h3>Example Box 2</h3>
-        <p class="muted">Description for example box 2.</p>
+        <h3>Your Pandora likes make my Spotify better</h3>
+        <p class="muted">TODO</p>
         <template class="box-detail">
-          <h3>Detail 2</h3>
-          <p>More details about example 2.</p>
+          <h3>TODO</h3>
+          <p>TODO</p>
         </template>
       </div>
       <div class="box" role="button" tabindex="0">
-        <h3>Example Box 3</h3>
-        <p class="muted">Description for example box 3.</p>
+        <h3>Robots, spammers identified</h3>
+        <p class="muted">Can't make my phone ring.</p>
         <template class="box-detail">
-          <h3>Detail 3</h3>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
-          <p>More details about example 3.</p>
+          <h3>TODO</h3>
+          <p>TODO</p>
         </template>
       </div>
       <div class="box" role="button" tabindex="0">
-        <h3>Example Box 4</h3>
-        <p class="muted">Description for example box 4.</p>
+        <h3>Start a movement</h3>
+        <p class="muted">Start a movement, vote for a 3'rd party.</p>
         <template class="box-detail">
-          <h3>Detail 4</h3>
-          <p>More details about example 4.</p>
+          <h3>TODO</h3>
+          <p>TODO</p>
         </template>
       </div>
       <div class="box" role="button" tabindex="0">
-        <h3>Example Box 5</h3>
-        <p class="muted">Description for example box 5.</p>
+        <h3>A whitelisted Internet (content signed by humans, no bots, no spam)</h3>
+        <p class="muted">A whitelisted Internet (content signed by humans, no bots, no spam)</p>
         <template class="box-detail">
-          <h3>Detail 5</h3>
-          <p>More details about example 5.</p>
+          <h3>TODO</h3>
+          <p>TODO</p>
         </template>
       </div>
     </section>
@@ -117,15 +125,18 @@
     <script src="boxes.js" defer></script>
     <script>
       function reportHeight() {
-        const boxes = document.querySelector('.boxes');
+        const boxes = document.querySelector(".boxes");
         if (boxes) {
           // Add a small buffer for shadows/margins
-          const height = boxes.offsetHeight; 
-          window.parent.postMessage({ type: 'setHeight', src: 'possibilities.html', height: height }, '*');
+          const height = boxes.offsetHeight;
+          window.parent.postMessage(
+            { type: "setHeight", src: "possibilities.html", height: height },
+            "*"
+          );
         }
       }
-      window.addEventListener('load', reportHeight);
-      window.addEventListener('resize', reportHeight);
+      window.addEventListener("load", reportHeight);
+      window.addEventListener("resize", reportHeight);
       // Report again after a moment to catch any layout shifts
       setTimeout(reportHeight, 100);
     </script>

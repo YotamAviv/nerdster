@@ -11,9 +11,18 @@
     <main>
       <h1>Crypto Trust</h1>
 
+      <p>
+        When you vouch for someone else by scanning their ONE-OF-US.NET's phone
+        app (or a QR code they shared with you), the ONE-OF-US.NET phone app
+        uses your private key to sign and publish a structured statement that
+        references their identity key, names them, and affirms that they're
+        "human, capable, and acting in good faith".
+      </p>
+
       <div class="text-iframe-2col">
         <div class="content">
-          <h2>Lisa trusts her mother.</h2>
+          <p>Lisa trusts her mother.</p>
+          <p>(Still vapid; we don't know who's keys those are.)</p>
         </div>
 
         <div class="embed">
@@ -52,7 +61,7 @@
 }`;
 
         iframe.src = IframeHelper.constructUrl({
-          verify: verify
+          verify: verify,
         });
       })();
     </script>
