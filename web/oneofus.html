@@ -451,11 +451,17 @@ A network of the people, by the people, for the people.
       <div class="hero-inner">
         <div class="lead">
           <h2>1 Paradigm, 2 Demo Apps</h2>
-          <p>
-            Software offering ONE-OF-US.NET phone app: Simple and complete The
-            Nerd'ster web app: A demo / proof of concept / reference
-            implementation...
-          </p>
+          <ul>
+            <li>
+              ONE-OF-US.NET phone app: Simple and complete. App store links
+              above.
+            </li>
+            <li>
+              Nerdster web app: A demo / proof of concept / reference
+              implementation. (<a href="https://nerdster.org">app</a>,
+              <a href="https://nerdster.org/home.html">site</a>)
+            </li>
+          </ul>
         </div>
       </div>
     </section>
@@ -475,8 +481,7 @@ A network of the people, by the people, for the people.
             <div class="lead-text">
               <h3>-- Wanted: Marketing help, marketing lead</h3>
               <p>
-                Promote, shape, entirely re-brand the apps; nothing is off the
-                table.
+                Promote, shape, entirely re-brand; nothing is off the table.
               </p>
             </div>
           </div>
@@ -508,11 +513,17 @@ A network of the people, by the people, for the people.
     <script src="guard.js" defer></script>
     <script src="boxes.js" defer></script>
     <script>
-      window.addEventListener('message', function(e) {
-        if (e.data && e.data.type === 'setHeight' && e.data.src === 'possibilities.html') {
-          const iframe = document.querySelector('iframe[src="possibilities.html"]');
+      window.addEventListener("message", function (e) {
+        if (
+          e.data &&
+          e.data.type === "setHeight" &&
+          e.data.src === "possibilities.html"
+        ) {
+          const iframe = document.querySelector(
+            'iframe[src="possibilities.html"]'
+          );
           if (iframe) {
-            iframe.style.height = e.data.height + 'px';
+            iframe.style.height = e.data.height + "px";
           }
         }
       });
