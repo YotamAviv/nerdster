@@ -1,3 +1,9 @@
+
+
+# video
+
+# 2 apps? screenshot of phone app? something to hint/clarify that the Nerdster is a different thing?
+
 ### Examples
 
 
@@ -11,15 +17,14 @@
 - vouch
 - delegate
 
-### Crypto / Interweb
+### Open, Decentralized 
 - heterogeneous (open, ready for evolution)
   - interoperable, non-proprietary (standard cryptographic keys, common JSON formats).
-- portable
+- portable, auditable
   - litter the Interweb with signed content
-- auditable
   - Complete cryptographicly signed chain 
   - Signatures are publicly verifiable independent of who stores or serves the data. (You don’t have to trust one-of-us.net or nerdster.org)
-- control (ownership?)
+- control, own
   - No special access.
     Nerdster.org and ONE-OF-US.NET do not have any.
     The Nerdster doesn't know what was is used to sign in.
@@ -27,13 +32,12 @@
   - no accounts
     You don't have an account with ONE-OF-US.NET or Nerdster.org. If anything, you have an account with those who vouched for you.
   - We build the network (decentralized) and **let** them use it.
-
+  - not ONE-OF-US.NET's, not mine. Yours, ours.
+- decentralized
+  - "Democracy 2.0"
+    ? "One man, one vote." => "One person, one like."
 
 ### Organization, culture, behavior
-- decentralized (You, we. Not I, not them)
-  - "Democracy 2.0"
-    - 1 man, 1 like
-  - 
 - authentic
   - reputation, decency, community. truth
   - "Liberated trust"

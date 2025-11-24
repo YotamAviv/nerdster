@@ -9,31 +9,25 @@
   </head>
   <body>
     <main>
-      <h1>Cryptography: Signing, Hashing</h1>
+      <h1>Public Key Cryptography</h1>
       <ul>
         <li>
-          Public key cryptography is solid, mature, and well-documented. (Hash
-          codes have been around forever.) This project uses standard
-          open-source implementations and formats.
-
+          Keys are created in pairs:
           <ul>
-            <li>The public key is shared openly, like a username.</li>
-            <li>The private key is kept secret, like a password.</li>
-          </ul>
-        </li>
-        <li>The key holder can "sign" data using his private key.</li>
-        <li>
-          The signature can be verified by anyone with the signer’s public key,
-          ensuring:
-
-          <ul>
+            <li>Public key: shared openly (like a username)</li>
+            <li>Private key: kept secret (like a password).</li>
+            <li>The key holder can "sign" data using his private key.</li>
             <li>
-              the data was genuinely signed by the holder of the corresponding
-              private key and has not been modified.
+              The signature can be verified by anyone with the signer’s public
+              key, ensuring that the data was genuinely signed by the holder of
+              the corresponding private key and has not been modified.
             </li>
           </ul>
         </li>
-        <li>No usernames or passwords are required.</li>
+        <li>
+          Solid, mature, and well-documented technology. This project uses
+          standard open-source implementations and formats.
+        </li>
       </ul>
 
       <h1>Demo: Signature Verification</h1>
@@ -69,15 +63,15 @@
       <h3>--Keys</h3>
       <ul>
         <li>
-          Identity Layer: You have a public/private key pair; the public key
-          is your identity. You vouch for another's identity (and humanity) by
-          signing a statement that includes their identity.
+          Identity Layer: You have a public/private key pair; the public key is
+          your identity. You vouch for another's identity (and humanity) by
+          signing a statement that includes their identity (their public key).
         </li>
         <li>
           Delegate Keys: You create and give other services disposable
-          public/private key pairs and use your private identity key to sign
-          statements stating that these key pairs represent you on those
-          services.
+          public/private key pairs and use your own, private identity key to
+          sign sturctured statements stating that these key pairs represent you
+          on those services.
         </li>
       </ul>
 
@@ -87,11 +81,12 @@
           A key token is used to form the URL for requesting statements signed
           by that key over our HTTP interface.
         </li>
-        <li>Statement tokens
+        <li>
+          Statement tokens
           <ul>
             <li>
-              We chain all statements signed by a key to prevent back-dating
-              in case a key is compromised. The "previous" field of a signed
+              We chain all statements signed by a key to prevent back-dating in
+              case a key is compromised. The "previous" field of a signed
               statement is the token of the previous statement signed by that
               key.
             </li>
@@ -121,7 +116,7 @@
 }`;
 
         iframe.src = IframeHelper.constructUrl({
-          verify: verify
+          verify: verify,
         });
       })();
     </script>

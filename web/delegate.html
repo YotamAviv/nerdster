@@ -17,7 +17,7 @@
 
       <div class="text-iframe-2col">
         <div class="content">
-          <h2>Demo: Delegate recognized</h2>
+          <h2>Milhouse delegates a key pair to nerdster.org</h2>
         </div>
 
         <div class="embed">
@@ -28,18 +28,9 @@
 
     <script src="iframe_helper.js"></script>
     <script>
-      /* 
-      Embed the Flutter app in the iframe 
-      */
       (function () {
         const iframe = document.getElementById("flutterApp");
         if (!iframe) return;
-
-        const identity = `{
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE"
-  }`;
 
         const verify = `{
   "statement": "net.one-of-us",
@@ -62,9 +53,7 @@
 }`;
 
         iframe.src = IframeHelper.constructUrl({
-          identity: identity,
-          verify2: verify,
-          skipCredentialsDisplay: "true"
+          verify: verify,
         });
       })();
     </script>
