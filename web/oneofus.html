@@ -414,7 +414,7 @@ A network of the people, by the people, for the people.
               <iframe
                 title="Possibilities"
                 src="possibilities.html"
-                style="width: 100%; height: 280px; border: 0"
+                style="width: 100%; height: 220px; border: 0"
               ></iframe>
             </div>
           </template>
@@ -475,7 +475,7 @@ A network of the people, by the people, for the people.
             <div class="lead-text">
               <h3>-- Wanted: Marketing help, marketing lead</h3>
               <p>
-                Promote, shape, entirely re-brand the apps, nothing is off the
+                Promote, shape, entirely re-brand the apps; nothing is off the
                 table.
               </p>
             </div>
@@ -507,5 +507,15 @@ A network of the people, by the people, for the people.
 
     <script src="guard.js" defer></script>
     <script src="boxes.js" defer></script>
+    <script>
+      window.addEventListener('message', function(e) {
+        if (e.data && e.data.type === 'setHeight' && e.data.src === 'possibilities.html') {
+          const iframe = document.querySelector('iframe[src="possibilities.html"]');
+          if (iframe) {
+            iframe.style.height = e.data.height + 'px';
+          }
+        }
+      });
+    </script>
   </body>
 </html>
