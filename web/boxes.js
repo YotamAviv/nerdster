@@ -37,6 +37,8 @@
   }
 
   function _lockScroll(){
+    // If already fixed, don't overwrite _scrollY with 0
+    if(document.body.style.position === 'fixed') return;
     _scrollY = window.scrollY || window.pageYOffset || 0;
     document.body.style.position = 'fixed';
     document.body.style.top = '-' + _scrollY + 'px';
@@ -55,6 +57,10 @@
   }
 
   function openModal(html){
+    if(window.parent && window.parent !== window && window.parent.boxes && window.parent.boxes.openModal){
+      window.parent.boxes.openModal(html);
+      return;
+    }
     if(!_elements) _elements = ensureModal();
     const { modal, modalContent, overlay } = _elements;
     if(!modal || !modalContent) return;

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Possibilities</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Comic+Neue:wght@400;700&family=Bangers&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="oneofus.css" />
+    <link rel="stylesheet" href="box-common.css" />
+    <link rel="stylesheet" href="boxes.css" />
+    <style>
+      body {
+        background: transparent; /* Allow parent background to show if needed, or just clean look */
+        padding: 0;
+        margin: 0;
+        overflow: hidden; /* Hide main scrollbar, only horizontal scroll allowed */
+      }
+      .horizontal-scroll {
+        display: flex;
+        overflow-x: auto;
+        padding: 1rem; /* Add some padding for shadows/hover effects */
+        gap: 1rem;
+        /* Hide scrollbar for cleaner look in some browsers, or style it */
+        scrollbar-width: thin;
+      }
+      .horizontal-scroll .box {
+        min-width: 200px;
+        flex: 0 0 auto;
+      }
+      /* Ensure boxes container takes full width */
+      .boxes {
+        margin: 0;
+        grid-template-columns: none; /* Override grid */
+      }
+    </style>
+  </head>
+  <body>
+    <section class="boxes horizontal-scroll" aria-live="polite">
+      <div class="box" role="button" tabindex="0">
+        <h3>Example Box 1</h3>
+        <p class="muted">Description for example box 1.</p>
+        <template class="box-detail">
+          <h3>Detail 1</h3>
+          <p>More details about example 1.</p>
+        </template>
+      </div>
+      <div class="box" role="button" tabindex="0">
+        <h3>Example Box 2</h3>
+        <p class="muted">Description for example box 2.</p>
+        <template class="box-detail">
+          <h3>Detail 2</h3>
+          <p>More details about example 2.</p>
+        </template>
+      </div>
+      <div class="box" role="button" tabindex="0">
+        <h3>Example Box 3</h3>
+        <p class="muted">Description for example box 3.</p>
+        <template class="box-detail">
+          <h3>Detail 3</h3>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+          <p>More details about example 3.</p>
+        </template>
+      </div>
+      <div class="box" role="button" tabindex="0">
+        <h3>Example Box 4</h3>
+        <p class="muted">Description for example box 4.</p>
+        <template class="box-detail">
+          <h3>Detail 4</h3>
+          <p>More details about example 4.</p>
+        </template>
+      </div>
+      <div class="box" role="button" tabindex="0">
+        <h3>Example Box 5</h3>
+        <p class="muted">Description for example box 5.</p>
+        <template class="box-detail">
+          <h3>Detail 5</h3>
+          <p>More details about example 5.</p>
+        </template>
+      </div>
+    </section>
+
+    <!-- modal and overlay for box details (if we want interaction inside the iframe) -->
+    <div id="overlay" class="overlay" aria-hidden="true"></div>
+    <div id="modal" class="modal" aria-hidden="true">
+      <div class="modal-inner" role="dialog" aria-modal="true">
+        <button id="modalClose" class="modal-close" aria-label="Close">
+          ✕
+        </button>
+        <div id="modalContent"></div>
+      </div>
+    </div>
+
+    <script src="boxes.js" defer></script>
+    <script>
+      function reportHeight() {
+        const boxes = document.querySelector('.boxes');
+        if (boxes) {
+          // Add a small buffer for shadows/margins
+          const height = boxes.offsetHeight; 
+          window.parent.postMessage({ type: 'setHeight', src: 'possibilities.html', height: height }, '*');
+        }
+      }
+      window.addEventListener('load', reportHeight);
+      window.addEventListener('resize', reportHeight);
+      // Report again after a moment to catch any layout shifts
+      setTimeout(reportHeight, 100);
+    </script>
+  </body>
+</html>
