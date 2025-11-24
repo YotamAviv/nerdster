@@ -24,16 +24,16 @@
   - litter the Interweb with signed content
   - Complete cryptographicly signed chain 
   - Signatures are publicly verifiable independent of who stores or serves the data. (You don’t have to trust one-of-us.net or nerdster.org)
-- control, own
+- control, ownership
   - No special access.
     Nerdster.org and ONE-OF-US.NET do not have any.
     The Nerdster doesn't know what was is used to sign in.
     ONE-OF-US.NET doesn't know what reads signed statements it published.
   - no accounts
     You don't have an account with ONE-OF-US.NET or Nerdster.org. If anything, you have an account with those who vouched for you.
+- decentralized
   - We build the network (decentralized) and **let** them use it.
   - not ONE-OF-US.NET's, not mine. Yours, ours.
-- decentralized
 
 ### Decentralized Organization.. Culture, Behavior
 - authentic
@@ -65,3 +65,4 @@ The Nerdster whitelists (no blacklisting / spam detection) - only trusted, authe
 Because you believe.
 Same human identities and reputations across Craigslist, Yelp, Maps, eBay, Airbnb, Marketface, VRBO, NYT, WSJ, Reddit, all 4 twitters, ...
 In case you do, grow the network.
+#### We build it and let them use it. They want to it as much as we do.
