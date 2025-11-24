@@ -12,9 +12,10 @@
       <h1>Delegate Keys</h1>
 
       <p>
-        Authorize disposable crypto key pairs for other services' use.
+        It's not going to work out well if we hand out our private key to the
+        hundreds of services we enjoy. Instead, we delegate to disposable crypto
+        key pairs for their use.
       </p>
-
       <div class="text-iframe-2col">
         <div class="content">
           <h2>Milhouse delegates a key pair to nerdster.org</h2>
@@ -24,6 +25,27 @@
           <iframe id="flutterApp"></iframe>
         </div>
       </div>
+
+      <p>
+        When you delegate a key pair to a service, the ONE-OF-US.NET phone app:
+      </p>
+      <ol>
+        <li>Creates and stores a new crypto key pair</li>
+        <li>
+          Uses your private key to sign and publish a statement that this key
+          represents you on that service
+        </li>
+      </ol>
+      <p>
+        Sign in to that service using the app to securely transmit the full key
+        (public and private components) to that service.
+      </p>
+      <p>
+        Use the app to revoke that delegation (eg. in case you don't like that
+        service any longer), revoke it at a particular time in history (eg. in
+        case your delegate key was compromised), or even erase (clear) the
+        delegation entirely - like it never even happened.
+      </p>
     </main>
 
     <script src="iframe_helper.js"></script>
