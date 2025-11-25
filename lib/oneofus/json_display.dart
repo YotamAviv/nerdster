@@ -17,10 +17,6 @@ class JsonDisplay extends StatefulWidget {
   static Interpreter? interpreter;
   static Set<String> highlightKeys = {};
 
-  static void set(Interpreter? interpreter) {
-    JsonDisplay.interpreter = interpreter;
-  }
-
   final dynamic subject; // String (ex. token) or Json (ex. key, statement)
   final dynamic bogusSubject;
   final ValueNotifier<bool> interpret;
