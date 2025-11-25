@@ -8,6 +8,11 @@ Explain that it's still the internet, but now we, people, replace accounts..
 ## 3rd row:
 Explain that we can be 1 person, (opt-in), who listens to music, likes movies, reads the paper, ... a complex being.
 
+whiotelist
+Instead of fighting to identify spam, sign, trust, verify, and
+whitelist.
+
+
 # video
 
 # 2 apps? screenshot of phone app? something to hint/clarify that the Nerdster is a different thing?
