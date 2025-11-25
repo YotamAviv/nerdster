@@ -56,11 +56,22 @@ const domain2statementType = {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  final Set<String> highlightKeys = Set.unmodifiable({
+    'I',
+    ...TrustVerb.values.map((e) => e.label),
+    ...ContentVerb.values.map((e) => e.label),
+  });
+
+  JsonDisplay.highlightKeys = highlightKeys;
+  Verify.highlightKeys = highlightKeys;
+
   // Don't even load up Firebase if we're just showing the validate demo
   if (b(Uri.base.queryParameters['verify'])) {
     runApp(MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(body: SafeArea(child: Verify(input: Uri.base.queryParameters['verify'])))));
+        home: Scaffold(
+            body: SafeArea(
+                child: Verify(input: Uri.base.queryParameters['verify'])))));
     return;
   }
 
