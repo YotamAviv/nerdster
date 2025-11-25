@@ -4,6 +4,14 @@
 
 ### Examples
 
+Trust journalists, not their employer
+
+Trust employees, not their company
+Is that chicken really pasture raised?
+
+What's healthy? Who killed Kenedy?
+What does your neighbor believe?
+
 ### Quotes
 
 
