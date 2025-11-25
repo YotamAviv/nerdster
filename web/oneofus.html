@@ -11,21 +11,6 @@
     <link rel="stylesheet" href="oneofus.css" />
     <link rel="stylesheet" href="box-common.css" />
     <link rel="stylesheet" href="boxes.css" />
-    <style>
-      /* Man page link style */
-      a.man-link {
-        font-family: "Courier New", Courier, monospace;
-        color: #000;
-        text-decoration: underline;
-        font-weight: bold;
-        font-size: 0.9rem;
-      }
-      a.man-link:hover {
-        background-color: #000;
-        color: #fff;
-        text-decoration: none;
-      }
-    </style>
   </head>
   <!-- TEMP
    http://0.0.0.0:40593/
@@ -515,11 +500,8 @@ A network of the people, by the people, for the people.
             </li>
           </ul>
 
-          <h2>Get Started</h2>
-          <div
-            style="display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap"
-          >
-            <div style="flex: 1; min-width: 300px">
+          <div class="video-container">
+            <div class="video-frame">
               <iframe
                 width="100%"
                 height="315"
@@ -531,41 +513,31 @@ A network of the people, by the people, for the people.
               >
               </iframe>
             </div>
-            <div
-              style="
-                flex: 1;
-                min-width: 300px;
-                display: flex;
-                align-items: center;
-              "
-            >
-              <ul>
-                <li>The phone app</li>
+            <div class="video-description">
+              <div class="video-description-content">
+                <h4>The phone app</h4>
                 <ul>
                   <li>
-                    Install it. App Store links at top of page. congratulations!
+                    Vouch for someone (whoever forwarded this to you): Click the
+                    QR icon on the bottom right of your phone app to scan their
+                    identity key QR code (front and center on the phone app).
                   </li>
                   <li>
-                    Connect with your associate (or whoever forwarded this to
-                    you): Click the QR icon on the bottom right of your phone
-                    app to scan the identity key front and center on his phone
-                    app.
-                  </li>
-                  <li>
-                    Have your associate vouch for you (have him scan your phone
-                    app with his) or email him your identity public key using
+                    Have someone vouch for you (have them scan your phone app
+                    with theirs) or email them your identity public key using
                     the app's "Share" menu.
                   </li>
                 </ul>
-                <li>Access the Nerd'ster: https://nerdster.org</li>
+                <h4>Access the Nerd'ster: https://nerdster.org</h4>
                 <ul>
                   <li>
-                    Sign in using your phone app ("QR Sign-in" on Nerdster, same
-                    QR button on phone app).
+                    Sign in using your phone app (Click "QR Sign-in" on Nerdster
+                    to display its Sign-in Parameters; Use the same QR button on
+                    your phone app to scan what's being shown).
                   </li>
                   <li>Rate, submit, comment, follow, etc...</li>
                 </ul>
-              </ul>
+              </div>
             </div>
           </div>
         </div>
