@@ -57,7 +57,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final Set<String> highlightKeys = Set.unmodifiable({
-    'I', 'moniker', 'domain',
+    'I',
+    'moniker',
+    'domain',
+    'encryptionPk',
+    'url',
     ...TrustVerb.values.map((e) => e.label),
     ...ContentVerb.values.map((e) => e.label),
   });
@@ -69,9 +73,7 @@ Future<void> main() async {
   if (b(Uri.base.queryParameters['verify'])) {
     runApp(MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(
-            body: SafeArea(
-                child: Verify(input: Uri.base.queryParameters['verify'])))));
+        home: Scaffold(body: SafeArea(child: Verify(input: Uri.base.queryParameters['verify'])))));
     return;
   }
 
@@ -215,23 +217,21 @@ Future<void> defaultSignIn(BuildContext context) async {
 }
 
 Future<void> initPrefs2() async {
-    final bool devDefault = fireChoice != FireChoice.prod;
-    Setting.get<bool>(SettingType.showCrypto).value = devDefault;
-    Setting.get<bool>(SettingType.showJson).value = devDefault;
-    Setting.get<bool>(SettingType.showKeys).value = devDefault;
-    Setting.get<bool>(SettingType.showStatements).value = devDefault;
-    Setting.get<bool>(SettingType.dev).value = devDefault;
+  final bool devDefault = fireChoice != FireChoice.prod;
+  Setting.get<bool>(SettingType.showCrypto).value = devDefault;
+  Setting.get<bool>(SettingType.showJson).value = devDefault;
+  Setting.get<bool>(SettingType.showKeys).value = devDefault;
+  Setting.get<bool>(SettingType.showStatements).value = devDefault;
+  Setting.get<bool>(SettingType.dev).value = devDefault;
 
-    // Sync showStuff with dependent settings
-    Setting.get<bool>(SettingType.showCrypto).addListener(() {
-      final showStuffValue = Setting.get<bool>(SettingType.showCrypto).value;
-      Setting.get<bool>(SettingType.showJson).value = showStuffValue;
-      Setting.get<bool>(SettingType.showKeys).value = showStuffValue;
-      Setting.get<bool>(SettingType.showStatements).value = showStuffValue;
-    });
-  }
-
-
+  // Sync showStuff with dependent settings
+  Setting.get<bool>(SettingType.showCrypto).addListener(() {
+    final showStuffValue = Setting.get<bool>(SettingType.showCrypto).value;
+    Setting.get<bool>(SettingType.showJson).value = showStuffValue;
+    Setting.get<bool>(SettingType.showKeys).value = showStuffValue;
+    Setting.get<bool>(SettingType.showStatements).value = showStuffValue;
+  });
+}
 
 const Json yotam = {
   "crv": "Ed25519",

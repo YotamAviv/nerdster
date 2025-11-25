@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Cryptography: Signing, Hashing</title>
+    <link rel="stylesheet" href="box.css" />
+    <link rel="stylesheet" href="oneofus.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Ready Now</h1>
+      <ul>
+        <li>QR Sign-in (or just identify)</li>
+        <li>Copy/paste sign-in (or just identify)</li>
+        <li>
+          Read (or even replicate) and leverage existing statements (they're
+          portable)
+        </li>
+        <li>
+          Use delegates for your own service.<br />
+          Opt-in: Sign and/or publish your service's users' signed content,
+          which would make it portable as well.
+        </li>
+        <li>
+          Implement alternatives to the ONE-OF-US.NET phone app.<br />People own
+          their own keys, not ONE-OF-US.NET, not me. They're welcome to export
+          and use them however they like.
+        </li>
+      </ul>
+
+      <h2>QR Sign-in</h2>
+      <div class="text-iframe-2col">
+        <div class="content">
+          <p>
+            There is no special access between one-of-us.net and nerdster.org.
+            The ONE-OF-US.NET phone app uses the camera to see and read the
+            sign-in parameters in the QR code and then performs an HTTP POST
+            over the Internet to the address it was instructed to, optionally
+            end-to-end encrypted.
+          </p>
+        </div>
+        <div class="embed">
+          <iframe id="flutterApp"></iframe>
+        </div>
+      </div>
+
+      <h2>Our signed content is published</h2>
+      <p>
+        Any service can read, verify, and leverage the statements you and your
+        delegates have signed and published.
+        <br />For example: My signed content is here:
+        <a
+          href="https://export.one-of-us.net/?spec=%222c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431%22"
+          >identity</a
+        >,
+        <a
+          href="https://export.nerdster.org/?spec=%22f4e45451dd663b6c9caf90276e366f57e573841b%22"
+          >Nerdster content</a
+        >.
+      </p>
+      <p>Leverage these to fit your needs:</p>
+      <ul>
+        <li>
+          Identity statements so your service can compute who's who and who.
+        </li>
+        <li>
+          Nerdster follow statements so your service can compute who's
+          intresting to whom and for what.
+        </li>
+        <li>
+          And all the rest of it: ratings, comments, equate/relate statements,
+          and so forth.
+        </li>
+      </ul>
+
+      <h2>Your service can do whatever</h2>
+      <p>
+        Your service doesn't need to be as naked and transparent as the
+        Nerdster.
+      </p>
+      <ul>
+        <li>
+          It doesn't have to use delegate keys; it might be enough for your
+          service to just identify a Point of View (PoV).
+        </li>
+        <li>
+          It doesn't have to expose folks' content, although this enables other
+          services to audit (which can add responsibility).
+        </li>
+      </ul>
+    </main>
+
+    <script src="iframe_helper.js"></script>
+    <script>
+      (function () {
+        const iframe = document.getElementById("flutterApp");
+        if (!iframe) return;
+
+        iframe.src = IframeHelper.constructUrl({
+          qrSignIn: true,
+        });
+      })();
+    </script>
+  </body>
+</html>
