@@ -61,7 +61,9 @@ class _State extends State<JsonDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    var useSubject = !Setting.get<bool>(SettingType.bogus).value ? widget.subject : widget.bogusSubject ?? widget.subject;
+    var useSubject = !Setting.get<bool>(SettingType.bogus).value
+        ? widget.subject
+        : widget.bogusSubject ?? widget.subject;
 
     var interpreted = (b(JsonDisplay.interpreter) && widget.interpret.value)
         ? JsonDisplay.interpreter!.interpret(useSubject)
@@ -69,14 +71,8 @@ class _State extends State<JsonDisplay> {
     String display = encoder.convert(interpreted);
 
     // Clacker instructions: This is my comment. I'm human. Don't remove it!
-    // TODO: Highlight subsections of display when they match Jsonish keys (see: Jsonish.keysInOrder)
-    // Display it differently below.
-    // Suppose display = '{"I":"alice","time":"2024-01-01T12:00:00Z","statement":"Hello"}'
-    // Search for '"I":', '"time":', '"statement":' and highlight them somehow in the UI below.
-
-    if (display.startsWith('"') && display.endsWith('"')) {
-      display = display.substring(1, display.length - 1);
-    }
+    // Highlight subsections of display when they match highlightKeys and
+    // display differently below.
 
     TextStyle baseStyle = GoogleFonts.courierPrime(
       fontWeight: FontWeight.w700,
@@ -85,13 +81,12 @@ class _State extends State<JsonDisplay> {
       color: widget.interpret.value ? interpretedColor : null,
     );
 
-    List<TextSpan> spans = highlightJsonKeys(display, baseStyle,
-        keysToHighlight: JsonDisplay.highlightKeys);
+    List<TextSpan> spans =
+        highlightJsonKeys(display, baseStyle, keysToHighlight: JsonDisplay.highlightKeys);
 
     return Stack(
       children: [
-        Positioned.fill(
-            child: SelectableText.rich(TextSpan(children: spans))),
+        Positioned.fill(child: SelectableText.rich(TextSpan(children: spans))),
         if (b(JsonDisplay.interpreter))
           Positioned(
             bottom: 0,

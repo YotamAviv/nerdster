@@ -23,7 +23,7 @@ Future<bool?> checkSignedIn(BuildContext? context) async {
   if (!b(context)) return false;
   return showDialog<bool>(
       context: context!,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (context) => Dialog(
           shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
           child: Padding(
