@@ -57,7 +57,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final Set<String> highlightKeys = Set.unmodifiable({
-    'I',
+    'I', 'moniker', 'domain',
     ...TrustVerb.values.map((e) => e.label),
     ...ContentVerb.values.map((e) => e.label),
   });
