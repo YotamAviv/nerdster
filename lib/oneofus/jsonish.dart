@@ -63,7 +63,7 @@ enum ContentVerb {
 /// - subjects
 /// - keys
 class Jsonish {
-  static final keysInOrder = [
+  static final List<String> keysInOrder = [
     'statement',
     'time',
     'I',

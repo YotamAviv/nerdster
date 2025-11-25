@@ -19,7 +19,7 @@ just that data missing.
 &netView=true
 
 # Emulator simpsonsDemo from PROD
-?fire=emulator&identity=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI%22%7D&skipCredentialsDisplay
+?fire=emulator&identity=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI%22%7D&skipCredentialsDisplay=true&showCrypto=true
 
 
 # Nice ones:
