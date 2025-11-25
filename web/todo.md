@@ -2,40 +2,38 @@
 
 # TODO
 
-## 2nd row:
-Explain that it's still the internet, but now we, people, replace accounts..
 
-## 3rd row:
-Explain that we can be 1 person, (opt-in), who listens to music, likes movies, reads the paper, ... a complex being.
-
-whiotelist
+### Whitelist
 Instead of fighting to identify spam, sign, trust, verify, and
 whitelist.
 
 
-# video
+## Possibilities
 
-# 2 apps? screenshot of phone app? something to hint/clarify that the Nerdster is a different thing?
+### Replace that Tweet, X, Face, .. bar of icons. Just recommend/share as you, using a delegate that you control at that service.
 
-### Examples
+### Trust journalists, not their employer
 
-Replace that Tweet, X, Face, .. bar of icons. Just recommend/share as you, using a delegate that you control at that service.
-
-
-
-Trust journalists, not their employer
-
-Trust employees, not their company
+### Trust employees, not their company
 Is that chicken really pasture raised?
 
-What's healthy? Who killed Kenedy?
+### What's healthy? Who killed Kenedy?
 What does your neighbor believe?
 
-### Quotes
+## Quotes
 
-### Implications and Aspirations: Organization, Culture, Behavior
 
-## Nerdster
+### Why?
+
+Because you believe.
+Same human identities and reputations across Craigslist, Yelp, Maps, eBay, Airbnb, Marketface, VRBO, NYT, WSJ, Reddit, all 4 twitters, ...
+In case you do, grow the network.
+Why would the let us? They want this themselves...
+
+#### We bui
+
+
+# Nerdster, home.html
 
 - difference of opinion vs. conflict
 - Simpsons Bot Farm
@@ -44,11 +42,4 @@ What does your neighbor believe?
 ## TODO
 
 The Nerdster whitelists (no blacklisting / spam detection) - only trusted, authentic content is shown.
-
-### Why?
-
-Because you believe.
-Same human identities and reputations across Craigslist, Yelp, Maps, eBay, Airbnb, Marketface, VRBO, NYT, WSJ, Reddit, all 4 twitters, ...
-In case you do, grow the network.
-
-#### We build it and let them use it. They want to it as much as we do.
+ld it and let them use it. They want to it as much as we do.
