@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../setting_type.dart';
-import 'jsonish.dart';
+import 'json_highlighter.dart';
 import 'prefs.dart';
 import 'util.dart';
 
@@ -15,6 +15,8 @@ Color? interpretedColor = Colors.green[900];
 
 class JsonDisplay extends StatefulWidget {
   static Interpreter? interpreter;
+  static Set<String> highlightKeys = {};
+
   static void set(Interpreter? interpreter) {
     JsonDisplay.interpreter = interpreter;
   }
@@ -76,11 +78,6 @@ class _State extends State<JsonDisplay> {
       display = display.substring(1, display.length - 1);
     }
 
-    List<TextSpan> spans = [];
-    // This is a simplified regex for finding keys like "key":
-    final RegExp keyPattern = RegExp(r'"[^"]+":');
-    int lastMatchEnd = 0;
-
     TextStyle baseStyle = GoogleFonts.courierPrime(
       fontWeight: FontWeight.w700,
       fontSize: 10,
@@ -88,31 +85,8 @@ class _State extends State<JsonDisplay> {
       color: widget.interpret.value ? interpretedColor : null,
     );
 
-    for (final match in keyPattern.allMatches(display)) {
-      if (match.start > lastMatchEnd) {
-        spans.add(TextSpan(
-          text: display.substring(lastMatchEnd, match.start),
-          style: baseStyle,
-        ));
-      }
-
-      String key = display.substring(match.start + 1, match.end - 2);
-      bool isJsonishKey = Jsonish.keysInOrder.contains(key);
-
-      spans.add(TextSpan(
-        text: display.substring(match.start, match.end),
-        style: baseStyle.copyWith(color: isJsonishKey ? Colors.blue : null),
-      ));
-
-      lastMatchEnd = match.end;
-    }
-
-    if (lastMatchEnd < display.length) {
-      spans.add(TextSpan(
-        text: display.substring(lastMatchEnd),
-        style: baseStyle,
-      ));
-    }
+    List<TextSpan> spans = highlightJsonKeys(display, baseStyle,
+        keysToHighlight: JsonDisplay.highlightKeys);
 
     return Stack(
       children: [

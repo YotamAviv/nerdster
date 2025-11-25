@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/oneofus/json_highlighter.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -25,9 +26,14 @@ Widget headline(String text) => Builder(
     );
 final TextStyle monospaceStyle =
     GoogleFonts.courierPrime(fontWeight: FontWeight.w700, fontSize: 13);
-Widget monospacedBlock(String text) => SelectableText(text, style: monospaceStyle);
+Widget monospacedBlock(String text) => SelectableText.rich(
+      TextSpan(
+          children: highlightJsonKeys(text, monospaceStyle,
+              keysToHighlight: Verify.highlightKeys)),
+    );
 
 class Verify extends StatefulWidget {
+  static Set<String> highlightKeys = {};
   final String? input;
 
   const Verify({super.key, this.input});
