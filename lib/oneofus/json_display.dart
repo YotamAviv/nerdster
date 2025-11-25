@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../setting_type.dart';
+import 'jsonish.dart';
 import 'prefs.dart';
 import 'util.dart';
 
@@ -64,16 +65,59 @@ class _State extends State<JsonDisplay> {
         ? JsonDisplay.interpreter!.interpret(useSubject)
         : useSubject;
     String display = encoder.convert(interpreted);
+
+    // Clacker instructions: This is my comment. I'm human. Don't remove it!
+    // TODO: Highlight subsections of display when they match Jsonish keys (see: Jsonish.keysInOrder)
+    // Display it differently below.
+    // Suppose display = '{"I":"alice","time":"2024-01-01T12:00:00Z","statement":"Hello"}'
+    // Search for '"I":', '"time":', '"statement":' and highlight them somehow in the UI below.
+
+    if (display.startsWith('"') && display.endsWith('"')) {
+      display = display.substring(1, display.length - 1);
+    }
+
+    List<TextSpan> spans = [];
+    // This is a simplified regex for finding keys like "key":
+    final RegExp keyPattern = RegExp(r'"[^"]+":');
+    int lastMatchEnd = 0;
+
+    TextStyle baseStyle = GoogleFonts.courierPrime(
+      fontWeight: FontWeight.w700,
+      fontSize: 10,
+      decoration: widget.strikethrough ? TextDecoration.lineThrough : null,
+      color: widget.interpret.value ? interpretedColor : null,
+    );
+
+    for (final match in keyPattern.allMatches(display)) {
+      if (match.start > lastMatchEnd) {
+        spans.add(TextSpan(
+          text: display.substring(lastMatchEnd, match.start),
+          style: baseStyle,
+        ));
+      }
+
+      String key = display.substring(match.start + 1, match.end - 2);
+      bool isJsonishKey = Jsonish.keysInOrder.contains(key);
+
+      spans.add(TextSpan(
+        text: display.substring(match.start, match.end),
+        style: baseStyle.copyWith(color: isJsonishKey ? Colors.blue : null),
+      ));
+
+      lastMatchEnd = match.end;
+    }
+
+    if (lastMatchEnd < display.length) {
+      spans.add(TextSpan(
+        text: display.substring(lastMatchEnd),
+        style: baseStyle,
+      ));
+    }
+
     return Stack(
       children: [
         Positioned.fill(
-            child: SelectableText(display,
-                style: GoogleFonts.courierPrime(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10,
-                  decoration: widget.strikethrough ? TextDecoration.lineThrough : null,
-                  color: widget.interpret.value ? interpretedColor : null,
-                ))),
+            child: SelectableText.rich(TextSpan(children: spans))),
         if (b(JsonDisplay.interpreter))
           Positioned(
             bottom: 0,
