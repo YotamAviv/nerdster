@@ -245,3 +245,45 @@ ul li::marker {
   font-size: 0.98em;
 }
 
+/* Man page link style */
+a.man-link {
+  font-family: "Courier New", Courier, monospace;
+  color: #000;
+  text-decoration: underline;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+a.man-link:hover {
+  background-color: #000;
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Video section styles */
+.video-container {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.video-frame {
+  flex: 1;
+  min-width: 300px;
+}
+
+.video-description {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.video-description-content {
+  margin-top: 0;
+}
+
+.video-description-content h4 {
+  margin-top: 0;
+}
+
