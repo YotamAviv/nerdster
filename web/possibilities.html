@@ -111,31 +111,66 @@
       </div>
     </section>
 
-    <!-- modal and overlay for box details (if we want interaction inside the iframe) -->
-    <div id="overlay" class="overlay" aria-hidden="true"></div>
-    <div id="modal" class="modal" aria-hidden="true">
-      <div class="modal-inner" role="dialog" aria-modal="true">
-        <button id="modalClose" class="modal-close" aria-label="Close">
-          ✕
-        </button>
-        <div id="modalContent"></div>
-      </div>
-    </div>
+    <!-- Detail container for inline expansion -->
+    <div id="detail-container" aria-live="polite"></div>
 
-    <script src="boxes.js" defer></script>
     <script>
       function reportHeight() {
         const boxes = document.querySelector(".boxes");
+        const detail = document.getElementById("detail-container");
         if (boxes) {
+          let height = boxes.offsetHeight;
+          if (detail) height += detail.offsetHeight;
           // Add a small buffer for shadows/margins
-          const height = boxes.offsetHeight;
+          height += 20;
           window.parent.postMessage(
             { type: "setHeight", src: "possibilities.html", height: height },
             "*"
           );
         }
       }
-      window.addEventListener("load", reportHeight);
+
+      function closeDetail() {
+        const container = document.getElementById("detail-container");
+        if (container) container.innerHTML = "";
+        document
+          .querySelectorAll(".box.selected")
+          .forEach((b) => b.classList.remove("selected"));
+        reportHeight();
+      }
+
+      function init() {
+        const boxes = document.querySelectorAll(".box");
+        boxes.forEach((box) => {
+          box.addEventListener("click", () => {
+            // Remove selected from others
+            boxes.forEach((b) => b.classList.remove("selected"));
+            box.classList.add("selected");
+
+            const tmpl = box.querySelector("template.box-detail");
+            if (tmpl) {
+              const container = document.getElementById("detail-container");
+              container.innerHTML = `
+                 <div style="margin-top: 1rem; padding: 1rem; border-top: 1px solid #eee; position: relative;">
+                   <button onclick="closeDetail()" aria-label="Close detail" style="position: absolute; right: 0; top: 0.5rem; border: none; background: transparent; font-size: 1.5rem; cursor: pointer; color: #666;">&times;</button>
+                   ${tmpl.innerHTML}
+                 </div>
+               `;
+              reportHeight();
+            }
+          });
+          // Keyboard support
+          box.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              box.click();
+            }
+          });
+        });
+        reportHeight();
+      }
+
+      window.addEventListener("load", init);
       window.addEventListener("resize", reportHeight);
       // Report again after a moment to catch any layout shifts
       setTimeout(reportHeight, 100);
