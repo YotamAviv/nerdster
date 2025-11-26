@@ -34,6 +34,15 @@ body {
   white-space: pre-wrap;
   font-family: monospace;
   color: #6b4f3b; /* softer brown */
+  /* Override box.css pre styles */
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+/* Match modal background to the page background for a seamless look */
+.modal-inner {
+  background: #FBF5EE;
 }
 
 .header-actions {

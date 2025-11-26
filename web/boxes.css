@@ -35,7 +35,7 @@
 .modal[aria-hidden="false"] { display: flex; pointer-events: auto; }
 
 .modal-inner {
-  background: #fff;
+  background: #FBF5EE;
   color: #111;
   border-radius: 0.625rem;
   padding: 1.125rem;
