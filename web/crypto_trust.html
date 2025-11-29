@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Delegate Keys</title>
     <link rel="stylesheet" href="box.css" />
     <link rel="stylesheet" href="oneofus.css" />
   </head>
@@ -33,14 +32,11 @@
 
     <script src="iframe_helper.js"></script>
     <script>
-      /* 
-      Embed the Flutter app in the iframe using IframeHelper.
-      */
       (function () {
         const iframe = document.getElementById("flutterApp");
         if (!iframe) return;
 
-        const verify = `{
+        const LisaTrustMom = `{
   "statement": "net.one-of-us",
   "time": "2024-05-24T07:00:00.000Z",
   "I": {
@@ -60,9 +56,7 @@
   "signature": "e908846169c1dd4a42f39e43dbe061adaace0747cd008e4fb574e83de7b91cae99966673a2f773c4b51fd16d24cb995fac5d3aaa66ec6ca939362c1a79493200"
 }`;
 
-        iframe.src = IframeHelper.constructUrl({
-          verify: verify,
-        });
+        iframe.src = IframeHelper.constructUrl({ verify: LisaTrustMom });
       })();
     </script>
   </body>
