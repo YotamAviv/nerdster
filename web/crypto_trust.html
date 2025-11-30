@@ -20,8 +20,8 @@
 
       <div class="text-iframe-2col">
         <div class="content">
-          <p>Lisa trusts her mother.</p>
-          <p>(Still vapid; we don't know whose keys those are.)</p>
+          <p>(Lisa trusts her mother.)</p>
+          <p>(Still vapid; we don't know whose key that is.)</p>
         </div>
 
         <div class="embed">
@@ -56,7 +56,10 @@
   "signature": "e908846169c1dd4a42f39e43dbe061adaace0747cd008e4fb574e83de7b91cae99966673a2f773c4b51fd16d24cb995fac5d3aaa66ec6ca939362c1a79493200"
 }`;
 
-        iframe.src = IframeHelper.constructUrl({ verify: LisaTrustMom });
+        iframe.src = IframeHelper.constructUrl({
+          verify: LisaTrustMom,
+          verifyImmediately: "true",
+        });
       })();
     </script>
   </body>

@@ -71,9 +71,12 @@ Future<void> main() async {
 
   // Don't even load up Firebase if we're just showing the validate demo
   if (b(Uri.base.queryParameters['verify'])) {
+    String verifyIn = Uri.base.queryParameters['verify']!;
+    final bool verifyImmediately = bs(Uri.base.queryParameters['verifyImmediately']);
     runApp(MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(body: SafeArea(child: Verify(input: Uri.base.queryParameters['verify'])))));
+        home: Scaffold(
+            body: SafeArea(child: Verify(input: verifyIn, verifyImmediately: verifyImmediately)))));
     return;
   }
 

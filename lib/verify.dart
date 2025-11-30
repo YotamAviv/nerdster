@@ -35,8 +35,9 @@ Widget monospacedBlock(String text) => SelectableText.rich(
 class Verify extends StatefulWidget {
   static Set<String> highlightKeys = {};
   final String? input;
+  final bool verifyImmediately;
 
-  const Verify({super.key, this.input});
+  const Verify({super.key, this.input, this.verifyImmediately = false});
 
   @override
   State<Verify> createState() => _VerifyState();
@@ -55,6 +56,16 @@ class _VerifyState extends State<Verify> {
     _controller.addListener(() {
       setState(() {}); // Trigger rebuild to show/hide reset button
     });
+
+    if (widget.verifyImmediately && _initialText.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ProcessedScreen(_controller.text),
+          ),
+        );
+      });
+    }
   }
 
   @override
