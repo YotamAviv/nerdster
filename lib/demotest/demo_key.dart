@@ -42,14 +42,15 @@ const OouCryptoFactory _crypto = CryptoFactoryEd25519();
 class DemoKey {
   static final LinkedHashMap<String, DemoKey> _name2key = LinkedHashMap<String, DemoKey>();
   static final Map<String, DemoKey> _token2key = <String, DemoKey>{};
+  static final Map<String, Json> _exports = {};
 
   static final dynamic demos = {
+    'simpsonsDemo': simpsonsDemo,
     'egosCorrupt': egosCorrupt,
     'lonerCorrupt': lonerCorrupt,
     'lonerBadDelegate': lonerBadDelegate,
     'lonerClearDelegate': lonerClearDelegate,
     'lonerRevokeDelegate': lonerRevokeDelegate,
-    'simpsonsDemo': simpsonsDemo,
     'simpsons': simpsons,
     'loner': loner,
     'trustBlockConflict': trustBlockConflict,
@@ -104,7 +105,8 @@ class DemoKey {
       bool? recommend,
       bool? dismiss,
       bool? censor,
-      ContentVerb? verb}) async {
+      ContentVerb? verb,
+      String? export}) async {
     assert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
@@ -112,25 +114,31 @@ class DemoKey {
     ContentVerb useVerb = verb ?? ContentVerb.rate;
     Json json = ContentStatement.make(await publicKey.json, useVerb, subject!,
         comment: comment, recommend: recommend, dismiss: dismiss, censor: censor);
+
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
+    if (export != null) _exports[export] = statement.json;
+
     return statement;
   }
 
-  Future<Statement> doFollow(DemoKey other, Json contexts, {ContentVerb? verb}) async {
+  Future<Statement> doFollow(DemoKey other, Json contexts,
+      {ContentVerb? verb, String? export}) async {
     ContentVerb useVerb = verb ?? ContentVerb.follow;
     Json json = ContentStatement.make(await publicKey.json, useVerb, await (other.publicKey).json,
         contexts: contexts);
+
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
     // CONSIDER: followNet.listen(); // Problematic
+    if (export != null) _exports[export] = statement.json;
     return statement;
   }
 
   Future<Statement> doRelate(ContentVerb verb,
-      {Json? subject, String? title, Json? other, String? otherTitle}) async {
+      {Json? subject, String? title, Json? other, String? otherTitle, String? export}) async {
     assert(i(subject) + i(title) == 1);
     assert(i(other) + i(otherTitle) == 1);
     if (b(title)) {
@@ -143,11 +151,12 @@ class DemoKey {
     Fetcher fetcher = Fetcher(token, kNerdsterDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
+    if (export != null) _exports[export] = statement.json;
     return statement;
   }
 
   Future<Statement> doTrust(TrustVerb verb, DemoKey other,
-      {String? moniker, String? comment, String? domain, String? revokeAt}) async {
+      {String? moniker, String? comment, String? domain, String? revokeAt, String? export}) async {
     switch (verb) {
       case TrustVerb.trust:
         moniker ??= other.name;
@@ -165,15 +174,15 @@ class DemoKey {
     Json json = TrustStatement.make(
         await (await keyPair.publicKey).json, await (other.publicKey).json, verb,
         domain: domain, moniker: moniker, comment: comment, revokeAt: revokeAt);
-
     Fetcher fetcher = Fetcher(token, kOneofusDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
     // CONSIDER: oneofusNet.listen(); // Problematic
+    if (export != null) _exports[export] = statement.json;
     return statement;
   }
 
-  Future<DemoKey> makeDelegate() async {
+  Future<DemoKey> makeDelegate({String? export}) async {
     assert(_name2key.containsKey(name));
     int i = 0;
     String delegateKeyName;
@@ -188,7 +197,7 @@ class DemoKey {
     DemoKey delegateKey = await DemoKey.findOrCreate(delegateKeyName);
     // It would be nice to have this returned (to revoke at it or to verify its rejection)
     Statement statement = await doTrust(TrustVerb.delegate, delegateKey, domain: kNerdsterDomain);
-
+    if (export != null) _exports[export] = statement.json;
     return delegateKey;
   }
 
@@ -203,5 +212,12 @@ class DemoKey {
     }
     var z = encoder.convert(x);
     print(z);
+  }
+
+  static void dumpExports() {
+    if (_exports.isNotEmpty) {
+      print('// Exported demoData');
+      print('const demoData = ${encoder.convert(_exports)};');
+    }
   }
 }

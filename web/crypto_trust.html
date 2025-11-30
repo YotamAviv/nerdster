@@ -22,7 +22,7 @@
 
       <ul>
         <li>
-          Trust: keys that meet the bar of "human, capable, and acting in good
+           <a id="trust-link" href="#">Trust</a>: keys that meet the bar of "human, capable, and acting in good
           faith".
         </li>
         <li>Block: keys that don't.</li>
@@ -56,65 +56,39 @@
     </main>
 
     <script src="iframe_helper.js"></script>
+    <script src="data/demoData.js"></script>
     <script>
       (function () {
         const iframe = document.getElementById("flutterApp");
         if (!iframe) return;
 
-        const LisaTrustMom = `{
-  "statement": "net.one-of-us",
-  "time": "2024-05-24T07:00:00.000Z",
-  "I": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE"
-  },
-  "trust": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "75V19wpMrCJgBIbNeVZ1IX0BxlnjYkmJGrDMowu6yEE"
-  },
-  "with": {
-    "moniker": "Mom"
-  },
-  "previous": "884052c4b6490eb3440115fe76fd2040b1747999",
-  "signature": "e908846169c1dd4a42f39e43dbe061adaace0747cd008e4fb574e83de7b91cae99966673a2f773c4b51fd16d24cb995fac5d3aaa66ec6ca939362c1a79493200"
-}`;
-
-        const delegateStatement = `{
-  "statement": "net.one-of-us",
-  "time": "2024-06-22T07:00:00.000Z",
-  "I": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "mEwiqG7o46sVysAtb5z4x-jLfIIW_YnWH3Y5yMhPBcg"
-  },
-  "delegate": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "xrRGbgdaLOGphzM1BnOjvYvWjRoGeQYcDaHHVjPROpo"
-  },
-  "with": {
-    "domain": "nerdster.org"
-  },
-  "previous": "b0a3b4c11c0a8652a14fdf99fcb656f4c6a96940",
-  "signature": "785def8d9ffaf2e5a26717fe10cfc09c3c1889e8afb914c1415f4e5101b12e42afda50a55bf3076c0b1a66f7df0e08464868db3bbb635449bc8322945931fb09"
-}`;
-
-        iframe.src = IframeHelper.constructUrl({
-          verify: LisaTrustMom,
-          verifyImmediately: "true",
-        });
+        function loadVerify(key) {
+          const data = demoData[key];
+          if (!data) {
+            console.error("No demo data found for key:", key);
+            return;
+          }
+          const verify = JSON.stringify(data, null, 2);
+          iframe.src = IframeHelper.constructUrl({
+            verify: verify,
+            verifyImmediately: "true",
+          });
+        }
 
         document
-          .getElementById("delegate-link")
-          .addEventListener("click", function (e) {
+          .getElementById("trust-link")
+          .addEventListener("click", (e) => {
             e.preventDefault();
-            iframe.src = IframeHelper.constructUrl({
-              verify: delegateStatement,
-              verifyImmediately: "true",
-            });
+            loadVerify("lisa-trust-mom");
           });
+        document
+          .getElementById("delegate-link")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            loadVerify("marge-delegate");
+          });
+
+        loadVerify("lisa-trust-mom");
       })();
     </script>
   </body>
