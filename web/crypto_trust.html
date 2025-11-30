@@ -8,7 +8,31 @@
   </head>
   <body>
     <main>
-      <h1>Crypto Trust</h1>
+      <h1>The Identity Layer</h1>
+      <ul>
+        <li>Vouch for humans</li>
+        <li>Delegate to services</li>
+      </ul>
+
+      <h2>Trust, Delegate, Block, Replace</h2>
+      <p>
+        There are four statements types involved in establishing and maintaining
+        the identity layer.
+      </p>
+
+      <ul>
+        <li>
+          Trust: keys that meet the bar of "human, capable, and acting in good
+          faith".
+        </li>
+        <li>Block: keys that don't.</li>
+        <li>Replace: your own lost or compromised keys.</li>
+        <li>
+          <a id="delegate-link" href="#">Delegate</a>: disposable keys that you
+          possess to services to allow them to act on your behalf (until you
+          revoke them).
+        </li>
+      </ul>
 
       <p>
         When you vouch for someone else by scanning their ONE-OF-US.NET's phone
@@ -20,10 +44,11 @@
 
       <div class="text-iframe-2col">
         <div class="content">
-          <p>(Lisa trusts her mother.)</p>
-          <p>(Still vapid; we don't know whose key that is.)</p>
+          <p>
+            (Lisa trusts her mother.) <br />(Still vapid; we don't know whose
+            key that is.)
+          </p>
         </div>
-
         <div class="embed">
           <iframe id="flutterApp"></iframe>
         </div>
@@ -56,10 +81,40 @@
   "signature": "e908846169c1dd4a42f39e43dbe061adaace0747cd008e4fb574e83de7b91cae99966673a2f773c4b51fd16d24cb995fac5d3aaa66ec6ca939362c1a79493200"
 }`;
 
+        const delegateStatement = `{
+  "statement": "net.one-of-us",
+  "time": "2024-06-22T07:00:00.000Z",
+  "I": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "mEwiqG7o46sVysAtb5z4x-jLfIIW_YnWH3Y5yMhPBcg"
+  },
+  "delegate": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "xrRGbgdaLOGphzM1BnOjvYvWjRoGeQYcDaHHVjPROpo"
+  },
+  "with": {
+    "domain": "nerdster.org"
+  },
+  "previous": "b0a3b4c11c0a8652a14fdf99fcb656f4c6a96940",
+  "signature": "785def8d9ffaf2e5a26717fe10cfc09c3c1889e8afb914c1415f4e5101b12e42afda50a55bf3076c0b1a66f7df0e08464868db3bbb635449bc8322945931fb09"
+}`;
+
         iframe.src = IframeHelper.constructUrl({
           verify: LisaTrustMom,
           verifyImmediately: "true",
         });
+
+        document
+          .getElementById("delegate-link")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            iframe.src = IframeHelper.constructUrl({
+              verify: delegateStatement,
+              verifyImmediately: "true",
+            });
+          });
       })();
     </script>
   </body>
