@@ -109,13 +109,16 @@ class _ContentTreeState extends State<ContentTree> {
       if (Setting.get(SettingType.netView).value) await NetBar.showTree(context);
 
       if (b(Uri.base.queryParameters['verify2'])) {
+        final bool verifyImmediately = bs(Uri.base.queryParameters['verifyImmediately']);
         await showDialog(
             context: context,
             builder: (context) => Dialog(
                     // Doesn't work: shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
                     child: Navigator(onGenerateRoute: (settings) {
                   return MaterialPageRoute(
-                      builder: (_) => Verify(input: Uri.base.queryParameters['verify2']));
+                      builder: (_) => Verify(
+                          input: Uri.base.queryParameters['verify2'],
+                          verifyImmediately: verifyImmediately));
                 })));
       }
     });
