@@ -17,7 +17,7 @@ import 'package:nerdster/oneofus/util.dart';
 ///   - no notificattions
 ///   - horses (Lisa), bowling, recipes, skateboards, alt movies
 /// - Bart
-///   - notifications: 
+///   - notifications:
 ///     - Nerdster remembers Lisa's initial sign in (<reset>), but Bart blocked for from <nerdster> follow netwok.
 ///     - Bart hasn't updated to Homer's new key
 ///     - Sideshow Mel trying to trust Sideshow Bob, who's already blocked
@@ -92,7 +92,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Sis');
   await homer2.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   // await lisa.doTrust(TrustVerb.trust, homer, moniker: 'Dad');
-  await lisa.doTrust(TrustVerb.trust, marge, moniker: 'Mom');
+  await lisa.doTrust(TrustVerb.trust, marge, moniker: 'Mom', export: 'lisa-trust-mom');
   // await lisa.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
   await lisa.doTrust(TrustVerb.trust, maggie, moniker: 'Maggie');
   await marge.doTrust(TrustVerb.trust, homer2, moniker: 'Hubby'); // marge trusts homer2
@@ -143,7 +143,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   DemoKey milhouseN = await milhouse.makeDelegate();
   DemoKey carlN = await carl.makeDelegate();
   DemoKey smithersN = await smithers.makeDelegate();
-  DemoKey margeN = await marge.makeDelegate();
+  DemoKey margeN = await marge.makeDelegate(export: 'marge-delegate');
 
   DemoKey sideshowN = await sideshow.makeDelegate();
   DemoKey melN = await mel.makeDelegate();
@@ -175,14 +175,17 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await milhouseN.doRate(subject: superbad, recommend: true, comment: 'two thumbs way up');
   await bartN.doRate(subject: superbad, recommend: true, comment: '#rad #sick meisterpeace');
   await margeN.doRate(subject: getToken(superbad), censor: true);
-  await margeN.doRate(subject: banana, recommend: true, comment: '#nutritious and #delicious');
+  await margeN.doRate(
+      subject: banana,
+      recommend: true,
+      comment: '#nutritious and #delicious',
+      export: 'marge-banana-rate');
   await homer2N.doRate(subject: kingpin, recommend: true, comment: '#rad');
   await bartN.doRate(subject: buck, dismiss: true, recommend: false, comment: '#barf');
   await bartN.doRate(subject: banana, dismiss: true);
   await lisaN.doRate(subject: secretariat, recommend: true, comment: '#poignant #horses');
   await margeN.doRate(subject: secretariat, recommend: true);
-  await carlN.doRate(
-      subject: superbad, dismiss: true, comment: '#disgusting', recommend: false);
+  await carlN.doRate(subject: superbad, dismiss: true, comment: '#disgusting', recommend: false);
 
   await sideshowN.doRate(subject: joker, recommend: true, comment: 'instant #classic');
   await sideshowN.doRate(subject: shakes, recommend: true, comment: 'instant #classic');
@@ -198,7 +201,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   // social: bart trusts milhouse, blocks lisa
   // nerd: bart trusts Milhouse, milhouse trusts lisa and bart.
   // family. lisa follows all family; there are other paths.
-  await bartN.doFollow(milhouse, {'social': 1});
+  await bartN.doFollow(milhouse, {'social': 1}, export: 'bart-follow-milhouse-social');
   await bartN.doFollow(lisa, {'family': 1, 'social': -1, kNerdsterContext: -1});
   await bartN.doFollow(homer, {'family': 1});
   await bartN.doFollow(marge, {kNerdsterContext: -1});
@@ -218,6 +221,8 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await burnsN.doFollow(homer2, {kNerdsterContext: -1});
 
   useClock(LiveClock());
+
+  DemoKey.dumpExports();
 
   return (lisa, lisaN);
 }
