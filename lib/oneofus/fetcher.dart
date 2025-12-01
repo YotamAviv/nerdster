@@ -74,7 +74,7 @@ import 'value_waiter.dart';
 /// - signature maintenance and verification
 
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
-
+final String kSinceAlways = '<since always>';
 abstract class CorruptionProblemCollector {
   void corrupt(String token, String error, String? details);
 }

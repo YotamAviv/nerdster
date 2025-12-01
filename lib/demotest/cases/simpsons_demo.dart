@@ -1,6 +1,7 @@
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/follow/follow_net.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -149,6 +150,10 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   DemoKey melN = await mel.makeDelegate();
   DemoKey amandaN = await amanda.makeDelegate();
   DemoKey seymoreN = await seymore.makeDelegate();
+
+  // Sideshow ...
+  await sideshowN.doTrust(TrustVerb.delegate, margeN,
+      revokeAt: kSinceAlways, export: 'sideshow-revoke-marge-delegate');
 
   // Submit something as each delegate
   const Json brokeback = {'contentType': 'movie', 'title': "Brokeback Mountain", 'year': '2005'};
