@@ -134,7 +134,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await milhouse.doTrust(TrustVerb.trust, ralph, moniker: 'Ralph');
 
   // milhouse->krusty, marge-x> sideshow
-  await marge.doTrust(TrustVerb.block, sideshow, comment: 'Naughty!!!');
+  await marge.doTrust(TrustVerb.block, sideshow, comment: 'Naughty!!!', export: 'marge-block-sideshow');
   await milhouse.doTrust(TrustVerb.trust, krusty, moniker: 'Krusty');
 
   DemoKey lisaN = await lisa.makeDelegate();
@@ -151,9 +151,8 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   DemoKey amandaN = await amanda.makeDelegate();
   DemoKey seymoreN = await seymore.makeDelegate();
 
-  // Sideshow ...
-  await sideshowN.doTrust(TrustVerb.delegate, margeN,
-      revokeAt: kSinceAlways, export: 'sideshow-revoke-marge-delegate');
+  await sideshow.doTrust(TrustVerb.delegate, margeN,
+      revokeAt: kSinceAlways, comment: 'Karen..', export: 'sideshow-revoke-marge-delegate');
 
   // Submit something as each delegate
   const Json brokeback = {'contentType': 'movie', 'title': "Brokeback Mountain", 'year': '2005'};
