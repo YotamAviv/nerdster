@@ -56,7 +56,7 @@ const domain2statementType = {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final Set<String> highlightKeys = Set.unmodifiable({
+  JsonDisplay.highlightKeys = Set.unmodifiable({
     'I',
     'moniker',
     'domain',
@@ -65,9 +65,13 @@ Future<void> main() async {
     ...TrustVerb.values.map((e) => e.label),
     ...ContentVerb.values.map((e) => e.label),
   });
-
-  JsonDisplay.highlightKeys = highlightKeys;
-  Verify.highlightKeys = highlightKeys;
+  Verify.highlightKeys = Set.unmodifiable({
+    'I',
+    'moniker',
+    'domain',
+    ...TrustVerb.values.map((e) => e.label),
+    ...ContentVerb.values.map((e) => e.label),
+  });
 
   // Don't even load up Firebase if we're just showing the validate demo
   if (b(Uri.base.queryParameters['verify'])) {
