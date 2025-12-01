@@ -108,43 +108,7 @@ class _ContentTreeState extends State<ContentTree> {
 
       if (Setting.get(SettingType.netView).value) await NetBar.showTree(context);
 
-      Setting verify2 = Setting.get(SettingType.verify2);
-      BuildContext? dialogContext;
-
-      Future<void> handleVerify2() async {
-        final String? value = verify2.value;
-        if (!b(value)) return;
-
-        if (dialogContext != null) {
-          if (dialogContext!.mounted) {
-            Navigator.of(dialogContext!).pop();
-          }
-          dialogContext = null;
-        }
-
-        print('verify2.value: $value');
-        final bool verifyImmediately = bs(Uri.base.queryParameters['verifyImmediately']);
-        await showDialog(
-            context: context,
-            builder: (context) {
-              dialogContext = context;
-              return Dialog(
-                  // Doesn't work: shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-                  child: Navigator(onGenerateRoute: (settings) {
-                return MaterialPageRoute(
-                    builder: (_) =>
-                        Verify(input: value, verifyImmediately: verifyImmediately));
-              }));
-            });
-        dialogContext = null;
-        verify2.value = null;
-      }
-
-      // Listen for changes
-      verify2.addListener(handleVerify2);
-
-      // Check the value immediately
-      handleVerify2();
+      verify2init(context);
     });
   }
 

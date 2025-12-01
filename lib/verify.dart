@@ -7,7 +7,9 @@ import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/json_highlighter.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
 /// from: https://www.urlencoder.org/
@@ -28,8 +30,7 @@ final TextStyle monospaceStyle =
     GoogleFonts.courierPrime(fontWeight: FontWeight.w700, fontSize: 13);
 Widget monospacedBlock(String text) => SelectableText.rich(
       TextSpan(
-          children: highlightJsonKeys(text, monospaceStyle,
-              keysToHighlight: Verify.highlightKeys)),
+          children: highlightJsonKeys(text, monospaceStyle, keysToHighlight: Verify.highlightKeys)),
     );
 
 class Verify extends StatefulWidget {
@@ -41,6 +42,45 @@ class Verify extends StatefulWidget {
 
   @override
   State<Verify> createState() => _VerifyState();
+}
+
+void verify2init(BuildContext context) {
+  Setting<String?> verify2 = Setting.get(SettingType.verify2);
+  BuildContext? dialogContext;
+
+  Future<void> handleVerify2() async {
+    final String? value = verify2.value;
+    if (!b(value)) return;
+
+    if (dialogContext != null) {
+      if (dialogContext!.mounted) {
+        Navigator.of(dialogContext!).pop();
+      }
+      dialogContext = null;
+    }
+
+    print('verify2.value: $value');
+    final bool verifyImmediately = bs(Uri.base.queryParameters['verifyImmediately']);
+    await showDialog(
+        context: context,
+        builder: (context) {
+          dialogContext = context;
+          return Dialog(
+              // Doesn't work: shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+              child: Navigator(onGenerateRoute: (settings) {
+            return MaterialPageRoute(
+                builder: (_) => Verify(input: value, verifyImmediately: verifyImmediately));
+          }));
+        });
+    dialogContext = null;
+    verify2.value = null;
+  }
+
+  // Listen for changes
+  verify2.addListener(handleVerify2);
+
+  // Check the value immediately
+  handleVerify2();
 }
 
 class _VerifyState extends State<Verify> {
