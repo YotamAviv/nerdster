@@ -29,21 +29,16 @@
         });
       }
 
-      const lisa = document.getElementById('load-lisa');
-      if (lisa) {
-        lisa.addEventListener('click', function (ev) {
-          ev.preventDefault();
-          iframe.contentWindow.postMessage({ identity: demoKeys.lisa }, '*');
-        });
-      }
+      document.getElementById('load-lisa').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ identity: demoKeys.lisa }, '*');
+      });
 
-      const bart = document.getElementById('load-bart');
-      if (bart) {
-        bart.addEventListener('click', function (ev) {
-          ev.preventDefault();
-          iframe.contentWindow.postMessage({ identity: demoKeys.bart }, '*');
-        });
-      }
+      document.getElementById('load-bart').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ identity: demoKeys.bart }, '*');
+      });
+
     } catch (e) {
       console.warn('home.js: Failed to load demo keys or wire buttons', e);
     }
@@ -52,10 +47,10 @@
   // --- Modal and interaction logic ---
 
   const modalContent = d.getElementById('modalContent');
-  
+
   // ensure modal content can receive focus (for accessibility and to avoid
   // focus-driven scrolling). We'll make it programmatically focusable.
-  if(modalContent) modalContent.tabIndex = -1;
+  if (modalContent) modalContent.tabIndex = -1;
 
   // (QR/status controls removed; demo now uses the embedded iframe controls)
 
@@ -66,31 +61,31 @@
   if (window.boxes) window.boxes.init();
 
   // Detail block: show content in the modal overlay so it appears above the iframe
-  function openDetail(content){
+  function openDetail(content) {
     if (window.boxes) window.boxes.openModal(content);
   }
-  function closeDetail(){
+  function closeDetail() {
     if (window.boxes) window.boxes.closeModal();
   }
 
 
   // Keyboard
-  document.addEventListener('keydown', e=>{
-    if(e.key==='Escape'){ closeDetail(); }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeDetail(); }
   });
 
   // postMessage hook (optional)
-  window.addEventListener('message', ev=>{
+  window.addEventListener('message', ev => {
     const handler = () => {
       const m = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
-      if(m?.action==='open' && m.detailId){
+      if (m?.action === 'open' && m.detailId) {
         let ref = document.getElementById(m.detailId);
-        if(ref) return openDetail(ref.innerHTML);
+        if (ref) return openDetail(ref.innerHTML);
         // find a box that declares that detail id
         const box = document.querySelector('.box[data-detail="' + m.detailId + '"]');
-        if(box){
+        if (box) {
           const tmpl = box.querySelector && box.querySelector('template.box-detail');
-          if(tmpl && tmpl.content){
+          if (tmpl && tmpl.content) {
             const frag = tmpl.content.cloneNode(true);
             const container = document.createElement('div');
             container.appendChild(frag);
