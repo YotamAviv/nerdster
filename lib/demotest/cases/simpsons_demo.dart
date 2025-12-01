@@ -84,7 +84,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await marge.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
   await marge.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await homer2.doTrust(TrustVerb.replace, homer,
-      comment: 'lost phone', revokeAt: s2.token); // homer replaces key
+      comment: 'lost phone', revokeAt: s2.token, export: 'homer-replace-key'); // homer replaces key
   await marge.doTrust(TrustVerb.trust, homer, moniker: 'Hubby');
   // await bart.doTrust(TrustVerb.trust, marge, moniker: 'Moms');
   await bart.doTrust(TrustVerb.trust, homer, moniker: 'Homer');
@@ -221,8 +221,6 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await burnsN.doFollow(homer2, {kNerdsterContext: -1});
 
   useClock(LiveClock());
-
-  DemoKey.dumpExports();
 
   return (lisa, lisaN);
 }

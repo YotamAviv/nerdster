@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
@@ -45,6 +46,28 @@ class Menus {
             DemoKey oneofus;
             DemoKey? delegate;
             (oneofus, delegate) = await e.value();
+            if (DemoKey.getExports().isNotEmpty) {
+                String exportDataJs = DemoKey.getExportsString();
+                await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                      title: const Text('Demo Data'),
+                      content: SingleChildScrollView(child: SelectableText(exportDataJs)),
+                      actions: [
+                      TextButton(
+                        onPressed: () async {
+                          await Clipboard.setData(ClipboardData(text: exportDataJs));
+                          if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Copied to clipboard')));
+                          }
+                        },
+                        child: const Text('Copy')),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context), child: const Text('Close'))
+                      ]));
+            }
             await signInState.signIn(oneofus.token, delegate?.keyPair, context: context);
           },
           child: Text(name)));

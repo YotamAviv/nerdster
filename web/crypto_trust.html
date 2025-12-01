@@ -8,7 +8,7 @@
   </head>
   <body>
     <main>
-      <h1>The Identity Layer</h1>
+      <h1>Vouch, Delegate - The Identity Layer</h1>
       <ul>
         <li>Vouch for humans</li>
         <li>Delegate to services</li>
@@ -26,7 +26,7 @@
           faith".
         </li>
         <li>Block: keys that don't.</li>
-        <li>Replace: your own lost or compromised keys.</li>
+        <li><a id="replace-link" href="#">Replace</a>: your own lost or compromised keys.</li>
         <li>
           <a id="delegate-link" href="#">Delegate</a>: disposable keys that you
           possess to services to allow them to act on your behalf (until you
@@ -87,6 +87,13 @@
             e.preventDefault();
             loadVerify("marge-delegate");
           });
+        document
+          .getElementById("replace-link")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            loadVerify("homer-replace-key");
+          });
+          
 
         loadVerify("lisa-trust-mom");
       })();

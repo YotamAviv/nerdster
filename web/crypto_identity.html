@@ -47,11 +47,13 @@
         <br />
         (On the
         <!-- DEFER: Add query parameters for ?fire=emulator -->
-        <a href="home.html" target="_blank">Nerdster Simpsons Bot Farm</a>'s Lisa
-        scanned her mom's phone, Marge scanned her kids' phones, and Bart
+        <a href="home.html" target="_blank">Nerdster Simpsons Bot Farm</a>'s
+        Lisa scanned her mom's phone, Marge scanned her kids' phones, and Bart
         scanned Milhouse's phone.)
       </p>
       <p>I am who your network says I am, across all services.</p>
+
+      <a href="#" id="verifyTrustMom">Lisa trusts her mom</a>
 
       <h1>Your public key is your identity</h1>
       <p>
@@ -110,46 +112,31 @@
     </main>
 
     <script src="iframe_helper.js"></script>
+    <script src="data/demoData.js"></script>
     <script>
       (function () {
         const iframe = document.getElementById("flutterApp");
         if (!iframe) return;
 
-        const identity = {
-          crv: "Ed25519",
-          kty: "OKP",
-          x: "cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE",
-        };
+        const identity = demoData["lisa"];
 
-        const verify2 = `{
-  "statement": "org.nerdster",
-  "time": "2024-07-23T07:00:00.000Z",
-  "I": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "B-mZ-Ydp8WY0u5yt1WytnsUeE0wYnntZxGbr81Enwp4"
-  },
-  "follow": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "mEwiqG7o46sVysAtb5z4x-jLfIIW_YnWH3Y5yMhPBcg"
-  },
-  "with": {
-    "contexts": {
-      "social": 1
-    }
-  },
-  "previous": "2ff7cf81d7023453d9d9eb3a4b2dc591a9e8e9e9",
-  "signature": "0c671a18e2ffe9ee82eb5b3b1ef75329b107a4e091f628a667a6d161a55b3289e0840ac25323e6af90a09b0e0dad2fddd7b578423a40ec91c3211371278e8c0f"
-}`;
+        const verify2 = demoData["bart-follow-milhouse-social"];
+        console.log("verify2:", verify2);
 
         iframe.src = IframeHelper.constructUrl({
           identity: JSON.stringify(identity),
-          verify2: verify2,
+          verify2: JSON.stringify(verify2, null, 2),
           verifyImmediately: "true",
           showCrypto: "true",
           skipCredentialsDisplay: "true",
         });
+
+        document
+          .getElementById("verifyTrustMom")
+          .addEventListener("click", function (ev) {
+            ev.preventDefault();
+            iframe.contentWindow.postMessage({ verify2: demoData["lisa-trust-mom"] }, "*");
+          });
       })();
     </script>
   </body>

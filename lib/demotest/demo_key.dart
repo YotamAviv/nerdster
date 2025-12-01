@@ -71,6 +71,7 @@ class DemoKey {
   static void clear() {
     _name2key.clear();
     _token2key.clear();
+    _exports.clear();
   }
 
   final String name;
@@ -88,10 +89,12 @@ class DemoKey {
     if (!_name2key.containsKey(name)) {
       final OouKeyPair keyPair = await _crypto.createKeyPair();
       final OouPublicKey publicKey = await keyPair.publicKey;
-      final String token = Jsonish(await publicKey.json).token;
+      final Json json = await publicKey.json;
+      final String token = Jsonish(json).token;
       DemoKey out = DemoKey._internal(name, keyPair, publicKey, token);
       _name2key[name] = out;
       _token2key[token] = out;
+      _exports[name] = json;
     }
     return _name2key[name]!;
   }
@@ -214,10 +217,9 @@ class DemoKey {
     print(z);
   }
 
-  static void dumpExports() {
-    if (_exports.isNotEmpty) {
-      print('// Exported demoData');
-      print('const demoData = ${encoder.convert(_exports)};');
-    }
+  static Json getExports() => _exports;
+
+  static String getExportsString() {
+    return 'const demoData = ${encoder.convert(_exports)};';
   }
 }
