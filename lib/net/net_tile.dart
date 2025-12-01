@@ -99,7 +99,7 @@ class _NetTileState extends State<NetTile> {
           iconPair = revokedKeyIconPair;
           String replacedOrRevoked = isDelegate ? 'revoked' : 'replaced';
           String revokeAtTime =
-              node.revokeAtTime == date0 ? '<since always>' : formatUiDatetime(node.revokeAtTime!);
+              node.revokeAtTime == date0 ? kSinceAlways : formatUiDatetime(node.revokeAtTime!);
           iconTooltip = '$iconTooltip \n$replacedOrRevoked at: $revokeAtTime';
         }
         if (isDelegate) {

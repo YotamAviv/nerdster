@@ -17,26 +17,20 @@
     }
 
     try {
-      const response = await fetch('/data/simpsonsDemo.json');
-      const demoKeys = await response.json();
-
-      const aviv = document.getElementById('load-aviv');
-      if (aviv) {
-        aviv.addEventListener('click', function (ev) {
-          ev.preventDefault();
-          const AVIV = { crv: 'Ed25519', kty: 'OKP', x: 'Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo' };
-          iframe.contentWindow.postMessage({ identity: AVIV }, '*');
-        });
-      }
+      document.getElementById('load-aviv').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        const AVIV = { crv: 'Ed25519', kty: 'OKP', x: 'Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo' };
+        iframe.contentWindow.postMessage({ identity: AVIV }, '*');
+      });
 
       document.getElementById('load-lisa').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identity: demoKeys.lisa }, '*');
+        iframe.contentWindow.postMessage({ identity: demoData.lisa }, '*');
       });
 
       document.getElementById('load-bart').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identity: demoKeys.bart }, '*');
+        iframe.contentWindow.postMessage({ identity: demoData.bart }, '*');
       });
 
     } catch (e) {

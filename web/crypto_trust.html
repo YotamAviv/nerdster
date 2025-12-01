@@ -30,7 +30,7 @@
         <li>
           <a id="delegate-link" href="#">Delegate</a>: disposable keys that you
           possess to services to allow them to act on your behalf (until you
-          revoke them).
+          <a id="revoke-delegate-link" href="#">revoke</a> them).
         </li>
       </ul>
 
@@ -92,11 +92,12 @@
             updateVerify("lisa-trust-mom");
           });
         document
-          .getElementById("delegate-link")
+          .getElementById("revoke-delegate-link")
           .addEventListener("click", (e) => {
             e.preventDefault();
-            updateVerify("marge-delegate");
+            updateVerify("sideshow-revoke-marge-delegate");
           });
+          
         document
           .getElementById("replace-link")
           .addEventListener("click", (e) => {
