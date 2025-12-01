@@ -25,7 +25,7 @@
            <a id="trust-link" href="#">Trust</a>: keys that meet the bar of "human, capable, and acting in good
           faith".
         </li>
-        <li>Block: keys that don't.</li>
+        <li><a id="block-link" href="#">Block</a>: keys that don't.</li>
         <li><a id="replace-link" href="#">Replace</a>: your own lost or compromised keys.</li>
         <li>
           <a id="delegate-link" href="#">Delegate</a>: disposable keys that you
@@ -92,12 +92,17 @@
             updateVerify("lisa-trust-mom");
           });
         document
+          .getElementById("block-link")
+          .addEventListener("click", (e) => {
+            e.preventDefault();
+            updateVerify("marge-block-sideshow");
+          });
+        document
           .getElementById("revoke-delegate-link")
           .addEventListener("click", (e) => {
             e.preventDefault();
             updateVerify("sideshow-revoke-marge-delegate");
           });
-          
         document
           .getElementById("replace-link")
           .addEventListener("click", (e) => {
