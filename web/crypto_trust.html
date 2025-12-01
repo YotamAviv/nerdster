@@ -20,19 +20,18 @@
         the identity layer.
       </p>
 
-      <ul>
-        <li>
-           <a id="trust-link" href="#">Trust</a>: keys that meet the bar of "human, capable, and acting in good
-          faith".
-        </li>
-        <li><a id="block-link" href="#">Block</a>: keys that don't.</li>
-        <li><a id="replace-link" href="#">Replace</a>: your own lost or compromised keys.</li>
-        <li>
-          <a id="delegate-link" href="#">Delegate</a>: disposable keys that you
-          possess to services to allow them to act on your behalf (until you
-          <a id="revoke-delegate-link" href="#">revoke</a> them).
-        </li>
-      </ul>
+      <p>
+        <a id="lisa-trust-mom" href="#">Trust</a>: keys that meet the bar of "human, capable, and acting in good
+        faith".
+        <br />
+        <a id="marge-block-sideshow" href="#">Block</a>: keys that don't.
+        <br />
+        <a id="homer-replace-key" href="#">Replace</a>: your own lost or compromised keys.
+        <br />
+        <a id="marge-delegate" href="#">Delegate</a>: disposable keys that you
+        possess to services to allow them to act on your behalf (until you
+        <a id="sideshow-revoke-marge-delegate" href="#">revoke</a> them).
+      </p>
 
       <p>
         When you vouch for someone else by scanning their ONE-OF-US.NET's phone
@@ -57,6 +56,7 @@
 
     <script src="iframe_helper.js"></script>
     <script src="data/demoData.js"></script>
+    <script src="verify_helper.js"></script>
     <script>
       (function () {
         const iframe = document.getElementById("flutterApp");
@@ -73,42 +73,13 @@
           });
         }
 
-        function updateVerify(key) {
-          const data = demoData[key];
-          if (!data) {
-            console.error("No demo data found for key:", key);
-            return;
-          }
-          iframe.contentWindow.postMessage(
-            { verify: JSON.stringify(data, null, 2) },
-            "*"
-          );
-        }
-
-        document
-          .getElementById("trust-link")
-          .addEventListener("click", (e) => {
-            e.preventDefault();
-            updateVerify("lisa-trust-mom");
-          });
-        document
-          .getElementById("block-link")
-          .addEventListener("click", (e) => {
-            e.preventDefault();
-            updateVerify("marge-block-sideshow");
-          });
-        document
-          .getElementById("revoke-delegate-link")
-          .addEventListener("click", (e) => {
-            e.preventDefault();
-            updateVerify("sideshow-revoke-marge-delegate");
-          });
-        document
-          .getElementById("replace-link")
-          .addEventListener("click", (e) => {
-            e.preventDefault();
-            updateVerify("homer-replace-key");
-          });
+        VerifyHelper.setupListeners([
+          "lisa-trust-mom",
+          "marge-block-sideshow",
+          "homer-replace-key",
+          "marge-delegate",
+          "sideshow-revoke-marge-delegate",
+        ]);
       })();
     </script>
   </body>
