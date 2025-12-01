@@ -121,12 +121,12 @@
 
         const identity = demoData["lisa"];
 
-        const verify2 = demoData["bart-follow-milhouse-social"];
-        console.log("verify2:", verify2);
+        const verify = demoData["bart-follow-milhouse-social"];
+        console.log("verify:", verify);
 
         iframe.src = IframeHelper.constructUrl({
           identity: JSON.stringify(identity),
-          verify2: JSON.stringify(verify2, null, 2),
+          verify: JSON.stringify(verify, null, 2),
           verifyImmediately: "true",
           showCrypto: "true",
           skipCredentialsDisplay: "true",
@@ -137,7 +137,7 @@
           .addEventListener("click", function (ev) {
             ev.preventDefault();
             iframe.contentWindow.postMessage(
-              { verify2: JSON.stringify(demoData["marge-banana-rate"], null, 2) },
+              { verify: JSON.stringify(demoData["marge-banana-rate"], null, 2) },
               "*"
             );
           });
@@ -147,7 +147,7 @@
           .addEventListener("click", function (ev) {
             ev.preventDefault();
             iframe.contentWindow.postMessage(
-              { verify2: JSON.stringify(demoData["lisa-trust-mom"], null, 2) },
+              { verify: JSON.stringify(demoData["lisa-trust-mom"], null, 2) },
               "*"
             );
           });

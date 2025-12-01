@@ -108,7 +108,7 @@ class _ContentTreeState extends State<ContentTree> {
 
       if (Setting.get(SettingType.netView).value) await NetBar.showTree(context);
 
-      verify2init(context);
+      verifyInit(navigatorKey);
     });
   }
 

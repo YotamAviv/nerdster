@@ -44,12 +44,12 @@ class Verify extends StatefulWidget {
   State<Verify> createState() => _VerifyState();
 }
 
-void verify2init(BuildContext context) {
-  Setting<String?> verify2 = Setting.get(SettingType.verify2);
+void verifyInit(GlobalKey<NavigatorState> navigatorKey) {
+  Setting verifySetting = Setting.get(SettingType.verify);
   BuildContext? dialogContext;
 
-  Future<void> handleVerify2() async {
-    final String? value = verify2.value;
+  Future<void> handleVerify() async {
+    final String? value = verifySetting.value;
     if (!b(value)) return;
 
     if (dialogContext != null) {
@@ -59,7 +59,24 @@ void verify2init(BuildContext context) {
       dialogContext = null;
     }
 
-    print('verify2.value: $value');
+    // Wait for navigator to be ready if needed
+    if (navigatorKey.currentContext == null) {
+      // This might happen on startup.
+      // We can retry or wait for the first frame.
+      // But since we are calling this from main(), runApp() is called right after.
+      // So we can use addPostFrameCallback on the binding?
+      // But we don't have a context yet.
+      // Let's just wait a bit? No, that's hacky.
+      // Better: use WidgetsBinding.instance.addPostFrameCallback
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        handleVerify();
+      });
+      return;
+    }
+
+    final context = navigatorKey.currentContext!;
+
+    print('${SettingType.verify.name}.value: $value');
     final bool verifyImmediately = bs(Uri.base.queryParameters['verifyImmediately']);
     await showDialog(
         context: context,
@@ -73,14 +90,14 @@ void verify2init(BuildContext context) {
           }));
         });
     dialogContext = null;
-    verify2.value = null;
+    verifySetting.value = null;
   }
 
   // Listen for changes
-  verify2.addListener(handleVerify2);
+  verifySetting.addListener(handleVerify);
 
   // Check the value immediately
-  handleVerify2();
+  handleVerify();
 }
 
 class _VerifyState extends State<Verify> {
@@ -427,4 +444,22 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: content),
       );
+}
+
+class StandaloneVerify extends StatelessWidget {
+  const StandaloneVerify({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String?>(
+      valueListenable: Setting.get(SettingType.verify),
+      builder: (context, value, child) {
+        return Verify(
+          key: ValueKey(value),
+          input: value,
+          verifyImmediately: bs(Uri.base.queryParameters['verifyImmediately']),
+        );
+      },
+    );
+  }
 }

@@ -53,8 +53,11 @@ const domain2statementType = {
   kNerdsterDomain: kNerdsterType,
 };
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Prefs.init();
 
   JsonDisplay.highlightKeys = Set.unmodifiable({
     'I',
@@ -72,17 +75,6 @@ Future<void> main() async {
     ...TrustVerb.values.map((e) => e.label),
     ...ContentVerb.values.map((e) => e.label),
   });
-
-  // Don't even load up Firebase if we're just showing the validate demo
-  if (b(Uri.base.queryParameters['verify'])) {
-    String verifyIn = Uri.base.queryParameters['verify']!;
-    final bool verifyImmediately = bs(Uri.base.queryParameters['verifyImmediately']);
-    runApp(MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-            body: SafeArea(child: Verify(input: verifyIn, verifyImmediately: verifyImmediately)))));
-    return;
-  }
 
   // ------------ Fire ------------
   Map<String, String> params = Uri.base.queryParameters;
@@ -151,7 +143,6 @@ Future<void> main() async {
   JsonDisplay.interpreter = keyLabels;
   TrustStatement.init();
   ContentStatement.init();
-  await Prefs.init();
   await initPrefs2();
   await About.init();
 
@@ -168,8 +159,19 @@ Future<void> main() async {
     initMessageListener();
   }
 
+  final bool fullScreen = Uri.base.queryParameters.containsKey('verifyFullScreen');
+
+  if (fullScreen && b(Setting.get(SettingType.verify).value)) {
+    runApp(MaterialApp(
+        navigatorKey: navigatorKey,
+        debugShowCheckedModeBanner: false,
+        home: const StandaloneVerify()));
+    return;
+  }
+
   // -------------- run app ---------------
-  runApp(MaterialApp(debugShowCheckedModeBanner: false, home: ContentTree()));
+  runApp(MaterialApp(
+      navigatorKey: navigatorKey, debugShowCheckedModeBanner: false, home: ContentTree()));
 }
 
 Future<void> defaultSignIn(BuildContext context) async {
