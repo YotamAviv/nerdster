@@ -31,7 +31,7 @@ enum SettingType {
   httpFetch(bool, true),
   batchFetch(bool, true),
 
-  verify2(String, null, param: true);
+  verify(String, null, param: true);
 
   final Type type;
   final dynamic defaultValue;

@@ -62,40 +62,47 @@
         const iframe = document.getElementById("flutterApp");
         if (!iframe) return;
 
-        function loadVerify(key) {
+        // Initial load
+        const initialKey = "lisa-trust-mom";
+        const initialData = demoData[initialKey];
+        if (initialData) {
+          iframe.src = IframeHelper.constructUrl({
+            verify: JSON.stringify(initialData, null, 2),
+            verifyImmediately: "true",
+            verifyFullScreen: "true",
+          });
+        }
+
+        function updateVerify(key) {
           const data = demoData[key];
           if (!data) {
             console.error("No demo data found for key:", key);
             return;
           }
-          const verify = JSON.stringify(data, null, 2);
-          iframe.src = IframeHelper.constructUrl({
-            verify: verify,
-            verifyImmediately: "true",
-          });
+          iframe.contentWindow.postMessage(
+            { verify: JSON.stringify(data, null, 2) },
+            "*"
+          );
         }
 
         document
           .getElementById("trust-link")
           .addEventListener("click", (e) => {
             e.preventDefault();
-            loadVerify("lisa-trust-mom");
+            updateVerify("lisa-trust-mom");
           });
         document
           .getElementById("delegate-link")
           .addEventListener("click", (e) => {
             e.preventDefault();
-            loadVerify("marge-delegate");
+            updateVerify("marge-delegate");
           });
         document
           .getElementById("replace-link")
           .addEventListener("click", (e) => {
             e.preventDefault();
-            loadVerify("homer-replace-key");
+            updateVerify("homer-replace-key");
           });
-          
-
-        loadVerify("lisa-trust-mom");
       })();
     </script>
   </body>
