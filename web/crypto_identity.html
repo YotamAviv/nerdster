@@ -54,6 +54,7 @@
       <p>I am who your network says I am, across all services.</p>
 
       <a href="#" id="verifyTrustMom">Lisa trusts her mom</a>
+      <a href="#" id="verifyMomRate">verifyMomRate</a>
 
       <h1>Your public key is your identity</h1>
       <p>
@@ -132,10 +133,23 @@
         });
 
         document
+          .getElementById("verifyMomRate")
+          .addEventListener("click", function (ev) {
+            ev.preventDefault();
+            iframe.contentWindow.postMessage(
+              { verify2: JSON.stringify(demoData["marge-banana-rate"], null, 2) },
+              "*"
+            );
+          });
+
+        document
           .getElementById("verifyTrustMom")
           .addEventListener("click", function (ev) {
             ev.preventDefault();
-            iframe.contentWindow.postMessage({ verify2: demoData["lisa-trust-mom"] }, "*");
+            iframe.contentWindow.postMessage(
+              { verify2: JSON.stringify(demoData["lisa-trust-mom"], null, 2) },
+              "*"
+            );
           });
       })();
     </script>

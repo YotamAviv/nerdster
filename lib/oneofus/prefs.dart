@@ -4,11 +4,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../oneofus/util.dart';
 import '../setting_type.dart';
 
+// Incluces Clacker made changes to support String? settings.
 class Setting<T> implements ValueListenable<T> {
   final SettingType type; // Enum for type-safe code references
   final ValueNotifier<T> _notifier;
 
-  Setting._(this.type) : _notifier = ValueNotifier<T>(type.defaultValue);
+  Setting._(this.type) : _notifier = ValueNotifier<T>(type.defaultValue as T);
 
   static Setting<T> get<T>(SettingType type) => _instances[type]! as Setting<T>;
   static final List<Setting> all = _instances.values.toList();
@@ -16,7 +17,7 @@ class Setting<T> implements ValueListenable<T> {
   String get name => type.name;
   ValueNotifier<T> get notifier => _notifier;
   List<String> get aliases => type.aliases;
-  T get defaultValue => type.defaultValue;
+  T get defaultValue => type.defaultValue as T;
   bool get persist => type.persist;
   bool get param => type.param;
 
@@ -35,10 +36,10 @@ class Setting<T> implements ValueListenable<T> {
 
   // Helper method to parse string values into type T
   T _parseValue(String value) {
-    if (T == bool) return bs(value) as T;
-    if (T == int) return int.parse(value) as T;
-    if (T == String) return value as T;
-    if (T == List<String>) return value.split(',') as T;
+    if (type.type == bool) return bs(value) as T;
+    if (type.type == int) return int.parse(value) as T;
+    if (type.type == String) return value as T;
+    if (type.type == List<String>) return value.split(',') as T;
     throw Exception('Unsupported type: $T');
   }
 
@@ -61,7 +62,7 @@ class Setting<T> implements ValueListenable<T> {
   void addToParams(Map<String, String> params) {
     if (!param) return;
     if (_notifier.value != defaultValue) {
-      if (T == List<String>) {
+      if (type.type == List<String>) {
         params[name] = (_notifier.value as List<String>).join(',');
       } else {
         params[name] = _notifier.value.toString();
@@ -90,7 +91,7 @@ class Setting<T> implements ValueListenable<T> {
   void addStorageListener(FlutterSecureStorage storage) {
     if (!persist) return;
     _notifier.addListener(() async {
-      if (T == List<String>) {
+      if (type.type == List<String>) {
         await storage.write(key: name, value: (_notifier.value as List<String>).join(','));
       } else {
         await storage.write(key: name, value: _notifier.value.toString());
@@ -110,6 +111,9 @@ class Setting<T> implements ValueListenable<T> {
     } else if (type.type == int) {
       return Setting<int>._(type);
     } else if (type.type == String) {
+      if (type.defaultValue == null) {
+        return Setting<String?>._(type);
+      }
       return Setting<String>._(type);
     } else if (type.type == List<String>) {
       return Setting<List<String>>._(type);

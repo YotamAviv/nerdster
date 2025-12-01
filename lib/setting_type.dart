@@ -1,4 +1,3 @@
-
 import 'package:nerdster/follow/follow_net.dart';
 
 enum SettingType {
@@ -30,7 +29,9 @@ enum SettingType {
 
   skipVerify(bool, true),
   httpFetch(bool, true),
-  batchFetch(bool, true);
+  batchFetch(bool, true),
+
+  verify2(String, null, param: true);
 
   final Type type;
   final dynamic defaultValue;
