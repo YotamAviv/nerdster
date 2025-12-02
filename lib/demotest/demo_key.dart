@@ -115,6 +115,7 @@ class DemoKey {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
     ContentVerb useVerb = verb ?? ContentVerb.rate;
+    // BUG: TODO: Sometimes use the token instead of the entire statement. RateDialog has similar logic. Factor.
     Json json = ContentStatement.make(await publicKey.json, useVerb, subject!,
         comment: comment, recommend: recommend, dismiss: dismiss, censor: censor);
 

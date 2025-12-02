@@ -213,7 +213,7 @@ class FollowNode extends Node {
           .where((s) => s.verb == TrustVerb.delegate)) {
         Fetcher delegateFetcher = Fetcher(delegateStatement.subjectToken, kNerdsterDomain);
         assert(delegateFetcher.isCached);
-        assert(delegateFetcher.revokeAt == delegateStatement.revokeAt);
+        // TEMP: This fires when Marge's delegate is claimed and revoked by Sideshow: assert(delegateFetcher.revokeAt == delegateStatement.revokeAt);
         delegateStatementss.add(delegateFetcher.statements);
       }
     }

@@ -163,14 +163,16 @@ class _State extends State<RateBody> {
     }
 
     Object subject;
-    if (verb == ContentVerb.clear || censor.value) {
-      // For clear or censor, use the token instead of the entire subject.
+    // For clear, censor, rate with dis, or rate statement:
+    // use the subject token instead of the entire subject.
+    if (verb == ContentVerb.clear ||
+        censor.value ||
+        (verb == ContentVerb.rate && dis.value) ||
+        widget.subject.containsKey('statement')) {
       subject = widget.subject.token;
     } else {
       assert(verb == ContentVerb.rate);
-      // When rating a statement, use the token instead of the entire statement.
-      subject =
-          (widget.subject.containsKey('statement')) ? widget.subject.token : widget.subject.json;
+      subject = widget.subject.json;
     }
 
     Json json = ContentStatement.make(i, verb, subject,
@@ -261,8 +263,7 @@ which will make your rating of his rating lost.''',
       ),
       TextField(
         enabled: editingEnabled,
-        decoration: const InputDecoration(
-            hintText: '''Blah, blah, blah, ...
+        decoration: const InputDecoration(hintText: '''Blah, blah, blah, ...
 #hashtag, #hashtag''', border: OutlineInputBorder(), hintStyle: hintStyle),
         maxLines: 4,
         controller: commentController,
