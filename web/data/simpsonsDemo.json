@@ -1,157 +1,346 @@
-{
+const demoData = {
   "lisa": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE"
+    "x": "7eGgqYd_kQW3NJ59LBUyf0wyBLOuacqBLgRX21U96sM"
   },
   "bart": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "0MBet7XnUVw-kZsAe23vQSpUmoURK0VGXh10umUev-4"
+    "x": "rprpIziYqODuA63Z8zi93IrGafqJqPOkvLFQmlUTSos"
   },
   "homer": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "YG_A7beLmznS9DRmvaqVxTy7inzazN4Rg6BfgbLnw0s"
+    "x": "dtlS1rKP6aI3F2aVE0yV68yf6WrSbQDrBYGu2LYwkY4"
   },
   "homer2": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "NlhN7XOOzxxvngUgTRDKtsu0_ehwqRNI33TF-4eBdEw"
+    "x": "Ldvf5orEVoJxbj9iDv3jjavfbcd5JhRTrW9SRgCDG54"
   },
   "marge": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "75V19wpMrCJgBIbNeVZ1IX0BxlnjYkmJGrDMowu6yEE"
+    "x": "DA5lPfprTUm2ridSKxGYYd0OkJCmZULpcZEWhIAIk1w"
   },
   "maggie": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "sgyI0RPmzDDFEudwy1G543dREzXnr-EGfNGj7y84MEc"
+    "x": "LP2fGhVtvgvuI2hCbh6OFOgPsvloHtjayElFcBmeRVE"
   },
   "milhouse": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "mEwiqG7o46sVysAtb5z4x-jLfIIW_YnWH3Y5yMhPBcg"
+    "x": "JIIWdzjYhDnEpjvH0Dg3cy9ZWPn9J2H8T9BUqLEFwm4"
   },
   "luann": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "EjLfJpzop1G9sc_sJW77DGqJTyWmBLY1xSpplEEGJcE"
+    "x": "wu1DCt7kv8-VFJbGaqRGwe-mzxlxcyHOxpKfV-pXfiQ"
   },
   "ralph": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "QYNeJPLF13y-h52AdFilIcI34SzzTclJAd5-y2m7HtU"
+    "x": "y2htdNZk4gObac0_5LlvrUsbiycnj8cLz0fFjSYfNJY"
   },
   "nelson": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "ewwyfk87LuLz0xla67H8Tm1ZBLecq5iFROPa3C3tSJI"
+    "x": "W5fREx4uzdgDbwQeILxOgLdIUfBLN7yiID53TpgVYhQ"
   },
   "lenny": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "V_AbKxCTeuFjI3dNyzkYfT_pwHJtAn2em5-nU0pkMXM"
+    "x": "CxtNp2a2d5uzueHUAGT5dpCl_bl2gcf8QXqh3CGdUQQ"
   },
   "carl": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "zwLrv6Zv18Lc7d4CCRvUikrptFffOQGWQY6iPJ8e3cE"
+    "x": "qcIWi_NMg8SbLZjGx7-9cVQ0L6mFE2K1qKofbbHUOsU"
   },
   "burns": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "Ttc01edzdG904U2Yao7TyCYdaBe6NKxatmVCM6TcT_w"
+    "x": "xt_uG63fPCBQtAgXczyYsYG47Sy1phsNsxe9fxCW5Gs"
   },
   "smithers": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "pksGIHUMnKy8cet9ojogb4vIqe3JuNV5O2uvYUNR8_Q"
+    "x": "Im_C3nH-T_UvZDorLWbu0enVTn8kvddur_1YoQLQEsw"
   },
   "krusty": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "vzunUHgF1w7dH_IZhqgKyaw4856Ptq_elovOzof9Zpk"
+    "x": "ZeO4e35YJluiEZs1j6bu90afVao0qCf9mDw25re1eIE"
   },
   "sideshow": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "qaGkdEGM9WDhqRoCEkd_3tYj_6bi_4MUHKyzNBjsXYY"
+    "x": "969OTva1QsBE1wvXEOmSCbU7WDuhDFtaKuU7f8GVlYA"
   },
   "mel": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "h6F3MVVcoxQqQINgl-ygyMjKPf1l4vn7obpTeFmc_kw"
+    "x": "vPXe0qdjiGLLDrKJngbQ5lonDOMhNKweiPrf0UrKcvg"
+  },
+  "homer-replace-key": {
+    "statement": "net.one-of-us",
+    "time": "2024-05-18T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "Ldvf5orEVoJxbj9iDv3jjavfbcd5JhRTrW9SRgCDG54"
+    },
+    "replace": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "dtlS1rKP6aI3F2aVE0yV68yf6WrSbQDrBYGu2LYwkY4"
+    },
+    "with": {
+      "revokeAt": "57b149d8cf1d3a3350fecfc28714e1a6f94272f4"
+    },
+    "comment": "lost phone",
+    "previous": "3e9b467353b51f305515d9f21b526b22b734ce3d",
+    "signature": "6695a86203c747bd7c204bafe85e4c734122e9711aca62aa7c0d95fb84bc77a7a82ca05d17e43c8756a3c098c202191857556c13c36bc4e0b686a617b80bf204"
+  },
+  "lisa-trust-mom": {
+    "statement": "net.one-of-us",
+    "time": "2024-05-24T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "7eGgqYd_kQW3NJ59LBUyf0wyBLOuacqBLgRX21U96sM"
+    },
+    "trust": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "DA5lPfprTUm2ridSKxGYYd0OkJCmZULpcZEWhIAIk1w"
+    },
+    "with": {
+      "moniker": "Mom"
+    },
+    "previous": "769acdc0bd189099a4a071c9142a6616d29ec7be",
+    "signature": "ca8b2e484af96881cf881bcfb92d0c0fc89c8e91d3749df7f972f00541f6b3ead4d008a4a19210fa3e1ade3539f7b9db94079f1ad70b0a4a457ce66b27f09306"
   },
   "seymore": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "p_gx97qxODkb873Q5fBxKnZlQuQQ-8UqvY64g-CaJAE"
+    "x": "-zHya1OwgOLqsO-U8nw3iitPSMjqJD1spG0AIuCs2wc"
   },
   "amanda": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "zEN4OySBZ6HiVCSG205fM8k5IEIepB1KTzfjElMRqQc"
+    "x": "smZeJwVmWQQZWgIigReKKr3h4a2k4otr7feM2rnH5m0"
+  },
+  "sideshow-trust-amanda": {
+    "statement": "net.one-of-us",
+    "time": "2024-06-01T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "969OTva1QsBE1wvXEOmSCbU7WDuhDFtaKuU7f8GVlYA"
+    },
+    "trust": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "smZeJwVmWQQZWgIigReKKr3h4a2k4otr7feM2rnH5m0"
+    },
+    "with": {
+      "moniker": "Amanda Hugginkiss"
+    },
+    "previous": "77921ccd96de6c8e924a544b5cc7d517f1153b7b",
+    "signature": "6373faddde1171dac55177791722b2633c101958632093ec7cfba6e9d0611cc566ba8ab56dd7fc424534d1b2f6978bf7ea7aab902abc96f5e348a36222027d0e"
+  },
+  "marge-block-sideshow": {
+    "statement": "net.one-of-us",
+    "time": "2024-06-16T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "DA5lPfprTUm2ridSKxGYYd0OkJCmZULpcZEWhIAIk1w"
+    },
+    "block": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "969OTva1QsBE1wvXEOmSCbU7WDuhDFtaKuU7f8GVlYA"
+    },
+    "comment": "Naughty!!!",
+    "previous": "0f67afa48e721513322515d8aac51ede15dd7dfc",
+    "signature": "9fb716c61b7c080f591e0bc268ad07532245196243355f833bd0edc42395827904037dd4a6d2cd7531bbfd2b441771024bbe8a56f67752a6b3f78053d444a009"
   },
   "lisa-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "asYfDyZsryw99v8kpdVf0jO3pSrVbq9VVyu9v3u6HIg"
+    "x": "oyfFuZuC5GLBGJuF9C6jSLgceMzhg0I-rYBOXMzlZvM"
   },
   "bart-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "B-mZ-Ydp8WY0u5yt1WytnsUeE0wYnntZxGbr81Enwp4"
+    "x": "EHW66oEKrDMMQluBosCF4OpVWdT43n26G1CyctXyZ4g"
   },
   "burns-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "Vk5in5WyhlVhQk7IVDx9RElY5gb1DTNCFddpO_IHj0g"
+    "x": "uD6G9UzSDBIZjCbgn7uJHiJjsQzKfR93BeuOqTzvXcY"
   },
   "homer2-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "OqtN4n5geYCBb89KVT-jdu2HzFZRsPp1O8iTrrFvwGc"
+    "x": "7m8Zn6OdiK-mrlxxbA4AxZZZ5hqc0HSCopuE7zqdoFQ"
   },
   "milhouse-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "xrRGbgdaLOGphzM1BnOjvYvWjRoGeQYcDaHHVjPROpo"
+    "x": "OeALjJex2r71QzH6j3Jur114SZsulPrQ2tdnMuUS8Cc"
   },
   "carl-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "bYTCZQSnNTPkIlMLC_7-yHgvEglX5IEaQUulFML9Nfw"
+    "x": "Q9cGIJYEsCt4W5VGeNRJGo7r0USaAEvvYTaqSkxoRUw"
   },
   "smithers-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "3RBKnzAkWFd-r352ffljTdOVM_P6SgykmJJhqxU9-9I"
+    "x": "eDFI6103GhtUcJh6gNkvYL0DRWULt1vZILFs1ofqmCM"
   },
   "marge-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "vFX6RdjMIExDfIBFCmwLQ_1FOxppR-SHQSiFK8-qcBk"
+    "x": "23VDXNfOi-bfZaXmL2Tf5TczREUAOZzAcMSe3Re8-xM"
+  },
+  "marge-delegate": {
+    "statement": "net.one-of-us",
+    "time": "2024-06-25T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "DA5lPfprTUm2ridSKxGYYd0OkJCmZULpcZEWhIAIk1w"
+    },
+    "delegate": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "23VDXNfOi-bfZaXmL2Tf5TczREUAOZzAcMSe3Re8-xM"
+    },
+    "with": {
+      "domain": "nerdster.org"
+    },
+    "previous": "1c0bbc9ff605e4e0b9443088fda1806ff72bea79",
+    "signature": "6b6c0b2d43a860eb285a50dcbfdb953d9c28c12fe933f3d1a065435cc7a845b5b5546402bff5ca4f6d73144c3456c4c85db38abba318653da141713d73cad50b"
   },
   "sideshow-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "BjGMKMrHztLj8_c8zP_3F6M-YGN_nLebwJ6p-cxMUx8"
+    "x": "V4wUhxZ-3Y9I_YCr7ZrjQ6Vo51VnFVW84ICP7bRAh84"
   },
   "mel-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "zXlNpp3Wzxld8SC2zR5uuJFJIb6D5E8TYx19lxvF6M4"
+    "x": "TOWY3UrNkeetKc_FdBt8TaW-ZDQZ062MmAPuT98hQjc"
   },
   "amanda-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "FtFCYiQscJ5yewv8Ult8Jh5krlChJxIaEvqlWZmapYQ"
+    "x": "DiARLO3bQ-ZcHR0vB4wc7RTYe0A0C1mKOAs3lObiXaI"
   },
   "seymore-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "umk10N1xhx6Qvu4B3LtS5llnKFFk4438yTIWkV0JELE"
+    "x": "aQa2i6TCzJaGmV3gfOipAc5H4YDFhhtp-wjKoZBVepo"
+  },
+  "sideshow-revoke-marge-delegate": {
+    "statement": "net.one-of-us",
+    "time": "2024-06-30T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "969OTva1QsBE1wvXEOmSCbU7WDuhDFtaKuU7f8GVlYA"
+    },
+    "delegate": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "23VDXNfOi-bfZaXmL2Tf5TczREUAOZzAcMSe3Re8-xM"
+    },
+    "with": {
+      "revokeAt": "<since always>"
+    },
+    "comment": "Karen..",
+    "previous": "cf3fec7211273883478032f8491f6595303ebb4e",
+    "signature": "663f872ad98f915db39e20a060ab002c566e2bb9727f097bbe73f78eeafaa54cea5582ee6cff9973977b169db4f7869342fedd74a062acce90e8ba2e07c18801"
+  },
+  "marge-censor-superbad": {
+    "statement": "org.nerdster",
+    "time": "2024-07-09T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "23VDXNfOi-bfZaXmL2Tf5TczREUAOZzAcMSe3Re8-xM"
+    },
+    "rate": "753c10b1268819483504a4ed1a891480ef3a259b",
+    "with": {
+      "censor": true
+    },
+    "previous": "a8e6933ec4683f38aaea494c59244359d314713a",
+    "signature": "c79db62ed2425d8fd766895ad7de42c2b5a9ee7bf38b166a127f3aa03d3df22a2bc5652c8ed776757774da8532c6aaab10feff64c1f7964761ec66cd33cad304"
+  },
+  "marge-banana-rate": {
+    "statement": "org.nerdster",
+    "time": "2024-07-10T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "23VDXNfOi-bfZaXmL2Tf5TczREUAOZzAcMSe3Re8-xM"
+    },
+    "rate": {
+      "contentType": "recipe",
+      "title": "Banana Banana Bread Recipe (with Video)",
+      "url": "https://www.allrecipes.com/recipe/20144/banana-banana-bread/"
+    },
+    "with": {
+      "recommend": true
+    },
+    "comment": "#nutritious and #delicious",
+    "previous": "a09b3490c695a63b21bc64b0132ff7d28c1472f4",
+    "signature": "6b2c4792d64aac88c9869797aa3357c6f13458cab2279756c00fc7e02a5144942b74296fc4d37302d4c1015051fca9f8ffef5ae22f728eb4f936116261d8cb00"
+  },
+  "bart-diss-banana": {
+    "statement": "org.nerdster",
+    "time": "2024-07-13T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "EHW66oEKrDMMQluBosCF4OpVWdT43n26G1CyctXyZ4g"
+    },
+    "rate": {
+      "contentType": "recipe",
+      "title": "Banana Banana Bread Recipe (with Video)",
+      "url": "https://www.allrecipes.com/recipe/20144/banana-banana-bread/"
+    },
+    "with": {
+      "dismiss": true
+    },
+    "previous": "e5c4f9ba0f4b6db5122fab3006d8b3f340fbce2e",
+    "signature": "3e67850f80c5bf3a76a0579687e4983e1ecd2e39a0ef766c16b2f8df5c70409ad2b87931b0ce22d2ede2eb16f02ed5147e7d9306ed81623ce72153e2aa2c8d05"
+  },
+  "bart-follow-milhouse-social": {
+    "statement": "org.nerdster",
+    "time": "2024-07-25T04:00:00.000Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "EHW66oEKrDMMQluBosCF4OpVWdT43n26G1CyctXyZ4g"
+    },
+    "follow": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "JIIWdzjYhDnEpjvH0Dg3cy9ZWPn9J2H8T9BUqLEFwm4"
+    },
+    "with": {
+      "contexts": {
+        "social": 1
+      }
+    },
+    "previous": "414b55dab17e74efdead44832e69d3a1e4ea0d96",
+    "signature": "7daa1ef85179bada40d5936831888e2967d701f60b38a67a051e83ccde5a9b3f4582d0f0367eb4b7e7e23562c9ed8a0e3dd13ea2c07373edc71dc3e09264dd0f"
   }
-}
+};

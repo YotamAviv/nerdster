@@ -112,7 +112,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await sideshow.doTrust(TrustVerb.trust, mel, moniker: 'Mel');
   await sideshow.doTrust(TrustVerb.trust, milhouse, moniker: '4-Eyes');
   await sideshow.doTrust(TrustVerb.trust, amanda,
-      moniker: 'Amanda Hugginkiss'); // Yeah, yeah, looking for Amanda Huggenkiss. What else is new?
+      moniker: 'Amanda Hugginkiss', export: 'sideshow-trust-amanda'); // Yeah, yeah, looking for Amanda Huggenkiss. What else is new?
   await sideshow.doTrust(TrustVerb.trust, seymore,
       moniker: 'Seymore Butts'); // That doesn't sound like a real name
   await sideshow.doTrust(TrustVerb.block, marge, comment: 'Karen');
@@ -134,7 +134,8 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await milhouse.doTrust(TrustVerb.trust, ralph, moniker: 'Ralph');
 
   // milhouse->krusty, marge-x> sideshow
-  await marge.doTrust(TrustVerb.block, sideshow, comment: 'Naughty!!!', export: 'marge-block-sideshow');
+  await marge.doTrust(TrustVerb.block, sideshow,
+      comment: 'Naughty!!!', export: 'marge-block-sideshow');
   await milhouse.doTrust(TrustVerb.trust, krusty, moniker: 'Krusty');
 
   DemoKey lisaN = await lisa.makeDelegate();
@@ -178,7 +179,7 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await bartN.doRate(subject: dogtown, recommend: true, comment: 'instant #classic');
   await milhouseN.doRate(subject: superbad, recommend: true, comment: 'two thumbs way up');
   await bartN.doRate(subject: superbad, recommend: true, comment: '#rad #sick meisterpeace');
-  await margeN.doRate(subject: getToken(superbad), censor: true);
+  await margeN.doRate(subject: getToken(superbad), censor: true, export: 'marge-censor-superbad');
   await margeN.doRate(
       subject: banana,
       recommend: true,
@@ -186,7 +187,8 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
       export: 'marge-banana-rate');
   await homer2N.doRate(subject: kingpin, recommend: true, comment: '#rad');
   await bartN.doRate(subject: buck, dismiss: true, recommend: false, comment: '#barf');
-  await bartN.doRate(subject: banana, dismiss: true);
+  // DEFER: Dissing should use the token, not the full subject.
+  await bartN.doRate(subject: banana, dismiss: true, export: 'bart-diss-banana');
   await lisaN.doRate(subject: secretariat, recommend: true, comment: '#poignant #horses');
   await margeN.doRate(subject: secretariat, recommend: true);
   await carlN.doRate(subject: superbad, dismiss: true, comment: '#disgusting', recommend: false);
