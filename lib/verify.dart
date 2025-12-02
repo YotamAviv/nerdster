@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/comp.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/json_highlighter.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -295,10 +296,23 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
   @override
   void initState() {
     super.initState();
+    keyLabels.addListener(_onKeyLabelsChanged);
     _startProcessing();
   }
 
-  void _set(Widget child) => setState(() => _body = child);
+  @override
+  void dispose() {
+    keyLabels.removeListener(_onKeyLabelsChanged);
+    super.dispose();
+  }
+
+  void _onKeyLabelsChanged() {
+    _startProcessing();
+  }
+
+  void _set(Widget child) {
+    if (mounted) setState(() => _body = child);
+  }
 
   void _notifyStatus(String label, Color color) {
     Future.microtask(() {
@@ -307,6 +321,9 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
   }
 
   Future<void> _startProcessing() async {
+    await Comp.waitOnComps([keyLabels]);
+    if (!mounted) return;
+
     final input = widget.input;
     Json json;
 
