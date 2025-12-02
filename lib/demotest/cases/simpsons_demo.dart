@@ -230,11 +230,3 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
 
   return (lisa, lisaN);
 }
-
-/* 9/14/25 prod
-https://nerdster.org/?identity=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE%22%7D
-*/
-
-// 6/1/2025, created demo on prod
-// from /etc => gen link..
-// ?oneofus=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22Ky4CcNdcoRi_OSA3Zr8OYgVoKDnGPpQwiZLtzYDIwBI%22%7D
