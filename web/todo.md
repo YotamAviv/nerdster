@@ -1,10 +1,7 @@
 # TODO
 
-Nerdster Simpsons mess..
-
-  - difference of opinion vs. conflict
-- Simpsons Bot Farm
-  - differences of opinion, conflicts, lost keys, replaced keys, hijacked keys, bogus identities, multiple moms, oh my..
+- difference of opinion vs. conflict
+- Nerdster shows rejected statements in red (due to conflicts)
 
 ## DEFER
 
