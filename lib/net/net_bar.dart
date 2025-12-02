@@ -37,7 +37,7 @@ class NetBar extends StatefulWidget {
 class _NetBarState extends State<NetBar> {
   static int instanceCount = 0;
 
-  late final StreamSubscription<void> _popStateSub;
+  StreamSubscription<void>? _popStateSub;
 
   @override
   void initState() {
@@ -71,12 +71,25 @@ class _NetBarState extends State<NetBar> {
     NetBar.bNetView.removeListener(listen);
     isSmall.removeListener(listen);
     // print('Disposing MyWidgetState');
-    _popStateSub.cancel();
+    _popStateSub?.cancel();
     super.dispose();
   }
 
   void listen() {
     setState(() {});
+    // Clacker fix to keep the left/right arrows for content/tree in sync.
+    bool isTree = context.findAncestorWidgetOfExactType<NetTreeView>() != null;
+    if (NetBar.bNetView.value) {
+      if (!isTree && (ModalRoute.of(context)?.isCurrent ?? false)) {
+        NetBar.showTree(context);
+      }
+    } else {
+      if (isTree) {
+        if (ModalRoute.of(context)?.isCurrent ?? false) {
+          Navigator.pop(context);
+        }
+      }
+    }
   }
 
   @override
@@ -93,7 +106,6 @@ class _NetBarState extends State<NetBar> {
                 color: linkColor,
                 tooltip: 'Content view',
                 onPressed: () {
-                  Navigator.pop(context);
                   NetBar.bNetView.value = false;
                 }),
           const BarRefresh(),
