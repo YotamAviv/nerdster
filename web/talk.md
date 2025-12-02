@@ -1,5 +1,7 @@
 # TODO
 
+Nerdster and ONE-OF-US.NET are not connected, have no special access.
+
 Show Nerdster homepage.
 "Nerdy, right? Well the first one has to be. Don't forget about all the 'colon slash slash forward slash' when the Web came around.
 
