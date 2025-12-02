@@ -13,7 +13,7 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
-/// 2 structural views are supported: <oneofus> [NetTreeView].bOneofus or 'follow network'.
+/// 2 structural views are supported: <one-of-us> [NetTreeView].bOneofus or 'follow network'.
 /// bOneofus: always uses a OneofusNetNode.
 /// !bOneofus: use FollowNet or OneofusNet nodes depending on b([FollowNet].fcontext).
 /// Total state is captured by:

@@ -141,7 +141,7 @@ class _StructureDropdownState extends State<_StructureDropdown> {
   @override
   Widget build(BuildContext context) {
     List<DropdownMenuEntry> entries = [
-      DropdownMenuEntry(value: true, label: '<oneofus>'),
+      DropdownMenuEntry(value: true, label: '<one-of-us>'),
       DropdownMenuEntry(value: false, label: 'follow network'),
     ];
 

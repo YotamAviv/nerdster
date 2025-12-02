@@ -53,6 +53,16 @@
         iframe.contentWindow.postMessage({ showCrypto: false }, '*');
       });
 
+      document.getElementById('paths-2').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ identityNetPaths: 2 }, '*');
+      });
+
+      document.getElementById('paths-1').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ identityNetPaths: 1 }, '*');
+      });
+
       VerifyHelper.setupListeners([
         "homer-replace-key",
         "marge-banana-rate",
