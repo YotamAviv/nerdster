@@ -36,6 +36,8 @@
       VerifyHelper.setupListeners([
         "homer-replace-key",
         "marge-banana-rate",
+        "marge-censor-superbad",
+        "sideshow-trust-amanda",
       ]);
 
     } catch (e) {
