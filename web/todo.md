@@ -1,10 +1,7 @@
 # TODO
 
-Any service can fetch signed content/statements by the signing key. (Using key token)
+Nerdster Simpsons mess..
 
-The Nerdster or any other service can read and verify your identity statements, but it can't create them and sign them.
-Delegate services don't have your identity private key. For now, that's on your phone.
-The Nerdster reads, validates, regards, processes, and even shows all your identity statements: trust, block, delegate, replace
 
 
 Heterogeneous: Anyone can make a different, better Nerdster leveraging the existing content but better.. Better conflict detection or identity Network, better UI, richer abilities, and that can fragment even further with competing services playing off each other's improvements. Can't do that with our Facebook, X, Insta content..
