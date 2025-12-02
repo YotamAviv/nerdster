@@ -36,9 +36,8 @@ Widget monospacedBlock(String text) => SelectableText.rich(
 class Verify extends StatefulWidget {
   static Set<String> highlightKeys = {};
   final String? input;
-  final bool verifyImmediately;
 
-  const Verify({super.key, this.input, this.verifyImmediately = false});
+  const Verify({super.key, this.input});
 
   @override
   State<Verify> createState() => _VerifyState();
@@ -50,7 +49,6 @@ void verifyInit(GlobalKey<NavigatorState> navigatorKey) {
 
   Future<void> handleVerify() async {
     final String? value = verifySetting.value;
-    if (!b(value)) return;
 
     if (dialogContext != null) {
       if (dialogContext!.mounted) {
@@ -58,6 +56,8 @@ void verifyInit(GlobalKey<NavigatorState> navigatorKey) {
       }
       dialogContext = null;
     }
+
+    if (!b(value)) return;
 
     // Wait for navigator to be ready if needed
     if (navigatorKey.currentContext == null) {
@@ -77,7 +77,6 @@ void verifyInit(GlobalKey<NavigatorState> navigatorKey) {
     final context = navigatorKey.currentContext!;
 
     print('${SettingType.verify.name}.value: $value');
-    final bool verifyImmediately = bs(Uri.base.queryParameters['verifyImmediately']);
     await showDialog(
         context: context,
         builder: (context) {
@@ -86,7 +85,7 @@ void verifyInit(GlobalKey<NavigatorState> navigatorKey) {
               // Doesn't work: shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
               child: Navigator(onGenerateRoute: (settings) {
             return MaterialPageRoute(
-                builder: (_) => Verify(input: value, verifyImmediately: verifyImmediately));
+                builder: (_) => Verify(input: value));
           }));
         });
     dialogContext = null;
@@ -114,7 +113,8 @@ class _VerifyState extends State<Verify> {
       setState(() {}); // Trigger rebuild to show/hide reset button
     });
 
-    if (widget.verifyImmediately && _initialText.isNotEmpty) {
+    final bool verifyImmediately = Setting.get<bool>(SettingType.verifyImmediately).value ?? false;
+    if (verifyImmediately && _initialText.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -457,7 +457,6 @@ class StandaloneVerify extends StatelessWidget {
         return Verify(
           key: ValueKey(value),
           input: value,
-          verifyImmediately: bs(Uri.base.queryParameters['verifyImmediately']),
         );
       },
     );

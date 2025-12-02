@@ -31,6 +31,7 @@ enum SettingType {
   httpFetch(bool, true),
   batchFetch(bool, true),
 
+  verifyImmediately(bool, false, param: true),
   verify(String, null, param: true);
 
   final Type type;

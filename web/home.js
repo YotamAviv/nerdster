@@ -33,6 +33,11 @@
         iframe.contentWindow.postMessage({ identity: demoData.bart }, '*');
       });
 
+      VerifyHelper.setupListeners([
+        "homer-replace-key",
+        "marge-banana-rate",
+      ]);
+
     } catch (e) {
       console.warn('home.js: Failed to load demo keys or wire buttons', e);
     }
