@@ -35,8 +35,7 @@ void initMessageListener() {
           for (final Setting setting in Setting.all) {
             if (jsonData.containsKey(setting.name)) {
               setting.updateFromQueryParam({setting.name: jsonData[setting.name].toString()});
-            } else {
-              setting.resetToDefault();
+              // Don't: setting.resetToDefault();
             }
           }
         }

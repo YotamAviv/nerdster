@@ -9,7 +9,10 @@ const VerifyHelper = {
     const iframe = this.getIframe();
     const data = demoData[key];
     iframe.contentWindow.postMessage(
-      { verify: JSON.stringify(data, null, 2) },
+      { 
+        verify: JSON.stringify(data, null, 2),
+        verifyImmediately: "true"
+      },
       "*"
     );
   },

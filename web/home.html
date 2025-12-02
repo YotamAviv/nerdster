@@ -246,6 +246,90 @@ Reference implementation for the ONE-OF-US.NET paradigm
         </p>
       </section>
 
+      <section class="regular-text">
+        <!-- 
+BUG: Switching views does not re-validate the statements shown in the iframe or dismiss it. It should probably re-validate it.
+TODO: Add notes about Bart not seeing Marge's content in his Nerdster context as he's blocked her.
+BUG: I've ended up with the arrows for left/right content/network being off.
+TODO: Make sure to sign out so that folks don't easily like Simpsons content. 
+TODO: Specifically show that I can view this content, and when I do, I'm not in the network. Ditto for Bart and Marge for <nerdster> context.
+-->
+        <details>
+          <summary>More about the Simpsons Bot Farm</summary>
+          <div class="muted scrollable-content">
+            <p>
+              Characters and statements from this demo appear throughout our
+              examples in other In Depth pages. The fake Simpsons characters in
+              the demo below all act more or less like we'd expect:
+            </p>
+            <ul>
+              <li>
+                Marge censors what Bart recommends. (conservative, uptight)
+              </li>
+              <li>
+                Homer loses and
+                <a id="homer-replace-key" href="#">replaces his key</a>, but not
+                everyone has caught up on that. (careless)
+              </li>
+              <li>Milhouse trusts clowns. (reckless)</li>
+              <li>
+                Sideshow Bob cheats by creating bogus people to get fraudulent
+                likes. (reprehensible)
+              </li>
+            </ul>
+
+            <p>
+              The demo below loads up with Lisa at the center. From Lisa's Point
+              of View (POV), things look harmless and agreeable:
+            </p>
+            <ul>
+              <li>No notifications</li>
+              <li>
+                Content: horses (Lisa),
+                <a id="marge-banana-rate" href="#">recipes (Marge)</a>, bowling
+                (Homer), skateboarding (boys), alt movies (employees)
+              </li>
+            </ul>
+
+            <p>Try these:</p>
+            <ul>
+              <li>Toggle censorship to see what Marge has censored</li>
+              <li>Change Settings to show JSON, keys, and statements</li>
+            </ul>
+
+            <p>
+              Change your Point of View (PoV) to Bart's and notice how things
+              are messier:
+            </p>
+            <ul>
+              <li>
+                Notifications because Bart hasn't reacted correctly to Homer's
+                replaced key
+              </li>
+              <li>
+                Milhouse trusts clowns who are bad actors, various block
+                conflicts show up.
+              </li>
+              <li>
+                Content is cruder as Bart has specifically blocked Lisa and
+                Marge from his default follow context.
+              </li>
+            </ul>
+
+            <p>Using Milhouse's PoV, things seem downright fraudulent:</p>
+            <ul>
+              <li>
+                His trust in clowns brings in bogus people that Sideshow Bob is
+                trying to use to manipulate clown movie ratings.
+              </li>
+              <li>
+                Even his name is shown as 4-Eyes as Sideshow Bob mocks him.
+              </li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
       <section class="lead">
         <p>
           The bigger picture is at
@@ -277,7 +361,8 @@ Reference implementation for the ONE-OF-US.NET paradigm
     <script src="guard.js" defer></script>
     <script src="iframe_helper.js" defer></script>
     <script src="boxes.js" defer></script>
-    <script src="home.js" defer></script>
     <script src="data/demoData.js" defer></script>
+    <script src="verify_helper.js" defer></script>
+    <script src="home.js" defer></script>
   </body>
 </html>
