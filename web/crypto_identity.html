@@ -16,16 +16,18 @@
       <div class="text-iframe-2col">
         <div class="content">
           <p>
-            We see "Bart@nerdster.org" as following Milhouse because Bart used
-            the Nerdster which signed the follow statement using the delegate
-            key pair delegated to it.
-            <br />"Bart@nerdster.org" is Bart. (Same as "Bart@ebay.com",
-            "Bart@discord.com", etc..)
+            <span class="json-text">"Bart@nerdster.org"</span>
+            is Bart.
             <br />
+            We see <span class="json-text">"Bart@nerdster.org"</span> because
+            Bart used the Nerdster to sign and publish the follow statement.
+            (Same dude as <span class="json-text">"Bart@ebay.com"</span> or
+            <span class="json-text">"Bart@discord.com"</span> would be.)
           </p>
           <p>
-            We see "Milhouse" simply (with no @domain) because that's who Bart
-            wants to follow: a person, not an account.
+            <span class="json-text">"Milhouse"</span> is Milhouse (simply, with
+            no @domain) because that's who Bart wants to follow: a person, not
+            an account.
           </p>
         </div>
 
@@ -34,35 +36,40 @@
         </div>
       </div>
       <h1>Identity Layer ties It All Together</h1>
-      <p>It distributes identity keys, so that we can know who's who.</p>
+      <p>It distributes identity keys, which are signed by our keys.</p>
       <p>
         "Milhouse" and "Bart" are not available usernames that some users
         grabbed for their accounts at nerdster.org.
         <br />
-        They're who Lisa's network says they are, backed by a complete,
+        They are who Lisa's network says they are, backed by a complete,
         cryptographic chain grounded by Lisa's own identity.
       </p>
       <p>
-        Examples of signed content (signed by delegate keys):
+        The Nerdster follow statetement above is not part of the identity layer,
+        rather it leverages the identity layer.
+        <br />Examples:
         <a id="marge-banana-rate" href="#">Marge rates a recipe</a>,
         <a id="bart-follow-milhouse-social" href="#">Bart follows Milhouse</a>.
       </p>
 
       <p>
         Here are the same statements shown in the "Vouch, Delegate" box, but
-        this time verified from Lisa's Point of View:
+        this time interpreted by the Nerdster from Lisa's Point of View:
         <a id="lisa-trust-mom" href="#">Trust</a>,
         <a id="marge-block-sideshow" href="#">Block</a>,
         <a id="homer-replace-key" href="#">Replace</a>,
-        <a id="marge-delegate" href="#">Delegate</a>
-        <a id="sideshow-revoke-marge-delegate" href="#">(delegate and revoke)</a
+        <a id="marge-delegate" href="#">Delegate</a>,
+        <a id="sideshow-revoke-marge-delegate" href="#">(Delegate and revoke)</a
         >.
+      </p>
 
-        <br />(On the
+      <p>
+        (On the
         <!-- TODO: nerdster.org "hosting": { "cleanUrls": true, ... -->
-        <a href="https://nerdster.org/home.html" target="_blank">Nerdster Simpsons Bot Farm</a>'s
-        Lisa scanned her mom's phone, Marge scanned her kids' phones, and Bart
-        scanned Milhouse's phone.)
+        <a href="https://nerdster.org/home.html" target="_blank"
+          >Simpsons Bot Farm</a
+        >, Lisa scanned her mom's phone, Marge scanned her kids' phones, and
+        Bart scanned Milhouse's phone.)
       </p>
       <p><em>I am who your network says I am, across all services.</em></p>
 
