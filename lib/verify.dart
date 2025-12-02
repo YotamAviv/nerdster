@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/comp.dart';
+import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/json_highlighter.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -59,6 +60,8 @@ void verifyInit(GlobalKey<NavigatorState> navigatorKey) {
     }
 
     if (!b(value)) return;
+
+    dismissCredentials();
 
     // Wait for navigator to be ready if needed
     if (navigatorKey.currentContext == null) {

@@ -33,6 +33,26 @@
         iframe.contentWindow.postMessage({ identity: demoData.bart }, '*');
       });
 
+      document.getElementById('censor-on').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ censor: true }, '*');
+      });
+
+      document.getElementById('censor-off').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ censor: false }, '*');
+      });
+
+      document.getElementById('crypto-on').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ showCrypto: true }, '*');
+      });
+
+      document.getElementById('crypto-off').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ showCrypto: false }, '*');
+      });
+
       VerifyHelper.setupListeners([
         "homer-replace-key",
         "marge-banana-rate",

@@ -10,6 +10,15 @@ import 'package:nerdster/setting_type.dart';
 
 OverlayEntry? _topRightOverlayEntry;
 
+void dismissCredentials() {
+  if (_topRightOverlayEntry != null) {
+    try {
+      _topRightOverlayEntry!.remove();
+    } catch (_) {}
+    _topRightOverlayEntry = null;
+  }
+}
+
 class CredentialsDisplay extends StatelessWidget {
   final Json? identityJson;
   final Json? delegateJson;
