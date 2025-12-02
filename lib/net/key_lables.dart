@@ -168,6 +168,7 @@ class KeyLabels with Comp, ChangeNotifier implements Interpreter {
       }
     } else if (d is Map) {
       Map out = Map.of(d);
+      out.remove('statement');
       out.remove('signature');
       out.remove('previous');
       return out.map((key, value) => MapEntry(interpret(key), interpret(value)));
