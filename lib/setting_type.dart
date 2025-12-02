@@ -19,6 +19,7 @@ enum SettingType {
   fcontext(String, kNerdsterContext, aliases: ['follow']),
 
   netView(bool, false),
+  netTreeOneofus(bool, true), // Clacker change
 
   showCrypto(bool, false, aliases: ['showStuff']),
   showJson(bool, false, param: false),

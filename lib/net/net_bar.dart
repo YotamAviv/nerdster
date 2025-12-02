@@ -15,6 +15,7 @@ import 'package:nerdster/ui/pop_state_stub.dart'
     if (dart.library.js_interop) 'package:nerdster/ui/pop_state_web.dart';
 import 'package:nerdster/util_ui.dart';
 
+// Clacker did the work of adding SettingType netTreeOneofus. I gave it a quick look
 class NetBar extends StatefulWidget {
   // Rep invariant: (exception for when loading and reacting to param settings)
   // bNetView true: the NetTreeView MaterialPageRoute is pushed
@@ -43,7 +44,7 @@ class _NetBarState extends State<NetBar> {
     instanceCount++;
     // print(instanceCount);
 
-    NetTreeView.bOneofus.addListener(listen);
+    Setting.get<bool>(SettingType.netTreeOneofus).notifier.addListener(listen);
     NetBar.bNetView.addListener(listen);
     isSmall.addListener(listen);
 
@@ -66,7 +67,7 @@ class _NetBarState extends State<NetBar> {
     instanceCount--;
     // print(instanceCount);
 
-    NetTreeView.bOneofus.removeListener(listen);
+    Setting.get<bool>(SettingType.netTreeOneofus).notifier.removeListener(listen);
     NetBar.bNetView.removeListener(listen);
     isSmall.removeListener(listen);
     // print('Disposing MyWidgetState');
@@ -125,12 +126,12 @@ class _StructureDropdownState extends State<_StructureDropdown> {
   @override
   void initState() {
     super.initState();
-    NetTreeView.bOneofus.addListener(listener);
+    Setting.get<bool>(SettingType.netTreeOneofus).notifier.addListener(listener);
   }
 
   @override
   void dispose() {
-    NetTreeView.bOneofus.removeListener(listener);
+    Setting.get<bool>(SettingType.netTreeOneofus).notifier.removeListener(listener);
     super.dispose();
   }
 
@@ -166,10 +167,10 @@ People included in the follow network are displayed in green.''';
         ),
       ),
       label: const Text('Tree structure'),
-      initialSelection: NetTreeView.bOneofus.value,
+      initialSelection: Setting.get<bool>(SettingType.netTreeOneofus).value,
       dropdownMenuEntries: entries,
       onSelected: (bOneofus) {
-        NetTreeView.bOneofus.value = bOneofus;
+        Setting.get<bool>(SettingType.netTreeOneofus).value = bOneofus;
       },
     );
   }
