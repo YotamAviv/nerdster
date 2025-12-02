@@ -1,6 +1,6 @@
 /* Styles extracted from oneofus.html <head> to separate file
    Purpose: keep page HTML slim and allow caching/reuse. */
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
 
 body {
   /* keep Inter for UI but lean into a warmer serif for headings via fallbacks */
@@ -348,6 +348,13 @@ a.man-link:hover {
 .modal-iframe-wrapper {
   width: 100%;
   overflow: hidden;
+}
+
+.code {
+  font-family: "Courier Prime", monospace;
+  font-weight: 500;
+  /* font-size: 10px; */
+  /* color: #1B5E20; */
 }
 
 .json-text {
