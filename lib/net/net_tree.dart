@@ -22,7 +22,6 @@ import 'package:nerdster/singletons.dart';
 
 class NetTreeView extends StatefulWidget {
   static ValueNotifier<String?> highlightToken = ValueNotifier<String?>(null);
-  static ValueNotifier<bool> bOneofus = ValueNotifier<bool>(true);
 
   final NetTreeModel root;
 
@@ -39,7 +38,8 @@ class NetTreeView extends StatefulWidget {
 
   static NetTreeModel makeRoot() {
     NetTreeModel root;
-    if (bOneofus.value || followNet.fcontext == kOneofusContext) {
+    if (Setting.get<bool>(SettingType.netTreeOneofus).value ||
+        followNet.fcontext == kOneofusContext) {
       root = OneofusTreeNode.root;
     } else {
       root = FollowTreeNode.root;
@@ -57,7 +57,7 @@ class _NetTreeViewState extends State<NetTreeView> {
   @override
   void initState() {
     super.initState();
-    NetTreeView.bOneofus.addListener(listen);
+    Setting.get<bool>(SettingType.netTreeOneofus).notifier.addListener(listen);
     followNet.addListener(listen);
     keyLabels.addListener(listen);
 
@@ -110,7 +110,7 @@ class _NetTreeViewState extends State<NetTreeView> {
 
   @override
   void dispose() {
-    NetTreeView.bOneofus.removeListener(listen);
+    Setting.get<bool>(SettingType.netTreeOneofus).notifier.removeListener(listen);
     followNet.removeListener(listen);
     keyLabels.removeListener(listen);
     Setting.get<bool>(SettingType.showCrypto).removeListener(listen);
