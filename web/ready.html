@@ -9,41 +9,49 @@
   <body>
     <main>
       <h1>Ready Now</h1>
-      <p>
-        Craigslist.org, for example, could have us sign in using the
-        ONE-OF-US.NET phone app as ourselves with or without Craigslist
-        delegates today.
-        <br />
-        Any service, big or small, could implement its own phone app to replace
-        ours today.
-      </p>
       <ul>
-        <li>QR Sign-in</li>
-        <li>Copy/paste sign-in</li>
         <li>
-          Read (or even replicate) and leverage existing statements (they're
-          portable)
+          Any service, big or small (consider Craigslist.org, for example) could
+          have us sign in using the ONE-OF-US.NET phone app as ourselves using
+          (or not) their own delegates today.
         </li>
         <li>
-          Use delegates for your own service.<br />
-          Opt-in: Sign and/or publish your service's users' signed content,
-          which would make it portable as well.
+          Any service, big or small, could implement its own phone app to
+          replace the ONE-OF-US.NET phone app today (your keys are yours and
+          available for export) today.
         </li>
         <li>
-          Implement alternatives to the ONE-OF-US.NET phone app.<br />People own
-          their own keys, not ONE-OF-US.NET, not me. They're welcome to export
-          and use them however they like.
+          Any service, big or small, can read, verify, and leverage the content
+          you've signed and published today.
+        </li>
+        <li>
+          Any service, big or small, could start publishing content signed by
+          our own keys and make it available (or not) to us all today.
         </li>
       </ul>
+
+      <p>
+        This (and only this) is what Nerdster and the ONE-OF-US.NET phone app
+        use. The phone app stores your identity private key on your phone, and
+        Nerdster can remember your private delegate key, but otherwise, both
+        apps read and verify your own signed, published content as they load up,
+        just like other services would to leverage that data.
+      </p>
 
       <h2>QR Sign-in</h2>
       <div class="text-iframe-2col">
         <div class="content">
           <p>
             There is no special access between one-of-us.net and nerdster.org.
-            The ONE-OF-US.NET phone app reads the sign-in parameters in the QR
-            code and then performs an HTTP POST over the Internet to the address
-            it was instructed to, optionally end-to-end encrypted.
+            The ONE-OF-US.NET phone app reads the
+            <strong>Sign-in Parameters</strong> in the QR code, checks if a
+            delegate key for (<span class="code-highlight">"domain"</span>) is
+            present, and then performs an HTTP POST over the Internet to the
+            address (<span class="code-highlight">"url"</span>) it was
+            instructed to, optionally end-to-end encrypted using the disposable
+            encyption public key provided (<span class="code-highlight"
+              >"encryptionPk"</span
+            >).
           </p>
         </div>
         <div class="embed">
@@ -53,9 +61,7 @@
 
       <h2>Our signed content is published</h2>
       <p>
-        Any service can read, verify, and leverage the statements you and your
-        delegates have signed and published.
-        <br />For example: My signed content is here:
+        For example: My signed content is here:
         <a
           href="https://export.one-of-us.net/?spec=%222c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431%22"
           >identity</a
@@ -65,34 +71,24 @@
           >Nerdster content</a
         >.
       </p>
-      <p>Leverage these to fit your needs:</p>
       <ul>
-        <li>Identity statements so your service can compute who's who.</li>
+        <li>Identity statements so any service can compute who's who.</li>
         <li>
-          Nerdster follow statements so your service can compute who's
-          interesting to whom and for what.
-        </li>
-        <li>
+          Nerdster follow statements so any service can compute who Nerdster
+          follows who and for what (if they care ;).
+          <br />
           And all the rest of it: ratings, comments, equate/relate statements,
-          and so forth.
+          censor statements, etc...
         </li>
       </ul>
 
-      <h2>Your service can do whatever</h2>
+      <h2>Services are free to choose</h2>
       <p>
-        Your service doesn't need to be as naked and transparent as the
-        Nerdster.
+        They don't need to be as naked and transparent as the Nerdster don't
+        have to use delegate keys (it might be enough to just identify a Point
+        of View (PoV)), and they don't have to expose folks' content, although
+        this enables other services to audit (which can enhance credibility).
       </p>
-      <ul>
-        <li>
-          It doesn't have to use delegate keys; it might be enough for your
-          service to just identify a Point of View (PoV).
-        </li>
-        <li>
-          It doesn't have to expose folks' content, although this enables other
-          services to audit (which can add responsibility).
-        </li>
-      </ul>
     </main>
 
     <script src="iframe_helper.js"></script>
