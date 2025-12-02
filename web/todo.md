@@ -4,7 +4,7 @@ Nerdster and ONE-OF-US.NET are not connected, have no special access.
 
 Any service can fetch signed content/statements by the signing key. (Using key token)
 
-The Nerdster or any other servie can read and verify your identity statements, but it can't create them and sign them.
+The Nerdster or any other service can read and verify your identity statements, but it can't create them and sign them.
 Delegate services don't have your identity private key. For now, that's on your phone.
 The Nerdster reads, validates, regards, processes, and even shows all your identity statements: trust, block, delegate, replace
 
@@ -38,13 +38,10 @@ Follow is not the identity layer; it leverages the identity layer (who's who).
 
 ## 4. Ready Now
 
-All of this is ready and available now.
-
 ### signed content (statements)
 
-### Sign-in
 
-That's what Nerdster and phone app use (and that's the only thing they use)
+### Sign-in
 
 # 2'nd row heterogeneous, open for competition and evolution
 
@@ -55,9 +52,6 @@ That's what Nerdster and phone app use (and that's the only thing they use)
 ## 3. Open, Opt-in
 
 ## 4. How to use signed content is up to the Internet
-
-Nerdster does something.
-The phone app only signs and publishes individual contributions. It aggregates and computes nothin'.
 
 ## Possibilities
 
