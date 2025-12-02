@@ -63,6 +63,16 @@
         iframe.contentWindow.postMessage({ identityNetPaths: 1 }, '*');
       });
 
+      document.getElementById('social-identity-tree').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ fcontext: 'social', netView: true, netTreeOneofus: true }, '*');
+      });
+
+      document.getElementById('social-context-tree').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ fcontext: 'social', netView: true, netTreeOneofus: false }, '*');
+      });
+
       VerifyHelper.setupListeners([
         "homer-replace-key",
         "marge-banana-rate",
