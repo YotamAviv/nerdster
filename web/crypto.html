@@ -8,7 +8,7 @@
   </head>
   <body>
     <main>
-      <h1>Public Key Cryptography</h1>
+      <h1>Public Key Cryptography, Digital Signatures</h1>
       <ul>
         <li>
           Keys are created in pairs:
@@ -51,52 +51,61 @@
         </div>
       </div>
 
-      <h1>Hash codes, Tokens</h1>
+      <h2>Crypto Keys are Cryptic</h2>
+      <p>
+        Unlike the usernames and passwords we're used to, public/private
+        cryptographic key pairs are long and cryptic and can't practically be
+        spoken or memorized. This is why we use QR codes (or occasionally
+        copy/paste) to communicate them.
+      </p>
+
+      <ul>
+        <li>QR codes allow us to communicate public keys using our phones.</li>
+        <li>JSON format is used when computers communicate with each other.</li>
+      </ul>
+
+      <h2>Sample public key</h2>
+
+      <div class="qr-json-2col">
+        <img src="img/sample.png" alt="sample public key" />
+
+        <pre><code>{
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ"
+}
+        </code></pre>
+      </div>
+
+      <h2>Sample public/private key pair</h2>
+      <div class="qr-json-2col">
+        <p>(We don't scan each other's private keys)</p>
+
+        <pre><code>{
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "rHT5B3q3rBCtNUaSBwT7DxT2Y0Q6fgvmhNKbVhJ_BtQ",
+  "d": "_MaCrtWx2jHTOrujWXVeihaBBJHF09QUxzwnk6GGiEQ"
+}
+        </code></pre>
+      </div>
+
+      <h2>They come in Pairs</h2>
+      <p>
+        Lose your private key and your public key is now abandoned. You'll have
+        to get a new key pair, can't just replace the private key. (We address
+        this with the "replace" statement.)
+      </p>
+
+      <h2>Hash codes, Tokens</h2>
       <p>
         Consider a hash code of data as a keyless signature. A hash is short
         regardless of the amount of data. That's why we use them as tokens for
-        keys as well as of statements.
+        keys as well as of statements. <br />We hash keys to locate where their
+        statements can be retrieved. <br />We hash statements to identify them
+        uniquely when forming a chain of statements to prevent backdating and to
+        identify the last valid statement signed by a revoked key.
       </p>
-
-      <h1>Our use</h1>
-      <h3>--Keys</h3>
-      <ul>
-        <li>
-          Identity Layer: You have a public/private key pair; the public key is
-          your identity. You vouch for another's identity (and humanity) by
-          signing a statement that includes their identity (their public key).
-        </li>
-        <li>
-          Delegate Keys: You create and give other services disposable
-          public/private key pairs and use your own private identity key to sign
-          structured statements stating that these key pairs represent you on
-          those services.
-        </li>
-      </ul>
-
-      <h3>--Tokens</h3>
-      <ul>
-        <li>
-          A key token is used to form the URL for requesting statements signed
-          by that key over our HTTP interface, specifically:
-          <code>https://export.one-of-us.net/?spec=&lt;key token&gt;</code>
-        </li>
-        <li>
-          Statement tokens
-          <ul>
-            <li>
-              We chain all statements signed by a key to prevent backdating in
-              case a key is compromised. The "previous" field of a signed
-              statement is the token of the previous statement signed by that
-              key.
-            </li>
-            <li>
-              We identify the last valid statement signed by a key that is
-              revoked by that statement's token.
-            </li>
-          </ul>
-        </li>
-      </ul>
     </main>
 
     <script src="iframe_helper.js"></script>
