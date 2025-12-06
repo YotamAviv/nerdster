@@ -33,6 +33,11 @@
         iframe.contentWindow.postMessage({ identity: demoData.bart }, '*');
       });
 
+      document.getElementById('load-milhouse').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ identity: demoData.milhouse }, '*');
+      });
+      
       document.getElementById('censor-on').addEventListener('click', function (ev) {
         ev.preventDefault();
         iframe.contentWindow.postMessage({ censor: true }, '*');
