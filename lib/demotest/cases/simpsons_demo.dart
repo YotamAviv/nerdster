@@ -112,7 +112,9 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await sideshow.doTrust(TrustVerb.trust, mel, moniker: 'Mel');
   await sideshow.doTrust(TrustVerb.trust, milhouse, moniker: '4-Eyes');
   await sideshow.doTrust(TrustVerb.trust, amanda,
-      moniker: 'Amanda Hugginkiss', export: 'sideshow-trust-amanda'); // Yeah, yeah, looking for Amanda Huggenkiss. What else is new?
+      moniker: 'Amanda Hugginkiss',
+      export:
+          'sideshow-trust-amanda'); // Yeah, yeah, looking for Amanda Huggenkiss. What else is new?
   await sideshow.doTrust(TrustVerb.trust, seymore,
       moniker: 'Seymore Butts'); // That doesn't sound like a real name
   await sideshow.doTrust(TrustVerb.block, marge, comment: 'Karen');
@@ -135,7 +137,8 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
 
   // milhouse->krusty, marge-x> sideshow
   await marge.doTrust(TrustVerb.block, sideshow,
-      comment: 'Naughty!!!', export: 'marge-block-sideshow');
+      comment: 'Naughty! You vouched for ficticious names to rack up likes',
+      export: 'marge-block-sideshow');
   await milhouse.doTrust(TrustVerb.trust, krusty, moniker: 'Krusty');
 
   DemoKey lisaN = await lisa.makeDelegate();
