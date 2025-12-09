@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -159,19 +160,22 @@ Future<void> main() async {
     initMessageListener();
   }
 
-  final bool fullScreen = Uri.base.queryParameters.containsKey('verifyFullScreen');
+  final Widget home = (Uri.base.queryParameters.containsKey('verifyFullScreen') &&
+          b(Setting.get(SettingType.verify).value))
+      ? const StandaloneVerify()
+      : ContentTree();
 
-  if (fullScreen && b(Setting.get(SettingType.verify).value)) {
-    runApp(MaterialApp(
-        navigatorKey: navigatorKey,
-        debugShowCheckedModeBanner: false,
-        home: const StandaloneVerify()));
-    return;
-  }
-
-  // -------------- run app ---------------
-  runApp(MaterialApp(
-      navigatorKey: navigatorKey, debugShowCheckedModeBanner: false, home: ContentTree()));
+  // Gemini: Use runWidget with a View wrapper to support multi-view mode (e.g. embedding in iframes)
+  // and avoid "Bad state: The app requested a view, but the platform did not provide one" errors.
+  // This explicitly provides the view from PlatformDispatcher.
+  runWidget(View(
+    view: ui.PlatformDispatcher.instance.views.first,
+    child: MaterialApp(
+      navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: false,
+      home: home,
+    ),
+  ));
 }
 
 Future<void> defaultSignIn(BuildContext context) async {
