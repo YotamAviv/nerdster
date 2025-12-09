@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Talk Teleprompter</title>
+    <style>
+      body {
+        background-color: #111;
+        color: #555;
+        font-family: sans-serif;
+        font-size: 18px;
+        line-height: 1.5;
+        margin: 0;
+        padding: 50vh 20px; /* Padding to center content vertically initially */
+        overflow-y: auto;
+        height: 100vh;
+        box-sizing: border-box;
+      }
+
+      .cue {
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        opacity: 0.5;
+      }
+
+      .cue.near {
+        opacity: 0.9;
+      }
+
+      .cue.active {
+        background-color: #222;
+        color: #fff;
+        font-size: 1.2em;
+        opacity: 1;
+        border-left: 4px solid #00ff00;
+        padding-left: 15px;
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: #888;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+
+      .cue.active h1,
+      .cue.active h2,
+      .cue.active h3 {
+        color: #fff;
+      }
+
+      ul {
+        padding-left: 20px;
+        margin: 0;
+      }
+
+      li {
+        margin-bottom: 5px;
+      }
+
+      /* Hide scrollbar for cleaner look */
+      ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <!-- Content generated from talk.md -->
+      <div class="cue">
+        Our own decentralized Identity Network
+        <ul>
+          <li>What does that mean?</li>
+          <li>Why would would want it?</li>
+          <li>How do we do it?</li>
+        </ul>
+      </div>
+      <div class="cue">
+        When you talk to something to someone in person, you sort of know who it
+        is, not to mention that he's not a robot. But it's not like that online.
+      </div>
+
+      <div class="cue"><h1>Demo</h1></div>
+      <div class="cue">Empty Nerdster</div>
+      <div class="cue">ONE-OF-US.NET phone app... Congrats!</div>
+
+      <div class="cue">
+        Sign in to Nerdster (no delegate key)
+        <ul>
+          <li>No content</li>
+          <li>"Me" on Nerdster</li>
+          <li>(Warning)</li>
+        </ul>
+      </div>
+
+      <div class="cue">
+        Scan Tom's phone..
+        <ul>
+          <li>Vouch for Tom</li>
+          <li>(dismiss but mention)</li>
+        </ul>
+      </div>
+      
+      <div class="cue">
+        That's it by the way.. That's all you have to do to build our
+        decentralized identity network.
+      </div>
+
+      <div class="cue">
+        Refresh Nerdster (from tree pane)
+        <ul>
+          <li>Tom</li>
+          <li>content in content pane</li>
+          <li>recommended movies</li>
+          <li>Andrew's and Tom's ratings</li>
+          <li>Click Andrew</li>
+          <li>Park on Andrew's smiley to see vouch chain</li>
+        </ul>
+      </div>
+      <div class="cue">
+        Like
+        <ul>
+          <li>Sign in with delegate (dismiss but metion)</li>
+          <li>Like (dismiss but metion)</li>
+        </ul>
+      </div>
+
+      <div class="cue">Explain:</div>
+      <div class="cue">When you scan phones:</div>
+
+      <div class="cue">
+        <ul>
+          <li>You reference the other person's public key</li>
+          <li>
+            You sign a statement vouching for who he is and that he's not robot
+            using your own private crypto key (that always stays on your phone,
+            unless you export it for use with other software)
+          </li>
+          <li>
+            You publish that signed statement in a location where everything
+            your key has signed can be found.
+          </li>
+        </ul>
+      </div>
+
+      <div class="cue">when you create the delegate:</div>
+
+      <div class="cue">
+        <ul>
+          <li>You create a disposable public/private key pair</li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>
+            You sign and publish a statement stating that that key represents
+            you on a service
+          </li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>You securely transmit that key pair to the service.</li>
+        </ul>
+      </div>
+
+      <div class="cue">
+        Complete cryptographic digital signature chain starting at your key to
+        all the whitelisted content you see.
+      </div>
+
+      <div class="cue">Show Crypto boxes</div>
+      <div class="cue">Show statements and keys on the nerdster.</div>
+
+      <div class="cue">
+        <ul>
+          <li>see statatement, raw or interpreted, for every activity.</li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>find any key's statements</li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>
+            Double click on keys to see token. Key token used to fetch
+            statements it's signed
+          </li>
+        </ul>
+      </div>
+
+      <div class="cue">
+        All activities on the apps signs and publishes a statement
+      </div>
+
+      <div class="cue">
+        <ul>
+          <li>
+            portable, verifiable by anything as having been done by that key
+          </li>
+        </ul>
+      </div>
+
+      <div class="cue">
+        Both apps get all of their content from those same published statements.
+      </div>
+
+      <div class="cue">
+        <ul>
+          <li>
+            Nerdster and ONE-OF-US.NET are not connected, have no special
+            access.
+          </li>
+        </ul>
+      </div>
+
+      <div class="cue">
+        Heterogeneous: Anyone can make a different, better Nerdster leveraging
+        the existing content but better.. Better conflict detection or identity
+        Network, better UI, richer abilities, and that can fragment even further
+        with competing services playing off each other's improvements. Can't do
+        that with our Facebook, X, Insta content..
+      </div>
+
+      <div class="cue">
+        <h1>Your identity is your crypto key. That's the paradigm</h1>
+      </div>
+
+      <div class="cue">
+        <ul>
+          <li>
+            You can use any tech to sign with it, issue delegates, claim and
+            revoke old keys, vouch for others
+          </li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>
+            Folks can be their own identities on any service, not an account at
+            a particular service
+          </li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>
+            Folks can follow or otherwise reference identities instead of
+            accounts at a particular service
+          </li>
+        </ul>
+      </div>
+
+      <div class="cue"><h1>Nerdster sample features</h1></div>
+
+      <div class="cue">Change PoV</div>
+
+      <div class="cue">
+        <ul>
+          <li>Demo phone not in network</li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>names change, decentralized</li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>content changes</li>
+        </ul>
+      </div>
+
+      <div class="cue">Block Tom, follow Andrew</div>
+
+      <div class="cue">
+        <ul>
+          <li>leverage identity layer</li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>
+            like all the other actions, this can be verified and leveraged by
+            your network on other services you use. Portable
+          </li>
+        </ul>
+      </div>
+
+      <div class="cue"><h2>What we didn't do</h2></div>
+
+      <div class="cue">
+        <ul>
+          <li>Pick a username. But we did name Tom</li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>Pick a password or sign in traditionally</li>
+        </ul>
+      </div>
+
+      <div class="cue"><h1>Close account</h1></div>
+
+      <div class="cue">
+        <ul>
+          <li>
+            No accounts. The demo phone sort of gave the Nerdster an account,
+            not the other way around. And then it removed that account.
+          </li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>
+            Demo phone never had an identity acount (and it never will, as
+            neither I nor anyone in my network will vouch for its humanity)
+          </li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>
+            I don't have an identity account with ONE-OF-US.NET or any other
+            service. If anything, I have an account with the folks who've
+            vouched for me.
+          </li>
+        </ul>
+      </div>
+
+      <div class="cue"><h1>Show Nerdster homepage.</h1></div>
+
+      <div class="cue"><h1>TODO</h1></div>
+
+      <div class="cue">
+        Mention revoking at or identifying offending statements
+      </div>
+
+      <div class="cue">Scan a few keys and mention reprehensible</div>
+
+      <div class="cue">
+        <h1>Rate as quickly as possible (dismiss confirmations quickly)</h1>
+      </div>
+
+      <div class="cue"><h1>Review Crypto boxes</h1></div>
+
+      <div class="cue"><h2>Now show Nerdster crypto</h2></div>
+
+      <div class="cue"><h3>Every action creates a statement</h3></div>
+
+      <div class="cue">
+        <ul>
+          <li>
+            Visible in the app
+            <ul>
+              <li>raw or</li>
+              <li>interpreted</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>
+            Show:
+            <ul>
+              <li>identity key</li>
+              <li>Identity statement</li>
+              <li>delegate key</li>
+              <li>Nerdster statement</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="cue">
+        <ul>
+          <li>
+            Visible on the Web, signed, portable. Show statements on web<br />
+            This the place (<em>only</em> place) where the Nerdster gets data
+          </li>
+        </ul>
+      </div>
+
+      <div class="cue">PoV ...</div>
+      <div class="cue">Follow, block</div>
+      <div class="cue">Rest of boxes</div>
+
+      <div class="cue">Thanks!</div>
+    </div>
+
+    <script>
+      let currentIndex = -1;
+      const cues = document.querySelectorAll(".cue");
+
+      function setActive(index) {
+        if (index < 0) index = 0;
+        if (index >= cues.length) index = cues.length - 1;
+
+        currentIndex = index;
+
+        cues.forEach((cue, i) => {
+          cue.classList.remove("active", "near");
+
+          if (i === index) {
+            cue.classList.add("active");
+            cue.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else if (Math.abs(i - index) <= 2) {
+            cue.classList.add("near");
+          }
+        });
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (
+          e.code === "Space" ||
+          e.code === "ArrowRight" ||
+          e.code === "ArrowDown"
+        ) {
+          e.preventDefault();
+          setActive(currentIndex + 1);
+        } else if (e.code === "ArrowLeft" || e.code === "ArrowUp") {
+          e.preventDefault();
+          setActive(currentIndex - 1);
+        }
+      });
+
+      // Initialize
+      // setActive(0);
+      // Don't auto-set active so user can start when ready, or click to start.
+
+      // Allow clicking to set active
+      cues.forEach((cue, i) => {
+        cue.addEventListener("click", () => setActive(i));
+      });
+    </script>
+  </body>
+</html>
