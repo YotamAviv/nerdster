@@ -18,20 +18,28 @@
       <p>
         There are four statement types involved in establishing and maintaining
         the identity layer. All are signed by one key and state something about
-        another.
+        another. This does 2 things:
       </p>
+      <ul>
+        <li>Distribute knowlege about the other key.</li>
+        <li>
+          Digitally signed by your private key (can be verified as authentically
+          signed by you, can't be forged)
+        </li>
+      </ul>
 
       <p>
-        <a id="lisa-trust-mom" href="#">Trust</a>: keys that meet the bar of
-        "human, capable, and acting in good faith".
+        <a id="lisa-trust-mom" href="#">Trust</a>: keys you vouch for as
+        representing someone "human, capable, and acting in good faith"
         <br />
-        <a id="marge-block-sideshow" href="#">Block</a>: keys that don't.
+        <a id="marge-block-sideshow" href="#">Block</a>: keys you've identified
+        that should not be trusted
         <br />
-        <a id="homer-replace-key" href="#">Replace</a>: your own lost or
-        compromised keys.
+        <a id="homer-replace-key" href="#">Replace</a>: lost or compromised
+        identity keys you used to use
         <br />
-        <a id="marge-delegate" href="#">Delegate</a>: disposable keys that you
-        provide to services to allow them to act on your behalf (until you
+        <a id="marge-delegate" href="#">Delegate</a>: keys that represent you on
+        various services (until you
         <a id="sideshow-revoke-marge-delegate" href="#">revoke</a> them).
       </p>
 
@@ -45,7 +53,10 @@
 
       <div class="text-iframe-2col">
         <div class="content">
-          <p>(Still vapid; we don't know whose key that is.)</p>
+          <p>
+            (Still vapid; we know that the key being trusted has not been
+            tampered with, but we don't know whose key signed this statement.)
+          </p>
         </div>
         <div class="embed">
           <iframe id="flutterApp"></iframe>
