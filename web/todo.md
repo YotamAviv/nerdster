@@ -13,3 +13,6 @@ More on decentralized judgment, reputation, props, respect.
 Is that chicken really pasture raised?
 
 What does your neighbor believe?
+
+# Decentralized
+- Imagine if links between different web servers didn't work 
