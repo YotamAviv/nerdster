@@ -39,6 +39,10 @@
         padding-left: 15px;
       }
 
+      .important {
+        color: #ff5555;
+      }
+
       h1,
       h2,
       h3 {
@@ -85,39 +89,70 @@
         is, not to mention that he's not a robot. But it's not like that online.
       </div>
 
-      <div class="cue"><h1>Demo</h1></div>
-      <div class="cue">Empty Nerdster</div>
-      <div class="cue">ONE-OF-US.NET phone app... Congrats!</div>
+      <div class="cue">
+        <h1>Demo</h1>
+        2 apps
+        <ul>
+          <li>ONE-OF-US.NET phone app</li>
+          <li>Nerdster web app</li>
+        </ul>
+        Both apps go to extreme lengths to demonstrate and highlight the crypto
+        behind the scenes.
+      </div>
+      <div class="cue">
+        Empty Nerdster
+        <ul>
+          <li>No content</li>
+          <li>No people</li>
+        </ul>
+      </div>
+
+      <div class="cue">
+        ONE-OF-US.NET phone app
+        <ul>
+          <li>No key</li>
+          <li>Create, (don't claim, don't import)</li>
+          <li>Congratuls! I gots Crypto!</li>
+        </ul>
+      </div>
 
       <div class="cue">
         Sign in to Nerdster (no delegate key)
         <ul>
+          <li>Click "QR Sign in"</li>
+          <li>
+            Click QR Scan icon on phone, show it Nerdster "Sign-in Parameters"
+          </li>
+          <li>Identity key sent / received</li>
           <li>No content</li>
           <li>"Me" on Nerdster</li>
-          <li>(Warning)</li>
+          <li>Warning: You're invisible</li>
         </ul>
       </div>
 
       <div class="cue">
-        Scan Tom's phone..
+        Vouch for Tom
         <ul>
-          <li>Vouch for Tom</li>
+          <li>Click QR Scan icon on phone, show it Tom's phone</li>
+          <li>Name him</li>
           <li>(dismiss but mention)</li>
         </ul>
       </div>
-      
+
       <div class="cue">
-        That's it by the way.. That's all you have to do to build our
-        decentralized identity network.
+        <span class="important"
+          >That's all you have to do to build our decentralized identity
+          network.</span
+        >
       </div>
 
       <div class="cue">
         Refresh Nerdster (from tree pane)
         <ul>
-          <li>Tom</li>
-          <li>content in content pane</li>
-          <li>recommended movies</li>
-          <li>Andrew's and Tom's ratings</li>
+          <li>Witness Tom</li>
+          <li>Witness content in content pane</li>
+          <li>Check recommended movies</li>
+          <li>Check Andrew's and Tom's ratings</li>
           <li>Click Andrew</li>
           <li>Park on Andrew's smiley to see vouch chain</li>
         </ul>
@@ -130,16 +165,21 @@
         </ul>
       </div>
 
-      <div class="cue">Explain:</div>
-      <div class="cue">When you scan phones:</div>
+      <div class="cue">What happened..</div>
 
       <div class="cue">
+        When you scan phones:
         <ul>
           <li>You reference the other person's public key</li>
           <li>
             You sign a statement vouching for who he is and that he's not robot
-            using your own private crypto key (that always stays on your phone,
-            unless you export it for use with other software)
+            using your own private crypto identity key
+            <ul>
+              <li>
+                Your private identity key always stays on your phone (unless you
+                export it for use with other software - know what you're doing)
+              </li>
+            </ul>
           </li>
           <li>
             You publish that signed statement in a location where everything
@@ -148,50 +188,43 @@
         </ul>
       </div>
 
-      <div class="cue">when you create the delegate:</div>
-
       <div class="cue">
+        When you create a delegate, you:
         <ul>
-          <li>You create a disposable public/private key pair</li>
-        </ul>
-      </div>
-      <div class="cue">
-        <ul>
+          <li>Create a new, disposable public/private key pair</li>
+          <li>Sign that this key represents you on that service</li>
           <li>
-            You sign and publish a statement stating that that key represents
-            you on a service
+            Publish that statement where it can be found and fetched using your
+            key's token
           </li>
-        </ul>
-      </div>
-      <div class="cue">
-        <ul>
-          <li>You securely transmit that key pair to the service.</li>
+          <li>Securely transmit that key pair to the service</li>
         </ul>
       </div>
 
       <div class="cue">
-        Complete cryptographic digital signature chain starting at your key to
-        all the whitelisted content you see.
+        <span class="important"
+          >Complete Cryptographic Digital Signature Chain</span
+        >
+        <ul>
+          <li>from your key to all the whitelisted content you see.</li>
+        </ul>
       </div>
 
-      <div class="cue">Show Crypto boxes</div>
-      <div class="cue">Show statements and keys on the nerdster.</div>
-
       <div class="cue">
+        Show Crypto boxes
         <ul>
-          <li>see statatement, raw or interpreted, for every activity.</li>
+          <li>...</li>
+          <li>...</li>
         </ul>
       </div>
       <div class="cue">
+        Show statements and keys on the nerdster.
         <ul>
-          <li>find any key's statements</li>
-        </ul>
-      </div>
-      <div class="cue">
-        <ul>
+          <li>Statements: raw or interpreted, for every activity</li>
+          <li>Keys: QR and text, token, too (double click)</li>
           <li>
-            Double click on keys to see token. Key token used to fetch
-            statements it's signed
+            Link to published statements<br />That's where both apps load data
+            from (and only)
           </li>
         </ul>
       </div>
