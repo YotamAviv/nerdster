@@ -66,6 +66,10 @@
         margin-bottom: 5px;
       }
 
+      .small {
+        font-size: 0.7em;
+      }
+
       /* Hide scrollbar for cleaner look */
       ::-webkit-scrollbar {
         width: 0px;
@@ -99,8 +103,8 @@
           <li>No content</li>
           <li>No people</li>
           <li>
-            (You don't have to use Nerdster, but atm it's the only thing that
-            can show and leverage our decentralized identity network.)
+            (You don't ever have to use Nerdster, but atm it's the only thing
+            that can show and leverage our decentralized identity network.)
           </li>
         </ul>
       </div>
@@ -108,9 +112,8 @@
       <div class="cue">
         ONE-OF-US.NET phone app
         <ul>
-          <li>No key</li>
-          <li>Create</li>
-          <li>Congrats, got crypto!</li>
+          <li>No key, Create, ..</li>
+          <li>Congrats! Got crypto (cryptographic public/private key pair)</li>
         </ul>
       </div>
 
@@ -123,8 +126,8 @@
           </li>
           <li>Identity key sent / received</li>
           <li>No content</li>
-          <li>"Me" on Nerdster</li>
-          <li>Warning: You're invisible</li>
+          <li>"Me" exists now</li>
+          <li>(Warning: You're invisible)</li>
         </ul>
       </div>
 
@@ -165,10 +168,13 @@
       </div>
 
       <div class="cue">
-        Like
+        Like (requires a delegate key)
         <ul>
-          <li>Sign in with delegate (dismiss notifications but metion)</li>
-          <li>Like (dismiss notifications but metion)</li>
+          <li>
+            Sign in again, this time yes delegate (dismiss notifications but
+            mention)
+          </li>
+          <li>Like (dismiss notifications but mention)</li>
         </ul>
       </div>
 
@@ -176,8 +182,8 @@
         <h2>What happened?</h2>
         2 apps
         <ul>
-          <li>ONE-OF-US.NET phone app</li>
-          <li>Nerdster web app</li>
+          <li>ONE-OF-US.NET phone app: builds identity network</li>
+          <li>Nerdster web app: leverages identity network</li>
         </ul>
         Both apps go to extreme lengths to demonstrate and highlight the crypto
         behind the scenes.
@@ -187,6 +193,7 @@
             because it's way different from username/password sign-in at a
             service
           </li>
+          <li>(The 2 apps are not connected, have no special access.)</li>
         </ul>
       </div>
 
@@ -204,8 +211,8 @@
           <li>signing works, keys are cryptic</li>
           <li>even signing keys works</li>
           <li>
-            distributing keys is the crux: it must be done authentically (and by
-            us)
+            <span class="important">distributing keys is the crux</span>: it
+            must be done authentically (and by us)
           </li>
         </ul>
       </div>
@@ -219,11 +226,11 @@
           </li>
           <li>reference their identity, a crypto public key</li>
           <li>
-            cryptographically sign it (requires your private crypto identity
-            key, can be verified by anyone who knows your public key)
+            cryptographically sign that statement (requires your private crypto
+            identity key, can be verified by anyone who knows your public key)
           </li>
           <li>
-            publish it to a location where everything signed by your key can be
+            publish it to a location where everything signed by that key can be
             found.
           </li>
         </ul>
@@ -237,11 +244,26 @@
       <div class="cue">
         Why even delegates?
         <ul>
-          <li>100's of services we enjoy (Nerdster not among them)</li>
+          <li>
+            100's of services we enjoy (Nerdster not among them)
+            <ul class="small">
+              <li>social (Facebook / Insta, 4 Twitters, )</li>
+              <li>shopping (eBay, Craigslist, Amazon, Marketface ..)</li>
+              <li>reviews (Yelp, Maps, etc.)</li>
+              <li>video (YouTube, TikTok, Twitch ..)</li>
+              <li>dating (Tinder, Grinder, Bumble ..)</li>
+              <li>services (Uber, Lyft Airbnb VRBO ..)</li>
+              <li>texting (Messenger, SnapChat, WhatsApp, Signal ..)</li>
+              <li>news (NYT, WSJ, etc.)</li>
+            </ul>
+          </li>
           <li>
             Wouldn't work out well to give our private key to every one of those
           </li>
-          <li>But we do want to be ourselves on any/all of them</li>
+          <li>
+            But we do want to have people on them <br />(Anonymity can be
+            offered by trusted services)
+          </li>
         </ul>
       </div>
 
@@ -268,9 +290,7 @@
         <span class="important"
           >Complete Cryptographic Digital Signature Chain</span
         >
-        <ul>
-          <li>String from your identity to all the content you see.</li>
-        </ul>
+        Starting from your identity to all the content you see.
       </div>
 
       <div class="cue">
@@ -293,6 +313,10 @@
 
       <div class="cue">
         Portable, verifiable by anything regardless of where it was found.
+        <ul>
+          <li>Signed content can be replicated all over the place</li>
+          <li>Trusted because crypto, not origin or authority</li>
+        </ul>
       </div>
 
       <div class="cue">
@@ -314,6 +338,14 @@
       </div>
 
       <div class="cue">
+        <h2>Heterogeneous</h2>
+        <ul>
+          <li>Read page</li>
+          <li>Show Heterogeneous boxes</li>
+        </ul>
+      </div>
+
+      <div class="cue">
         <h3>
           <span class="important"
             >Your identity is your crypto key. That's the paradigm. That's
@@ -323,31 +355,11 @@
       </div>
 
       <div class="cue">
-        <h2>Heterogeneous</h2>
-        <ul>
-          <li>Read page</li>
-          <li>Show Heterogeneous boxes</li>
-        </ul>
-      </div>
-
-      <div class="cue">
         The Internet can evolve, take it from there, wherever that may go..
         <br />
         <span class="important"
           >Competing algorithms over our signed content</span
         >
-        Only Facebook can aggregate Face likes, Amazon their own reviews,
-        Twitters, Blue skies, etc..
-      </div>
-
-      <div class="cue">
-        The 2 apps we used are just examples.
-        <br />
-        Services can do things differently, better, worse, however they like.
-        <ul>
-          <li>I appreciate..</li>
-          <li>I suspect..</li>
-        </ul>
       </div>
 
       <div class="cue">
@@ -404,17 +416,18 @@
           <li>Toggle censorship</li>
           <li>Network degrees and paths..</li>
         </ul>
-        <h3>Show Nerdster homepage.</h3>
-        <a href="https://nerdster.org/home">https://nerdster.org/home</a>
+      </div>
+
+      <div class="cue">
+        Show nerdy Nerdster homepage: https://nerdster.org/home
         <ul>
-          <li>Nerdy!</li>
           <li>Simpsons Bot Farm</li>
           <li>Conflicts, fraud, censorship, and worse...</li>
         </ul>
       </div>
 
       <div class="cue">
-        <h2>What we didn't do</h2>
+        <h3>What we didn't do</h3>
         <ul>
           <li>Pick a username</li>
           <li>Pick a password or sign in traditionally</li>
@@ -426,46 +439,50 @@
       <div class="cue"><h2>Demo Close Account</h2></div>
 
       <div class="cue">
+        <span class="important">No accounts - you hold the keys</span>
         <ul>
           <li>
-            <span class="important">No accounts - you hold the keys</span>. The
-            demo phone sort of gave the Nerdster an account, not the other way
-            around.
+            The demo phone sort of gave the Nerdster an account, not the other
+            way around.
           </li>
         </ul>
       </div>
 
       <div class="cue">
-        Show account (delegate key) on Nerdster
+        Show account / delegate key on Nerdster
         <ul>
-          <li>Show Crypto on Nerdster</li>
-          <li>Show demo phone's delegate key</li>
+          <li>Turn on Show Crypto</li>
+          <li>Locate demo phone's delegate key</li>
         </ul>
       </div>
 
       <div class="cue">
-        <h3>
-          Close the Nerdster account on the phone app, where your identity is
-          managed.
-        </h3>
+        <h3>The phone app holds your identity key, manages these things...</h3>
+      </div>
+
+      <div class="cue">
+        Show phone app menus
         <ul>
-          <li>Show phone app Sign menu</li>
-          <li>Show phone app Share menu</li>
-          <li>Show phone app Settings menu, Export keys</li>
+          <li>(we've already seen the scan QR button)</li>
+          <li>Share (email QR)</li>
+          <li>Settings (import/export keys; they're yours)</li>
+          <li>Sign menu</li>
           <ul>
             <li>Trusts / blocks - your network</li>
             <li>
               Replace - your former identity keys (you'll lose them, have them
               compromised, ...)
             </li>
-            <li>
-              Delegate - your authorized services (Nerdster, ...)
-              <ul>
-                <li>Could revoke (since always, or at any time in the past)</li>
-                <li>I'll just clear (remove / erase)</li>
-              </ul>
-            </li>
+            <li>Delegate - your authorized services (Nerdster, ...)</li>
           </ul>
+        </ul>
+      </div>
+
+      <div class="cue">
+        Clear the Nerdster's delegate key
+        <ul>
+          <li>Could revoke (since always, or at any time in the past)</li>
+          <li>Just clear (remove / erase)</li>
         </ul>
       </div>
 
@@ -489,7 +506,44 @@
               I have an account with the folks who've vouched for me.
             </span>
           </li>
-          <li>(I'll never give the demo an account)</li>
+          <li>(demo will not get an account with me)</li>
+        </ul>
+      </div>
+
+      <div class="cue">
+        <h2>Identity</h2>
+        <ul>
+          <li>
+            I am not my Facebook account, my email address, shopping history,
+            prescription medications.
+          </li>
+          <li>That's how the Internet knows me but not how people do.</li>
+        </ul>
+      </div>
+
+      <div class="cue">
+        We're not trying to build a new network, the IRL network already exists
+        <ul>
+          <li>
+            We're just publishing it authentically so we can use it online.
+          </li>
+        </ul>
+      </div>
+
+      <div class="cue">
+        How would having our authentic identities online affect us?
+        <ul>
+          <li>
+            More open to learning? growth?<br />The folks forming your news feed
+            would be there because you invited them, not because an algorithm
+            figured out which accounts or content trigger you.
+          </li>
+          <li>
+            PoVs.. Even if you don't want to openly news follow me and have it
+            affect those who news follow you, you could still visit, maybe
+            understand, comment, connect..
+          </li>
+          <li>kinder? gentler? less confused and angry?</li>
         </ul>
       </div>
 
@@ -499,35 +553,18 @@
           <li>
             No hierarchy, center, powerful silo, gov't, editorial board, etc...
           </li>
-          <li>resistant to corruption, censorship, and control</li>
+          <li>robusust and resistant to corruption, censorship, and control</li>
         </ul>
       </div>
 
-      <div class="cue">
-        <span class="important"
-          >Not a new network, the IRL network already exists</span
-        >
-        <ul>
-          <li>
-            We're just writing it down authentically and making it accessible.
-          </li>
-          <li>Would it affect is differently</li>
-          <li>Would we behave differently, IRL, too?</li>
-          <li>
-            Folks can follow or otherwise reference identities instead of
-            accounts at a particular service
-          </li>
-        </ul>
-      </div>
-
-      <div class="cue">Possibiilies...</div>
+      <div class="cue">Click Possibilities box...</div>
 
       <div class="cue">
-        Recap... How'd it go?
+        <h2>Recap</h2>
         <ul>
           <li>
-            if you came into this not knowing what "our own decentralized
-            identity" means, I hope thatyou have a better understanding now.
+            "Our Own Decentralized, Heterogeneous Identity Network". If you came
+            into this not clear on what we mean by that, I hope you do now.
           </li>
           <li>
             Not my network, not the ONE-OF-US.NET network, not the Nerdster
@@ -537,19 +574,23 @@
             Both apps can be considered demos, but this could be
             <span class="important">how this starts</span>.
           </li>
-          <li>Your identity is your crypto key</li>
-          <li>Vouch for humans, delegate to services</li>
           <li>
-            Everything you do is signed and published where it can be found
+            Services can consume and produce authentic content that can play
+            nice with other authentic content from other services.
           </li>
-          <li>
-            Services can consume and produce authentic that can play nice with
-            other authentic content from other services.
-          </li>
-          <li>
-            It's free, not locked up, open for competition. Anyone can build
-            better services leveraging our authentic content.
-          </li>
+          <ul>
+            <li>
+              Open for competition and evolution. Anyone can build better
+              services leveraging our authentic identities and content.
+            </li>
+            <li>
+              How will they know who's who? We'll tell them.<span
+                class="important"
+              >
+                We build network and <em>let</em> them use it.
+              </span>
+            </li>
+          </ul>
         </ul>
       </div>
       <div class="cue">
