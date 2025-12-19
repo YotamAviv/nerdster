@@ -36,25 +36,33 @@ The project codebase is available at: https://github.com/YotamAviv/oneofus
 **Nerdster** is a social application built *on top* of the ONE-OF-US.NET trust network. It is a place to discover, rate, and discuss content (movies, books, etc.).
 
 ### Key Concepts:
-*   **Trust-Based Content:** Unlike traditional social networks that use algorithms to show you "engaging" content, Nerdster uses your **Web of Trust**.
-    *   You see ratings and comments from people you trust, and people *they* trust.
-    *   Spammers and bots are naturally filtered out because no real human in your network has vouched for them.
-*   **Submitting Content:** Users submit **Content Statements** (Ratings, Comments, Relations).
-    *   *Example:* "I rate 'The Matrix' 5 stars."
-    *   These statements are signed by your delegated app key.
+*   **Trust-Based Content & Follow Contexts:**
+    *   **Humanity First:** Nerdster leverages the Identity Layer to ensure that every user you see is a real person, not a bot or a fake account.
+    *   **Follow Network:** While the Identity Layer establishes *who is real*, the Nerdster Application Layer establishes *who is interesting*. You can follow people for specific contexts like 'social', 'local', or 'news'.
+    *   **Default Context:** The `<nerdster>` context is a built-in default. By default, you follow the people you have personally vouched for in the Identity Layer.
+        *   You can specifically **follow** people you haven't identity-vouched for in the `<nerdster>` context to bring them closer to you.
+        *   You can specifically **block** people in the `<nerdster>` context (even if you vouched for their identity) if you aren't interested in their ratings. This also protects those who follow you from seeing their content.
+*   **Submitting Content:** Users submit **Content Statements** signed by their delegated app key. Types of statements include:
+    *   **Rate:** Expressing an opinion (e.g., "I rate 'The Matrix' 5 stars").
+    *   **Comment:** Adding text discussion to a subject.
+    *   **Relate:** Linking two subjects together (e.g., "'The Matrix' is related to 'Cyberpunk'"). Supports negative assertions ("not related").
+    *   **Equate:** Asserting that two subjects are identical (e.g., "'Sci-Fi' is the same as 'Science Fiction'"). Supports negative assertions ("not the same").
+    *   **Conflict Resolution:** Nerdster resolves conflicting statements (e.g., one user says "related", another says "not related") based on who is more trusted in the active context.
 *   **Censorship as Protection:** You can "censor" content you find objectionable.
     *   This doesn't delete it from the internet, but it hides it from *your* view.
-    *   Crucially, your censorship protects those who trust you. If you are a trusted node for your family, your censorship decisions can help filter their feed.
+    *   Crucially, your censorship protects those who follow you. If you are a trusted node for your family or friends, your censorship decisions help filter their feed, creating a community-curated safety layer.
 
-## 3. The Cloud: Dumb Storage, Smart Clients
+## 3. The Cloud & Data: Portable, Signed Statements
 
-The system uses the cloud, but differently from traditional web apps.
+The system treats data differently from traditional web apps. The cloud is not a source of truth, but a convenience for availability.
 
 ### Key Concepts:
-*   **The Cloud is a Relay:** The cloud server (Firebase/Firestore) is a "dumb" storage bucket. It simply stores the signed statements (Trust Statements and Content Statements) uploaded by users.
-*   **No Central Truth:** The cloud does not calculate who is trusted or what the "average rating" is. It doesn't know or care.
-*   **Client-Side Logic:** All the intelligence lives in the **Client** (your phone or browser).
-    *   Your app downloads the raw statements.
-    *   Your app calculates the Trust Graph from *your* Point of View (PoV).
-    *   Your app filters and sorts the content based on *your* calculated trust network.
-    *   This means two different users might see different content or different ratings for the same movie, based on who they trust.
+*   **Portability via Signatures:** A person's statements are trusted because they are **cryptographically signed**, not because of where they are stored. This makes the data portable; it can be moved between servers or stored locally without losing its validity.
+*   **Universal Publishing:** Both the Identity App and the Nerdster App publish statements to the cloud so they can be leveraged by other services.
+    *   **Every Action is a Statement:** Almost every action you take (vouching, rating, commenting, following) publishes a signed statement. (Exceptions are local preferences).
+    *   **Identity as the Anchor:** The core concept is that a person's identity is their public cryptographic key. The Trust Layer distributes the knowledge of *who* these keys belong to.
+    *   **Open Ecosystem:** Other services can use these same identity keys but are free to define their own statement formats and behaviors. They can leverage the existing Web of Trust without being bound to Nerdster's specific data standards.
+*   **Data Visibility:** All data visible in the apps comes from reading and verifying these published statements. The application constructs its view of the world by aggregating these individual assertions.
+*   **The Cloud as a Relay:** Currently, the cloud acts as a "dumb" storage bucket (Firebase/Firestore). It simply stores and serves the signed statements.
+    *   **No Central Truth:** The cloud does not calculate who is trusted or what the "average rating" is.
+    *   **Verification:** Logic for verifying signatures and calculating the trust graph currently happens on the client, ensuring that the user's view is mathematically derived from their own trust roots.
