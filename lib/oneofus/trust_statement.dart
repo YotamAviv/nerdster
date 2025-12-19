@@ -59,6 +59,34 @@ class TrustStatement extends Statement {
     return s;
   }
 
+  /// Factory for creating TrustStatements in tests without raw JSON.
+  factory TrustStatement.build({
+    required String issuer,
+    required TrustVerb verb,
+    required String subject,
+    required DateTime time,
+    String? revokeAt,
+    String? previous,
+  }) {
+    final Map<String, dynamic> json = {
+      'statement': kOneofusType,
+      'I': {'kid': issuer},
+      'time': time.toIso8601String(),
+      verb.label: subject,
+    };
+
+    if (revokeAt != null) {
+      json['with'] = {'revokeAt': revokeAt};
+    }
+    if (previous != null) {
+      json['previous'] = previous;
+    }
+
+    // Create Jsonish (which handles ordering and token generation)
+    final jsonish = Jsonish(json);
+    return TrustStatement(jsonish);
+  }
+
   static TrustStatement? find(String token) => _cache[token];
 
   static void assertValid(

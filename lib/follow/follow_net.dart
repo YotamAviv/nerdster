@@ -204,19 +204,21 @@ class FollowNode extends Node {
     if (processed) return;
     assert(Comp.compsReady([oneofusNet, oneofusEquiv]));
 
-    List<Iterable<Statement>> delegateStatementss = <Iterable<Statement>>[];
-    for (String equiv in oneofusEquiv.getEquivalents(token)) {
+    Iterable<Iterable<Statement>> delegateStatementss = oneofusEquiv
+        .getEquivalents(token)
+        .where((equiv) => oneofusNet.network.containsKey(equiv))
+        .expand((equiv) {
       Fetcher oneofusFetcher = Fetcher(equiv, kOneofusDomain);
-      if (!oneofusNet.network.containsKey(equiv)) continue; // not Oneofus
-      for (TrustStatement delegateStatement in oneofusFetcher.statements
+      return oneofusFetcher.statements
           .cast<TrustStatement>()
-          .where((s) => s.verb == TrustVerb.delegate)) {
-        Fetcher delegateFetcher = Fetcher(delegateStatement.subjectToken, kNerdsterDomain);
+          .where((s) => s.verb == TrustVerb.delegate)
+          .map((s) {
+        Fetcher delegateFetcher = Fetcher(s.subjectToken, kNerdsterDomain);
         assert(delegateFetcher.isCached);
         // TEMP: This fires when Marge's delegate is claimed and revoked by Sideshow: assert(delegateFetcher.revokeAt == delegateStatement.revokeAt);
-        delegateStatementss.add(delegateFetcher.statements);
-      }
-    }
+        return delegateFetcher.statements;
+      });
+    });
     // QUESTIONABLE:
     // Below is a distinct/merger combo with no transformer.
     // The ContentStatements are presumably stated by ...

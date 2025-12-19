@@ -50,6 +50,40 @@ class ContentStatement extends Statement {
     return s;
   }
 
+  /// Factory for creating ContentStatements in tests without raw JSON.
+  factory ContentStatement.build({
+    required String issuer,
+    required ContentVerb verb,
+    required dynamic subject,
+    required DateTime time,
+    bool? like,
+    bool? dismiss,
+    bool? censor,
+    String? comment,
+  }) {
+    final json = {
+      'statement': kNerdsterType,
+      'I': issuer,
+      'time': time.toIso8601String(),
+      verb.label: subject,
+    };
+
+    final withMap = <String, dynamic>{};
+    if (like != null) withMap['recommend'] = like;
+    if (dismiss != null) withMap['dismiss'] = dismiss;
+    if (censor != null) withMap['censor'] = censor;
+    
+    if (withMap.isNotEmpty) {
+      json['with'] = withMap;
+    }
+    if (comment != null) {
+      json['comment'] = comment;
+    }
+
+    final jsonish = Jsonish(json);
+    return ContentStatement(jsonish);
+  }
+
   static ContentStatement? find(String token) => _cache[token];
 
   ContentStatement._internal(

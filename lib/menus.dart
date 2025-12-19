@@ -21,6 +21,7 @@ import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
+import 'package:nerdster/v2/shadow_view.dart';
 
 const iconSpacer = SizedBox(width: 3);
 
@@ -187,6 +188,22 @@ $link''',
                 onPressed: DemoKey.dumpDemoCredentials, child: const Text('dumpDemoCredentials')),
             ...demos
           ], child: const Text('demo')),
+          MenuItemButton(
+              child: const Text('V2 Shadow View'),
+              onPressed: () {
+                if (signInState.identity != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShadowView(rootToken: signInState.identity!),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please sign in first')),
+                  );
+                }
+              }),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
           MenuItemButton(

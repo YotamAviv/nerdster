@@ -19,10 +19,10 @@ import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/equivalence/equivalence_bridge.dart';
 import 'package:nerdster/most_strings.dart';
-import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/measure.dart';
+import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -102,13 +102,6 @@ class ContentBase with Comp, ChangeNotifier {
     _equiv2equivsTags.clear();
     if (!b(signInState.pov)) return;
 
-    List<ContentStatement> statements = <ContentStatement>[];
-    for (String oneofus in followNet.oneofus2delegates.keys) {
-      statements.addAll(followNet
-          .getStatements(oneofus)
-          .where((s) => (s.verb != ContentVerb.follow && s.verb != ContentVerb.clear)));
-    }
-
     /// Censoring: who gets to do what? (Note: this used to be called delete)
     /// - (I can always censor my own statements. GONE: I can clear my own statements.)
     /// - I can always censor statements or subjects for myself.
@@ -171,14 +164,28 @@ class ContentBase with Comp, ChangeNotifier {
     /// - Hide things whose only children are censor/delete statements.
     if (censor) {
       /// delete deletions correctly (more trusted can delete less trusted)
-      for (final ContentStatement statement
-          in statements.where((s) => s.verb == ContentVerb.rate && bb(s.censor))) {
-        if (_censored.contains(statement.token)) {
-          continue;
+      /// We iterate in the order of followNet.oneofus2delegates.keys, which preserves the "more trusted"
+      /// heuristic (assuming the map preserves insertion order from BFS or similar).
+      /// We do this separately from the main merge to ensure we process censors in trust order, not time order.
+      for (String oneofus in followNet.oneofus2delegates.keys) {
+        for (ContentStatement statement in followNet
+            .getStatements(oneofus)
+            .where((s) => s.verb == ContentVerb.rate && bb(s.censor))) {
+          if (_censored.contains(statement.token)) {
+            continue;
+          }
+          _censored.add(statement.subjectToken);
         }
-        _censored.add(statement.subjectToken);
       }
+    }
 
+    List<ContentStatement> statements = Merger.merge(followNet.oneofus2delegates.keys
+            .map((oneofus) => followNet.getStatements(oneofus)))
+        .where((s) => (s.verb != ContentVerb.follow && s.verb != ContentVerb.clear))
+        .cast<ContentStatement>()
+        .toList();
+
+    if (censor) {
       // Filter censored statements and statements about censored subjects
       statements.removeWhere((s) => _censored.contains(s.token));
       statements.removeWhere((s) => _censored.contains(s.subjectToken));
@@ -198,10 +205,11 @@ class ContentBase with Comp, ChangeNotifier {
     _related.make();
 
     // distinct.. (1 per author per subject)
-    List<ContentStatement> distinctStatements =
-        distinct(statements, transformer: (t) => followNet.delegate2oneofus[t]!)
-            .cast<ContentStatement>().toList();
-    statements = distinctStatements;
+    // Redundant: followNet.getStatements() already distincts per author, and authors are distinct.
+    // List<ContentStatement> distinctStatements =
+    //     distinct(statements, transformer: (t) => followNet.delegate2oneofus[t]!)
+    //         .cast<ContentStatement>().toList();
+    // statements = distinctStatements;
 
     // _subject2statements
     Equivalence relatedTags = Equivalence();
