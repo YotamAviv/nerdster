@@ -1,87 +1,57 @@
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/io.dart';
 
-/// A caching decorator for [StatementSource] and [ContentSource].
-/// Stores fetched atoms in memory to avoid redundant network calls.
-class CachedSource implements StatementSource, ContentSource {
-  final StatementSource? _trustDelegate;
-  final ContentSource? _contentDelegate;
+/// A caching decorator for [StatementSource].
+/// Stores fetched statements in memory to avoid redundant network calls.
+///
+/// The cache is keyed by both the Identity Token and the 'revokeAt' Token,
+/// as the set of valid statements depends on the revocation point (time travel).
+class CachedSource implements StatementSource {
+  final StatementSource _delegate;
   
-  final Map<String, List<TrustStatement>> _trustCache = {};
-  final Map<String, List<ContentStatement>> _contentCache = {};
+  // Map<Token, Map<RevokeAt?, List<Statement>>>
+  final Map<String, Map<String?, List<Statement>>> _cache = {};
 
-  CachedSource({
-    StatementSource? trustDelegate,
-    ContentSource? contentDelegate,
-  })  : _trustDelegate = trustDelegate,
-        _contentDelegate = contentDelegate;
+  CachedSource(this._delegate);
 
   void clear() {
-    _trustCache.clear();
-    _contentCache.clear();
+    _cache.clear();
   }
 
   @override
-  Future<List<TrustStatement>> fetch(List<String> keys) async {
-    final List<TrustStatement> results = [];
-    final List<String> missing = [];
+  Future<Map<String, List<Statement>>> fetch(Map<String, String?> keys) async {
+    final Map<String, List<Statement>> results = {};
+    final Map<String, String?> missing = {};
 
-    for (var key in keys) {
-      if (_trustCache.containsKey(key)) {
-        results.addAll(_trustCache[key]!);
+    // 1. Check cache
+    for (var entry in keys.entries) {
+      final token = entry.key;
+      final revokeAt = entry.value;
+
+      if (_cache.containsKey(token) && _cache[token]!.containsKey(revokeAt)) {
+        results[token] = _cache[token]![revokeAt]!;
       } else {
-        missing.add(key);
+        missing[token] = revokeAt;
       }
     }
 
-    if (missing.isNotEmpty && _trustDelegate != null) {
-      final fetched = await _trustDelegate.fetch(missing);
+    // 2. Fetch missing
+    if (missing.isNotEmpty) {
+      final fetched = await _delegate.fetch(missing);
       
-      // Group by issuer to populate cache
-      final byIssuer = <String, List<TrustStatement>>{};
-      for (var stmt in fetched) {
-        byIssuer.putIfAbsent(stmt.iToken, () => []).add(stmt);
-      }
-
-      // Update cache for all requested keys (even if they had no statements)
-      for (var key in missing) {
-        final stmts = byIssuer[key] ?? [];
-        _trustCache[key] = stmts;
-        results.addAll(stmts);
-      }
-    }
-
-    return results;
-  }
-
-  @override
-  Future<List<ContentStatement>> fetchContent(List<String> keys) async {
-    final List<ContentStatement> results = [];
-    final List<String> missing = [];
-
-    for (var key in keys) {
-      if (_contentCache.containsKey(key)) {
-        results.addAll(_contentCache[key]!);
-      } else {
-        missing.add(key);
-      }
-    }
-
-    if (missing.isNotEmpty && _contentDelegate != null) {
-      final fetched = await _contentDelegate.fetchContent(missing);
-      
-      // Group by issuer
-      final byIssuer = <String, List<ContentStatement>>{};
-      for (var stmt in fetched) {
-        byIssuer.putIfAbsent(stmt.iToken, () => []).add(stmt);
-      }
-
-      // Update cache
-      for (var key in missing) {
-        final stmts = byIssuer[key] ?? [];
-        _contentCache[key] = stmts;
-        results.addAll(stmts);
+      // 3. Update cache and results
+      for (var entry in missing.entries) {
+        final token = entry.key;
+        final revokeAt = entry.value;
+        
+        // If the delegate didn't return anything for a requested key, it means empty list
+        final statements = fetched[token] ?? [];
+        
+        if (!_cache.containsKey(token)) {
+          _cache[token] = {};
+        }
+        _cache[token]![revokeAt] = statements;
+        results[token] = statements;
       }
     }
 

@@ -18,6 +18,7 @@ import 'package:nerdster/oneofus/endpoint.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/fire_util.dart';
+import 'package:nerdster/v2/config.dart';
 import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -124,18 +125,30 @@ Future<void> main() async {
           kNerdsterDomain, const Endpoint('http', '127.0.0.1', 'bogus/export', port: 5001));
       break;
     case FireChoice.emulator:
+      const oneofusUrl = 'http://127.0.0.1:5002/one-of-us-net/us-central1/export';
+      const nerdsterUrl = 'http://127.0.0.1:5001/nerdster/us-central1/export';
+      
       Fetcher.initEndpoint(kOneofusDomain,
           const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
       Fetcher.initEndpoint(kNerdsterDomain,
           const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
+          
+      V2Config.registerUrl(kOneofusDomain, oneofusUrl);
+      V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;
     case FireChoice.prod:
 
       /// DEFER: Get export.one-of-us.net from the QR sign in process instead of having it hard-coded here.
       /// Furthermore, replace "one-of-us.net" with "identity" everywhere (for elegance only as
       /// there is no other identity... but there could be)
+      const oneofusUrl = 'https://export.one-of-us.net';
+      const nerdsterUrl = 'https://export.nerdster.org';
+
       Fetcher.initEndpoint(kOneofusDomain, const Endpoint('https', 'export.one-of-us.net', ''));
       Fetcher.initEndpoint(kNerdsterDomain, const Endpoint('https', 'export.nerdster.org', ''));
+      
+      V2Config.registerUrl(kOneofusDomain, oneofusUrl);
+      V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;
   }
 

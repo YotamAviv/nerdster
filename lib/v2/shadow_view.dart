@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/v2/cached_source.dart';
 import 'package:nerdster/v2/content_pipeline.dart';
-import 'package:nerdster/v2/firestore_source.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/net_tree_model.dart';
 import 'package:nerdster/v2/net_tree_view.dart';
@@ -27,8 +27,8 @@ class _ShadowViewState extends State<ShadowView> {
   String? _error;
   
   // Persist cache across runs within this view
-  final CachedSource _cachedIdentity = CachedSource(trustDelegate: FirestoreSource(kOneofusDomain));
-  final CachedSource _cachedContent = CachedSource(contentDelegate: FirestoreSource(kNerdsterDomain));
+  final CachedSource _cachedIdentity = CachedSource(SourceFactory.get(kOneofusDomain));
+  final CachedSource _cachedContent = CachedSource(SourceFactory.get(kNerdsterDomain));
 
   Future<void> _runPipeline() async {
     setState(() {

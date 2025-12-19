@@ -28,9 +28,18 @@ class TrustPipeline {
       final keysToFetch = frontier.difference(visited).toList();
       if (keysToFetch.isEmpty) break;
 
-      final newStatements = await source.fetch(keysToFetch);
+      // Map keys to null revokeAt for now (Orchestrator doesn't know revokeAt yet, logic does)
+      // Actually, the logic might tell us revokeAt constraints for the frontier.
+      // But for now, let's just fetch everything.
+      // TODO: Use graph.revokeAtConstraints to filter fetch
+      final fetchMap = {for (var k in keysToFetch) k: graph.revokeAtConstraints[k]};
+
+      final newStatementsMap = await source.fetch(fetchMap);
       visited.addAll(keysToFetch);
-      allStatements.addAll(newStatements);
+      
+      for (var list in newStatementsMap.values) {
+        allStatements.addAll(list.whereType<TrustStatement>());
+      }
 
       // 2. REDUCE (Pure Logic)
       // We re-run the reducer on the accumulated history.

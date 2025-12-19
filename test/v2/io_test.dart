@@ -20,7 +20,8 @@ void main() {
       final rootKey = rawData.keys.first;
       
       final source = MemorySource(rawData.cast<String, List<dynamic>>());
-      final atoms = await source.fetch([rootKey]);
+      final results = await source.fetch({rootKey: null});
+      final atoms = results[rootKey]!;
 
       expect(atoms, isNotEmpty);
       

@@ -5,19 +5,19 @@ import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/content/content_statement.dart';
 
-class MockContentSource implements ContentSource {
+class MockContentSource implements StatementSource {
   final Map<String, List<ContentStatement>> data;
   List<String>? lastRequestedKeys;
 
   MockContentSource(this.data);
 
   @override
-  Future<List<ContentStatement>> fetchContent(List<String> keys) async {
-    lastRequestedKeys = keys;
-    final results = <ContentStatement>[];
-    for (var key in keys) {
+  Future<Map<String, List<Statement>>> fetch(Map<String, String?> keys) async {
+    lastRequestedKeys = keys.keys.toList();
+    final results = <String, List<Statement>>{};
+    for (var key in keys.keys) {
       if (data.containsKey(key)) {
-        results.addAll(data[key]!);
+        results[key] = data[key]!;
       }
     }
     return results;

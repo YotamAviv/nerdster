@@ -85,6 +85,10 @@ class DemoKey {
 
   static DemoKey? findByToken(String token) => _token2key[token];
 
+  static Future<DemoKey> create(String name) async {
+    return findOrCreate(name);
+  }
+
   static Future<DemoKey> findOrCreate(String name) async {
     if (!_name2key.containsKey(name)) {
       final OouKeyPair keyPair = await _crypto.createKeyPair();
@@ -97,6 +101,18 @@ class DemoKey {
       _exports[name] = json;
     }
     return _name2key[name]!;
+  }
+
+  Map<String, TrustStatement> get network {
+    // TODO: Implement a way to get the network view for this key
+    // This likely requires running the Trust Logic (V2) starting from this key.
+    // For now, returning empty map to allow compilation of tests.
+    return {};
+  }
+
+  List<String> get notifications {
+    // TODO: Implement notifications retrieval
+    return [];
   }
 
   DemoKey._internal(this.name, this.keyPair, this.publicKey, this.token);
@@ -158,6 +174,31 @@ class DemoKey {
     if (export != null) _exports[export] = statement.json;
     return statement;
   }
+
+  Future<Statement> trust(DemoKey other, {String? moniker, String? comment, String? domain, String? revokeAt, String? export}) async {
+    return doTrust(TrustVerb.trust, other, moniker: moniker, comment: comment, domain: domain, revokeAt: revokeAt, export: export);
+  }
+
+  Future<Statement> block(DemoKey other, {List<Statement>? citing, String? comment, String? domain, String? export}) async {
+    if (citing == null || citing.isEmpty) {
+      throw ArgumentError('Blocking requires citing at least one statement.');
+    }
+    // TODO: Pass citing to doTrust/TrustStatement.make once supported
+    return doTrust(TrustVerb.block, other, comment: comment, domain: domain, export: export);
+  }
+
+  Future<Statement> replace(DemoKey other, {Statement? lastGoodToken, String? comment, String? domain, String? export}) async {
+    return doTrust(TrustVerb.replace, other, comment: comment, domain: domain, revokeAt: lastGoodToken?.token, export: export);
+  }
+
+  Future<Statement> revoke(DemoKey other, {String? comment, String? domain, String? export}) async {
+    // Revoke is usually done by issuing a new statement that contradicts or clears the old one,
+    // or by using 'clear' verb if supported.
+    // For now mapping to clear.
+    return doTrust(TrustVerb.clear, other, comment: comment, domain: domain, export: export);
+  }
+
+  // ... existing methods ...
 
   Future<Statement> doTrust(TrustVerb verb, DemoKey other,
       {String? moniker, String? comment, String? domain, String? revokeAt, String? export}) async {

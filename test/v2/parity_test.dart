@@ -7,7 +7,7 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/firestore_source.dart';
+import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:test/test.dart';
 
@@ -33,10 +33,10 @@ void main() {
       final sideshow = await DemoKey.findOrCreate('sideshow');
       final marge = await DemoKey.findOrCreate('marge');
 
-      // 3. Run V2 Pipeline for Bart
-      final source = FirestoreSource(kOneofusDomain);
+            // 3. Run V2 Pipeline for Alice
+      final source = DirectFirestoreSource(kOneofusDomain);
       final pipeline = TrustPipeline(source);
-      final graph = await pipeline.build(bart.token);
+      final graph = await pipeline.build(alice.token);
 
       print('V2 Graph Stats: Nodes=${graph.distances.length}, Blocked=${graph.blocked.length}, Conflicts=${graph.conflicts.length}');
       for (var c in graph.conflicts) {
@@ -67,7 +67,7 @@ void main() {
       final (bart, _) = await trustBlockConflict();
 
       // 2. Run V2 Pipeline for Bart
-      final source = FirestoreSource(kOneofusDomain);
+      final source = DirectFirestoreSource(kOneofusDomain);
       final pipeline = TrustPipeline(source);
       final graph = await pipeline.build(bart.token);
 

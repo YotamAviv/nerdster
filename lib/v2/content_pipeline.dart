@@ -1,9 +1,10 @@
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/model.dart';
 
 class ContentPipeline {
-  final ContentSource source;
+  final StatementSource source;
 
   ContentPipeline(this.source);
 
@@ -25,7 +26,18 @@ class ContentPipeline {
     });
 
     // 2. Fetch Content
-    final rawContent = await source.fetchContent(trustedUsers);
+    // Use revokeAt constraints from the graph to ensure we get content from the valid identity era.
+    final fetchMap = {
+      for (var token in trustedUsers) 
+        token: graph.revokeAtConstraints[token]
+    };
+
+    final Map<String, List<Statement>> rawMap = await source.fetch(fetchMap);
+    
+    final List<ContentStatement> rawContent = [];
+    for (var list in rawMap.values) {
+      rawContent.addAll(list.whereType<ContentStatement>());
+    }
 
     // 3. Verify Content
     // The source should only return content for the requested keys.

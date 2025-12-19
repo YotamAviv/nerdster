@@ -1,65 +1,42 @@
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/statement.dart';
 
-/// Interface for fetching trust statements.
+/// Interface for fetching statements (Trust or Content).
 abstract class StatementSource {
-  Future<List<TrustStatement>> fetch(List<String> keys);
-}
-
-/// Interface for fetching content statements.
-abstract class ContentSource {
-  Future<List<ContentStatement>> fetchContent(List<String> keys);
+  /// Fetches statements for the given keys.
+  /// [keys] maps the Identity Token to an optional 'revokeAt' Token.
+  /// If 'revokeAt' is provided, only statements up to (and including) that token are returned.
+  /// Returns a map of Identity Token -> List of Statements.
+  Future<Map<String, List<Statement>>> fetch(Map<String, String?> keys);
 }
 
 /// A source that parses a raw JSON map (Token -> List<StatementJson>).
 /// This matches the format of the 'export' Cloud Function.
-class MemorySource implements StatementSource, ContentSource {
-  final Map<String, List<TrustStatement>> trustData = {};
-  final Map<String, List<ContentStatement>> contentData = {};
+class MemorySource implements StatementSource {
+  final Map<String, List<Statement>> data = {};
 
-  MemorySource([Map<String, List<dynamic>>? jsonTrustData]) {
-    if (jsonTrustData != null) {
-      for (var entry in jsonTrustData.entries) {
-        trustData[entry.key] = entry.value.map((json) {
+  MemorySource([Map<String, List<dynamic>>? jsonData]) {
+    if (jsonData != null) {
+      for (var entry in jsonData.entries) {
+        data[entry.key] = entry.value.map((json) {
           final jsonish = Jsonish(json);
-          return _toTrustStatement(jsonish);
+          return Statement.make(jsonish);
         }).toList();
       }
     }
   }
 
-  // Adapter to convert Jsonish to V2 TrustStatement
-  TrustStatement _toTrustStatement(Jsonish jsonish) => toTrustStatement(jsonish);
-
   @override
-  Future<List<TrustStatement>> fetch(List<String> keys) async {
-    final List<TrustStatement> results = [];
-    for (var key in keys) {
-      if (trustData.containsKey(key)) {
-        results.addAll(trustData[key]!);
-      }
-    }
-    return results;
-  }
-
-  @override
-  Future<List<ContentStatement>> fetchContent(List<String> keys) async {
-    final List<ContentStatement> results = [];
-    for (var key in keys) {
-      if (contentData.containsKey(key)) {
-        results.addAll(contentData[key]!);
+  Future<Map<String, List<Statement>>> fetch(Map<String, String?> keys) async {
+    final Map<String, List<Statement>> results = {};
+    for (var entry in keys.entries) {
+      final key = entry.key;
+      // TODO: Implement revokeAt filtering for MemorySource if needed for tests
+      if (data.containsKey(key)) {
+        results[key] = data[key]!;
       }
     }
     return results;
   }
 }
 
-// Public Adapters
-TrustStatement toTrustStatement(Jsonish jsonish) {
-  return TrustStatement(jsonish);
-}
-
-ContentStatement toContentStatement(Jsonish jsonish) {
-  return ContentStatement(jsonish);
-}
