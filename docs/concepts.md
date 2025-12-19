@@ -6,6 +6,23 @@ This document outlines the high-level architecture and philosophy of the system,
 
 **ONE-OF-US.NET** is the foundation of the system. It is a mobile application responsible for managing your cryptographic identity and your relationships with other humans.
 
+It performs the following core functions:
+*   **Identity Management:** Creates and stores a public/private key pair for a person.
+    *   The public key serves as the person's identity.
+    *   The public key QR code is displayed front and center for easy sharing.
+*   **Vouching (Web of Trust):** Allows scanning other people's identity QR codes to vouch for their humanity and identity.
+    *   **Criteria:** Uses the standard "human capable and acting in good faith". People not capable of understanding how this works should not be trusted.
+    *   **Management:** Manages trust statements, supporting updates (changing moniker, comment) or changing the verb from 'trust' to 'block', as well as clearing them.
+*   **Service Sign-In:** Allows scanning sign-in parameters to authenticate with a service (like Nerdster).
+    *   Communicates the person's identity to the service via HTTP POST.
+    *   Offers to create a **Delegate Key** for the service, signing and publishing a delegate statement that authorizes that key to represent the person on that service.
+    *   Securely communicates the delegate key to the service.
+*   **Key Rotation:** Allows signing and publishing **Replace Statements**, enabling people to cycle through identity keys if they are lost or compromised.
+*   **Advanced Scanning:** Allows scanning QR codes for other keys, statement tokens, or entire statements needed for operations like `revokeAt`, `replace`, or `claim delegate`.
+*   **Clipboard Support:** Copy/paste can be used in place of QR code scanning.
+
+The project codebase is available at: https://github.com/YotamAviv/oneofus
+
 ### Key Concepts:
 *   **Self-Sovereign Identity:** You do not have an "account" on a central server. Your identity is a cryptographic key pair generated and stored securely on your phone.
 *   **Vouching (The Web of Trust):** The core action in ONE-OF-US.NET is **Vouching**.
