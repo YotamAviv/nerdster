@@ -58,6 +58,13 @@ Statements are JSON objects. The specific fields depend on the statement type, b
 - **`previous`**: The Notary Chain link.
 - **`signature`**: The cryptographic signature.
 
+### 1.3. Transport Optimization
+
+To reduce bandwidth, the system supports an optimized transport format where redundant fields (`statement`, `I`) are omitted during transmission and reconstructed by the client. See [Optimization Strategy](optimization_strategy.md) for details.
+
+## 2. Trust Semantics
+
+
 #### 1.2.1. Nerdster Content Statements
 
 Nerdster uses the `org.nerdster` statement type.

@@ -1,46 +1,68 @@
+
+[aviv]: this doc is nearly useless, and no matter how I ask Agent to make it not useless, it ramains. Do not trust anything here.
+
 # V2 Implementation Status
-Date: December 10, 2025
 
-## Overview
-We are iterating on a V2 architecture for Nerdster, moving towards a functional "Data Pipeline" approach. The current focus is on the Trust Graph logic and visualizing it alongside the existing V1 app.
+> **Date:** December 20, 2025
+> **Focus:** Functional Data Pipeline & Trust Graph Logic
 
-## Completed Work
+## 1. Architecture Overview
 
-### 1. Core Logic (`lib/v2/`)
-*   **`trust_logic.dart`**: Implemented the pure functional core.
-    *   Breadth-First Search (BFS) traversal.
-    *   Handling of `trust`, `block`, `replace`, `delegate` verbs.
-    *   **Conflict Detection**: Parity with V1 verified (detects blocking trusted keys, replacing trusted keys).
-    *   **`revokeAt`**: Implemented time-based revocation constraints.
-*   **`model.dart`**: Defined immutable data structures (`TrustGraph`, `TrustAtom`, `TrustConflict`).
+The V2 architecture moves away from stateful singletons (`OneofusNet`) towards a functional **Data Pipeline**.
 
-### 2. Infrastructure
-*   **`io.dart` / `firestore_source.dart`**: Abstractions for fetching data, decoupled from logic.
-*   **`cached_source.dart`**: In-memory caching decorator to speed up the Shadow View and reduce Firestore reads during debugging.
-*   **`orchestrator.dart`**: Manages the fetch-reduce loop.
+### The Pipeline
+1.  **Source**: Fetches raw JSON statements from the backend (Cloud Functions or Firestore).
+2.  **Jsonish**: Wraps JSON data. Supports two modes:
+    *   **Calculated Token**: Hashes the canonical JSON (requires full data).
+    *   **Server Token**: Trusts the ID provided by the server (enables bandwidth optimization).
+3.  **Trust Logic**: A pure function (`reduceTrustGraph`) that takes a graph and new statements to produce a new graph.
+4.  **Orchestrator**: Manages the fetch-reduce loop.
 
-### 3. UI Integration
-*   **`shadow_view.dart`**: A debug view accessible from the Dev menu.
-    *   Runs the V2 pipeline for the current user.
-    *   Displays stats, conflicts, and blocked nodes.
-    *   **Caching**: Includes "Clear Cache" functionality.
-*   **`net_tree_view.dart` / `net_tree_model.dart`**:
-    *   Created an adapter (`V2NetTreeModel`) to map V2 `TrustGraph` to the existing `NetTreeModel` interface.
-    *   Allows reusing the existing `NetTreeTree` widget to visualize the V2 graph.
+## 2. Optimization Strategy
 
-### 4. Testing
-*   **`test/v2/parity_test.dart`**: Integration test using the `simpsonsDemo` dataset. Verifies that V2 reports the same conflicts as V1 (specifically for Bart).
+To reduce bandwidth, the `CloudFunctionsSource` requests optimized payloads from the server:
+*   **Omit**: Large fields like `statement` (type) and `I` (public key) are omitted.
+*   **Include ID**: The server returns the authoritative SHA-1 token in the `id` field.
+*   **Reconstruction**: The client reconstructs the missing fields for UI compatibility but uses the provided `id` as the `serverToken` for `Jsonish`. This bypasses the need to hash the (imperfectly reconstructed) JSON on the client.
 
-## Next Steps
+*See `docs/optimization_strategy.md` for details.*
 
-1.  **Verification**:
-    *   Run the app and open **Dev -> V2 Shadow View**.
-    *   Run the pipeline and click **"Show Tree"**.
-    *   Verify the tree structure matches expectations.
+## 3. Testing & Verification
 
-2.  **Content Tree**:
-    *   The current "Content" tab in Shadow View shows a flat list.
-    *   Need to implement a `ContentTree` adapter (similar to `V2NetTreeModel`) to show content in a hierarchical view if desired.
+### Integration Testing
+We use `flutter drive` to run integration tests that verify the full pipeline against a local emulator.
 
-3.  **Migration**:
-    *   Once V2 is fully verified, plan the replacement of `OneofusNet` and `FollowNet` singletons with the V2 pipeline.
+**Prerequisites:**
+Start the `one-of-us-net` emulator with the snapshot data:
+```bash
+firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start --import exports/oneofus-25-12-02--17-18/
+```
+
+**Running the Test:**
+```bash
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/v2_basic_test.dart -d web-server
+```
+
+**Coverage (`v2_basic_test.dart`):**
+*   **Scenario**: Builds a trust graph from Marge's perspective using the "Simpsons" dataset.
+*   **Permutations**: Iterates through 4 optimization configurations to ensure robustness:
+    1.  **No Optimization**: Full JSON payload.
+    2.  **Omit Statement**: `statement` field missing.
+    3.  **Omit I**: `I` (public key) field missing.
+    4.  **Full Optimization**: Both fields missing.
+*   **Assertions**: Verifies that Marge correctly trusts Lisa and Bart at distance 1 in all cases.
+
+## 4. Component Status
+
+| Component | Status | Notes |
+| :--- | :--- | :--- |
+| **Trust Logic** | ✅ Stable | Pure functional core. Handles trust, block, replace, revokeAt. |
+| **Cloud Source** | ✅ Stable | Supports `omit` optimization and `serverToken`. |
+| **Jsonish** | ✅ Stable | Updated to support `serverToken` injection. |
+| **Orchestrator** | 🚧 Beta | Basic fetch-reduce loop working. |
+| **UI (Shadow View)** | 🚧 Beta | Debug view available. Needs Content Tree adapter. |
+
+## 5. Next Steps
+
+1.  **Content Tree**: Implement a `ContentTree` adapter to visualize content hierarchies in the Shadow View.
+2.  **Migration**: Plan the replacement of V1 singletons (`OneofusNet`, `FollowNet`) with the V2 pipeline.
