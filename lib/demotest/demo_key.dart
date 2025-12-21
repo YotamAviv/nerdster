@@ -14,6 +14,7 @@ import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/demotest/cases/v2_scenarios.dart';
+import 'package:nerdster/demotest/cases/v2_verification.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
@@ -47,7 +48,7 @@ class DemoKey {
 
   static final dynamic demos = {
     'simpsonsDemo': simpsonsDemo,
-    'basicScenario': basicScenario,
+    'basicScenario': testBasicScenario,
     'egosCorrupt': egosCorrupt,
     'lonerCorrupt': lonerCorrupt,
     'lonerBadDelegate': lonerBadDelegate,
@@ -90,6 +91,7 @@ class DemoKey {
   static Future<DemoKey> create(String name) async {
     return findOrCreate(name);
   }
+
 
   static Future<DemoKey> findOrCreate(String name) async {
     if (!_name2key.containsKey(name)) {

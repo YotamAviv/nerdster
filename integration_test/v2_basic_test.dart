@@ -4,7 +4,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/demotest/cases/v2_scenarios.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/cloud_functions_source.dart';
 import 'package:nerdster/v2/orchestrator.dart';
@@ -18,6 +17,7 @@ import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/main.dart';
 
 import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/demotest/cases/v2_verification.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -59,15 +59,6 @@ void main() {
 
   testWidgets('V2 Integration: Basic Scenario', (WidgetTester tester) async {
     try {
-      debugPrint('Running Basic Scenario Setup...');
-      await basicScenario();
-      final marge = DemoKey.findByName('marge')!;
-      final lisa = DemoKey.findByName('lisa')!;
-      final bart = DemoKey.findByName('bart')!;
-
-      debugPrint('Setup complete. Waiting 2 seconds for consistency...');
-      await Future.delayed(const Duration(seconds: 2));
-
       // Define permutations to test
       final permutations = [
         (name: 'No Optimization', omit: null),
@@ -87,21 +78,7 @@ void main() {
           omit: p.omit,
         );
         
-        final pipeline = TrustPipeline(source);
-        
-        debugPrint('Building graph from Marge...');
-        final graph = await pipeline.build(marge.token);
-
-        debugPrint('Graph built. Node count: ${graph.distances.length}');
-        debugPrint('Distances: ${graph.distances}');
-        debugPrint('Is Lisa trusted? ${graph.isTrusted(lisa.token)}');
-        debugPrint('Is Bart trusted? ${graph.isTrusted(bart.token)}');
-
-        expect(graph.isTrusted(lisa.token), isTrue, reason: '[${p.name}] Marge should trust Lisa');
-        expect(graph.distances[lisa.token], 1, reason: '[${p.name}] Lisa should be distance 1');
-
-        expect(graph.isTrusted(bart.token), isTrue, reason: '[${p.name}] Marge should trust Bart');
-        expect(graph.distances[bart.token], 1, reason: '[${p.name}] Bart should be distance 1');
+        await testBasicScenario(source: source, description: p.name);
         
         debugPrint('Permutation ${p.name} Verified!');
       }

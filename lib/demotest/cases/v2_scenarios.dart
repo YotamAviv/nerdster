@@ -195,20 +195,4 @@ Future<Map<String, DemoKey>> setupWhacAMole() async {
   };
 }
 
-/// Scenario: Basic Trust
-///
-/// Lisa <-> Marge
-/// Marge -> Bart
-Future<(DemoKey, DemoKey?)> basicScenario() async {
-  var lisa = await DemoKey.create('lisa');
-  var marge = await DemoKey.create('marge');
-  var bart = await DemoKey.create('bart');
-
-  await lisa.trust(marge);
-  await marge.trust(lisa);
-  await marge.trust(bart);
-
-  return (marge, null);
-}
-
 

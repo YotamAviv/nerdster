@@ -33,17 +33,43 @@ To reduce bandwidth, the `CloudFunctionsSource` requests optimized payloads from
 We use `flutter drive` to run integration tests that verify the full pipeline against a local emulator.
 
 **Prerequisites:**
-Start the `one-of-us-net` emulator with the snapshot data:
-```bash
-firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start --import exports/oneofus-25-12-02--17-18/
-```
+You need to have both the `one-of-us-net` (Identity) and `nerdster` (Content) emulators running.
+
+1.  **Start OneOfUs Emulator:**
+    ```bash
+    firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start
+    ```
+
+2.  **Start Nerdster Emulator:**
+    ```bash
+    firebase --project=nerdster emulators:start
+    ```
+
+> **Note:** You may need to specify a different UI port for the second emulator (e.g., `--ui-only-port=4001`) if they conflict.
 
 **Running the Test:**
-```bash
-flutter drive --driver=test_driver/integration_test.dart --target=integration_test/v2_basic_test.dart -d web-server
-```
+
+You can run the test in a visible Chrome window (recommended for debugging) or headless.
+
+*   **Option 1: Chrome (Visible)**
+    ```bash
+    flutter drive --driver=test_driver/integration_test.dart --target=integration_test/v2_basic_test.dart -d chrome
+    ```
+
+*   **Option 2: Headless (Web Server)**
+    ```bash
+    flutter drive --driver=test_driver/integration_test.dart --target=integration_test/v2_basic_test.dart -d web-server
+    ```
+
+> **Debugging Note:** Diagnosing failures in integration tests can be challenging.
+> *   **Build Errors:** If the app fails to build (e.g., "Application exited before the test started"), the actual error (like a missing import or linker failure) is often buried in the verbose logs.
+> *   **Runtime Errors:** Use `-d chrome` to visually inspect the app state.
+> *   **Logs:** `debugPrint` output from the app is streamed to the test driver console, which is crucial for tracing execution flow.
 
 **Coverage (`v2_basic_test.dart`):**
+*   **Status:** ✅ **PASSED** (Dec 20, 2025)
+    *   Verified on Chrome (`flutter drive -d chrome`).
+    *   Verified unit tests (`flutter test`).
 *   **Scenario**: Builds a trust graph from Marge's perspective using the "Simpsons" dataset.
 *   **Permutations**: Iterates through 4 optimization configurations to ensure robustness:
     1.  **No Optimization**: Full JSON payload.
@@ -59,10 +85,14 @@ flutter drive --driver=test_driver/integration_test.dart --target=integration_te
 | **Trust Logic** | ✅ Stable | Pure functional core. Handles trust, block, replace, revokeAt. |
 | **Cloud Source** | ✅ Stable | Supports `omit` optimization and `serverToken`. |
 | **Jsonish** | ✅ Stable | Updated to support `serverToken` injection. |
-| **Orchestrator** | 🚧 Beta | Basic fetch-reduce loop working. |
+| **Orchestrator** | ✅ Verified | Basic fetch-reduce loop verified by integration tests. |
 | **UI (Shadow View)** | 🚧 Beta | Debug view available. Needs Content Tree adapter. |
 
-## 5. Next Steps
+## 5. Known Issues
+
+*   **Broken Tests**: `test/v2/revoke_test.dart` and `test/v2/trust_logic_test.dart` are currently broken and fail to compile. They rely on `TrustStatement.build` which has been removed. These tests need to be rewritten using `TrustStatement.make` or raw JSON.
+
+## 6. Next Steps
 
 1.  **Content Tree**: Implement a `ContentTree` adapter to visualize content hierarchies in the Shadow View.
 2.  **Migration**: Plan the replacement of V1 singletons (`OneofusNet`, `FollowNet`) with the V2 pipeline.

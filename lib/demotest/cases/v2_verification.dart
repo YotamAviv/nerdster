@@ -1,0 +1,40 @@
+import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/orchestrator.dart';
+import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/demotest/cases/test_utils.dart';
+import 'package:nerdster/demotest/cases/v2_scenarios.dart';
+import 'package:nerdster/v2/source_factory.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+
+/// Executes the pipeline and verifies the graph state for the Basic Scenario.
+///
+/// [source] - The source to use. Defaults to [SourceFactory.get(kOneofusDomain)].
+/// [description] - Optional description for error messages (useful for permutations).
+Future<void> testBasicScenario({
+  StatementSource? source,
+  String? description,
+}) async {
+  // Clear any existing keys to ensure isolation
+  DemoKey.clear();
+
+  var lisa = await DemoKey.create('lisa');
+  var marge = await DemoKey.create('marge');
+  var bart = await DemoKey.create('bart');
+
+  await lisa.trust(marge);
+  await marge.trust(lisa);
+  await marge.trust(bart);
+
+  final src = source ?? SourceFactory.get(kOneofusDomain);
+  final pipeline = TrustPipeline(src);
+  final graph = await pipeline.build(marge.token);
+
+  final p = description != null ? '[$description] ' : '';
+
+  check(graph.isTrusted(lisa.token), '${p}Marge should trust Lisa');
+  check(graph.distances[lisa.token] == 1, '${p}Lisa should be distance 1');
+
+  check(graph.isTrusted(bart.token), '${p}Marge should trust Bart');
+  check(graph.distances[bart.token] == 1, '${p}Bart should be distance 1');
+}
