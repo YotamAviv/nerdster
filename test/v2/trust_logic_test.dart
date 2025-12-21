@@ -2,12 +2,36 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:test/test.dart';
 
-String keyToken(String name) => Jsonish({'kid': name}).token;
+Json keyJson(String name) => {'kid': name, 'crv': 'Ed25519', 'kty': 'OKP', 'x': 'mock_$name'};
+String keyToken(String name) => Jsonish(keyJson(name)).token;
 DateTime t(int seconds) => DateTime.fromMillisecondsSinceEpoch(1000000 + seconds * 1000);
 
+TrustStatement makeTrust({
+  required String issuer,
+  required TrustVerb verb,
+  required dynamic subject,
+  required DateTime time,
+  String? revokeAt,
+  String? moniker,
+  String? domain,
+}) {
+  final iJson = keyJson(issuer);
+  final otherJson = (subject is String) ? keyJson(subject) : subject;
+  
+  final json = TrustStatement.make(iJson, otherJson, verb, revokeAt: revokeAt, moniker: moniker, domain: domain);
+  json['time'] = time.toIso8601String();
+  
+  return TrustStatement(Jsonish(json));
+}
+
 void main() {
+  setUpAll(() {
+    TrustStatement.init();
+  });
+
   group('V2 Trust Logic', () {
     test('Basic Trust Propagation', () {
       final alice = keyToken('Alice');
@@ -16,8 +40,8 @@ void main() {
       
       final root = alice;
       final statements = [
-        TrustStatement.build(issuer: 'Alice', verb: TrustVerb.trust, subject: bob, time: t(10)),
-        TrustStatement.build(issuer: 'Bob', verb: TrustVerb.trust, subject: charlie, time: t(10)),
+        makeTrust(issuer: 'Alice', verb: TrustVerb.trust, subject: 'Bob', time: t(10)),
+        makeTrust(issuer: 'Bob', verb: TrustVerb.trust, subject: 'Charlie', time: t(10)),
       ];
       
       statements.sort((a, b) => b.time.compareTo(a.time));
@@ -37,9 +61,9 @@ void main() {
 
       final root = alice;
       final statements = [
-        TrustStatement.build(issuer: 'Alice', verb: TrustVerb.trust, subject: bob, time: t(10)),
-        TrustStatement.build(issuer: 'Alice', verb: TrustVerb.block, subject: charlie, time: t(11)),
-        TrustStatement.build(issuer: 'Bob', verb: TrustVerb.trust, subject: charlie, time: t(10)),
+        makeTrust(issuer: 'Alice', verb: TrustVerb.trust, subject: 'Bob', time: t(10)),
+        makeTrust(issuer: 'Alice', verb: TrustVerb.block, subject: 'Charlie', time: t(11)),
+        makeTrust(issuer: 'Bob', verb: TrustVerb.trust, subject: 'Charlie', time: t(10)),
       ];
 
       statements.sort((a, b) => b.time.compareTo(a.time));
@@ -61,14 +85,14 @@ void main() {
       
       final statements = [
         // Alice trusts Bob and Charlie, who are the "New Keys"
-        TrustStatement.build(issuer: 'Alice', verb: TrustVerb.trust, subject: bob, time: t(10)),
-        TrustStatement.build(issuer: 'Alice', verb: TrustVerb.trust, subject: charlie, time: t(10)),
+        makeTrust(issuer: 'Alice', verb: TrustVerb.trust, subject: 'Bob', time: t(10)),
+        makeTrust(issuer: 'Alice', verb: TrustVerb.trust, subject: 'Charlie', time: t(10)),
         
         // Bob claims he replaces OldKey
-        TrustStatement.build(issuer: 'Bob', verb: TrustVerb.replace, subject: oldKey, time: t(20)),
+        makeTrust(issuer: 'Bob', verb: TrustVerb.replace, subject: 'OldKey', time: t(20)),
         
         // Charlie claims he replaces OldKey
-        TrustStatement.build(issuer: 'Charlie', verb: TrustVerb.replace, subject: oldKey, time: t(20)),
+        makeTrust(issuer: 'Charlie', verb: TrustVerb.replace, subject: 'OldKey', time: t(20)),
       ];
 
       statements.sort((a, b) => b.time.compareTo(a.time));

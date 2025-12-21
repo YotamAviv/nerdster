@@ -90,7 +90,13 @@ You can run the test in a visible Chrome window (recommended for debugging) or h
 
 ## 5. Known Issues
 
-*   **Broken Tests**: `test/v2/revoke_test.dart` and `test/v2/trust_logic_test.dart` are currently broken and fail to compile. They rely on `TrustStatement.build` which has been removed. These tests need to be rewritten using `TrustStatement.make` or raw JSON.
+*   **Compilation Failures**: The following tests fail to compile due to API changes (removal of `TrustStatement.build`, changes to `Statement`):
+    *   `test/v2/content_pipeline_test.dart`
+    *   `test/v2/io_test.dart`
+    *   `test/v2/parity_test.dart`
+*   **Logic Failures**: The following tests compile but fail assertions:
+    *   `test/v2/revoke_test.dart` (Sorting fixed, but logic assertions failing)
+    *   `test/v2/scenarios_test.dart` (Regressions in Scenarios 1, 5, 6, 7)
 
 ## 6. Next Steps
 

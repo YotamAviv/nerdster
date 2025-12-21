@@ -3,6 +3,7 @@ import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/content_pipeline.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/content/content_statement.dart';
 
 class MockContentSource implements StatementSource {

@@ -1,11 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('V2 Orchestrator', () {
+    setUpAll(() {
+      TrustStatement.init();
+    });
+
     test('Builds graph from Lisa sample', () async {
       final file = File('test/v2/lisa_oneofus.json');
       if (!await file.exists()) return;
