@@ -1,6 +1,4 @@
-# Nerdster Data Flow & Architecture
-
-This document outlines the core data flow of the Nerdster application, detailing how raw cryptographic statements are transformed into the user-facing Trust and Content trees.
+# Nerdster & ONE-OF-US.NET Data Flow & Architecture
 
 ## 1. The Trust Layer ("The Who")
 

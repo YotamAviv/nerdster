@@ -1,7 +1,5 @@
 # Core Specification
 
-This document outlines the immutable core concepts and protocol specifications of the Nerdster/OneOfUs system. It serves as the source of truth for any implementation (V1, V2, etc.) to ensure compatibility and system integrity.
-
 ## 1. Data Structures & Cryptography
 
 The protocol relies on asymmetric cryptography to establish identity and data integrity.
@@ -140,7 +138,28 @@ To verify an identity's feed:
 
 If a gap or mismatch is found in the chain (e.g., Statement A points to B, but the aggregator presents C instead of B), the **entire chain is considered corrupt**. The client must reject the data completely. This forces aggregators to either present the full, unaltered history or nothing at all. They cannot selectively edit the past.
 
-### 1.5. Example: Censorship via Token
+### 1.5. Singular Disposition
+
+The protocol enforces a **Singular Disposition** model (also known as "Latest-Write-Wins" per subject).
+
+#### 1.5.1. The Principle
+One key's disposition towards another is singular. If you trust a key and then block it, only the most recent statement is your key's disposition towards the other.
+
+*   **Overwrite (Re-state):** You can re-state any statement (e.g., updating "moniker" or "comment"). This will override whatever you previously stated.
+*   **Clear (Erase):** The `clear` verb acts as "erase". If you trust a key and then clear the key, it's like you never said anything at all. Whatever you do can always be undone.
+
+#### 1.5.2. Mechanism
+To enforce this, the system uses a **Distinct Signature** for filtering:
+*   **Trust Statements:** `Issuer:Subject` (e.g., `Alice:Bob`).
+*   **Content Statements:** `Issuer:Subject` (or `Issuer:Subject:Other` for relationships).
+
+When processing a stream of statements:
+1.  Sort statements by time (Newest First).
+2.  Iterate through the list.
+3.  Keep the **first** statement seen for each unique Signature.
+4.  Discard the rest.
+
+### 1.6. Example: Censorship via Token
 
 Tokens allow referring to content without repeating it. This is critical for censorship, where repeating the objectionable content would be counter-productive.
 
@@ -165,7 +184,7 @@ The statement targets the **Token** of the content, not the content itself.
 }
 ```
 
-### 1.6. Immutability & Schema Constraints
+### 1.7. Immutability & Schema Constraints
 
 The schema defined in this document is **cryptographically frozen**.
 
@@ -177,7 +196,7 @@ The schema defined in this document is **cryptographically frozen**.
 
 The **Identity Network** is the foundational layer of trust. It is a graph of **Identity Keys** connected by statements that vouch for the identity and that subject is "human, capable, and acting in good faith".
 
-> For detailed semantics on trust, blocking, and the distinction between Identity and Content layers, refer to `docs/trust_semantics.md`.
+> For detailed semantics on trust, blocking, and the distinction between Identity and Content layers, refer to `docs/trust_statement_semantics.md`.
 
 - **Trust:** A `trust` statement is a strong assertion that the subject is a real human acting in good faith. It is the mechanism by which the network grows.
 - **Block:** A `block` statement in this layer is a severe assertion. It signifies that the subject is a bad actor (e.g., a bot, a spammer, or a malicious entity), not merely someone with disagreeable opinions.

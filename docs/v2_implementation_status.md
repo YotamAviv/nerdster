@@ -35,7 +35,7 @@ We use `flutter drive` to run integration tests that verify the full pipeline ag
 **Prerequisites:**
 You need to have both the `one-of-us-net` (Identity) and `nerdster` (Content) emulators running.
 
-1.  **Start OneOfUs Emulator:**
+1.  **Start ONE-OF-US.NET Emulator:**
     ```bash
     firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start
     ```

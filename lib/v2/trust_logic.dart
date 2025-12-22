@@ -129,7 +129,7 @@ TrustGraph reduceTrustGraph(TrustGraph current, List<TrustStatement> statements)
     // --- STEP 3: Process DELEGATES (Old -> New) ---
     // NOTE: We do NOT traverse delegates as trust edges.
     // Delegates are for signing, not for expanding the trust graph.
-    // (Unless we decide otherwise, but per docs/trust_semantics.md, they are service keys).
+    // (Unless we decide otherwise, but per docs/trust_statement_semantics.md, they are service keys).
     
     /* 
     for (var s in issuerStatements.where((s) => s.verb == TrustVerb.delegate)) {

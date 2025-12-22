@@ -1,7 +1,5 @@
 # Nerdster & ONE-OF-US.NET: Core Concepts
 
-This document outlines the high-level architecture and philosophy of the system, distinguishing between the Identity Layer (ONE-OF-US.NET) and the Application Layer (Nerdster).
-
 ## 1. ONE-OF-US.NET: The Identity Layer (Phone App)
 
 **ONE-OF-US.NET** is the foundation of the system. It is a mobile application responsible for managing your cryptographic identity and your relationships with other humans.
