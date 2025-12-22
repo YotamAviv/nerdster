@@ -5,7 +5,6 @@ import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/demotest/cases/integration_tests.dart';
-import 'package:nerdster/demotest/cases/v2_integration.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dev/corruption_check.dart';
 import 'package:nerdster/dev/just_sign.dart';
@@ -15,14 +14,14 @@ import 'package:nerdster/main.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
-import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/verify.dart';
 import 'package:nerdster/v2/shadow_view.dart';
+import 'package:nerdster/verify.dart';
 
 const iconSpacer = SizedBox(width: 3);
 
@@ -185,24 +184,6 @@ $link''',
                 child: const Text('all')),
           ], child: const Text('integration tests')),
           SubmenuButton(menuChildren: [
-            MenuItemButton(
-                onPressed: () => runV2Scenario1(context),
-                child: const Text('1: Graceful Recovery')),
-            MenuItemButton(
-                onPressed: () => runV2Scenario2(context),
-                child: const Text('2: Persistent Block')),
-            MenuItemButton(
-                onPressed: () => runV2Scenario4(context),
-                child: const Text('4: Mutual Friend Conflict')),
-            MenuItemButton(
-                onPressed: () => runV2Scenario5(context),
-                child: const Text('5: Lost Key')),
-            MenuItemButton(
-                onPressed: () => runV2Scenario6(context),
-                child: const Text('6: Poor Judgment')),
-            MenuItemButton(
-                onPressed: () => runV2Scenario7(context),
-                child: const Text('7: Whac-A-Mole')),
           ], child: const Text('V2 Scenarios')),
           SubmenuButton(menuChildren: [
             MenuItemButton(

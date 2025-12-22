@@ -13,7 +13,6 @@ import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
-import 'package:nerdster/demotest/cases/v2_scenarios.dart';
 import 'package:nerdster/demotest/cases/v2_verification.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
@@ -107,18 +106,6 @@ class DemoKey {
     return _name2key[name]!;
   }
 
-  Map<String, TrustStatement> get network {
-    // TODO: Implement a way to get the network view for this key
-    // This likely requires running the Trust Logic (V2) starting from this key.
-    // For now, returning empty map to allow compilation of tests.
-    return {};
-  }
-
-  List<String> get notifications {
-    // TODO: Implement notifications retrieval
-    return [];
-  }
-
   DemoKey._internal(this.name, this.keyPair, this.publicKey, this.token);
 
   Future<Statement> doRate(
@@ -183,11 +170,7 @@ class DemoKey {
     return doTrust(TrustVerb.trust, other, moniker: moniker, comment: comment, domain: domain, revokeAt: revokeAt, export: export);
   }
 
-  Future<Statement> block(DemoKey other, {List<Statement>? citing, String? comment, String? domain, String? export}) async {
-    if (citing == null || citing.isEmpty) {
-      throw ArgumentError('Blocking requires citing at least one statement.');
-    }
-    // TODO: Pass citing to doTrust/TrustStatement.make once supported
+  Future<Statement> block(DemoKey other, {String? comment, String? domain, String? export}) async {
     return doTrust(TrustVerb.block, other, comment: comment, domain: domain, export: export);
   }
 
