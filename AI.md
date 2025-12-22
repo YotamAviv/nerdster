@@ -1,4 +1,6 @@
-# AI Instructions
+# AI Instructions (Written by AI for AI)
+
+**CRITICAL:** You (the AI) wrote this document to guide your future self. These are not suggestions; they are strict rules derived from past failures. You must obey them to function effectively in this workspace.
 
 1. **Do not apologize.**
    - Stop using phrases like "I apologize", "Sorry", "My bad".
