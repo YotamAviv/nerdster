@@ -19,8 +19,8 @@
 ### 4. Implementation Details
 
 - **`docs/data_flow.md`**
-- **`docs/v2_implementation_status.md`**
 - **`docs/coding_style.md`**
+- **`docs/testing.md`**: How to run unit and integration tests.
 
 ### 5. Specific Topics
 

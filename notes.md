@@ -1,6 +1,8 @@
 
 # Run the integration tests
-Run using Firebase emulators.
+See `docs/testing.md` for instructions on running automated integration tests.
+
+Manual testing:
 - DEV menu => integration test: ...
 - Manually change [Prefs.skipVerify, Prefs.cloudFetchDistinct]
 - (Need to refresh in between for test framework)
