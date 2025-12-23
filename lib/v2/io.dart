@@ -1,4 +1,3 @@
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 
 /// Interface for fetching statements (Trust or Content).

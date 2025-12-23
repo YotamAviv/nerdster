@@ -1,15 +1,21 @@
 import 'package:nerdster/oneofus/trust_statement.dart';
 
-/// Represents a conflict discovered during graph construction.
-class TrustConflict {
+/// Represents a notification or conflict discovered during graph construction.
+class TrustNotification {
   final String subject;
   final String reason;
-  final List<String> conflictingStatements;
+  final List<String> relatedStatements;
+  final bool isConflict;
 
-  TrustConflict(this.subject, this.reason, this.conflictingStatements);
+  TrustNotification({
+    required this.subject,
+    required this.reason,
+    this.relatedStatements = const [],
+    this.isConflict = false,
+  });
 
   @override
-  String toString() => 'Conflict($subject): $reason';
+  String toString() => '${isConflict ? "Conflict" : "Notification"}($subject): $reason';
 }
 
 /// The immutable result of the Trust Algorithm.
@@ -19,7 +25,7 @@ class TrustGraph {
   final Map<String, String> replacements; // OldToken -> NewToken
   final Map<String, String> revokeAtConstraints; // Token -> RevokeAtToken (Time constraint)
   final Set<String> blocked; // Tokens blocked by the graph
-  final List<TrustConflict> conflicts; // Structured conflicts
+  final List<TrustNotification> notifications; // Structured notifications and conflicts
   final Map<String, List<TrustStatement>> edges; // Adjacency list: Issuer -> List<TrustStatement> (Valid statements)
 
   TrustGraph({
@@ -28,12 +34,14 @@ class TrustGraph {
     this.replacements = const {},
     this.revokeAtConstraints = const {},
     this.blocked = const {},
-    this.conflicts = const [],
+    this.notifications = const [],
     this.edges = const {},
   });
 
   bool isTrusted(String token) => distances.containsKey(token);
   
+  List<TrustNotification> get conflicts => notifications.where((n) => n.isConflict).toList();
+
   /// Returns the active identity token for a given key.
   /// If the key is replaced, returns the replacement (recursively).
   String resolveIdentity(String token) {

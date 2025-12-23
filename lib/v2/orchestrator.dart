@@ -7,8 +7,18 @@ import 'package:nerdster/v2/trust_logic.dart';
 class TrustPipeline {
   final StatementSource source;
   final int maxDegrees;
+  final PathRequirement? pathRequirement;
 
-  TrustPipeline(this.source, {this.maxDegrees = 6});
+  TrustPipeline(this.source, {
+    this.maxDegrees = 6,
+    this.pathRequirement,
+  });
+
+  static int defaultPathRequirement(int distance) {
+    if (distance <= 2) return 1;
+    if (distance <= 4) return 2;
+    return 3;
+  }
 
   /// Builds the trust graph starting from [rootToken].
   Future<TrustGraph> build(String rootToken) async {
@@ -24,14 +34,10 @@ class TrustPipeline {
 
       // 1. FETCH (Side Effect)
       // We only fetch keys we haven't visited yet to avoid redundant network calls.
-      // (Though the Source might cache internally, we optimize here too).
       final keysToFetch = frontier.difference(visited).toList();
       if (keysToFetch.isEmpty) break;
 
-      // Map keys to null revokeAt for now (Orchestrator doesn't know revokeAt yet, logic does)
-      // Actually, the logic might tell us revokeAt constraints for the frontier.
-      // But for now, let's just fetch everything.
-      // TODO: Use graph.revokeAtConstraints to filter fetch
+      // Map keys to their revokeAt constraints if known.
       final fetchMap = {for (var k in keysToFetch) k: graph.revokeAtConstraints[k]};
 
       final newStatementsMap = await source.fetch(fetchMap);
@@ -43,17 +49,15 @@ class TrustPipeline {
 
       // 2. REDUCE (Pure Logic)
       // We re-run the reducer on the accumulated history.
-      // Optimization: In a real app, we might make the reducer incremental,
-      // but for correctness, re-reducing is safest.
       // We run it twice to ensure backward constraints (like 'replace' with 'revokeAt')
       // are propagated to the nodes they affect.
-      graph = reduceTrustGraph(graph, allStatements);
-      graph = reduceTrustGraph(graph, allStatements);
+      final pr = pathRequirement ?? defaultPathRequirement;
+      graph = reduceTrustGraph(graph, allStatements, pathRequirement: pr);
+      graph = reduceTrustGraph(graph, allStatements, pathRequirement: pr);
 
       // 3. CALCULATE NEXT FRONTIER
       // The reducer tells us who is trusted. We need to find who is trusted
       // but hasn't been fetched yet.
-      // Note: 'graph.distances' contains all trusted nodes.
       frontier = graph.distances.keys.toSet().difference(visited);
     }
 

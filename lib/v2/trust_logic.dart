@@ -1,21 +1,32 @@
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/model.dart';
 
+typedef PathRequirement = int Function(int distance);
+
 /// The Pure Function Core of the Trust Algorithm.
 ///
 /// Input: A starting graph (or empty) and a list of statements.
 /// Output: A new TrustGraph.
 ///
 /// This function is deterministic and synchronous.
-TrustGraph reduceTrustGraph(TrustGraph current, List<TrustStatement> statements) {
+/// It implements a Greedy BFS with support for:
+/// - Key Rotations (Replace statements)
+/// - Conflicts (Trust vs Block)
+/// - Confidence Levels (Multiple paths for distant nodes)
+/// - Notifications
+TrustGraph reduceTrustGraph(
+  TrustGraph current, 
+  List<TrustStatement> statements, {
+  PathRequirement? pathRequirement,
+}) {
   final Map<String, int> distances = {current.root: 0};
-  final Map<String, String> replacements = {};
-  final Map<String, String> revokeAtConstraints = Map.from(current.revokeAtConstraints); // Inherit constraints
+  final Map<String, String> replacements = Map.from(current.replacements);
+  final Map<String, String> revokeAtConstraints = Map.from(current.revokeAtConstraints);
   final Set<String> blocked = {};
-  final List<TrustConflict> conflicts = [];
+  final List<TrustNotification> notifications = [];
   final Map<String, List<TrustStatement>> edges = {};
   
-  // Index statements
+  // --- 1. Index Statements ---
   final Map<String, List<TrustStatement>> byIssuer = {};
   final Map<String, TrustStatement> byToken = {};
   
@@ -24,18 +35,20 @@ TrustGraph reduceTrustGraph(TrustGraph current, List<TrustStatement> statements)
     byToken[s.token] = s;
   }
 
-  // Helper to resolve revokeAt token to DateTime
   DateTime? resolveRevokeAt(String? revokeAtToken) {
     if (revokeAtToken == null) return null;
-    final atom = byToken[revokeAtToken];
-    return atom?.time;
+    return byToken[revokeAtToken]?.time;
   }
 
-  // BFS Queue
+  // --- 2. BFS Traversal ---
   final queue = [current.root];
   final visited = {current.root};
   
+  // Track paths for confidence levels (Node -> Set of Issuers who trust it)
+  final Map<String, Set<String>> trustedBy = {};
+
   int maxDegrees = 6;
+  final req = pathRequirement ?? (d) => 1;
   
   while (queue.isNotEmpty) {
     final issuer = queue.removeAt(0);
@@ -45,76 +58,83 @@ TrustGraph reduceTrustGraph(TrustGraph current, List<TrustStatement> statements)
     
     var issuerStatements = byIssuer[issuer] ?? [];
     
-    // Assert sorted (Newest First / Descending)
-    // The source must provide them in this order.
-    for (int i = 0; i < issuerStatements.length - 1; i++) {
-       if (issuerStatements[i].time.isBefore(issuerStatements[i+1].time)) {
-          throw 'Statements not sorted (expected Newest First) for $issuer';
-       }
-    }
+    // Sort Newest First (Descending)
+    issuerStatements.sort((a, b) => b.time.compareTo(a.time));
 
     // --- FILTER by revokeAt (External Constraint) ---
+    // This handles 'replace' statements where a new key revokes an old one.
     if (revokeAtConstraints.containsKey(issuer)) {
-      final limitToken = revokeAtConstraints[issuer];
-      final limitTime = resolveRevokeAt(limitToken);
+      final limitTime = resolveRevokeAt(revokeAtConstraints[issuer]);
       if (limitTime != null) {
         issuerStatements = issuerStatements.where((s) => !s.time.isAfter(limitTime)).toList();
       }
     }
 
-    // --- FILTER by Self-Revocation (Delegate) ---
-    DateTime? selfRevokeTime;
-    for (var s in issuerStatements) {
-       if (s.verb == TrustVerb.delegate && s.revokeAt != null) {
-          final t = resolveRevokeAt(s.revokeAt);
-          if (t != null) {
-             if (selfRevokeTime == null || t.isBefore(selfRevokeTime)) {
-                selfRevokeTime = t;
-             }
-          }
-       }
-    }
-    
-    if (selfRevokeTime != null) {
-       issuerStatements = issuerStatements.where((s) => !s.time.isAfter(selfRevokeTime!)).toList();
-    }
-
     // Store valid edges for this issuer
     edges[issuer] = issuerStatements;
     
+    final Set<String> decided = {};
+
+    // --- STEP 0: Process CLEARS ---
+    for (var s in issuerStatements.where((s) => s.verb == TrustVerb.clear)) {
+      decided.add(s.subjectToken);
+    }
+
     // --- STEP 1: Process BLOCKS ---
     for (var s in issuerStatements.where((s) => s.verb == TrustVerb.block)) {
-      if (distances.containsKey(s.subjectToken)) {
-        conflicts.add(TrustConflict(
-          s.subjectToken,
-          "Attempt to block trusted key by $issuer",
-          [s.token]
+      final subject = s.subjectToken;
+      if (decided.contains(subject)) continue;
+      decided.add(subject);
+
+      if (distances.containsKey(subject)) {
+        notifications.add(TrustNotification(
+          subject: subject,
+          reason: "Attempt to block trusted key by $issuer",
+          relatedStatements: [s.token],
+          isConflict: true,
         ));
       } else {
-        blocked.add(s.subjectToken);
+        blocked.add(subject);
       }
     }
     
     // --- STEP 2: Process REPLACES (New -> Old) ---
     for (var s in issuerStatements.where((s) => s.verb == TrustVerb.replace)) {
       final oldKey = s.subjectToken;
+      if (decided.contains(oldKey)) continue;
+      // We don't add to 'decided' here because a key can be replaced 
+      // and then subsequently blocked or trusted in the same history? 
+      // Actually, newest-first means if it's replaced, that's the latest word.
+      decided.add(oldKey);
       
-      if (distances.containsKey(oldKey)) {
-        conflicts.add(TrustConflict(
-          oldKey,
-          "Attempt to replace trusted key by $issuer",
-          [s.token]
+      final alreadyNotified = notifications.any((n) => n.relatedStatements.contains(s.token));
+
+      if (distances.containsKey(oldKey) && !alreadyNotified) {
+        notifications.add(TrustNotification(
+          subject: oldKey,
+          reason: "Trusted key $oldKey is being replaced by $issuer",
+          relatedStatements: [s.token],
+          isConflict: false,
         ));
-        continue;
+      }
+
+      if (blocked.contains(oldKey) && !alreadyNotified) {
+        notifications.add(TrustNotification(
+          subject: oldKey,
+          reason: "Blocked key $oldKey is being replaced by $issuer (Benefit of the doubt given to $issuer)",
+          relatedStatements: [s.token],
+          isConflict: false,
+        ));
       }
 
       if (replacements.containsKey(oldKey)) {
         final existingNewKey = replacements[oldKey];
         if (existingNewKey != issuer) {
-           conflicts.add(TrustConflict(
-             oldKey, 
-             "Replaced by both $existingNewKey and $issuer",
-             [s.token]
+           notifications.add(TrustNotification(
+             subject: oldKey, 
+             reason: "Key $oldKey replaced by both $existingNewKey and $issuer",
+             relatedStatements: [s.token],
+             isConflict: true,
            ));
            continue;
         }
@@ -124,49 +144,57 @@ TrustGraph reduceTrustGraph(TrustGraph current, List<TrustStatement> statements)
       if (s.revokeAt != null) {
         revokeAtConstraints[oldKey] = s.revokeAt!;
       }
+
+      // --- BACKWARD DISCOVERY ---
+      // If we trust the new key, we must also trust the old key it replaces
+      // so we can discover the history of that identity.
+      if (!distances.containsKey(oldKey)) {
+        distances[oldKey] = dist; // Same distance as the issuer
+        queue.add(oldKey);
+      }
     }
 
-    // --- STEP 3: Process DELEGATES (Old -> New) ---
-    // NOTE: We do NOT traverse delegates as trust edges.
-    // Delegates are for signing, not for expanding the trust graph.
-    // (Unless we decide otherwise, but per docs/trust_statement_semantics.md, they are service keys).
-    
-    /* 
-    for (var s in issuerStatements.where((s) => s.verb == TrustVerb.delegate)) {
-       // Logic for delegate traversal removed per semantics.
-    }
-    */
-
-    // --- STEP 4: Process TRUSTS ---
-    for (var s in issuerStatements.where((s) => s.verb == TrustVerb.trust)) {
+    // --- STEP 3: Process TRUSTS ---
+    final trustStatements = issuerStatements.where((s) => s.verb == TrustVerb.trust);
+    for (var s in trustStatements) {
       final subject = s.subjectToken;
+      if (decided.contains(subject)) continue;
+      decided.add(subject);
+      
       if (blocked.contains(subject)) {
-        conflicts.add(TrustConflict(
-          subject,
-          "Attempt to trust blocked key by $issuer",
-          [s.token]
+        notifications.add(TrustNotification(
+          subject: subject,
+          reason: "Attempt to trust blocked key by $issuer",
+          relatedStatements: [s.token],
+          isConflict: true,
         ));
         continue;
       }
       
+      // Resolve identity (if replaced)
       String effectiveSubject = subject;
       if (replacements.containsKey(subject)) {
         effectiveSubject = replacements[subject]!;
       }
       
-      if (!visited.contains(effectiveSubject) && !blocked.contains(effectiveSubject)) {
-        visited.add(effectiveSubject);
-        distances[effectiveSubject] = dist + 1;
-        queue.add(effectiveSubject);
-      }
+      if (blocked.contains(effectiveSubject)) continue;
+
+      // Track paths for confidence levels
+      trustedBy.putIfAbsent(effectiveSubject, () => {}).add(issuer);
       
-      // Also traverse the original subject if it's different (to catch pre-revocation statements)
-      if (effectiveSubject != subject) {
-         if (!visited.contains(subject) && !blocked.contains(subject)) {
-            visited.add(subject);
-            distances[subject] = dist + 1;
-            queue.add(subject);
-         }
+      final requiredPaths = req(dist + 1);
+      if (trustedBy[effectiveSubject]!.length >= requiredPaths) {
+        if (!visited.contains(effectiveSubject)) {
+          visited.add(effectiveSubject);
+          distances[effectiveSubject] = dist + 1;
+          queue.add(effectiveSubject);
+        }
+        
+        // Always ensure the original subject is marked as trusted if the identity is trusted.
+        // This ensures backward discovery and correct notifications.
+        if (effectiveSubject != subject) {
+          distances[subject] = dist + 1;
+        }
       }
     }
   }
@@ -177,7 +205,7 @@ TrustGraph reduceTrustGraph(TrustGraph current, List<TrustStatement> statements)
     replacements: replacements,
     revokeAtConstraints: revokeAtConstraints,
     blocked: blocked,
-    conflicts: conflicts,
+    notifications: notifications,
     edges: edges,
   );
 }

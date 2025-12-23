@@ -82,7 +82,7 @@ void main() async {
 
     Iterable<ContentTreeNode> roots;
 
-    await signInState.signIn(oneofus!.token, delegate.keyPair);
+    await signInState.signIn(oneofus.token, delegate.keyPair);
     await contentBase.waitUntilReady();
     roots = contentBase.roots;
     expect(roots.length, 0);
@@ -225,7 +225,7 @@ void main() async {
   test('equate1 without dump', () async {
     DemoKey? nerd, delegate;
     (nerd, delegate) = await lonerEquate();
-    await signInState.signIn(nerd!.token, (delegate != null) ? delegate.keyPair : null);
+    await signInState.signIn(nerd.token, (delegate != null) ? delegate.keyPair : null);
     await contentBase.waitUntilReady();
     expect(contentBase.roots.length, 1);
   });

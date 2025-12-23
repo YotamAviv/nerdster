@@ -137,22 +137,22 @@ class _ShadowViewState extends State<ShadowView> {
                         ListTile(
                           title: const Text('Stats'),
                           subtitle: Text(
-                              'Nodes: ${_graph!.distances.length}, Blocked: ${_graph!.blocked.length}, Conflicts: ${_graph!.conflicts.length}'),
+                              'Nodes: ${_graph!.distances.length}, Blocked: ${_graph!.blocked.length}, Notifications: ${_graph!.notifications.length}'),
                         ),
                         const Divider(),
-                        if (_graph!.conflicts.isNotEmpty) ...[
+                        if (_graph!.notifications.isNotEmpty) ...[
                           const Padding(
                             padding: EdgeInsets.all(8.0),
-                            child: Text('Conflicts',
+                            child: Text('Notifications & Conflicts',
                                 style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red)),
+                                    fontWeight: FontWeight.bold)),
                           ),
-                          ..._graph!.conflicts.map((c) => ListTile(
-                                title: Text(c.subject),
-                                subtitle: Text(c.reason),
-                                leading: const Icon(Icons.warning,
-                                    color: Colors.red),
+                          ..._graph!.notifications.map((n) => ListTile(
+                                title: Text(n.subject),
+                                subtitle: Text(n.reason),
+                                leading: Icon(
+                                    n.isConflict ? Icons.warning : Icons.info,
+                                    color: n.isConflict ? Colors.red : Colors.blue),
                               )),
                           const Divider(),
                         ],
@@ -173,12 +173,18 @@ class _ShadowViewState extends State<ShadowView> {
                           child: Text('Trusted Nodes',
                               style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
-                        ..._graph!.distances.entries.map((e) => ListTile(
-                              title: Text(e.key),
-                              subtitle: Text('Distance: ${e.value}'),
-                              leading: const Icon(Icons.check_circle,
-                                  color: Colors.green),
-                            )),
+                        ..._graph!.distances.entries.map((e) {
+                          final token = e.key;
+                          final resolved = _graph!.resolveIdentity(token);
+                          final isReplaced = resolved != token;
+                          
+                          return ListTile(
+                            title: Text(token),
+                            subtitle: Text('Distance: ${e.value}${isReplaced ? " (Replaced by $resolved)" : ""}'),
+                            leading: Icon(Icons.check_circle,
+                                color: isReplaced ? Colors.orange : Colors.green),
+                          );
+                        }),
                       ],
                     ),
                   ],

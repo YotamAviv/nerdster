@@ -117,7 +117,7 @@ class _VerifyState extends State<Verify> {
       setState(() {}); // Trigger rebuild to show/hide reset button
     });
 
-    final bool verifyImmediately = Setting.get<bool>(SettingType.verifyImmediately).value ?? false;
+    final bool verifyImmediately = Setting.get<bool>(SettingType.verifyImmediately).value;
     if (verifyImmediately && _initialText.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).push(
