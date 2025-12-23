@@ -3,7 +3,9 @@ import 'package:graphview/GraphView.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/source_factory.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/singletons.dart';
 
 const String kOneofusDomain = 'one-of-us.net';
 
@@ -19,12 +21,14 @@ class TrustGraphVisualizerLoader extends StatefulWidget {
 
 class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader> {
   TrustGraph? _graph;
+  late String _currentRoot;
   bool _loading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _currentRoot = widget.rootToken;
     _load();
   }
 
@@ -32,7 +36,7 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
     try {
       final source = SourceFactory.get<TrustStatement>(kOneofusDomain);
       final pipeline = TrustPipeline(source);
-      final graph = await pipeline.build(widget.rootToken);
+      final graph = await pipeline.build(_currentRoot);
       if (mounted) {
         setState(() {
           _graph = graph;
@@ -62,7 +66,17 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
         body: SingleChildScrollView(child: Text(_error!)),
       );
     }
-    return TrustGraphVisualizer(graph: _graph!);
+    return TrustGraphVisualizer(
+      graph: _graph!,
+      onPovChanged: (newToken) {
+        setState(() {
+          _currentRoot = newToken;
+          _loading = true;
+          _graph = null;
+        });
+        _load();
+      },
+    );
   }
 }
 
@@ -80,8 +94,9 @@ void main() {
 /// A quick demo widget to visualize the TrustGraph using GraphView.
 class TrustGraphVisualizer extends StatefulWidget {
   final TrustGraph graph;
+  final Function(String)? onPovChanged;
 
-  const TrustGraphVisualizer({super.key, required this.graph});
+  const TrustGraphVisualizer({super.key, required this.graph, this.onPovChanged});
 
   @override
   State<TrustGraphVisualizer> createState() => _TrustGraphVisualizerState();
@@ -89,11 +104,14 @@ class TrustGraphVisualizer extends StatefulWidget {
 
 class _TrustGraphVisualizerState extends State<TrustGraphVisualizer> {
   final Graph graph = Graph();
-  final FruchtermanReingoldAlgorithm algorithm = FruchtermanReingoldAlgorithm(FruchtermanReingoldConfiguration());
+  final FruchtermanReingoldAlgorithm algorithm =
+      FruchtermanReingoldAlgorithm(FruchtermanReingoldConfiguration());
+  late V2Labeler _labeler;
 
   @override
   void initState() {
     super.initState();
+    _labeler = V2Labeler(widget.graph);
     _buildGraph();
   }
 
@@ -179,7 +197,10 @@ class _TrustGraphVisualizerState extends State<TrustGraphVisualizer> {
 
             return Opacity(
               opacity: opacity,
-              child: _buildNodeWidget(token, dist, isRoot, isBlocked),
+              child: GestureDetector(
+                onLongPress: () => _showNodeDetails(token),
+                child: _buildNodeWidget(token, dist, isRoot, isBlocked),
+              ),
             );
           },
         ),
@@ -187,7 +208,49 @@ class _TrustGraphVisualizerState extends State<TrustGraphVisualizer> {
     );
   }
 
+  void _showNodeDetails(String token) {
+    final labels = _labeler.getAllLabels(token);
+    final paths = _labeler.getLabeledPaths(token);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_labeler.getLabel(token)),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Token: $token', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              const SizedBox(height: 10),
+              const Text('All Monikers:', style: TextStyle(fontWeight: FontWeight.bold)),
+              if (labels.isEmpty) const Text('None'),
+              ...labels.map((l) => Text('• $l')),
+              const SizedBox(height: 10),
+              const Text('Shortest Paths:', style: TextStyle(fontWeight: FontWeight.bold)),
+              if (paths.isEmpty) const Text('None'),
+              ...paths.map((p) => Text('• $p')),
+            ],
+          ),
+        ),
+        actions: [
+          if (widget.onPovChanged != null && token != widget.graph.root)
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                widget.onPovChanged!(token);
+              },
+              child: const Text('Set as PoV'),
+            ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+
   Widget _buildNodeWidget(String token, int dist, bool isRoot, bool isBlocked) {
+    final label = _labeler.getLabel(token);
+    
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -209,7 +272,7 @@ class _TrustGraphVisualizerState extends State<TrustGraphVisualizer> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            isRoot ? 'YOU (Root)' : 'Key ${token.substring(0, 6)}...',
+            label,
             style: TextStyle(
               fontWeight: isRoot ? FontWeight.bold : FontWeight.normal,
               fontSize: 12,

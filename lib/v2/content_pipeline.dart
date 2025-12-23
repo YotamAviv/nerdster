@@ -26,10 +26,10 @@ class ContentPipeline {
     });
 
     // 2. Fetch Content
-    // Use revokeAt constraints from the graph to ensure we get content from the valid identity era.
+    // Use replacement constraints from the graph to ensure we get content from the valid identity era.
     final fetchMap = {
       for (var token in trustedUsers) 
-        token: graph.revokeAtConstraints[token]
+        token: graph.replacementConstraints[token]
     };
 
     final Map<String, List<ContentStatement>> rawMap = await source.fetch(fetchMap);

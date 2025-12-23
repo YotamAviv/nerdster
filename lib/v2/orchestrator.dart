@@ -37,8 +37,8 @@ class TrustPipeline {
       final keysToFetch = frontier.difference(visited).toList();
       if (keysToFetch.isEmpty) break;
 
-      // Map keys to their revokeAt constraints if known.
-      final fetchMap = {for (var k in keysToFetch) k: graph.revokeAtConstraints[k]};
+      // Map keys to their replacement constraints if known.
+      final fetchMap = {for (var k in keysToFetch) k: graph.replacementConstraints[k]};
 
       final newStatementsMap = await source.fetch(fetchMap);
       visited.addAll(keysToFetch);
@@ -49,8 +49,8 @@ class TrustPipeline {
       // We re-run the reducer on the accumulated history.
       // The reducer is "Strictly Greedy": it processes the graph layer-by-layer.
       // Within each layer, it processes Blocks and Replaces before Trusts.
-      // This ensures that same-distance revocations are handled, but "deep" 
-      // nodes cannot revoke "shallow" nodes.
+      // This ensures that same-distance replacements are handled, but "deep" 
+      // nodes cannot constrain "shallow" nodes.
       final pr = pathRequirement ?? defaultPathRequirement;
       graph = reduceTrustGraph(graph, statementsByIssuer, pathRequirement: pr);
 

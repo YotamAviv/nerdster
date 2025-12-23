@@ -4,6 +4,7 @@ import 'package:nerdster/v2/content_pipeline.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/orchestrator.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/net_tree_model.dart';
 import 'package:nerdster/v2/net_tree_view.dart';
 import 'package:nerdster/v2/graph_demo.dart';
@@ -24,6 +25,7 @@ class ShadowView extends StatefulWidget {
 
 class _ShadowViewState extends State<ShadowView> {
   TrustGraph? _graph;
+  V2Labeler? _labeler;
   List<ContentStatement>? _content;
   bool _loading = false;
   String? _error;
@@ -50,6 +52,7 @@ class _ShadowViewState extends State<ShadowView> {
       if (mounted) {
         setState(() {
           _graph = graph;
+          _labeler = V2Labeler(graph);
           _content = content;
           _loading = false;
         });
@@ -66,7 +69,8 @@ class _ShadowViewState extends State<ShadowView> {
 
   void _showTree() {
     if (_graph == null) return;
-    final root = V2NetTreeModel([], _graph!, token: _graph!.root);
+    final labeler = V2Labeler(_graph!);
+    final root = V2NetTreeModel([], _graph!, labeler, token: _graph!.root);
     Navigator.push(context, MaterialPageRoute(builder: (_) => V2NetTreeView(root: root)));
   }
 
@@ -144,9 +148,10 @@ class _ShadowViewState extends State<ShadowView> {
                       itemCount: _content?.length ?? 0,
                       itemBuilder: (context, index) {
                         final item = _content![index];
+                        final label = _labeler?.getLabel(item.iToken) ?? item.iToken;
                         return ListTile(
                           title: Text('${item.verb.label} ${item.subject}'),
-                          subtitle: Text('By: ${item.iToken}\n${item.subject}'),
+                          subtitle: Text('By: $label\n${item.subject}'),
                           trailing: Text(item.time.toString().split(' ')[0]),
                         );
                       },
@@ -168,7 +173,7 @@ class _ShadowViewState extends State<ShadowView> {
                                     fontWeight: FontWeight.bold)),
                           ),
                           ..._graph!.notifications.map((n) => ListTile(
-                                title: Text(n.subject),
+                                title: Text(_labeler?.getLabel(n.subject) ?? n.subject),
                                 subtitle: Text(n.reason),
                                 leading: Icon(
                                     n.isConflict ? Icons.warning : Icons.info,
@@ -183,26 +188,41 @@ class _ShadowViewState extends State<ShadowView> {
                                 style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                           ..._graph!.blocked.map((b) => ListTile(
-                                title: Text(b),
-                                leading: const Icon(Icons.block),
+                                title: Text(_labeler?.getLabel(b) ?? b),
+                                subtitle: Text('Token: $b'),
+                                leading: const Icon(Icons.block, color: Colors.red),
                               )),
                           const Divider(),
                         ],
                         const Padding(
                           padding: EdgeInsets.all(8.0),
-                          child: Text('Trusted Nodes',
+                          child: Text('Trusted Identities',
                               style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
-                        ..._graph!.distances.entries.map((e) {
-                          final token = e.key;
-                          final resolved = _graph!.resolveIdentity(token);
-                          final isReplaced = resolved != token;
+                        ..._graph!.getEquivalenceGroups().entries.map((entry) {
+                          final canonical = entry.key;
+                          final members = entry.value;
+                          final label = _labeler?.getLabel(canonical) ?? canonical;
                           
-                          return ListTile(
-                            title: Text(token),
-                            subtitle: Text('Distance: ${e.value}${isReplaced ? " (Replaced by $resolved)" : ""}'),
-                            leading: Icon(Icons.check_circle,
-                                color: isReplaced ? Colors.orange : Colors.green),
+                          return ExpansionTile(
+                            title: Text(label),
+                            subtitle: Text('Identity: $canonical (${members.length} keys)'),
+                            leading: const Icon(Icons.person, color: Colors.green),
+                            children: members.map((token) {
+                              final memberLabel = _labeler?.getLabel(token) ?? token;
+                              final dist = _graph!.distances[token];
+                              final isCanonical = token == canonical;
+                              
+                              return ListTile(
+                                title: Text(memberLabel),
+                                subtitle: Text('Distance: $dist\nToken: $token'),
+                                leading: Icon(
+                                  isCanonical ? Icons.check_circle : Icons.history,
+                                  color: isCanonical ? Colors.green : Colors.orange,
+                                ),
+                                dense: true,
+                              );
+                            }).toList(),
                           );
                         }),
                       ],

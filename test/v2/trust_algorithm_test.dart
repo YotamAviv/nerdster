@@ -149,68 +149,68 @@ void main() {
     expect(graph.isTrusted(bob.token), isFalse, reason: 'Trust was cleared');
   });
 
-  test('Revoke Since Always', () async {
+  test('Replace with Constraint (Since Always)', () async {
     final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
+    final bobOld = await DemoKey.create('bobOld');
     final bobNew = await DemoKey.create('bobNew');
     final charlie = await DemoKey.create('charlie');
 
     await alice.trust(bobNew);
-    // bobNew replaces bob, but revokes him "since always"
-    await bobNew.doTrust(TrustVerb.replace, bob, revokeAt: '<since always>');
-    await bob.trust(charlie); // This statement should be ignored
+    // bobNew replaces bobOld, but constrains him "since always"
+    await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
+    await bobOld.trust(charlie); // This statement should be ignored
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
     expect(graph.isTrusted(bobNew.token), isTrue);
-    expect(graph.isTrusted(bob.token), isTrue, reason: 'Bob is still part of the identity');
-    expect(graph.isTrusted(charlie.token), isFalse, reason: 'Bobs statements should be revoked');
+    expect(graph.isTrusted(bobOld.token), isTrue, reason: 'bobOld is still part of the identity');
+    expect(graph.isTrusted(charlie.token), isFalse, reason: 'bobOld statements should be ignored due to constraint');
   });
 
-  test('Revoke with Garbage Token (Since Always)', () async {
+  test('Replace with Garbage Constraint (Since Always)', () async {
     final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
+    final bobOld = await DemoKey.create('bobOld');
     final bobNew = await DemoKey.create('bobNew');
     final charlie = await DemoKey.create('charlie');
 
     await alice.trust(bobNew);
-    // bobNew replaces bob, but uses a garbage revokeAt token
-    await bobNew.doTrust(TrustVerb.replace, bob, revokeAt: 'garbage-token');
-    await bob.trust(charlie); // This statement should be ignored
+    // bobNew replaces bobOld, but uses a garbage revokeAt token
+    await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: 'garbage-token');
+    await bobOld.trust(charlie); // This statement should be ignored
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
     expect(graph.isTrusted(bobNew.token), isTrue);
-    expect(graph.isTrusted(charlie.token), isFalse, reason: 'Bobs statements should be revoked due to invalid token');
+    expect(graph.isTrusted(charlie.token), isFalse, reason: 'bobOld statements should be ignored due to invalid constraint token');
   });
 
-  test('Revocation Race Condition (Requires 2 passes)', () async {
+  test('Replacement Race Condition (Requires 2 passes)', () async {
     final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
+    final bobOld = await DemoKey.create('bobOld');
     final bobNew = await DemoKey.create('bobNew');
     final charlie = await DemoKey.create('charlie');
 
-    // Alice trusts Bob AND BobNew.
-    // We want Bob to be processed BEFORE BobNew in the BFS.
+    // Alice trusts bobOld AND bobNew.
+    // We want bobOld to be processed BEFORE bobNew in the BFS.
     // In reduceTrustGraph, issuer statements are sorted newest-first.
-    // So if Alice trusts Bob AFTER she trusts BobNew, Bob will be first in the list.
+    // So if Alice trusts bobOld AFTER she trusts bobNew, bobOld will be first in the list.
     
     await alice.trust(bobNew); // Older
     await Future.delayed(Duration(milliseconds: 10));
-    await alice.trust(bob);    // Newer -> Processed first
+    await alice.trust(bobOld);    // Newer -> Processed first
     
-    // Bob trusts Charlie.
-    await bob.trust(charlie);
+    // bobOld trusts Charlie.
+    await bobOld.trust(charlie);
     
-        // BobNew replaces Bob and revokes his statements.
-    await bobNew.doTrust(TrustVerb.replace, bob, revokeAt: '<since always>');
+    // bobNew replaces bobOld and constrains his statements.
+    await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
-    // Set maxDegrees to 3 so that BobNew (dist 1) can revoke Bob (dist 2) 
+    // Set maxDegrees to 3 so that bobNew (dist 1) can constrain bobOld (dist 2) 
     // and we can see the effect on Charlie (dist 3).
     final pipeline = TrustPipeline(source, maxDegrees: 3);
     
@@ -218,9 +218,9 @@ void main() {
     final graph = await pipeline.build(alice.token);
 
     expect(graph.isTrusted(bobNew.token), isTrue);
-    expect(graph.isTrusted(bob.token), isTrue);
+    expect(graph.isTrusted(bobOld.token), isTrue);
     expect(graph.isTrusted(charlie.token), isFalse, 
-      reason: 'Charlie should be revoked by BobNew. If this fails, it means the race condition was not resolved.');
+      reason: 'Charlie should be ignored due to bobNew constraint. If this fails, it means the race condition was not resolved.');
   });
 
   test('Trust Non-Canonical Key Notification', () async {
@@ -242,25 +242,25 @@ void main() {
     expect(graph.notifications.any((n) => n.reason.contains('non-canonical')), isTrue);
   });
 
-  test('Distance Authority: Deep Replacement Revocation Ignored', () async {
+  test('Distance Authority: Deep Replacement Constraint Ignored', () async {
     final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
+    final bobOld = await DemoKey.create('bobOld');
     final bobNew = await DemoKey.create('bobNew');
     final charlie = await DemoKey.create('charlie');
     final frank = await DemoKey.create('frank');
 
-    // Alice trusts Bob (dist 1)
-    await alice.trust(bob);
+    // Alice trusts bobOld (dist 1)
+    await alice.trust(bobOld);
     // Alice trusts Charlie (dist 1)
     await alice.trust(charlie);
-    // Charlie trusts BobNew (dist 2)
+    // Charlie trusts bobNew (dist 2)
     await charlie.trust(bobNew);
     
-    // BobNew replaces Bob and revokes everything
-    await bobNew.doTrust(TrustVerb.replace, bob, revokeAt: '<since always>');
+    // bobNew replaces bobOld and constrains everything
+    await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
     
-    // Bob trusts Frank
-    await bob.trust(frank);
+    // bobOld trusts Frank
+    await bobOld.trust(frank);
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source);
@@ -268,94 +268,89 @@ void main() {
     // --- PoV: Alice ---
     final graphAlice = await pipeline.build(alice.token);
     
-    expect(graphAlice.isTrusted(bob.token), isTrue);
+    expect(graphAlice.isTrusted(bobOld.token), isTrue);
     expect(graphAlice.isTrusted(bobNew.token), isTrue);
     expect(graphAlice.isTrusted(frank.token), isTrue, 
-      reason: 'Frank should be trusted because BobNew is further away than Bob from Alices PoV');
-    expect(graphAlice.notifications.any((n) => n.reason.contains('Revocation ignored due to distance')), isTrue);
+      reason: 'Frank should be trusted because bobNew is further away than bobOld from Alices PoV');
+    expect(graphAlice.notifications.any((n) => n.reason.contains('Replacement constraint ignored due to distance')), isTrue);
 
     // --- PoV: Charlie ---
     final graphCharlie = await pipeline.build(charlie.token);
     
     expect(graphCharlie.isTrusted(bobNew.token), isTrue);
-    expect(graphCharlie.isTrusted(bob.token), isTrue);
+    expect(graphCharlie.isTrusted(bobOld.token), isTrue);
     expect(graphCharlie.isTrusted(frank.token), isFalse, 
-      reason: 'Frank should be revoked because BobNew is closer to Charlie than Bob is');
+      reason: 'Frank should be ignored because bobNew is closer to Charlie than bobOld is');
   });
 
-  test('Backward Discovery: Pulling in distant keys', () async {
+  test('Backward Discovery: Pulling in historical keys', () async {
     final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
+    final bobOld = await DemoKey.create('bobOld');
     final bobNew = await DemoKey.create('bobNew');
     final charlie = await DemoKey.create('charlie');
 
     // Alice -> Charlie (dist 1)
     await alice.trust(charlie);
-    // Charlie -> BobNew (dist 2)
+    // Charlie -> bobNew (dist 2)
     await charlie.trust(bobNew);
-    // BobNew replaces Bob
-    await bobNew.replace(bob);
+    // bobNew replaces bobOld
+    await bobNew.replace(bobOld);
     
-    // Bob is NOT trusted by anyone else. 
-    // Without backward discovery, Bob would be "not in network".
+    // bobOld is NOT trusted by anyone else. 
+    // Without backward discovery, bobOld would be "not in network".
     
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
-    // We need maxDegrees: 3 so that BobNew (at dist 2) is processed as an issuer.
+    // We need maxDegrees: 3 so that bobNew (at dist 2) is processed as an issuer.
     final pipeline = TrustPipeline(source, maxDegrees: 3);
     final graph = await pipeline.build(alice.token);
 
     expect(graph.isTrusted(bobNew.token), isTrue);
-    expect(graph.isTrusted(bob.token), isTrue, 
-      reason: 'Bob should be pulled into the network at distance 3 because BobNew is at distance 2');
-    expect(graph.distances[bob.token], 3);
+    expect(graph.isTrusted(bobOld.token), isTrue, 
+      reason: 'bobOld should be pulled into the network at distance 3 because bobNew is at distance 2');
+    expect(graph.distances[bobOld.token], 3);
   });
 
   test('Double Replacement (Shortcut vs Fork)', () async {
     final alice = await DemoKey.create('alice');
-    final bob1 = await DemoKey.create('bob1');
-    final bob2 = await DemoKey.create('bob2');
-    final bob3 = await DemoKey.create('bob3');
+    final bobV1 = await DemoKey.create('bobV1');
+    final bobV2 = await DemoKey.create('bobV2');
+    final bobV3 = await DemoKey.create('bobV3');
 
     // Alice trusts the newest key
-    await alice.trust(bob3);
+    await alice.trust(bobV3);
 
-    // Bob3 replaces both predecessors
-    await bob3.replace(bob2);
-    await bob3.replace(bob1);
+    // bobV3 replaces both predecessors
+    await bobV3.replace(bobV2);
+    await bobV3.replace(bobV1);
 
-    // Bob2 also replaces Bob1 (the standard chain)
-    await bob2.replace(bob1);
+    // bobV2 also replaces bobV1 (the standard chain)
+    await bobV2.replace(bobV1);
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
 
     // --- THOUGHTS ON DOUBLE REPLACEMENT ---
-    // Scenario: Bob3 replaces Bob2 AND Bob1. Bob2 replaces Bob1.
+    // Scenario: bobV3 replaces bobV2 AND bobV1. bobV2 replaces bobV1.
     //
     // 1. Is it a Conflict? 
-    //    Technically, Bob1 has two keys claiming to be its successor. If Bob2 and Bob3 
+    //    Technically, bobV1 has two keys claiming to be its successor. If bobV2 and bobV3 
     //    were different people, this would be a "Fork" (a hijack attempt).
     //
     // 2. Is it a Shortcut?
-    //    Since Bob3 also replaces Bob2, it's a consistent chain. Bob3 is just 
-    //    providing a "shortcut" for anyone who only knows Bob1.
+    //    Since bobV3 also replaces bobV2, it's a consistent chain. bobV3 is just 
+    //    providing a "shortcut" for anyone who only knows bobV1.
     //
     // 3. Current Algorithm Behavior:
-    //    The algorithm uses "Distance Authority". Since Bob3 (dist 1) is closer 
-    //    than Bob2 (dist 2), Bob3's replacement of Bob1 is processed first.
-    //    When Bob2 tries to replace Bob1, the algorithm sees Bob1 is already 
-    //    trusted via a shorter path and ignores the second revocation, 
+    //    The algorithm uses "Distance Authority". Since bobV3 (dist 1) is closer 
+    //    than bobV2 (dist 2), bobV3's replacement of bobV1 is processed first.
+    //    When bobV2 tries to replace bobV1, the algorithm sees bobV1 is already 
+    //    trusted via a shorter path and ignores the second replacement constraint, 
     //    issuing an INFO notification.
-    //
-    // 4. Open Question:
-    //    Should we suppress this notification if the chain is consistent? 
-    //    Doing so would require the algorithm to "know" that Bob3 also replaces Bob2
-    //    while it is processing Bob2's statements.
     
-    expect(graph.isTrusted(bob3.token), isTrue);
-    expect(graph.isTrusted(bob2.token), isTrue);
-    expect(graph.isTrusted(bob1.token), isTrue);
+    expect(graph.isTrusted(bobV3.token), isTrue);
+    expect(graph.isTrusted(bobV2.token), isTrue);
+    expect(graph.isTrusted(bobV1.token), isTrue);
     
     print('Notifications:');
     for (var n in graph.notifications) {
@@ -363,10 +358,97 @@ void main() {
     }
 
     final hasConflict = graph.notifications.any((n) => n.isConflict && n.reason.contains('replaced by both'));
-    final hasInfo = graph.notifications.any((n) => !n.isConflict && n.reason.contains('Revocation ignored due to distance'));
+    final hasInfo = graph.notifications.any((n) => !n.isConflict && n.reason.contains('Replacement constraint ignored due to distance'));
     
     print('Has Conflict: $hasConflict');
     print('Has Info: $hasInfo');
-    print('Bob1 Replacement: ${graph.replacements[bob1.token] == bob3.token ? "Bob3" : "Bob2"}');
+    print('bobV1 Replacement: ${graph.replacements[bobV1.token] == bobV3.token ? "bobV3" : "bobV2"}');
+  });
+
+  test('Ordered Keys (BFS Discovery)', () async {
+    final alice = await DemoKey.create('alice');
+    final bob = await DemoKey.create('bob');
+    final charlie = await DemoKey.create('charlie');
+    final dave = await DemoKey.create('dave');
+
+    // Alice -> Bob, Charlie
+    await alice.trust(bob);
+    await alice.trust(charlie);
+
+    // Bob -> Dave
+    await bob.trust(dave);
+
+    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final pipeline = TrustPipeline(source, maxDegrees: 5);
+    final graph = await pipeline.build(alice.token);
+
+    // Order should be: Alice (0), Charlie (1), Bob (1), Dave (2)
+    // Charlie comes before Bob because Alice trusted him later (newest-first processing).
+    expect(graph.orderedKeys, [
+      alice.token,
+      charlie.token,
+      bob.token,
+      dave.token,
+    ]);
+    expect(graph.orderedKeys.length, 4);
+  });
+
+  test('Graph Paths (Shortest Paths)', () async {
+    final alice = await DemoKey.create('alice');
+    final bob = await DemoKey.create('bob');
+    final charlie = await DemoKey.create('charlie');
+    final dave = await DemoKey.create('dave');
+
+    // Alice -> Bob -> Dave
+    // Alice -> Charlie -> Dave
+    await alice.trust(bob);
+    await alice.trust(charlie);
+    await bob.trust(dave);
+    await charlie.trust(dave);
+
+    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final pipeline = TrustPipeline(source, maxDegrees: 5);
+    final graph = await pipeline.build(alice.token);
+
+    final paths = graph.getPathsTo(dave.token);
+    expect(paths.length, 2);
+    expect(paths, containsAll([
+      [alice.token, bob.token, dave.token],
+      [alice.token, charlie.token, dave.token],
+    ]));
+  });
+
+  test('Replacement: Far to Close (Identity Link vs Replacement Constraint)', () async {
+    final alice = await DemoKey.create('alice');
+    final bobOld = await DemoKey.create('bobOld');
+    final bobNew = await DemoKey.create('bobNew');
+    final dave = await DemoKey.create('dave');
+
+    // 1. Alice trusts bobOld (dist 1)
+    await alice.trust(bobOld);
+    
+    // 2. bobOld trusts bobNew (dist 2)
+    await bobOld.trust(bobNew);
+    
+    // 3. bobOld trusts Dave (dist 2)
+    final sDave = await bobOld.trust(dave);
+
+    // 4. bobNew (dist 2) replaces bobOld (dist 1) with a constraint
+    // This is "Far to Close" because bobNew is further than Alice.
+    await bobNew.replace(bobOld, lastGoodToken: sDave);
+
+    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final pipeline = TrustPipeline(source, maxDegrees: 5);
+    final graph = await pipeline.build(alice.token);
+
+    // Identity Link should be accepted
+    expect(graph.resolveIdentity(bobOld.token), bobNew.token, 
+      reason: 'Identity link should be accepted even from a further node');
+    
+    // Replacement constraint should be ignored
+    expect(graph.isTrusted(dave.token), isTrue, 
+      reason: 'Dave should still be trusted because the replacement constraint from a further node was ignored');
+    
+    expect(graph.notifications.any((n) => n.reason.contains('Replacement constraint ignored due to distance')), isTrue);
   });
 }

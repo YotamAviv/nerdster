@@ -36,3 +36,14 @@
 7. **Cite the Source.**
    - Before running complex commands (tests, builds, deployments), you must explicitly state which documentation file you read to derive the command.
    - If you cannot find documentation, you must state "No documentation found for this task" before proceeding with a guess.
+
+8. **Verify State and Side Effects.**
+   - Do not assume that changing one piece of state (e.g., PoV) automatically updates another (e.g., Identity).
+   - In this codebase, `SignInState` has a "sticky" identity. Once `_identity` is set (either by `signIn` or the first `pov` change), it does not change when `pov` is updated.
+   - Always verify if a view is using `identity` (the signed-in user) or `pov` (the current perspective), as they are often different.
+   - Before claiming a UI will update, check if the widget captures state once at construction (like `ShadowView`) or if it actually listens to the `ChangeNotifier`.
+
+9. **Acknowledge Mistakes and Shifted Understanding.**
+   - If you discover that a previous answer or claim was incorrect, you must explicitly state that you were wrong or that your understanding has changed.
+   - Do not attempt to hide mistakes or proceed as if the previous incorrect information was never given.
+   - Direct acknowledgment of errors is required for clear communication, but continue to follow Rule 1 (no apologies).

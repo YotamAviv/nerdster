@@ -26,7 +26,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
 
     await Future.wait(keys.entries.map((entry) async {
       final token = entry.key;
-      final revokeAt = entry.value;
+      final limitToken = entry.value;
 
       try {
         final collectionRef = _fire
@@ -34,13 +34,13 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
             .doc('statements')
             .collection('statements');
 
-        DateTime? revokeAtTime;
-        if (revokeAt != null) {
-          final doc = await collectionRef.doc(revokeAt).get();
+        DateTime? limitTime;
+        if (limitToken != null) {
+          final doc = await collectionRef.doc(limitToken).get();
           if (doc.exists && doc.data() != null) {
-            revokeAtTime = parseIso(doc.data()!['time']);
+            limitTime = parseIso(doc.data()!['time']);
           } else {
-            // If revokeAt token not found, return empty list
+            // If limit token not found, return empty list
             results[token] = [];
             return; 
           }
@@ -48,8 +48,8 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
 
         Query<Map<String, dynamic>> query = collectionRef.orderBy('time', descending: true);
         
-        if (revokeAtTime != null) {
-          query = query.where('time', isLessThanOrEqualTo: formatIso(revokeAtTime));
+        if (limitTime != null) {
+          query = query.where('time', isLessThanOrEqualTo: formatIso(limitTime));
         }
 
         final snapshot = await query.get();

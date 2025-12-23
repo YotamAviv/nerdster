@@ -108,6 +108,16 @@ class DemoKey {
 
   DemoKey._internal(this.name, this.keyPair, this.publicKey, this.token);
 
+  // Expose statements for testing
+  List<TrustStatement> get statements {
+    final fetcher = Fetcher(token, kOneofusDomain);
+    // This is a hack for testing. In reality, we'd need to fetch from the source.
+    // But DemoKey pushes to a memory source usually.
+    // Let's assume the memory source is accessible or we track them here.
+    return _localStatements;
+  }
+  final List<TrustStatement> _localStatements = [];
+
   Future<Statement> doRate(
       {dynamic subject,
       String? title,
@@ -209,6 +219,11 @@ class DemoKey {
     Fetcher fetcher = Fetcher(token, kOneofusDomain);
     OouSigner signer = await OouSigner.make(keyPair);
     Statement statement = await fetcher.push(json, signer);
+    
+    if (statement is TrustStatement) {
+      _localStatements.add(statement);
+    }
+    
     // CONSIDER: oneofusNet.listen(); // Problematic
     if (export != null) _exports[export] = statement.json;
     return statement;

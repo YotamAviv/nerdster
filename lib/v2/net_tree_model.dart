@@ -1,17 +1,18 @@
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/net/key_lables.dart';
-import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
 class V2NetTreeModel extends NetTreeModel {
   final TrustGraph graph;
   final TrustStatement? stmt;
+  final V2Labeler labeler;
 
   V2NetTreeModel(
     List<NetTreeModel> path,
-    this.graph, {
+    this.graph,
+    this.labeler, {
     String? token,
     this.stmt,
   }) : super(path, token: token);
@@ -37,6 +38,7 @@ class V2NetTreeModel extends NetTreeModel {
       return V2NetTreeModel(
         [...path, this],
         graph,
+        labeler,
         token: e.subjectToken,
         stmt: e,
       );
@@ -49,10 +51,10 @@ class V2NetTreeModel extends NetTreeModel {
   String get moniker {
     if (stmt != null) {
        // If this node represents a target of a statement
-       return keyLabels.labelKey(stmt!.subjectToken) ?? kUnknown;
+       return labeler.getLabel(stmt!.subjectToken);
     } else {
        // Root node
-       return keyLabels.labelKey(token!) ?? kUnknown;
+       return labeler.getLabel(token!);
     }
   }
 
