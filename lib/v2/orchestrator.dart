@@ -47,10 +47,11 @@ class TrustPipeline {
 
       // 2. REDUCE (Pure Logic)
       // We re-run the reducer on the accumulated history.
-      // We run it twice to ensure backward constraints (like 'replace' with 'revokeAt')
-      // are propagated to the nodes they affect.
+      // The reducer is "Strictly Greedy": it processes the graph layer-by-layer.
+      // Within each layer, it processes Blocks and Replaces before Trusts.
+      // This ensures that same-distance revocations are handled, but "deep" 
+      // nodes cannot revoke "shallow" nodes.
       final pr = pathRequirement ?? defaultPathRequirement;
-      graph = reduceTrustGraph(graph, statementsByIssuer, pathRequirement: pr);
       graph = reduceTrustGraph(graph, statementsByIssuer, pathRequirement: pr);
 
       // 3. CALCULATE NEXT FRONTIER
