@@ -5,7 +5,7 @@ import 'package:nerdster/v2/trust_logic.dart';
 
 /// The Orchestrator manages the loop between Fetching (IO) and Reducing (Logic).
 class TrustPipeline {
-  final StatementSource source;
+  final StatementSource<TrustStatement> source;
   final int maxDegrees;
   final PathRequirement? pathRequirement;
 
@@ -26,7 +26,7 @@ class TrustPipeline {
     TrustGraph graph = TrustGraph(root: rootToken);
     Set<String> frontier = {rootToken};
     Set<String> visited = {};
-    List<TrustStatement> allStatements = [];
+    Map<String, List<TrustStatement>> statementsByIssuer = {};
 
     // The Loop
     for (int depth = 0; depth < maxDegrees; depth++) {
@@ -43,17 +43,15 @@ class TrustPipeline {
       final newStatementsMap = await source.fetch(fetchMap);
       visited.addAll(keysToFetch);
       
-      for (var list in newStatementsMap.values) {
-        allStatements.addAll(list.whereType<TrustStatement>());
-      }
+      statementsByIssuer.addAll(newStatementsMap);
 
       // 2. REDUCE (Pure Logic)
       // We re-run the reducer on the accumulated history.
       // We run it twice to ensure backward constraints (like 'replace' with 'revokeAt')
       // are propagated to the nodes they affect.
       final pr = pathRequirement ?? defaultPathRequirement;
-      graph = reduceTrustGraph(graph, allStatements, pathRequirement: pr);
-      graph = reduceTrustGraph(graph, allStatements, pathRequirement: pr);
+      graph = reduceTrustGraph(graph, statementsByIssuer, pathRequirement: pr);
+      graph = reduceTrustGraph(graph, statementsByIssuer, pathRequirement: pr);
 
       // 3. CALCULATE NEXT FRONTIER
       // The reducer tells us who is trusted. We need to find who is trusted

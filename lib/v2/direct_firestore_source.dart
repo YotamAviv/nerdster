@@ -13,7 +13,7 @@ import 'package:nerdster/v2/io.dart';
 ///
 /// It replicates the logic of the Cloud Function (revokeAt filtering, distinct collapsing)
 /// on the client side.
-class DirectFirestoreSource implements StatementSource {
+class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
   final String domain;
 
   DirectFirestoreSource(this.domain);
@@ -21,8 +21,8 @@ class DirectFirestoreSource implements StatementSource {
   FirebaseFirestore get _fire => FireFactory.find(domain);
 
   @override
-  Future<Map<String, List<Statement>>> fetch(Map<String, String?> keys) async {
-    final Map<String, List<Statement>> results = {};
+  Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
+    final Map<String, List<T>> results = {};
 
     await Future.wait(keys.entries.map((entry) async {
       final token = entry.key;
@@ -53,7 +53,7 @@ class DirectFirestoreSource implements StatementSource {
         }
 
         final snapshot = await query.get();
-        final List<Statement> chain = [];
+        final List<T> chain = [];
         
         String? previousToken;
         DateTime? previousTime;
@@ -82,7 +82,7 @@ class DirectFirestoreSource implements StatementSource {
           previousToken = json['previous'];
           previousTime = time;
 
-          chain.add(Statement.make(jsonish));
+          chain.add(Statement.make(jsonish) as T);
         }
         
         // Apply distinct

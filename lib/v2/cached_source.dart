@@ -9,11 +9,11 @@ import 'package:nerdster/v2/io.dart';
 /// It does not cache different 'revokeAt' views separately, as the trust algorithm
 /// is greedy and deterministic; once a key is fetched, its statements are filtered
 /// in memory by the logic layer.
-class CachedSource implements StatementSource {
-  final StatementSource _delegate;
+class CachedSource<T extends Statement> implements StatementSource<T> {
+  final StatementSource<T> _delegate;
 
   // Map<Token, List<Statement>>
-  final Map<String, List<Statement>> _cache = {};
+  final Map<String, List<T>> _cache = {};
 
   CachedSource(this._delegate);
 
@@ -22,8 +22,8 @@ class CachedSource implements StatementSource {
   }
 
   @override
-  Future<Map<String, List<Statement>>> fetch(Map<String, String?> keys) async {
-    final Map<String, List<Statement>> results = {};
+  Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
+    final Map<String, List<T>> results = {};
     final Map<String, String?> missing = {};
 
     // 1. Check cache

@@ -7,6 +7,7 @@ import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/net_tree_model.dart';
 import 'package:nerdster/v2/net_tree_view.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
 
 const String kOneofusDomain = 'one-of-us.net';
 const String kNerdsterDomain = 'nerdster.org';
@@ -27,8 +28,8 @@ class _ShadowViewState extends State<ShadowView> {
   String? _error;
   
   // Persist cache across runs within this view
-  final CachedSource _cachedIdentity = CachedSource(SourceFactory.get(kOneofusDomain));
-  final CachedSource _cachedContent = CachedSource(SourceFactory.get(kNerdsterDomain));
+  final CachedSource<TrustStatement> _cachedIdentity = CachedSource(SourceFactory.get<TrustStatement>(kOneofusDomain));
+  final CachedSource<ContentStatement> _cachedContent = CachedSource(SourceFactory.get<ContentStatement>(kNerdsterDomain));
 
   Future<void> _runPipeline() async {
     setState(() {

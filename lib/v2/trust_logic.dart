@@ -16,7 +16,7 @@ typedef PathRequirement = int Function(int distance);
 /// - Notifications
 TrustGraph reduceTrustGraph(
   TrustGraph current, 
-  List<TrustStatement> statements, {
+  Map<String, List<TrustStatement>> byIssuer, {
   PathRequirement? pathRequirement,
 }) {
   final Map<String, int> distances = {current.root: 0};
@@ -26,13 +26,12 @@ TrustGraph reduceTrustGraph(
   final List<TrustNotification> notifications = [];
   final Map<String, List<TrustStatement>> edges = {};
   
-  // --- 1. Index Statements ---
-  final Map<String, List<TrustStatement>> byIssuer = {};
+  // --- 1. Index by Token (for revokeAt resolution) ---
   final Map<String, TrustStatement> byToken = {};
-  
-  for (var s in statements) {
-    byIssuer.putIfAbsent(s.iToken, () => []).add(s);
-    byToken[s.token] = s;
+  for (var list in byIssuer.values) {
+    for (var s in list) {
+      byToken[s.token] = s;
+    }
   }
 
   DateTime? resolveRevokeAt(String? revokeAtToken) {
@@ -74,11 +73,6 @@ TrustGraph reduceTrustGraph(
     edges[issuer] = issuerStatements;
     
     final Set<String> decided = {};
-
-    // --- STEP 0: Process CLEARS ---
-    for (var s in issuerStatements.where((s) => s.verb == TrustVerb.clear)) {
-      decided.add(s.subjectToken);
-    }
 
     // --- STEP 1: Process BLOCKS ---
     for (var s in issuerStatements.where((s) => s.verb == TrustVerb.block)) {

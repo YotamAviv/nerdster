@@ -10,7 +10,7 @@ import 'package:nerdster/v2/source_factory.dart';
 /// [source] - The source to use. Defaults to [SourceFactory.get(kOneofusDomain)].
 /// [description] - Optional description for error messages (useful for permutations).
 Future<void> testBasicScenario({
-  StatementSource? source,
+  StatementSource<TrustStatement>? source,
   String? description,
 }) async {
   // Clear any existing keys to ensure isolation
@@ -24,7 +24,7 @@ Future<void> testBasicScenario({
   await marge.trust(lisa);
   await marge.trust(bart);
 
-  final src = source ?? SourceFactory.get(kOneofusDomain);
+  final src = source ?? SourceFactory.get<TrustStatement>(kOneofusDomain);
   final pipeline = TrustPipeline(src);
   final graph = await pipeline.build(marge.token);
 

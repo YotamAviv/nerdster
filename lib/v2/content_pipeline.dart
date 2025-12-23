@@ -4,7 +4,7 @@ import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/model.dart';
 
 class ContentPipeline {
-  final StatementSource source;
+  final StatementSource<ContentStatement> source;
 
   ContentPipeline(this.source);
 
@@ -32,11 +32,11 @@ class ContentPipeline {
         token: graph.revokeAtConstraints[token]
     };
 
-    final Map<String, List<Statement>> rawMap = await source.fetch(fetchMap);
+    final Map<String, List<ContentStatement>> rawMap = await source.fetch(fetchMap);
     
     final List<ContentStatement> rawContent = [];
     for (var list in rawMap.values) {
-      rawContent.addAll(list.whereType<ContentStatement>());
+      rawContent.addAll(list);
     }
 
     // 3. Verify Content

@@ -13,7 +13,7 @@ import 'package:nerdster/v2/io.dart';
 /// 3. Omit redundant fields (`statement`, `I`) to save bandwidth.
 ///
 /// This class reconstructs the omitted fields on the client side before parsing.
-class CloudFunctionsSource implements StatementSource {
+class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final String baseUrl;
   final String statementType;
   final http.Client client;
@@ -27,7 +27,7 @@ class CloudFunctionsSource implements StatementSource {
   }) : client = client ?? http.Client();
 
   @override
-  Future<Map<String, List<Statement>>> fetch(Map<String, String?> keys) async {
+  Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
     if (keys.isEmpty) return {};
 
     final spec = keys.entries.map((e) {
@@ -54,7 +54,7 @@ class CloudFunctionsSource implements StatementSource {
       throw Exception('Failed to fetch statements from $baseUrl: ${response.statusCode}');
     }
 
-    final Map<String, List<Statement>> results = {};
+    final Map<String, List<T>> results = {};
 
     await for (final line in response.stream.transform(utf8.decoder).transform(const LineSplitter())) {
       if (line.trim().isEmpty) continue;
@@ -86,7 +86,7 @@ class CloudFunctionsSource implements StatementSource {
           if (serverToken != null) json.remove('id');
 
           final jsonish = Jsonish(json, serverToken);
-          list.add(Statement.make(jsonish));
+          list.add(Statement.make(jsonish) as T);
         }
       }
     }
