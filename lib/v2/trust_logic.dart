@@ -50,101 +50,49 @@ TrustGraph reduceTrustGraph(
     final int dist = distances[currentLayer.first]!;
     if (dist >= maxDegrees) break;
 
-    // --- STAGE 1 & 2: BLOCKS & REPLACES ---
-    // We loop until no more nodes are discovered via backward discovery (replaces)
-    // in this layer.
-    bool layerChanged;
-    do {
-      layerChanged = false;
-      final Set<String> layerToProcess = Set.from(currentLayer);
-
-      // 1. BLOCKS
-      for (final issuer in layerToProcess) {
-        var statements = byIssuer[issuer] ?? [];
-        statements.sort((a, b) => b.time.compareTo(a.time));
-        final decided = <String>{};
-        for (var s in statements.where((s) => s.verb == TrustVerb.block)) {
-          final subject = s.subjectToken;
-          if (decided.contains(subject)) continue;
-          decided.add(subject);
-
-          if (distances.containsKey(subject) && distances[subject]! <= dist) {
-            notifications.add(TrustNotification(
-              subject: subject,
-              reason: "Attempt to block trusted key by $issuer",
-              relatedStatements: [s.token],
-              isConflict: true,
-            ));
-          } else {
-            blocked.add(subject);
-          }
-        }
-      }
-
-      // 2. REPLACES
-      for (final issuer in layerToProcess) {
-        var statements = byIssuer[issuer] ?? [];
-        statements.sort((a, b) => b.time.compareTo(a.time));
-        final decided = <String>{};
-        for (var s in statements.where((s) => s.verb == TrustVerb.replace)) {
-          final oldKey = s.subjectToken;
-          if (decided.contains(oldKey)) continue;
-          decided.add(oldKey);
-
-          final alreadyNotified = notifications.any((n) => n.relatedStatements.contains(s.token));
-
-          if (distances.containsKey(oldKey) && distances[oldKey]! <= dist && !alreadyNotified) {
-            notifications.add(TrustNotification(
-              subject: oldKey,
-              reason: "Trusted key $oldKey is being replaced by $issuer",
-              relatedStatements: [s.token],
-              isConflict: false,
-            ));
-          }
-
-          if (blocked.contains(oldKey) && !alreadyNotified) {
-            notifications.add(TrustNotification(
-              subject: oldKey,
-              reason: "Blocked key $oldKey is being replaced by $issuer (Benefit of the doubt given to $issuer)",
-              relatedStatements: [s.token],
-              isConflict: false,
-            ));
-          }
-
-          if (replacements.containsKey(oldKey)) {
-            final existingNewKey = replacements[oldKey];
-            if (existingNewKey != issuer) {
-              notifications.add(TrustNotification(
-                subject: oldKey, 
-                reason: "Key $oldKey replaced by both $existingNewKey and $issuer",
-                relatedStatements: [s.token],
-                isConflict: true,
-              ));
-              continue;
-            }
-          }
-          
-          replacements[oldKey] = issuer;
-          if (s.revokeAt != null) {
-            revokeAtConstraints[oldKey] = s.revokeAt!;
-          }
-
-          if (!distances.containsKey(oldKey)) {
-            distances[oldKey] = dist;
-            currentLayer.add(oldKey);
-            layerChanged = true;
-          }
-        }
-      }
-    } while (layerChanged);
-
-    // --- STAGE 3: TRUSTS ---
     final nextLayer = <String>{};
+
+    // --- STAGE 1: BLOCKS ---
+    // Blocks are processed first for the entire layer.
+    for (final issuer in currentLayer) {
+      var statements = byIssuer[issuer] ?? [];
+      statements.sort((a, b) => b.time.compareTo(a.time));
+      final decided = <String>{};
+      for (var s in statements.where((s) => s.verb == TrustVerb.block)) {
+        final subject = s.subjectToken;
+        if (decided.contains(subject)) continue;
+        decided.add(subject);
+
+        if (subject == current.root) {
+          notifications.add(TrustNotification(
+            subject: subject,
+            reason: "Attempt to block your key.",
+            relatedStatements: [s.token],
+            isConflict: true,
+          ));
+          continue;
+        }
+
+        if (distances.containsKey(subject) && distances[subject]! <= dist) {
+          notifications.add(TrustNotification(
+            subject: subject,
+            reason: "Attempt to block trusted key by $issuer",
+            relatedStatements: [s.token],
+            isConflict: true,
+          ));
+        } else {
+          blocked.add(subject);
+        }
+      }
+    }
+
+    // --- STAGE 2: REPLACES & TRUSTS ---
+    // These discover nodes for the NEXT layer.
     for (final issuer in currentLayer) {
       var statements = byIssuer[issuer] ?? [];
       statements.sort((a, b) => b.time.compareTo(a.time));
 
-      // Apply constraints discovered in STAGE 2
+      // Apply constraints discovered in previous layers
       if (revokeAtConstraints.containsKey(issuer)) {
         final limitTime = resolveRevokeAt(revokeAtConstraints[issuer]);
         if (limitTime != null) {
@@ -154,6 +102,74 @@ TrustGraph reduceTrustGraph(
       edges[issuer] = statements;
 
       final decided = <String>{};
+
+      // 1. Process REPLACES
+      for (var s in statements.where((s) => s.verb == TrustVerb.replace)) {
+        final oldKey = s.subjectToken;
+        if (decided.contains(oldKey)) continue;
+        decided.add(oldKey);
+
+        if (oldKey == current.root) {
+          notifications.add(TrustNotification(
+            subject: oldKey,
+            reason: "Attempt to replace your key.",
+            relatedStatements: [s.token],
+            isConflict: true,
+          ));
+          continue;
+        }
+
+        if (blocked.contains(oldKey)) {
+          notifications.add(TrustNotification(
+            subject: oldKey,
+            reason: "Blocked key $oldKey is being replaced by $issuer",
+            relatedStatements: [s.token],
+            isConflict: false,
+          ));
+          // We still accept the replacement (identity link) but the key remains blocked.
+        }
+
+        // Distance Authority: If the old key is already trusted and is CLOSER than 
+        // the new path (dist + 1), we accept the link but ignore the revocation.
+        if (distances.containsKey(oldKey) && distances[oldKey]! < dist + 1) {
+          if (!replacements.containsKey(oldKey)) {
+            replacements[oldKey] = issuer;
+          }
+          notifications.add(TrustNotification(
+            subject: oldKey,
+            reason: "Trusted key $oldKey is being replaced by $issuer (Revocation ignored due to distance)",
+            relatedStatements: [s.token],
+            isConflict: false,
+          ));
+          continue;
+        }
+
+        if (replacements.containsKey(oldKey)) {
+          final existingNewKey = replacements[oldKey];
+          if (existingNewKey != issuer) {
+            notifications.add(TrustNotification(
+              subject: oldKey, 
+              reason: "Key $oldKey replaced by both $existingNewKey and $issuer",
+              relatedStatements: [s.token],
+              isConflict: true,
+            ));
+            continue;
+          }
+        }
+        
+        replacements[oldKey] = issuer;
+        if (s.revokeAt != null) {
+          revokeAtConstraints[oldKey] = s.revokeAt!;
+        }
+
+        if (!visited.contains(oldKey)) {
+          visited.add(oldKey);
+          distances[oldKey] = dist + 1;
+          nextLayer.add(oldKey);
+        }
+      }
+
+      // 2. Process TRUSTS
       for (var s in statements.where((s) => s.verb == TrustVerb.trust)) {
         final subject = s.subjectToken;
         if (decided.contains(subject)) continue;
@@ -172,6 +188,12 @@ TrustGraph reduceTrustGraph(
         String effectiveSubject = subject;
         if (replacements.containsKey(subject)) {
           effectiveSubject = replacements[subject]!;
+          notifications.add(TrustNotification(
+            subject: subject,
+            reason: "You trust a non-canonical key directly (replaced by $effectiveSubject)",
+            relatedStatements: [s.token],
+            isConflict: false,
+          ));
         }
         
         if (blocked.contains(effectiveSubject)) continue;

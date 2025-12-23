@@ -1,16 +1,25 @@
 # Continue to work on the tests and impl for the trust algorithm
 
-- examine all of the notification types from the legacy code
-- make sure we can understand all of them
-- document them
-- test them
-- so.. difficult scenarios.. notifications, conflicts, loops, etc..
+- examine all of the notification types from the legacy code [DONE]
+- make sure we can understand all of them [DONE]
+- document them [DONE - see docs/v2_trust_specification.md]
+- test them [DONE - 10 tests passing in test/v2/trust_algorithm_test.dart]
+- so.. difficult scenarios.. notifications, conflicts, loops, etc.. [DONE]
+
+
+- Nerdster recommends: scan this key, verify that you've vouched for it
+  - add 'suspect' (moves to the end of your direct trusts, hints to others)
+  - add generated comment
+  - clear it?
+  - block it?
 
 # longer term
 
 - document this as a requirements doc (for AI)
 - visualize the network
   - ideally not as a tree
+    - graph that you can drag around: blue, green, red edges
+      - only goes 1 or degrees out and then fades, have to change PoV to explore
   - ideally without deprecated libraries
   - ability to link to a person, key, statement
 - crypto on

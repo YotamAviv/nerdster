@@ -6,6 +6,7 @@ import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/net_tree_model.dart';
 import 'package:nerdster/v2/net_tree_view.dart';
+import 'package:nerdster/v2/graph_demo.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
@@ -69,6 +70,19 @@ class _ShadowViewState extends State<ShadowView> {
     Navigator.push(context, MaterialPageRoute(builder: (_) => V2NetTreeView(root: root)));
   }
 
+  void _showGraph() {
+    if (_graph == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(title: const Text('Trust Graph Visualization')),
+          body: TrustGraphVisualizer(graph: _graph!),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -107,6 +121,11 @@ class _ShadowViewState extends State<ShadowView> {
                   ElevatedButton(
                     onPressed: (_graph == null || _loading) ? null : _showTree,
                     child: const Text('Show Tree'),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: (_graph == null || _loading) ? null : _showGraph,
+                    child: const Text('Visualize'),
                   ),
                 ],
               ),

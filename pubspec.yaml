@@ -58,6 +58,7 @@ dependencies:
   flutter_linkify: ^6.0.0
   package_info_plus: ^8.1.1
   cloud_functions: ^6.0.0
+  graphview: ^1.5.1
   web: ^1.1.1
   integration_test:
     sdk: flutter

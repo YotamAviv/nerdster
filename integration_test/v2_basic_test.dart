@@ -70,7 +70,7 @@ void main() {
         
         // Manually construct source to inject omit params
         final url = V2Config.getUrl(kOneofusDomain)!;
-        final source = CloudFunctionsSource(
+        final source = CloudFunctionsSource<TrustStatement>(
           baseUrl: url, 
           statementType: kOneofusType,
           omit: p.omit,
