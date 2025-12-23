@@ -36,7 +36,8 @@ TrustGraph reduceTrustGraph(
 
   DateTime? resolveRevokeAt(String? revokeAtToken) {
     if (revokeAtToken == null) return null;
-    return byToken[revokeAtToken]?.time;
+    // If the token is not found (or is "<since always>"), we revoke "since always" (epoch 0).
+    return byToken[revokeAtToken]?.time ?? DateTime.fromMicrosecondsSinceEpoch(0);
   }
 
   // --- 2. BFS Traversal ---

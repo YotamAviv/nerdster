@@ -34,3 +34,4 @@ The `revokeAt` field is a modifier that can be attached to statements (primarily
 
 - **Meaning:** "This statement (and the key it refers to) is only valid for statements issued *before* the timestamp/token specified in `revokeAt`."
 - **Use Case:** If a key is compromised, a `replace` statement with `revokeAt` ensures that any malicious statements made by the attacker (after the compromise time) are ignored.
+- **Invalid Tokens & "<since always>":** If the `revokeAt` token does not match any known statement by that issuer, the key is considered revoked **since always** (i.e., all its statements are ignored). The special string `"<since always>"` can be used explicitly to achieve this effect as it's guaranteed to not match any valid statement token.
