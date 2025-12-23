@@ -1,21 +1,45 @@
-# Continue to work on the tests and impl for the trust algorithm
+# Probably next - DO NOT GET STARTED.
 
-- examine all of the notification types from the legacy code [DONE]
-- make sure we can understand all of them [DONE]
-- document them [DONE - see docs/v2_trust_specification.md]
-- test them [DONE - 10 tests passing in test/v2/trust_algorithm_test.dart]
-- so.. difficult scenarios.. notifications, conflicts, loops, etc.. [DONE]
+## Delegate / follow network.
+Document
+Test
+Implement
 
+## Censor
+Document
+Test
+Implemnet
 
-- Nerdster recommends: scan this key, verify that you've vouched for it
-  - add 'suspect' (moves to the end of your direct trusts, hints to others)
-  - add generated comment
-  - clear it?
-  - block it?
+## Equivalent, Related
+Document
+Test
+Implement.
+- possibly drag n' drop
 
-# longer term
+Display subjects, ratings, relations,
 
+# longer term - DO NOT GET STARTED ON THESE!
+
+# Nerdster recommends (Have the Nerdster recommend an action)
+- Nerdster recommends (Have the Nerdster recommend an action)
+  - get in touch with your associate and
+    - verify the key you have represents him and has not been compromised (maybe mention a specific action)
+    - ask about a different key.
+  - scan this key, verify that you've vouched for it
+    - add 'suspect' (moves to the end of your direct trusts, hints to others)
+    - add generated comment
+    - clear it?
+    - block it?
+
+# Graph layout, traversal, linking, expansion...
 - document this as a requirements doc (for AI)
+
+Lay the graph out better.
+- include keys dive in when crypto enabled
+Deal with hugeness:
+- fade out nodes beyond 2 degrees, but highlight start of paths.
+- scroll through or something when there are too many edges.
+Ditch the shadow view graph entirely.
 - visualize the network
   - ideally not as a tree
     - graph that you can drag around: blue, green, red edges
@@ -38,8 +62,6 @@
   - 
 
 # UI regression testing
-
-# longer term
 
 ## implement in cloud
 
