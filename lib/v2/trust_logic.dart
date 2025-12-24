@@ -1,3 +1,4 @@
+import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/model.dart';
 
@@ -21,8 +22,8 @@ TrustGraph reduceTrustGraph(
 }) {
   final Map<String, int> distances = {current.root: 0};
   final List<String> orderedKeys = [current.root];
-  final Map<String, String> replacements = Map.from(current.replacements);
-  final Map<String, String> replacementConstraints = Map.from(current.replacementConstraints);
+  final Map<String, String> replacements = {};
+  final Map<String, String> replacementConstraints = {};
   final Set<String> blocked = {};
   final List<TrustNotification> notifications = [];
   final Map<String, List<TrustStatement>> edges = {};
@@ -208,9 +209,10 @@ TrustGraph reduceTrustGraph(
         String effectiveSubject = subject;
         if (replacements.containsKey(subject)) {
           effectiveSubject = replacements[subject]!;
+          final String issuerName = issuer == current.root ? "You" : "Identity $issuer";
           notifications.add(TrustNotification(
             subject: subject,
-            reason: "You trust a non-canonical key directly (replaced by $effectiveSubject)",
+            reason: "$issuerName trusts a non-canonical key directly (replaced by $effectiveSubject)",
             relatedStatements: [s.token],
             isConflict: false,
           ));
@@ -242,7 +244,16 @@ TrustGraph reduceTrustGraph(
     
     currentLayer = nextLayer;
   }
-  
+
+  // Deduplicate notifications
+  final Map<String, TrustNotification> uniqueNotifications = {};
+  for (final n in notifications) {
+    final key = "${n.subject}:${n.reason}";
+    if (!uniqueNotifications.containsKey(key)) {
+      uniqueNotifications[key] = n;
+    }
+  }
+
   return TrustGraph(
     root: current.root,
     distances: distances,
@@ -250,7 +261,7 @@ TrustGraph reduceTrustGraph(
     replacements: replacements,
     replacementConstraints: replacementConstraints,
     blocked: blocked,
-    notifications: notifications,
+    notifications: uniqueNotifications.values.toList(),
     edges: edges,
   );
 }

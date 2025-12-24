@@ -27,7 +27,7 @@ void main() async {
     prefsSnapshot = Prefs.snapshot();
     timezoneOffsetKludge = 0;
     useClock(TestClock());
-    DemoKey.clear();
+    DemoKey.reset();
     signInState.signOut();
 
     for (final fire in FireFactory.domain2fire.values) {

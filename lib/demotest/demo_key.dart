@@ -70,7 +70,7 @@ class DemoKey {
     'stress': stress,
   };
 
-  static void clear() {
+  static void reset() {
     _name2key.clear();
     _token2key.clear();
     _exports.clear();
@@ -108,58 +108,98 @@ class DemoKey {
 
   DemoKey._internal(this.name, this.keyPair, this.publicKey, this.token);
 
-  // Expose statements for testing
-  List<TrustStatement> get statements {
-    final fetcher = Fetcher(token, kOneofusDomain);
-    // This is a hack for testing. In reality, we'd need to fetch from the source.
-    // But DemoKey pushes to a memory source usually.
-    // Let's assume the memory source is accessible or we track them here.
-    return _localStatements;
-  }
-  final List<TrustStatement> _localStatements = [];
+  // --- Outbox / Local Cache ---
+  
+  /// Returns all trust statements issued by this key, newest first.
+  List<TrustStatement> get trustStatements => _localStatements.whereType<TrustStatement>().toList();
 
-  Future<Statement> doRate(
-      {dynamic subject,
-      String? title,
-      String? comment,
-      bool? recommend,
-      bool? dismiss,
-      bool? censor,
-      ContentVerb? verb,
-      String? export}) async {
+  /// Returns all content statements issued by this key, newest first.
+  List<ContentStatement> get contentStatements => _localStatements.whereType<ContentStatement>().toList();
+
+  final List<Statement> _localStatements = [];
+
+  // --- Content Statement Helpers (Make, then Do) ---
+
+  Future<Json> makeRate({
+    required dynamic subject,
+    String? comment,
+    bool? recommend,
+    bool? dismiss,
+    bool? censor,
+    dynamic other,
+  }) async {
+    return ContentStatement.make(
+      await publicKey.json,
+      ContentVerb.rate,
+      subject,
+      comment: comment,
+      recommend: recommend,
+      dismiss: dismiss,
+      censor: censor,
+      other: other,
+    );
+  }
+
+  Future<Json> makeFollow(dynamic subject, Json contexts) async {
+    return ContentStatement.make(
+      await publicKey.json,
+      ContentVerb.follow,
+      subject is DemoKey ? await subject.publicKey.json : subject,
+      contexts: contexts,
+    );
+  }
+
+  Future<Json> makeRelate(ContentVerb verb, dynamic subject, dynamic other) async {
+    return ContentStatement.make(
+      await publicKey.json,
+      verb,
+      subject is DemoKey ? await subject.publicKey.json : subject,
+      other: other is DemoKey ? await other.publicKey.json : other,
+    );
+  }
+
+  Future<ContentStatement> doRate({
+    dynamic subject,
+    String? title,
+    String? comment,
+    bool? recommend,
+    bool? dismiss,
+    bool? censor,
+    String? export,
+  }) async {
     assert(i(title) + i(subject) == 1);
     if (b(title)) {
       subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
     }
-    ContentVerb useVerb = verb ?? ContentVerb.rate;
-    // BUG: TODO: Sometimes use the token instead of the entire statement. RateDialog has similar logic. Factor.
-    Json json = ContentStatement.make(await publicKey.json, useVerb, subject!,
-        comment: comment, recommend: recommend, dismiss: dismiss, censor: censor);
+    
+    final Json json = await makeRate(
+      subject: subject is DemoKey ? await subject.publicKey.json : subject!,
+      comment: comment,
+      recommend: recommend,
+      dismiss: dismiss,
+      censor: censor,
+    );
 
-    Fetcher fetcher = Fetcher(token, kNerdsterDomain);
-    OouSigner signer = await OouSigner.make(keyPair);
-    Statement statement = await fetcher.push(json, signer);
-    if (export != null) _exports[export] = statement.json;
-
-    return statement;
-  }
-
-  Future<Statement> doFollow(DemoKey other, Json contexts,
-      {ContentVerb? verb, String? export}) async {
-    ContentVerb useVerb = verb ?? ContentVerb.follow;
-    Json json = ContentStatement.make(await publicKey.json, useVerb, await (other.publicKey).json,
-        contexts: contexts);
-
-    Fetcher fetcher = Fetcher(token, kNerdsterDomain);
-    OouSigner signer = await OouSigner.make(keyPair);
-    Statement statement = await fetcher.push(json, signer);
-    // CONSIDER: followNet.listen(); // Problematic
+    final ContentStatement statement = await _pushContent(json);
     if (export != null) _exports[export] = statement.json;
     return statement;
   }
 
-  Future<Statement> doRelate(ContentVerb verb,
-      {Json? subject, String? title, Json? other, String? otherTitle, String? export}) async {
+  Future<ContentStatement> doFollow(dynamic subject, Json contexts, {String? export}) async {
+    final Json json = await makeFollow(subject, contexts);
+    final ContentStatement statement = await _pushContent(json);
+    if (export != null) _exports[export] = statement.json;
+    return statement;
+  }
+
+  Future<ContentStatement> doRelate(
+    ContentVerb verb, {
+    dynamic subject,
+    String? title,
+    dynamic other,
+    String? otherTitle,
+    String? export,
+  }) async {
     assert(i(subject) + i(title) == 1);
     assert(i(other) + i(otherTitle) == 1);
     if (b(title)) {
@@ -168,37 +208,65 @@ class DemoKey {
     if (b(otherTitle)) {
       other = {'contentType': 'article', 'title': otherTitle, 'url': 'u1'};
     }
-    Json json = ContentStatement.make(await publicKey.json, verb, subject, other: other);
-    Fetcher fetcher = Fetcher(token, kNerdsterDomain);
-    OouSigner signer = await OouSigner.make(keyPair);
-    Statement statement = await fetcher.push(json, signer);
+    
+    final Json json = await makeRelate(verb, subject!, other!);
+    final ContentStatement statement = await _pushContent(json);
     if (export != null) _exports[export] = statement.json;
     return statement;
   }
 
-  Future<Statement> trust(DemoKey other, {String? moniker, String? comment, String? domain, String? revokeAt, String? export}) async {
-    return doTrust(TrustVerb.trust, other, moniker: moniker, comment: comment, domain: domain, revokeAt: revokeAt, export: export);
+  Future<ContentStatement> _pushContent(Json json) async {
+    final Fetcher fetcher = Fetcher(token, kNerdsterDomain);
+    final OouSigner signer = await OouSigner.make(keyPair);
+    final Statement statement = await fetcher.push(json, signer);
+    final ContentStatement content = statement as ContentStatement;
+    _localStatements.insert(0, content);
+    return content;
   }
 
-  Future<Statement> block(DemoKey other, {String? comment, String? domain, String? export}) async {
-    return doTrust(TrustVerb.block, other, comment: comment, domain: domain, export: export);
+  // --- Trust Statement Helpers (Make, then Do) ---
+
+  Future<Json> makeTrust(TrustVerb verb, DemoKey other, {String? moniker, String? comment, String? domain, String? revokeAt}) async {
+    return TrustStatement.make(
+      await publicKey.json,
+      await other.publicKey.json,
+      verb,
+      domain: domain,
+      moniker: moniker,
+      comment: comment,
+      revokeAt: revokeAt,
+    );
   }
 
-  Future<Statement> replace(DemoKey other, {Statement? lastGoodToken, String? comment, String? domain, String? export}) async {
-    return doTrust(TrustVerb.replace, other, comment: comment, domain: domain, revokeAt: lastGoodToken?.token, export: export);
+  Future<TrustStatement> trust(DemoKey other, {required String moniker, String? comment, String? export}) async {
+    return await doTrust(TrustVerb.trust, other, moniker: moniker, comment: comment, export: export);
   }
 
-  Future<Statement> revoke(DemoKey other, {String? comment, String? domain, String? export}) async {
-    // Revoke is usually done by issuing a new statement that contradicts or clears the old one,
-    // or by using 'clear' verb if supported.
-    // For now mapping to clear.
-    return doTrust(TrustVerb.clear, other, comment: comment, domain: domain, export: export);
+  Future<TrustStatement> block(DemoKey other, {String? comment, String? export}) async {
+    return await doTrust(TrustVerb.block, other, comment: comment, export: export);
   }
 
-  // ... existing methods ...
+  Future<TrustStatement> replace(DemoKey other, {Statement? lastGoodToken, String? comment, String? export}) async {
+    return await doTrust(TrustVerb.replace, other, comment: comment, revokeAt: lastGoodToken?.token, export: export);
+  }
 
-  Future<Statement> doTrust(TrustVerb verb, DemoKey other,
-      {String? moniker, String? comment, String? domain, String? revokeAt, String? export}) async {
+  Future<TrustStatement> delegate(DemoKey other, {required String domain, String? comment, String? export}) async {
+    return await doTrust(TrustVerb.delegate, other, comment: comment, domain: domain, export: export);
+  }
+
+  Future<TrustStatement> clear(DemoKey other) async {
+    return await doTrust(TrustVerb.clear, other);
+  }
+
+  Future<TrustStatement> doTrust(
+    TrustVerb verb,
+    DemoKey other, {
+    String? moniker,
+    String? comment,
+    String? domain,
+    String? revokeAt,
+    String? export,
+  }) async {
     switch (verb) {
       case TrustVerb.trust:
         moniker ??= other.name;
@@ -213,20 +281,14 @@ class DemoKey {
       case TrustVerb.clear:
     }
 
-    Json json = TrustStatement.make(
-        await (await keyPair.publicKey).json, await (other.publicKey).json, verb,
-        domain: domain, moniker: moniker, comment: comment, revokeAt: revokeAt);
-    Fetcher fetcher = Fetcher(token, kOneofusDomain);
-    OouSigner signer = await OouSigner.make(keyPair);
-    Statement statement = await fetcher.push(json, signer);
-    
-    if (statement is TrustStatement) {
-      _localStatements.add(statement);
-    }
-    
-    // CONSIDER: oneofusNet.listen(); // Problematic
-    if (export != null) _exports[export] = statement.json;
-    return statement;
+    final Json json = await makeTrust(verb, other, moniker: moniker, comment: comment, domain: domain, revokeAt: revokeAt);
+    final Fetcher fetcher = Fetcher(token, kOneofusDomain);
+    final OouSigner signer = await OouSigner.make(keyPair);
+    final Statement statement = await fetcher.push(json, signer);
+    final TrustStatement trust = statement as TrustStatement;
+    _localStatements.insert(0, trust);
+    if (export != null) _exports[export] = trust.json;
+    return trust;
   }
 
   Future<DemoKey> makeDelegate({String? export}) async {

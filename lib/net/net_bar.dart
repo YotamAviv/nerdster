@@ -159,7 +159,7 @@ class _StructureDropdownState extends State<_StructureDropdown> {
     ];
 
     const String message =
-        '''"<one-of-us>" structure will build tree accoring to who one-of-us trusts whom.
+        '''"<one-of-us>" structure will build tree according to who trusts whom in the Identity Layer.
 In case statements are displayed, they'll be identity statements.
 
 "follow network" structure will build the tree accoring to who follows whom for the selected context.
@@ -319,7 +319,7 @@ class _FollowDropdownState extends State<_FollowDropdown> {
 Select an enabled follow context or <one-of-us> (everyone).'''
         : '''Choose a follow context:
 - <one-of-us>: everyone
-- <nerdster>: everyone with exceptions (block folks that talk too much or specifically <nerdster> follow those far on your one-of-us network that you want closer)
+- <nerdster>: everyone with exceptions (block folks that talk too much or specifically <nerdster> follow those far on your Identity Layer network that you want closer)
 - Custom contexts like 'nerd', 'social', 'family', 'local', 'geezer', etc...''';
 
     Slider degreesSlider = Slider(

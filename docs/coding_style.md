@@ -17,12 +17,14 @@ Do not write code that "handles" impossible situations unless it's at the system
 *   **Good:** `assert(list.isNotEmpty, 'List must not be empty');`
 
 ### 3. Strict Data Integrity
-*   Data sources (like Firestore) must return valid, sorted, and verified data.
+*   Data sources (like Firestore) must return valid data.
 *   Consumers of that data (like pipelines or logic functions) should **assert** validity, not fix it.
-*   If a chain of trust is broken, the entire chain is invalid. Do not try to salvage partial data.
 
 ### 4. Immutability
 Prefer immutable data structures for core models (`TrustGraph`, `TrustAtom`, etc.).
 
 ### 5. Comments
 Explain *why*, not *what*. Document assumptions about data integrity.
+Avoid long-winded explanations of protocol mechanics or implementation details that can be inferred from the code or the concise description of the data mapping.
+*   **Bad:** A paragraph explaining the history and purpose of a concept.
+*   **Good:** "Maps identities keys to delegate keys and vice versa."

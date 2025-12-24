@@ -22,7 +22,7 @@ void main() async {
 
   setUp(() async {
     useClock(TestClock());
-    DemoKey.clear();
+    DemoKey.reset();
     Fetcher.clear();
     await FireFactory.clearPersistence();
   });

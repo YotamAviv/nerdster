@@ -14,15 +14,15 @@ Future<void> testBasicScenario({
   String? description,
 }) async {
   // Clear any existing keys to ensure isolation
-  DemoKey.clear();
+  DemoKey.reset();
 
   var lisa = await DemoKey.create('lisa');
   var marge = await DemoKey.create('marge');
   var bart = await DemoKey.create('bart');
 
-  await lisa.trust(marge);
-  await marge.trust(lisa);
-  await marge.trust(bart);
+  await lisa.trust(marge, moniker: 'marge');
+  await marge.trust(lisa, moniker: 'lisa');
+  await marge.trust(bart, moniker: 'bart');
 
   final src = source ?? SourceFactory.get<TrustStatement>(kOneofusDomain);
   final pipeline = TrustPipeline(src);

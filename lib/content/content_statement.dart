@@ -103,7 +103,7 @@ class ContentStatement extends Statement {
   // CONSIDER: Factoring a little more into parent.
   static Json make(Json iJson, ContentVerb verb, dynamic subject,
       {String? comment,
-      Json? other,
+      dynamic other,
       bool? recommend,
       bool? dismiss,
       bool? censor,

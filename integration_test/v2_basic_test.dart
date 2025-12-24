@@ -21,7 +21,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
-    DemoKey.clear();
+    DemoKey.reset();
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );

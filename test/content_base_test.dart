@@ -62,7 +62,7 @@ void main() async {
     prefsSnapshot = Prefs.snapshot();
     timezoneOffsetKludge = 0;
     useClock(TestClock());
-    DemoKey.clear();
+    DemoKey.reset();
     signInState.signOut();
     await signInState.signIn(Jsonish({}).token, null); // unnecessary.
     contentBase.censor = true;

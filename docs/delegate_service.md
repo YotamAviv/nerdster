@@ -1,20 +1,22 @@
 # Delegate Services and Keys
 
-Users issue **Delegate Keys** (App Keys) for specific domains (e.g., `nerdster.org`) by:
+The Delegate Service is a core component enabling the use of singular identities. It enables users to securely sign in to third-party applications (like Nerdster) and authorize those applications to act on their behalf using **delegate keys**.
 
-1.  Signing and publishing a **Delegate Statement** using their Identity Key.
+Users issue **delegate keys** (App Keys) for specific domains (e.g., `nerdster.org`) by:
+
+1.  Signing and publishing a **Delegate Statement** using their **identity key**.
 2.  Giving the delegate key pair to a service to sign content on their behalf.
 
 This separation allows users to:
 
-1.  Keep their Identity Key secure.
+1.  Keep their **identity key** secure.
 2.  Manage delegate keys independently (rotate or revoke without service participation).
 3.  Maintain a single identity across multiple services.
 
 ## Validity Conditions
 
 Content signed by a delegate key is valid if:
-- It is delegated by a statement signed by the issuer's Identity Key.
+- It is delegated by a statement signed by the issuer's **identity key**.
 - The key is not revoked, or the content was signed before the `revokeAt` time.
 
 ## Examples

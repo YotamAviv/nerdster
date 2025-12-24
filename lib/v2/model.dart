@@ -1,3 +1,4 @@
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
 /// Represents a notification or conflict discovered during graph construction.
@@ -26,7 +27,8 @@ class TrustGraph {
   final Map<String, String> replacements; // OldToken -> NewToken
   final Map<String, String> replacementConstraints; // Token -> RevokeAtToken (Time constraint)
   final Set<String> blocked; // Tokens blocked by the graph
-  final List<TrustNotification> notifications; // Structured notifications and conflicts
+  /// Notifications: key rotation issues, attempt to claim a delegate that's already been claimed.
+  final List<TrustNotification> notifications;
   final Map<String, List<TrustStatement>> edges; // Adjacency list: Issuer -> List<TrustStatement> (Valid statements)
 
   TrustGraph({
@@ -67,6 +69,12 @@ class TrustGraph {
     return groups;
   }
 
+  /// Returns all trusted tokens that belong to the given canonical identity.
+  List<String> getEquivalenceGroup(String canonical) {
+    return distances.keys.where((token) => resolveIdentity(token) == canonical).toList()
+      ..sort((a, b) => distances[a]!.compareTo(distances[b]!));
+  }
+
   /// Returns all shortest paths from root to [target].
   List<List<String>> getPathsTo(String target) {
     if (target == root) return [[root]];
@@ -91,5 +99,67 @@ class TrustGraph {
     }
     return results;
   }
+}
+
+/// The result of building a Follow Network for a specific context.
+class FollowNetwork {
+  final String fcontext;
+  final List<String> identities; // Canonical identity tokens in discovery order
+  final String rootIdentity; // The identity from whose POV this network was built
+  /// Notifications: attempt to claim a delegate that's already been claimed.
+  final List<TrustNotification> notifications;
+
+  FollowNetwork({
+    required this.fcontext,
+    this.identities = const [],
+    required this.rootIdentity,
+    this.notifications = const [],
+  });
+
+  bool contains(String identity) => identities.contains(identity);
+}
+
+/// Aggregated data for a single subject (or equivalence group).
+class SubjectAggregation {
+  final String canonicalToken;
+  final dynamic subject; // The subject JSON or token
+  final List<ContentStatement> statements;
+  final Set<String> tags;
+  final int likes;
+  final int dislikes;
+  final DateTime lastActivity;
+  final Set<String> related; // Canonical tokens of related subjects
+  final bool isDismissed; // Dismissed by the POV (first identity in FollowNetwork)
+
+  SubjectAggregation({
+    required this.canonicalToken,
+    this.subject,
+    this.statements = const [],
+    this.tags = const {},
+    this.likes = 0,
+    this.dislikes = 0,
+    required this.lastActivity,
+    this.related = const {},
+    this.isDismissed = false,
+  });
+}
+
+/// The result of aggregating content for a Follow Network.
+class ContentAggregation {
+  /// Flat list of filtered statements, ordered by the rank (discovery distance) 
+  /// of the signing identity in the FollowNetwork.
+  final List<ContentStatement> statements;
+  final Set<String> censored; // Tokens of censored subjects/statements
+  final Map<String, String> equivalence; // SubjectToken -> CanonicalSubjectToken
+  final Map<String, Set<String>> related; // SubjectToken -> Set of RelatedSubjectTokens
+  final Map<String, SubjectAggregation> subjects; // CanonicalToken -> Aggregation
+
+  ContentAggregation({
+    this.statements = const [],
+    this.censored = const {},
+    this.equivalence = const {},
+    this.related = const {},
+    this.subjects = const {},
+  });
 }
 

@@ -21,7 +21,7 @@ void main() {
     FireFactory.register(kNerdsterDomain, firestore, null);
     TrustStatement.init();
     ContentStatement.init();
-    DemoKey.clear();
+    DemoKey.reset();
   });
 
   test('Simpsons Demo: Millhouse PoV', () async {

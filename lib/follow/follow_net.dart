@@ -22,8 +22,9 @@ import 'package:nerdster/trust/greedy_bfs_trust.dart';
 import 'package:nerdster/trust/trust.dart';
 
 const kNerdsterContext = '<nerdster>';
-const kOneofusContext = '<one-of-us>';
-const kSpecialContexts = {kOneofusContext, kNerdsterContext};
+const kIdentityContext = '<identity>';
+const kOneofusContext = kIdentityContext;
+const kSpecialContexts = {kIdentityContext, kNerdsterContext};
 typedef StatementFilter = Iterable<Statement> Function(Iterable<Statement>);
 
 ProgressRX _followNetProgressR = ProgressRX(ProgressDialog.singleton.nerdster);

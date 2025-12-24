@@ -22,7 +22,11 @@ The V2 Trust Pipeline implements a "Strictly Greedy" BFS algorithm. This means t
 
 The V2 algorithm generates `TrustNotification` objects when it encounters conflicts or invalid statements.
 
-### Notification Fatigue Analysis
+## Pending Refinements
+
+1.  **Implement Double-Claimed Delegate Notification**: Add logic to detect and notify when multiple identities attempt to claim the same delegate key.
+2.  **Use Merger for Statements**: Replace `sort` calls in `follow_logic.dart` and `content_logic.dart` with a `Merger` to handle pre-sorted statements efficiently.
+ Analysis
 
 | Legacy Notification | V2 Status | To Whom? | Decision / Logic |
 |---------------------|-----------|----------|------------------|
@@ -65,6 +69,10 @@ Manages the loop between fetching data (I/O) and reducing it (Logic). It uses a 
 
 ## Progress Log
 
+- **2025-01-24**: Refactored `TrustGraph` and `reduceTrustGraph` to remove `delegates`.
+- **2025-01-24**: Refactored `FollowNetwork` to use an ordered `List<String>` for `identities` and removed the `authority` map.
+- **2025-01-24**: Updated `SubjectAggregation` model and `reduceContentAggregation` logic to support likes, tags, and last activity.
+- **2025-01-24**: Enforced explicit typing (no `var`) and fail-fast assertions in V2 logic.
 *   **2025-12-22**: Initial implementation of V2 Trust Pipeline.
 *   **2025-12-22**: Refactored IO layer to be generic (`StatementSource<T>`).
 *   **2025-12-22**: Implemented "Since Always" revocation logic.
@@ -72,6 +80,18 @@ Manages the loop between fetching data (I/O) and reducing it (Logic). It uses a 
 *   **2025-12-22**: Implemented "Distance Authority" for replacements: Identity links are always accepted, but revocations are ignored if the replacer is further away than the original trust path.
 *   **2025-12-22**: Aligned V2 with legacy "Next Degree" replacement logic (rotations cost 1 degree).
 *   **2025-12-22**: Verified all 13 core trust scenarios with unit tests (including Double Replacement).
+*   **2025-12-23**: Implemented V2 Follow Network logic (`reduceFollowNetwork`).
+    *   Supports context-aware filtering.
+    *   Handles transitive follows (if A follows B for context C, and B follows D for context C, A follows D).
+    *   Resolves delegates (if A follows B, A also follows B's trusted delegates).
+    *   Initializes network with identities that follow the context itself.
+*   **2025-12-23**: Implemented V2 Content Aggregation logic (`reduceContentAggregation`).
+    *   **Decentralized Censorship**: "Censor beats Rate". If a trusted identity censors a subject or a statement, it is filtered out for everyone who follows them.
+    *   **Equivalence Grouping**: Groups subjects (URLs, articles) under a canonical token based on `equate` statements.
+    *   **Relational Discovery**: Maps related subjects via `relate` statements.
+    *   Verified with unit tests including Simpsons and Custom Context scenarios.
+*   **2025-12-23**: Updated documentation and specifications for V2 logic.
+*   **2025-12-23**: Configured VS Code settings to prevent "run anyway" prompts from interrupting the flow.
 
 ## Open Questions & Future Considerations
 
@@ -84,6 +104,3 @@ In the "Double Replacement" scenario (Bob3 replaces both Bob2 and Bob1, while Bo
 **Current Decision**: We notify the user. While Bob's shortcut is technically valid, the ambiguity of multiple keys claiming the same identity is a security risk that deserves visibility. We prioritize "Distance Authority" (the shortest path to the identity link wins).
 
 **Future Consideration**: Could we detect if the two "new" keys are themselves linked? If Bob3 replaces Bob2, and both replace Bob1, we could theoretically suppress the notification because the chain is consistent. However, this adds complexity to the BFS (requires looking "ahead" or "sideways" at other replacements).
-
-### 2. Notification Fatigue
-As the network grows, will "Info" notifications (like "You trust a non-canonical key") become too noisy? We may need a way to "auto-apply" these suggestions or hide them behind a "Maintenance" view.

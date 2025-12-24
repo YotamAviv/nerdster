@@ -55,7 +55,7 @@ void main() async {
 
   setUp(() async {
     useClock(TestClock());
-    DemoKey.clear();
+    DemoKey.reset();
     signInState.signOut();
     oneofusNet.numPaths = 1;
     followNet.fcontext = kOneofusContext;

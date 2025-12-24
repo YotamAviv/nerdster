@@ -24,7 +24,7 @@ A **Token** is a hash used to identify data. It can be computed for any JSON obj
 
 > **CRITICAL:** The canonicalization rules and hashing algorithm (SHA-1) **MUST NOT CHANGE**. Changing them would result in different token values, breaking critical system functions including:
 >
-> - **Fetching:** We use a Key's token (Identity or Delegate) to query for statements issued by that key.
+> - **Fetching:** We use a Key's token (**identity key** or **delegate key**) to query for statements issued by that key.
 > - **Notary Chain:** The `previous` link is the token of the prior statement.
 > - **Censorship:** Censorship statements use the _token_ of the subject (to avoid repeating the objectionable content), not the subject itself.
 
@@ -49,8 +49,8 @@ Statements are JSON objects. The specific fields depend on the statement type, b
 }
 ```
 
-- **`statement`**: Identifies the protocol/type (e.g., `net.one-of-us`).
-- **`I`**: The Issuer's public key (as a JSON object).
+- **`statement`**: Identifies the protocol/type (e.g., `net.one-of-us` for Identity Layer statements).
+- **`I`**: The Issuer's public key (as a JSON object). This is either an **identity key** or a **delegate key**.
 - **`<verb>`**: The key corresponding to the action (e.g., `trust`, `block`, `rate`). The value is the **Subject** of the statement.
 - **`with`**: Optional metadata associated with the action (e.g., `revokeAt` for delegation/replacement).
 - **`previous`**: The Notary Chain link.

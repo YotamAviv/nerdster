@@ -22,7 +22,7 @@ void integrationTests() async {
     if (fireChoice == FireChoice.prod) throw 'not on production';
     prefsSnapshot = Prefs.snapshot();
     useClock(TestClock());
-    DemoKey.clear();
+    DemoKey.reset();
   });
 
   test('blockReplacedKey', () async {

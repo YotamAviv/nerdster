@@ -66,7 +66,7 @@ void main() async {
     prefsSnapshot = Prefs.snapshot();
     timezoneOffsetKludge = 0;
     useClock(TestClock());
-    DemoKey.clear();
+    DemoKey.reset();
     signInState.signOut();
     signInState.pov = Jsonish({}).token; // unnecessary.
     oneofusNet.degrees = 6;

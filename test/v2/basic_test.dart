@@ -12,7 +12,7 @@ void main() {
   late FakeFirebaseFirestore fakeFirestore;
 
   setUp(() {
-    DemoKey.clear();
+    DemoKey.reset();
     fireChoice = FireChoice.fake;
     fakeFirestore = FakeFirebaseFirestore();
     TrustStatement.init();

@@ -1,3 +1,5 @@
 {
-  "CodeGPT.apiKey": "OpenAI"
+  "CodeGPT.apiKey": "OpenAI",
+  "debug.onTaskErrors": "debugAnyway",
+  "dart.runTestsWithErrors": true
 }

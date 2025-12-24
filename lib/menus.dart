@@ -44,7 +44,7 @@ class Menus {
       demos.add(MenuItemButton(
           onPressed: () async {
             demo = name;
-            DemoKey.clear();
+            DemoKey.reset();
             DemoKey oneofus;
             DemoKey? delegate;
             (oneofus, delegate) = await e.value();

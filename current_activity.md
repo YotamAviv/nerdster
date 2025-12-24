@@ -1,22 +1,12 @@
+# Current Activity: V2 Rewrite
+
+## Follow Network & Content Aggregation (V2)
+- [x] Document requirements in `docs/follow_net_specification.md`
+- [ ] Implement V2 `FollowNetwork` logic
+- [ ] Implement V2 `ContentAggregator` logic
+- [ ] Port and expand tests to V2
+
 # Probably next - DO NOT GET STARTED.
-
-## Delegate / follow network.
-Document
-Test
-Implement
-
-## Censor
-Document
-Test
-Implemnet
-
-## Equivalent, Related
-Document
-Test
-Implement.
-- possibly drag n' drop
-
-Display subjects, ratings, relations,
 
 # longer term - DO NOT GET STARTED ON THESE!
 

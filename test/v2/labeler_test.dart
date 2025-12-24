@@ -27,7 +27,7 @@ void main() {
     FireFactory.register(kNerdsterDomain, firestore, null);
     TrustStatement.init();
     ContentStatement.init();
-    DemoKey.clear();
+    DemoKey.reset();
   });
 
   test('V2Labeler: Greedy Moniker Assignment', () async {

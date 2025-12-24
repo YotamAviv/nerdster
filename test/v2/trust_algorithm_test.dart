@@ -21,7 +21,7 @@ void main() {
     FireFactory.register(kNerdsterDomain, firestore, null);
     TrustStatement.init();
     ContentStatement.init();
-    DemoKey.clear();
+    DemoKey.reset();
   });
 
   test('Basic Trust BFS', () async {
@@ -29,8 +29,8 @@ void main() {
     final bob = await DemoKey.create('bob');
     final charlie = await DemoKey.create('charlie');
 
-    await alice.trust(bob);
-    await bob.trust(charlie);
+    await alice.trust(bob, moniker: 'bob');
+    await bob.trust(charlie, moniker: 'charlie');
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source);
@@ -48,9 +48,9 @@ void main() {
     final bobNew = await DemoKey.create('bobNew');
     final charlie = await DemoKey.create('charlie');
 
-    await alice.trust(bobNew); // Alice only trusts the NEW key
+    await alice.trust(bobNew, moniker: 'bobNew'); // Alice only trusts the NEW key
     await bobNew.replace(bob); // bobNew replaces bob
-    await bob.trust(charlie);  // Charlie was trusted by the OLD key
+    await bob.trust(charlie, moniker: 'charlie');  // Charlie was trusted by the OLD key
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     // Alice (0) -> BobNew (1) -> Bob (2) -> Charlie (3)
@@ -74,9 +74,9 @@ void main() {
 
     // Alice trusts Bob and Charlie (dist 1)
     // Bob and Charlie trust Dave (dist 2)
-    await alice.trust(bob);
-    await alice.trust(charlie);
-    await bob.trust(dave);
+    await alice.trust(bob, moniker: 'bob');
+    await alice.trust(charlie, moniker: 'charlie');
+    await bob.trust(dave, moniker: 'dave');
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     
@@ -86,7 +86,7 @@ void main() {
     var graph = await pipeline.build(alice.token);
     expect(graph.isTrusted(dave.token), isFalse, reason: 'Dave only has 1 path');
 
-    await charlie.trust(dave);
+    await charlie.trust(dave, moniker: 'dave');
     // Now Dave has 2 paths (Bob and Charlie)
     
     graph = await pipeline.build(alice.token);
@@ -101,10 +101,10 @@ void main() {
 
     // Alice trusts Bob then Charlie. 
     // Since reduceTrustGraph sorts newest first, Charlie is processed before Bob.
-    await alice.trust(bob);
-    await alice.trust(charlie);
+    await alice.trust(bob, moniker: 'bob');
+    await alice.trust(charlie, moniker: 'charlie');
     
-    await bob.trust(dave);
+    await bob.trust(dave, moniker: 'dave');
     await charlie.block(dave);
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
@@ -123,8 +123,8 @@ void main() {
     final bob = await DemoKey.create('bob');
     final bobNew = await DemoKey.create('bobNew');
 
-    await alice.trust(bob);
-    await alice.trust(bobNew);
+    await alice.trust(bob, moniker: 'bob');
+    await alice.trust(bobNew, moniker: 'bobNew');
     await bobNew.replace(bob);
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
@@ -139,8 +139,8 @@ void main() {
     final alice = await DemoKey.create('alice');
     final bob = await DemoKey.create('bob');
 
-    await alice.trust(bob);
-    await alice.revoke(bob); // This issues a 'clear' statement
+    await alice.trust(bob, moniker: 'bob');
+    await alice.clear(bob); // This issues a 'clear' statement
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source);
@@ -155,10 +155,10 @@ void main() {
     final bobNew = await DemoKey.create('bobNew');
     final charlie = await DemoKey.create('charlie');
 
-    await alice.trust(bobNew);
+    await alice.trust(bobNew, moniker: 'bobNew');
     // bobNew replaces bobOld, but constrains him "since always"
     await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
-    await bobOld.trust(charlie); // This statement should be ignored
+    await bobOld.trust(charlie, moniker: 'charlie'); // This statement should be ignored
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source);
@@ -175,10 +175,10 @@ void main() {
     final bobNew = await DemoKey.create('bobNew');
     final charlie = await DemoKey.create('charlie');
 
-    await alice.trust(bobNew);
+    await alice.trust(bobNew, moniker: 'bobNew');
     // bobNew replaces bobOld, but uses a garbage revokeAt token
     await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: 'garbage-token');
-    await bobOld.trust(charlie); // This statement should be ignored
+    await bobOld.trust(charlie, moniker: 'charlie'); // This statement should be ignored
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source);
@@ -199,12 +199,12 @@ void main() {
     // In reduceTrustGraph, issuer statements are sorted newest-first.
     // So if Alice trusts bobOld AFTER she trusts bobNew, bobOld will be first in the list.
     
-    await alice.trust(bobNew); // Older
+    await alice.trust(bobNew, moniker: 'bobNew'); // Older
     await Future.delayed(Duration(milliseconds: 10));
-    await alice.trust(bobOld);    // Newer -> Processed first
+    await alice.trust(bobOld, moniker: 'bobOld');    // Newer -> Processed first
     
     // bobOld trusts Charlie.
-    await bobOld.trust(charlie);
+    await bobOld.trust(charlie, moniker: 'charlie');
     
     // bobNew replaces bobOld and constrains his statements.
     await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
@@ -229,10 +229,10 @@ void main() {
     final bobNew = await DemoKey.create('bobNew');
     final charlie = await DemoKey.create('charlie');
 
-    await alice.trust(charlie);
-    await alice.trust(bobNew);
+    await alice.trust(charlie, moniker: 'charlie');
+    await alice.trust(bobNew, moniker: 'bobNew');
     await bobNew.replace(bob);
-    await charlie.trust(bob); // Charlie trusts the OLD key directly, but BobNew (also trusted) replaced it
+    await charlie.trust(bob, moniker: 'bob'); // Charlie trusts the OLD key directly, but BobNew (also trusted) replaced it
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source);
@@ -250,17 +250,17 @@ void main() {
     final frank = await DemoKey.create('frank');
 
     // Alice trusts bobOld (dist 1)
-    await alice.trust(bobOld);
+    await alice.trust(bobOld, moniker: 'bobOld');
     // Alice trusts Charlie (dist 1)
-    await alice.trust(charlie);
+    await alice.trust(charlie, moniker: 'charlie');
     // Charlie trusts bobNew (dist 2)
-    await charlie.trust(bobNew);
+    await charlie.trust(bobNew, moniker: 'bobNew');
     
     // bobNew replaces bobOld and constrains everything
     await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
     
     // bobOld trusts Frank
-    await bobOld.trust(frank);
+    await bobOld.trust(frank, moniker: 'frank');
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source);
@@ -290,9 +290,9 @@ void main() {
     final charlie = await DemoKey.create('charlie');
 
     // Alice -> Charlie (dist 1)
-    await alice.trust(charlie);
+    await alice.trust(charlie, moniker: 'charlie');
     // Charlie -> bobNew (dist 2)
-    await charlie.trust(bobNew);
+    await charlie.trust(bobNew, moniker: 'bobNew');
     // bobNew replaces bobOld
     await bobNew.replace(bobOld);
     
@@ -317,7 +317,7 @@ void main() {
     final bobV3 = await DemoKey.create('bobV3');
 
     // Alice trusts the newest key
-    await alice.trust(bobV3);
+    await alice.trust(bobV3, moniker: 'bobV3');
 
     // bobV3 replaces both predecessors
     await bobV3.replace(bobV2);
@@ -372,11 +372,11 @@ void main() {
     final dave = await DemoKey.create('dave');
 
     // Alice -> Bob, Charlie
-    await alice.trust(bob);
-    await alice.trust(charlie);
+    await alice.trust(bob, moniker: 'bob');
+    await alice.trust(charlie, moniker: 'charlie');
 
     // Bob -> Dave
-    await bob.trust(dave);
+    await bob.trust(dave, moniker: 'dave');
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source, maxDegrees: 5);
@@ -401,10 +401,10 @@ void main() {
 
     // Alice -> Bob -> Dave
     // Alice -> Charlie -> Dave
-    await alice.trust(bob);
-    await alice.trust(charlie);
-    await bob.trust(dave);
-    await charlie.trust(dave);
+    await alice.trust(bob, moniker: 'bob');
+    await alice.trust(charlie, moniker: 'charlie');
+    await bob.trust(dave, moniker: 'dave');
+    await charlie.trust(dave, moniker: 'dave');
 
     final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
     final pipeline = TrustPipeline(source, maxDegrees: 5);
@@ -425,13 +425,13 @@ void main() {
     final dave = await DemoKey.create('dave');
 
     // 1. Alice trusts bobOld (dist 1)
-    await alice.trust(bobOld);
+    await alice.trust(bobOld, moniker: 'bobOld');
     
     // 2. bobOld trusts bobNew (dist 2)
-    await bobOld.trust(bobNew);
+    await bobOld.trust(bobNew, moniker: 'bobNew');
     
     // 3. bobOld trusts Dave (dist 2)
-    final sDave = await bobOld.trust(dave);
+    final sDave = await bobOld.trust(dave, moniker: 'dave');
 
     // 4. bobNew (dist 2) replaces bobOld (dist 1) with a constraint
     // This is "Far to Close" because bobNew is further than Alice.
