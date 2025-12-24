@@ -1,5 +1,5 @@
 import 'package:nerdster/oneofus/util.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('''xssert doesn't evaluate messageFunc unless hafta''', () {

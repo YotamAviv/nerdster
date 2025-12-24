@@ -122,6 +122,7 @@ class DemoKey {
 
   Future<Json> makeRate({
     required dynamic subject,
+    ContentVerb verb = ContentVerb.rate,
     String? comment,
     bool? recommend,
     bool? dismiss,
@@ -130,7 +131,7 @@ class DemoKey {
   }) async {
     return ContentStatement.make(
       await publicKey.json,
-      ContentVerb.rate,
+      verb,
       subject,
       comment: comment,
       recommend: recommend,
@@ -140,10 +141,10 @@ class DemoKey {
     );
   }
 
-  Future<Json> makeFollow(dynamic subject, Json contexts) async {
+  Future<Json> makeFollow(dynamic subject, Json contexts, {ContentVerb verb = ContentVerb.follow}) async {
     return ContentStatement.make(
       await publicKey.json,
-      ContentVerb.follow,
+      verb,
       subject is DemoKey ? await subject.publicKey.json : subject,
       contexts: contexts,
     );
@@ -160,6 +161,7 @@ class DemoKey {
 
   Future<ContentStatement> doRate({
     dynamic subject,
+    ContentVerb verb = ContentVerb.rate,
     String? title,
     String? comment,
     bool? recommend,
@@ -174,6 +176,7 @@ class DemoKey {
     
     final Json json = await makeRate(
       subject: subject is DemoKey ? await subject.publicKey.json : subject!,
+      verb: verb,
       comment: comment,
       recommend: recommend,
       dismiss: dismiss,
@@ -185,8 +188,8 @@ class DemoKey {
     return statement;
   }
 
-  Future<ContentStatement> doFollow(dynamic subject, Json contexts, {String? export}) async {
-    final Json json = await makeFollow(subject, contexts);
+  Future<ContentStatement> doFollow(dynamic subject, Json contexts, {ContentVerb verb = ContentVerb.follow, String? export}) async {
+    final Json json = await makeFollow(subject, contexts, verb: verb);
     final ContentStatement statement = await _pushContent(json);
     if (export != null) _exports[export] = statement.json;
     return statement;

@@ -7,7 +7,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 Future<(DemoKey, DemoKey?)> egos() async {
   DemoKey jock = await DemoKey.findOrCreate('jock');

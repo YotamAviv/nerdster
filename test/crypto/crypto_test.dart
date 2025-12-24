@@ -4,7 +4,7 @@ import 'package:jwk/jwk.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 final OouCryptoFactory factory = CryptoFactoryEd25519();
 

@@ -1,6 +1,7 @@
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/wot_equivalence.dart';
-import 'package:test/test.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('base', () {

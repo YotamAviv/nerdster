@@ -1,4 +1,4 @@
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/equivalence/eg.dart';
 import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';

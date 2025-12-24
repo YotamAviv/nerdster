@@ -13,7 +13,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// Test against FirebaseEmulator and Cloud Functions..
 /// (This section of doc is mostly useless.)
@@ -51,7 +51,7 @@ import 'package:test/test.dart';
 
 const String _domain = kOneofusDomain;
 const String _type = kOneofusType;
-final FirebaseFirestore _fire = FireFactory.find(_domain);
+FirebaseFirestore get _fire => FireFactory.find(_domain);
 
 class TestSigner implements StatementSigner {
   @override

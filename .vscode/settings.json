@@ -1,5 +1,7 @@
 {
   "CodeGPT.apiKey": "OpenAI",
   "debug.onTaskErrors": "debugAnyway",
-  "dart.runTestsWithErrors": true
+  "dart.runTestsWithErrors": true,
+  "dart.testExplorerEnabled": true,
+  "dart.showTestCodeLens": true
 }

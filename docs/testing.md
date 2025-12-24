@@ -8,6 +8,16 @@ Run unit tests using the standard Flutter command:
 flutter test
 ```
 
+## JavaScript Tests
+
+The JavaScript implementation of the "jsonish" tokenization logic is tested against exported samples to ensure parity with the Dart implementation.
+
+Run the test using Node.js:
+
+```bash
+node js/jsonish.js
+```
+
 ## Integration Tests
 
 Integration tests run in a browser environment and interact with local Firebase Emulators.

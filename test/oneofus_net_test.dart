@@ -28,7 +28,7 @@ import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/trust/greedy_bfs_trust.dart';
 import 'package:nerdster/trust/trust.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 printStatement(String statementToken) {
   TrustStatement statement = TrustStatement.find(statementToken)!;

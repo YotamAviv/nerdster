@@ -7,7 +7,7 @@ import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/main.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// These are not necessary, but as it was easy, I figured why not test them against
 /// FirebaseEmulator and Cloud Functions, if I want to, every once in a while..., right? But there

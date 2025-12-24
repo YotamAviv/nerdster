@@ -1,5 +1,5 @@
 import 'package:nerdster/content/tag.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 // From 
 // Letter after #: Use [a-zA-Z] to ensure the first character is a letter.

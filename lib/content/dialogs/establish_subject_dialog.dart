@@ -24,7 +24,7 @@ import 'package:nerdster/util_ui.dart';
 /// - write that back to the Firebase doc.
 /// This class uses that mechanism.
 
-final FirebaseFunctions? _functions = FireFactory.findFunctions(kNerdsterDomain);
+late final FirebaseFunctions? _functions = FireFactory.findFunctions(kNerdsterDomain);
 
 Future<Jsonish?> establishSubjectDialog(BuildContext context) {
   double width = max(MediaQuery.of(context).size.width / 2, 500);
