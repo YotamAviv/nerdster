@@ -30,7 +30,7 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
     if (keys.isEmpty) return {};
 
-    final spec = keys.entries.map((e) {
+    final List<dynamic> spec = keys.entries.map((e) {
       if (e.value == null) return e.key;
       return {e.key: e.value};
     }).toList();
@@ -45,35 +45,38 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
       params['omit'] = omit;
     }
 
-    final uri = Uri.parse(baseUrl).replace(queryParameters: params);
-    
-    final request = http.Request('GET', uri);
-    final response = await client.send(request);
+    final Uri uri = Uri.parse(baseUrl).replace(queryParameters: params);
+
+    final http.Request request = http.Request('GET', uri);
+    final http.StreamedResponse response = await client.send(request);
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to fetch statements from $baseUrl: ${response.statusCode}');
+      throw Exception(
+          'Failed to fetch statements from $baseUrl: ${response.statusCode}');
     }
 
     final Map<String, List<T>> results = {};
 
-    await for (final line in response.stream.transform(utf8.decoder).transform(const LineSplitter())) {
+    await for (final String line in response.stream
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())) {
       if (line.trim().isEmpty) continue;
       print('CloudFunctionsSource received line length: ${line.length}');
       if (line.length < 500) print('CloudFunctionsSource received line: $line');
-      
-      final Map<String, dynamic> jsonToken2Statements = jsonDecode(line);
-      
-      for (var entry in jsonToken2Statements.entries) {
-        final token = entry.key;
-        final List statementsJson = entry.value;
-        
-        final list = results.putIfAbsent(token, () => []);
-        
-        final iJson = {'I': token};
 
-        for (var json in statementsJson) {
+      final Map<String, dynamic> jsonToken2Statements = jsonDecode(line);
+
+      for (final MapEntry<String, dynamic> entry in jsonToken2Statements.entries) {
+        final String token = entry.key;
+        final List<dynamic> statementsJson = entry.value;
+
+        final List<T> list = results.putIfAbsent(token, () => []);
+
+        final Map<String, String> iJson = {'I': token};
+
+        for (final dynamic json in statementsJson) {
           if (!json.containsKey('I')) {
-            final cached = Jsonish.find(token);
+            final Jsonish? cached = Jsonish.find(token);
             if (cached != null) {
               json['I'] = cached.json;
             } else {
@@ -81,16 +84,24 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
             }
           }
           if (!json.containsKey('statement')) json['statement'] = statementType;
-          
-          String? serverToken = json['id'];
+
+          final String? serverToken = json['id'];
           if (serverToken != null) json.remove('id');
 
-          final jsonish = Jsonish(json, serverToken);
-          list.add(Statement.make(jsonish) as T);
+          final Jsonish jsonish = Jsonish(json, serverToken);
+          final Statement statement = Statement.make(jsonish);
+          if (statement is T) {
+            list.add(statement);
+          } else {
+            // This can happen if the server returns a different type than requested,
+            // or if the client-side reconstruction of 'statement' field is wrong.
+            print(
+                'CloudFunctionsSource: Skipping statement of type ${statement.runtimeType} (expected $T)');
+          }
         }
       }
     }
-    
+
     return results;
   }
 }

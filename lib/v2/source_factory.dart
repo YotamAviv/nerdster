@@ -8,23 +8,24 @@ import 'package:nerdster/v2/io.dart';
 
 class SourceFactory {
   static StatementSource<T> get<T extends Statement>(String domain) {
-    final url = V2Config.getUrl(domain);
-    
+    // TODO(AI): Refactor to use FireChoice/Settings instead of guessing by URL presence.
+    // The source selection should be explicit and fail loudly if the requested
+    // environment (prod/emulator/fake) is not properly configured.
+    final String? url = V2Config.getUrl(domain);
+
     if (url != null) {
-      String type;
-      if (domain == kOneofusDomain) {
+      final String type;
+      if (T == TrustStatement) {
         type = kOneofusType;
-      } else if (domain == kNerdsterDomain) {
+      } else if (T == ContentStatement) {
         type = kNerdsterType;
       } else {
-        // Fallback or throw? For now default to oneofus type or just use domain as type?
-        // The legacy code map was strict.
-        type = 'unknown'; 
+        throw ArgumentError('Unsupported statement type: $T');
       }
-      
+
       return CloudFunctionsSource<T>(baseUrl: url, statementType: type);
     }
-    
+
     return DirectFirestoreSource<T>(domain);
   }
 }

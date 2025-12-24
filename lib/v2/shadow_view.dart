@@ -8,6 +8,7 @@ import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/net_tree_model.dart';
 import 'package:nerdster/v2/net_tree_view.dart';
 import 'package:nerdster/v2/graph_demo.dart';
+import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
@@ -32,7 +33,8 @@ class _ShadowViewState extends State<ShadowView> {
   
   // Persist cache across runs within this view
   final CachedSource<TrustStatement> _cachedIdentity = CachedSource(SourceFactory.get<TrustStatement>(kOneofusDomain));
-  final CachedSource<ContentStatement> _cachedContent = CachedSource(SourceFactory.get<ContentStatement>(kNerdsterDomain));
+  final CachedSource<ContentStatement> _cachedIdentityContent = CachedSource(SourceFactory.get<ContentStatement>(kOneofusDomain));
+  final CachedSource<ContentStatement> _cachedAppContent = CachedSource(SourceFactory.get<ContentStatement>(kNerdsterDomain));
 
   Future<void> _runPipeline() async {
     setState(() {
@@ -44,10 +46,14 @@ class _ShadowViewState extends State<ShadowView> {
       // 1. Identity Pipeline
       final trustPipeline = TrustPipeline(_cachedIdentity);
       final graph = await trustPipeline.build(widget.rootToken);
+      final delegateResolver = DelegateResolver(graph);
 
       // 2. Content Pipeline
-      final contentPipeline = ContentPipeline(_cachedContent);
-      final content = await contentPipeline.fetchContent(graph);
+      final contentPipeline = ContentPipeline(
+        identitySource: _cachedIdentityContent,
+        appSource: _cachedAppContent,
+      );
+      final content = await contentPipeline.fetchContent(graph, delegateResolver);
 
       if (mounted) {
         setState(() {
@@ -58,6 +64,8 @@ class _ShadowViewState extends State<ShadowView> {
         });
       }
     } catch (e, stack) {
+      debugPrint('Shadow Pipeline Error: $e');
+      debugPrint(stack.toString());
       if (mounted) {
         setState(() {
           _error = '$e\n$stack';
@@ -116,7 +124,8 @@ class _ShadowViewState extends State<ShadowView> {
                   OutlinedButton(
                     onPressed: _loading ? null : () {
                       _cachedIdentity.clear();
-                      _cachedContent.clear();
+                      _cachedIdentityContent.clear();
+                      _cachedAppContent.clear();
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cache cleared')));
                     },
                     child: const Text('Clear Cache'),
@@ -137,7 +146,7 @@ class _ShadowViewState extends State<ShadowView> {
             if (_error != null)
               Expanded(
                   child: SingleChildScrollView(
-                      child: Text(_error!,
+                      child: SelectableText(_error!,
                           style: const TextStyle(color: Colors.red)))),
             if (_graph != null)
               Expanded(

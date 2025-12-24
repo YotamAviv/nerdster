@@ -2,58 +2,87 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/delegates.dart';
 
 class ContentPipeline {
-  final StatementSource<ContentStatement> source;
+  final StatementSource<ContentStatement> identitySource;
+  final StatementSource<ContentStatement> appSource;
 
-  ContentPipeline(this.source);
+  ContentPipeline({required this.identitySource, required this.appSource});
 
-  /// Fetches and filters content based on the TrustGraph.
-  Future<List<ContentStatement>> fetchContent(TrustGraph graph) async {
+  /// Fetches and filters content based on the TrustGraph and DelegateResolver.
+  Future<List<ContentStatement>> fetchContent(TrustGraph graph, DelegateResolver delegateResolver) async {
     // 1. Identify Trusted Users
     // We only care about users who are trusted (distance < maxDegrees, which is implicit in the graph)
     // and NOT blocked.
     // ORDERING: Must be ordered by Trust Distance (ascending).
-    final List<String> trustedUsers = graph.distances.keys
-        .where((token) => !graph.blocked.contains(token))
-        .toList();
+    final List<String> trustedIdentities = graph.getEquivalenceGroups().keys.toList();
     
-    trustedUsers.sort((a, b) {
+    trustedIdentities.sort((a, b) {
       final int distA = graph.distances[a]!;
       final int distB = graph.distances[b]!;
       if (distA != distB) return distA.compareTo(distB);
       return a.compareTo(b); // Stable tie-break
     });
 
-    // 2. Fetch Content
-    // Use replacement constraints from the graph to ensure we get content from the valid identity era.
-    final fetchMap = {
-      for (var token in trustedUsers) 
-        token: graph.replacementConstraints[token]
-    };
+    // 2. Map Identities to all their authorized keys (Identity Keys + Delegate Keys)
+    // We split these because they are hosted on different domains.
+    final Map<String, String?> identityFetchMap = {};
+    final Map<String, String?> appFetchMap = {};
 
-    final Map<String, List<ContentStatement>> rawMap = await source.fetch(fetchMap);
+    for (final String identity in trustedIdentities) {
+      // Identity Keys -> Hosted on one-of-us.net
+      final List<String> identityKeys = graph.getEquivalenceGroup(identity);
+      for (final String key in identityKeys) {
+        identityFetchMap[key] = graph.replacementConstraints[key];
+      }
+
+      // Delegate Keys -> Hosted on nerdster.org
+      final List<String> delegateKeys = delegateResolver.getDelegatesForIdentity(identity);
+      for (final String key in delegateKeys) {
+        // Delegates don't have replacement constraints in the identity layer
+        appFetchMap[key] = null;
+      }
+    }
+
+    // 3. Fetch Content from both sources in parallel
+    final results = await Future.wait([
+      identitySource.fetch(identityFetchMap),
+      appSource.fetch(appFetchMap),
+    ]);
+    
+    final Map<String, List<ContentStatement>> identityMap = results[0];
+    final Map<String, List<ContentStatement>> appMap = results[1];
     
     final List<ContentStatement> rawContent = [];
-    for (var list in rawMap.values) {
+    for (var list in identityMap.values) {
+      rawContent.addAll(list);
+    }
+    for (var list in appMap.values) {
       rawContent.addAll(list);
     }
 
-    // 3. Verify Content
+    // 4. Verify Content
     // The source should only return content for the requested keys.
-    // We assert this strictly.
-    
     for (final stmt in rawContent) {
-      if (!graph.isTrusted(stmt.iToken)) {
-         throw 'Pipeline Error: Source returned content from untrusted issuer: ${stmt.iToken}';
+      final String key = stmt.iToken;
+      final bool isTrustedIdentity = graph.isTrusted(key);
+      final bool isAuthorizedDelegate = delegateResolver.getIdentityForDelegate(key) != null;
+
+      if (!isTrustedIdentity && !isAuthorizedDelegate) {
+         throw 'Pipeline Error: Source returned content from unauthorized key: $key';
       }
-      if (graph.blocked.contains(stmt.iToken)) {
-         throw 'Pipeline Error: Source returned content from blocked issuer: ${stmt.iToken}';
+      
+      final String? identity = isTrustedIdentity 
+          ? graph.resolveIdentity(key) 
+          : delegateResolver.getIdentityForDelegate(key);
+
+      if (identity != null && graph.blocked.contains(identity)) {
+         throw 'Pipeline Error: Source returned content from blocked identity: $identity';
       }
     }
 
-    // 4. Sort by Time (Newest first)
-    // Since we merge content from multiple users, we must sort the result.
+    // 5. Sort by Time (Newest first)
     rawContent.sort((a, b) => b.time.compareTo(a.time));
 
     return rawContent;

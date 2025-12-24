@@ -24,47 +24,51 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
     final Map<String, List<T>> results = {};
 
-    await Future.wait(keys.entries.map((entry) async {
-      final token = entry.key;
-      final limitToken = entry.value;
+    await Future.wait(keys.entries.map((MapEntry<String, String?> entry) async {
+      final String token = entry.key;
+      final String? limitToken = entry.value;
 
       try {
-        final collectionRef = _fire
+        final CollectionReference<Map<String, dynamic>> collectionRef = _fire
             .collection(token)
             .doc('statements')
             .collection('statements');
 
         DateTime? limitTime;
         if (limitToken != null) {
-          final doc = await collectionRef.doc(limitToken).get();
+          final DocumentSnapshot<Map<String, dynamic>> doc =
+              await collectionRef.doc(limitToken).get();
           if (doc.exists && doc.data() != null) {
             limitTime = parseIso(doc.data()!['time']);
           } else {
             // If limit token not found, return empty list
             results[token] = [];
-            return; 
+            return;
           }
         }
 
-        Query<Map<String, dynamic>> query = collectionRef.orderBy('time', descending: true);
-        
+        Query<Map<String, dynamic>> query =
+            collectionRef.orderBy('time', descending: true);
+
         if (limitTime != null) {
-          query = query.where('time', isLessThanOrEqualTo: formatIso(limitTime));
+          query =
+              query.where('time', isLessThanOrEqualTo: formatIso(limitTime));
         }
 
-        final snapshot = await query.get();
+        final QuerySnapshot<Map<String, dynamic>> snapshot = await query.get();
         final List<T> chain = [];
-        
+
         String? previousToken;
         DateTime? previousTime;
         bool first = true;
 
-        for (var doc in snapshot.docs) {
-          final json = doc.data();
-          final jsonish = Jsonish(json);
+        for (final QueryDocumentSnapshot<Map<String, dynamic>> doc
+            in snapshot.docs) {
+          final Map<String, dynamic> json = doc.data();
+          final Jsonish jsonish = Jsonish(json);
 
-          final time = parseIso(jsonish['time']);
-          
+          final DateTime time = parseIso(jsonish['time']);
+
           if (first) {
             first = false;
           } else {
@@ -82,19 +86,21 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
           previousToken = json['previous'];
           previousTime = time;
 
-          chain.add(Statement.make(jsonish) as T);
+          final Statement statement = Statement.make(jsonish);
+          if (statement is T) {
+            chain.add(statement);
+          }
         }
-        
-        // Apply distinct
-        final distinctChain = d.distinct(chain).toList();
-        results[token] = distinctChain;
 
+        // Apply distinct
+        final List<T> distinctChain = d.distinct(chain).toList();
+        results[token] = distinctChain;
       } catch (e) {
         print('Error fetching $token: $e');
         results[token] = [];
       }
     }));
-    
+
     return results;
   }
 }
