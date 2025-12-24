@@ -85,7 +85,7 @@ Future<(DemoKey, DemoKey?)> deletions3() async {
   await contentBase.waitUntilReady();
   // Using 'assert', not 'expect' from test. Not sure why it's probablematic here outside the
   // context of a test but not for the one above.
-  assert(contentBase.roots.length == 0, contentBase.roots.length); 
+  assert(contentBase.roots.isEmpty, contentBase.roots.length); 
 
   // observer2 should not be censored as per deleter2's desire to delete deleter1's deletion.
   assert(contentBase.ready);

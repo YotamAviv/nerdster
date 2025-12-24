@@ -1,4 +1,3 @@
-import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/model.dart';
 

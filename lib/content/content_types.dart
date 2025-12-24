@@ -38,8 +38,7 @@ enum ContentType {
   ),
   recipe(
     'recipe',
-    (
-      Icons.restaurant, Icons.restaurant_outlined),
+    (Icons.restaurant, Icons.restaurant_outlined),
     {'url': 'url', 'title': 'string'},
   ), // CONSIDER: colors
   event(

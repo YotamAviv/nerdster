@@ -2,16 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/main.dart';
-import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 

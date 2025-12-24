@@ -10,12 +10,12 @@ class V2NetTreeModel extends NetTreeModel {
   final V2Labeler labeler;
 
   V2NetTreeModel(
-    List<NetTreeModel> path,
+    super.path,
     this.graph,
     this.labeler, {
-    String? token,
+    super.token,
     this.stmt,
-  }) : super(path, token: token);
+  });
 
   @override
   Iterable<NetTreeModel> get children {

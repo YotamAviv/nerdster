@@ -8,7 +8,6 @@ import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 
 import 'package:nerdster/main.dart';
-import 'package:nerdster/oneofus/prefs.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;

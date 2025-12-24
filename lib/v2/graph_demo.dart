@@ -5,7 +5,6 @@ import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/singletons.dart';
 
 const String kOneofusDomain = 'one-of-us.net';
 

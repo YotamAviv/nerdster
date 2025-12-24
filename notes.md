@@ -115,10 +115,10 @@ firebase projects:list
 gcloud projects list
 gcloud auth login
 
-export NOW=`date3`
 # If running in 2 windows, make sure to set (export) NOW in both
-export NOW=25-12-24--11-26
+export NOW=`date3`
 echo $NOW
+export NOW=25-12-24--16-53
 
 firebase use nerdster
 gcloud config set project nerdster

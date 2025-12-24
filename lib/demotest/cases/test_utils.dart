@@ -8,6 +8,7 @@
 /// would force it to be a regular `dependency`, bloating the production app.
 ///
 /// Instead, we use the [check] helper below to throw standard Exceptions.
+library;
 
 /// Helper to enforce conditions even in release mode.
 /// 

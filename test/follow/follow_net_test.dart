@@ -285,7 +285,7 @@ void main() async {
   });
 
   test('!canon follow !canon', () async {
-    var expected;
+    Map<String, Object?> expected;
     DemoKey somebodyElse = await DemoKey.findOrCreate('somebodyElse');
 
     DemoKey bob = await DemoKey.findOrCreate('bob');
@@ -344,7 +344,7 @@ void main() async {
   });
 
   test('!canon follow !canon, multiple delegates', () async {
-    var expected;
+    Map<String, Object?> expected;
     DemoKey somebodyElse = await DemoKey.findOrCreate('somebodyElse');
 
     DemoKey bob = await DemoKey.findOrCreate('bob');
@@ -438,7 +438,7 @@ void main() async {
   });
 
   test('follow !oneofus', () async {
-    var expected;
+    Map<String, List<String>> expected;
     // bob doesn't trust steve
     DemoKey bob = await DemoKey.findOrCreate('bob');
     DemoKey bobN = await bob.makeDelegate();
@@ -475,7 +475,7 @@ void main() async {
 
   test('canon and other follow varieties', () async {
     // This test is messier than the better, classic unit tests. It's here, could probably be removed.
-    var expected;
+    Map<String, List<String>> expected;
     DemoKey somebodyElse = await DemoKey.findOrCreate('somebodyElse');
 
     DemoKey bob = await DemoKey.findOrCreate('bob');

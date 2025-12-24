@@ -57,7 +57,7 @@ final helpStyle = TextStyle(
 class PopupMenuHelpItem<T> extends PopupMenuEntry<T> {
   final Widget child;
 
-  const PopupMenuHelpItem({required this.child});
+  const PopupMenuHelpItem({super.key, required this.child});
 
   @override
   double get height => 0; // no enforced height

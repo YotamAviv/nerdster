@@ -55,7 +55,7 @@ Future<(DemoKey, DemoKey?)> lonerCorrupt() async {
   // This is detected as corrupt without this top statement. 
   // Corruption cases should unit tested in Fetcher, not in integration tests like this.
   await delegate!.doRate(title: 'a');
-  Statement s = await delegate!.doRate(title: 'b');
+  Statement s = await delegate.doRate(title: 'b');
   await delegate.doRate(title: 'c');
 
   FirebaseFirestore fire = FireFactory.find(kNerdsterDomain);

@@ -13,7 +13,7 @@ Future<(DemoKey, DemoKey?)> delegateMerge() async {
     useClock(TestClock());
 
     Iterable<ContentTreeNode> roots;
-    var expected;
+    Map<String, Object?> expected;
     DemoKey somebodyElse = await DemoKey.findOrCreate('somebodyElse');
 
     DemoKey loner = await DemoKey.findOrCreate('loner');

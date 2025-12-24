@@ -133,7 +133,7 @@ void main() async {
     roots = contentBase.roots;
     expect(roots.length, 0);
 
-    ContentStatement rateStatement = await lonerD.doRate(title: "t1") as ContentStatement;
+    ContentStatement rateStatement = await lonerD.doRate(title: "t1");
     contentBase.listen();
     await contentBase.waitUntilReady();
     roots = contentBase.roots;
@@ -142,7 +142,7 @@ void main() async {
     expect(t1Node.getChildren().length, 1);
 
     ContentStatement relateStatement = await lonerD.doRelate(ContentVerb.relate,
-        title: "t1", other: rateStatement.json) as ContentStatement;
+        title: "t1", other: rateStatement.json);
     contentBase.listen();
     expect(relateStatement.subject, rateStatement.subject);
     expect(relateStatement.other, rateStatement.json);

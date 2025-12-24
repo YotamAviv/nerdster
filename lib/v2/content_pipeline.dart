@@ -1,5 +1,4 @@
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';

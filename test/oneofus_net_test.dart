@@ -30,7 +30,7 @@ import 'package:nerdster/trust/greedy_bfs_trust.dart';
 import 'package:nerdster/trust/trust.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-printStatement(String statementToken) {
+void printStatement(String statementToken) {
   TrustStatement statement = TrustStatement.find(statementToken)!;
   String string = encoder.convert(keyLabels.interpret(statement));
   print(string);

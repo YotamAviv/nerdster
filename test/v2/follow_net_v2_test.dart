@@ -119,7 +119,7 @@ void main() async {
     final TrustGraph trustBart = reduceTrustGraph(TrustGraph(root: bart.token), allTrustStatements);
     final DelegateResolver delegatesBart = DelegateResolver(trustBart);
     final FollowNetwork followBart = reduceFollowNetwork(trustBart, delegatesBart, allContentStatements, kNerdsterContext);
-    final ContentAggregation contentBart = reduceContentAggregation(followBart, trustBart, delegatesBart, allContentStatements);
+    reduceContentAggregation(followBart, trustBart, delegatesBart, allContentStatements);
 
     // Bart blocks Lisa in <nerdster> context in simpsons.dart
     expect(followBart.contains(trustBart.resolveIdentity(lisa.token)), false, reason: 'Bart blocks Lisa');
@@ -128,7 +128,7 @@ void main() async {
     final TrustGraph trustHomer = reduceTrustGraph(TrustGraph(root: homer2.token), allTrustStatements);
     final DelegateResolver delegatesHomer = DelegateResolver(trustHomer);
     final FollowNetwork followHomer = reduceFollowNetwork(trustHomer, delegatesHomer, allContentStatements, kNerdsterContext);
-    final ContentAggregation contentHomer = reduceContentAggregation(followHomer, trustHomer, delegatesHomer, allContentStatements);
+    reduceContentAggregation(followHomer, trustHomer, delegatesHomer, allContentStatements);
 
     expect(followHomer.contains(trustHomer.resolveIdentity(lisa.token)), true, reason: 'Homer2 should follow Lisa');
   });

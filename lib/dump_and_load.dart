@@ -115,7 +115,7 @@ Future<Map<String, Map<String, List>>> dumpStatements() async {
   return out;
 }
 
-_showDump(BuildContext context, dynamic dump) {
+void _showDump(BuildContext context, dynamic dump) {
   ScrollController scrollController = ScrollController();
   showDialog(
       context: context,

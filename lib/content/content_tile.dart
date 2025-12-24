@@ -52,7 +52,7 @@ class _ContentTileState extends State<ContentTile> {
     super.dispose();
   }
 
-  listener() async {
+  Future<void> listener() async {
     await contentBase.waitUntilReady();
     if (mounted) {
       setState(() {});

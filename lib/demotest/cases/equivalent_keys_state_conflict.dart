@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
@@ -10,6 +12,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/trust/trust.dart';
 
 /// I loose track at times of what tests were meant to test. As the implementation evolves (like
 /// getting rid of blockerBenefit), I've just been going through and updating the outcomes.
@@ -26,9 +29,9 @@ Future<(DemoKey, DemoKey?)> equivalentKeysStateConflict() async {
   DemoKey lisa = await DemoKey.findOrCreate('lisa');
   DemoKey milhouse = await DemoKey.findOrCreate('milhouse');
 
-  var network;
-  var expectedNetwork;
-  var expectedEquivalents;
+  LinkedHashMap<String, Node> network;
+  Map<String, String?> expectedNetwork;
+  Set<String> expectedEquivalents;
 
   Statement lisaTrustsMilhouse =
       await lisa.doTrust(TrustVerb.trust, milhouse, moniker: 'Millhouse');

@@ -198,7 +198,7 @@ ContentAggregation reduceContentAggregation(
 
         // Update the aggregation
         subjects[canonical] = SubjectAggregation(
-          canonicalToken: agg.canonicalToken,
+          canonicalToken: canonical,
           subject: _bestSubject(
               agg.subject,
               s.subjectToken == canonical

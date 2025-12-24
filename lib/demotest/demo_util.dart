@@ -31,7 +31,7 @@ void jsonShowExpect(dynamic actual, dynamic expected) {
   assert(diffNode.hasNothing);
 }
 
-jsonExpect(Json actual, Json expected) {
+void jsonExpect(Json actual, Json expected) {
   JsonDiffer differ = JsonDiffer.fromJson(actual, expected);
   DiffNode diffNode = differ.diff();
   if (!diffNode.hasNothing) {

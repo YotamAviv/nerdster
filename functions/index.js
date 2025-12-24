@@ -19,7 +19,7 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const fetch = require("node-fetch");
 const { Timestamp } = require("firebase-admin/firestore");
-// const cheerio = require('cheerio'); // For HTML parsing
+const cheerio = require('cheerio'); // For HTML parsing
 const { decode } = require('html-entities'); // Import the decode function
 
 admin.initializeApp();
@@ -27,47 +27,75 @@ admin.initializeApp();
 /*
 Try:
 https://www.panningtheglobe.com/ottolenghis-roast-chicken-zaatar-sumac/
-
-The code that uses "cheerio" works, but I favor myExtractTitle atm.
 */
-function myExtractTitle(htmlString) {
-  const match = htmlString.match(/<title>(.*?)<\/title>/i); // Non-greedy match
-  let title = match ? match[1].trim() : null;
-  title = decode(title);
-  return title;
+function myExtractTitle($, htmlString) {
+  // Try OpenGraph title
+  let title = $('meta[property="og:title"]').attr('content') || 
+              $('meta[name="twitter:title"]').attr('content');
+  
+  if (!title) {
+    const match = htmlString.match(/<title>(.*?)<\/title>/i);
+    title = match ? match[1].trim() : null;
+  }
+  
+  return title ? decode(title).trim() : null;
 }
+
+function myExtractImage($, url) {
+  // Try various metadata tags for images
+  let image = $('meta[property="og:image"]').attr('content') ||
+              $('meta[property="og:image:url"]').attr('content') ||
+              $('meta[property="og:image:secure_url"]').attr('content') ||
+              $('meta[name="twitter:image"]').attr('content') ||
+              $('meta[name="twitter:image:src"]').attr('content') ||
+              $('link[rel="image_src"]').attr('href') ||
+              $('link[rel="apple-touch-icon"]').attr('href');
+
+  if (!image) {
+    // Fallback: find the first large-ish image in the body
+    $('img').each((i, el) => {
+      const src = $(el).attr('src');
+      if (src && !src.includes('icon') && !src.includes('logo')) {
+        image = src;
+        return false; // break
+      }
+    });
+  }
+
+  if (image && !image.startsWith('http')) {
+    try {
+      const baseUrl = new URL(url);
+      image = new URL(image, baseUrl.origin).href;
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  return image;
+}
+
 exports.cloudfetchtitle = onCall(async (request) => {
   const url = request.data.url;
+  if (!url) return { "title": null, "image": null };
 
-  const response = await fetch(url);
-  const html = await response.text();
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      },
+      timeout: 5000
+    });
+    const html = await response.text();
+    const $ = cheerio.load(html);
 
-  // const $ = cheerio.load(html);
-  // // Select the <title> tag and get its text content
-  // let title = $('title').text();
-  // // AI to remove junk that isn't the title. I don't understand why I need this.
-  // // 1. Attempt to split by the brand separator " | "
-  // let parts = title.split(' | ');
-  // if (parts.length > 1) {
-  //   title = parts[0].trim(); // Take the part before the separator
-  // } else {
-  //   // 2. Fallback: If the brand separator isn't present, look for a hyphen
-  //   parts = title.split(' - ');
-  //   if (parts.length > 1) {
-  //     title = parts[0].trim();
-  //   } else {
-  //     // 3.  Fallback: If still not found, remove any characters after and including "Email"
-  //     const emailIndex = title.indexOf('Email');
-  //     if (emailIndex > -1) {
-  //       title = title.substring(0, emailIndex).trim();
-  //     }
-  //   }
-  // }
+    let title = myExtractTitle($, html);
+    let image = myExtractImage($, url);
 
-  let title = myExtractTitle(html);
-  title = title.trim();
-  // logger.log(`title=${title}`);
-  return { "title": title };
+    return { "title": title, "image": image };
+  } catch (error) {
+    logger.error(`Error fetching title for ${url}:`, error);
+    return { "title": null, "image": null, "error": error.message };
+  }
 });
 
 // HTTP POST for QR signin (not 'signIn' (in camelCase) - that breaks things).

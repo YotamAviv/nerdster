@@ -24,11 +24,11 @@ import 'package:nerdster/util_ui.dart';
 /// - write that back to the Firebase doc.
 /// This class uses that mechanism.
 
-late final FirebaseFunctions? _functions = FireFactory.findFunctions(kNerdsterDomain);
+final FirebaseFunctions? _functions = FireFactory.findFunctions(kNerdsterDomain);
 
 Future<Jsonish?> establishSubjectDialog(BuildContext context) {
   double width = max(MediaQuery.of(context).size.width / 2, 500);
-  return showDialog(
+  return showDialog<Jsonish?>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) => Dialog(
@@ -92,7 +92,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
 
     fetchingUrlWidget.isRunning.value = true;
 
-    tryFetchTitle(urlController.text, (String url, {String? title, String? error}) {
+    tryFetchTitle(urlController.text, (String url, {String? title, String? image, String? error}) {
       if (urlController.text == url) {
         fetchingUrlWidget.isRunning.value = false;
         if (title != null) {
@@ -192,12 +192,12 @@ You can include a URL in a comment or relate or equate this book to an article w
   }
 }
 
-void tryFetchTitle(String url, Function(String url, {String title, String error}) callback) async {
+void tryFetchTitle(String url, Function(String url, {String? title, String? image, String? error}) callback) async {
   if (_functions == null) return;
   if (!url.startsWith('http://') && !url.startsWith('https://')) return;
   try {
     var retval = await _functions!.httpsCallable('cloudfetchtitle').call({"url": url});
-    callback(url, title: retval.data["title"]);
+    callback(url, title: retval.data["title"], image: retval.data["image"]);
   } on FirebaseFunctionsException catch (e) {
     String error = [e.message, if (e.details != null) e.details].join(', ');
     callback(url, error: error);

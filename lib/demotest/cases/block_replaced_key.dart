@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -6,12 +7,14 @@ import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/net/oneofus_tree_node.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/trust/trust.dart';
 
 Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   useClock(TestClock()); // DEFER: setUp? tearDown? using tests in code...
@@ -25,11 +28,11 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   DemoKey lisa = await DemoKey.findOrCreate('lisa');
   DemoKey homer = await DemoKey.findOrCreate('homer');
 
-  var network;
-  var expectedNetwork;
-  var expectedEquivalents;
-  var dump;
-  var expected;
+  LinkedHashMap<String, Node> network;
+  Map<String, String?> expectedNetwork;
+  Set<String> expectedEquivalents;
+  Json dump;
+  Map<String, Map<String, Map>> expected;
 
   Statement s1 = await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   Statement r1 = await bart2.doTrust(TrustVerb.replace, bart, revokeAt: s1.token);

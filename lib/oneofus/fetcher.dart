@@ -224,12 +224,15 @@ class Fetcher {
             Fetcher fetcher = Fetcher(e.key, domain);
             fetcher._cached = null;
             if (b(revokedAt)) fetcher.setRevokeAt(revokedAt!);
-            List<Json> jsons = batchFetched[_key(e.key, domain)]!;
+            List<Json>? jsons = batchFetched[_key(e.key, domain)];
+            if (jsons == null) {
+              throw Exception('Batch fetch failed to return data for ${e.key} in $domain. '
+                  'Check if the Cloud Function "export" is running and accessible at $uri');
+            }
             await fetcher._fetch(jsons: jsons);
           }
-        } catch (e, stackTrace) {
-          print('Error: $e');
-          print(stackTrace);
+        } catch (e) {
+          rethrow;
         }
       }
     }
@@ -238,7 +241,10 @@ class Fetcher {
     for (MapEntry<String, String?> e in token2revokeAt.entries) {
       String? revokedAt = token2revokeAt[e.key];
       Fetcher f = Fetcher(e.key, domain);
-      assert(f.isCached);
+      if (!f.isCached) {
+        throw Exception('Fetcher for ${e.key} in $domain is not cached after batch fetch. '
+            'This usually indicates a network error or a failure in the Cloud Function.');
+      }
       assert(revokedAt == f.revokeAt, '$revokedAt == ${f.revokeAt}');
       out.add(f);
     }

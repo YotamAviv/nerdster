@@ -21,6 +21,7 @@ import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/shadow_view.dart';
+import 'package:nerdster/v2/fancy_shadow_view.dart';
 import 'package:nerdster/v2/graph_demo.dart';
 import 'package:nerdster/verify.dart';
 
@@ -199,6 +200,22 @@ $link''',
                     context,
                     MaterialPageRoute(
                       builder: (context) => ShadowView(rootToken: signInState.identity!),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please sign in first')),
+                  );
+                }
+              }),
+          MenuItemButton(
+              child: const Text('V2 Fancy Shadow View'),
+              onPressed: () {
+                if (signInState.identity != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FancyShadowView(rootToken: signInState.identity!),
                     ),
                   );
                 } else {

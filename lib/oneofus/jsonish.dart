@@ -222,7 +222,7 @@ class Jsonish {
   String get token => _token;
   String get ppJson => encoder.convert(json);
 
-  operator [](String key) => _json[key];
+  dynamic operator [](String key) => _json[key];
   bool containsKey(String key) => _json.containsKey(key);
   Iterable get keys => _json.keys;
   Iterable get values => _json.values;

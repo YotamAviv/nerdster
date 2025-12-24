@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/demo_util.dart';
@@ -8,6 +10,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/trust/trust.dart';
 
 Future<(DemoKey, DemoKey?)> multipleBlocks() async {
   useClock(TestClock());
@@ -19,8 +22,8 @@ Future<(DemoKey, DemoKey?)> multipleBlocks() async {
   DemoKey milhouse = await DemoKey.findOrCreate('milhouse');
   DemoKey sideshow = await DemoKey.findOrCreate('sideshow');
   
-  var network;
-  var expectedNetwork;
+  LinkedHashMap<String, Node> network;
+  Map<String, Null> expectedNetwork;
 
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await lisa.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
