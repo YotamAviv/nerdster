@@ -9,6 +9,8 @@ import 'package:nerdster/v2/net_tree_model.dart';
 import 'package:nerdster/v2/net_tree_view.dart';
 import 'package:nerdster/v2/graph_demo.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/follow_logic.dart';
+import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
@@ -27,7 +29,7 @@ class ShadowView extends StatefulWidget {
 class _ShadowViewState extends State<ShadowView> {
   TrustGraph? _graph;
   V2Labeler? _labeler;
-  List<ContentStatement>? _content;
+  ContentAggregation? _aggregation;
   bool _loading = false;
   String? _error;
   
@@ -53,13 +55,20 @@ class _ShadowViewState extends State<ShadowView> {
         identitySource: _cachedIdentityContent,
         appSource: _cachedAppContent,
       );
-      final content = await contentPipeline.fetchContent(graph, delegateResolver);
+      final contentMap =
+          await contentPipeline.fetchContentMap(graph, delegateResolver);
+
+      // 3. Logic Layer (Reducers)
+      final followNetwork = reduceFollowNetwork(
+          graph, delegateResolver, contentMap, kNerdsterContext);
+      final aggregation = reduceContentAggregation(
+          followNetwork, graph, delegateResolver, contentMap);
 
       if (mounted) {
         setState(() {
           _graph = graph;
           _labeler = V2Labeler(graph);
-          _content = content;
+          _aggregation = aggregation;
           _loading = false;
         });
       }
@@ -152,16 +161,40 @@ class _ShadowViewState extends State<ShadowView> {
               Expanded(
                 child: TabBarView(
                   children: [
-                    // Tab 1: Content
+                    // Tab 1: Content (Aggregated)
                     ListView.builder(
-                      itemCount: _content?.length ?? 0,
+                      itemCount: _aggregation?.subjects.length ?? 0,
                       itemBuilder: (context, index) {
-                        final item = _content![index];
-                        final label = _labeler?.getLabel(item.iToken) ?? item.iToken;
-                        return ListTile(
-                          title: Text('${item.verb.label} ${item.subject}'),
-                          subtitle: Text('By: $label\n${item.subject}'),
-                          trailing: Text(item.time.toString().split(' ')[0]),
+                        final subjects = _aggregation!.subjects.values.toList();
+                        // Sort by last activity (newest first)
+                        subjects.sort(
+                            (a, b) => b.lastActivity.compareTo(a.lastActivity));
+
+                        final agg = subjects[index];
+                        final subjectLabel = agg.subject is Map
+                            ? (agg.subject['title'] ?? agg.canonicalToken)
+                            : agg.subject.toString();
+
+                        return ExpansionTile(
+                          title: Text(subjectLabel),
+                          subtitle: Text(
+                              'Likes: ${agg.likes}, Dislikes: ${agg.dislikes}, Tags: ${agg.tags.join(", ")}'),
+                          trailing: Text(
+                              agg.lastActivity.toString().split(' ')[0]),
+                          leading: Icon(
+                            agg.isDismissed ? Icons.visibility_off : Icons.movie,
+                            color: agg.isDismissed ? Colors.grey : Colors.blue,
+                          ),
+                          children: agg.statements.map((s) {
+                            final label =
+                                _labeler?.getLabel(s.iToken) ?? s.iToken;
+                            return ListTile(
+                              title: Text(s.comment ?? s.verb.label),
+                              subtitle: Text('By: $label'),
+                              trailing: Text(s.time.toString().split(' ')[0]),
+                              dense: true,
+                            );
+                          }).toList(),
                         );
                       },
                     ),

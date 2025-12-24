@@ -10,14 +10,17 @@ class ContentPipeline {
 
   ContentPipeline({required this.identitySource, required this.appSource});
 
-  /// Fetches and filters content based on the TrustGraph and DelegateResolver.
-  Future<List<ContentStatement>> fetchContent(TrustGraph graph, DelegateResolver delegateResolver) async {
+  /// Fetches content based on the TrustGraph and DelegateResolver.
+  /// Returns a map of Token -> List of ContentStatements.
+  Future<Map<String, List<ContentStatement>>> fetchContentMap(
+      TrustGraph graph, DelegateResolver delegateResolver) async {
     // 1. Identify Trusted Users
     // We only care about users who are trusted (distance < maxDegrees, which is implicit in the graph)
     // and NOT blocked.
     // ORDERING: Must be ordered by Trust Distance (ascending).
-    final List<String> trustedIdentities = graph.getEquivalenceGroups().keys.toList();
-    
+    final List<String> trustedIdentities =
+        graph.getEquivalenceGroups().keys.toList();
+
     trustedIdentities.sort((a, b) {
       final int distA = graph.distances[a]!;
       final int distB = graph.distances[b]!;
@@ -38,7 +41,8 @@ class ContentPipeline {
       }
 
       // Delegate Keys -> Hosted on nerdster.org
-      final List<String> delegateKeys = delegateResolver.getDelegatesForIdentity(identity);
+      final List<String> delegateKeys =
+          delegateResolver.getDelegatesForIdentity(identity);
       for (final String key in delegateKeys) {
         // Delegates don't have replacement constraints in the identity layer
         appFetchMap[key] = null;
@@ -46,45 +50,39 @@ class ContentPipeline {
     }
 
     // 3. Fetch Content from both sources in parallel
-    final results = await Future.wait([
+    final List<Map<String, List<ContentStatement>>> results =
+        await Future.wait([
       identitySource.fetch(identityFetchMap),
       appSource.fetch(appFetchMap),
     ]);
-    
+
     final Map<String, List<ContentStatement>> identityMap = results[0];
     final Map<String, List<ContentStatement>> appMap = results[1];
-    
-    final List<ContentStatement> rawContent = [];
-    for (var list in identityMap.values) {
-      rawContent.addAll(list);
-    }
-    for (var list in appMap.values) {
-      rawContent.addAll(list);
-    }
+
+    final Map<String, List<ContentStatement>> combinedMap = {};
+    combinedMap.addAll(identityMap);
+    combinedMap.addAll(appMap);
 
     // 4. Verify Content
     // The source should only return content for the requested keys.
-    for (final stmt in rawContent) {
-      final String key = stmt.iToken;
+    for (final String key in combinedMap.keys) {
       final bool isTrustedIdentity = graph.isTrusted(key);
-      final bool isAuthorizedDelegate = delegateResolver.getIdentityForDelegate(key) != null;
+      final bool isAuthorizedDelegate =
+          delegateResolver.getIdentityForDelegate(key) != null;
 
       if (!isTrustedIdentity && !isAuthorizedDelegate) {
-         throw 'Pipeline Error: Source returned content from unauthorized key: $key';
+        throw 'Pipeline Error: Source returned content from unauthorized key: $key';
       }
-      
-      final String? identity = isTrustedIdentity 
-          ? graph.resolveIdentity(key) 
+
+      final String? identity = isTrustedIdentity
+          ? graph.resolveIdentity(key)
           : delegateResolver.getIdentityForDelegate(key);
 
       if (identity != null && graph.blocked.contains(identity)) {
-         throw 'Pipeline Error: Source returned content from blocked identity: $identity';
+        throw 'Pipeline Error: Source returned content from blocked identity: $identity';
       }
     }
 
-    // 5. Sort by Time (Newest first)
-    rawContent.sort((a, b) => b.time.compareTo(a.time));
-
-    return rawContent;
+    return combinedMap;
   }
 }
