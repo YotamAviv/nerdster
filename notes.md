@@ -22,6 +22,8 @@ just that data missing.
 
 # Emulator simpsonsDemo from PROD
 ?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}&skipCredentialsDisplay=true&showCrypto=true
+# Emulator yotam
+?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}&skipCredentialsDisplay=true&showCrypto=true
 
 
 # Nice ones:
@@ -115,7 +117,7 @@ gcloud auth login
 
 export NOW=`date3`
 # If running in 2 windows, make sure to set (export) NOW in both
-export NOW=25-12-02--17-18
+export NOW=25-12-24--11-26
 echo $NOW
 
 firebase use nerdster
