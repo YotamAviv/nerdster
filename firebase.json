@@ -1,0 +1,57 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "nerdster",
+          "appId": "1:210894467329:android:0dd0566af27fb976ca2b00",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "nerdster",
+          "configurations": {
+            "android": "1:210894467329:android:0dd0566af27fb976ca2b00",
+            "ios": "1:210894467329:ios:e3c1379380ddd36fca2b00",
+            "macos": "1:210894467329:ios:e3c1379380ddd36fca2b00",
+            "web": "1:210894467329:web:071b465361d059ebca2b00",
+            "windows": "1:210894467329:web:3af447c41ac3b332ca2b00"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "cleanUrls": true,
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/m{,/**}",
+        "destination": "/m.html"
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}

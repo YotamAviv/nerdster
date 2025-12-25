@@ -14,9 +14,6 @@ import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
-const String kOneofusDomain = 'one-of-us.net';
-const String kNerdsterDomain = 'nerdster.org';
-
 class ShadowView extends StatefulWidget {
   final String rootToken;
 

@@ -92,7 +92,7 @@ class _ContentTreeState extends State<ContentTree> {
       if (b(Uri.base.queryParameters['qrSignIn'])) {
         await qrSignIn(context);
       } else {
-        await defaultSignIn(context);
+        await defaultSignIn(context: context);
       }
 
       // progress will call Navigator.pop(context) asynchronously, and so can't showTree first.

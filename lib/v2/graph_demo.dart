@@ -6,8 +6,6 @@ import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
-const String kOneofusDomain = 'one-of-us.net';
-
 /// A loader widget that runs the TrustPipeline and then shows the visualizer.
 class TrustGraphVisualizerLoader extends StatefulWidget {
   final String rootToken;

@@ -14,9 +14,6 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/content/dialogs/establish_subject_dialog.dart';
 
-const String kOneofusDomain = 'one-of-us.net';
-const String kNerdsterDomain = 'nerdster.org';
-
 class FancyShadowView extends StatefulWidget {
   final String rootToken;
 

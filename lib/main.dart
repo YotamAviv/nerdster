@@ -29,6 +29,7 @@ import 'package:nerdster/progress.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
+import 'package:nerdster/v2/fancy_shadow_view.dart';
 
 import 'firebase_options.dart';
 import 'message_handler.dart' if (dart.library.io) 'stub_message_handler.dart';
@@ -157,6 +158,7 @@ Future<void> main() async {
   JsonDisplay.interpreter = keyLabels;
   TrustStatement.init();
   ContentStatement.init();
+  await defaultSignIn();
   await initPrefs2();
   await About.init();
 
@@ -173,10 +175,17 @@ Future<void> main() async {
     initMessageListener();
   }
 
-  final Widget home = (Uri.base.queryParameters.containsKey('verifyFullScreen') &&
-          b(Setting.get(SettingType.verify).value))
-      ? const StandaloneVerify()
-      : ContentTree();
+  Widget home;
+  final path = Uri.base.path;
+  if (path == '/m' || path.startsWith('/m/') || path == '/m.html') {
+    // Mobile-focused view
+    home = FancyShadowView(rootToken: signInState.pov ?? kNerdsterDomain);
+  } else if (Uri.base.queryParameters.containsKey('verifyFullScreen') &&
+      b(Setting.get(SettingType.verify).value)) {
+    home = const StandaloneVerify();
+  } else {
+    home = ContentTree();
+  }
 
   // Gemini: Use runWidget with a View wrapper to support multi-view mode (e.g. embedding in iframes)
   // and avoid "Bad state: The app requested a view, but the platform did not provide one" errors.
@@ -191,7 +200,7 @@ Future<void> main() async {
   ));
 }
 
-Future<void> defaultSignIn(BuildContext context) async {
+Future<void> defaultSignIn({BuildContext? context}) async {
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
   // CONSIDER: Leverage Prefs Settings for identity/oneofus. Then again, the keys...
