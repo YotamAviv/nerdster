@@ -12,6 +12,8 @@ import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/content/dialogs/establish_subject_dialog.dart';
 
 class FancyShadowView extends StatefulWidget {
@@ -111,7 +113,14 @@ class _FancyShadowViewState extends State<FancyShadowView> {
   }
 
   Widget _buildFeed() {
-    final subjects = _aggregation!.subjects.values.toList();
+    final tagSetting = Setting.get<String>(SettingType.tag).value;
+    final subjects = _aggregation!.subjects.values.where((s) {
+      if (tagSetting == '-') return true;
+      final normalizedTag = tagSetting.toLowerCase();
+      final searchTag = normalizedTag.startsWith('#') ? normalizedTag : '#$normalizedTag';
+      return s.tags.contains(searchTag);
+    }).toList();
+
     subjects.sort((a, b) => b.lastActivity.compareTo(a.lastActivity));
 
     return ListView.builder(
@@ -158,14 +167,19 @@ class ContentBox extends StatelessWidget {
     if (localType == 'recipe') keyword = 'food';
 
     // Use a hash of the title to get a consistent image from LoremFlickr
-    // We use the keyword and the first word of the title to increase relevance
-    final firstWord = localTitle.split(' ').firstWhere((w) => w.length > 3, orElse: () => localTitle.split(' ').first);
-    final tags = '${Uri.encodeComponent(keyword)},${Uri.encodeComponent(firstWord)}';
-    final seed = localTitle.hashCode.abs() % 1000;
+    // We use the keyword and several words from the title to increase relevance
+    final words = localTitle
+        .split(RegExp(r'[\s\-_]'))
+        .where((w) => w.length > 3)
+        .take(2)
+        .toList();
+    final tags = [keyword, ...words].map((w) => Uri.encodeComponent(w)).join(',');
+    final seed = aggregation.canonicalToken.hashCode.abs() % 1000;
+    
+    // Use wsrv.nl as a proxy to ensure we get the specific image for the tags/seed
+    // and to avoid LoremFlickr's default behavior of returning a random image if tags don't match well.
     final url = 'https://loremflickr.com/600/600/$tags?lock=$seed';
-
     if (kIsWeb) {
-      // Use wsrv.nl as a CORS proxy for web to avoid "No 'Access-Control-Allow-Origin' header" errors.
       return 'https://wsrv.nl/?url=${Uri.encodeComponent(url)}&w=600&h=600&fit=cover';
     }
     return url;
@@ -229,6 +243,7 @@ class ContentBox extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
+                          maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
@@ -386,7 +401,7 @@ class ContentBox extends StatelessWidget {
                       child: Wrap(
                         spacing: 6,
                         children: aggregation.tags.map((tag) => Text(
-                          '#$tag',
+                          tag,
                           style: const TextStyle(color: Colors.blue, fontSize: 12),
                         )).toList(),
                       ),

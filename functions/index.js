@@ -48,16 +48,35 @@ function myExtractImage($, url) {
               $('meta[property="og:image:secure_url"]').attr('content') ||
               $('meta[name="twitter:image"]').attr('content') ||
               $('meta[name="twitter:image:src"]').attr('content') ||
-              $('link[rel="image_src"]').attr('href') ||
-              $('link[rel="apple-touch-icon"]').attr('href');
+              $('link[rel="image_src"]').attr('href');
 
   if (!image) {
     // Fallback: find the first large-ish image in the body
+    // We avoid common UI elements and small icons
     $('img').each((i, el) => {
       const src = $(el).attr('src');
-      if (src && !src.includes('icon') && !src.includes('logo')) {
-        image = src;
-        return false; // break
+      const width = $(el).attr('width');
+      const height = $(el).attr('height');
+      
+      // Skip if it looks like an icon or logo
+      if (src && 
+          !src.includes('icon') && 
+          !src.includes('logo') && 
+          !src.includes('avatar') &&
+          !src.includes('pixel') &&
+          !src.includes('spacer')) {
+        
+        // If we have dimensions, prefer larger ones
+        if (width && height) {
+          if (parseInt(width) > 100 && parseInt(height) > 100) {
+            image = src;
+            return false; // break
+          }
+        } else {
+          // No dimensions, just take the first one that isn't obviously an icon
+          image = src;
+          return false; // break
+        }
       }
     });
   }

@@ -648,7 +648,7 @@ void main() async {
     
     final SubjectAggregation agg = aggregation.subjects[sToken]!;
     expect(agg.likes, equals(2));
-    expect(agg.tags, contains('news'));
+    expect(agg.tags, contains('#news'));
     expect(agg.isDismissed, isTrue); // Dismissed by Homer (POV)
     expect(agg.statements.length, equals(3));
     

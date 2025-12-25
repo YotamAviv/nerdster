@@ -25,6 +25,7 @@
   "hosting": {
     "public": "build/web",
     "cleanUrls": true,
+    "trailingSlash": false,
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -32,8 +33,12 @@
     ],
     "rewrites": [
       {
-        "source": "/m{,/**}",
+        "source": "/m/**",
         "destination": "/m.html"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
       }
     ]
   },

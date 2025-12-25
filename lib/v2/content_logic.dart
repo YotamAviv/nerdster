@@ -1,4 +1,5 @@
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/tag.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/v2/model.dart';
@@ -135,7 +136,6 @@ ContentAggregation reduceContentAggregation(
 
   // 5. Subject Aggregation
   final Map<String, SubjectAggregation> subjects = {};
-  final RegExp tagRegex = RegExp(r'#(\w+)');
 
   for (final String identity in followNetwork.identities) {
     final List<ContentStatement> statements = filteredByIdentity[identity] ?? [];
@@ -171,9 +171,7 @@ ContentAggregation reduceContentAggregation(
         // Extract tags from comment
         final Set<String> tags = Set.from(agg.tags);
         if (s.comment != null) {
-          for (final Match match in tagRegex.allMatches(s.comment!)) {
-            tags.add(match.group(1)!.toLowerCase());
-          }
+          tags.addAll(extractTags(s.comment!));
         }
 
         // Update related
