@@ -146,10 +146,8 @@ class SubjectAggregation {
 
 /// The result of aggregating content for a Follow Network.
 class ContentAggregation {
-  /// Flat list of filtered statements, ordered by the rank (discovery distance) 
-  /// of the signing identity in the FollowNetwork.
   final List<ContentStatement> statements;
-  final Set<String> censored; // Tokens of censored subjects/statements
+  final Set<String> censored;
   final Map<String, String> equivalence; // SubjectToken -> CanonicalSubjectToken
   final Map<String, Set<String>> related; // SubjectToken -> Set of RelatedSubjectTokens
   final Map<String, SubjectAggregation> subjects; // CanonicalToken -> Aggregation

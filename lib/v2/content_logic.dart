@@ -29,6 +29,7 @@ ContentAggregation reduceContentAggregation(
   bool enableCensorship = true,
 }) {
   final Set<String> censored = {};
+  final List<TrustNotification> notifications = [];
   
   // 1. Decentralized Censorship (Proximity Wins)
   if (enableCensorship) {
@@ -91,11 +92,16 @@ ContentAggregation reduceContentAggregation(
 
   // 3. Equivalence Grouping
   final Map<String, Set<String>> egEdges = {};
-  for (final ContentStatement s in filteredStatements.where((s) => s.verb == ContentVerb.equate)) {
-    final String s1 = s.subjectToken;
-    final String s2 = getToken(s.other);
-    egEdges.putIfAbsent(s1, () => {}).add(s2);
-    egEdges.putIfAbsent(s2, () => {}).add(s1);
+
+  for (final ContentStatement s in filteredStatements) {
+    if (s.verb == ContentVerb.equate) {
+      final String s1 = s.subjectToken;
+      final String s2 = getToken(s.other);
+      if (s1 == s2) continue;
+
+      egEdges.putIfAbsent(s1, () => {}).add(s2);
+      egEdges.putIfAbsent(s2, () => {}).add(s1);
+    }
   }
 
   final Map<String, String> equivalence = {};
@@ -126,12 +132,16 @@ ContentAggregation reduceContentAggregation(
 
   // 4. Relational Discovery (Related)
   final Map<String, Set<String>> related = {};
-  for (final ContentStatement s in filteredStatements.where((s) => s.verb == ContentVerb.relate)) {
-    final String s1 = equivalence[s.subjectToken] ?? s.subjectToken;
-    final String s2 = equivalence[getToken(s.other)] ?? getToken(s.other);
-    if (s1 == s2) continue;
-    related.putIfAbsent(s1, () => {}).add(s2);
-    related.putIfAbsent(s2, () => {}).add(s1);
+
+  for (final ContentStatement s in filteredStatements) {
+    if (s.verb == ContentVerb.relate) {
+      final String s1 = equivalence[s.subjectToken] ?? s.subjectToken;
+      final String s2 = equivalence[getToken(s.other)] ?? getToken(s.other);
+      if (s1 == s2) continue;
+
+      related.putIfAbsent(s1, () => {}).add(s2);
+      related.putIfAbsent(s2, () => {}).add(s1);
+    }
   }
 
   // 5. Subject Aggregation

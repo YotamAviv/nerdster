@@ -14,7 +14,8 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
-import 'package:nerdster/content/dialogs/establish_subject_dialog.dart';
+import 'package:nerdster/content/content_base.dart';
+import 'package:nerdster/v2/metadata_service.dart';
 
 class FancyShadowView extends StatefulWidget {
   final String rootToken;
@@ -109,6 +110,17 @@ class _FancyShadowViewState extends State<FancyShadowView> {
               : _aggregation == null
                   ? const Center(child: Text('No content', style: TextStyle(color: Colors.white)))
                   : _buildFeed(),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () async {
+          final result = await submit(context);
+          if (result != null) {
+            // After adding content, refresh the feed
+            _runPipeline();
+          }
+        },
+      ),
     );
   }
 
@@ -148,49 +160,21 @@ class ContentBox extends StatelessWidget {
     required this.imageCache,
   });
 
-  String _getFallbackUrl() {
-    final subject = aggregation.subject;
-    String localTitle = 'Unknown';
-    String localType = 'article';
-
-    if (subject is Map || subject is Jsonish) {
-      localTitle = subject['title']?.toString() ?? 'Unknown';
-      localType = subject['contentType']?.toString() ?? 'article';
-    }
-
-    // Use specific keywords based on content type
-    String keyword = 'abstract';
-    if (localType == 'book') keyword = 'book';
-    if (localType == 'movie') keyword = 'movie';
-    if (localType == 'article') keyword = 'news';
-    if (localType == 'album') keyword = 'music';
-    if (localType == 'recipe') keyword = 'food';
-
-    // Use a hash of the title to get a consistent image from LoremFlickr
-    // We use the keyword and several words from the title to increase relevance
-    final words = localTitle
-        .split(RegExp(r'[\s\-_]'))
-        .where((w) => w.length > 3)
-        .take(2)
-        .toList();
-    final tags = [keyword, ...words].map((w) => Uri.encodeComponent(w)).join(',');
-    final seed = aggregation.canonicalToken.hashCode.abs() % 1000;
-    
-    // Use wsrv.nl as a proxy to ensure we get the specific image for the tags/seed
-    // and to avoid LoremFlickr's default behavior of returning a random image if tags don't match well.
-    final url = 'https://loremflickr.com/600/600/$tags?lock=$seed';
-    if (kIsWeb) {
-      return 'https://wsrv.nl/?url=${Uri.encodeComponent(url)}&w=600&h=600&fit=cover';
-    }
-    return url;
-  }
-
   @override
   Widget build(BuildContext context) {
     final subject = aggregation.subject;
-    final title = (subject is Map || subject is Jsonish) ? (subject['title'] ?? 'Unknown') : subject.toString();
-    final type = (subject is Map || subject is Jsonish) ? (subject['contentType'] ?? 'unknown') : 'unknown';
+    final title = (subject is Map || subject is Jsonish) ? subject['title'] : subject.toString();
+    final type = (subject is Map || subject is Jsonish) ? subject['contentType'] : 'unknown';
+    
+    // Fail Fast: Ensure we have the required fields
+    assert(title != null, 'Subject must have a title');
+    assert(type != null, 'Subject must have a contentType');
+
     final url = (subject is Map || subject is Jsonish) ? subject['url']?.toString() : null;
+    final author = (subject is Map || subject is Jsonish) ? subject['author']?.toString() : null;
+    final List<String> images = (subject is Map || subject is Jsonish) && subject['images'] != null 
+        ? List<String>.from(subject['images']) 
+        : [];
 
     return Dismissible(
       key: Key(aggregation.canonicalToken),
@@ -313,7 +297,10 @@ class ContentBox extends StatelessWidget {
                     aspectRatio: 1,
                     child: DynamicImage(
                       url: url,
-                      fallbackUrl: _getFallbackUrl(),
+                      title: title,
+                      author: author,
+                      initialImage: images.isNotEmpty ? images[0] : null,
+                      contentType: type,
                       imageCache: imageCache,
                     ),
                   ),
@@ -487,13 +474,19 @@ class _ActionButton extends StatelessWidget {
 
 class DynamicImage extends StatefulWidget {
   final String? url;
-  final String fallbackUrl;
+  final String? title;
+  final String? author;
+  final String? initialImage;
+  final String contentType;
   final Map<String, String> imageCache;
 
   const DynamicImage({
     super.key,
     required this.url,
-    required this.fallbackUrl,
+    this.title,
+    this.author,
+    this.initialImage,
+    required this.contentType,
     required this.imageCache,
   });
 
@@ -507,28 +500,33 @@ class _DynamicImageState extends State<DynamicImage> {
   @override
   void initState() {
     super.initState();
+    _fetchedUrl = widget.initialImage;
     _checkCacheAndFetch();
   }
 
   @override
   void didUpdateWidget(DynamicImage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url) {
+    if (oldWidget.url != widget.url || oldWidget.title != widget.title || oldWidget.author != widget.author || oldWidget.initialImage != widget.initialImage || oldWidget.contentType != widget.contentType) {
+      _fetchedUrl = widget.initialImage;
       _checkCacheAndFetch();
     }
   }
 
   void _checkCacheAndFetch() {
-    if (widget.url == null) {
+    if (_fetchedUrl != null) return;
+
+    final cacheKey = widget.url ?? widget.title;
+    if (cacheKey == null) {
       setState(() {
         _fetchedUrl = null;
       });
       return;
     }
 
-    if (widget.imageCache.containsKey(widget.url)) {
+    if (widget.imageCache.containsKey(cacheKey)) {
       setState(() {
-        _fetchedUrl = widget.imageCache[widget.url];
+        _fetchedUrl = widget.imageCache[cacheKey];
       });
     } else {
       _fetchImage();
@@ -536,48 +534,66 @@ class _DynamicImageState extends State<DynamicImage> {
   }
 
   void _fetchImage() {
-    tryFetchTitle(widget.url!, (url, {title, image, error}) {
-      if (mounted && url == widget.url && image != null) {
-        String finalUrl = image;
-        if (kIsWeb) {
-          // Use wsrv.nl as a CORS proxy and image resizer for web
-          finalUrl = 'https://wsrv.nl/?url=${Uri.encodeComponent(image)}&w=600&h=600&fit=cover';
+    fetchImages(
+      subject: {
+        'url': widget.url,
+        'title': widget.title,
+        'author': widget.author,
+        'contentType': widget.contentType,
+      },
+      onResult: (result) {
+        if (mounted && (result.image != null)) {
+          String finalUrl = result.image!;
+          if (kIsWeb) {
+            // Use wsrv.nl as a CORS proxy and image resizer for web
+            finalUrl = 'https://wsrv.nl/?url=${Uri.encodeComponent(finalUrl)}&w=600&h=600&fit=cover';
+          }
+          final cacheKey = widget.url ?? widget.title;
+          if (cacheKey != null) {
+            widget.imageCache[cacheKey] = finalUrl;
+          }
+          setState(() {
+            _fetchedUrl = finalUrl;
+          });
         }
-        widget.imageCache[url] = finalUrl;
-        setState(() {
-          _fetchedUrl = finalUrl;
-        });
-      }
-    });
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = _fetchedUrl ?? widget.fallbackUrl;
+    final imageUrl = _fetchedUrl;
 
     return ClipRRect(
-      child: Image.network(
-        imageUrl,
-        fit: BoxFit.cover,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            color: Colors.grey[850],
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                    : null,
-                color: Colors.white24,
-              ),
+      child: imageUrl != null 
+        ? Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                color: Colors.grey[850],
+                child: Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                        : null,
+                    color: Colors.white24,
+                  ),
+                ),
+              );
+            },
+            errorBuilder: (context, error, stackTrace) => Container(
+              color: Colors.grey[850],
+              child: const Icon(Icons.broken_image, color: Colors.white24, size: 80),
             ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) => Container(
-          color: Colors.grey[850],
-          child: const Icon(Icons.broken_image, color: Colors.white24, size: 80),
-        ),
-      ),
+          )
+        : Container(
+            color: Colors.grey[850],
+            child: const Center(
+              child: Icon(Icons.image_outlined, color: Colors.white10, size: 80),
+            ),
+          ),
     );
   }
 }

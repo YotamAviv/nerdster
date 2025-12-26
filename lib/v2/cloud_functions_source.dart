@@ -61,8 +61,6 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
         .transform(utf8.decoder)
         .transform(const LineSplitter())) {
       if (line.trim().isEmpty) continue;
-      print('CloudFunctionsSource received line length: ${line.length}');
-      if (line.length < 500) print('CloudFunctionsSource received line: $line');
 
       final Map<String, dynamic> jsonToken2Statements = jsonDecode(line);
 

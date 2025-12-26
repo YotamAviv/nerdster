@@ -1,528 +1,225 @@
 
-/*
-Exporting statements is for both [Nerdster, ONE-OF-US.NET].
+/**
+ * Nerdster Cloud Functions
+ * 
+ * This file contains the entry points for all Cloud Functions used by Nerdster.
+ * It is organized into:
+ * 1. Callable Functions (v2 onCall) - Used by the Flutter app.
+ * 2. HTTP Functions (v2 onRequest) - Used for external integrations and streaming.
+ */
 
-Cloud functions are all for for the Nerdster web-app, not ONE-OF-US.NET phone app, but this is 
-used by the Nerdster to read from ONE-OF-US.NET, and so it needs to be pushed out there, too.
-
-I often forget and then see it in the logs.. (to run in the functions directory)
-npm install
-npm install --save firebase-functions@latest
-npm audit fix
-*/
-
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { logger } = require("firebase-functions");
-const { onRequest } = require("firebase-functions/v2/https");
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
-const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const fetch = require("node-fetch");
-const { Timestamp } = require("firebase-admin/firestore");
-const cheerio = require('cheerio'); // For HTML parsing
-const { decode } = require('html-entities'); // Import the decode function
+const cheerio = require('cheerio');
 
-admin.initializeApp();
+// Local Utilities
+const { 
+  fetchFromOpenLibrary, 
+  fetchFromWikipedia, 
+  fetchFromYouTube,
+  extractTitle, 
+  extractImages 
+} = require('./metadata_fetchers');
 
-/*
-Try:
-https://www.panningtheglobe.com/ottolenghis-roast-chicken-zaatar-sumac/
-*/
-function myExtractTitle($, htmlString) {
-  // Try OpenGraph title
-  let title = $('meta[property="og:title"]').attr('content') || 
-              $('meta[name="twitter:title"]').attr('content');
-  
-  if (!title) {
-    const match = htmlString.match(/<title>(.*?)<\/title>/i);
-    title = match ? match[1].trim() : null;
-  }
-  
-  return title ? decode(title).trim() : null;
+const { fetchStatements } = require('./statement_fetcher');
+const { parseIrevoke } = require('./jsonish_util');
+
+// Initialization
+if (admin.apps.length === 0) {
+  admin.initializeApp();
 }
 
-function myExtractImage($, url) {
-  // Try various metadata tags for images
-  let image = $('meta[property="og:image"]').attr('content') ||
-              $('meta[property="og:image:url"]').attr('content') ||
-              $('meta[property="og:image:secure_url"]').attr('content') ||
-              $('meta[name="twitter:image"]').attr('content') ||
-              $('meta[name="twitter:image:src"]').attr('content') ||
-              $('link[rel="image_src"]').attr('href');
+// ----------------------------------------------------------------------------
+// 1. Callable Functions (v2 onCall)
+// ----------------------------------------------------------------------------
 
-  if (!image) {
-    // Fallback: find the first large-ish image in the body
-    // We avoid common UI elements and small icons
-    $('img').each((i, el) => {
-      const src = $(el).attr('src');
-      const width = $(el).attr('width');
-      const height = $(el).attr('height');
-      
-      // Skip if it looks like an icon or logo
-      if (src && 
-          !src.includes('icon') && 
-          !src.includes('logo') && 
-          !src.includes('avatar') &&
-          !src.includes('pixel') &&
-          !src.includes('spacer')) {
-        
-        // If we have dimensions, prefer larger ones
-        if (width && height) {
-          if (parseInt(width) > 100 && parseInt(height) > 100) {
-            image = src;
-            return false; // break
-          }
-        } else {
-          // No dimensions, just take the first one that isn't obviously an icon
-          image = src;
-          return false; // break
-        }
-      }
-    });
-  }
-
-  if (image && !image.startsWith('http')) {
-    try {
-      const baseUrl = new URL(url);
-      image = new URL(image, baseUrl.origin).href;
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  return image;
-}
-
-exports.cloudfetchtitle = onCall(async (request) => {
+/**
+ * Fetches the canonical title from a URL to help establish a subject identity.
+ * Fail Fast: Requires a valid URL.
+ */
+exports.fetchTitle = onCall(async (request) => {
   const url = request.data.url;
-  if (!url) return { "title": null, "image": null };
+  if (!url || !url.startsWith('http')) {
+    throw new HttpsError("invalid-argument", "A valid URL starting with http is required.");
+  }
 
   try {
+    logger.info(`[fetchTitle] Fetching: ${url}`);
     const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      },
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
       timeout: 5000
     });
+
+    if (!response.ok) {
+      logger.error(`[fetchTitle] HTTP Error: ${response.status}`);
+      return { "title": null };
+    }
+
     const html = await response.text();
     const $ = cheerio.load(html);
-
-    let title = myExtractTitle($, html);
-    let image = myExtractImage($, url);
-
-    return { "title": title, "image": image };
-  } catch (error) {
-    logger.error(`Error fetching title for ${url}:`, error);
-    return { "title": null, "image": null, "error": error.message };
+    const title = extractTitle($, html);
+    return { "title": title };
+  } catch (e) {
+    logger.error(`[fetchTitle] Error: ${e.message}`);
+    return { "title": null };
   }
 });
 
-// HTTP POST for QR signin (not 'signIn' (in camelCase) - that breaks things).
-// The Nerdster should be listening for a new doc at collection /sessions/doc/<session>/
-// The phone app should POST to this function (it used to write directly to the Nerdster Firebase collection.)
-exports.signin = onRequest((req, res) => {
+/**
+ * Fetches high-quality images for a subject to enhance visual presentation.
+ * This is dynamic and NOT part of the subject's identity.
+ * Fail Fast: Requires a subject with a contentType.
+ */
+exports.fetchImages = onCall(async (request) => {
+  const subject = request.data.subject;
+  if (!subject) {
+    throw new HttpsError("invalid-argument", "Missing subject object.");
+  }
+  
+  const contentType = subject.contentType;
+  if (!contentType) {
+    throw new HttpsError("invalid-argument", "Subject must have a contentType.");
+  }
+
+  const url = subject.url || "";
+  const author = subject.author || "";
+  const type = contentType.toLowerCase();
+  
+  let title = subject.title || "";
+  let images = [];
+
+  logger.info(`--- fetchImages: ${type} | ${title} ---`);
+
+  // 1. YouTube check
+  if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
+    const ytImages = fetchFromYouTube(url);
+    images = [...images, ...ytImages];
+  }
+
+  // 2. Fetch HTML if URL is present
+  if (url && url.startsWith('http')) {
+    try {
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        timeout: 5000
+      });
+      if (response.ok) {
+        const html = await response.text();
+        const $ = cheerio.load(html);
+        const scrapedTitle = extractTitle($, html);
+        if (!title) title = scrapedTitle;
+        const scrapedImages = extractImages($, url);
+        images = [...images, ...scrapedImages];
+      }
+    } catch (e) {
+      logger.error(`[fetchImages] HTML Fetch Error: ${e.message}`);
+    }
+  }
+
+  // 3. Smart Fetch (Wikipedia/OpenLibrary) for specific types
+  const smartTypes = ['book', 'movie', 'person', 'place', 'work', 'video'];
+  if (title && (images.length === 0 || smartTypes.includes(type))) {
+    // Skip hash-like titles (e.g. content-addressed IDs)
+    if (!/^[0-9a-f]{32,40}$/i.test(title)) {
+      let searchTitle = title.replace(/ - Amazon\.com:.*$/i, '').replace(/ - YouTube$/i, '').trim();
+      let cleanAuthor = (author && author.length < 50) ? author : "";
+
+      if (type === 'book') {
+        let ol = await fetchFromOpenLibrary(searchTitle, cleanAuthor);
+        if (ol.length === 0 && searchTitle.includes(':')) {
+          ol = await fetchFromOpenLibrary(searchTitle.split(':')[0].trim(), cleanAuthor);
+        }
+        images = [...ol, ...images];
+      }
+      
+      // Fallback or supplement with Wikipedia
+      if (images.length === 0 || type !== 'book') {
+        let wiki = await fetchFromWikipedia(searchTitle);
+        if (wiki.length === 0 && searchTitle.includes(':')) {
+          wiki = await fetchFromWikipedia(searchTitle.split(':')[0].trim());
+        }
+        images = [...wiki, ...images];
+      }
+    }
+  }
+
+  // Final cleanup: unique, valid URLs
+  images = [...new Set(images)].filter(img => img && typeof img === 'string' && img.startsWith('http'));
+  
+  return {
+    "title": title,
+    "image": images.length > 0 ? images[0] : null,
+    "images": images
+  };
+});
+
+// ----------------------------------------------------------------------------
+// 2. HTTP Functions (v2 onRequest)
+// ----------------------------------------------------------------------------
+
+/**
+ * Handles QR sign-in by adding session data to Firestore.
+ */
+exports.signin = onRequest({ cors: true }, async (req, res) => {
   const session = req.body.session;
-  const db = admin.firestore();
-  return db
-    .collection("sessions")
-    .doc("doc")
-    .collection(session)
-    .add(req.body).then(() => {
-      res.status(201).json({});
-    });
-});
-
-// ----- Code from jsonish.js to copy/paste into <nerdster/oneofus>/functions/index.js ----------//
-
-var key2order = {
-  "statement": 0,
-  "time": 1,
-  "I": 2,
-  "trust": 3,
-  "block": 4,
-  "replace": 5,
-  "delegate": 6,
-  "clear": 7,
-  "rate": 8,
-  "relate": 9,
-  "dontRelate": 10,
-  "equate": 11,
-  "dontEquate": 12,
-  "follow": 13,
-  "with": 15,
-  "other": 16,
-  "moniker": 17,
-  "revokeAt": 18,
-  "domain": 19,
-  "tags": 20,
-  "recommend": 21,
-  "dismiss": 22,
-  "censor": 23,
-  "stars": 24,
-  "comment": 25,
-  "contentType": 26,
-  "previous": 27,
-  "signature": 28
-};
-
-async function computeSHA1(str) {
-  const buffer = new TextEncoder("utf-8").encode(str);
-  const hash = await crypto.subtle.digest("SHA-1", buffer);
-  return Array.from(new Uint8Array(hash))
-    .map(x => x.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-function compareKeys(key1, key2) {
-  // console.log(`compareKeys(${key1}, ${key2})`);
-  // Keys we know have an order; others are ordered alphabetically below keys we know except signature.
-  // TODO: Is that correct about 'signature' below unknown keys?
-  const key1i = key2order[key1];
-  const key2i = key2order[key2];
-  var out;
-  if (key1i != null && key2i != null) {
-    out = key1i - key2i;
-  } else if (key1i == null && key2i == null) {
-    out = key1 < key2 ? -1 : 1;
-  } else if (key1i != null) {
-    out = -1;
-  } else {
-    out = 1;
-  }
-  // console.log(`compareKeys(${key1}, ${key2})=${out}`);
-  return out;
-}
-
-
-function order(thing) {
-  if (typeof thing === 'string') {
-    return thing;
-  } else if (typeof thing === 'boolean') {
-    return thing;
-  } else if (typeof thing === 'number') {
-    return thing;
-  } else if (Array.isArray(thing)) {
-    return thing.map((x) => order(x));
-  } else {
-    const signature = thing.signature; // signature last
-    const { ['signature']: excluded, ...signatureExcluded } = thing;
-    var out = Object.keys(signatureExcluded)
-      .sort((a, b) => compareKeys(a, b))
-      .reduce((obj, key) => {
-        obj[key] = order(thing[key]);
-        return obj;
-      }, {});
-    if (signature) out.signature = signature;
-    return out;
-  }
-}
-
-async function getToken(input) {
-  if (typeof input === 'string') {
-    return input;
-  } else {
-    const ordered = order(input);
-    var ppJson = JSON.stringify(ordered, null, 2);
-    var token = await computeSHA1(ppJson);
-    return token;
-  }
-}
-
-// -----------  --------------------------------------------------------//
-
-// ONE-OF-US.NET has those statements and those verbs, but... just union (Nerdster, ONE-OF-US)  
-const verbs = [
-  'trust',
-  'delegate',
-  'clear',
-  'rate',
-  'follow',
-  'censor',
-  'relate',
-  'dontRelate',
-  'equate',
-  'dontEquate',
-  'replace',
-  'block',
-];
-
-function getVerbSubject(j) {
-  for (var verb of verbs) {
-    if (j[verb] != null) {
-      return [verb, j[verb]];
-    }
-  }
-  return null;
-}
-
-function getOtherSubject(j) {
-  if ('with' in j && 'otherSubject' in j['with']) {
-    return j['with']['otherSubject'];
-  }
-}
-
-// -----------  --------------------------------------------------------//
-
-// Considers subject of verb (input[verb]) and otherSubject (input[with][otherSubject]) if present.
-async function makedistinct(input) {
-  var distinct = [];
-  var already = new Set();
-  for (var s of input) {
-    var i = s['I'];
-    const [verb, subject] = getVerbSubject(s);
-    const subjectToken = await getToken(subject);
-    const otherSubject = getOtherSubject(s);
-    const otherToken = otherSubject != null ? await getToken(otherSubject) : null;
-    const combinedKey = otherToken != null ?
-      ((subjectToken < otherToken) ? subjectToken.concat(otherToken) : otherToken.concat(subjectToken)) :
-      subjectToken;
-    if (already.has(combinedKey)) continue;
-    already.add(combinedKey);
-    distinct.push(s);
-  }
-  return distinct;
-}
-
-// fetchh: gratuitous h to avoid naming conflict with node-fetch
-async function fetchh(token2revokeAt, params = {}, omit = {}) {
-  const checkPrevious = params.checkPrevious != null;
-  const distinct = params.distinct != null;
-  const orderStatements = params.orderStatements != 'false'; // true by default for demo.
-  const includeId = params.includeId != null;
-  const after = params.after;
-
-  if (!token2revokeAt) throw 'Missing token2revokeAt';
-  const token = Object.keys(token2revokeAt)[0];
-  const revokeAt = token2revokeAt[token];
-  if (!token) throw 'Missing token';
-  if (checkPrevious && !includeId) throw 'checkPrevious requires includeId';
-
-  const db = admin.firestore();
-  const collectionRef = db.collection(token).doc('statements').collection('statements');
-
-  var revokeAtTime;
-  if (revokeAt) {
-    const doc = collectionRef.doc(revokeAt);
-    const docSnap = await doc.get();
-    if (docSnap.data()) {
-      revokeAtTime = docSnap.data().time;
-    } else {
-      return [];
-    }
+  if (!session) {
+    res.status(400).send("Missing session");
+    return;
   }
 
-  var snapshot;
-  if (revokeAtTime && after) {
-    var error = `Unimplemented: revokeAtTime && after`;
-    logger.error(error);
-    throw error;
-  } else if (revokeAtTime) {
-    snapshot = await collectionRef.where('time', "<=", revokeAtTime).orderBy('time', 'desc').get();
-  } else if (after) {
-    // logger.log(`after=${after}`)
-    snapshot = await collectionRef.where('time', ">", after).orderBy('time', 'desc').get();
-  } else {
-    snapshot = await collectionRef.orderBy('time', 'desc').get();
-  }
-
-  var statements;
-  if (includeId) {
-    statements = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  } else {
-    statements = snapshot.docs.map(doc => doc.data());
-  }
-
-
-  if (checkPrevious) {
-    // Validate notary chain, decending order
-    var first = true;
-    var previousToken;
-    var previousTime;
-    for (var d of statements) {
-      if (first) {
-        first = false; // no check
-      } else {
-        if (d.id != previousToken) {
-          var error = `Notarization violation: ${d.id} != ${previousToken}`;
-          logger.error(error);
-          throw error;
-        }
-
-        if (d.time >= previousTime) {
-          var error = `Not descending: ${d.time} >= ${previousTime}`;
-          logger.error(error);
-          throw error;
-        }
-      }
-      previousToken = d.previous;
-      previousTime = d.time;
-    }
-  }
-
-  if (omit) {
-    for (var s of statements) {
-      for (const key of omit) {
-        delete s[key];
-      }
-    }
-  }
-
-  if (distinct) {
-    statements = await makedistinct(statements);
-  }
-
-  // order statements
-  if (orderStatements) {
-    var list = [];
-    for (const statement of statements) {
-      const ordered = order(statement);
-      list.push(ordered);
-    }
-    statements = list;
-  }
-
-  return statements;
-}
-
-// ----------------------- JSON export ------------------------- //
-
-// - Emulator-Nerdster-Yotam: http://127.0.0.1:5001/nerdster/us-central1/..
-// - Emulator-Oneofus-Yotam: http://127.0.0.1:5002/one-of-us-net/us-central1/..
-// - Prod-Nerdster-Yotam: https://us-central1-nerdster.cloudfunctions.net/..
-// - Prod-Oneofus-Yotam: http://us-central1-one-of-us-net.cloudfunctions.net/..
-//
-// 10/18/24:
-// - upgraded to v2 (in response to errors on command line)
-// - mapped to https://export.nerdster.org
-//   - https://console.cloud.google.com/run/domains?project=nerdster
-//   - https://console.firebase.google.com/project/nerdster/functions/list
-
-
-// ------------- stream 
-
-// Async streaming (parallel)
-/*
-Plan dicussion, points..
-- reconsider the 'spec' stuff; mabye always pass a map of token2revoked 
-  - typical:    {token: revoked, token: null, token: revoked, token: null}
-  - unexpected: [{token: revoked}, token, {token: revoked}, token]
-- This should be the export API
-  - detect if allows or use a param: stream or return list
-- Only 2 requirements:
-  - demo (Nerster shows statement export link)
-  - Nerdster backend
-- if request starts with ["{", "["] then it's JSON; otherwise, it's a single token.
-  - or token=, 
-- short aliases?
-  - t: token
-  - ts: tokenspec
-- Demo: Nice to just use ?token=<token>
-- Different entry points (/export/, /stream/) or different params (?stream=true)
-  - JSON input? (unlike ?token=<token>)
-
-  TEST: (seem to work)
-http://127.0.0.1:5001/nerdster/us-central1/statements?spec=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}]
-http://127.0.0.1:5001/nerdster/us-central1/statements?spec=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"}]&omit=["statement","I"]
-http://127.0.0.1:5001/nerdster/us-central1/statements?spec=["f4e45451dd663b6c9caf90276e366f57e573841b"]
-http://127.0.0.1:5001/nerdster/us-central1/statements?spec=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]
-http://127.0.0.1:5001/nerdster/us-central1/statements?spec=[{"f4e45451dd663b6c9caf90276e366f57e573841b":"c2dc387845c6937bb13abfb77d9ddf72e3d518b5"},"b6741d196e4679ce2d05f91a978b4e367c1756dd"]&omit=["statement","I"]
-*/
-exports.export = functions.https.onRequest((req, res) => {
-  // QUESTIONABLE: I've seen and ignored this stuff:
-  // if (!req.acceptsStreaming) ...
-  // if (req.headers['content-type'] === 'application/stream+json') ...
-  // response.writeHead(200, {
-  //   'Content-Type': 'application/stream+json',
-  //   'Transfer-Encoding': 'chunked' // Important for streaming
-  // });
-  res.set('Access-Control-Allow-Origin', '*'); // CORS header.. Allow all origins
-  res.writeHead(200, {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
   try {
-    if (!req.query.spec) throw new HttpsError('required: spec');
-    const specString = decodeURIComponent(req.query.spec);
-    // logger.log(`specString=${specString}`);
-    // list or just 1
-    // list items are <String> or <String, String?>{}
-    let specs;
-    if (/^\s*[\[{"]/.test(specString)) {
-      // starts with [, {, or " → looks like JSON
-      specs = JSON.parse(specString);
-    } else {
-      specs = specString;
-    }
-    if (!Array.isArray(specs)) specs = [specs];
-    // logger.log(`specs=${JSON.stringify(specs)}`);
-
-    // CODE: call decodeURIComponent on all values in params (but I don't even know what type of object params is)
-    const params = req.query;
-    // const omit = req.query.omit ? JSON.parse(decodeURIComponent(params.omit)) : null;
-    const omit = req.query.omit ? params.omit : null;
-
-    let count = 0;
-    const all = specs.map(
-      async (spec) => {
-        // logger.log(`spec=${JSON.stringify(spec)}`);
-        var token2revoked;
-        if (typeof spec === 'string') {
-          token2revoked = { [spec]: null };
-        } else {
-          token2revoked = spec;
-        }
-        // logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
-
-        const token = Object.keys(token2revoked)[0];
-        // logger.log(`token2revoked=${JSON.stringify(token2revoked)}`);
-        const statements = await fetchh(token2revoked, params, omit);
-        const result = { [token]: statements };
-        const sOut = JSON.stringify(result);
-        res.write(`${sOut}\n`);
-        count++;
-        if (count == specs.length) {
-          res.end();
-          res.status(200);
-          // logger.log(`end`);
-        }
-      },
-    );
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(`Error: ${error}`); // BUG: Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
+    await admin.firestore()
+      .collection("sessions")
+      .doc("doc")
+      .collection(session)
+      .add(req.body);
+    res.status(201).json({});
+  } catch (e) {
+    logger.error(`[signin] Error: ${e.message}`);
+    res.status(500).send(e.message);
   }
 });
 
-/*
-Just prototype
-http://127.0.0.1:5001/nerdster/us-central1/streamnums
-*/
-exports.streamnums = functions.https.onRequest((req, res) => {
-  // if (!req.acceptsStreaming) {
-  //   const error = 'no streaming';
-  //   console.error(error);
-  //   res.status(500).send(`Error: ${error}`);
-  //   return;
-  // }
-
-  // Add the following line to set the CORS header
-  res.set('Access-Control-Allow-Origin', '*'); // Allow all origins
+/**
+ * Exports statements as a JSON stream.
+ * Mapped to https://export.nerdster.org
+ */
+exports.export = onRequest({ cors: true }, async (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive'
   });
-  let count = 0;
-  const intervalId = setInterval(() => {
-    if (count < 10) {
-      var out = { 'data': count };
-      var sOut = JSON.stringify(out);
-      res.write(`${sOut}\n`);
-      count++;
+
+  try {
+    const specParam = req.query.spec;
+    if (!specParam) throw new Error('Query parameter "spec" is required');
+
+    const specString = decodeURIComponent(specParam);
+    let specs = /^\s*[\[{"]/.test(specString) ? JSON.parse(specString) : specString;
+    if (!Array.isArray(specs)) specs = [specs];
+
+    const params = req.query;
+    const omit = params.omit;
+
+    for (const spec of specs) {
+      const token2revoked = parseIrevoke(spec);
+      const token = Object.keys(token2revoked)[0];
+      const statements = await fetchStatements(token2revoked, params, omit);
+      
+      res.write(JSON.stringify({ [token]: statements }) + '\n');
+    }
+    res.end();
+  } catch (e) {
+    logger.error(`[export] Error: ${e.message}`);
+    // Note: If headers were already sent, we can't change status
+    if (!res.headersSent) {
+      res.status(500).send(`Error: ${e.message}`);
     } else {
-      clearInterval(intervalId);
       res.end();
     }
-  }, 300);
+  }
 });
+

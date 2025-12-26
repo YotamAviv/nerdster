@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nerdster/comp.dart';
@@ -84,6 +85,17 @@ class ContentBase with Comp, ChangeNotifier {
   }
 
   Iterable<ContentStatement>? getSubjectStatements(String subject) => _subject2statements[subject];
+
+  String exportSubjects() {
+    List<Map<String, dynamic>> subjects = [];
+    for (String token in _subject2statements.keys) {
+      Jsonish? j = Jsonish.find(token);
+      if (j != null) {
+        subjects.add(j.json);
+      }
+    }
+    return jsonEncode(subjects);
+  }
 
   Iterable<ContentTreeNode>? getChildren(ContentTreeNode node) => _node2children[node];
 

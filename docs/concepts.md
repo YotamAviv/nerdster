@@ -61,6 +61,16 @@ All actions a person carries out using the ONE-OF-US.NET app use their **identit
   - This doesn't delete it from the internet, but it hides it from _your_ view.
   - Crucially, your censorship protects those who follow you. If you are a trusted node for your family or friends, your censorship decisions help filter their feed, creating a community-curated safety layer.
 
+### Subject Identity (Canonicalization)
+
+Nerdster makes a strict distinction between what a subject *is* (its identity) and how it *looks* (its presentation).
+
+- The goal is for different users rating the same thing (e.g., the same news article) to end up with the exact same **Subject Token**.
+- For articles, the identity is defined by the **URL**.
+- For books and movies, the identity is defined by specific fields like **Title**, **Author**, or **Year**.
+- **Images are NEVER part of a subject's identity.** If images were included in the subject definition, two users rating the same book with different cover art would accidentally create two different subjects.
+- When "Establishing a Subject" from a URL, we fetch the **Canonical Title** only to ensure the user doesn't have to type it manually (which leads to typos and fragmentation).
+
 ### Application Statement Hosting
 
 Just like the ONE-OF-US.NET phone app, the Nerdster web app serves content signed by its **delegate keys** (which users have authorized and associated with their identities) on its domain: `nerdster.org`. These statements are published where they can be fetched using the delegate key's token (the SHA-1 hash of the public key). This applies to all critical application actions: `rate`, `relate`, `equate`, `follow`, and `clear`.

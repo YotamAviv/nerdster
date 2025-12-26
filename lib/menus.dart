@@ -241,6 +241,31 @@ $link''',
                 }
               }),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
+          MenuItemButton(
+              child: const Text('Export subjects for testing'),
+              onPressed: () async {
+                String data = contentBase.exportSubjects();
+                await showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                            title: const Text('Exported Subjects'),
+                            content: SingleChildScrollView(child: SelectableText(data)),
+                            actions: [
+                              TextButton(
+                                  onPressed: () async {
+                                    await Clipboard.setData(ClipboardData(text: data));
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Copied to clipboard')));
+                                    }
+                                  },
+                                  child: const Text('Copy')),
+                              TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Close'))
+                            ]));
+              }),
           // MenuItemButton(onPressed: () => Fix.fix(), child: const Text('Fix')),
           MenuItemButton(
               onPressed: () => CorruptionCheck.make(), child: const Text('CorruptionCheck')),

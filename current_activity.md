@@ -2,9 +2,9 @@
 
 ## Follow Network & Content Aggregation (V2)
 - [x] Document requirements in `docs/follow_net_specification.md`
-- [ ] Implement V2 `FollowNetwork` logic
-- [ ] Implement V2 `ContentAggregator` logic
-- [ ] Port and expand tests to V2
+- [x] Implement V2 `FollowNetwork` logic (Stable)
+- [x] Implement V2 `ContentAggregator` logic (Stable)
+- [x] Port and expand tests to V2 (36 tests passing)
 
 # Probably next - DO NOT GET STARTED.
 

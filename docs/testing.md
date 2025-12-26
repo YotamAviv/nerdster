@@ -8,15 +8,22 @@ Run unit tests using the standard Flutter command:
 flutter test
 ```
 
-## JavaScript Tests
+## Backend (JavaScript) Tests
 
-The JavaScript implementation of the "jsonish" tokenization logic is tested against exported samples to ensure parity with the Dart implementation.
+The backend logic (Cloud Functions) is tested using the built-in Node.js test runner. This includes:
+- **Jsonish Parity**: Ensuring the JavaScript implementation of tokenization and ordering matches the Dart implementation.
+- **Metadata Fetchers**: Verifying title and image extraction from external sources.
 
-Run the test using Node.js:
+### Running Backend Tests
+
+Navigate to the `functions` directory and run:
 
 ```bash
-node js/jsonish.js
+cd functions
+npm test
 ```
+
+This runs all tests in the `functions/test/` directory.
 
 ## Integration Tests
 
@@ -48,9 +55,15 @@ Integration tests run in a browser environment and interact with local Firebase 
 
 ### Running the Tests
 
-Run the integration tests using `flutter drive`.
+Run the integration tests using the helper script or `flutter drive` directly.
 
-**V2 Basic Test:**
+**Using the helper script:**
+
+```bash
+./bin/integration_test.sh
+```
+
+**Using flutter drive directly:**
 
 ```bash
 flutter drive \

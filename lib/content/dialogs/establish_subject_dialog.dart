@@ -8,6 +8,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/util_ui.dart';
@@ -92,7 +93,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
 
     fetchingUrlWidget.isRunning.value = true;
 
-    tryFetchTitle(urlController.text, (String url, {String? title, String? image, String? error}) {
+    tryFetchTitle(urlController.text, (String url, {String? title, String? error}) {
       if (urlController.text == url) {
         fetchingUrlWidget.isRunning.value = false;
         if (title != null) {
@@ -192,15 +193,13 @@ You can include a URL in a comment or relate or equate this book to an article w
   }
 }
 
-void tryFetchTitle(String url, Function(String url, {String? title, String? image, String? error}) callback) async {
-  if (_functions == null) return;
+void tryFetchTitle(String url, Function(String url, {String? title, String? error}) callback) async {
   if (!url.startsWith('http://') && !url.startsWith('https://')) return;
   try {
-    var retval = await _functions!.httpsCallable('cloudfetchtitle').call({"url": url});
-    callback(url, title: retval.data["title"], image: retval.data["image"]);
-  } on FirebaseFunctionsException catch (e) {
-    String error = [e.message, if (e.details != null) e.details].join(', ');
-    callback(url, error: error);
+    final title = await fetchTitle(url);
+    callback(url, title: title);
+  } catch (e) {
+    callback(url, error: e.toString());
   }
 }
 
