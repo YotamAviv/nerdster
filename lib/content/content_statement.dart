@@ -3,7 +3,6 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 const String kNerdsterDomain = 'nerdster.org';
-const String kNerdsterType = 'org.nerdster';
 
 class ContentStatement extends Statement {
   static final Map<String, ContentStatement> _cache = <String, ContentStatement>{};
@@ -18,7 +17,7 @@ class ContentStatement extends Statement {
   final Json? contexts; // (verb == follow)
 
   static void init() {
-    Statement.registerFactory(kNerdsterType, _ContentStatementFactory());
+    Statement.registerFactory('org.nerdster', _ContentStatementFactory(), ContentStatement, kNerdsterDomain);
   }
 
   factory ContentStatement(Jsonish jsonish) {
@@ -75,7 +74,7 @@ class ContentStatement extends Statement {
       bool? censor,
       Json? contexts}) {
     Json json = {
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'time': clock.nowIso,
       'I': iJson,
       verb.label: subject,

@@ -279,7 +279,7 @@ class Fetcher {
           DateTime jTime = parseIso(j['time']);
           if (time != null) assert(jTime.isBefore(time));
           time = jTime;
-          j['statement'] = domain2statementType[domain]!;
+          j['statement'] = Statement.typeForDomain(domain);
           j['I'] = Jsonish.find(token)!.json;
           j.remove('id'); // No problem, unless we end up here twice (which we shouldn't).
 
@@ -464,21 +464,14 @@ class Fetcher {
 
   static Json getEndpoint(String domain) => _endpoints[domain]!.toJson();
 
-  static Uri makeSimpleUri(String domain, var spec) {
-    final endpoint = _endpoints[domain];
-    if (endpoint == null) throw ArgumentError('Unknown endpoint domain: $domain');
-    return endpoint.build({'spec': spec});
-  }
+  static Uri makeSimpleUri(String domain, var spec) => _endpoints[domain]!.build({'spec': spec});
 
   static Uri _makeUri(String domain, var spec) {
-    final endpoint = _endpoints[domain];
-    if (endpoint == null) throw ArgumentError('Unknown endpoint domain: $domain');
-
     Json params = Map.of(_paramsProto);
     params['spec'] = spec;
 
     // Delegate scheme/host/path to the endpoint
-    return endpoint.build(params);
+    return _endpoints[domain]!.build(params);
   }
 
   static void setCorruptionCollector(CorruptionProblemCollector corruptor) {

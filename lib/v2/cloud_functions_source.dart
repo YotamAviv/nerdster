@@ -21,10 +21,10 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
 
   CloudFunctionsSource({
     required this.baseUrl,
-    required this.statementType,
     http.Client? client,
     this.omit = const ['statement', 'I'],
-  }) : client = client ?? http.Client();
+  })  : statementType = Statement.type<T>(),
+        client = client ?? http.Client();
 
   @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {

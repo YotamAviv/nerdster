@@ -11,10 +11,19 @@ Avoid `var` and `final` (without type) whenever the type is not immediately obvi
 *   **Good:** `String x = getSomething();`
 *   **Acceptable:** `final List<String> names = [];`
 
-### 2. Fail Fast (Assertions)
+### 2. Fail Fast (Assertions and Bang Operator)
 Do not write code that "handles" impossible situations unless it's at the system boundary (e.g., user input or network IO). Internal logic should assume preconditions are met and assert them.
 *   **Bad:** `if (list.isEmpty) return; // when list should never be empty`
 *   **Good:** `assert(list.isNotEmpty, 'List must not be empty');`
+
+Prefer using the bang operator (`!`) over explicit null checks and exceptions for internal logic where a value is guaranteed to be present.
+*   **Bad:**
+    ```dart
+    final String? value = map[key];
+    if (value == null) throw Exception('Value must be present');
+    return value;
+    ```
+*   **Good:** `return map[key]!;`
 
 ### 3. Strict Data Integrity
 *   Data sources (like Firestore) must return valid data.

@@ -42,7 +42,7 @@ void main() {
     // Bob -> Dave ("David")
     await bob.doTrust(TrustVerb.trust, dave, moniker: 'David');
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
     
@@ -63,7 +63,7 @@ void main() {
     // Bob trusts Alice back as "Lisa"
     await bob.doTrust(TrustVerb.trust, alice, moniker: 'Lisa');
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
     
@@ -96,7 +96,7 @@ void main() {
     // Bob2 replaces Bob1
     await bob2.replace(bob1);
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
     
@@ -118,7 +118,7 @@ void main() {
     // Alice -> Bob2 ("Bob") - Different identity
     await alice.doTrust(TrustVerb.trust, bob2, moniker: 'Bob');
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
     
@@ -151,7 +151,7 @@ void main() {
     // Charlie2 replaces Charlie1
     await charlie2.replace(charlie1);
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
     

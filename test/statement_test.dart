@@ -22,6 +22,10 @@ var statementJson = {
 };
 
 void main() {
+  setUpAll(() {
+    TrustStatement.init();
+  });
+
   test('some identity==, mostly Jsonish', () async {
     Jsonish.wipeCache();
     Jsonish jsonish = Jsonish(statementJson);

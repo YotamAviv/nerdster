@@ -188,13 +188,11 @@ class _State extends State<RateBody> {
   Widget build(BuildContext context) {
     // check if subject is my statement
     bool subjectIsMyStatement = false;
-    try {
-      // Assume that subject is a statement, construct the Statement, and check if I'm its author.
-      Statement temp = Statement.make(widget.subject);
-      subjectIsMyStatement = followNet.delegate2oneofus[temp.iToken] ==
-          followNet.delegate2oneofus[signInState.delegate!];
-    } catch (e) {
-      // Probably not even a statement
+    if (widget.subject.containsKey('statement')) {
+      final String subjectDelegate = Statement.make(widget.subject).iToken;
+      final String i = followNet.delegate2oneofus[signInState.delegate!]!;
+      assert(i == signInState.identity, 'confirming');
+      subjectIsMyStatement = (i == followNet.delegate2oneofus[subjectDelegate]);
     }
 
     bool editingEnabled = !erase.value;
@@ -235,7 +233,7 @@ class _State extends State<RateBody> {
         callback: eraseListener);
 
     Widget warning = const SizedBox(width: 120.0);
-    if (widget.subject['statement'] == kNerdsterType) {
+    if (widget.subject.containsKey('statement')) {
       warning = SizedBox(
         width: 120.0,
         child: Tooltip(

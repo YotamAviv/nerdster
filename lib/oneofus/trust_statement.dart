@@ -1,30 +1,16 @@
 import 'jsonish.dart';
+export 'jsonish.dart';
 import 'statement.dart';
 import 'util.dart';
 
 const String kOneofusDomain = 'one-of-us.net';
-const String kOneofusType = 'net.one-of-us';
-
-enum TrustVerb {
-  trust('trust', 'trusted'),
-  block('block', 'blocked'),
-  replace('replace', 'replaced'), // requires 'revokeAt'
-
-  delegate('delegate', 'delegated'), // allows 'revokeAt'
-
-  clear('clear', 'cleared');
-
-  const TrustVerb(this.label, this.pastTense);
-  final String label;
-  final String pastTense;
-}
 
 class TrustStatement extends Statement {
   // CONSIDER: wipeCaches? ever?
   static final Map<String, TrustStatement> _cache = <String, TrustStatement>{};
 
   static void init() {
-    Statement.registerFactory(kOneofusType, _TrustStatementFactory());
+    Statement.registerFactory('net.one-of-us', _TrustStatementFactory(), TrustStatement, kOneofusDomain);
   }
 
   final TrustVerb verb;
@@ -104,7 +90,7 @@ class TrustStatement extends Statement {
     // assert(Jsonish(iJson) != Jsonish(otherJson));)
 
     Json json = {
-      'statement': kOneofusType,
+      'statement': Statement.type<TrustStatement>(),
       'time': clock.nowIso,
       'I': iJson,
       verb.label: otherJson,

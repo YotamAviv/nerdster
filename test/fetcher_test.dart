@@ -16,7 +16,7 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const String _domain = kOneofusDomain;
-const String _type = kOneofusType;
+final String _type = Statement.type<TrustStatement>();
 late final FirebaseFirestore _fire;
 
 void main() async {

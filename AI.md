@@ -37,3 +37,6 @@
 
 9. **Be Literal and Direct.**
    - Treat all user instructions literally.
+
+10. **Don't be eager.**
+    - Do not run tests, stage files, or commit unless explicitly asked to do so.

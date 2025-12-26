@@ -31,7 +31,7 @@ void main() {
     await alice.trust(bob, moniker: 'bob');
     await bob.trust(charlie, moniker: 'charlie');
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
@@ -51,7 +51,7 @@ void main() {
     await bobNew.replace(bob); // bobNew replaces bob
     await bob.trust(charlie, moniker: 'charlie');  // Charlie was trusted by the OLD key
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     // Alice (0) -> BobNew (1) -> Bob (2) -> Charlie (3)
     // So we need maxDegrees: 3 to reach Charlie.
     // We also need a pathRequirement that allows 1 path at distance 3.
@@ -77,7 +77,7 @@ void main() {
     await alice.trust(charlie, moniker: 'charlie');
     await bob.trust(dave, moniker: 'dave');
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     
     // Requirement: 2 paths for distance 2
     final pipeline = TrustPipeline(source, pathRequirement: (d) => d >= 2 ? 2 : 1);
@@ -106,7 +106,7 @@ void main() {
     await bob.trust(dave, moniker: 'dave');
     await charlie.block(dave);
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
@@ -126,7 +126,7 @@ void main() {
     await alice.trust(bobNew, moniker: 'bobNew');
     await bobNew.replace(bob);
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
@@ -141,7 +141,7 @@ void main() {
     await alice.trust(bob, moniker: 'bob');
     await alice.clear(bob); // This issues a 'clear' statement
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
@@ -159,7 +159,7 @@ void main() {
     await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
     await bobOld.trust(charlie, moniker: 'charlie'); // This statement should be ignored
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
@@ -179,7 +179,7 @@ void main() {
     await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: 'garbage-token');
     await bobOld.trust(charlie, moniker: 'charlie'); // This statement should be ignored
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
@@ -208,7 +208,7 @@ void main() {
     // bobNew replaces bobOld and constrains his statements.
     await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     // Set maxDegrees to 3 so that bobNew (dist 1) can constrain bobOld (dist 2) 
     // and we can see the effect on Charlie (dist 3).
     final pipeline = TrustPipeline(source, maxDegrees: 3);
@@ -233,7 +233,7 @@ void main() {
     await bobNew.replace(bob);
     await charlie.trust(bob, moniker: 'bob'); // Charlie trusts the OLD key directly, but BobNew (also trusted) replaced it
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
@@ -261,7 +261,7 @@ void main() {
     // bobOld trusts Frank
     await bobOld.trust(frank, moniker: 'frank');
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     
     // --- PoV: Alice ---
@@ -298,7 +298,7 @@ void main() {
     // bobOld is NOT trusted by anyone else. 
     // Without backward discovery, bobOld would be "not in network".
     
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     // We need maxDegrees: 3 so that bobNew (at dist 2) is processed as an issuer.
     final pipeline = TrustPipeline(source, maxDegrees: 3);
     final graph = await pipeline.build(alice.token);
@@ -325,7 +325,7 @@ void main() {
     // bobV2 also replaces bobV1 (the standard chain)
     await bobV2.replace(bobV1);
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
 
@@ -377,7 +377,7 @@ void main() {
     // Bob -> Dave
     await bob.trust(dave, moniker: 'dave');
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
 
@@ -405,7 +405,7 @@ void main() {
     await bob.trust(dave, moniker: 'dave');
     await charlie.trust(dave, moniker: 'dave');
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
 
@@ -436,7 +436,7 @@ void main() {
     // This is "Far to Close" because bobNew is further than Alice.
     await bobNew.replace(bobOld, lastGoodToken: sDave);
 
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
 

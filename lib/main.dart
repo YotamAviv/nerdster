@@ -31,17 +31,11 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/v2/fancy_shadow_view.dart';
 
+import 'package:nerdster/fire_choice.dart';
+export 'package:nerdster/fire_choice.dart';
 import 'firebase_options.dart';
 import 'message_handler.dart' if (dart.library.io) 'stub_message_handler.dart';
 
-enum FireChoice {
-  fake,
-  emulator,
-  prod;
-}
-
-// default values, may be overwritten by query parameters
-FireChoice fireChoice = FireChoice.prod;
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
 
@@ -50,11 +44,6 @@ String? demo;
 // This doesn't work. [ContentTree] sets this using [BuildContext].
 // On my Pixel 6a, size is (374.2, 713.1).
 ValueNotifier<bool> isSmall = ValueNotifier<bool>(true);
-
-const domain2statementType = {
-  kOneofusDomain: kOneofusType,
-  kNerdsterDomain: kNerdsterType,
-};
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -128,12 +117,12 @@ Future<void> main() async {
     case FireChoice.emulator:
       const oneofusUrl = 'http://127.0.0.1:5002/one-of-us-net/us-central1/export';
       const nerdsterUrl = 'http://127.0.0.1:5001/nerdster/us-central1/export';
-      
+
       Fetcher.initEndpoint(kOneofusDomain,
           const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
       Fetcher.initEndpoint(kNerdsterDomain,
           const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
-          
+
       V2Config.registerUrl(kOneofusDomain, oneofusUrl);
       V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;
@@ -147,7 +136,7 @@ Future<void> main() async {
 
       Fetcher.initEndpoint(kOneofusDomain, const Endpoint('https', 'export.one-of-us.net', ''));
       Fetcher.initEndpoint(kNerdsterDomain, const Endpoint('https', 'export.nerdster.org', ''));
-      
+
       V2Config.registerUrl(kOneofusDomain, oneofusUrl);
       V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;

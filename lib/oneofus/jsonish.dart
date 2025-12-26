@@ -4,8 +4,6 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:crypto/crypto.dart';
 
-import 'trust_statement.dart';
-
 /// Statement signing and verification are handled here.
 /// Getting the map from this object, and then signing that, and then putting the
 /// signature back in the map seems tedious and error prone.
@@ -38,6 +36,20 @@ abstract class StatementVerifier {
 
 // This is here in Jsonish because I wanted the oneofus dir not to depend on Content
 // stuff, not super elegant.
+enum TrustVerb {
+  trust('trust', 'trusted'),
+  block('block', 'blocked'),
+  replace('replace', 'replaced'), // requires 'revokeAt'
+
+  delegate('delegate', 'delegated'), // allows 'revokeAt'
+
+  clear('clear', 'cleared');
+
+  const TrustVerb(this.label, this.pastTense);
+  final String label;
+  final String pastTense;
+}
+
 enum ContentVerb {
   // apply to 'subject'
   rate('rate', 'rated'), // (comment), recommend, dismiss, ..

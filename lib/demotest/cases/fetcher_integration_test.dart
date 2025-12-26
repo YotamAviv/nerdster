@@ -50,7 +50,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// - lastToken, maybe
 
 const String _domain = kOneofusDomain;
-const String _type = kOneofusType;
+final String _type = Statement.type<TrustStatement>();
 FirebaseFirestore get _fire => FireFactory.find(_domain);
 
 class TestSigner implements StatementSigner {
@@ -280,14 +280,14 @@ class FetcherTestHelper {
     fetcher = Fetcher(getToken(kI), kNerdsterDomain);
 
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'rate': {'title': 't1'},
       'comment': '1',
       'time': clock.nowIso
     }, signer);
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'rate': {'title': 't2'},
       'comment': '2',
@@ -297,14 +297,14 @@ class FetcherTestHelper {
     expect(js.length, 2);
 
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'rate': {'title': 't3'},
       'comment': '3',
       'time': clock.nowIso
     }, signer);
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'rate': {'title': 't3'},
       'comment': '4',
@@ -326,7 +326,7 @@ class FetcherTestHelper {
     fetcher = Fetcher(getToken(kI), kNerdsterDomain);
 
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'relate': {'title': 'a'},
       'with': {
@@ -335,7 +335,7 @@ class FetcherTestHelper {
       'time': clock.nowIso
     }, signer);
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'relate': {'title': 'b'},
       'with': {
@@ -348,7 +348,7 @@ class FetcherTestHelper {
     expect(js.length, 2);
 
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'relate': {'title': 'c'},
       'with': {
@@ -357,7 +357,7 @@ class FetcherTestHelper {
       'time': clock.nowIso
     }, signer);
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'relate': {'title': 'c'},
       'with': {
@@ -371,7 +371,7 @@ class FetcherTestHelper {
     expect(js.length, 3);
 
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'relate': {'title': '1'},
       'with': {
@@ -380,7 +380,7 @@ class FetcherTestHelper {
       'time': clock.nowIso
     }, signer);
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'relate': {'title': '2'},
       'with': {
@@ -405,7 +405,7 @@ class FetcherTestHelper {
     fetcher = Fetcher(getToken(kI), kNerdsterDomain);
 
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'relate': {'title': 'a'},
       'with': {
@@ -418,7 +418,7 @@ class FetcherTestHelper {
     expect(js.length, 1);
 
     await fetcher.push({
-      'statement': kNerdsterType,
+      'statement': Statement.type<ContentStatement>(),
       'I': kI,
       'clear': {'title': 'a'},
       'with': {
@@ -452,7 +452,7 @@ class FetcherTestHelper {
       Fetcher.clear();
       Fetcher fetcher1 = Fetcher(t1, kNerdsterDomain);
       Statement s1 = await fetcher1.push({
-        'statement': kNerdsterType,
+        'statement': Statement.type<ContentStatement>(),
         'I': kI1,
         'rate': {'title': 'a'},
         'time': clock.nowIso
@@ -460,7 +460,7 @@ class FetcherTestHelper {
 
       Fetcher fetcher2 = Fetcher(t2, kNerdsterDomain);
       Statement s2 = await fetcher2.push({
-        'statement': kNerdsterType,
+        'statement': Statement.type<ContentStatement>(),
         'I': kI2,
         'rate': {'title': 'a'},
         'time': clock.nowIso

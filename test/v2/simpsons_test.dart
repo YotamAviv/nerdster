@@ -27,7 +27,7 @@ void main() {
     await simpsonsDemo();
     
     final milhouse = DemoKey.findByName('milhouse')!;
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final graph = await pipeline.build(milhouse.token);
     
@@ -85,7 +85,7 @@ void main() {
     await simpsonsDemo();
     
     final lisa = DemoKey.findByName('lisa')!;
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final graph = await pipeline.build(lisa.token);
     final labeler = V2Labeler(graph);
@@ -101,7 +101,7 @@ void main() {
     await simpsonsDemo();
     
     final bart = DemoKey.findByName('bart')!;
-    final source = DirectFirestoreSource<TrustStatement>(kOneofusDomain);
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final graph = await pipeline.build(bart.token);
     final labeler = V2Labeler(graph);

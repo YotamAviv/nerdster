@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/v2/cloud_functions_source.dart';
 import 'package:nerdster/v2/config.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -72,7 +73,6 @@ void main() {
         final url = V2Config.getUrl(kOneofusDomain)!;
         final source = CloudFunctionsSource<TrustStatement>(
           baseUrl: url, 
-          statementType: kOneofusType,
           omit: p.omit,
         );
         
