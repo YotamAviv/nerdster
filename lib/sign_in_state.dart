@@ -39,13 +39,19 @@ Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterK
 
   final String oneofusToken = getToken(await oneofusPublicKey.json);
   await signInState.signIn(oneofusToken, nerdsterKeyPair, context: context);
-  await BarRefresh.refresh(context);
+  
+  // V2 views handle their own refresh via didUpdateWidget or listeners.
+  // V1 still needs a manual refresh trigger.
+  final path = Uri.base.path;
+  final isV2 = path == '/' || path.contains('/v2/') || path == '/v2';
+  if (!isV2) {
+    await BarRefresh.refresh(context);
+  }
 }
 
 class SignInState with ChangeNotifier {
   String? _pov;
   String? _identity;
-  OouKeyPair? _delegateKeyPair;
   Json? _delegatePublicKeyJson;
   String? _delegate;
   StatementSigner? _signer;
@@ -69,7 +75,6 @@ class SignInState with ChangeNotifier {
     _identity = identity;
     _pov = identity;
     if (b(delegateKeyPair)) {
-      _delegateKeyPair = delegateKeyPair;
       OouPublicKey delegatePublicKey = await delegateKeyPair!.publicKey;
       _delegatePublicKeyJson = await delegatePublicKey.json;
       _delegate = getToken(_delegatePublicKeyJson);
@@ -88,7 +93,6 @@ class SignInState with ChangeNotifier {
 
   void signOut({bool? clearIdentity = false, BuildContext? context}) {
     if (clearIdentity == true) _identity = null;
-    _delegateKeyPair = null;
     _delegatePublicKeyJson = null;
     _delegate = null;
     _signer = null;

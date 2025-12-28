@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/main.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/util_ui.dart';
 

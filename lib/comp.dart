@@ -20,7 +20,6 @@ abstract mixin class Comp {
   bool _processing = false;
   bool _dirtyDuringProcess = false;
   Object? _exception;
-  StackTrace? _stackTrace;
   int _waitingCount = 0;
 
   static void dumpComps() {
@@ -105,8 +104,7 @@ abstract mixin class Comp {
           }
 
           _ready.value = true;
-        } catch (e, stackTrace) {
-          _stackTrace = stackTrace;
+        } catch (e) {
           _exception = e;
           _processing = false;
           _ready.value = true; // necessary to end the waiting below

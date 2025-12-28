@@ -78,11 +78,7 @@ exports.fetchImages = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "Missing subject object.");
   }
   
-  const contentType = subject.contentType;
-  if (!contentType) {
-    throw new HttpsError("invalid-argument", "Subject must have a contentType.");
-  }
-
+  const contentType = subject.contentType || "";
   const url = subject.url || "";
   const author = subject.author || "";
   const type = contentType.toLowerCase();
@@ -90,7 +86,11 @@ exports.fetchImages = onCall(async (request) => {
   let title = subject.title || "";
   let images = [];
 
-  logger.info(`--- fetchImages: ${type} | ${title} ---`);
+  logger.info(`--- fetchImages: ${type || 'no-type'} | ${title || 'no-title'} | ${url || 'no-url'} ---`);
+
+  if (!contentType && !url) {
+    throw new HttpsError("invalid-argument", "Subject must have either a contentType or a url.");
+  }
 
   // 1. YouTube check
   if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {

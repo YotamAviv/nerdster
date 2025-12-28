@@ -6,7 +6,7 @@ import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/orchestrator.dart';
-import 'package:nerdster/main.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 
@@ -46,7 +46,7 @@ void main() {
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
     
-    final labeler = V2Labeler(graph);
+    final labeler = V2Labeler(graph, meToken: alice.token);
 
     expect(labeler.getLabel(alice.token), 'Me');
     expect(labeler.getLabel(bob.token), 'Bobby');

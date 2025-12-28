@@ -7,7 +7,7 @@ import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 
-import 'package:nerdster/main.dart';
+import 'package:nerdster/app.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;

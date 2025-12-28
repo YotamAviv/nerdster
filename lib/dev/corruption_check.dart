@@ -78,11 +78,9 @@ class CorruptionCheck {
       // Validate verb
       // If Statement (s) succeeded so far, then there's nothing to check regarding
       if (fetcher.domain == kOneofusDomain) {
-        TrustStatement s2 = s as TrustStatement;
-        // print(s2.verb);
+        // print((s as TrustStatement).verb);
       } else if (fetcher.domain == kNerdsterDomain) {
-        ContentStatement s2 = s as ContentStatement;
-        // print(s2.verb);
+        // print((s as ContentStatement).verb);
       } else {
         assert(false, fetcher.domain);
       }

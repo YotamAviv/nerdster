@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:nerdster/v2/cached_source.dart';
-import 'package:nerdster/v2/content_pipeline.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
-import 'package:nerdster/v2/orchestrator.dart';
+import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/follow_logic.dart';
-import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -16,117 +11,100 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/v2/metadata_service.dart';
+import 'package:nerdster/singletons.dart';
 
 class FancyShadowView extends StatefulWidget {
-  final String rootToken;
+  final String? rootToken;
 
-  const FancyShadowView({super.key, required this.rootToken});
+  const FancyShadowView({super.key, this.rootToken});
 
   @override
   State<FancyShadowView> createState() => _FancyShadowViewState();
 }
 
 class _FancyShadowViewState extends State<FancyShadowView> {
-  V2Labeler? _labeler;
-  ContentAggregation? _aggregation;
-  bool _loading = false;
-  String? _error;
+  late final V2FeedController _controller;
 
   // Cache for dynamically fetched image URLs
   static final Map<String, String> _imageUrlCache = {};
 
-  final CachedSource<TrustStatement> _cachedIdentity =
-      CachedSource(SourceFactory.get<TrustStatement>(kOneofusDomain));
-  final CachedSource<ContentStatement> _cachedIdentityContent =
-      CachedSource(SourceFactory.get<ContentStatement>(kOneofusDomain));
-  final CachedSource<ContentStatement> _cachedAppContent =
-      CachedSource(SourceFactory.get<ContentStatement>(kNerdsterDomain));
-
   @override
   void initState() {
     super.initState();
-    _runPipeline();
+    _controller = V2FeedController(
+      trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
+      identityContentSource: SourceFactory.get<ContentStatement>(kOneofusDomain),
+      appContentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
+    );
+    _controller.refresh(widget.rootToken, meToken: signInState.identity);
+    contentBase.addListener(_onRefresh);
+    Setting.get<String>(SettingType.tag).addListener(_onSettingChanged);
   }
 
-  Future<void> _runPipeline() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  @override
+  void dispose() {
+    contentBase.removeListener(_onRefresh);
+    Setting.get<String>(SettingType.tag).removeListener(_onSettingChanged);
+    _controller.dispose();
+    super.dispose();
+  }
 
-    try {
-      final trustPipeline = TrustPipeline(_cachedIdentity);
-      final graph = await trustPipeline.build(widget.rootToken);
-      final delegateResolver = DelegateResolver(graph);
+  void _onSettingChanged() {
+    if (mounted) setState(() {});
+  }
 
-      final contentPipeline = ContentPipeline(
-        identitySource: _cachedIdentityContent,
-        appSource: _cachedAppContent,
-      );
-      final contentMap =
-          await contentPipeline.fetchContentMap(graph, delegateResolver);
-
-      final followNetwork = reduceFollowNetwork(
-          graph, delegateResolver, contentMap, kNerdsterContext);
-      final aggregation = reduceContentAggregation(
-          followNetwork, graph, delegateResolver, contentMap);
-
-      if (mounted) {
-        setState(() {
-          _labeler = V2Labeler(graph);
-          _aggregation = aggregation;
-          _loading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Fancy Shadow Pipeline Error: $e');
-      if (mounted) {
-        setState(() {
-          _error = '$e';
-          _loading = false;
-        });
-      }
-    }
+  void _onRefresh() {
+    _controller.refresh(widget.rootToken, meToken: signInState.identity);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Nerdster Feed', style: TextStyle(color: Colors.white)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _loading ? null : _runPipeline,
+    return ValueListenableBuilder<V2FeedModel?>(
+      valueListenable: _controller,
+      builder: (context, model, _) {
+        return Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            title: const Text('Nerdster Feed', style: TextStyle(color: Colors.white)),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.account_tree, color: Colors.white),
+                onPressed: () {
+                  // TODO: Use TrustGraphVisualizer when ready
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: _controller.loading ? null : _onRefresh,
+              ),
+            ],
           ),
-        ],
-      ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
-              : _aggregation == null
-                  ? const Center(child: Text('No content', style: TextStyle(color: Colors.white)))
-                  : _buildFeed(),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blueAccent,
-        child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () async {
-          final result = await submit(context);
-          if (result != null) {
-            // After adding content, refresh the feed
-            _runPipeline();
-          }
-        },
-      ),
+          body: _controller.loading
+              ? const Center(child: CircularProgressIndicator())
+              : _controller.error != null
+                  ? Center(child: Text(_controller.error!, style: const TextStyle(color: Colors.red)))
+                  : (model == null || model.aggregation.subjects.isEmpty)
+                      ? const Center(child: Text('No content', style: TextStyle(color: Colors.white)))
+                      : _buildFeed(model),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: Colors.blueAccent,
+            child: const Icon(Icons.add, color: Colors.white),
+            onPressed: () async {
+              final result = await submit(context);
+              if (result != null) {
+                _onRefresh();
+              }
+            },
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildFeed() {
+  Widget _buildFeed(V2FeedModel model) {
     final tagSetting = Setting.get<String>(SettingType.tag).value;
-    final subjects = _aggregation!.subjects.values.where((s) {
+    final subjects = model.aggregation.subjects.values.where((s) {
       if (tagSetting == '-') return true;
       final normalizedTag = tagSetting.toLowerCase();
       final searchTag = normalizedTag.startsWith('#') ? normalizedTag : '#$normalizedTag';
@@ -140,7 +118,7 @@ class _FancyShadowViewState extends State<FancyShadowView> {
       itemBuilder: (context, index) {
         return ContentBox(
           aggregation: subjects[index],
-          labeler: _labeler!,
+          labeler: model.labeler,
           imageCache: _imageUrlCache,
         );
       },
@@ -401,9 +379,14 @@ class ContentBox extends StatelessWidget {
                         text: TextSpan(
                           style: const TextStyle(fontSize: 13),
                           children: [
-                            TextSpan(
-                              text: '$label ',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: Text(
+                                '$label ',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                             TextSpan(
                               text: s.comment ?? s.verb.label,

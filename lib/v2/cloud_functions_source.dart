@@ -8,7 +8,7 @@ import 'package:nerdster/v2/io.dart';
 /// This is the preferred method for Production and Emulator environments as it is more efficient.
 ///
 /// It requests the cloud to:
-/// 1. Filter by `revokeAt` (time travel).
+/// 1. Filter statements up to `revokeAt` if applicable.
 /// 2. Apply `distinct` logic (collapse redundant statements).
 /// 3. Omit redundant fields (`statement`, `I`) to save bandwidth.
 ///
@@ -90,12 +90,8 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
           final Statement statement = Statement.make(jsonish);
           if (statement is T) {
             list.add(statement);
-          } else {
-            // This can happen if the server returns a different type than requested,
-            // or if the client-side reconstruction of 'statement' field is wrong.
-            print(
-                'CloudFunctionsSource: Skipping statement of type ${statement.runtimeType} (expected $T)');
           }
+          // Silently skip statements of other types (e.g. TrustStatements when fetching ContentStatements)
         }
       }
     }

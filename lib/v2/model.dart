@@ -1,5 +1,18 @@
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/v2/labeler.dart';
+
+enum V2SortMode {
+  recentActivity,
+  netLikes,
+  mostComments,
+}
+
+enum V2FilterMode {
+  myDisses,
+  povDisses,
+  ignoreDisses,
+}
 
 /// Represents a notification or conflict discovered during graph construction.
 class TrustNotification {
@@ -129,7 +142,11 @@ class SubjectAggregation {
   final int dislikes;
   final DateTime lastActivity;
   final Set<String> related; // Canonical tokens of related subjects
-  final bool isDismissed; // Dismissed by the POV (first identity in FollowNetwork)
+  final DateTime? userDismissalTimestamp;
+  final DateTime? povDismissalTimestamp;
+  final bool isCensored;
+  final bool isDismissed; // Dismissed by the POV (lastActivity <= povDismissalTimestamp)
+  final bool isRated; // Rated by the POV
 
   SubjectAggregation({
     required this.canonicalToken,
@@ -140,7 +157,11 @@ class SubjectAggregation {
     this.dislikes = 0,
     required this.lastActivity,
     this.related = const {},
+    this.userDismissalTimestamp,
+    this.povDismissalTimestamp,
+    this.isCensored = false,
     this.isDismissed = false,
+    this.isRated = false,
   });
 }
 
@@ -150,6 +171,8 @@ class ContentAggregation {
   final Set<String> censored;
   final Map<String, String> equivalence; // SubjectToken -> CanonicalSubjectToken
   final Map<String, Set<String>> related; // SubjectToken -> Set of RelatedSubjectTokens
+  final Map<String, String> tagEquivalence; // Tag -> Canonical Tag
+  final List<String> mostTags; // Tags ordered by frequency
   final Map<String, SubjectAggregation> subjects; // CanonicalToken -> Aggregation
 
   ContentAggregation({
@@ -157,7 +180,38 @@ class ContentAggregation {
     this.censored = const {},
     this.equivalence = const {},
     this.related = const {},
+    this.tagEquivalence = const {},
+    this.mostTags = const [],
     this.subjects = const {},
+  });
+}
+
+/// A complete snapshot of the feed data, ready for display.
+class V2FeedModel {
+  final TrustGraph trustGraph;
+  final V2Labeler labeler;
+  final ContentAggregation aggregation;
+  final String rootToken;
+  final String fcontext;
+  final V2SortMode sortMode;
+  final V2FilterMode filterMode;
+  final String? tagFilter;
+  final bool enableCensorship;
+  final List<String> availableContexts;
+  final Set<String> activeContexts;
+
+  V2FeedModel({
+    required this.trustGraph,
+    required this.labeler,
+    required this.aggregation,
+    required this.rootToken,
+    required this.fcontext,
+    required this.sortMode,
+    required this.filterMode,
+    this.tagFilter,
+    required this.enableCensorship,
+    this.availableContexts = const [],
+    this.activeContexts = const {},
   });
 }
 

@@ -1,0 +1,190 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/content_logic.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/feed_controller.dart';
+import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/oneofus/statement.dart';
+
+class MockSource<T extends Statement> implements StatementSource<T> {
+  @override
+  Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async => {};
+}
+
+void main() {
+  setUpAll(() {
+    ContentStatement.init();
+  });
+
+  group('V2 Tag Logic Tests', () {
+    test('Recursive Tag Collection', () {
+      final now = DateTime.now().toIso8601String();
+      final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
+      final identityToken = identityJsonish.token;
+
+      final s1 = ContentStatement(Jsonish({
+        'rate': 'subject1',
+        'comment': 'Hello #world',
+        'I': identityJsonish.json,
+        'time': now,
+      }));
+      final s2 = ContentStatement(Jsonish({
+        'rate': s1.token, // Reply to s1
+        'comment': 'Reply with #tag2',
+        'I': identityJsonish.json,
+        'time': now,
+      }));
+
+      final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
+      final trustGraph = TrustGraph(root: identityToken, distances: {identityToken: 0});
+      final delegateResolver = DelegateResolver(trustGraph);
+      
+      final byToken = {
+        identityToken: [s1, s2],
+      };
+
+      final aggregation = reduceContentAggregation(
+        followNetwork,
+        trustGraph,
+        delegateResolver,
+        byToken,
+      );
+
+      final subjectAgg = aggregation.subjects['subject1'];
+      expect(subjectAgg, isNotNull);
+      expect(subjectAgg!.tags, contains('#world'));
+      expect(subjectAgg.tags, contains('#tag2'));
+    });
+
+    test('Tag Equivalence (Transitive)', () {
+      final now = DateTime.now().toIso8601String();
+      final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
+      final identityToken = identityJsonish.token;
+
+      final s1 = ContentStatement(Jsonish({
+        'rate': 'subject1',
+        'comment': 'Co-occurrence #news #politics',
+        'I': identityJsonish.json,
+        'time': now,
+      }));
+      final s2 = ContentStatement(Jsonish({
+        'rate': 'subject2',
+        'comment': 'Co-occurrence #politics #world',
+        'I': identityJsonish.json,
+        'time': now,
+      }));
+
+      final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
+      final trustGraph = TrustGraph(root: identityToken, distances: {identityToken: 0});
+      final delegateResolver = DelegateResolver(trustGraph);
+      
+      final byToken = {
+        identityToken: [s1, s2],
+      };
+
+      final aggregation = reduceContentAggregation(
+        followNetwork,
+        trustGraph,
+        delegateResolver,
+        byToken,
+      );
+
+      final newsCanonical = aggregation.tagEquivalence['#news'];
+      final politicsCanonical = aggregation.tagEquivalence['#politics'];
+      final worldCanonical = aggregation.tagEquivalence['#world'];
+
+      expect(newsCanonical, isNotNull);
+      expect(newsCanonical, equals(politicsCanonical));
+      expect(politicsCanonical, equals(worldCanonical));
+    });
+
+    test('Tag Frequency Tracking', () {
+      final now = DateTime.now().toIso8601String();
+      final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
+      final identityToken = identityJsonish.token;
+
+      final s1 = ContentStatement(Jsonish({
+        'rate': 'subject1',
+        'comment': '#common #rare',
+        'I': identityJsonish.json,
+        'time': now,
+      }));
+      final s2 = ContentStatement(Jsonish({
+        'rate': 'subject2',
+        'comment': '#common',
+        'I': identityJsonish.json,
+        'time': now,
+      }));
+
+      final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
+      final trustGraph = TrustGraph(root: identityToken, distances: {identityToken: 0});
+      final delegateResolver = DelegateResolver(trustGraph);
+      
+      final byToken = {
+        identityToken: [s1, s2],
+      };
+
+      final aggregation = reduceContentAggregation(
+        followNetwork,
+        trustGraph,
+        delegateResolver,
+        byToken,
+      );
+
+      expect(aggregation.mostTags.first, equals('#common'));
+      expect(aggregation.mostTags, contains('#rare'));
+    });
+
+    test('Filtering by Tag (including equivalents)', () {
+      final now = DateTime.now().toIso8601String();
+      final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
+      final identityToken = identityJsonish.token;
+
+      final s1 = ContentStatement(Jsonish({
+        'rate': 'subject1',
+        'comment': '#news #politics',
+        'I': identityJsonish.json,
+        'time': now,
+      }));
+      final s2 = ContentStatement(Jsonish({
+        'rate': 'subject2',
+        'comment': '#world',
+        'I': identityJsonish.json,
+        'time': now,
+      }));
+
+      final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
+      final trustGraph = TrustGraph(root: identityToken, distances: {identityToken: 0});
+      final delegateResolver = DelegateResolver(trustGraph);
+      
+      final byToken = {
+        identityToken: [s1, s2],
+      };
+
+      final aggregation = reduceContentAggregation(
+        followNetwork,
+        trustGraph,
+        delegateResolver,
+        byToken,
+      );
+
+      final controller = V2FeedController(
+        trustSource: MockSource(),
+        identityContentSource: MockSource(),
+        appContentSource: MockSource(),
+      );
+
+      final sub1 = aggregation.subjects['subject1']!;
+      final sub2 = aggregation.subjects['subject2']!;
+
+      // Filter by #politics, should show subject1 (because it has #news which is equivalent to #politics)
+      expect(controller.shouldShow(sub1, V2FilterMode.ignoreDisses, false, tagFilter: '#politics', tagEquivalence: aggregation.tagEquivalence), isTrue);
+      expect(controller.shouldShow(sub1, V2FilterMode.ignoreDisses, false, tagFilter: '#news', tagEquivalence: aggregation.tagEquivalence), isTrue);
+      
+      // Filter by #politics, should NOT show subject2
+      expect(controller.shouldShow(sub2, V2FilterMode.ignoreDisses, false, tagFilter: '#politics', tagEquivalence: aggregation.tagEquivalence), isFalse);
+    });
+  });
+}

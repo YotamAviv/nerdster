@@ -1,5 +1,23 @@
 # Current Activity: V2 Rewrite
 
+## NOTES FOR ME - DON'T START WITHOUT ME
+- submit
+- filter by type: recipe, ..
+- embed in home page and on aviv.net
+- respect all setting types in URL, go over one by one
+- use my equivalence algorithm implementation
+
+## NerdyContentView
+- [x] Document requirements in `docs/v2_nerdy_content_view_spec.md`
+- [ ] consider UI testing
+- [x] implement (Stable with Multi-View Routing)
+
+## Multi-View Routing & Navigation
+- [x] Implement path-based routing in `app.dart`
+- [x] Add "Views" menu to `NerdsterMenu`
+- [x] Restore legacy views (`ContentTree`, `NetTreeView`)
+- [x] Link V2 Feed to V2 Trust Tree and Graph
+
 ## Follow Network & Content Aggregation (V2)
 - [x] Document requirements in `docs/follow_net_specification.md`
 - [x] Implement V2 `FollowNetwork` logic (Stable)

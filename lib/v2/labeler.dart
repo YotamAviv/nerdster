@@ -1,5 +1,6 @@
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/v2/delegates.dart';
 
 /// A utility to resolve monikers for keys in a [TrustGraph] using a greedy,
 /// distance-authoritative approach.
@@ -23,11 +24,13 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 ///      with prime notation (e.g., "Bob'", "Bob''") to indicate their status.
 class V2Labeler {
   final TrustGraph graph;
+  final DelegateResolver? delegateResolver;
+  final String? meToken;
   final Map<String, String> _tokenToName = {};
   final Map<String, Set<String>> _tokenToAllNames = {};
   final Set<String> _usedNames = {};
 
-  V2Labeler(this.graph) {
+  V2Labeler(this.graph, {this.delegateResolver, this.meToken}) {
     _computeLabels();
   }
 
@@ -83,15 +86,24 @@ class V2Labeler {
         
         // Fallback for the root identity if no one has vouched for it yet.
         if (bestMoniker == null) {
-           if (token == graph.root) {
-             bestMoniker = "Me";
-           } else {
-             // Skip tokens that have no moniker and aren't the root.
-             continue; 
-           }
+          if (token == graph.root) {
+            if (meToken != null &&
+                graph.resolveIdentity(token) ==
+                    graph.resolveIdentity(meToken!)) {
+              bestMoniker = "Me";
+            } else {
+              // Use their moniker from Jsonish or the token itself
+              final jsonish = Jsonish.find(token);
+              bestMoniker = jsonish?['moniker'] ??
+                  (token.length > 8 ? token.substring(0, 8) : token);
+            }
+          } else {
+            // Skip tokens that have no moniker and aren't the root.
+            continue;
+          }
         }
-        
-        baseName = _makeUnique(bestMoniker, isOld: false);
+
+        baseName = _makeUnique(bestMoniker!, isOld: false);
         _tokenToName[identity] = baseName;
         _usedNames.add(baseName);
       }
@@ -133,8 +145,30 @@ class V2Labeler {
   ///
   /// If no moniker was discovered, returns a truncated version of the token.
   String getLabel(String token) {
-    return _tokenToName[token] ??
-        (token.length > 8 ? token.substring(0, 8) : token);
+    if (_tokenToName.containsKey(token)) {
+      return _tokenToName[token]!;
+    }
+
+    // Check if it's a delegate key
+    if (delegateResolver != null) {
+      final identity = delegateResolver!.getIdentityForDelegate(token);
+      if (identity != null) {
+        final identityLabel = getLabel(identity);
+        final domain = delegateResolver!.getDomainForDelegate(token);
+        return "$identityLabel@$domain";
+      }
+    }
+
+    return token.length > 8 ? token.substring(0, 8) : token;
+  }
+
+  /// Returns the canonical identity for a given token (key or delegate).
+  String getIdentityForToken(String token) {
+    if (delegateResolver != null) {
+      final identity = delegateResolver!.getIdentityForDelegate(token);
+      if (identity != null) return identity;
+    }
+    return graph.resolveIdentity(token);
   }
 
   /// Returns all monikers associated with the identity of this token.

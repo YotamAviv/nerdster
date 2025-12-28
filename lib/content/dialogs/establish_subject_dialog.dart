@@ -2,11 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_types.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
@@ -24,8 +21,6 @@ import 'package:nerdster/util_ui.dart';
 /// - use Node on the server side to fetch the HTML and exctract the title
 /// - write that back to the Firebase doc.
 /// This class uses that mechanism.
-
-final FirebaseFunctions? _functions = FireFactory.findFunctions(kNerdsterDomain);
 
 Future<Jsonish?> establishSubjectDialog(BuildContext context) {
   double width = max(MediaQuery.of(context).size.width / 2, 500);

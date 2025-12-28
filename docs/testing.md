@@ -55,7 +55,9 @@ Integration tests run in a browser environment and interact with local Firebase 
 
 ### Running the Tests
 
-Run the integration tests using the helper script or `flutter drive` directly.
+Integration tests require Chrome. Do not use `-d linux`.
+
+Run using the helper script or `flutter drive`:
 
 **Using the helper script:**
 
@@ -76,3 +78,13 @@ flutter drive \
 
 *   **"Unable to start a WebDriver session"**: Ensure `chromedriver` is running on port 4444.
 *   **"Failed to connect to the VM Service"**: Ensure you are using `-d chrome` (or `-d web-server` if configured correctly) and that the port is not blocked.
+
+## TODO: Image Relevance Regression Testing
+
+We need a way to ensure that the images fetched for subjects (books, movies, etc.) remain relevant and high-quality.
+- **Goal**: Prevent "degraded" or irrelevant images from appearing in the feed.
+- **Proposed Strategy**:
+    1.  **Golden Set**: Maintain a list of subjects with known "good" image URLs.
+    2.  **Automated Check**: A test that runs the `fetchImages` cloud function for these subjects and verifies that the returned images are still in the golden set or meet certain criteria (e.g., resolution, source domain).
+    3.  **AI-Assisted Review**: Periodically use a vision model to score the relevance of fetched images against the subject's title and tags.
+

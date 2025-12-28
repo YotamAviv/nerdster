@@ -10,7 +10,7 @@ import 'package:nerdster/dev/corruption_check.dart';
 import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/main.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -20,9 +20,12 @@ import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/shadow_view.dart';
 import 'package:nerdster/v2/fancy_shadow_view.dart';
 import 'package:nerdster/v2/graph_demo.dart';
+import 'package:nerdster/v2/nerdy_content_view.dart';
+import 'package:nerdster/content/content_tree.dart';
+import 'package:nerdster/net/net_tree.dart';
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/verify.dart';
 
 const iconSpacer = SizedBox(width: 3);
@@ -79,6 +82,30 @@ class Menus {
     return <Widget>[
       // Sign in
       SignInMenu(),
+
+      // Views
+      SubmenuButton(menuChildren: [
+        MenuItemButton(
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NerdyContentView(rootToken: signInState.pov))),
+          child: const Text('Nerdy Feed (V2)'),
+        ),
+        MenuItemButton(
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FancyShadowView(rootToken: signInState.pov))),
+          child: const Text('Fancy Shadow View (V2)'),
+        ),
+        MenuItemButton(
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TrustGraphVisualizerLoader(rootToken: signInState.pov))),
+          child: const Text('Trust Graph (V2)'),
+        ),
+        MenuItemButton(
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ContentTree())),
+          child: const Text('Legacy Content Tree'),
+        ),
+        MenuItemButton(
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NetTreeView(NetTreeView.makeRoot()))),
+          child: const Text('Legacy Network Tree'),
+        ),
+      ], child: const Row(children: [Icon(Icons.visibility), iconSpacer, Text('Views')])),
 
       // Settings
       SubmenuButton(menuChildren: [
@@ -172,7 +199,12 @@ $link''',
                 Json centerJson = Jsonish.find(signInState.pov!)!.json;
                 Jsonish.wipeCache();
                 Jsonish(centerJson);
-                BarRefresh.refresh(context);
+                
+                final path = Uri.base.path;
+                final isV2 = path == '/' || path.contains('/v2/') || path == '/v2';
+                if (!isV2) {
+                  BarRefresh.refresh(context);
+                }
               },
               child: const Text('Refresh. Jsonish cache, too')),
           SubmenuButton(menuChildren: [
@@ -192,54 +224,6 @@ $link''',
                 onPressed: DemoKey.dumpDemoCredentials, child: const Text('dumpDemoCredentials')),
             ...demos
           ], child: const Text('demo')),
-          MenuItemButton(
-              child: const Text('V2 Shadow View'),
-              onPressed: () {
-                if (signInState.identity != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ShadowView(rootToken: signInState.identity!),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please sign in first')),
-                  );
-                }
-              }),
-          MenuItemButton(
-              child: const Text('V2 Fancy Shadow View'),
-              onPressed: () {
-                if (signInState.identity != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => FancyShadowView(rootToken: signInState.identity!),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please sign in first')),
-                  );
-                }
-              }),
-          MenuItemButton(
-              child: const Text('V2 Network Graph'),
-              onPressed: () {
-                if (signInState.identity != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TrustGraphVisualizerLoader(rootToken: signInState.identity!),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please sign in first')),
-                  );
-                }
-              }),
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           MenuItemButton(
               child: const Text('Export subjects for testing'),

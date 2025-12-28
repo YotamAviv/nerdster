@@ -35,20 +35,15 @@ class NetBar extends StatefulWidget {
 }
 
 class _NetBarState extends State<NetBar> {
-  static int instanceCount = 0;
-
   StreamSubscription<void>? _popStateSub;
 
   @override
   void initState() {
-    instanceCount++;
-    // print(instanceCount);
-
+    super.initState();
     Setting.get<bool>(SettingType.netTreeOneofus).notifier.addListener(listen);
     NetBar.bNetView.addListener(listen);
     isSmall.addListener(listen);
 
-    final listenerId = DateTime.now().microsecondsSinceEpoch;
     if (NetBar.bNetView.value) {
       _popStateSub = bindPopState(() {
         setState(() {
@@ -64,9 +59,6 @@ class _NetBarState extends State<NetBar> {
 
   @override
   void dispose() {
-    instanceCount--;
-    // print(instanceCount);
-
     Setting.get<bool>(SettingType.netTreeOneofus).notifier.removeListener(listen);
     NetBar.bNetView.removeListener(listen);
     isSmall.removeListener(listen);

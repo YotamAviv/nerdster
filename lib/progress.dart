@@ -85,7 +85,7 @@ class ProgressDialogState extends State<ProgressDialog> {
       children: [
         const Text('Loading one-of-us.net statements'),
         Padding(padding: kPadding, child: LinearProgressIndicator(value: widget.oneofus.value)),
-        const Text('''Loading nerster.org statements'''),
+        const Text('Loading nerdster.org statements'),
         Padding(padding: kPadding, child: LinearProgressIndicator(value: widget.nerdster.value)),
         if (b(widget.message.value)) Padding(padding: kPadding, child: Text(widget.message.value!)),
       ],

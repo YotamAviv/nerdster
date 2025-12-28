@@ -5,8 +5,6 @@ import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/v2/net_tree_model.dart';
-import 'package:nerdster/v2/net_tree_view.dart';
 import 'package:nerdster/v2/graph_demo.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/follow_logic.dart';
@@ -82,10 +80,6 @@ class _ShadowViewState extends State<ShadowView> {
   }
 
   void _showTree() {
-    if (_graph == null) return;
-    final labeler = V2Labeler(_graph!);
-    final root = V2NetTreeModel([], _graph!, labeler, token: _graph!.root);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => V2NetTreeView(root: root)));
   }
 
   void _showGraph() {

@@ -6,6 +6,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 class DelegateResolver {
   final TrustGraph graph;
   final Map<String, String> _delegateToIdentity = {};
+  final Map<String, String> _delegateToDomain = {};
   final Map<String, List<String>> _identityToDelegates = {};
   final Set<String> _resolvedIdentities = {};
 
@@ -32,6 +33,7 @@ class DelegateResolver {
         // First one to claim it wins.
         if (!_delegateToIdentity.containsKey(delegateKey)) {
           _delegateToIdentity[delegateKey] = identity;
+          _delegateToDomain[delegateKey] = s.domain ?? 'unknown';
           _identityToDelegates.putIfAbsent(identity, () => []).add(delegateKey);
         }
       }
@@ -43,6 +45,11 @@ class DelegateResolver {
   /// Returns null if the token is not a recognized delegate.
   String? getIdentityForDelegate(String token) {
     return _delegateToIdentity[token];
+  }
+
+  /// Returns the domain for a given delegate key.
+  String? getDomainForDelegate(String token) {
+    return _delegateToDomain[token];
   }
 
   /// Returns all delegate keys authorized by the given canonical identity.

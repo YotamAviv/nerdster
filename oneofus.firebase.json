@@ -57,8 +57,12 @@
     "hosting": {
       "port": 5005
     },
+    "hub": {
+      "port": 4401
+    },
     "ui": {
-      "enabled": true
+      "enabled": true,
+      "port": 4001
     }
   }
 }

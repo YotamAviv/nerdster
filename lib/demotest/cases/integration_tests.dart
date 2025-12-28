@@ -4,7 +4,7 @@ import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/main.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:flutter_test/flutter_test.dart';

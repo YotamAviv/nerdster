@@ -13,7 +13,7 @@ import 'package:nerdster/demotest/demo_util.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/follow/follow_net.dart';
-import 'package:nerdster/main.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/net/net_node.dart';
 import 'package:nerdster/net/net_tree_model.dart';
 import 'package:nerdster/net/oneofus_net.dart';

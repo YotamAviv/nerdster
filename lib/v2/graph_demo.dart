@@ -8,9 +8,9 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 
 /// A loader widget that runs the TrustPipeline and then shows the visualizer.
 class TrustGraphVisualizerLoader extends StatefulWidget {
-  final String rootToken;
+  final String? rootToken;
 
-  const TrustGraphVisualizerLoader({super.key, required this.rootToken});
+  const TrustGraphVisualizerLoader({super.key, this.rootToken});
 
   @override
   State<TrustGraphVisualizerLoader> createState() => _TrustGraphVisualizerLoaderState();
@@ -18,7 +18,7 @@ class TrustGraphVisualizerLoader extends StatefulWidget {
 
 class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader> {
   TrustGraph? _graph;
-  late String _currentRoot;
+  String? _currentRoot;
   bool _loading = true;
   String? _error;
 
@@ -26,14 +26,20 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
   void initState() {
     super.initState();
     _currentRoot = widget.rootToken;
-    _load();
+    if (_currentRoot != null) {
+      _load();
+    } else {
+      _loading = false;
+    }
   }
 
   Future<void> _load() async {
+    final root = _currentRoot;
+    if (root == null) return;
     try {
       final source = SourceFactory.get<TrustStatement>(kOneofusDomain);
       final pipeline = TrustPipeline(source);
-      final graph = await pipeline.build(_currentRoot);
+      final graph = await pipeline.build(root);
       if (mounted) {
         setState(() {
           _graph = graph;
@@ -52,6 +58,11 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
 
   @override
   Widget build(BuildContext context) {
+    if (_currentRoot == null) {
+      return const Scaffold(
+        body: Center(child: Text('Please sign in to view the trust graph.')),
+      );
+    }
     if (_loading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),

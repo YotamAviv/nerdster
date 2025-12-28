@@ -12,13 +12,23 @@ import 'package:nerdster/v2/io.dart';
 class CachedSource<T extends Statement> implements StatementSource<T> {
   final StatementSource<T> _delegate;
 
-  // Map<Token, List<Statement>>
-  final Map<String, List<T>> _cache = {};
+  // Full histories: Map<Token, List<Statement>>
+  final Map<String, List<T>> _fullCache = {};
+
+  // Partial histories: Map<Token, (revokeAt, List<Statement>)>
+  final Map<String, (String, List<T>)> _partialCache = {};
 
   CachedSource(this._delegate);
 
   void clear() {
-    _cache.clear();
+    _fullCache.clear();
+    _partialCache.clear();
+  }
+
+  /// Clears all cached partial histories. 
+  /// Full histories remain valid across PoV changes.
+  void resetRevokeAt() {
+    _partialCache.clear();
   }
 
   @override
@@ -29,11 +39,18 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
     // 1. Check cache
     for (var entry in keys.entries) {
       final token = entry.key;
+      final revokeAt = entry.value;
 
-      if (_cache.containsKey(token)) {
-        results[token] = _cache[token]!;
+      if (_fullCache.containsKey(token)) {
+        // Full history is always safe to use; logic layer will filter if needed.
+        results[token] = _fullCache[token]!;
+      } else if (revokeAt != null &&
+          _partialCache.containsKey(token) &&
+          _partialCache[token]!.$1 == revokeAt) {
+        // Partial history is safe if the revokeAt matches exactly.
+        results[token] = _partialCache[token]!.$2;
       } else {
-        missing[token] = entry.value;
+        missing[token] = revokeAt;
       }
     }
 
@@ -43,10 +60,14 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
 
       // 3. Update cache and results
       for (var token in missing.keys) {
-        // If the delegate didn't return anything for a requested key, it means empty list
         final statements = fetched[token] ?? [];
+        final revokeAt = missing[token];
 
-        _cache[token] = statements;
+        if (revokeAt == null) {
+          _fullCache[token] = statements;
+        } else {
+          _partialCache[token] = (revokeAt, statements);
+        }
         results[token] = statements;
       }
     }

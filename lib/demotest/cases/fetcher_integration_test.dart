@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/main.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/notifications.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
@@ -451,7 +451,7 @@ class FetcherTestHelper {
 
       Fetcher.clear();
       Fetcher fetcher1 = Fetcher(t1, kNerdsterDomain);
-      Statement s1 = await fetcher1.push({
+      await fetcher1.push({
         'statement': Statement.type<ContentStatement>(),
         'I': kI1,
         'rate': {'title': 'a'},

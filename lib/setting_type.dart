@@ -10,6 +10,7 @@ enum SettingType {
 
   censor(bool, true),
   hideDisliked(bool, false),
+  hideSeen(bool, false, persist: true),
   dis(String, 'pov'),
   sort(String, 'recentActivity'),
   contentType(String, 'all', aliases: ['type']),

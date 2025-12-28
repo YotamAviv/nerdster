@@ -19,14 +19,16 @@ Future<List> checkWrite(FirebaseFirestore fire, String collection) async {
 Future<List> checkRead(FirebaseFirestore fire, String collection) async {
   List out = [];
   final CollectionReference<Json> fireStatements = fire.collection(collection);
-  QuerySnapshot<Map<String, dynamic>> snapshots =
-      await fireStatements.orderBy('time', descending: true).limit(2).get().catchError((e) {
+  try {
+    QuerySnapshot<Map<String, dynamic>> snapshots =
+        await fireStatements.orderBy('time', descending: true).limit(2).get();
+    for (var docSnapshot in snapshots.docs) {
+      var data = docSnapshot.data();
+      DateTime time = parseIso(data['time']);
+      out.add(time);
+    }
+  } catch (e) {
     out.add(e);
-  });
-  for (var docSnapshot in snapshots.docs) {
-    var data = docSnapshot.data();
-    DateTime time = parseIso(data['time']);
-    out.add(time);
   }
   print(out);
   return out;

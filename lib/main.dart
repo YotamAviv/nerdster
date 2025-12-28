@@ -10,7 +10,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
@@ -28,8 +27,8 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/progress.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/verify.dart';
-import 'package:nerdster/v2/fancy_shadow_view.dart';
 
 import 'package:nerdster/fire_choice.dart';
 export 'package:nerdster/fire_choice.dart';
@@ -164,43 +163,24 @@ Future<void> main() async {
     initMessageListener();
   }
 
-  Widget home;
-  final path = Uri.base.path;
-  if (path == '/m' || path.startsWith('/m/') || path == '/m.html') {
-    // Mobile-focused view
-    home = FancyShadowView(rootToken: signInState.pov ?? kNerdsterDomain);
-  } else if (Uri.base.queryParameters.containsKey('verifyFullScreen') &&
-      b(Setting.get(SettingType.verify).value)) {
-    home = const StandaloneVerify();
-  } else {
-    home = ContentTree();
-  }
-
   // Gemini: Use runWidget with a View wrapper to support multi-view mode (e.g. embedding in iframes)
   // and avoid "Bad state: The app requested a view, but the platform did not provide one" errors.
   // This explicitly provides the view from PlatformDispatcher.
   runWidget(View(
     view: ui.PlatformDispatcher.instance.views.first,
-    child: MaterialApp(
-      navigatorKey: navigatorKey,
-      debugShowCheckedModeBanner: false,
-      home: home,
-    ),
+    child: const NerdsterApp(),
   ));
 }
 
 Future<void> defaultSignIn({BuildContext? context}) async {
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
-  // CONSIDER: Leverage Prefs Settings for identity/oneofus. Then again, the keys...
   String? identityParam = params['identity'];
   String? oneofusParam = params['oneofus']; // alias, deprecated.
+  String? pov;
   if (b(identityParam) || b(oneofusParam)) {
     Json povJson = json.decode(b(identityParam) ? identityParam! : oneofusParam!);
-    String pov = getToken(povJson);
-    await signInState.signIn(pov, null, context: context);
-    // NEXT: signInState.pov = pov; // Add stack of visitors
-    return;
+    pov = getToken(povJson);
   }
 
   if (b(params['demo'])) {
@@ -211,22 +191,30 @@ Future<void> defaultSignIn({BuildContext? context}) async {
     OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
     DemoKey.dumpDemoCredentials();
     await signInState.signIn(identity, nerdsterKeyPair, context: context);
+    if (pov != null) signInState.pov = pov;
     return;
   }
 
-  // Check secure browswer storage
-  if (fireChoice == FireChoice.prod) {
+  // Check secure browser storage
+  if (fireChoice != FireChoice.fake) {
     OouPublicKey? identityPublicKey;
     OouKeyPair? nerdsterKeyPair;
     (identityPublicKey, nerdsterKeyPair) = await KeyStore.readKeys();
-    // It's been annoying to not be able to sign out if I wasn't fully signed in.
-    // TODO: Don't even persist identity key if I'm not fully signed in.
     if (b(identityPublicKey) && b(nerdsterKeyPair)) {
       String identity = getToken(await identityPublicKey!.json);
       await signInState.signIn(identity, nerdsterKeyPair, context: context);
+      if (pov != null) signInState.pov = pov;
       return;
     }
   }
+
+  // If we have a POV from the URL but no keys, sign in as that identity (view-only)
+  if (pov != null) {
+    await signInState.signIn(pov, null, context: context);
+    return;
+  }
+
+  // Check for hard coded values
 
   // Check for hard coded values
   if (b(hardCodedSignIn[fireChoice])) {

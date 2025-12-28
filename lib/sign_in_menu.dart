@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/main.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -79,7 +79,13 @@ class _SignInMenuState extends State<SignInMenu> {
               onPressed: () async {
                 await signInState.signIn(key.token, nerdsterKeyPair, context: context);
 
-                await BarRefresh.refresh(context);
+                // V2 views handle their own refresh via didUpdateWidget or listeners.
+                // V1 still needs a manual refresh trigger.
+                final path = Uri.base.path;
+                final isV2 = path == '/' || path.contains('/v2/') || path == '/v2';
+                if (!isV2) {
+                  await BarRefresh.refresh(context);
+                }
               },
               child: Text(name)));
         }

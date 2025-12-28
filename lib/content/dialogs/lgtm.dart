@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/main.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';

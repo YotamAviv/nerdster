@@ -6,3 +6,4 @@ build
 exports
 lib/firebase_options.dart
 lib/oneofus_fire.dart
+yotam.json

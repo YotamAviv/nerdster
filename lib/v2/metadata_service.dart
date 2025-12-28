@@ -12,7 +12,7 @@ class MetadataResult {
   MetadataResult({this.title, this.image, this.images, this.error});
 }
 
-final FirebaseFunctions? _functions = FireFactory.findFunctions(kNerdsterDomain);
+FirebaseFunctions? get _functions => FireFactory.findFunctions(kNerdsterDomain);
 
 /// Use Case 1: Establish Subject (Canonicalization)
 /// Fetches ONLY the title from a URL to help the user create a canonical subject.
@@ -36,7 +36,10 @@ Future<void> fetchImages({
   required Map<String, dynamic> subject,
   required Function(MetadataResult result) onResult,
 }) async {
-  if (_functions == null) return;
+  if (_functions == null) {
+    debugPrint('MetadataService: Firebase Functions not initialized');
+    return;
+  }
   
   // Fail Fast: Ensure we have the required fields for a subject
   assert(subject['contentType'] != null, 'Subject must have a contentType');
@@ -44,10 +47,18 @@ Future<void> fetchImages({
   // Basic validation to avoid unnecessary cloud calls
   if (subject.isEmpty) return;
 
+  // TODO: Improve image relevance. 
+  // Currently, we rely on the cloud function to find images. 
+  // We should explore using more specific search queries (e.g., including author/year)
+  // or using specialized APIs (Google Books, TMDB, etc.) based on contentType.
+
   try {
+    debugPrint('MetadataService: Calling fetchImages for ${subject['url'] ?? subject['title']}');
     final retval = await _functions!.httpsCallable('fetchImages').call({
       "subject": subject,
     });
+
+    debugPrint('MetadataService: Received response: ${retval.data}');
 
     List<String>? images;
     if (retval.data["images"] != null) {

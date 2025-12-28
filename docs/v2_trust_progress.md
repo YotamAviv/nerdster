@@ -92,6 +92,14 @@ Manages the loop between fetching data (I/O) and reducing it (Logic). It uses a 
     *   Verified with unit tests including Simpsons and Custom Context scenarios.
 *   **2025-12-23**: Updated documentation and specifications for V2 logic.
 *   **2025-12-23**: Configured VS Code settings to prevent "run anyway" prompts from interrupting the flow.
+*   **2025-12-26**: Implemented Multi-View Routing and Navigation.
+    *   Added path-based routing in `app.dart` supporting `/m` (Fancy), `/v2/graph` (Graph), `/legacy/content` (Legacy Tree), and `/legacy/net` (Legacy Trust).
+    *   Integrated `NerdsterMenu` into the V2 feed and added a "Views" submenu for easy navigation between all UI versions.
+    *   Prepared delegate monikers in `ContentCard` and `DetailsView` for future graph integration.
+*   **2025-12-26**: Codebase Stabilization and Cleanup.
+    *   Restored legacy `ContentTree` and `NetTreeView` files to support the multi-view requirement.
+    *   Resolved critical compile errors in `main.dart` and `fire_util.dart`.
+    *   Performed a comprehensive cleanup of unused imports and variables across the V2 and legacy codebases (`comp.dart`, `sign_in_state.dart`, `content_logic.dart`, etc.).
 
 ## Open Questions & Future Considerations
 

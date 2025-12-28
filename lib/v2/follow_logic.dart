@@ -5,7 +5,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
 
-const String kOneofusContext = '<one-of-us>';
+const String kOneofusContext = '<identity>';
 const String kNerdsterContext = '<nerdster>';
 
 /// The Pure Function Core of the Follow Network Algorithm.

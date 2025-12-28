@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 
-import '../main.dart';
+import '../app.dart';
 import '../setting_type.dart';
 import 'distincter.dart';
 import 'endpoint.dart';
