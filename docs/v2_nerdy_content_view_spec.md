@@ -66,7 +66,7 @@ Each subject is represented by a card that aggregates the network's collective w
   - Support scrolling for long threads.
   - Allow manual expand/collapse of sub-trees.
 - **Filtering**: Individual comments and statements are subject to the same dismissal and censorship filtering as the top-level subjects.
-- **Link to Trust / Follow Graph**: Contributors are displayed using labeled names. Links to the trust or follow graph are currently disabled until the graph widget is ready.
+- **Link to Trust / Follow Graph**: Contributors are displayed using labeled names. Clicking a contributor's name opens the graph view focused on that person, showing the trust or follow paths from the current PoV.
 
 ### Action Bar
 - **Quick Rate**: Explicit Icon Buttons for Like, Dislike, and Dismiss.

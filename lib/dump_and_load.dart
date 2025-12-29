@@ -47,7 +47,7 @@ dynamic loadDumpDialog(BuildContext context) async {
 
   okHandler() {
     Json dump = jsonDecode(controller.text);
-    loadDump(dump);
+    loadDump(dump['dump'] ?? dump);
     Navigator.pop(context);
   }
 
@@ -73,7 +73,9 @@ Future<void> loadDump(Json dump) async {
 
 Future<void> loadStatements(Json domain2token2statements) async {
   for (String domain in [kOneofusDomain, kNerdsterDomain]) {
-    for (MapEntry e in domain2token2statements[domain]!.entries) {
+    final domainData = domain2token2statements[domain];
+    if (domainData == null) continue;
+    for (MapEntry e in domainData.entries) {
       String token = e.key;
       List jsons = e.value;
       for (Json json in jsons.reversed) {

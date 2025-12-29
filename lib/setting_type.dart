@@ -17,7 +17,10 @@ enum SettingType {
   timeframe(String, 'all'),
   tag(String, '-'),
 
+  pov(String, null, persist: true),
   fcontext(String, kNerdsterContext, aliases: ['follow']),
+
+  graphMode(String, 'follow'),
 
   netView(bool, false),
   netTreeOneofus(bool, true), // Clacker change

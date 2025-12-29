@@ -48,8 +48,8 @@ void main() {
     final charlie = await DemoKey.create('charlie');
 
     await alice.trust(bobNew, moniker: 'bobNew'); // Alice only trusts the NEW key
-    await bobNew.replace(bob); // bobNew replaces bob
-    await bob.trust(charlie, moniker: 'charlie');  // Charlie was trusted by the OLD key
+    final sCharlie = await bob.trust(charlie, moniker: 'charlie');  // Charlie was trusted by the OLD key
+    await bobNew.replace(bob, lastGoodToken: sCharlie); // bobNew replaces bob, valid up to sCharlie
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     // Alice (0) -> BobNew (1) -> Bob (2) -> Charlie (3)
@@ -90,6 +90,47 @@ void main() {
     
     graph = await pipeline.build(alice.token);
     expect(graph.isTrusted(dave.token), isTrue, reason: 'Dave now has 2 paths');
+  });
+
+  test('Node-Disjoint Paths (Bottleneck Test)', () async {
+    final root = await DemoKey.create('root');
+    final alice = await DemoKey.create('alice');
+    final bob = await DemoKey.create('bob');
+    final charlie = await DemoKey.create('charlie');
+    final dave = await DemoKey.create('dave');
+
+    // root -> alice (dist 1)
+    await root.trust(alice, moniker: 'alice');
+    
+    // alice -> bob, charlie (dist 2)
+    await alice.trust(bob, moniker: 'bob');
+    await alice.trust(charlie, moniker: 'charlie');
+    
+    // bob, charlie -> dave (dist 3)
+    await bob.trust(dave, moniker: 'dave');
+    await charlie.trust(dave, moniker: 'dave');
+
+    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    
+    // Requirement: 2 paths for distance 3
+    final pipeline = TrustPipeline(source, pathRequirement: (d) => d >= 3 ? 2 : 1);
+    
+    final graph = await pipeline.build(root.token);
+    
+    // Dave should NOT be trusted because all paths go through Alice
+    expect(graph.isTrusted(dave.token), isFalse, reason: 'Dave has a bottleneck at Alice');
+    
+    // Now add a second path from root to bypass Alice
+    final zoe = await DemoKey.create('zoe');
+    await root.trust(zoe, moniker: 'zoe');
+    await zoe.trust(bob, moniker: 'bob');
+    
+    // Now Dave has 2 node-disjoint paths:
+    // 1. root -> alice -> charlie -> dave
+    // 2. root -> zoe -> bob -> dave
+    
+    final graph2 = await pipeline.build(root.token);
+    expect(graph2.isTrusted(dave.token), isTrue, reason: 'Dave now has 2 node-disjoint paths');
   });
 
   test('Conflicts (Trust vs Block)', () async {

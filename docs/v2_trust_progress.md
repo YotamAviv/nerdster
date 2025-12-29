@@ -98,6 +98,18 @@ Manages the loop between fetching data (I/O) and reducing it (Logic). It uses a 
     *   Prepared delegate monikers in `ContentCard` and `DetailsView` for future graph integration.
 *   **2025-12-26**: Codebase Stabilization and Cleanup.
     *   Restored legacy `ContentTree` and `NetTreeView` files to support the multi-view requirement.
+*   **2025-12-27**: Graph Network View Phase 1.
+    *   Implemented `GraphController` and `GraphView` for V2.
+    *   Created `FanAlgorithm` for radial layout (3 PM to 6 PM) with curved Bezier edges.
+    *   Implemented node-disjoint path highlighting from PoV to focused subject.
+    *   Integrated graph view with `NerdyContentView` (clicking contributor names).
+*   **2025-12-28**: Trust Algorithm Security & Identity Resolution.
+    *   Redefined "Distinct Paths" as **Node-Disjoint Paths** to prevent bottleneck vulnerabilities.
+    *   Implemented iterative BFS with node removal in `_countNodeDisjointPaths`.
+    *   Centralized identity resolution in `GraphController` and `V2Labeler` to handle delegates and replacements correctly.
+    *   Fixed PoV synchronization between feed and graph.
+    *   Implemented explicit revocation handling for `trust`, `block`, and `delegate` statements using the `revokeAt` field.
+    *   Augmented Follow Network graph with WoT trust edges in the `<nerdster>` context to ensure path continuity.
     *   Resolved critical compile errors in `main.dart` and `fire_util.dart`.
     *   Performed a comprehensive cleanup of unused imports and variables across the V2 and legacy codebases (`comp.dart`, `sign_in_state.dart`, `content_logic.dart`, etc.).
 

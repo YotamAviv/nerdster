@@ -10,7 +10,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/content_card.dart';
 import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/verify.dart';
-import 'package:nerdster/v2/graph_demo.dart';
+import 'package:nerdster/v2/graph_view.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/app.dart';
 
@@ -81,6 +81,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
   }
 
   void _changePov(String? newToken) {
+    Setting.get<String?>(SettingType.pov).value = newToken;
     setState(() {
       _currentPov = newToken;
     });
@@ -287,13 +288,20 @@ class _NerdyContentViewState extends State<NerdyContentView> {
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.auto_graph),
-                tooltip: 'V2 Trust Graph',
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TrustGraphVisualizerLoader(rootToken: _currentPov),
-                  ),
-                ),
+                tooltip: 'Network Graph',
+                onPressed: () {
+                  if (model != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NerdyGraphView(
+                          feedModel: model,
+                          onPovChanged: _changePov,
+                        ),
+                      ),
+                    );
+                  }
+                },
               ),
               const Text('Censor'),
               Switch(
@@ -381,6 +389,20 @@ class _NerdyContentViewState extends State<NerdyContentView> {
           onRefresh: _onRefresh,
           onPovChange: _changePov,
           onTagTap: _onTagTap,
+          onGraphFocus: (identity) {
+            if (model != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NerdyGraphView(
+                    feedModel: model,
+                    onPovChanged: _changePov,
+                    initialFocus: identity,
+                  ),
+                ),
+              );
+            }
+          },
         );
       },
     );

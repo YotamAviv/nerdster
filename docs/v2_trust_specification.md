@@ -27,7 +27,9 @@ Within each layer, statements from all issuers in that layer are processed in th
 
 #### Stage 3: Trusts (Lowest Priority)
 *   Discovers new nodes for the next layer ($dist + 1$).
-*   **Confidence Levels**: A node is only added to the next layer if it meets the `PathRequirement` (e.g., 2 independent paths for distance > 2).
+*   **Confidence Levels (Node-Disjoint Paths)**: A node is only added to the next layer if it meets the `PathRequirement`.
+    *   **Definition**: For a node at distance $D$ to be trusted with a confidence level of $N$, there must exist $N$ paths from the Root to that node such that no two paths share any intermediate nodes.
+    *   **The Bottleneck Rule**: If all paths to a subject pass through a single person (e.g., Alice), then that subject has only 1 distinct path, regardless of how many people Alice trusts or how many people trust the subject.
 *   **Canonicalization**: If a trusted key has been replaced, the algorithm automatically follows the replacement to the "effective" subject.
 
 ## Notifications & Conflicts

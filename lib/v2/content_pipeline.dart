@@ -43,8 +43,7 @@ class ContentPipeline {
       final List<String> delegateKeys =
           delegateResolver.getDelegatesForIdentity(identity);
       for (final String key in delegateKeys) {
-        // Delegates don't have replacement constraints in the identity layer
-        appFetchMap[key] = null;
+        appFetchMap[key] = delegateResolver.getConstraintForDelegate(key);
       }
     }
 

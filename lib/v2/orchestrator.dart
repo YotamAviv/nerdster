@@ -52,7 +52,12 @@ class TrustPipeline {
       // This ensures that same-distance replacements are handled, but "deep" 
       // nodes cannot constrain "shallow" nodes.
       final pr = pathRequirement ?? defaultPathRequirement;
-      graph = reduceTrustGraph(graph, statementsByIssuer, pathRequirement: pr);
+      graph = reduceTrustGraph(
+        graph, 
+        statementsByIssuer, 
+        pathRequirement: pr,
+        maxDegrees: maxDegrees,
+      );
 
       // 3. CALCULATE NEXT FRONTIER
       // The reducer tells us who is trusted. We need to find who is trusted

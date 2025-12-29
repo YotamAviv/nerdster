@@ -82,6 +82,24 @@ Allow the user to express something like:
 - for 3 or 4 degrees away, require 2 distinct paths of trust.
 - for 5 or 6, require 3 distinct paths.
 
+#### Definition of "Distinct Paths"
+
+In this algorithm, "distinct" is defined as **Node-Disjoint Paths**. 
+
+- **Requirement:** For a node at distance $D$ to be trusted with a confidence level of $N$, there must exist $N$ paths from the Root to that node such that no two paths share any intermediate nodes.
+- **The Bottleneck Rule:** If all paths to a subject pass through a single person (e.g., Alice), then that subject has only **1 distinct path**, regardless of how many people Alice trusts or how many people trust the subject.
+- **Greedy Evaluation:** This property is evaluated greedily at each layer. A node is only eligible to be an intermediate node in a path if it has already satisfied its own path requirements at a previous layer.
+
+#### Why Node-Disjoint?
+
+This stricter definition protects the network from "super-connector" vulnerabilities. If you only trust Alice, your network's integrity depends entirely on her. Requiring node-disjoint paths ensures that high-confidence trust is backed by truly independent social chains.
+
+#### Implementation Note
+
+While finding node-disjoint paths is traditionally a Network Flow problem, the Greedy BFS implementation uses an iterative shortest-path search with node removal. This remains efficient for the small values of $N$ (1, 2, or 3) used in the confidence levels.
+
+
+
 ## Replace Statements
 
 Stating that your new key replaces an old key does 2 things:

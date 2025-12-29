@@ -25,6 +25,8 @@ FollowNetwork reduceFollowNetwork(
 }) {
   final List<String> identities = [];
   final List<TrustNotification> notifications = [];
+  final Map<String, List<ContentStatement>> edges = {};
+  final Map<String, List<String>> paths = {trustGraph.root: [trustGraph.root]};
 
   // 1. Handle <one-of-us> context (Identity Layer only)
   if (fcontext == kOneofusContext) {
@@ -32,12 +34,19 @@ FollowNetwork reduceFollowNetwork(
       final String canonical = trustGraph.resolveIdentity(token);
       if (identities.contains(canonical)) continue;
       identities.add(canonical);
+      // For <identity> context, we can pull paths from the trustGraph
+      final tgPaths = trustGraph.paths[canonical];
+      if (tgPaths != null && tgPaths.isNotEmpty) {
+        paths[canonical] = tgPaths.first;
+      }
     }
     return FollowNetwork(
       fcontext: fcontext,
       identities: identities,
       rootIdentity: trustGraph.root,
+      paths: paths,
       notifications: notifications,
+      edges: edges,
     );
   }
 
@@ -78,6 +87,9 @@ FollowNetwork reduceFollowNetwork(
 
         if (weight == null) continue;
         
+        // Record the edge for the graph view
+        edges.putIfAbsent(issuerIdentity, () => []).add(s);
+
         if (decided.contains(subjectIdentity)) continue;
         decided.add(subjectIdentity);
 
@@ -85,15 +97,39 @@ FollowNetwork reduceFollowNetwork(
 
         if (w < 0) {
           // Block
-          if (subjectIdentity == trustGraph.root) continue; // Can't block self
+          if (subjectIdentity == trustGraph.root) {
+            notifications.add(TrustNotification(
+              subject: subjectIdentity,
+              reason: "Attempt to block yourself in context $fcontext",
+              relatedStatements: [s.token],
+              isConflict: true,
+            ));
+            continue;
+          }
           if (!followDistances.containsKey(subjectIdentity) || followDistances[subjectIdentity]! > dist) {
             blocked.add(subjectIdentity);
+          } else {
+            notifications.add(TrustNotification(
+              subject: subjectIdentity,
+              reason: "Attempt to block followed identity $subjectIdentity in context $fcontext",
+              relatedStatements: [s.token],
+              isConflict: true,
+            ));
           }
         } else if (weight > 0) {
           // Follow
-          if (blocked.contains(subjectIdentity)) continue;
+          if (blocked.contains(subjectIdentity)) {
+            notifications.add(TrustNotification(
+              subject: subjectIdentity,
+              reason: "Attempt to follow blocked identity $subjectIdentity in context $fcontext",
+              relatedStatements: [s.token],
+              isConflict: true,
+            ));
+            continue;
+          }
           if (!followDistances.containsKey(subjectIdentity)) {
             followDistances[subjectIdentity] = dist + 1;
+            paths[subjectIdentity] = [...paths[issuerIdentity]!, subjectIdentity];
             orderedIdentities.add(subjectIdentity);
             nextLayer.add(subjectIdentity);
           }
@@ -114,6 +150,7 @@ FollowNetwork reduceFollowNetwork(
             if (blocked.contains(subjectIdentity)) continue;
             if (!followDistances.containsKey(subjectIdentity)) {
               followDistances[subjectIdentity] = dist + 1;
+              paths[subjectIdentity] = [...paths[issuerIdentity]!, subjectIdentity];
               orderedIdentities.add(subjectIdentity);
               nextLayer.add(subjectIdentity);
             }
@@ -130,6 +167,8 @@ FollowNetwork reduceFollowNetwork(
     fcontext: fcontext,
     identities: filteredIdentities,
     rootIdentity: trustGraph.root,
+    paths: paths,
     notifications: notifications,
+    edges: edges,
   );
 }

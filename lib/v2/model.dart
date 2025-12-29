@@ -40,6 +40,7 @@ class TrustGraph {
   final Map<String, String> replacements; // OldToken -> NewToken
   final Map<String, String> replacementConstraints; // Token -> RevokeAtToken (Time constraint)
   final Set<String> blocked; // Tokens blocked by the graph
+  final Map<String, List<List<String>>> paths; // Target -> List of node-disjoint paths from root
   /// Notifications: key rotation issues, attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
   final Map<String, List<TrustStatement>> edges; // Adjacency list: Issuer -> List<TrustStatement> (Valid statements)
@@ -51,6 +52,7 @@ class TrustGraph {
     this.replacements = const {},
     this.replacementConstraints = const {},
     this.blocked = const {},
+    this.paths = const {},
     this.notifications = const [],
     this.edges = const {},
   });
@@ -119,14 +121,18 @@ class FollowNetwork {
   final String fcontext;
   final List<String> identities; // Canonical identity tokens in discovery order
   final String rootIdentity; // The identity from whose POV this network was built
+  final Map<String, List<String>> paths; // Identity -> Path from root
   /// Notifications: attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
+  final Map<String, List<ContentStatement>> edges; // IssuerIdentity -> List of accepted follow/block statements
 
   FollowNetwork({
     required this.fcontext,
     this.identities = const [],
     required this.rootIdentity,
+    this.paths = const {},
     this.notifications = const [],
+    this.edges = const {},
   });
 
   bool contains(String identity) => identities.contains(identity);
@@ -189,6 +195,7 @@ class ContentAggregation {
 /// A complete snapshot of the feed data, ready for display.
 class V2FeedModel {
   final TrustGraph trustGraph;
+  final FollowNetwork followNetwork;
   final V2Labeler labeler;
   final ContentAggregation aggregation;
   final String rootToken;
@@ -202,6 +209,7 @@ class V2FeedModel {
 
   V2FeedModel({
     required this.trustGraph,
+    required this.followNetwork,
     required this.labeler,
     required this.aggregation,
     required this.rootToken,

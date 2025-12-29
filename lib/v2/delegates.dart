@@ -8,6 +8,7 @@ class DelegateResolver {
   final Map<String, String> _delegateToIdentity = {};
   final Map<String, String> _delegateToDomain = {};
   final Map<String, List<String>> _identityToDelegates = {};
+  final Map<String, String> _delegateConstraints = {}; // delegateKey -> revokeAtToken
   final Set<String> _resolvedIdentities = {};
 
   DelegateResolver(this.graph);
@@ -23,6 +24,14 @@ class DelegateResolver {
       final List<TrustStatement> statements = graph.edges[key] ?? [];
       for (final TrustStatement s in statements.where((s) => s.verb == TrustVerb.delegate)) {
         final String delegateKey = s.subjectToken;
+
+        // A delegate statement with a revokeAt timestamp is a revocation.
+        if (s.revokeAt != null) {
+          // If we have multiple revocations, the most recent one (first in list) wins.
+          if (!_delegateConstraints.containsKey(delegateKey)) {
+            _delegateConstraints[delegateKey] = s.revokeAt!;
+          }
+        }
         
         // A key cannot be a delegate if it is already a trusted identity key
         if (graph.isTrusted(delegateKey)) continue;
@@ -50,6 +59,11 @@ class DelegateResolver {
   /// Returns the domain for a given delegate key.
   String? getDomainForDelegate(String token) {
     return _delegateToDomain[token];
+  }
+
+  /// Returns the revocation constraint (revokeAt token) for a given delegate key.
+  String? getConstraintForDelegate(String token) {
+    return _delegateConstraints[token];
   }
 
   /// Returns all delegate keys authorized by the given canonical identity.

@@ -18,6 +18,7 @@ class ContentCard extends StatefulWidget {
   final VoidCallback? onRefresh;
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String?>? onTagTap;
+  final ValueChanged<String?>? onGraphFocus;
 
   const ContentCard({
     super.key,
@@ -26,6 +27,7 @@ class ContentCard extends StatefulWidget {
     this.onRefresh,
     this.onPovChange,
     this.onTagTap,
+    this.onGraphFocus,
   });
 
   @override
@@ -171,6 +173,7 @@ class _ContentCardState extends State<ContentCard> {
                   onRefresh: widget.onRefresh,
                   onPovChange: widget.onPovChange,
                   onTagTap: widget.onTagTap,
+                  onGraphFocus: widget.onGraphFocus,
                 ),
               ],
             ],
@@ -229,10 +232,15 @@ class _ContentCardState extends State<ContentCard> {
               children: [
                 WidgetSpan(
                   alignment: PlaceholderAlignment.middle,
-                  child: Text(
-                    '$label: ',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                  child: InkWell(
+                    onTap: () => widget.onGraphFocus?.call(s.iToken),
+                    child: Text(
+                      '$label: ',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                 ),
@@ -406,6 +414,7 @@ class SubjectDetailsView extends StatelessWidget {
   final VoidCallback? onRefresh;
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String>? onTagTap;
+  final ValueChanged<String?>? onGraphFocus;
 
   const SubjectDetailsView({
     super.key,
@@ -414,6 +423,7 @@ class SubjectDetailsView extends StatelessWidget {
     this.onRefresh,
     this.onPovChange,
     this.onTagTap,
+    this.onGraphFocus,
   });
 
   @override
@@ -484,17 +494,25 @@ class SubjectDetailsView extends StatelessWidget {
         color: isMe ? Colors.blue[50] : Colors.grey[50],
         child: ListTile(
           dense: true,
-          leading: CircleAvatar(
-            radius: 16,
-            child: Text(label.isNotEmpty ? label[0] : '?', style: const TextStyle(fontSize: 12)),
+          leading: InkWell(
+            onTap: () => onGraphFocus?.call(s.iToken),
+            child: CircleAvatar(
+              radius: 16,
+              child: Text(label.isNotEmpty ? label[0] : '?', style: const TextStyle(fontSize: 12)),
+            ),
           ),
           title: Row(
             children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
+              InkWell(
+                onTap: () => onGraphFocus?.call(s.iToken),
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
                 ),
               ),
               const Spacer(),

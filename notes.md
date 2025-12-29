@@ -1,3 +1,4 @@
+AI NOTE: This is my (the human) file with my own notes.
 
 # Run the integration tests
 See `docs/testing.md` for instructions on running automated integration tests.
@@ -84,35 +85,6 @@ UI for clear relate/equate.
 
 - Minor: filter by book doesn filters Hillel's comment on the article he
   submitted about a book which I equated to a book
-
-## TODO:
-
-- Look into if we verify 'nerdster.org'
-
-? clean up 'data corruption' in Nerdster that dumps all entries by
-  order regardless of data corruption that Fetcher detects.
-
-- NerdTree solid
-  - DO: test! (now that we have better than dump !minimalist)
-  - paths
-  - names
-  - replaced/blocked nerds pink/red
-  - replaced/blocked keys pink/red
-  - revoked delegate
-    - Include a revoked delegate in the tests and show properly in NerdTree.
-      Progress: Hipster has a revoked delegate key, but the display could be
-        improved:
-        - says 'replaced', not 'revoked'.
-        - (name, comment), and I'm not sure that it's in the tests.
-
-- Firebase clarity: Nerdster/Oneofus 
-
-- stress, performance.. more nerds, more trusts and blocks.
-  - check where I'm spending time
-    - reducing network at end?
-  - limit number of paths to store per node?
-  - limit path length?
-  - limit time?
 
 ### Export PROD Firebase for use by local emulators
 firebase projects:list

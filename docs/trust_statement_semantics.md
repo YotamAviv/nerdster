@@ -17,8 +17,9 @@ For these verbs, the Subject represents an **Identity** (a person or entity).
     - *Implication:* I am willing to introduce this person to my network.
 - **`block`**: "I assert that Key X does not represent a human, or that the person holding Key X is a bad actor (spammer, malicious)."
     - *Implication:* This key should be excluded from the network.
-- **`replace`**: "I (New Key) am replacing Old Key X. X still represents me, but is invalid for new statements as of the time of replacement."
+- **`replace`**: "I (New Key) am replacing Old Key X. X still represents me, but is invalid for new statements after the time of replacement."
     - *Implication:* All trust and reputation associated with Old Key X should transfer to New Key.
+    - revokeAt is required for replace. If it's missing, <since always> is assumed.
 
 ### 2. Delegation Verbs (`delegate`)
 
@@ -30,8 +31,8 @@ For this verb, the Subject represents a **Service Key** (a delegate).
 
 ## Revocation Semantics (`revokeAt`)
 
-The `revokeAt` field is a modifier that can be attached to statements (primarily `replace` and `delegate`).
+The `revokeAt` field is a modifier that can be attached to statements (`replace` and `delegate`).
 
-- **Meaning:** "This statement (and the key it refers to) is only valid for statements issued *before* the timestamp/token specified in `revokeAt`."
+- **Meaning:** "This statement (and the key it refers to) is only valid for statements issued *up to and including* the token specified in `revokeAt`."
 - **Use Case:** If a key is compromised, a `replace` statement with `revokeAt` ensures that any malicious statements made by the attacker (after the compromise time) are ignored.
-- **Invalid Tokens & "<since always>":** If the `revokeAt` token does not match any known statement by that issuer, the key is considered revoked **since always** (i.e., all its statements are ignored). The special string `"<since always>"` can be used explicitly to achieve this effect as it's guaranteed to not match any valid statement token.
+- **Invalid Tokens & "<since always>":** If the `revokeAt` token does not match any known statement by the **revoked key** (the subject of the statement), the key is considered revoked **since always** (i.e., all its statements are ignored). The special string `"<since always>"` can be used explicitly to achieve this effect as it's guaranteed to not match any valid statement token.

@@ -12,6 +12,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/most_strings.dart';
 
 class V2FeedController extends ValueNotifier<V2FeedModel?> {
   final CachedSource<TrustStatement> trustSource;
@@ -90,6 +91,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     
     value = V2FeedModel(
       trustGraph: value!.trustGraph,
+      followNetwork: value!.followNetwork,
       labeler: value!.labeler,
       aggregation: value!.aggregation,
       rootToken: value!.rootToken,
@@ -241,15 +243,15 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
           delegateResolver: delegateResolver, meToken: currentMeToken);
 
       // 6. Contexts
-      final availableContextsSet = <String>{};
+      final mostContexts = MostStrings({kOneofusContext, kNerdsterContext});
       for (final statements in contentMap.values) {
         for (final s in statements) {
           if (s.verb == ContentVerb.follow && s.contexts != null) {
-            availableContextsSet.addAll(s.contexts!.keys);
+            mostContexts.process(s.contexts!.keys);
           }
         }
       }
-      final availableContexts = availableContextsSet.toList()..sort();
+      final availableContexts = mostContexts.most().toList();
 
       final activeContexts = <String>{};
       final rootIdentity = graph.root;
@@ -271,6 +273,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       if (_latestRequestedToken == currentToken && _latestRequestedMeToken == currentMeToken) {
         value = V2FeedModel(
           trustGraph: graph,
+          followNetwork: followNetwork,
           labeler: labeler,
           aggregation: aggregation,
           rootToken: currentToken,

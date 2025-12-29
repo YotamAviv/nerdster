@@ -8,6 +8,7 @@ import 'package:nerdster/demotest/cases/deletions.dart';
 import 'package:nerdster/demotest/cases/egos.dart';
 import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/loner.dart';
+import 'package:nerdster/demotest/cases/large_graph.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
@@ -46,6 +47,7 @@ class DemoKey {
   static final Map<String, Json> _exports = {};
 
   static final dynamic demos = {
+    'largeGraph': largeGraph,
     'simpsonsDemo': simpsonsDemo,
     'basicScenario': testBasicScenario,
     'egosCorrupt': egosCorrupt,

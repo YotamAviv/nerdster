@@ -69,7 +69,7 @@ class Trust {
 }
 
 class Replace extends Trust {
-  final String revokeAt;
+  final String? revokeAt;
   Replace(super.node, super.statedAt, this.revokeAt, super.statementToken);
 }
 
