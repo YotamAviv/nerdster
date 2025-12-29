@@ -8,12 +8,18 @@ typedef PathRequirement = int Function(int distance);
 List<List<String>> _findNodeDisjointPaths(String root, String target, Map<String, Set<String>> graph, int limit) {
   final List<List<String>> paths = [];
   final Set<String> excludedNodes = {};
+  final Set<String> usedPathStrings = {}; 
 
   while (paths.length < limit) {
     final path = _findShortestPath(root, target, graph, excludedNodes);
     if (path == null) break;
     
+    final pathString = path.join('->');
+    if (usedPathStrings.contains(pathString)) break;
+    
     paths.add(path);
+    usedPathStrings.add(pathString);
+
     // Exclude intermediate nodes to ensure node-disjointness
     for (int i = 1; i < path.length - 1; i++) {
       excludedNodes.add(path[i]);
@@ -116,7 +122,6 @@ TrustGraph reduceTrustGraph(
     // Blocks are processed first for the entire layer.
     for (final issuer in currentLayer) {
       var statements = byIssuer[issuer] ?? [];
-      statements.sort((a, b) => b.time.compareTo(a.time));
       final decided = <String>{};
       
       // Process Blocks
@@ -154,7 +159,6 @@ TrustGraph reduceTrustGraph(
     // 1. First pass: Process all REPLACES in this layer to establish identity links and constraints.
     for (final issuer in currentLayer) {
       var statements = byIssuer[issuer] ?? [];
-      statements.sort((a, b) => b.time.compareTo(a.time));
 
       // Apply constraints discovered in previous layers
       if (replacementConstraints.containsKey(issuer)) {
@@ -317,11 +321,6 @@ TrustGraph reduceTrustGraph(
               orderedKeys.add(subject);
               nextLayer.add(subject);
             }
-          }
-        } else {
-          // Not enough node-disjoint paths yet. Remove the temporary edges.
-          for (final i in trustedBy[effectiveSubject]!) {
-            graphForPathfinding[i]?.remove(effectiveSubject);
           }
         }
       }

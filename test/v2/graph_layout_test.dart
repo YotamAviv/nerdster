@@ -56,6 +56,11 @@ void main() {
         bob.token: [s2],
         charlie.token: [s3],
       },
+      paths: {
+        charlie.token: [
+          [lisa.token, bob.token, charlie.token]
+        ],
+      },
     );
 
     final fn = FollowNetwork(fcontext: 'test', rootIdentity: lisa.token);
@@ -114,6 +119,12 @@ void main() {
         a2.token: [s3],
         b2.token: [s6],
       },
+      paths: {
+        target.token: [
+          [root.token, a1.token, a2.token, target.token],
+          [root.token, b1.token, b2.token, target.token],
+        ],
+      },
     );
 
     final fn = FollowNetwork(fcontext: 'test', rootIdentity: root.token);
@@ -124,9 +135,6 @@ void main() {
     controller.focusedIdentity = target.token;
     signInState.pov = root.token;
     
-    // We want 2 paths
-    controller.pathCountFunction = (d) => 2;
-
     final data = controller.buildGraphData();
     
     // Should find 2 node-disjoint paths.
@@ -158,6 +166,11 @@ void main() {
         lisa.token: [s1],
         homer.token: [s2],
         bart.token: [s3],
+      },
+      paths: {
+        bart.token: [
+          [lisa.token, homer.token, bart.token]
+        ],
       },
     );
 

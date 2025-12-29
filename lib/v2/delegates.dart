@@ -20,34 +20,62 @@ class DelegateResolver {
     if (_resolvedIdentities.contains(identity)) return;
 
     final List<String> keys = graph.getEquivalenceGroup(identity);
+    List<TrustStatement> allStatements = [];
     for (final String key in keys) {
-      final List<TrustStatement> statements = graph.edges[key] ?? [];
-      for (final TrustStatement s in statements.where((s) => s.verb == TrustVerb.delegate)) {
-        final String delegateKey = s.subjectToken;
+      final statements = graph.edges[key] ?? [];
+      if (allStatements.isEmpty) {
+        allStatements = statements;
+      } else {
+        allStatements = _mergeSorted(allStatements, statements);
+      }
+    }
 
-        // A delegate statement with a revokeAt timestamp is a revocation.
-        if (s.revokeAt != null) {
-          // If we have multiple revocations, the most recent one (first in list) wins.
-          if (!_delegateConstraints.containsKey(delegateKey)) {
-            _delegateConstraints[delegateKey] = s.revokeAt!;
-          }
-        }
-        
-        // A key cannot be a delegate if it is already a trusted identity key
-        if (graph.isTrusted(delegateKey)) continue;
-        
-        // A key cannot be a delegate if it is blocked
-        if (graph.blocked.contains(delegateKey)) continue;
+    final Set<String> decidedDelegates = {};
 
-        // First one to claim it wins.
-        if (!_delegateToIdentity.containsKey(delegateKey)) {
-          _delegateToIdentity[delegateKey] = identity;
-          _delegateToDomain[delegateKey] = s.domain ?? 'unknown';
-          _identityToDelegates.putIfAbsent(identity, () => []).add(delegateKey);
-        }
+    for (final TrustStatement s in allStatements.where((s) => s.verb == TrustVerb.delegate)) {
+      final String delegateKey = s.subjectToken;
+
+      if (decidedDelegates.contains(delegateKey)) continue;
+      decidedDelegates.add(delegateKey);
+
+      // A delegate statement with a revokeAt timestamp is a revocation.
+      if (s.revokeAt != null) {
+        _delegateConstraints[delegateKey] = s.revokeAt!;
+      }
+      
+      // A key cannot be a delegate if it is already a trusted identity key
+      if (graph.isTrusted(delegateKey)) continue;
+      
+      // A key cannot be a delegate if it is blocked
+      if (graph.blocked.contains(delegateKey)) continue;
+
+      // First one to claim it wins.
+      if (!_delegateToIdentity.containsKey(delegateKey)) {
+        _delegateToIdentity[delegateKey] = identity;
+        _delegateToDomain[delegateKey] = s.domain ?? 'unknown';
+        _identityToDelegates.putIfAbsent(identity, () => []).add(delegateKey);
       }
     }
     _resolvedIdentities.add(identity);
+  }
+
+  List<TrustStatement> _mergeSorted(List<TrustStatement> a, List<TrustStatement> b) {
+    final List<TrustStatement> result = [];
+    int i = 0, j = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i].time.isAfter(b[j].time)) {
+        result.add(a[i++]);
+      } else {
+        result.add(b[j++]);
+      }
+    }
+    while (i < a.length) {
+      result.add(a[i++]);
+    }
+    while (j < b.length) {
+      result.add(b[j++]);
+    }
+    return result;
   }
 
   /// Returns the canonical identity for a given delegate key.

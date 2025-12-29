@@ -198,4 +198,49 @@ void main() {
       reason: 'Delegate should be authorized even if revokeAt is present');
     expect(resolver.getConstraintForDelegate(delegate.token), equals(kSinceAlways));
   });
+
+  test('Delegate Revocation: Comprehensive test (Revoked but still a delegate)', () async {
+    final bob = await DemoKey.create('bob');
+    final delegate = await DemoKey.create('delegate3');
+
+    // 1. Delegate signs a statement (S1)
+    final s1 = await delegate.doRate(title: 'Before Revocation');
+    await upload(delegate.token, s1);
+
+    // 2. Bob delegates to delegate
+    final d1 = await bob.doTrust(TrustVerb.delegate, delegate, domain: 'nerdster.org');
+    
+    // 3. Bob revokes delegate at S1
+    final d2 = await bob.doTrust(TrustVerb.delegate, delegate, revokeAt: s1.token);
+
+    // 4. Delegate signs another statement (S2) AFTER revocation
+    final s2 = await delegate.doRate(title: 'After Revocation');
+    await upload(delegate.token, s2);
+
+    final tg = TrustGraph(
+      root: bob.token,
+      distances: {bob.token: 0},
+      edges: {
+        bob.token: [d2, d1], // Sorted by time descending
+      },
+    );
+
+    final resolver = DelegateResolver(tg);
+    resolver.resolveForIdentity(bob.token);
+
+    // Verify it's still a delegate
+    expect(resolver.getIdentityForDelegate(delegate.token), equals(bob.token));
+    expect(resolver.getConstraintForDelegate(delegate.token), equals(s1.token));
+
+    // Verify content filtering
+    final pipeline = ContentPipeline(identitySource: contentSource, appSource: contentSource);
+    final contentMap = await pipeline.fetchContentMap(tg, resolver);
+
+    final delegateStatements = contentMap[delegate.token] ?? [];
+    
+    // Should only contain S1
+    expect(delegateStatements.any((s) => s.token == s1.token), isTrue, reason: 'S1 should be present');
+    expect(delegateStatements.any((s) => s.token == s2.token), isFalse, reason: 'S2 should be ignored');
+    expect(delegateStatements.length, equals(1));
+  });
 }
