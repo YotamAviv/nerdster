@@ -10,7 +10,11 @@ import 'package:nerdster/v2/io.dart';
 
 class SourceFactory {
   static StatementSource<T> get<T extends Statement>(String domain) =>
-      (fireChoice == FireChoice.fake || !Setting.get<bool>(SettingType.httpFetch).value)
+      (fireChoice == FireChoice.fake ||
+              !Setting.get<bool>(SettingType.httpFetch).value)
           ? DirectFirestoreSource<T>(FireFactory.find(domain))
           : CloudFunctionsSource<T>(baseUrl: V2Config.getUrl(domain)!);
+
+  static StatementWriter getWriter(String domain) =>
+      DirectFirestoreWriter(FireFactory.find(domain));
 }

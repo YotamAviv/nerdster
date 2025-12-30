@@ -7,8 +7,11 @@ import '../oneofus/json_display.dart';
 import '../oneofus/statement.dart';
 import '../content/dialogs/on_off_icon.dart';
 import '../content/dialogs/on_off_icons.dart';
+import '../content/dialogs/lgtm.dart';
 import '../util_ui.dart';
 import 'model.dart';
+import 'source_factory.dart';
+import 'refresh_signal.dart';
 
 enum RateIntent { like, dislike, dismiss, comment, censor, clear, none }
 
@@ -42,7 +45,11 @@ class V2RateDialog extends StatefulWidget {
 
     if (result != null) {
       try {
-        await contentBase.insert(result, context);
+        bool? proceed = await Lgtm.check(result, context);
+        if (proceed != true) return;
+
+        final writer = SourceFactory.getWriter(kNerdsterDomain);
+        await writer.push(result, signInState.signer!);
         onRefresh?.call();
       } catch (e, stackTrace) {
         debugPrint('V2RateDialog Error: $e\n$stackTrace');
@@ -331,7 +338,6 @@ class _V2RateDialogState extends State<V2RateDialog> {
           )
         else
           const SizedBox(width: 120.0),
-        const Spacer(),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),

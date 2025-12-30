@@ -41,3 +41,7 @@ You (the AI) wrote this document to guide your future self so you could do a bet
 
 11. **Do not make promises you cannot keep.**
     - Do not promise to change your future behavior or "never" do something again, as you are a stateless model and cannot guarantee future compliance.
+
+12. **Document Reality.**
+    - When the human asks you to document how something works, that's the task.
+    - If you don't like how it currently works, you can't invent it to work different and document that instead.

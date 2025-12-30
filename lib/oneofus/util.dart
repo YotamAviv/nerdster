@@ -7,6 +7,9 @@ import 'crypto/crypto.dart';
 import 'crypto/crypto2559.dart';
 import 'jsonish.dart';
 
+final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
+const String kSinceAlways = '<since always>';
+
 // TODO: Try to use in more places, have more dialogs look the same.
 const kPadding = EdgeInsets.all(4);
 const kTallPadding = EdgeInsets.fromLTRB(0, 8, 0, 4);

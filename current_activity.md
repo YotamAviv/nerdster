@@ -2,6 +2,13 @@
 
 ## NOTES FOR ME - DON'T START WITHOUT ME
 
+Bugs:
+- Rate dialog thumb down is green, not like what's on content view. Unify.
+- I disliked a rating
+  - eneded up with a high level statement in the content view
+  - it isn't clear that my dislike did something, or what it did at all.
+  - I shouldn't be allowed to censor my own statements, I don't believe. I should just claer them.
+  - I think the easiest way to clear this up is to remove the bunch of icons and just have a single REACT icon.
 - Submit
   - Verify URLs some
 
@@ -19,9 +26,9 @@
   - ratings on equated subjects to be shown under the canonical
   - allow users to equate/relate and not as well
 
-- Make sure fetcher push is transactional
+- Make sure fetcher push is transactional [DONE in V2 via StatementWriter]
 
-  - Consider integration test
+  - Consider integration test [DONE: v2_basic_test.dart covers this]
 
 - Crypto proofs
 
@@ -42,6 +49,15 @@ regression test, integration test.
   - Reach goal: Recommended actions, warnings
 
 - embed in home page and on aviv.net
+
+- transactions
+The "Gold Standard" Solution
+If you want the best of both worlds—no update permissions for anyone AND guaranteed atomic writes for you—the logic must move to a Cloud Function.
+Rules: You set Firestore to read: true and create: false, update: false, delete: false. No one can write directly.
+Function: You create a pushStatement Cloud Function.
+Security: The Function uses your public key to verify the signature before it touches the database.
+Atomicity: Because it's running on the server, it can use the Admin SDK to query for the latest statement inside a transaction, verify the new one, and write it—all without needing a mutable head pointer or granting update permissions to the world.
+
 
 ## NerdyContentView
 

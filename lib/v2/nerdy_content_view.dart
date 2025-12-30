@@ -13,6 +13,8 @@ import 'package:nerdster/verify.dart';
 import 'package:nerdster/v2/graph_view.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/app.dart';
+import 'refresh_signal.dart';
+import 'submit.dart';
 
 class NerdyContentView extends StatefulWidget {
   final String? rootToken;
@@ -39,7 +41,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
     _controller.refresh(_currentPov, meToken: signInState.identity);
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     Setting.get<String>(SettingType.fcontext).addListener(_onRefresh);
-    contentBase.addListener(_onRefresh);
+    v2RefreshSignal.addListener(_onRefresh);
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       verifyInit(navigatorKey);
@@ -64,7 +66,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
   void dispose() {
     Setting.get<bool>(SettingType.hideSeen).removeListener(_onSettingChanged);
     Setting.get<String>(SettingType.fcontext).removeListener(_onRefresh);
-    contentBase.removeListener(_onRefresh);
+    v2RefreshSignal.removeListener(_onRefresh);
     _controller.dispose();
     super.dispose();
   }
@@ -136,6 +138,12 @@ class _NerdyContentViewState extends State<NerdyContentView> {
               ],
             ),
           ),
+          floatingActionButton: model != null
+              ? FloatingActionButton(
+                  onPressed: () => v2Submit(context, model, onRefresh: _onRefresh),
+                  child: const Icon(Icons.add),
+                )
+              : null,
         );
       },
     );
@@ -390,18 +398,16 @@ class _NerdyContentViewState extends State<NerdyContentView> {
           onPovChange: _changePov,
           onTagTap: _onTagTap,
           onGraphFocus: (identity) {
-            if (model != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => NerdyGraphView(
-                    feedModel: model,
-                    onPovChanged: _changePov,
-                    initialFocus: identity,
-                  ),
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NerdyGraphView(
+                  feedModel: model,
+                  onPovChanged: _changePov,
+                  initialFocus: identity,
                 ),
-              );
-            }
+              ),
+            );
           },
         );
       },

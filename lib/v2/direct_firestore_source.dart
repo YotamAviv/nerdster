@@ -4,6 +4,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/v2/refresh_signal.dart';
 
 /// Fetches statements directly from Firestore.
 /// This is used for:
@@ -99,5 +100,58 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
     }));
 
     return results;
+  }
+}
+
+/// Writes statements directly to Firestore.
+class DirectFirestoreWriter implements StatementWriter {
+  final FirebaseFirestore _fire;
+
+  DirectFirestoreWriter(this._fire);
+
+  @override
+  Future<Statement> push(Json json, StatementSigner signer) async {
+    final String issuerToken = getToken(json['I']);
+    final fireStatements =
+        _fire.collection(issuerToken).doc('statements').collection('statements');
+
+    // 1. Find the latest statement (Non-Atomic)
+    // Note: This is not truly transactional because the Flutter SDK does not
+    // support queries inside transactions.
+    final latestSnapshot = await fireStatements
+        .orderBy('time', descending: true)
+        .limit(1)
+        .get();
+
+    String? previousToken;
+    DateTime? prevTime;
+
+    if (latestSnapshot.docs.isNotEmpty) {
+      final latestDoc = latestSnapshot.docs.first;
+      previousToken = latestDoc.id;
+      prevTime = parseIso(latestDoc.data()['time']);
+    }
+
+    if (prevTime != null) {
+      final DateTime thisTime = parseIso(json['time']!);
+      if (!thisTime.isAfter(prevTime)) {
+        throw Exception(
+            'Timestamp must be after previous statement ($thisTime <= $prevTime)');
+      }
+    }
+
+    // 2. Set previous and sign
+    if (previousToken != null) {
+      json['previous'] = previousToken;
+    }
+
+    final Jsonish jsonish = await Jsonish.makeSign(json, signer);
+    final statement = Statement.make(jsonish);
+
+    // 3. Write statement (create only)
+    await fireStatements.doc(jsonish.token).set(jsonish.json);
+
+    v2RefreshSignal.signal();
+    return statement;
   }
 }

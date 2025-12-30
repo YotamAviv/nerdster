@@ -9,9 +9,10 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
-import 'package:nerdster/content/content_base.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/singletons.dart';
+import 'refresh_signal.dart';
+import 'submit.dart';
 
 class FancyShadowView extends StatefulWidget {
   final String? rootToken;
@@ -37,13 +38,13 @@ class _FancyShadowViewState extends State<FancyShadowView> {
       appContentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
     _controller.refresh(widget.rootToken, meToken: signInState.identity);
-    contentBase.addListener(_onRefresh);
+    v2RefreshSignal.addListener(_onRefresh);
     Setting.get<String>(SettingType.tag).addListener(_onSettingChanged);
   }
 
   @override
   void dispose() {
-    contentBase.removeListener(_onRefresh);
+    v2RefreshSignal.removeListener(_onRefresh);
     Setting.get<String>(SettingType.tag).removeListener(_onSettingChanged);
     _controller.dispose();
     super.dispose();
@@ -91,9 +92,8 @@ class _FancyShadowViewState extends State<FancyShadowView> {
             backgroundColor: Colors.blueAccent,
             child: const Icon(Icons.add, color: Colors.white),
             onPressed: () async {
-              final result = await submit(context);
-              if (result != null) {
-                _onRefresh();
+              if (model != null) {
+                await v2Submit(context, model, onRefresh: _onRefresh);
               }
             },
           ),

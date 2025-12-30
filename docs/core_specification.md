@@ -58,7 +58,7 @@ Statements are JSON objects. The specific fields depend on the statement type, b
 
 ### 1.3. Transport Optimization
 
-To reduce bandwidth, the system supports an optimized transport format where redundant fields (`statement`, `I`) are omitted during transmission and reconstructed by the client. See [Optimization Strategy](optimization_strategy.md) for details.
+To reduce bandwidth, the system supports an optimized transport format where redundant fields (`statement`, `I`) are omitted during transmission and reconstructed by the client. See [Firestore I/O](firestore_io.md) for details.
 
 ## 2. Trust Semantics
 
@@ -94,22 +94,39 @@ Nerdster uses the `org.nerdster` statement type.
   - `otherSubject`: The second subject for `relate`/`equate` verbs.
   - `contexts`: A map defining contexts for `follow` statements.
 
-### 1.3. Canonicalization
+### 1.3. Canonicalization and Signing
 
-To ensure consistent hashing, JSON statements are canonicalized before hashing. The system handles this by enforcing strict ordering and formatting rules.
+To ensure consistent hashing and verifiable signatures, statements follow a strict multi-step process.
 
-**Ordering Rules:**
+#### 1.3.1. Canonicalization Rules
+
+JSON objects are ordered before any string conversion:
 
 1.  **Known Keys First:** Keys are sorted based on a predefined precedence list.
     - Order: `statement`, `time`, `I`, `trust`, `block`, `replace`, `delegate`, `clear`, `rate`, `relate`, `dontRelate`, `equate`, `dontEquate`, `follow`, `with`, `other`, `moniker`, `revokeAt`, `domain`, `tags`, `recommend`, `dismiss`, `censor`, `stars`, `comment`, `contentType`, `previous`.
 2.  **Unknown Keys:** Any keys not in the known list are sorted **alphabetically** and placed _after_ the known keys.
 3.  **Signature Last:** The `signature` key is **always** placed at the very end of the map.
 
-**Formatting Rules:**
+#### 1.3.2. Formatting Rules
 
 - **Indentation:** 2 spaces (`JsonEncoder.withIndent('  ')`).
 - **Encoding:** UTF-8.
 - **Recursion:** Nested maps are also recursively ordered. Lists preserve their element order, but the elements themselves are canonicalized.
+
+#### 1.3.3. The Signing Sequence
+
+To sign a statement:
+1.  **Prepare**: Create the JSON object with all fields **except** `signature`.
+2.  **Canonicalize**: Apply the ordering and formatting rules above to produce a pretty-printed string.
+3.  **Sign**: Calculate the cryptographic signature of this string.
+4.  **Finalize**: Add the `"signature"` key to the JSON object.
+
+#### 1.3.4. Token Generation
+
+The **Token** (the object's unique ID) is generated **after** signing:
+1.  **Canonicalize**: Apply the ordering and formatting rules to the *complete* object (including the signature).
+2.  **Hash**: Calculate the **SHA-1** hash of the resulting pretty-printed string.
+3.  **Format**: Represent the hash as a hexadecimal string.
 
 ### 1.4. The Notary Chain
 

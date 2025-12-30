@@ -24,7 +24,7 @@
 
 ### 5. Specific Topics
 
-- **`docs/optimization_strategy.md`**
+- **`docs/firestore_io.md`**
 - **`docs/rewrite_proposal.md`**: (Historical) Context on why the V2 rewrite was initiated.
 - **`docs/hosting.md`**: Web hosting setup and deployment.
 

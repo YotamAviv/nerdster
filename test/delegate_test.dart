@@ -10,6 +10,7 @@ import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;

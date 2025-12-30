@@ -102,7 +102,7 @@ void main() {
       }
 
       // 4. Verify Monikers (Names)
-      // Assuming the emulator has data where Lisa trusts someone named "Yotam" or "Bart"
+      // Assuming the emulator has data where Lisa trusts someone named "Bart"
       // We can look for specific text that should be resolved by the Labeler.
       // If the labeler is working, we should see names, not tokens.
       final monikerFinder = find.textContaining(RegExp(r'^[A-Z][a-z]+')); // Look for capitalized names

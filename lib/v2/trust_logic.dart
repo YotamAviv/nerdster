@@ -1,6 +1,6 @@
 import 'dart:collection';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/model.dart';
 
 typedef PathRequirement = int Function(int distance);

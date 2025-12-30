@@ -1,8 +1,5 @@
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/setting_type.dart';
-import 'package:nerdster/singletons.dart';
 
 enum GraphViewMode {
   identity, // Pure Identity Network
