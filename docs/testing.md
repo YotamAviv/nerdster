@@ -68,9 +68,16 @@ Run using the helper script or `flutter drive`:
 **Using flutter drive directly:**
 
 ```bash
+# Basic Logic Tests
 flutter drive \
   --driver=test_driver/integration_test.dart \
   --target=integration_test/v2_basic_test.dart \
+  -d chrome
+
+# UI Tests
+flutter drive \
+  --driver=test_driver/integration_test.dart \
+  --target=integration_test/v2_ui_test.dart \
   -d chrome
 ```
 

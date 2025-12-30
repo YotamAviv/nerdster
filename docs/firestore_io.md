@@ -44,7 +44,7 @@ Mapped to `https://export.nerdster.org` (or the project's Cloud Functions URL), 
 ## 4. Writing Statements
 
 - **Notary Chain Integrity**: Every statement must link to the one that preceded it to prevent back-dating or statement omission. This creates a linear, chronological history for every issuer that cannot be reordered or tampered with.
-- **Transactional Consistency**: While the system requires a linear chain, the current client-side implementation (using the Flutter Firestore SDK) cannot perform atomic "read-then-write" operations on the collection. This means that if multiple devices write simultaneously, the notary chain may fork.
+- **Transactional Consistency**: While the system requires a linear chain, the current client-side implementation (using the Flutter Firestore SDK) cannot perform atomic "read-then-write" operations on the collection. This means that if multiple devices write simultaneously, the notary chain may fork. However, the system **does** use transactions to ensure that the same exact statement (same token) is never written twice, throwing an exception if a duplicate is detected.
 
 ### 4.1. Transactional Requirements (Ideal)
 

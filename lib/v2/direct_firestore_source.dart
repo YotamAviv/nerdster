@@ -132,14 +132,6 @@ class DirectFirestoreWriter implements StatementWriter {
       prevTime = parseIso(latestDoc.data()['time']);
     }
 
-    if (prevTime != null) {
-      final DateTime thisTime = parseIso(json['time']!);
-      if (!thisTime.isAfter(prevTime)) {
-        throw Exception(
-            'Timestamp must be after previous statement ($thisTime <= $prevTime)');
-      }
-    }
-
     // 2. Set previous and sign
     if (previousToken != null) {
       json['previous'] = previousToken;
@@ -148,8 +140,24 @@ class DirectFirestoreWriter implements StatementWriter {
     final Jsonish jsonish = await Jsonish.makeSign(json, signer);
     final statement = Statement.make(jsonish);
 
-    // 3. Write statement (create only)
-    await fireStatements.doc(jsonish.token).set(jsonish.json);
+    // 3. Write statement (transactional check for existence)
+    await _fire.runTransaction((transaction) async {
+      final docRef = fireStatements.doc(jsonish.token);
+      final doc = await transaction.get(docRef);
+      if (doc.exists) {
+        throw Exception('Statement already exists: ${jsonish.token}');
+      }
+
+      if (prevTime != null) {
+        final DateTime thisTime = parseIso(json['time']!);
+        if (!thisTime.isAfter(prevTime)) {
+          throw Exception(
+              'Timestamp must be after previous statement ($thisTime <= $prevTime)');
+        }
+      }
+
+      transaction.set(docRef, jsonish.json);
+    });
 
     v2RefreshSignal.signal();
     return statement;
