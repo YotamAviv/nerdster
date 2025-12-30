@@ -41,6 +41,11 @@ import 'package:nerdster/oneofus/util.dart';
 /// CONSIDER: Use a fake clock to load the demo, but then reset back to a regular one.
 const OouCryptoFactory _crypto = CryptoFactoryEd25519();
 
+/// Represents a key pair for testing/demo purposes.
+///
+/// A [DemoKey] instance should be used EITHER as an Identity Key (issuing [TrustStatement]s)
+/// OR as a Delegate Key (issuing [ContentStatement]s), but never both.
+/// This is enforced by [_checkUsage].
 class DemoKey {
   static final LinkedHashMap<String, DemoKey> _name2key = LinkedHashMap<String, DemoKey>();
   static final Map<String, DemoKey> _token2key = <String, DemoKey>{};
@@ -112,13 +117,48 @@ class DemoKey {
 
   // --- Outbox / Local Cache ---
   
+  bool get isIdentity => _localStatements.isNotEmpty && _localStatements.first is TrustStatement;
+  bool get isDelegate => _localStatements.isNotEmpty && _localStatements.first is ContentStatement;
+
   /// Returns all trust statements issued by this key, newest first.
-  List<TrustStatement> get trustStatements => _localStatements.whereType<TrustStatement>().toList();
+  ///
+  /// Note: Only Identity Keys should have trust statements.
+  List<TrustStatement> get trustStatements {
+    if (_localStatements.isNotEmpty) {
+      assert(_localStatements.first is TrustStatement,
+          'Key "$name" is a Delegate Key (has content statements), but trustStatements was requested.');
+    }
+    return _localStatements.cast<TrustStatement>().toList();
+  }
 
   /// Returns all content statements issued by this key, newest first.
-  List<ContentStatement> get contentStatements => _localStatements.whereType<ContentStatement>().toList();
+  ///
+  /// Note: Only Delegate Keys should have content statements.
+  List<ContentStatement> get contentStatements {
+    if (_localStatements.isNotEmpty) {
+      assert(_localStatements.first is ContentStatement,
+          'Key "$name" is an Identity Key (has trust statements), but contentStatements was requested.');
+    }
+    return _localStatements.cast<ContentStatement>().toList();
+  }
 
   final List<Statement> _localStatements = [];
+
+  void _checkUsage(Statement newStatement) {
+    if (_localStatements.isEmpty) return;
+
+    final bool hasTrust = _localStatements.any((s) => s is TrustStatement);
+    final bool hasContent = _localStatements.any((s) => s is ContentStatement);
+
+    if (newStatement is TrustStatement && hasContent) {
+      throw 'DemoKey Usage Error: Key "$name" ($token) is being used for both Trust and Content statements. '
+          'It should be either an Identity Key (Trust) or a Delegate Key (Content), not both.';
+    }
+    if (newStatement is ContentStatement && hasTrust) {
+      throw 'DemoKey Usage Error: Key "$name" ($token) is being used for both Trust and Content statements. '
+          'It should be either an Identity Key (Trust) or a Delegate Key (Content), not both.';
+    }
+  }
 
   // --- Content Statement Helpers (Make, then Do) ---
 
@@ -225,6 +265,7 @@ class DemoKey {
     final OouSigner signer = await OouSigner.make(keyPair);
     final Statement statement = await fetcher.push(json, signer);
     final ContentStatement content = statement as ContentStatement;
+    _checkUsage(content);
     _localStatements.insert(0, content);
     return content;
   }
@@ -291,6 +332,7 @@ class DemoKey {
     final OouSigner signer = await OouSigner.make(keyPair);
     final Statement statement = await fetcher.push(json, signer);
     final TrustStatement trust = statement as TrustStatement;
+    _checkUsage(trust);
     _localStatements.insert(0, trust);
     if (export != null) _exports[export] = trust.json;
     return trust;

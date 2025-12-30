@@ -148,6 +148,7 @@ class SubjectAggregation {
   final int dislikes;
   final DateTime lastActivity;
   final Set<String> related; // Canonical tokens of related subjects
+  final List<ContentStatement> myDelegateStatements;
   final DateTime? userDismissalTimestamp;
   final DateTime? povDismissalTimestamp;
   final bool isCensored;
@@ -163,6 +164,7 @@ class SubjectAggregation {
     this.dislikes = 0,
     required this.lastActivity,
     this.related = const {},
+    this.myDelegateStatements = const [],
     this.userDismissalTimestamp,
     this.povDismissalTimestamp,
     this.isCensored = false,

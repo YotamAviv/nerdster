@@ -13,6 +13,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/most_strings.dart';
+import 'package:nerdster/singletons.dart';
 
 class V2FeedController extends ValueNotifier<V2FeedModel?> {
   final CachedSource<TrustStatement> trustSource;
@@ -170,6 +171,24 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         final currentToken = _latestRequestedToken;
         final currentMeToken = _latestRequestedMeToken;
         
+        List<String>? meKeys;
+        List<String>? additionalIdentityKeys;
+        List<String>? additionalAppKeys;
+
+        if (currentMeToken != null && currentMeToken == signInState.identity) {
+           final delegate = signInState.delegate;
+           meKeys = [currentMeToken];
+           additionalIdentityKeys = [currentMeToken];
+           // Also fetch meToken from App Source (nerdster.org)
+           // This allows identities to host content on the app even if they are identities.
+           additionalAppKeys = [currentMeToken];
+           
+           if (delegate != null) {
+             meKeys.add(delegate);
+             additionalAppKeys!.add(delegate);
+           }
+        }
+        
         if (currentToken == null) {
           debugPrint('V2FeedController: rootToken is null, clearing model');
           value = null;
@@ -205,7 +224,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         identitySource: identityContentSource,
         appSource: appContentSource,
       );
-      final contentMap = await contentPipeline.fetchContentMap(graph, delegateResolver);
+      final contentMap = await contentPipeline.fetchContentMap(
+        graph, 
+        delegateResolver,
+        additionalIdentityKeys: additionalIdentityKeys,
+        additionalAppKeys: additionalAppKeys,
+      );
       debugPrint('V2FeedController: ContentMap has ${contentMap.length} entries');
       progress.value = 0.6;
 
@@ -233,6 +257,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         contentMap,
         enableCensorship: _enableCensorship,
         meToken: currentMeToken,
+        meKeys: meKeys,
       );
       debugPrint('V2FeedController: Aggregation has ${aggregation.statements.length} statements');
       progress.value = 0.95;

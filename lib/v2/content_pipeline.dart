@@ -12,7 +12,11 @@ class ContentPipeline {
   /// Fetches content based on the TrustGraph and DelegateResolver.
   /// Returns a map of Token -> List of ContentStatements.
   Future<Map<String, List<ContentStatement>>> fetchContentMap(
-      TrustGraph graph, DelegateResolver delegateResolver) async {
+    TrustGraph graph,
+    DelegateResolver delegateResolver, {
+    List<String>? additionalIdentityKeys,
+    List<String>? additionalAppKeys,
+  }) async {
     // 1. Identify Trusted Users
     // We only care about users who are trusted (distance < maxDegrees, which is implicit in the graph)
     // and NOT blocked.
@@ -47,6 +51,18 @@ class ContentPipeline {
       }
     }
 
+    // Add additional keys (e.g. "me" and my delegate)
+    if (additionalIdentityKeys != null) {
+      for (final key in additionalIdentityKeys) {
+        identityFetchMap[key] = null;
+      }
+    }
+    if (additionalAppKeys != null) {
+      for (final key in additionalAppKeys) {
+        appFetchMap[key] = null;
+      }
+    }
+
     // 3. Fetch Content from both sources in parallel
     final List<Map<String, List<ContentStatement>>> results =
         await Future.wait([
@@ -67,8 +83,10 @@ class ContentPipeline {
       final bool isTrustedIdentity = graph.isTrusted(key);
       final bool isAuthorizedDelegate =
           delegateResolver.getIdentityForDelegate(key) != null;
+      final bool isAdditional = (additionalIdentityKeys?.contains(key) ?? false) ||
+          (additionalAppKeys?.contains(key) ?? false);
 
-      if (!isTrustedIdentity && !isAuthorizedDelegate) {
+      if (!isTrustedIdentity && !isAuthorizedDelegate && !isAdditional) {
         throw 'Pipeline Error: Source returned content from unauthorized key: $key';
       }
 

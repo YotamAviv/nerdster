@@ -33,11 +33,8 @@ void main() async {
     
     // 1. Build TrustGraph (Identity Layer)
     final Map<String, List<TrustStatement>> allTrustStatements = {};
-    for (final DemoKey dk in DemoKey.all) {
-      final List<TrustStatement> statements = dk.trustStatements;
-      if (statements.isNotEmpty) {
-        allTrustStatements[dk.token] = statements;
-      }
+    for (final DemoKey dk in DemoKey.all.where((k) => k.isIdentity)) {
+      allTrustStatements[dk.token] = dk.trustStatements;
     }
 
     final TrustGraph trustGraph = reduceTrustGraph(
@@ -51,11 +48,8 @@ void main() async {
 
     // 2. Build FollowNetwork for <nerdster> context
     final Map<String, List<ContentStatement>> allContentStatements = {};
-    for (final DemoKey dk in DemoKey.all) {
-      final List<ContentStatement> statements = dk.contentStatements;
-      if (statements.isNotEmpty) {
-        allContentStatements[dk.token] = statements;
-      }
+    for (final DemoKey dk in DemoKey.all.where((k) => k.isDelegate)) {
+      allContentStatements[dk.token] = dk.contentStatements;
     }
 
     final FollowNetwork followNet = reduceFollowNetwork(
@@ -93,9 +87,11 @@ void main() async {
 
     final Map<String, List<TrustStatement>> allTrustStatements = {};
     final Map<String, List<ContentStatement>> allContentStatements = {};
-    for (final DemoKey dk in DemoKey.all) {
-      if (dk.trustStatements.isNotEmpty) allTrustStatements[dk.token] = dk.trustStatements;
-      if (dk.contentStatements.isNotEmpty) allContentStatements[dk.token] = dk.contentStatements;
+    for (final DemoKey dk in DemoKey.all.where((k) => k.isIdentity)) {
+      allTrustStatements[dk.token] = dk.trustStatements;
+    }
+    for (final DemoKey dk in DemoKey.all.where((k) => k.isDelegate)) {
+      allContentStatements[dk.token] = dk.contentStatements;
     }
 
     final DemoKey margeN = DemoKey.findByName('marge-nerdster0')!;
@@ -138,11 +134,8 @@ void main() async {
     final DemoKey bart = DemoKey.findByName('bart')!;
     
     final Map<String, List<TrustStatement>> allTrustStatements = {};
-    for (final DemoKey dk in DemoKey.all) {
-      final List<TrustStatement> statements = dk.trustStatements;
-      if (statements.isNotEmpty) {
-        allTrustStatements[dk.token] = statements;
-      }
+    for (final DemoKey dk in DemoKey.all.where((k) => k.isIdentity)) {
+      allTrustStatements[dk.token] = dk.trustStatements;
     }
 
     final TrustGraph trustGraph = reduceTrustGraph(
@@ -153,11 +146,8 @@ void main() async {
     final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
 
     final Map<String, List<ContentStatement>> allContentStatements = {};
-    for (final DemoKey dk in DemoKey.all) {
-      final List<ContentStatement> statements = dk.contentStatements;
-      if (statements.isNotEmpty) {
-        allContentStatements[dk.token] = statements;
-      }
+    for (final DemoKey dk in DemoKey.all.where((k) => k.isDelegate)) {
+      allContentStatements[dk.token] = dk.contentStatements;
     }
 
     // 'family' is a custom follow context used in the Simpsons demo data
@@ -216,7 +206,7 @@ void main() async {
     await lisaN.doRate(subject: spam, censor: true);
 
     final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -275,7 +265,7 @@ void main() async {
     await homerN.doFollow(lisa.token, {'news': 1});
     
     final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -292,7 +282,7 @@ void main() async {
     final ContentStatement homerRate = await homerN.doRate(subject: spamUrl, recommend: true);
 
     // Rebuild map to include new statements
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -316,7 +306,7 @@ void main() async {
     final ContentStatement bartCensorship = await bartN.doRate(subject: spamUrl, censor: true);
     
     // Rebuild map again
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -331,7 +321,7 @@ void main() async {
     final ContentStatement lisaCensorsBartCensorship = await lisaN.doRate(subject: bartCensorship.token, censor: true);
 
     // Rebuild map again
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -384,7 +374,7 @@ void main() async {
     await bartDelegate.doRate(subject: news, recommend: true);
 
     final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartDelegate]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartDelegate].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -435,7 +425,7 @@ void main() async {
     await homerN.doFollow(lisa.token, {'news': 1});
     
     final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -452,7 +442,7 @@ void main() async {
     final ContentStatement homerRate = await homerN.doRate(subject: spamUrl, recommend: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -475,7 +465,7 @@ void main() async {
     final ContentStatement bartCensorship = await bartN.doRate(subject: spamUrl, censor: true);
     
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -493,7 +483,7 @@ void main() async {
     final ContentStatement lisaCensorsBartCensorship = await lisaN.doRate(subject: bartCensorship.token, censor: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -537,7 +527,7 @@ void main() async {
     await homerN.doFollow(lisa.token, {newsContext: 1});
 
     final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -556,7 +546,7 @@ void main() async {
     final ContentStatement censor2 = await lisaN.doRate(subject: subject2, censor: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -577,7 +567,7 @@ void main() async {
     final ContentStatement censorRelate = await lisaN.doRate(subject: relate13.token, censor: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -612,7 +602,7 @@ void main() async {
     await homerN.doFollow(bart.token, {newsContext: 1});
 
     final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 
@@ -632,7 +622,7 @@ void main() async {
     await homerN.doRate(subject: subject1, dismiss: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN]) {
+    for (final DemoKey dk in [homer, homerN, bart, bartN].where((k) => k.isDelegate)) {
       allStatementsByToken[dk.token] = dk.contentStatements;
     }
 

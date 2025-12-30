@@ -282,54 +282,40 @@ class _ContentCardState extends State<ContentCard> {
     final hasPrior = widget.aggregation.statements.any((s) => 
       widget.model.labeler.getIdentityForToken(s.iToken) == signInState.identity);
 
+    IconData icon;
+    Color? color;
+    String tooltip;
+
+    if (userLike) {
+      icon = Icons.thumb_up;
+      color = Colors.green;
+      tooltip = 'You liked this';
+    } else if (userDislike) {
+      icon = Icons.thumb_down;
+      color = Colors.red;
+      tooltip = 'You disliked this';
+    } else if (userDismissed) {
+      icon = Icons.swipe_left;
+      color = Colors.brown;
+      tooltip = 'You dismissed this';
+    } else if (hasPrior) {
+      icon = Icons.comment;
+      color = Colors.blue;
+      tooltip = 'You commented on this';
+    } else {
+      icon = Icons.rate_review_outlined;
+      color = null;
+      tooltip = 'React';
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (hasPrior)
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.cancel_outlined),
-            tooltip: 'Clear my rating',
-            onPressed: _clear,
-          ),
         IconButton(
           visualDensity: VisualDensity.compact,
-          icon: Icon(
-            userLike ? Icons.thumb_up : Icons.thumb_up_outlined,
-            color: userLike ? Colors.green : null,
-          ),
-          tooltip: 'Like',
-          onPressed: () => _rate(true),
-        ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: Icon(
-            userDislike ? Icons.thumb_down : Icons.thumb_down_outlined,
-            color: userDislike ? Colors.red : null,
-          ),
-          tooltip: 'Dislike',
-          onPressed: () => _rate(false),
-        ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: const Icon(Icons.comment_outlined),
-          tooltip: 'Comment',
-          onPressed: _comment,
-        ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: Icon(
-            userDismissed ? Icons.swipe_left : Icons.swipe_left_outlined,
-            color: userDismissed ? Colors.brown : null,
-          ),
-          tooltip: 'Dismiss (I don\'t care to see this again)',
-          onPressed: _dismiss,
-        ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: const Icon(Icons.delete, color: Colors.red),
-          tooltip: 'Censor this subject for everybody (who cares)',
-          onPressed: _censor,
+          icon: Icon(icon, color: color),
+          tooltip: tooltip,
+          onPressed: _react,
         ),
       ],
     );
@@ -352,57 +338,13 @@ class _ContentCardState extends State<ContentCard> {
     return true;
   }
 
-  Future<void> _rate(bool like) async {
+  Future<void> _react() async {
     if (!_checkDelegate()) return;
     await V2RateDialog.show(
       context,
       widget.aggregation,
       widget.model,
-      intent: like ? RateIntent.like : RateIntent.dislike,
-      onRefresh: widget.onRefresh,
-    );
-  }
-
-  Future<void> _clear() async {
-    if (!_checkDelegate()) return;
-    await V2RateDialog.show(
-      context,
-      widget.aggregation,
-      widget.model,
-      intent: RateIntent.clear,
-      onRefresh: widget.onRefresh,
-    );
-  }
-
-  Future<void> _dismiss() async {
-    if (!_checkDelegate()) return;
-    await V2RateDialog.show(
-      context,
-      widget.aggregation,
-      widget.model,
-      intent: RateIntent.dismiss,
-      onRefresh: widget.onRefresh,
-    );
-  }
-
-  Future<void> _comment() async {
-    if (!_checkDelegate()) return;
-    await V2RateDialog.show(
-      context,
-      widget.aggregation,
-      widget.model,
-      intent: RateIntent.comment,
-      onRefresh: widget.onRefresh,
-    );
-  }
-
-  Future<void> _censor() async {
-    if (!_checkDelegate()) return;
-    await V2RateDialog.show(
-      context,
-      widget.aggregation,
-      widget.model,
-      intent: RateIntent.censor,
+      intent: RateIntent.none,
       onRefresh: widget.onRefresh,
     );
   }

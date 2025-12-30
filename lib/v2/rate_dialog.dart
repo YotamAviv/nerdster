@@ -259,6 +259,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
         text: 'Like',
         tooltipText: 'Like or dislike',
         color: Colors.green,
+        key2colors: const {true: Colors.green, false: Colors.red},
         callback: listener,
         disabled: !editingEnabled);
     OnOffIcon disButton = OnOffIcon(dis, Icons.swipe_left, Icons.swipe_left_outlined,

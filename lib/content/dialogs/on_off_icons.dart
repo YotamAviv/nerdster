@@ -9,10 +9,11 @@ class OnOffIcons extends StatefulWidget {
   final Map<Object, (IconData, IconData)> key2icons;
   final String? text;
   final Color? color;
+  final Map<Object, Color>? key2colors;
   final bool? disabled;
   final VoidCallback? callback;
   const OnOffIcons(this.valueNotifier, this.key2icons,
-      {required this.tooltipText, super.key, this.text, this.color, this.disabled, this.callback});
+      {required this.tooltipText, super.key, this.text, this.color, this.key2colors, this.disabled, this.callback});
 
   @override
   State<StatefulWidget> createState() {
@@ -59,10 +60,11 @@ class _State extends State<OnOffIcons> {
       var key = e.key;
       var icons = e.value;
       IconData iconData = widget.valueNotifier.value == e.key ? icons.$1 : icons.$2;
+      Color? color = widget.key2colors?[key] ?? widget.color;
       buttons.add(IconButton(
           padding: EdgeInsets.zero,
           onPressed: bb(widget.disabled) ? null : () => onPressed(key),
-          color: widget.color,
+          color: color,
           icon: Icon(iconData)));
     }
     TextStyle? textStyle = bb(widget.disabled) ? hintStyle : null;

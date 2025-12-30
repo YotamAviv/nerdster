@@ -5,6 +5,11 @@ import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
 
+bool _isStatement(String token) {
+  final j = Jsonish.find(token);
+  return j != null && j.containsKey('statement');
+}
+
 dynamic _bestSubject(dynamic current, dynamic candidate) {
   if (candidate == null) return current;
   if (current is! Map && candidate is Map) return candidate;
@@ -27,17 +32,21 @@ ContentAggregation reduceContentAggregation(
   Map<String, List<ContentStatement>> byToken, {
   bool enableCensorship = true,
   String? meToken,
+  List<String>? meKeys,
 }) {
   final Set<String> censored = {};
   
   // 1. Decentralized Censorship (Proximity Wins)
   if (enableCensorship) {
     // Process identities in trust order (discovery order in FollowNetwork)
-    for (final String identity in followNetwork.identities) {
+    final List<String> identitiesToProcess = [...followNetwork.identities];
+
+    for (final String identity in identitiesToProcess) {
       final List<String> allKeys = [
         ...trustGraph.getEquivalenceGroup(identity),
         ...delegateResolver.getDelegatesForIdentity(identity),
       ];
+
       final List<Iterable<ContentStatement>> sources = [];
       for (final String key in allKeys) {
         if (byToken.containsKey(key)) sources.add(byToken[key]!);
@@ -60,11 +69,14 @@ ContentAggregation reduceContentAggregation(
   final List<ContentStatement> filteredStatements = [];
   final Map<String, List<ContentStatement>> filteredByIdentity = {};
 
-  for (final String identity in followNetwork.identities) {
+  final List<String> identitiesToProcess = [...followNetwork.identities];
+
+  for (final String identity in identitiesToProcess) {
     final List<String> allKeys = [
       ...trustGraph.getEquivalenceGroup(identity),
       ...delegateResolver.getDelegatesForIdentity(identity),
     ];
+
     final List<Iterable<ContentStatement>> sources = [];
     for (final String key in allKeys) {
       if (byToken.containsKey(key)) {
@@ -86,6 +98,41 @@ ContentAggregation reduceContentAggregation(
 
       filteredStatements.add(s);
       filteredByIdentity.putIfAbsent(identity, () => []).add(s);
+    }
+  }
+
+  // 2b. Collect My Statements (Separately)
+  //
+  // Rationale:
+  // When viewing the feed from another Point of View (PoV), the current user ("Me")
+  // might not be in the PoV's trust network. If "Me" is not trusted, my statements
+  // (ratings, comments) should NOT affect the feed's content, sort order, or aggregate scores
+  // (likes/dislikes). The user should see the feed exactly as the PoV sees it.
+  //
+  // However, the UI still needs to display the user's own state (e.g., "You rated this",
+  // "You commented"). Therefore, we fetch and aggregate "Me's" statements separately
+  // and overlay them into the `myDelegateStatements` field of the SubjectAggregation.
+  //
+  // This ensures:
+  // 1. Purity of the PoV's view (no pollution from untrusted "Me").
+  // 2. Availability of "Me's" data for UI widgets.
+  final List<ContentStatement> myFilteredStatements = [];
+  if (meKeys != null) {
+    final List<Iterable<ContentStatement>> sources = [];
+    for (final String key in meKeys) {
+      if (byToken.containsKey(key)) {
+        sources.add(byToken[key]!);
+      }
+    }
+    final Iterable<ContentStatement> statements = Merger.merge(sources);
+    for (final ContentStatement s in statements) {
+      if (s.verb == ContentVerb.follow) continue;
+      if (enableCensorship) {
+        if (censored.contains(s.token)) continue;
+        if (censored.contains(s.subjectToken)) continue;
+        if (s.other != null && censored.contains(getToken(s.other))) continue;
+      }
+      myFilteredStatements.add(s);
     }
   }
 
@@ -213,8 +260,12 @@ ContentAggregation reduceContentAggregation(
         s.verb == ContentVerb.rate ||
         s.verb == ContentVerb.relate ||
         s.verb == ContentVerb.dontRelate) {
-      topLevelSubjects.add(canonical1);
-      if (canonical2 != null) topLevelSubjects.add(canonical2);
+      if (!_isStatement(canonical1)) {
+        topLevelSubjects.add(canonical1);
+      }
+      if (canonical2 != null && !_isStatement(canonical2)) {
+        topLevelSubjects.add(canonical2);
+      }
     }
   }
 
@@ -301,6 +352,7 @@ ContentAggregation reduceContentAggregation(
           dislikes: dislikes,
           lastActivity: lastActivity,
           related: relatedSet,
+          myDelegateStatements: agg.myDelegateStatements,
           userDismissalTimestamp: userDismissalTimestamp,
           povDismissalTimestamp: povDismissalTimestamp,
           isCensored: censored.contains(canonical) || censored.contains(s.subjectToken),
@@ -308,6 +360,57 @@ ContentAggregation reduceContentAggregation(
           isRated: isRated,
         );
       }
+    }
+  }
+
+  // Pass 2b: Aggregate My Statements
+  for (final ContentStatement s in myFilteredStatements) {
+    final String canonical1 = equivalence[s.subjectToken] ?? s.subjectToken;
+    final String? canonical2 =
+        s.other != null ? (equivalence[getToken(s.other)] ?? getToken(s.other)) : null;
+
+    final List<String> targets = [canonical1];
+    if (canonical2 != null && canonical2 != canonical1) {
+      targets.add(canonical2);
+    }
+
+    for (final String canonical in targets) {
+      // Only aggregate if this canonical token is a top-level subject.
+      if (!topLevelSubjects.contains(canonical)) continue;
+
+      // If the subject doesn't exist in the aggregation (because PoV doesn't see it),
+      // we skip it. "I should see their view exactly as they would".
+      if (!subjects.containsKey(canonical)) continue;
+
+      final SubjectAggregation agg = subjects[canonical]!;
+
+      // Update dismissal timestamps
+      DateTime? userDismissalTimestamp = agg.userDismissalTimestamp;
+      if (s.dismiss == true) {
+        if (userDismissalTimestamp == null || s.time.isAfter(userDismissalTimestamp)) {
+          userDismissalTimestamp = s.time;
+        }
+      }
+
+      // Update myDelegateStatements
+      final List<ContentStatement> myDelegateStatements = [...agg.myDelegateStatements, s];
+
+      subjects[canonical] = SubjectAggregation(
+        canonicalToken: agg.canonicalToken,
+        subject: agg.subject,
+        statements: agg.statements,
+        tags: agg.tags,
+        likes: agg.likes,
+        dislikes: agg.dislikes,
+        lastActivity: agg.lastActivity,
+        related: agg.related,
+        myDelegateStatements: myDelegateStatements,
+        userDismissalTimestamp: userDismissalTimestamp,
+        povDismissalTimestamp: agg.povDismissalTimestamp,
+        isCensored: agg.isCensored,
+        isDismissed: agg.isDismissed,
+        isRated: agg.isRated,
+      );
     }
   }
 
@@ -347,6 +450,7 @@ ContentAggregation reduceContentAggregation(
       dislikes: agg.dislikes,
       lastActivity: agg.lastActivity,
       related: agg.related,
+      myDelegateStatements: agg.myDelegateStatements,
       userDismissalTimestamp: agg.userDismissalTimestamp,
       povDismissalTimestamp: agg.povDismissalTimestamp,
       isCensored: agg.isCensored,
