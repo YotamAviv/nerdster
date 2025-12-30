@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:nerdster/v2/source_factory.dart';
+import 'package:nerdster/content/dialogs/relate_dialog.dart';
+import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/singletons.dart';
@@ -10,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/json_display.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/setting_type.dart';
 
 class ContentCard extends StatefulWidget {
@@ -19,6 +24,8 @@ class ContentCard extends StatefulWidget {
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String?>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
+  final String? markedSubjectToken;
+  final ValueChanged<String?>? onMark;
 
   const ContentCard({
     super.key,
@@ -28,6 +35,8 @@ class ContentCard extends StatefulWidget {
     this.onPovChange,
     this.onTagTap,
     this.onGraphFocus,
+    this.markedSubjectToken,
+    this.onMark,
   });
 
   @override
@@ -75,6 +84,61 @@ class _ContentCardState extends State<ContentCard> {
     });
   }
 
+  void _showInspectionSheet(String token) {
+    final agg = widget.model.aggregation.subjects[token];
+    if (agg == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: SingleChildScrollView(
+                controller: scrollController,
+                child: ContentCard(
+                  aggregation: agg,
+                  model: widget.model,
+                  onRefresh: widget.onRefresh,
+                  onPovChange: widget.onPovChange,
+                  onTagTap: widget.onTagTap,
+                  onGraphFocus: widget.onGraphFocus,
+                  markedSubjectToken: widget.markedSubjectToken,
+                  onMark: widget.onMark,
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showStatementDialog(BuildContext context, ContentStatement s) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Statement Details'),
+        content: SingleChildScrollView(
+          child: Text(s.jsonish.ppJson),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final subject = widget.aggregation.subject;
@@ -97,6 +161,7 @@ class _ContentCardState extends State<ContentCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildActionBar(),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -151,9 +216,9 @@ class _ContentCardState extends State<ContentCard> {
                       ],
                     ),
                   ),
-                  _buildTrustSummary(),
                 ],
               ),
+              _buildEquivalentSubjects(),
               if (widget.aggregation.tags.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -162,9 +227,9 @@ class _ContentCardState extends State<ContentCard> {
                     children: widget.aggregation.tags.map((tag) => Text('#$tag', style: const TextStyle(color: Colors.blue))).toList(),
                   ),
                 ),
+              _buildRelatedSubjects(),
               const Divider(),
-              _buildTopComments(),
-              _buildActionBar(),
+              _buildBriefHistory(),
               if (_expanded) ...[
                 const Divider(),
                 SubjectDetailsView(
@@ -174,6 +239,9 @@ class _ContentCardState extends State<ContentCard> {
                   onPovChange: widget.onPovChange,
                   onTagTap: widget.onTagTap,
                   onGraphFocus: widget.onGraphFocus,
+                  onMark: widget.onMark,
+                  markedSubjectToken: widget.markedSubjectToken,
+                  onInspect: _showInspectionSheet,
                 ),
               ],
             ],
@@ -204,9 +272,8 @@ class _ContentCardState extends State<ContentCard> {
     );
   }
 
-  Widget _buildTopComments() {
+  Widget _buildBriefHistory() {
     final comments = widget.aggregation.statements
-        .where((s) => s.comment != null && s.comment!.isNotEmpty)
         .where((s) => _shouldShowStatement(s, widget.model))
         .toList();
 
@@ -225,38 +292,265 @@ class _ContentCardState extends State<ContentCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: topComments.map((s) {
         final label = widget.model.labeler.getLabel(s.iToken);
+        
+        // Icons for reaction
+        final List<Widget> icons = [];
+        if (s.like == true) icons.add(const Icon(Icons.thumb_up, size: 12, color: Colors.green));
+        if (s.like == false) icons.add(const Icon(Icons.thumb_down, size: 12, color: Colors.red));
+        if (s.comment != null && s.comment!.isNotEmpty) icons.add(const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey));
+        if (s.dismiss == true) icons.add(const Icon(Icons.swipe_left, size: 12, color: Colors.brown));
+
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 2.0),
-          child: Text.rich(
-            TextSpan(
+          child: Row(
+            children: [
+              InkWell(
+                onTap: () => widget.onGraphFocus?.call(s.iToken),
+                child: Text(
+                  '$label: ',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+              if (icons.isNotEmpty) ...[
+                const Text('[', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                ...icons.expand((i) => [i, const SizedBox(width: 2)]).take(icons.length * 2 - 1),
+                const Text('] ', style: TextStyle(color: Colors.grey, fontSize: 12)),
+              ],
+              Expanded(
+                child: Text(
+                  s.comment ?? (s.like == true ? 'Liked' : (s.like == false ? 'Disliked' : 'Reacted')),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildEquivalentSubjects() {
+    // Find all subjects that are equivalent to this one
+    final equivalentTokens = widget.model.aggregation.equivalence.entries
+        .where((e) => e.value == widget.aggregation.canonicalToken && e.key != widget.aggregation.canonicalToken)
+        .map((e) => e.key)
+        .toSet();
+
+    if (equivalentTokens.isEmpty) return const SizedBox.shrink();
+
+    // We need to find the titles for these tokens.
+    // We can look at the statements in the aggregation to find the subjects.
+    final Map<String, String> tokenToTitle = {};
+    final equateStatements = <String, List<ContentStatement>>{};
+
+    for (final s in widget.aggregation.statements) {
+      if (equivalentTokens.contains(s.subjectToken)) {
+        final subject = s.subject;
+        final title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
+        tokenToTitle[s.subjectToken] = title;
+      }
+      
+      if (s.verb == ContentVerb.equate) {
+        final otherToken = getToken(s.other);
+        if (equivalentTokens.contains(s.subjectToken)) {
+          equateStatements.putIfAbsent(s.subjectToken, () => []).add(s);
+        }
+        if (equivalentTokens.contains(otherToken)) {
+          equateStatements.putIfAbsent(otherToken, () => []).add(s);
+        }
+      }
+    }
+
+    return ExpansionTile(
+      title: Text('Equivalents: ${equivalentTokens.length}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      children: tokenToTitle.entries.map((e) {
+        final statements = equateStatements[e.key] ?? [];
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              dense: true,
+              title: InkWell(
+                onTap: () => _showInspectionSheet(e.key),
+                child: Text(
+                  e.value,
+                  style: const TextStyle(
+                    decoration: TextDecoration.underline,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              trailing: widget.onMark != null
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.link,
+                        color: widget.markedSubjectToken == e.key ? Colors.orange : Colors.grey,
+                      ),
+                      onPressed: () => widget.onMark!(e.key),
+                      tooltip: widget.markedSubjectToken == e.key ? 'Unmark' : 'Mark to Un-Equate',
+                    )
+                  : null,
+            ),
+            ...statements.map((s) {
+               final identity = widget.model.labeler.getIdentityForToken(s.iToken);
+               final authorName = widget.model.labeler.getLabel(s.iToken);
+               return Padding(
+                 padding: const EdgeInsets.only(left: 16.0, bottom: 4.0),
+                 child: Row(
+                   children: [
+                     InkWell(
+                       onTap: () => _showStatementDialog(context, s),
+                       child: const Icon(Icons.verified_user, color: Colors.blue, size: 16),
+                     ),
+                     const SizedBox(width: 4),
+                     const Text('Equated by: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                     InkWell(
+                       onTap: () {
+                         if (identity != null) widget.onGraphFocus?.call(identity);
+                       },
+                       child: Text(authorName, style: const TextStyle(fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
+                     ),
+                   ],
+                 ),
+               );
+            }),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildRelatedSubjects() {
+    if (widget.aggregation.related.isEmpty) return const SizedBox.shrink();
+
+    // Find statements that established these relationships
+    final relatedStatements = <String, List<ContentStatement>>{};
+    
+    for (final token in widget.aggregation.related) {
+      relatedStatements[token] = [];
+    }
+
+    // Check statements in this aggregation (where subject == this card)
+    for (final s in widget.aggregation.statements) {
+      if (s.verb == ContentVerb.relate && s.other != null) {
+        final otherToken = getToken(s.other);
+        // Filter out if it's an equivalent subject
+        if (widget.model.aggregation.equivalence[otherToken] == widget.aggregation.canonicalToken) {
+          continue;
+        }
+        if (widget.aggregation.related.contains(otherToken)) {
+          relatedStatements[otherToken]?.add(s);
+        }
+      }
+    }
+
+    // Filter related tokens to exclude equivalents
+    final relatedTokens = widget.aggregation.related.where((token) => 
+      widget.model.aggregation.equivalence[token] != widget.aggregation.canonicalToken
+    ).toList();
+
+    if (relatedTokens.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Related:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          ...relatedTokens.map((token) {
+            final relatedAgg = widget.model.aggregation.subjects[token];
+            if (relatedAgg == null) return const SizedBox.shrink();
+            
+            final subject = relatedAgg.subject;
+            final title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
+            
+            final statements = relatedStatements[token] ?? [];
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: InkWell(
-                    onTap: () => widget.onGraphFocus?.call(s.iToken),
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: widget.onMark != null 
+                      ? IconButton(
+                          icon: Icon(
+                            Icons.link, 
+                            color: widget.markedSubjectToken == token ? Colors.orange : Colors.grey
+                          ),
+                          onPressed: () => widget.onMark!(token),
+                          tooltip: widget.markedSubjectToken == token ? 'Unmark' : 'Mark to Relate/Equate',
+                        ) 
+                      : null,
+                  title: InkWell(
+                    onTap: () => _showInspectionSheet(token),
                     child: Text(
-                      '$label: ',
+                      title,
                       style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
+                        color: Colors.black,
                         decoration: TextDecoration.underline,
                       ),
                     ),
                   ),
                 ),
-                WidgetSpan(
-                  child: CommentWidget(
-                    text: s.comment!,
-                    onHashtagTap: (tag, _) => widget.onTagTap?.call(tag),
-                  ),
-                ),
+                ...statements.map((s) {
+                   final identity = widget.model.labeler.getIdentityForToken(s.iToken);
+                   final authorName = widget.model.labeler.getLabel(s.iToken);
+                   final isMe = identity == signInState.identity;
+                   return Padding(
+                     padding: const EdgeInsets.only(left: 16.0, bottom: 4.0),
+                     child: Row(
+                       children: [
+                         InkWell(
+                           onTap: () => _showStatementDialog(context, s),
+                           child: const Icon(Icons.verified_user, color: Colors.blue, size: 16),
+                         ),
+                         const SizedBox(width: 4),
+                         const Text('Related by: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                         InkWell(
+                           onTap: () {
+                             if (identity != null) widget.onGraphFocus?.call(identity);
+                           },
+                           child: Text(authorName, style: const TextStyle(fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
+                         ),
+                         if (isMe) ...[
+                           const SizedBox(width: 8),
+                           InkWell(
+                             onTap: () async {
+                               Json? json = await RelateDialog(
+                                 widget.aggregation.subject,
+                                 relatedAgg.subject,
+                                 s,
+                                 initialVerb: ContentVerb.clear,
+                               ).show(context);
+                               if (json != null) {
+                                 try {
+                                   await SourceFactory.getWriter(kNerdsterDomain, context: context).push(json, signInState.signer!);
+                                   widget.onRefresh?.call();
+                                 } catch (_) {
+                                   // Cancelled
+                                 }
+                               }
+                             },
+                             child: const Icon(Icons.close, color: Colors.red, size: 16),
+                           ),
+                         ],
+                       ],
+                     ),
+                   );
+                }),
               ],
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        );
-      }).toList(),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -273,50 +567,52 @@ class _ContentCardState extends State<ContentCard> {
       );
     }
 
-    final userLike = widget.aggregation.statements.any((s) => 
-      s.like == true && widget.model.labeler.getIdentityForToken(s.iToken) == signInState.identity);
-    final userDislike = widget.aggregation.statements.any((s) => 
-      s.like == false && widget.model.labeler.getIdentityForToken(s.iToken) == signInState.identity);
-    final userDismissed = widget.aggregation.statements.any((s) => 
-      s.dismiss == true && widget.model.labeler.getIdentityForToken(s.iToken) == signInState.identity);
-    final hasPrior = widget.aggregation.statements.any((s) => 
-      widget.model.labeler.getIdentityForToken(s.iToken) == signInState.identity);
+    final myStatements = widget.aggregation.statements.where((s) => 
+      widget.model.labeler.getIdentityForToken(s.iToken) == signInState.identity
+    ).toList();
+    
+    // Sort by time descending to find the latest
+    myStatements.sort((a, b) => b.time.compareTo(a.time));
+    
+    final hasPrior = myStatements.any((s) => s.verb == ContentVerb.rate);
 
-    IconData icon;
+    IconData icon = Icons.rate_review_outlined;
     Color? color;
     String tooltip;
 
-    if (userLike) {
-      icon = Icons.thumb_up;
-      color = Colors.green;
-      tooltip = 'You liked this';
-    } else if (userDislike) {
-      icon = Icons.thumb_down;
-      color = Colors.red;
-      tooltip = 'You disliked this';
-    } else if (userDismissed) {
-      icon = Icons.swipe_left;
-      color = Colors.brown;
-      tooltip = 'You dismissed this';
-    } else if (hasPrior) {
-      icon = Icons.comment;
+    if (hasPrior) {
       color = Colors.blue;
-      tooltip = 'You commented on this';
+      tooltip = 'You reacted to this';
     } else {
-      icon = Icons.rate_review_outlined;
-      color = null;
+      color = Colors.grey;
       tooltip = 'React';
     }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
+        if (widget.onMark != null)
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(
+              Icons.link,
+              color: widget.markedSubjectToken == widget.aggregation.canonicalToken
+                  ? Colors.orange
+                  : Colors.grey,
+            ),
+            tooltip: widget.markedSubjectToken == widget.aggregation.canonicalToken
+                ? 'Unmark'
+                : 'Mark to Relate/Equate',
+            onPressed: () => widget.onMark!(widget.aggregation.canonicalToken),
+          ),
         IconButton(
           visualDensity: VisualDensity.compact,
           icon: Icon(icon, color: color),
           tooltip: tooltip,
           onPressed: _react,
         ),
+        const SizedBox(width: 8),
+        _buildTrustSummary(),
       ],
     );
   }
@@ -357,6 +653,9 @@ class SubjectDetailsView extends StatelessWidget {
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
+  final ValueChanged<String>? onMark;
+  final String? markedSubjectToken;
+  final ValueChanged<String>? onInspect;
 
   const SubjectDetailsView({
     super.key,
@@ -366,6 +665,9 @@ class SubjectDetailsView extends StatelessWidget {
     this.onPovChange,
     this.onTagTap,
     this.onGraphFocus,
+    this.onMark,
+    this.markedSubjectToken,
+    this.onInspect,
   });
 
   @override
@@ -429,6 +731,57 @@ class SubjectDetailsView extends StatelessWidget {
     final label = model.labeler.getLabel(s.iToken);
     final isMe = signInState.identity != null && model.labeler.getIdentityForToken(s.iToken) == signInState.identity;
 
+    // Determine current user's reaction to this statement
+    final myReplies = aggregation.statements.where((r) => 
+      r.subjectToken == s.token && 
+      signInState.identity != null && 
+      model.labeler.getIdentityForToken(r.iToken) == signInState.identity
+    ).toList();
+
+    IconData icon = Icons.rate_review_outlined;
+    Color? color;
+    String tooltip;
+    
+    if (myReplies.isNotEmpty) {
+      color = Colors.blue;
+      tooltip = 'You replied to this';
+    } else {
+      color = Colors.grey;
+      tooltip = 'React';
+    }
+
+    // Construct the action text (Verb)
+    String actionText = '';
+    String? otherTitle;
+    
+    if (s.verb == ContentVerb.rate) {
+      if (s.like == true) actionText = 'liked';
+      else if (s.like == false) actionText = 'disliked';
+      else if (s.dismiss == true) actionText = 'dismissed';
+      else actionText = 'commented on';
+    } else if (s.verb == ContentVerb.relate) {
+      actionText = 'related';
+    } else if (s.verb == ContentVerb.dontRelate) {
+      actionText = 'un-related';
+    } else if (s.verb == ContentVerb.equate) {
+      actionText = 'equated';
+    } else if (s.verb == ContentVerb.dontEquate) {
+      actionText = 'un-equated';
+    } else {
+      actionText = s.verb.label;
+    }
+
+    if (s.other != null) {
+      final otherToken = getToken(s.other);
+      final otherAgg = model.aggregation.subjects[otherToken];
+      if (otherAgg != null) {
+        final subject = otherAgg.subject;
+        otherTitle = (subject is Map) ? (subject['title'] ?? 'Untitled') : model.labeler.getLabel(subject.toString());
+      } else {
+        otherTitle = model.labeler.getLabel(otherToken);
+      }
+    }
+
     return Padding(
       padding: EdgeInsets.only(left: depth * 16.0),
       child: Card(
@@ -436,13 +789,6 @@ class SubjectDetailsView extends StatelessWidget {
         color: isMe ? Colors.blue[50] : Colors.grey[50],
         child: ListTile(
           dense: true,
-          leading: InkWell(
-            onTap: () => onGraphFocus?.call(s.iToken),
-            child: CircleAvatar(
-              radius: 16,
-              child: Text(label.isNotEmpty ? label[0] : '?', style: const TextStyle(fontSize: 12)),
-            ),
-          ),
           title: Row(
             children: [
               InkWell(
@@ -457,6 +803,40 @@ class SubjectDetailsView extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(width: 4),
+              if (s.like == true) ...[
+                const Icon(Icons.thumb_up, size: 12, color: Colors.green),
+                const SizedBox(width: 2),
+              ],
+              if (s.like == false) ...[
+                const Icon(Icons.thumb_down, size: 12, color: Colors.red),
+                const SizedBox(width: 2),
+              ],
+              if (s.comment != null && s.comment!.isNotEmpty) ...[
+                const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey),
+                const SizedBox(width: 2),
+              ],
+              const SizedBox(width: 2),
+              Text(actionText, style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+              if (otherTitle != null) ...[
+                const SizedBox(width: 4),
+                const Text('to', style: TextStyle(fontSize: 12)),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: InkWell(
+                    onTap: () {
+                      if (s.other != null && onInspect != null) {
+                         onInspect!(getToken(s.other));
+                      }
+                    },
+                    child: Text(
+                      otherTitle,
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
               const Spacer(),
               if (onPovChange != null)
                 IconButton(
@@ -465,25 +845,20 @@ class SubjectDetailsView extends StatelessWidget {
                   onPressed: () => onPovChange!(s.iToken),
                   visualDensity: VisualDensity.compact,
                 ),
-              IconButton(
-                icon: const Icon(Icons.cancel_outlined, size: 16),
-                tooltip: 'Clear my rating',
-                onPressed: () => V2RateDialog.show(
-                  context,
-                  SubjectAggregation(
-                    canonicalToken: s.token,
-                    subject: s.json,
-                    lastActivity: s.time,
+              if (onMark != null)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    Icons.link,
+                    size: 16,
+                    color: markedSubjectToken == s.token ? Colors.orange : Colors.grey,
                   ),
-                  model,
-                  intent: RateIntent.clear,
-                  onRefresh: onRefresh,
+                  tooltip: markedSubjectToken == s.token ? 'Unmark' : 'Mark to Relate/Equate',
+                  onPressed: () => onMark!(s.token),
                 ),
-                visualDensity: VisualDensity.compact,
-              ),
               IconButton(
-                icon: const Icon(Icons.thumb_up, size: 16, color: Colors.green),
-                tooltip: 'Like',
+                icon: Icon(icon, size: 16, color: color),
+                tooltip: tooltip,
                 onPressed: () => V2RateDialog.show(
                   context,
                   SubjectAggregation(
@@ -492,71 +867,7 @@ class SubjectDetailsView extends StatelessWidget {
                     lastActivity: s.time,
                   ),
                   model,
-                  intent: RateIntent.like,
-                  onRefresh: onRefresh,
-                ),
-                visualDensity: VisualDensity.compact,
-              ),
-              IconButton(
-                icon: const Icon(Icons.thumb_down, size: 16, color: Colors.orange),
-                tooltip: 'Dislike',
-                onPressed: () => V2RateDialog.show(
-                  context,
-                  SubjectAggregation(
-                    canonicalToken: s.token,
-                    subject: s.json,
-                    lastActivity: s.time,
-                  ),
-                  model,
-                  intent: RateIntent.dislike,
-                  onRefresh: onRefresh,
-                ),
-                visualDensity: VisualDensity.compact,
-              ),
-              IconButton(
-                icon: const Icon(Icons.comment, size: 16, color: Colors.blue),
-                tooltip: 'Comment',
-                onPressed: () => V2RateDialog.show(
-                  context,
-                  SubjectAggregation(
-                    canonicalToken: s.token,
-                    subject: s.json,
-                    lastActivity: s.time,
-                  ),
-                  model,
-                  intent: RateIntent.comment,
-                  onRefresh: onRefresh,
-                ),
-                visualDensity: VisualDensity.compact,
-              ),
-              IconButton(
-                icon: const Icon(Icons.swipe_left, size: 16, color: Colors.brown),
-                tooltip: 'Dismiss (I don\'t care to see this again)',
-                onPressed: () => V2RateDialog.show(
-                  context,
-                  SubjectAggregation(
-                    canonicalToken: s.token,
-                    subject: s.json,
-                    lastActivity: s.time,
-                  ),
-                  model,
-                  intent: RateIntent.dismiss,
-                  onRefresh: onRefresh,
-                ),
-                visualDensity: VisualDensity.compact,
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, size: 16, color: Colors.red),
-                tooltip: 'Censor this subject for everybody (who cares)',
-                onPressed: () => V2RateDialog.show(
-                  context,
-                  SubjectAggregation(
-                    canonicalToken: s.token,
-                    subject: s.json,
-                    lastActivity: s.time,
-                  ),
-                  model,
-                  intent: RateIntent.censor,
+                  intent: RateIntent.none,
                   onRefresh: onRefresh,
                 ),
                 visualDensity: VisualDensity.compact,
@@ -592,9 +903,6 @@ class SubjectDetailsView extends StatelessWidget {
                   onHashtagTap: (tag, _) => onTagTap?.call(tag),
                 )
               : null,
-          trailing: s.like == true
-              ? const Icon(Icons.thumb_up, color: Colors.green, size: 16)
-              : (s.like == false ? const Icon(Icons.thumb_down, color: Colors.red, size: 16) : null),
         ),
       ),
     );

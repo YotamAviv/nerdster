@@ -58,9 +58,23 @@ Each subject is represented by a card that aggregates the network's collective w
   - **Stock Images**: For common domains (New York Times, Wall Street Journal, YouTube, etc.), use a hardcoded stock image representing that publisher.
 - **Tags**: Aggregated hashtags from all trusted statements.
 
+### Relationships Display
+- **Equivalent Subjects**:
+  - **Header**: If the card aggregates multiple equivalent subjects, display a "Matches: [Count]" indicator (or similar). Hovering/clicking reveals the list of equivalent subjects.
+  - **List Items**: Each subject in the list displays its `title` and a **Linking Icon**.
+  - **Un-Equating**: Users can use the **Linking Icon** on a specific equivalent subject to mark it, then link it to the main card (or vice versa) to open the dialog and state `dontEquate`.
+  - **Attribution**: Ratings derived from an equivalent subject display a small icon or text (e.g., "via `title`") next to the author's name to indicate the source.
+- **Related Subjects**:
+  - **Footer/Metadata**: Display a horizontal list of related subjects at the bottom of the card content (before the comments).
+  - **Chips**: Each chip displays the subject's `title` and a **Linking Icon**.
+  - **Un-Relating**: Users can use the **Linking Icon** on a related subject chip to mark it, then link it to the main card to open the dialog and state `dontRelate`.
+  - **Navigation**: Clicking the subject text navigates to that subject's card.
+
 ### The "Review" Section
-- **Comment Tree**: Supports a nested tree of ratings (e.g., liking a comment, commenting on a dislike).
-  - **Style**: Indentation-based layout (Reddit-style).
+- **Rating Ratings**: The system supports rating any statement, not just top-level subjects (eg. Users can like/dislike another user's rating, comment on a rating, comment on a comment, etc..)
+- **Visualization**:
+  - **Comment Tree**: Supports a nested tree of ratings/comments.
+  - **Style**: Indentation-based layout (Reddit-style) to show the hierarchy.
 - **Main Feed Depth**: Initially show only the top 2 most recent comments/ratings from the most trusted contributors.
 - **Expanded View**: Inline expansion within the card shows the full tree.
   - Support scrolling for long threads.
@@ -69,10 +83,16 @@ Each subject is represented by a card that aggregates the network's collective w
 - **Link to Trust / Follow Graph**: Contributors are displayed using labeled names. Clicking a contributor's name opens the graph view focused on that person, showing the trust or follow paths from the current PoV.
 
 ### Action Bar
-- **Quick Rate**: Explicit Icon Buttons for Like, Dislike, and Dismiss.
-  - **Icons**: Uses legacy-style icons (`thumb_up`, `thumb_down`, `swipe_left` for dismiss, `delete` for censor).
-- **Comment**: Open a dialog to add your own rating or comment.
-- **Relate/Equate**: Tools to link this subject to others (accessible via context menu or expanded view).
+- **Single React Button**: A single icon button that opens the `V2RateDialog`.
+  - **State Indication**: The button indicates whether the signed-in user (not necessarily the PoV) has rated or interacted with the content at all, but does not reveal the specific nature of the rating (Like vs Dislike).
+    - **Has Rating**: `rate_review` (Active Color).
+    - **No Rating**: `rate_review_outlined` (Default Color).
+  - **Unified Colors**: The active color must be consistent across the UI.
+- **Linking Icon**: A toggleable icon button (e.g., `link`) to "mark" the subject for relating/equating.
+  - **State**: Indicates if the card is currently marked.
+- **Relate/Equate**: Tools to link this subject to others (accessible via the Mark & Relate workflow).
+  - **Visibility**: Users should be able to see if subjects are marked as equivalent.
+  - **Attribution**: Ratings on equivalent subjects are shown under the canonical subject, but the UI should indicate the source of the equivalence.
 
 ## Show Crypto
 When the menu setting to **Show Crypto** is on, show a special crypto icon (or similar indicator) throughout the interface.
@@ -81,10 +101,15 @@ When the menu setting to **Show Crypto** is on, show a special crypto icon (or s
 
 ## 3. Interactions & Navigation
 - **Mouse & Keyboard**: Primary interaction model.
-- **Icon Buttons**: All primary actions (Like, Dislike, Dismiss, Censor) are accessible via explicit buttons.
+- **Single React Button**: The primary action is the single "React" button which opens the Rate Dialog.
 - **Inline Expansion**: Tapping the card expands it inline to show the full history of statements. (Trust graph integration is planned for the future).
-- **Right Click / Context Menu**: Access advanced actions (Equate, Relate).
-  - **Implementation**: Uses `ContextMenuRegion` to provide a native-feeling desktop menu.
+- **Mark & Relate Workflow**:
+  - **Marking**: Click the **Linking Icon** on a card to "mark" it as the primary subject.
+    - **Visual Feedback**: The icon becomes active/filled, and the card receives a distinct border or highlight.
+    - **Unmarking**: Clicking the active Linking Icon again unmarks it.
+  - **Relating**: Click the **Linking Icon** on a *different* card while one is marked to initiate a relationship.
+    - **Action**: Opens the `RelateDialog` with the marked card as the `subject` and the second card as the `otherSubject`.
+    - **Outcome**: After the dialog closes (regardless of result), the mark is cleared.
 
 ## 4. Filtering & Sorting
 - **Tag Filtering**: Respect the global tag selection (e.g., `#nfl`, `#crypto`).

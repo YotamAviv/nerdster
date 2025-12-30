@@ -637,10 +637,11 @@ void main() async {
     expect(network.rootIdentity, homer.token);
     
     final SubjectAggregation agg = aggregation.subjects[sToken]!;
-    expect(agg.likes, equals(2));
+    // Homer's dismissal overwrites his previous like because they are the same subject (token vs map)
+    expect(agg.likes, equals(1)); 
     expect(agg.tags, contains('#news'));
     expect(agg.isDismissed, isTrue); // Dismissed by Homer (POV)
-    expect(agg.statements.length, equals(3));
+    expect(agg.statements.length, equals(2));
     
     // Verify bestSubject (should be the JSON, not the token string)
     expect(agg.subject, isA<Map>());

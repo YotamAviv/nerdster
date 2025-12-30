@@ -12,6 +12,7 @@ import 'package:nerdster/demotest/cases/large_graph.dart';
 import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
+import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/demotest/cases/v2_verification.dart';
@@ -54,6 +55,7 @@ class DemoKey {
   static final dynamic demos = {
     'largeGraph': largeGraph,
     'simpsonsDemo': simpsonsDemo,
+    'simpsonsRelateDemo': simpsonsRelateDemo,
     'basicScenario': testBasicScenario,
     'egosCorrupt': egosCorrupt,
     'lonerCorrupt': lonerCorrupt,

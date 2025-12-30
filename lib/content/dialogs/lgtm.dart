@@ -14,7 +14,7 @@ import 'package:nerdster/singletons.dart';
 
 class Lgtm {
   static Future<bool?> check(Json json, BuildContext context) async {
-    if (isSmall.value || Setting.get<bool>(SettingType.skipLgtm).value) return true;
+    if (Setting.get<bool>(SettingType.skipLgtm).value) return true;
 
     assert(b(signInState.delegate));
 

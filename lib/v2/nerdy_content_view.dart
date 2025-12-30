@@ -12,6 +12,7 @@ import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/v2/graph_view.dart';
 import 'package:nerdster/v2/follow_logic.dart';
+import 'package:nerdster/v2/relate_dialog.dart';
 import 'package:nerdster/app.dart';
 import 'refresh_signal.dart';
 import 'submit.dart';
@@ -28,6 +29,7 @@ class NerdyContentView extends StatefulWidget {
 class _NerdyContentViewState extends State<NerdyContentView> {
   late final V2FeedController _controller;
   String? _currentPov;
+  String? _markedSubjectToken;
 
   @override
   void initState() {
@@ -55,6 +57,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
       debugPrint('NerdyContentView: rootToken changed from ${oldWidget.rootToken} to ${widget.rootToken}');
       setState(() {
         _currentPov = widget.rootToken;
+        _markedSubjectToken = null;
       });
       // We use a small delay to ensure the previous refresh (if any) has a chance to see the loading state
       // or we can just call _controller.refresh directly which we will make smarter.
@@ -86,12 +89,56 @@ class _NerdyContentViewState extends State<NerdyContentView> {
     Setting.get<String?>(SettingType.pov).value = newToken;
     setState(() {
       _currentPov = newToken;
+      _markedSubjectToken = null;
     });
     _onRefresh();
   }
 
   void _onTagTap(String? tag) {
     _controller.tagFilter = tag;
+  }
+
+  void _onMark(String? token) {
+    if (token == null) {
+      setState(() {
+        _markedSubjectToken = null;
+      });
+      return;
+    }
+
+    if (_markedSubjectToken == token) {
+      // Unmark
+      setState(() {
+        _markedSubjectToken = null;
+      });
+    } else if (_markedSubjectToken == null) {
+      // Mark
+      setState(() {
+        _markedSubjectToken = token;
+      });
+    } else {
+      // Relate
+      final model = _controller.value;
+      if (model != null) {
+        final subject1 = model.aggregation.subjects[_markedSubjectToken];
+        final subject2 = model.aggregation.subjects[token];
+
+        if (subject1 != null && subject2 != null) {
+          V2RelateDialog.show(
+            context,
+            subject1,
+            subject2,
+            model,
+            onRefresh: () {
+              _onRefresh();
+              setState(() {
+                _markedSubjectToken = null;
+              });
+            },
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -397,6 +444,8 @@ class _NerdyContentViewState extends State<NerdyContentView> {
           onRefresh: _onRefresh,
           onPovChange: _changePov,
           onTagTap: _onTagTap,
+          onMark: _onMark,
+          markedSubjectToken: _markedSubjectToken,
           onGraphFocus: (identity) {
             Navigator.push(
               context,

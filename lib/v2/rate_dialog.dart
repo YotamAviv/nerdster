@@ -45,13 +45,11 @@ class V2RateDialog extends StatefulWidget {
 
     if (result != null) {
       try {
-        bool? proceed = await Lgtm.check(result, context);
-        if (proceed != true) return;
-
-        final writer = SourceFactory.getWriter(kNerdsterDomain);
+        final writer = SourceFactory.getWriter(kNerdsterDomain, context: context);
         await writer.push(result, signInState.signer!);
         onRefresh?.call();
       } catch (e, stackTrace) {
+        if (e.toString().contains('LGTM check failed')) return;
         debugPrint('V2RateDialog Error: $e\n$stackTrace');
         if (context.mounted) {
           showDialog(
@@ -92,7 +90,8 @@ class _V2RateDialogState extends State<V2RateDialog> {
     if (myIdentity != null) {
       try {
         priorStatement = widget.aggregation.statements.firstWhere(
-          (s) => widget.model.labeler.getIdentityForToken(s.iToken) == myIdentity
+          (s) => widget.model.labeler.getIdentityForToken(s.iToken) == myIdentity &&
+                 s.verb == ContentVerb.rate
         );
       } catch (_) {
         priorStatement = null;

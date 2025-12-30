@@ -7,6 +7,7 @@ import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/oneofus/statement.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
 
 class MockSource<T extends Statement> implements StatementSource<T> {
   @override
@@ -16,6 +17,7 @@ class MockSource<T extends Statement> implements StatementSource<T> {
 void main() {
   setUpAll(() {
     ContentStatement.init();
+    TrustStatement.init();
   });
 
   group('V2 Tag Logic Tests', () {
@@ -23,26 +25,41 @@ void main() {
       final now = DateTime.now().toIso8601String();
       final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
       final identityToken = identityJsonish.token;
+      
+      final delegateJsonish = Jsonish({'oneofusKey': 'delegate1'});
+      final delegateToken = delegateJsonish.token;
+
+      final delegateStatement = TrustStatement(Jsonish({
+        'statement': 'net.one-of-us',
+        'time': now,
+        'I': identityJsonish.json,
+        'delegate': delegateJsonish.json,
+        'with': {'domain': 'nerdster.org'}
+      }));
 
       final s1 = ContentStatement(Jsonish({
         'rate': 'subject1',
         'comment': 'Hello #world',
-        'I': identityJsonish.json,
+        'I': delegateJsonish.json,
         'time': now,
       }));
       final s2 = ContentStatement(Jsonish({
         'rate': s1.token, // Reply to s1
         'comment': 'Reply with #tag2',
-        'I': identityJsonish.json,
+        'I': delegateJsonish.json,
         'time': now,
       }));
 
       final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
-      final trustGraph = TrustGraph(root: identityToken, distances: {identityToken: 0});
+      final trustGraph = TrustGraph(
+        root: identityToken, 
+        distances: {identityToken: 0},
+        edges: {identityToken: [delegateStatement]}
+      );
       final delegateResolver = DelegateResolver(trustGraph);
       
       final byToken = {
-        identityToken: [s1, s2],
+        delegateToken: [s1, s2],
       };
 
       final aggregation = reduceContentAggregation(
@@ -63,25 +80,40 @@ void main() {
       final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
       final identityToken = identityJsonish.token;
 
+      final delegateJsonish = Jsonish({'oneofusKey': 'delegate1'});
+      final delegateToken = delegateJsonish.token;
+
+      final delegateStatement = TrustStatement(Jsonish({
+        'statement': 'net.one-of-us',
+        'time': now,
+        'I': identityJsonish.json,
+        'delegate': delegateJsonish.json,
+        'with': {'domain': 'nerdster.org'}
+      }));
+
       final s1 = ContentStatement(Jsonish({
         'rate': 'subject1',
         'comment': 'Co-occurrence #news #politics',
-        'I': identityJsonish.json,
+        'I': delegateJsonish.json,
         'time': now,
       }));
       final s2 = ContentStatement(Jsonish({
         'rate': 'subject2',
         'comment': 'Co-occurrence #politics #world',
-        'I': identityJsonish.json,
+        'I': delegateJsonish.json,
         'time': now,
       }));
 
       final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
-      final trustGraph = TrustGraph(root: identityToken, distances: {identityToken: 0});
+      final trustGraph = TrustGraph(
+        root: identityToken, 
+        distances: {identityToken: 0},
+        edges: {identityToken: [delegateStatement]}
+      );
       final delegateResolver = DelegateResolver(trustGraph);
       
       final byToken = {
-        identityToken: [s1, s2],
+        delegateToken: [s1, s2],
       };
 
       final aggregation = reduceContentAggregation(
@@ -105,25 +137,40 @@ void main() {
       final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
       final identityToken = identityJsonish.token;
 
+      final delegateJsonish = Jsonish({'oneofusKey': 'delegate1'});
+      final delegateToken = delegateJsonish.token;
+
+      final delegateStatement = TrustStatement(Jsonish({
+        'statement': 'net.one-of-us',
+        'time': now,
+        'I': identityJsonish.json,
+        'delegate': delegateJsonish.json,
+        'with': {'domain': 'nerdster.org'}
+      }));
+
       final s1 = ContentStatement(Jsonish({
         'rate': 'subject1',
         'comment': '#common #rare',
-        'I': identityJsonish.json,
+        'I': delegateJsonish.json,
         'time': now,
       }));
       final s2 = ContentStatement(Jsonish({
         'rate': 'subject2',
         'comment': '#common',
-        'I': identityJsonish.json,
+        'I': delegateJsonish.json,
         'time': now,
       }));
 
       final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
-      final trustGraph = TrustGraph(root: identityToken, distances: {identityToken: 0});
+      final trustGraph = TrustGraph(
+        root: identityToken, 
+        distances: {identityToken: 0},
+        edges: {identityToken: [delegateStatement]}
+      );
       final delegateResolver = DelegateResolver(trustGraph);
       
       final byToken = {
-        identityToken: [s1, s2],
+        delegateToken: [s1, s2],
       };
 
       final aggregation = reduceContentAggregation(
@@ -142,25 +189,40 @@ void main() {
       final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
       final identityToken = identityJsonish.token;
 
+      final delegateJsonish = Jsonish({'oneofusKey': 'delegate1'});
+      final delegateToken = delegateJsonish.token;
+
+      final delegateStatement = TrustStatement(Jsonish({
+        'statement': 'net.one-of-us',
+        'time': now,
+        'I': identityJsonish.json,
+        'delegate': delegateJsonish.json,
+        'with': {'domain': 'nerdster.org'}
+      }));
+
       final s1 = ContentStatement(Jsonish({
         'rate': 'subject1',
         'comment': '#news #politics',
-        'I': identityJsonish.json,
+        'I': delegateJsonish.json,
         'time': now,
       }));
       final s2 = ContentStatement(Jsonish({
         'rate': 'subject2',
         'comment': '#world',
-        'I': identityJsonish.json,
+        'I': delegateJsonish.json,
         'time': now,
       }));
 
       final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
-      final trustGraph = TrustGraph(root: identityToken, distances: {identityToken: 0});
+      final trustGraph = TrustGraph(
+        root: identityToken, 
+        distances: {identityToken: 0},
+        edges: {identityToken: [delegateStatement]}
+      );
       final delegateResolver = DelegateResolver(trustGraph);
       
       final byToken = {
-        identityToken: [s1, s2],
+        delegateToken: [s1, s2],
       };
 
       final aggregation = reduceContentAggregation(

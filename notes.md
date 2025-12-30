@@ -17,6 +17,7 @@ just that data missing.
   - modifying any value in it.
 
 # Misc...
+?fire=emulator
 ?fire=emulator&skipCredentialsDisplay
 ?fire=fake&demo=egosCircle
 &netView=true
@@ -28,6 +29,12 @@ just that data missing.
 ?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}
 
 &skipCredentialsDisplay=true&showCrypto=true
+
+Bart's Credentials (Delegate Key included):
+{"identity":{"crv":"Ed25519","kty":"OKP","x":"Mmm6pBj597NNqBc6gYqgupVJjYnPXWRSIVPG8O0aD4U"},"nerdster.org":{"crv":"Ed25519","d":"nVGl5mXckRnP09cJqBf7Bt9CEgru-luBuxNXgSvNbtk","kty":"OKP","x":"RRZjJbcfT6Vhx19EFODb0Kgx6XuLBx7jSTt38_WzETE"}}
+
+Lisa's Credentials:
+{"identity":{"crv":"Ed25519","kty":"OKP","x":"mF5aL7Gws_QhlrvpTv8qZiotC1zZntyimOmwSTQUPao"},"nerdster.org":{"crv":"Ed25519","d":"youO01NczJp6TZFDeAfn_58Id7M1gojaOMYBvwBxVQk","kty":"OKP","x":"v7unDWD7Vr_0VRuPTI6w8RjnT5FK1cyULR53vYCXyB4"}}
 
 /m?fire=emulator&identity=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%7D
 

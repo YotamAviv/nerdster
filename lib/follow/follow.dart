@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/follow/follow_net.dart';
@@ -42,9 +43,17 @@ Future<Statement?> follow(String token, BuildContext context) async {
     Json json = ContentStatement.make(
         signInState.delegatePublicKeyJson!, ContentVerb.follow, subjectPublicKey,
         contexts: contextsOut);
-    Statement? statement = await contentBase.insert(json, context);
-    followNet.listen();
-    return statement;
+    
+    // Use SourceFactory to get a writer that respects LGTM
+    try {
+      final writer = SourceFactory.getWriter(kNerdsterDomain, context: context);
+      Statement statement = await writer.push(json, signInState.signer!);
+      followNet.listen();
+      return statement;
+    } catch (_) {
+      // Cancelled or failed
+      return null;
+    }
   }
   return null;
 }

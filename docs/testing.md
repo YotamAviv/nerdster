@@ -79,6 +79,14 @@ flutter drive \
   --driver=test_driver/integration_test.dart \
   --target=integration_test/v2_ui_test.dart \
   -d chrome
+
+# Simpsons Relate Demo
+
+To run the Simpsons Relate/Equate demo (V2):
+
+```bash
+./bin/run_simpsons_relate_demo.sh
+```
 ```
 
 ### Troubleshooting

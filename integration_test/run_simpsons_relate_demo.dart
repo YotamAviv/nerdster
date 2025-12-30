@@ -1,0 +1,83 @@
+import 'dart:convert';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nerdster/firebase_options.dart';
+import 'package:nerdster/v2/config.dart';
+import 'package:nerdster/oneofus/statement.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/endpoint.dart';
+import 'package:nerdster/oneofus_fire.dart';
+import 'package:nerdster/app.dart';
+
+import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() async {
+    DemoKey.reset();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await OneofusFire.init();
+
+    // Connect to Emulators
+    fireChoice = FireChoice.emulator;
+    FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
+    OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
+
+    // Configure V2 for Emulator
+    const host = 'localhost'; 
+    const oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
+    const nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
+    
+    V2Config.registerUrl(kOneofusDomain, oneofusUrl);
+    V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
+
+    // Configure Fetcher Endpoints
+    Fetcher.initEndpoint(kOneofusDomain,
+        const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
+    Fetcher.initEndpoint(kNerdsterDomain,
+        const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
+
+    FireFactory.register(kOneofusDomain, OneofusFire.firestore, null);
+    FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, null);
+
+    TrustStatement.init();
+    ContentStatement.init();
+  });
+
+  testWidgets('Run Simpsons Relate Demo', (WidgetTester tester) async {
+    print('Starting Simpsons Relate Demo...');
+    
+    await simpsonsRelateDemo();
+
+    print('\n--- Demo Keys (Copy JSON for Paste Sign-In) ---');
+    
+    final characters = ['lisa', 'bart', 'homer', 'marge'];
+    
+    for (var name in characters) {
+      final identityKey = DemoKey.findByName(name);
+      final delegateKey = DemoKey.findByName('$name-nerdster0');
+      
+      if (identityKey != null && delegateKey != null) {
+        final json = {
+          'identity': await identityKey.publicKey.json,
+          'nerdster.org': await delegateKey.keyPair.json,
+        };
+        
+        print('\nName: $name');
+        print('Credentials JSON:');
+        print(jsonEncode(json));
+      }
+    }
+    print('-----------------------------------------------\n');
+    print('Demo completed successfully.');
+  });
+}

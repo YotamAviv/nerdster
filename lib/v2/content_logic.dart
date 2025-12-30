@@ -2,6 +2,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/tag.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/merger.dart';
+import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
 
@@ -43,7 +44,6 @@ ContentAggregation reduceContentAggregation(
 
     for (final String identity in identitiesToProcess) {
       final List<String> allKeys = [
-        ...trustGraph.getEquivalenceGroup(identity),
         ...delegateResolver.getDelegatesForIdentity(identity),
       ];
 
@@ -73,7 +73,7 @@ ContentAggregation reduceContentAggregation(
 
   for (final String identity in identitiesToProcess) {
     final List<String> allKeys = [
-      ...trustGraph.getEquivalenceGroup(identity),
+      identity,
       ...delegateResolver.getDelegatesForIdentity(identity),
     ];
 
@@ -83,11 +83,15 @@ ContentAggregation reduceContentAggregation(
         sources.add(byToken[key]!);
       }
     }
-    final Iterable<ContentStatement> statements = Merger.merge(sources);
+    final Iterable<ContentStatement> statements = distinct(
+      Merger.merge(sources),
+      transformer: (_) => identity,
+    ).cast<ContentStatement>();
 
     for (final ContentStatement s in statements) {
       // Filter out follow statements (they are for network building)
       if (s.verb == ContentVerb.follow) continue;
+      if (s.verb == ContentVerb.clear) continue;
 
       // Filter censored
       if (enableCensorship) {
@@ -143,15 +147,6 @@ ContentAggregation reduceContentAggregation(
     if (s.verb == ContentVerb.equate) {
       final String s1 = s.subjectToken;
       final String s2 = getToken(s.other);
-      if (s1 == s2) continue;
-
-      egEdges.putIfAbsent(s1, () => {}).add(s2);
-      egEdges.putIfAbsent(s2, () => {}).add(s1);
-    }
-    // Implicit equivalence: a clear statement is equivalent to its subjectToken (the content hash)
-    if (s.verb == ContentVerb.clear) {
-      final String s1 = s.token;
-      final String s2 = s.subjectToken;
       if (s1 == s2) continue;
 
       egEdges.putIfAbsent(s1, () => {}).add(s2);
@@ -259,7 +254,8 @@ ContentAggregation reduceContentAggregation(
     if ((s.verb == ContentVerb.clear && s.subject is Map) ||
         s.verb == ContentVerb.rate ||
         s.verb == ContentVerb.relate ||
-        s.verb == ContentVerb.dontRelate) {
+        s.verb == ContentVerb.dontRelate ||
+        s.verb == ContentVerb.equate) {
       if (!_isStatement(canonical1)) {
         topLevelSubjects.add(canonical1);
       }
@@ -320,6 +316,74 @@ ContentAggregation reduceContentAggregation(
         final String? signerIdentity = trustGraph.isTrusted(s.iToken)
             ? trustGraph.resolveIdentity(s.iToken)
             : delegateResolver.getIdentityForDelegate(s.iToken);
+
+        if (s.verb == ContentVerb.clear) {
+          // Remove prior statements by this identity
+          final toRemove = agg.statements.where((existing) {
+            final existingIdentity = trustGraph.isTrusted(existing.iToken)
+                ? trustGraph.resolveIdentity(existing.iToken)
+                : delegateResolver.getIdentityForDelegate(existing.iToken);
+            return existingIdentity == signerIdentity;
+          }).toList();
+
+          int likesDelta = 0;
+          int dislikesDelta = 0;
+          for (final r in toRemove) {
+            if (r.verb == ContentVerb.rate) {
+              if (r.like == true) likesDelta--;
+              if (r.like == false) dislikesDelta--;
+            }
+          }
+
+          final newStatements = agg.statements.where((existing) => !toRemove.contains(existing)).toList();
+
+          Set<String> newRelated = agg.related;
+          if (toRemove.any((r) => r.verb == ContentVerb.relate)) {
+            newRelated = {};
+            for (final stmt in newStatements) {
+              if (stmt.verb == ContentVerb.relate) {
+                final c1 = equivalence[stmt.subjectToken] ?? stmt.subjectToken;
+                final c2 = stmt.other != null ? (equivalence[getToken(stmt.other)] ?? getToken(stmt.other)) : null;
+                if (canonical == c1 && c2 != null) {
+                  newRelated.add(c2);
+                } else if (canonical == c2) {
+                  newRelated.add(c1);
+                }
+              }
+            }
+          }
+
+          // Also clear isRated if the signer is the PoV
+          bool isRated = agg.isRated;
+          if (signerIdentity == followNetwork.rootIdentity) {
+             // If we removed any rate statements, we might need to re-check isRated.
+             // But simpler: just re-check from newStatements.
+             isRated = newStatements.any((stmt) {
+                final sid = trustGraph.isTrusted(stmt.iToken)
+                    ? trustGraph.resolveIdentity(stmt.iToken)
+                    : delegateResolver.getIdentityForDelegate(stmt.iToken);
+                return sid == followNetwork.rootIdentity && stmt.verb == ContentVerb.rate;
+             });
+          }
+
+          subjects[canonical] = SubjectAggregation(
+            canonicalToken: canonical,
+            subject: agg.subject,
+            statements: newStatements,
+            tags: agg.tags,
+            likes: agg.likes + likesDelta,
+            dislikes: agg.dislikes + dislikesDelta,
+            lastActivity: s.time.isAfter(agg.lastActivity) ? s.time : agg.lastActivity,
+            related: newRelated,
+            myDelegateStatements: agg.myDelegateStatements,
+            userDismissalTimestamp: agg.userDismissalTimestamp,
+            povDismissalTimestamp: agg.povDismissalTimestamp,
+            isCensored: agg.isCensored,
+            isDismissed: agg.isDismissed,
+            isRated: isRated,
+          );
+          continue;
+        }
 
         if (signerIdentity == followNetwork.rootIdentity) {
           if (s.verb == ContentVerb.rate) isRated = true;
@@ -393,7 +457,13 @@ ContentAggregation reduceContentAggregation(
       }
 
       // Update myDelegateStatements
-      final List<ContentStatement> myDelegateStatements = [...agg.myDelegateStatements, s];
+      List<ContentStatement> myDelegateStatements = agg.myDelegateStatements;
+      if (s.verb == ContentVerb.clear) {
+        // Clear all my previous statements on this subject
+        myDelegateStatements = [];
+      } else {
+        myDelegateStatements = [...myDelegateStatements, s];
+      }
 
       subjects[canonical] = SubjectAggregation(
         canonicalToken: agg.canonicalToken,

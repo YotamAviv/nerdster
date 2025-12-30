@@ -1,8 +1,18 @@
 # Current Activity: V2 Rewrite
 
-- [x] My delegate statements should always be fetched and cached even when I'm not in the network being displayed (I'm not PoV, and I'm not in PoV's network (for this context)).
-This is to show if I've already liked, what my existing comment was, etc... 
-regression test, integration test.
+Lots bad in the UI
+- start with a requirements doc
+  - can rate ratings, comment on comments, rate comments, etc...
+    Users should be able to see these and understand what they are.
+  - can equate / relate (or not) subjects
+  - can find rated content
+  - ratings for equivalent content is show under the canonical subject
+    - there should be a way for the user to notice that other subjects have been marked as being equivalent. 
+      The user should be able to state that they're not, or to censor, dis, like, etc... the statement that stated the equivalence.
+  - there shouldn't be too many icons. 
+    Where we want to give the user the like, dislike, dis, comment, etc... just give him a "rate" icon.
+  - colors and icons for the rating actions should be uniform throughout the UI.
+
 
 
 Bugs:

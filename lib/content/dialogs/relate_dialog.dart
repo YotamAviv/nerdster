@@ -15,8 +15,9 @@ class RelateDialog extends StatefulWidget {
   final Json subject;
   final Json otherSubject;
   final ContentStatement? priorStatement;
+  final ContentVerb? initialVerb;
 
-  const RelateDialog(this.subject, this.otherSubject, this.priorStatement, {super.key});
+  const RelateDialog(this.subject, this.otherSubject, this.priorStatement, {super.key, this.initialVerb});
   @override
   State<StatefulWidget> createState() => _State();
 
@@ -40,6 +41,7 @@ class _State extends State<RelateDialog> {
   late ValueNotifier<Json> bottom;
   late ValueNotifier<ContentVerb> verb;
   late TextEditingController commentController;
+  late ValueNotifier<bool> okEnabled;
 
   @override
   void initState() {
@@ -47,14 +49,20 @@ class _State extends State<RelateDialog> {
 
     top = ValueNotifier(widget.subject);
     bottom = ValueNotifier(widget.otherSubject);
-    verb = ValueNotifier(widget.priorStatement?.verb ?? ContentVerb.relate);
+    verb = ValueNotifier(widget.initialVerb ?? widget.priorStatement?.verb ?? ContentVerb.relate);
     commentController = TextEditingController()..text = widget.priorStatement?.comment ?? '';
+    okEnabled = ValueNotifier(false);
 
     // Klunky: Could just get them right before flipping.
     if (b(widget.priorStatement) &&
         widget.priorStatement!.subjectToken != getToken(widget.subject)) {
       flip();
     }
+
+    verb.addListener(_checkChanged);
+    commentController.addListener(_checkChanged);
+    top.addListener(_checkChanged);
+    _checkChanged();
   }
 
   @override
@@ -63,7 +71,21 @@ class _State extends State<RelateDialog> {
     bottom.dispose();
     verb.dispose();
     commentController.dispose();
+    okEnabled.dispose();
     super.dispose();
+  }
+
+  void _checkChanged() {
+    bool changed = false;
+    if (widget.priorStatement == null) {
+      changed = true;
+    } else {
+      final prior = widget.priorStatement!;
+      if (verb.value != prior.verb) changed = true;
+      if ((commentController.text) != (prior.comment ?? '')) changed = true;
+      if (getToken(top.value) != prior.subjectToken) changed = true;
+    }
+    okEnabled.value = changed;
   }
 
   void okHandler() async {
@@ -119,7 +141,7 @@ class _State extends State<RelateDialog> {
           controller: commentController,
         ),
         const SizedBox(height: 10),
-        OkCancel(okHandler, 'Okay'),
+        OkCancel(okHandler, 'Okay', okEnabled: okEnabled),
       ],
     );
   }
