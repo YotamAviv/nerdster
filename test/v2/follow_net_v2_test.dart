@@ -186,12 +186,11 @@ void main() async {
     final String news2 = 'https://news.com/2';
     final String spam = 'https://spam.com';
 
+    await homer.trust(lisa, moniker: 'lisa');
+    await homer.trust(bart, moniker: 'bart');
+
     final TrustGraph graph = reduceTrustGraph(TrustGraph(root: homer.token), {
-      homer.token: [
-        await homer.trust(lisa, moniker: 'lisa'),
-        await homer.trust(bart, moniker: 'bart'),
-        ...homer.trustStatements, // includes the delegate
-      ],
+      homer.token: homer.trustStatements,
       bart.token: bart.trustStatements,
       lisa.token: lisa.trustStatements,
     });
@@ -248,12 +247,11 @@ void main() async {
     final DemoKey lisaN = await lisa.makeDelegate();
 
     // Lisa is more trusted than Bart
+    await homer.trust(bart, moniker: 'bart');
+    await homer.trust(lisa, moniker: 'lisa');
+
     final TrustGraph graph = reduceTrustGraph(TrustGraph(root: homer.token), {
-      homer.token: [
-        await homer.trust(lisa, moniker: 'lisa'),
-        await homer.trust(bart, moniker: 'bart'),
-        ...homer.trustStatements,
-      ],
+      homer.token: homer.trustStatements,
       bart.token: bart.trustStatements,
       lisa.token: lisa.trustStatements,
     });
@@ -348,11 +346,10 @@ void main() async {
     final DemoKey homerN = await homer.makeDelegate();
 
     // 1. Homer trusts Bart
+    await homer.trust(bart, moniker: 'bart');
+
     final Map<String, List<TrustStatement>> trustStatements = {
-      homer.token: [
-        await homer.trust(bart, moniker: 'bart'),
-        ...homer.trustStatements,
-      ],
+      homer.token: homer.trustStatements,
       bart.token: [await bart.delegate(bartDelegate, domain: kNerdsterDomain)],
     };
 
@@ -510,12 +507,11 @@ void main() async {
     final DemoKey bartN = await bart.makeDelegate();
     final DemoKey lisaN = await lisa.makeDelegate();
 
+    await homer.trust(bart, moniker: 'bart');
+    await homer.trust(lisa, moniker: 'lisa');
+
     final TrustGraph graph = reduceTrustGraph(TrustGraph(root: homer.token), {
-      homer.token: [
-        await homer.trust(bart, moniker: 'bart'),
-        await homer.trust(lisa, moniker: 'lisa'),
-        ...homer.trustStatements,
-      ],
+      homer.token: homer.trustStatements,
       bart.token: bart.trustStatements,
       lisa.token: lisa.trustStatements,
     });

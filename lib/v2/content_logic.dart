@@ -5,6 +5,9 @@ import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/equivalence/equivalence.dart';
+import 'package:nerdster/equivalence/equate_statement.dart';
+import 'package:nerdster/equivalence/eg.dart';
 
 bool _isStatement(String token) {
   final j = Jsonish.find(token);
@@ -141,42 +144,28 @@ ContentAggregation reduceContentAggregation(
   }
 
   // 3. Equivalence Grouping
-  final Map<String, Set<String>> egEdges = {};
+  final Equivalence eqLogic = Equivalence();
 
   for (final ContentStatement s in filteredStatements) {
-    if (s.verb == ContentVerb.equate) {
+    if (s.verb == ContentVerb.equate || s.verb == ContentVerb.dontEquate) {
       final String s1 = s.subjectToken;
       final String s2 = getToken(s.other);
       if (s1 == s2) continue;
 
-      egEdges.putIfAbsent(s1, () => {}).add(s2);
-      egEdges.putIfAbsent(s2, () => {}).add(s1);
+      eqLogic.process(EquateStatement(
+        s1, 
+        s2, 
+        dont: s.verb == ContentVerb.dontEquate
+      ));
     }
   }
 
   final Map<String, String> equivalence = {};
-  final Set<String> egVisited = {};
-  for (final String subject in egEdges.keys) {
-    if (egVisited.contains(subject)) continue;
-
-    final Set<String> component = {};
-    final List<String> queue = [subject];
-    egVisited.add(subject);
-    while (queue.isNotEmpty) {
-      final String current = queue.removeAt(0);
-      component.add(current);
-      for (final String neighbor in egEdges[current] ?? <String>{}) {
-        if (!egVisited.contains(neighbor)) {
-          egVisited.add(neighbor);
-          queue.add(neighbor);
-        }
-      }
-    }
-
-    final List<String> sorted = component.toList()..sort();
-    final String canonicalToken = sorted.first;
-    for (final String s in component) {
-      equivalence[s] = canonicalToken;
+  final Set<EquivalenceGroup> groups = eqLogic.createGroups();
+  
+  for (final EquivalenceGroup group in groups) {
+    for (final String token in group.all) {
+      equivalence[token] = group.canonical;
     }
   }
 

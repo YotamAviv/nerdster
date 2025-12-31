@@ -30,13 +30,13 @@ void main() async {
     final charlie = await DemoKey.create('charlie');
 
     // Alice trusts Bob in WoT
-    final t1 = await alice.trust(bob, moniker: 'bob');
+    await alice.trust(bob, moniker: 'bob');
     // Bob trusts Charlie in WoT
-    final t2 = await bob.trust(charlie, moniker: 'charlie');
+    await bob.trust(charlie, moniker: 'charlie');
 
     final allTrustStatements = {
-      alice.token: [t1, ...alice.trustStatements],
-      bob.token: [t2, ...bob.trustStatements],
+      alice.token: alice.trustStatements,
+      bob.token: bob.trustStatements,
     };
 
     final trustGraph = reduceTrustGraph(
