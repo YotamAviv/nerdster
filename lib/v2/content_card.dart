@@ -1,8 +1,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:nerdster/v2/source_factory.dart';
-import 'package:nerdster/content/dialogs/relate_dialog.dart';
 
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/metadata_service.dart';
@@ -45,7 +43,6 @@ class ContentCard extends StatefulWidget {
 
 class _ContentCardState extends State<ContentCard> {
   MetadataResult? _metadata;
-  bool _expanded = false;
 
   @override
   void initState() {
@@ -76,12 +73,6 @@ class _ContentCardState extends State<ContentCard> {
         },
       );
     }
-  }
-
-  void _toggleExpand() {
-    setState(() {
-      _expanded = !_expanded;
-    });
   }
 
   void _showInspectionSheet(String token) {
@@ -124,21 +115,6 @@ class _ContentCardState extends State<ContentCard> {
     );
   }
 
-  void _showStatementDialog(BuildContext context, ContentStatement s) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Statement Details'),
-        content: SingleChildScrollView(
-          child: Text(s.jsonish.ppJson),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final subject = widget.aggregation.subject;
@@ -154,84 +130,82 @@ class _ContentCardState extends State<ContentCard> {
 
     return Card(
       margin: const EdgeInsets.all(8.0),
-      child: InkWell(
-        onTap: _toggleExpand,
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildActionBar(),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.network(
-                        kIsWeb 
-                          ? 'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=200&h=200&fit=cover'
-                          : imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.image_not_supported, size: 20),
-                          );
-                        },
-                      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildActionBar(),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.network(
+                      kIsWeb 
+                        ? 'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=200&h=200&fit=cover'
+                        : imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image_not_supported, size: 20),
+                        );
+                      },
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            final subject = widget.aggregation.subject;
-                            String? url;
-                            if (subject is Map) {
-                              url = subject['url'];
-                              if (url == null) {
-                                final values = subject.values.where((v) => v != null).join(' ');
-                                url = 'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
-                              }
-                            } else {
-                              url = 'https://www.google.com/search?q=${Uri.encodeComponent(title)}';
-                            }
-                            launchUrl(Uri.parse(url));
-                          },
-                          child: Text(
-                            title,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  decoration: TextDecoration.underline,
-                                ),
-                          ),
-                        ),
-                        Text(type.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              _buildEquivalentSubjects(),
-              if (widget.aggregation.tags.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Wrap(
-                    spacing: 8.0,
-                    children: widget.aggregation.tags.map((tag) => Text('#$tag', style: const TextStyle(color: Colors.blue))).toList(),
                   ),
                 ),
-              _buildRelatedSubjects(),
-              const Divider(),
-              _buildBriefHistory(),
-              if (_expanded) ...[
-                const Divider(),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          final subject = widget.aggregation.subject;
+                          String? url;
+                          if (subject is Map) {
+                            url = subject['url'];
+                            if (url == null) {
+                              final values = subject.values.where((v) => v != null).join(' ');
+                              url = 'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
+                            }
+                          } else {
+                            url = 'https://www.google.com/search?q=${Uri.encodeComponent(title)}';
+                          }
+                          launchUrl(Uri.parse(url));
+                        },
+                        child: Text(
+                          title,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                decoration: TextDecoration.underline,
+                              ),
+                        ),
+                      ),
+                      Text(type.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (widget.aggregation.tags.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Wrap(
+                  spacing: 8.0,
+                  children: widget.aggregation.tags.map((tag) => Text('#$tag', style: const TextStyle(color: Colors.blue))).toList(),
+                ),
+              ),
+            const Divider(),
+            _buildBriefHistory(),
+            _buildRelationshipsSection(),
+            ExpansionTile(
+              title: const Text('History', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              children: [
                 SubjectDetailsView(
                   aggregation: widget.aggregation,
                   model: widget.model,
@@ -244,8 +218,8 @@ class _ContentCardState extends State<ContentCard> {
                   onInspect: _showInspectionSheet,
                 ),
               ],
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -298,7 +272,53 @@ class _ContentCardState extends State<ContentCard> {
         if (s.like == true) icons.add(const Icon(Icons.thumb_up, size: 12, color: Colors.green));
         if (s.like == false) icons.add(const Icon(Icons.thumb_down, size: 12, color: Colors.red));
         if (s.comment != null && s.comment!.isNotEmpty) icons.add(const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey));
-        if (s.dismiss == true) icons.add(const Icon(Icons.swipe_left, size: 12, color: Colors.brown));
+        
+        // Relation icons
+        if (s.verb == ContentVerb.relate) icons.add(const Text('≈', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)));
+        if (s.verb == ContentVerb.dontRelate) icons.add(const Text('≉', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)));
+        if (s.verb == ContentVerb.equate) icons.add(const Text('=', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)));
+        if (s.verb == ContentVerb.dontEquate) icons.add(const Text('≠', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)));
+
+        // Determine display text
+        String displayText = '';
+        String? targetToken;
+
+        if (s.comment != null && s.comment!.isNotEmpty) {
+          displayText = s.comment!;
+        } else if (s.other != null) {
+           String? otherToken;
+           String? otherTitle;
+           final sOtherToken = getToken(s.other);
+           
+           if (s.subjectToken == widget.aggregation.token) {
+              otherToken = sOtherToken;
+              if (s.other is Map && s.other['title'] != null) otherTitle = s.other['title'];
+           } else if (sOtherToken == widget.aggregation.token) {
+              otherToken = s.subjectToken;
+              if (s.subject is Map && s.subject['title'] != null) otherTitle = s.subject['title'];
+           } else {
+              otherToken = sOtherToken;
+           }
+           
+           targetToken = otherToken;
+
+           if (otherTitle == null) {
+              final otherAgg = widget.model.aggregation.subjects[otherToken];
+              if (otherAgg != null) {
+                final subject = otherAgg.subject;
+                otherTitle = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
+              } else {
+                otherTitle = widget.model.labeler.getLabel(otherToken);
+              }
+           }
+           displayText = otherTitle ?? '';
+        } else if (s.like == true) {
+           displayText = ''; 
+        } else if (s.like == false) {
+           displayText = ''; 
+        } else {
+           displayText = 'Reacted';
+        }
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -320,14 +340,32 @@ class _ContentCardState extends State<ContentCard> {
                 ...icons.expand((i) => [i, const SizedBox(width: 2)]).take(icons.length * 2 - 1),
                 const Text('] ', style: TextStyle(color: Colors.grey, fontSize: 12)),
               ],
-              Expanded(
-                child: Text(
-                  s.comment ?? (s.like == true ? 'Liked' : (s.like == false ? 'Disliked' : 'Reacted')),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13),
+              if (displayText.isNotEmpty)
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: targetToken != null
+                      ? InkWell(
+                          onTap: () => _showInspectionSheet(targetToken!),
+                          child: Text(
+                            displayText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              decoration: TextDecoration.underline,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          displayText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                  ),
                 ),
-              ),
             ],
           ),
         );
@@ -335,220 +373,96 @@ class _ContentCardState extends State<ContentCard> {
     );
   }
 
-  Widget _buildEquivalentSubjects() {
-    // Find all subjects that are equivalent to this one
+  Widget _buildRelationshipsSection() {
+    final List<Widget> children = [];
+
+    // 1. Equivalents
     final equivalentTokens = widget.model.aggregation.equivalence.entries
         .where((e) => e.value == widget.aggregation.token && e.key != widget.aggregation.token)
         .map((e) => e.key)
         .toSet();
 
-    if (equivalentTokens.isEmpty) return const SizedBox.shrink();
-
-    // We need to find the titles for these tokens.
-    // We can look at the statements in the aggregation to find the subjects.
-    final Map<String, String> tokenToTitle = {};
-    final equateStatements = <String, List<ContentStatement>>{};
-
-    for (final s in widget.aggregation.statements) {
-      if (equivalentTokens.contains(s.subjectToken)) {
-        final subject = s.subject;
-        final title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
-        tokenToTitle[s.subjectToken] = title;
+    if (equivalentTokens.isNotEmpty) {
+      final Map<String, String> tokenToTitle = {};
+      
+      // Try to find titles in current statements
+      for (final s in widget.aggregation.statements) {
+        if (equivalentTokens.contains(s.subjectToken)) {
+          final subject = s.subject;
+          final title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
+          tokenToTitle[s.subjectToken] = title;
+        }
       }
       
-      if (s.verb == ContentVerb.equate) {
-        final otherToken = getToken(s.other);
-        if (equivalentTokens.contains(s.subjectToken)) {
-          equateStatements.putIfAbsent(s.subjectToken, () => []).add(s);
-        }
-        if (equivalentTokens.contains(otherToken)) {
-          equateStatements.putIfAbsent(otherToken, () => []).add(s);
-        }
+      // Also check global aggregation map if missing
+      for (final token in equivalentTokens) {
+         if (!tokenToTitle.containsKey(token)) {
+             final agg = widget.model.aggregation.subjects[token];
+             if (agg != null) {
+                final subject = agg.subject;
+                final title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
+                tokenToTitle[token] = title;
+             } else {
+                tokenToTitle[token] = widget.model.labeler.getLabel(token);
+             }
+         }
+      }
+
+      for (final entry in tokenToTitle.entries) {
+         children.add(_buildRelationTile('=', entry.key, entry.value));
       }
     }
 
-    return ExpansionTile(
-      title: Text('Equivalents: ${equivalentTokens.length}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      children: tokenToTitle.entries.map((e) {
-        final statements = equateStatements[e.key] ?? [];
-        
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              dense: true,
-              title: InkWell(
-                onTap: () => _showInspectionSheet(e.key),
-                child: Text(
-                  e.value,
-                  style: const TextStyle(
-                    decoration: TextDecoration.underline,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              trailing: widget.onMark != null
-                  ? IconButton(
-                      icon: Icon(
-                        Icons.link,
-                        color: widget.markedSubjectToken == e.key ? Colors.orange : Colors.grey,
-                      ),
-                      onPressed: () => widget.onMark!(e.key),
-                      tooltip: widget.markedSubjectToken == e.key ? 'Unmark' : 'Mark to Un-Equate',
-                    )
-                  : null,
-            ),
-            ...statements.map((s) {
-               final identity = widget.model.labeler.getIdentityForToken(s.iToken);
-               final authorName = widget.model.labeler.getLabel(s.iToken);
-               return Padding(
-                 padding: const EdgeInsets.only(left: 16.0, bottom: 4.0),
-                 child: Row(
-                   children: [
-                     InkWell(
-                       onTap: () => _showStatementDialog(context, s),
-                       child: const Icon(Icons.verified_user, color: Colors.blue, size: 16),
-                     ),
-                     const SizedBox(width: 4),
-                     const Text('Equated by: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                     InkWell(
-                       onTap: () {
-                         widget.onGraphFocus?.call(identity);
-                       },
-                       child: Text(authorName, style: const TextStyle(fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
-                     ),
-                   ],
-                 ),
-               );
-            }),
-          ],
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildRelatedSubjects() {
-    if (widget.aggregation.related.isEmpty) return const SizedBox.shrink();
-
-    // Find statements that established these relationships
-    final relatedStatements = <String, List<ContentStatement>>{};
-    
-    for (final token in widget.aggregation.related) {
-      relatedStatements[token] = [];
-    }
-
-    // Check statements in this aggregation (where subject == this card)
-    for (final s in widget.aggregation.statements) {
-      if (s.verb == ContentVerb.relate && s.other != null) {
-        final otherToken = getToken(s.other);
-        // Filter out if it's an equivalent subject
-        if (widget.model.aggregation.equivalence[otherToken] == widget.aggregation.token) {
-          continue;
-        }
-        if (widget.aggregation.related.contains(otherToken)) {
-          relatedStatements[otherToken]?.add(s);
-        }
-      }
-    }
-
-    // Filter related tokens to exclude equivalents
+    // 2. Related
     final relatedTokens = widget.aggregation.related.where((token) => 
       widget.model.aggregation.equivalence[token] != widget.aggregation.token
     ).toList();
 
-    if (relatedTokens.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Related:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-          ...relatedTokens.map((token) {
-            final relatedAgg = widget.model.aggregation.subjects[token];
-            if (relatedAgg == null) return const SizedBox.shrink();
-            
+    for (final token in relatedTokens) {
+        final relatedAgg = widget.model.aggregation.subjects[token];
+        String title;
+        if (relatedAgg != null) {
             final subject = relatedAgg.subject;
-            final title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
-            
-            final statements = relatedStatements[token] ?? [];
+            title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
+        } else {
+            title = widget.model.labeler.getLabel(token);
+        }
+        children.add(_buildRelationTile('≈', token, title));
+    }
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  leading: widget.onMark != null 
-                      ? IconButton(
-                          icon: Icon(
-                            Icons.link, 
-                            color: widget.markedSubjectToken == token ? Colors.orange : Colors.grey
-                          ),
-                          onPressed: () => widget.onMark!(token),
-                          tooltip: widget.markedSubjectToken == token ? 'Unmark' : 'Mark to Relate/Equate',
-                        ) 
-                      : null,
-                  title: InkWell(
-                    onTap: () => _showInspectionSheet(token),
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
+    if (children.isEmpty) return const SizedBox.shrink();
+
+    return ExpansionTile(
+      title: const Text('Relationships', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      initiallyExpanded: true,
+      children: children,
+    );
+  }
+
+  Widget _buildRelationTile(String iconText, String token, String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            child: Text(iconText, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: InkWell(
+                onTap: () => _showInspectionSheet(token),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
                   ),
                 ),
-                ...statements.map((s) {
-                   final identity = widget.model.labeler.getIdentityForToken(s.iToken);
-                   final authorName = widget.model.labeler.getLabel(s.iToken);
-                   final isMe = identity == signInState.identity;
-                   return Padding(
-                     padding: const EdgeInsets.only(left: 16.0, bottom: 4.0),
-                     child: Row(
-                       children: [
-                         InkWell(
-                           onTap: () => _showStatementDialog(context, s),
-                           child: const Icon(Icons.verified_user, color: Colors.blue, size: 16),
-                         ),
-                         const SizedBox(width: 4),
-                         const Text('Related by: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                         InkWell(
-                           onTap: () {
-                             widget.onGraphFocus?.call(identity);
-                           },
-                           child: Text(authorName, style: const TextStyle(fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
-                         ),
-                         if (isMe) ...[
-                           const SizedBox(width: 8),
-                           InkWell(
-                             onTap: () async {
-                               Json? json = await RelateDialog(
-                                 widget.aggregation.subject,
-                                 relatedAgg.subject,
-                                 s,
-                                 initialVerb: ContentVerb.clear,
-                               ).show(context);
-                               if (json != null) {
-                                 try {
-                                   await SourceFactory.getWriter(kNerdsterDomain, context: context).push(json, signInState.signer!);
-                                   widget.onRefresh?.call();
-                                 } catch (_) {
-                                   // Cancelled
-                                 }
-                               }
-                             },
-                             child: const Icon(Icons.close, color: Colors.red, size: 16),
-                           ),
-                         ],
-                       ],
-                     ),
-                   );
-                }),
-              ],
-            );
-          }),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -693,10 +607,6 @@ class SubjectDetailsView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text('Full History', style: Theme.of(context).textTheme.titleMedium),
-        ),
         ...tree,
       ],
     );
@@ -731,9 +641,21 @@ class SubjectDetailsView extends StatelessWidget {
     final label = model.labeler.getLabel(s.iToken);
     final isMe = signInState.identity != null && model.labeler.getIdentityForToken(s.iToken) == signInState.identity;
 
+    // Find the aggregation for this statement (s)
+    final canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
+    final statementAgg = model.aggregation.subjects[canonicalToken];
+    
+    // Combine statements from the main aggregation (if any are threaded there) and the statement's own aggregation
+    final repliesInParent = aggregation.statements.where((r) => r.subjectToken == s.token).toList();
+    final combinedStatements = [
+        ...repliesInParent,
+        ...(statementAgg?.statements ?? <ContentStatement>[]),
+    ];
+    // Deduplicate based on token
+    final List<ContentStatement> uniqueStatements = {for (var s in combinedStatements) s.token: s}.values.toList();
+
     // Determine current user's reaction to this statement
-    final myReplies = aggregation.statements.where((r) => 
-      r.subjectToken == s.token && 
+    final myReplies = uniqueStatements.where((r) => 
       signInState.identity != null && 
       model.labeler.getIdentityForToken(r.iToken) == signInState.identity
     ).toList();
@@ -750,46 +672,72 @@ class SubjectDetailsView extends StatelessWidget {
       tooltip = 'React';
     }
 
-    // Construct the action text (Verb)
-    String actionText = '';
-    String? otherTitle;
-    
-    if (s.verb == ContentVerb.rate) {
-      if (s.like == true) actionText = 'liked';
-      else if (s.like == false) actionText = 'disliked';
-      else if (s.dismiss == true) actionText = 'dismissed';
-      else actionText = 'commented on';
-    } else if (s.verb == ContentVerb.relate) {
-      actionText = 'related';
-    } else if (s.verb == ContentVerb.dontRelate) {
-      actionText = 'un-related';
-    } else if (s.verb == ContentVerb.equate) {
-      actionText = 'equated';
-    } else if (s.verb == ContentVerb.dontEquate) {
-      actionText = 'un-equated';
-    } else {
-      actionText = s.verb.label;
-    }
+    // Determine display elements based on verb
+    Widget? verbIcon;
+    String? displayText;
+    String? otherToken;
 
-    if (s.other != null) {
-      final otherToken = getToken(s.other);
-      final otherAgg = model.aggregation.subjects[otherToken];
-      if (otherAgg != null) {
-        final subject = otherAgg.subject;
-        otherTitle = (subject is Map) ? (subject['title'] ?? 'Untitled') : model.labeler.getLabel(subject.toString());
-      } else {
-        otherTitle = model.labeler.getLabel(otherToken);
+    if (s.verb == ContentVerb.rate) {
+      // Icons are handled in the row, text is handled in subtitle or here if comment
+    } else {
+      // Relations
+      if (s.verb == ContentVerb.relate) {
+        verbIcon = const Text('≈', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      } else if (s.verb == ContentVerb.dontRelate) {
+        verbIcon = const Text('≉', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      } else if (s.verb == ContentVerb.equate) {
+        verbIcon = const Text('=', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      } else if (s.verb == ContentVerb.dontEquate) {
+        verbIcon = const Text('≠', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      }
+
+      // Determine target subject
+      if (s.other != null) {
+        final sOtherToken = getToken(s.other);
+        // If the statement's subject is THIS card, then the target is s.other
+        // If the statement's other is THIS card, then the target is s.subject
+        
+        if (s.subjectToken == aggregation.token) {
+           otherToken = sOtherToken;
+           // Try to get title from s.other if it's a map
+           if (s.other is Map && s.other['title'] != null) {
+             displayText = s.other['title'];
+           }
+        } else if (sOtherToken == aggregation.token) {
+           otherToken = s.subjectToken;
+           // Try to get title from s.subject if it's a map
+           if (s.subject is Map && s.subject['title'] != null) {
+             displayText = s.subject['title'];
+           }
+        } else {
+           // Fallback
+           otherToken = sOtherToken;
+        }
+
+        if (displayText == null) {
+           final otherAgg = model.aggregation.subjects[otherToken];
+           if (otherAgg != null) {
+             final subject = otherAgg.subject;
+             displayText = (subject is Map) ? (subject['title'] ?? 'Untitled') : model.labeler.getLabel(subject.toString());
+           } else {
+             displayText = model.labeler.getLabel(otherToken);
+           }
+        }
       }
     }
 
-    return Padding(
-      padding: EdgeInsets.only(left: depth * 16.0),
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 4.0),
-        color: isMe ? Colors.blue[50] : Colors.grey[50],
-        child: ListTile(
-          dense: true,
-          title: Row(
+    return Container(
+      color: isMe ? Colors.blue[50] : null,
+      padding: EdgeInsets.only(
+        left: 16.0 + (depth * 16.0), 
+        right: 16.0, 
+        top: 4.0, 
+        bottom: 4.0
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
               InkWell(
                 onTap: () => onGraphFocus?.call(s.iToken),
@@ -816,38 +764,36 @@ class SubjectDetailsView extends StatelessWidget {
                 const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey),
                 const SizedBox(width: 2),
               ],
-              const SizedBox(width: 2),
-              Text(actionText, style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
-              if (otherTitle != null) ...[
+              
+              if (verbIcon != null) ...[
                 const SizedBox(width: 4),
-                const Text('to', style: TextStyle(fontSize: 12)),
+                verbIcon,
                 const SizedBox(width: 4),
+              ],
+
+              if (displayText != null) ...[
                 Flexible(
                   child: InkWell(
                     onTap: () {
-                      if (s.other != null && onInspect != null) {
-                         onInspect!(getToken(s.other));
+                      if (otherToken != null && onInspect != null) {
+                         onInspect!(otherToken);
                       }
                     },
                     child: Text(
-                      otherTitle,
+                      displayText,
                       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ),
               ],
+
               const Spacer(),
-              if (onPovChange != null)
-                IconButton(
-                  icon: const Icon(Icons.visibility, size: 16),
-                  tooltip: 'View from this POV',
-                  onPressed: () => onPovChange!(s.iToken),
-                  visualDensity: VisualDensity.compact,
-                ),
               if (onMark != null)
                 IconButton(
                   visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   icon: Icon(
                     Icons.link,
                     size: 16,
@@ -856,7 +802,11 @@ class SubjectDetailsView extends StatelessWidget {
                   tooltip: markedSubjectToken == s.token ? 'Unmark' : 'Mark to Relate/Equate',
                   onPressed: () => onMark!(s.token),
                 ),
+              const SizedBox(width: 8),
               IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
                 icon: Icon(icon, size: 16, color: color),
                 tooltip: tooltip,
                 onPressed: () => V2RateDialog.show(
@@ -864,12 +814,12 @@ class SubjectDetailsView extends StatelessWidget {
                   SubjectAggregation(
                     subject: s.json,
                     lastActivity: s.time,
+                    statements: uniqueStatements,
                   ),
                   model,
                   intent: RateIntent.none,
                   onRefresh: onRefresh,
                 ),
-                visualDensity: VisualDensity.compact,
               ),
               ValueListenableBuilder<bool>(
                 valueListenable: Setting.get<bool>(SettingType.showCrypto),
@@ -896,13 +846,16 @@ class SubjectDetailsView extends StatelessWidget {
               ),
             ],
           ),
-          subtitle: s.comment != null && s.comment!.isNotEmpty 
-              ? CommentWidget(
+          if (s.comment != null && s.comment!.isNotEmpty)
+             Padding(
+               padding: const EdgeInsets.only(left: 0.0, top: 2.0),
+               child: CommentWidget(
                   text: s.comment!,
                   onHashtagTap: (tag, _) => onTagTap?.call(tag),
-                )
-              : null,
-        ),
+                  style: const TextStyle(fontSize: 13),
+               ),
+             ),
+        ],
       ),
     );
   }

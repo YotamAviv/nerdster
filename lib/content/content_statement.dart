@@ -65,7 +65,7 @@ class ContentStatement extends Statement {
     required this.contexts,
   });
 
-  /// Encapsulates the logic for creating content statements, including the conditional 
+  /// Encapsulates the logic for creating content statements, including the conditional
   /// tokenization (or not) of subject, other subject.
   static Json make(Json iJson, ContentVerb verb, dynamic subject,
       {String? comment,
@@ -77,16 +77,20 @@ class ContentStatement extends Statement {
     dynamic s = subject;
     dynamic o = other;
 
+    final bool debugUseSubjectNotToken = Setting.get(SettingType.debugUseSubjectNotToken).value;
+
     if (verb == ContentVerb.rate || verb == ContentVerb.clear) {
       final isStatement = (s is Map && s.containsKey('statement')) || s is Statement;
       if (verb == ContentVerb.clear ||
           (censor == true) ||
           (verb == ContentVerb.rate && dismiss == true) ||
           isStatement) {
-        s = getToken(s);
+        if (!debugUseSubjectNotToken) {
+          s = getToken(s);
+        }
       }
     } else {
-      if (Setting.get(SettingType.debugUseSubjectNotToken).value != true) {
+      if (!debugUseSubjectNotToken) {
         s = getToken(s);
         if (b(o)) o = getToken(o);
       }

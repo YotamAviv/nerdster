@@ -112,12 +112,15 @@ void main() {
       final switchFinder = find.byType(Switch);
       expect(switchFinder, findsOneWidget);
       
-      // 6. Test Bottom Sheet
-      await tester.tap(find.byType(ContentCard).first);
+      // 6. Test History Expansion
+      final historyFinder = find.text('History');
+      expect(historyFinder, findsWidgets);
+
+      // Tap the first 'History' to expand it
+      await tester.tap(historyFinder.first);
       await tester.pumpAndSettle();
       
-      expect(find.text('Full History'), findsOneWidget, reason: 'Tapping a card should open the Full History sheet');
-      expect(find.byType(ListTile), findsWidgets, reason: 'Full History should contain statement tiles');
+      expect(find.byType(SubjectDetailsView), findsWidgets, reason: 'Expanding History should show SubjectDetailsView');
     });
   });
 }

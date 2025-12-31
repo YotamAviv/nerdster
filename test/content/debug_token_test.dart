@@ -154,8 +154,12 @@ void main() {
         subjectObj,
         dismiss: true,
       );
-      // Should be token because of dismiss logic
-      expect(dismissRateJson['rate'], equals(subjectToken));
+      
+      if (debugMode) {
+        expect(dismissRateJson['rate'], equals(subjectObj));
+      } else {
+        expect(dismissRateJson['rate'], equals(subjectToken));
+      }
 
     }
   });

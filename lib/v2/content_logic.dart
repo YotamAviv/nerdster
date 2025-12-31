@@ -241,10 +241,8 @@ ContentAggregation reduceContentAggregation(
         s.verb == ContentVerb.relate ||
         s.verb == ContentVerb.dontRelate ||
         s.verb == ContentVerb.equate) {
-      if (!_isStatement(canonical1)) {
-        topLevelSubjects.add(canonical1);
-      }
-      if (canonical2 != null && !_isStatement(canonical2)) {
+      topLevelSubjects.add(canonical1);
+      if (canonical2 != null) {
         topLevelSubjects.add(canonical2);
       }
     }

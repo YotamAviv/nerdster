@@ -10,6 +10,7 @@ import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/cached_source.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/most_strings.dart';
@@ -131,6 +132,14 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled, {String? tagFilter, Map<String, String>? tagEquivalence}) {
+    // Don't show statements as top-level cards
+    final s = subject.subject;
+    if (s is Map && s.containsKey('statement')) return false;
+    if (s is String) {
+      final j = Jsonish.find(s);
+      if (j != null && j.containsKey('statement')) return false;
+    }
+
     if (censorshipEnabled && subject.isCensored) return false;
 
     if (tagFilter != null && tagFilter != '-') {

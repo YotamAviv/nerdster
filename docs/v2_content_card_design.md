@@ -23,36 +23,28 @@ The `ContentCard` is the atomic unit of the Nerdster feed. It represents a **Sub
 +-----------------------------------------------------------------------+
 |  [BRIEF HISTORY] (2 most recent reactions or relations)               |
 |  Lisa@nerdster.org [👍 💬]: "It's a vehicle!" (Truncated 1 line)      |
-|  Bart@nerdster.org [≈]: Related to "Toy"                              |
+|  Bart@nerdster.org [≈]: "Toy" (Click -> Inspect)                      |
 +-----------------------------------------------------------------------+
-|  [RELATIONSHIPS SECTION]                                              |
-|                                                                       |
-|  > Equivalents (2) [ExpansionTile]                                    |
-|    +-------------------------------------------------------+          |
-|    | "Transportation"                          [Link Icon] |          |
-|    |   (Click Title -> Inspect)                            |          |
-|    |   L Equated by: Bart [Guard]                          |          |
-|    +-------------------------------------------------------+          |
-|                                                                       |
-|  > Related (1) [ExpansionTile]                                        |
-|    +-------------------------------------------------------+          |
-|    | "Art"                                     [Link Icon] |          |
-|    |   (Click Title -> Inspect)                            |          |
-|    |   L Related by: Me [Guard] [Clear Icon]               |          |
-|    +-------------------------------------------------------+          |
+|  [Relationships] [ExpansionTile]                                      |
+|  [=] "Transportation"             (Clickable Blue Title)              |
+|  [≈] "Art"                        (Clickable Blue Title)              |
 +-----------------------------------------------------------------------+
 |  [HISTORY SECTION] [ExpansionTile]                                    |
 |  Title: "History (5)"                                                 |
 |                                                                       |
 |  (List of Statements)                                                 |
-|  Me@nerdster.org [≠] Un-equated to "Transportation"       [Clear Icon]|
+|  Me@nerdster.org [≠] "Transportation"                     [Clear Icon]|
 |           (2 hours ago)      (Click "Transportation" -> Inspect)      |
-|  Me@nerdster.org [≉] Un-related to "Toy"                  [Clear Icon]|
+|  Me@nerdster.org [≉] "Toy"                                [Clear Icon]|
 |                                                                       |
 |  Lisa@nerdster.org [👍 💬] "It's a vehicle!"              [Rate Icon] |
 |           (1 hour ago)      (Icons show Lisa's rating)                |
 +-----------------------------------------------------------------------+
 ```
+
+### Relationships Section Logic
+The items in this section are **aggregated (computed) subjects**, not raw user statements.
+(So if Subject A is related to Subject B, and Subject B is related to Subject C, then the card for Subject A will display both B and C.)
 
 ### Icon Legend & Meanings
 
@@ -151,9 +143,8 @@ The `ContentCard` is the atomic unit of the Nerdster feed. It represents a **Sub
                         *   **Action Bar**: `Row` (Link Button, Rate Button, Score) - *Top Right*
                         *   **Content**: `ListTile` (Title, Image)
                     *   **Brief History**: `Column` (2 most recent reactions or relations, truncated, with icons)
-            *   **Relationships**: `Column` (Siblings to Header, not wrapped in InkWell)
-                *   `_buildEquivalentSubjects` -> `ExpansionTile` -> List of `ListTile`
-                *   `_buildRelatedSubjects` -> `ExpansionTile` -> List of `ListTile`
+            *   **Relationships**: `ExpansionTile` (Siblings to Header, not wrapped in InkWell)
+                *   List of `ListTile` (Icon + Title) - Mixed Equivalents and Related
             *   **History**: `ExpansionTile` (was SubjectDetailsView directly)
                 *   *Note*: Tapping the Header `InkWell` programmatically toggles this tile.
                 *   `SubjectDetailsView` (The tree of statements)
@@ -180,17 +171,16 @@ The `ContentCard` is the atomic unit of the Nerdster feed. It represents a **Sub
 
 The text displayed in the history list depends on the statement's verb and content.
 
-| Verb | Condition | Display Text |
-| :--- | :--- | :--- |
-| `rate` | `comment` is not empty | "Commented" (or the comment text) |
-| `rate` | `like` == true | "Liked" |
-| `rate` | `like` == false | "Disliked" |
-| `relate` | - | "Related to [Other Subject]" |
-| `equate` | - | "Equated to [Other Subject]" |
-| `dontRelate` | - | "Un-related" |
-| `dontEquate` | - | "Un-equated" |
-| `clear` | - | "Cleared statement" |
-| *Any* | Fallback | "Reacted" |
+| Verb | Condition | Icon(s) | Display Text |
+| :--- | :--- | :--- | :--- |
+| `rate` | `comment` is not empty | 💬 | Comment text |
+| `rate` | `like` == true | 👍 | *None* |
+| `rate` | `like` == false | 👎 | *None* |
+| `relate` | - | ≈ | "[Other Subject]" |
+| `equate` | - | = | "[Other Subject]" |
+| `dontRelate` | - | ≉ | "[Other Subject]" |
+| `dontEquate` | - | ≠ | "[Other Subject]" |
+| *Any* | Fallback | ❓ | *None* |
 
 *Note: "Reacted" should only be used as a fallback if no other condition matches.*
 

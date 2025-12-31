@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/v2/feed_controller.dart';
+import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/setting_type.dart';
 
 
 import 'package:nerdster/demotest/demo_key.dart';
@@ -144,10 +146,14 @@ void main() {
     );
     expect(inceptionAgg, isNotEmpty, reason: "Inception should be in the feed");
 
-    // 6. Verify the Rating Statement is NOT a top-level subject
+    // 6. Verify the Rating Statement IS in the aggregation (for lookup)
     final ratingAsSubject = model.aggregation.subjects.values.where((agg) => 
       agg.token == ratingToken
     );
-    expect(ratingAsSubject, isEmpty, reason: "The rating statement itself should NOT be a top-level subject");
+    expect(ratingAsSubject, isNotEmpty, reason: "The rating statement should be in the aggregation for lookup");
+
+    // 7. Verify it is hidden from the feed
+    final shouldShow = controller.shouldShow(ratingAsSubject.first, V2FilterMode.ignoreDisses, false);
+    expect(shouldShow, isFalse, reason: "The rating statement should be hidden from the feed");
   });
 }

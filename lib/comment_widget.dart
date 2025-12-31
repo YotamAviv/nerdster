@@ -10,13 +10,15 @@ typedef OnHashtagTap = void Function(String hashtag, BuildContext context);
 class CommentWidget extends StatelessWidget {
   final String text;
   final OnHashtagTap? onHashtagTap;
+  final TextStyle? style;
 
-  const CommentWidget({super.key, required this.text, this.onHashtagTap});
+  const CommentWidget({super.key, required this.text, this.onHashtagTap, this.style});
 
   @override
   Widget build(BuildContext context) {
     return SelectableLinkify(
       text: text,
+      style: style,
       linkifiers: [_HashtagLinkifier()],
       onOpen: (LinkableElement link) => onHashtagTap?.call(link.url, context),
       linkStyle: const TextStyle(

@@ -1,18 +1,32 @@
 # Current Activity: V2 Rewrite
 
-Lots bad in the UI
-- start with a requirements doc
-  - can rate ratings, comment on comments, rate comments, etc...
-    Users should be able to see these and understand what they are.
-  - can equate / relate (or not) subjects
-  - can find rated content
-  - ratings for equivalent content is show under the canonical subject
-    - there should be a way for the user to notice that other subjects have been marked as being equivalent. 
-      The user should be able to state that they're not, or to censor, dis, like, etc... the statement that stated the equivalence.
-  - there shouldn't be too many icons. 
-    Where we want to give the user the like, dislike, dis, comment, etc... just give him a "rate" icon.
-  - colors and icons for the rating actions should be uniform throughout the UI.
 
+NOT LIKE DOC:
+- Remove PoV icons everywhere
+
+- Collapsible sections
+
+- Use icons instead of words
+
+- BUG: I equated to <token>
+
+- BUG: I see related to El Barto regardless of if I'm looking at Art or El Barto 
+{
+  "time": "12/31/2025 3:06 AM",
+  "I": "Lisa@nerdster.org",
+  "relate": {
+    "contentType": "resource",
+    "title": "Art",
+    "url": "https://en.wikipedia.org/wiki/Art"
+  },
+  "with": {
+    "otherSubject": {
+      "contentType": "resource",
+      "title": "El Barto",
+      "url": "https://simpsons.fandom.com/wiki/El_Barto"
+    }
+  }
+}
 
 
 Bugs:
