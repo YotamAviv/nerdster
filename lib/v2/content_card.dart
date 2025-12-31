@@ -76,8 +76,53 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   void _showInspectionSheet(String token) {
-    final agg = widget.model.aggregation.subjects[token];
+    var agg = widget.model.aggregation.subjects[token];
+    
+    if (agg == null) {
+      // Check if it's an equivalent subject
+      final canonical = widget.model.aggregation.equivalence[token];
+      if (canonical != null) {
+        final canonicalAgg = widget.model.aggregation.subjects[canonical];
+        if (canonicalAgg != null) {
+           // Found the canonical parent.
+           // Try to find the subject object for 'token' in the statements.
+           dynamic subjectObj;
+           for (final s in canonicalAgg.statements) {
+             if (s.subjectToken == token) {
+               subjectObj = s.subject;
+               break;
+             }
+             if (s.other != null && getToken(s.other) == token) {
+               subjectObj = s.other;
+               break;
+             }
+           }
+           
+           if (subjectObj == null) {
+             subjectObj = token; 
+           }
+
+           agg = SubjectAggregation(
+             subject: subjectObj,
+             statements: canonicalAgg.statements,
+             likes: canonicalAgg.likes,
+             dislikes: canonicalAgg.dislikes,
+             related: canonicalAgg.related,
+             tags: canonicalAgg.tags,
+             lastActivity: canonicalAgg.lastActivity,
+             isCensored: canonicalAgg.isCensored,
+             userDismissalTimestamp: canonicalAgg.userDismissalTimestamp,
+             povDismissalTimestamp: canonicalAgg.povDismissalTimestamp,
+             isDismissed: canonicalAgg.isDismissed,
+             isRated: canonicalAgg.isRated,
+             myDelegateStatements: canonicalAgg.myDelegateStatements,
+           );
+        }
+      }
+    }
+
     if (agg == null) return;
+    final safeAgg = agg;
 
     showModalBottomSheet(
       context: context,
@@ -98,7 +143,7 @@ class _ContentCardState extends State<ContentCard> {
               child: SingleChildScrollView(
                 controller: scrollController,
                 child: ContentCard(
-                  aggregation: agg,
+                  aggregation: safeAgg,
                   model: widget.model,
                   onRefresh: widget.onRefresh,
                   onPovChange: widget.onPovChange,
