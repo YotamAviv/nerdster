@@ -136,7 +136,7 @@ void main() {
           alice: [root, alice],
         },
         notifications: [
-          TrustNotification(subject: alice, reason: 'conflict', relatedStatements: [f1.token], isConflict: true),
+          TrustNotification(subject: alice, reason: 'conflict', relatedStatement: f1.token, isConflict: true),
         ],
       );
 

@@ -158,7 +158,7 @@ class GraphController {
           final isNonCanonical = tg.replacements.containsKey(s.subjectToken);
           
           // Check if this statement is a conflict
-          final isConflict = tg.notifications.any((n) => n.isConflict && n.relatedStatements.contains(s.token));
+          final isConflict = tg.notifications.any((n) => n.isConflict && n.relatedStatement == s.token);
 
           _mergeOrAddEdge(edges, GraphEdgeData(
             fromIdentity: issuerIdentity,
@@ -185,7 +185,7 @@ class GraphController {
         final subjectIdentity = feedModel.labeler.getIdentityForToken(s.subjectToken);
         
         // Check if this statement is a conflict
-        final isConflict = fn.notifications.any((n) => n.isConflict && n.relatedStatements.contains(s.token));
+        final isConflict = fn.notifications.any((n) => n.isConflict && n.relatedStatement == s.token);
 
         _mergeOrAddEdge(edges, GraphEdgeData(
           fromIdentity: resolvedIssuer,

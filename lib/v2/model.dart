@@ -18,13 +18,13 @@ enum V2FilterMode {
 class TrustNotification {
   final String subject;
   final String reason;
-  final List<String> relatedStatements;
+  final String relatedStatement;
   final bool isConflict;
 
   TrustNotification({
     required this.subject,
     required this.reason,
-    this.relatedStatements = const [],
+    required this.relatedStatement,
     this.isConflict = false,
   });
 

@@ -101,7 +101,7 @@ FollowNetwork reduceFollowNetwork(
             notifications.add(TrustNotification(
               subject: subjectIdentity,
               reason: "Attempt to block yourself in context $fcontext",
-              relatedStatements: [s.token],
+              relatedStatement: s.token,
               isConflict: true,
             ));
             continue;
@@ -112,7 +112,7 @@ FollowNetwork reduceFollowNetwork(
             notifications.add(TrustNotification(
               subject: subjectIdentity,
               reason: "Attempt to block followed identity $subjectIdentity in context $fcontext",
-              relatedStatements: [s.token],
+              relatedStatement: s.token,
               isConflict: true,
             ));
           }
@@ -122,7 +122,7 @@ FollowNetwork reduceFollowNetwork(
             notifications.add(TrustNotification(
               subject: subjectIdentity,
               reason: "Attempt to follow blocked identity $subjectIdentity in context $fcontext",
-              relatedStatements: [s.token],
+              relatedStatement: s.token,
               isConflict: true,
             ));
             continue;

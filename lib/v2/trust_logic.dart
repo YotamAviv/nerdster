@@ -134,7 +134,7 @@ TrustGraph reduceTrustGraph(
           notifications.add(TrustNotification(
             subject: subject,
             reason: "Attempt to block your key.",
-            relatedStatements: [s.token],
+            relatedStatement: s.token,
             isConflict: true,
           ));
           continue;
@@ -144,7 +144,7 @@ TrustGraph reduceTrustGraph(
           notifications.add(TrustNotification(
             subject: subject,
             reason: "Attempt to block trusted key by $issuer",
-            relatedStatements: [s.token],
+            relatedStatement: s.token,
             isConflict: true,
           ));
         } else {
@@ -188,7 +188,7 @@ TrustGraph reduceTrustGraph(
           notifications.add(TrustNotification(
             subject: oldKey,
             reason: "Attempt to replace your key.",
-            relatedStatements: [s.token],
+            relatedStatement: s.token,
             isConflict: true,
           ));
           continue;
@@ -198,7 +198,7 @@ TrustGraph reduceTrustGraph(
           notifications.add(TrustNotification(
             subject: oldKey,
             reason: "Blocked key $oldKey is being replaced by $issuer",
-            relatedStatements: [s.token],
+            relatedStatement: s.token,
             isConflict: false,
           ));
           // Do not add blocked keys to the pathfinding graph
@@ -212,7 +212,7 @@ TrustGraph reduceTrustGraph(
           notifications.add(TrustNotification(
             subject: oldKey,
             reason: "Trusted key $oldKey is being replaced by $issuer (Replacement constraint ignored due to distance)",
-            relatedStatements: [s.token],
+            relatedStatement: s.token,
             isConflict: false,
           ));
           continue;
@@ -224,7 +224,7 @@ TrustGraph reduceTrustGraph(
             notifications.add(TrustNotification(
               subject: oldKey,
               reason: "Key $oldKey replaced by both $existingNewKey and $issuer",
-              relatedStatements: [s.token],
+              relatedStatement: s.token,
               isConflict: true,
             ));
             continue;
@@ -235,7 +235,7 @@ TrustGraph reduceTrustGraph(
           notifications.add(TrustNotification(
             subject: oldKey,
             reason: "Trusted key $oldKey is being replaced by $issuer",
-            relatedStatements: [s.token],
+            relatedStatement: s.token,
             isConflict: false,
           ));
         }
@@ -277,7 +277,7 @@ TrustGraph reduceTrustGraph(
           notifications.add(TrustNotification(
             subject: subject,
             reason: "Attempt to trust blocked key by $issuer",
-            relatedStatements: [s.token],
+            relatedStatement: s.token,
             isConflict: true,
           ));
           continue;
@@ -289,7 +289,7 @@ TrustGraph reduceTrustGraph(
           notifications.add(TrustNotification(
             subject: subject,
             reason: "$issuerName trusts a non-canonical key directly (replaced by $effectiveSubject)",
-            relatedStatements: [s.token],
+            relatedStatement: s.token,
             isConflict: false,
           ));
         }
