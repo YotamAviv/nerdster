@@ -37,7 +37,9 @@ enum SettingType {
   batchFetch(bool, true),
 
   verifyImmediately(bool, false, param: true),
-  verify(String, null, param: true);
+  verify(String, null, param: true),
+  
+  debugUseSubjectNotToken(bool, false);
 
   final Type type;
   final dynamic defaultValue;

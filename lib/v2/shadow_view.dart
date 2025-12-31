@@ -163,7 +163,7 @@ class _ShadowViewState extends State<ShadowView> {
 
                         final agg = subjects[index];
                         final subjectLabel = agg.subject is Map
-                            ? (agg.subject['title'] ?? agg.canonicalToken)
+                            ? (agg.subject['title'] ?? agg.token)
                             : agg.subject.toString();
 
                         return ExpansionTile(

@@ -22,6 +22,9 @@ just that data missing.
 ?fire=fake&demo=egosCircle
 &netView=true
 
+# Fake simpsonsRelateDemo
+?fire=fake&demo=simpsonsRelateDemo&debugUseSubjectNotToken=true
+
 # Emulator simpsonsDemo from PROD
 ?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}
 

@@ -10,7 +10,6 @@ Future<void> v2Submit(BuildContext context, V2FeedModel model, {VoidCallback? on
     final canonicalToken = subject.token;
     final aggregation = model.aggregation.subjects[canonicalToken] ?? 
         SubjectAggregation(
-          canonicalToken: canonicalToken,
           subject: subject.json,
           lastActivity: DateTime.now(),
         );

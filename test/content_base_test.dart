@@ -144,8 +144,8 @@ void main() async {
     ContentStatement relateStatement = await lonerD.doRelate(ContentVerb.relate,
         title: "t1", other: rateStatement.json);
     contentBase.listen();
-    expect(relateStatement.subject, rateStatement.subject);
-    expect(relateStatement.other, rateStatement.json);
+    expect(relateStatement.subject, getToken(rateStatement.subject));
+    expect(relateStatement.other, getToken(rateStatement.json));
     await contentBase.waitUntilReady();
     roots = contentBase.roots;
     expect(roots.length, 1);

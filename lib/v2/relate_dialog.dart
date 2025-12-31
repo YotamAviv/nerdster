@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
-import 'package:nerdster/content/dialogs/lgtm.dart';
 
 class V2RelateDialog extends StatefulWidget {
   final SubjectAggregation subject1;
@@ -145,8 +143,8 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
     final json = ContentStatement.make(
       signInState.delegatePublicKeyJson!,
       _verb,
-      widget.subject1.canonicalToken, // Using token as subject
-      other: widget.subject2.canonicalToken, // Using token as other
+      widget.subject1.subject,
+      other: widget.subject2.subject,
       comment: _commentController.text.isNotEmpty ? _commentController.text : null,
     );
     if (mounted) {

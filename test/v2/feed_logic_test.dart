@@ -2,15 +2,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
-import 'package:nerdster/v2/model.dart';
+
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
+
+
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/oneofus/oou_signer.dart';
+
 import 'simpsons_data_helper.dart';
 
 void main() {
@@ -146,7 +146,7 @@ void main() {
 
     // 6. Verify the Rating Statement is NOT a top-level subject
     final ratingAsSubject = model.aggregation.subjects.values.where((agg) => 
-      agg.canonicalToken == ratingToken
+      agg.token == ratingToken
     );
     expect(ratingAsSubject, isEmpty, reason: "The rating statement itself should NOT be a top-level subject");
   });

@@ -70,6 +70,18 @@ Future<(DemoKey, DemoKey?)> simpsonsRelateDemo() async {
   final art = {'contentType': 'resource', 'title': 'Art', 'url': 'https://en.wikipedia.org/wiki/Art'};
   final toy = {'contentType': 'resource', 'title': 'Toy', 'url': 'https://en.wikipedia.org/wiki/Toy'};
 
+  // Rate subjects so they are known (otherwise only tokens are used in relate/equate)
+  await lisaD.doRate(subject: science, recommend: true);
+  await lisaD.doRate(subject: math, recommend: true);
+  await homerD.doRate(subject: donut, recommend: true);
+  await lisaD.doRate(subject: happiness, recommend: true);
+  await margeD.doRate(subject: food, recommend: true);
+  await bartD.doRate(subject: skateboard, recommend: true);
+  await lisaD.doRate(subject: transportation, recommend: true);
+  await bartD.doRate(subject: elBarto, recommend: true);
+  await lisaD.doRate(subject: art, recommend: true);
+  await bartD.doRate(subject: toy, recommend: true);
+
   // Lisa relates Science to Math
   await lisaD.doRelate(ContentVerb.relate, subject: science, other: math);
 

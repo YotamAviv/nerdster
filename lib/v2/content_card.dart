@@ -1,9 +1,9 @@
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/content/dialogs/relate_dialog.dart';
-import 'package:nerdster/content/dialogs/lgtm.dart';
+
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/singletons.dart';
@@ -56,7 +56,7 @@ class _ContentCardState extends State<ContentCard> {
   @override
   void didUpdateWidget(ContentCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.aggregation.canonicalToken != widget.aggregation.canonicalToken) {
+    if (oldWidget.aggregation.token != widget.aggregation.token) {
       _metadata = null;
       _fetchMetadata();
     }
@@ -150,7 +150,7 @@ class _ContentCardState extends State<ContentCard> {
     String? metaImage = _metadata?.image;
     if (metaImage != null && metaImage.isEmpty) metaImage = null;
 
-    final imageUrl = metaImage ?? 'https://picsum.photos/seed/${widget.aggregation.canonicalToken}/600/400';
+    final imageUrl = metaImage ?? 'https://picsum.photos/seed/${widget.aggregation.token}/600/400';
 
     return Card(
       margin: const EdgeInsets.all(8.0),
@@ -338,7 +338,7 @@ class _ContentCardState extends State<ContentCard> {
   Widget _buildEquivalentSubjects() {
     // Find all subjects that are equivalent to this one
     final equivalentTokens = widget.model.aggregation.equivalence.entries
-        .where((e) => e.value == widget.aggregation.canonicalToken && e.key != widget.aggregation.canonicalToken)
+        .where((e) => e.value == widget.aggregation.token && e.key != widget.aggregation.token)
         .map((e) => e.key)
         .toSet();
 
@@ -413,7 +413,7 @@ class _ContentCardState extends State<ContentCard> {
                      const Text('Equated by: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
                      InkWell(
                        onTap: () {
-                         if (identity != null) widget.onGraphFocus?.call(identity);
+                         widget.onGraphFocus?.call(identity);
                        },
                        child: Text(authorName, style: const TextStyle(fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
                      ),
@@ -442,7 +442,7 @@ class _ContentCardState extends State<ContentCard> {
       if (s.verb == ContentVerb.relate && s.other != null) {
         final otherToken = getToken(s.other);
         // Filter out if it's an equivalent subject
-        if (widget.model.aggregation.equivalence[otherToken] == widget.aggregation.canonicalToken) {
+        if (widget.model.aggregation.equivalence[otherToken] == widget.aggregation.token) {
           continue;
         }
         if (widget.aggregation.related.contains(otherToken)) {
@@ -453,7 +453,7 @@ class _ContentCardState extends State<ContentCard> {
 
     // Filter related tokens to exclude equivalents
     final relatedTokens = widget.aggregation.related.where((token) => 
-      widget.model.aggregation.equivalence[token] != widget.aggregation.canonicalToken
+      widget.model.aggregation.equivalence[token] != widget.aggregation.token
     ).toList();
 
     if (relatedTokens.isEmpty) return const SizedBox.shrink();
@@ -516,7 +516,7 @@ class _ContentCardState extends State<ContentCard> {
                          const Text('Related by: ', style: TextStyle(fontSize: 12, color: Colors.grey)),
                          InkWell(
                            onTap: () {
-                             if (identity != null) widget.onGraphFocus?.call(identity);
+                             widget.onGraphFocus?.call(identity);
                            },
                            child: Text(authorName, style: const TextStyle(fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
                          ),
@@ -596,14 +596,14 @@ class _ContentCardState extends State<ContentCard> {
             visualDensity: VisualDensity.compact,
             icon: Icon(
               Icons.link,
-              color: widget.markedSubjectToken == widget.aggregation.canonicalToken
+              color: widget.markedSubjectToken == widget.aggregation.token
                   ? Colors.orange
                   : Colors.grey,
             ),
-            tooltip: widget.markedSubjectToken == widget.aggregation.canonicalToken
+            tooltip: widget.markedSubjectToken == widget.aggregation.token
                 ? 'Unmark'
                 : 'Mark to Relate/Equate',
-            onPressed: () => widget.onMark!(widget.aggregation.canonicalToken),
+            onPressed: () => widget.onMark!(widget.aggregation.token),
           ),
         IconButton(
           visualDensity: VisualDensity.compact,
@@ -862,7 +862,6 @@ class SubjectDetailsView extends StatelessWidget {
                 onPressed: () => V2RateDialog.show(
                   context,
                   SubjectAggregation(
-                    canonicalToken: s.token,
                     subject: s.json,
                     lastActivity: s.time,
                   ),

@@ -40,7 +40,7 @@ void main() async {
     var (identity, delegate) = await egosCircle();
     await signInState.signIn(identity.token, null);
     await Comp.waitOnComps([notifications]);
-    var x = notifications.problems;
+    // var x = notifications.problems;
     if (notifications.problems.isNotEmpty) {
       print(notifications.problems.first);
     }

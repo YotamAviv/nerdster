@@ -7,11 +7,11 @@ import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/oneofus/prefs.dart';
+
+
+
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/setting_type.dart';
+
 import 'package:nerdster/demotest/demo_key.dart';
 
 class MockV2FeedModel extends V2FeedModel {

@@ -109,7 +109,7 @@ void main() async {
     expect(followLisa.contains(trustLisa.resolveIdentity(homer.token)), true, reason: 'Lisa should follow Homer (Homer2)');
     
     // Check if Marge's content is there (MargeN signed it)
-    expect(contentLisa.subjects.values.any((s) => s.canonicalToken == margeRating.subjectToken), true, reason: "Lisa should see Marge's content");
+    expect(contentLisa.subjects.values.any((s) => s.token == margeRating.subjectToken), true, reason: "Lisa should see Marge's content");
 
     // --- BART'S POV ---
     final TrustGraph trustBart = reduceTrustGraph(TrustGraph(root: bart.token), allTrustStatements);
@@ -274,7 +274,7 @@ void main() async {
     final ContentStatement spamRate = await bartN.doRate(subject: spamUrl, recommend: true);
     
     // 2. Lisa censors Bart's rating statement
-    final ContentStatement lisaCensorship = await lisaN.doRate(subject: spamRate.token, censor: true);
+    await lisaN.doRate(subject: spamRate.token, censor: true);
 
     // 3. Homer also rates the spam URL (he likes it)
     final ContentStatement homerRate = await homerN.doRate(subject: spamUrl, recommend: true);
@@ -316,7 +316,7 @@ void main() async {
     );
 
     // 5. Lisa censors Bart's censorship statement
-    final ContentStatement lisaCensorsBartCensorship = await lisaN.doRate(subject: bartCensorship.token, censor: true);
+    await lisaN.doRate(subject: bartCensorship.token, censor: true);
 
     // Rebuild map again
     for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
@@ -433,7 +433,7 @@ void main() async {
     final ContentStatement spamRate = await bartN.doRate(subject: spamUrl, recommend: true);
     
     // 2. Lisa censors Bart's rating statement
-    final ContentStatement lisaCensorship = await lisaN.doRate(subject: spamRate.token, censor: true);
+    await lisaN.doRate(subject: spamRate.token, censor: true);
 
     // 3. Homer also rates the spam URL (he likes it)
     final ContentStatement homerRate = await homerN.doRate(subject: spamUrl, recommend: true);
@@ -477,7 +477,7 @@ void main() async {
     expect(aggregation2.censored, contains(spamUrl));
 
     // 5. Lisa censors Bart's censorship statement
-    final ContentStatement lisaCensorsBartCensorship = await lisaN.doRate(subject: bartCensorship.token, censor: true);
+    await lisaN.doRate(subject: bartCensorship.token, censor: true);
 
     // Rebuild map
     for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
@@ -539,7 +539,7 @@ void main() async {
     final ContentStatement relate13 = await bartN.doRelate(ContentVerb.relate, subject: subject1, other: subject3);
 
     // 3. Lisa censors subject 2
-    final ContentStatement censor2 = await lisaN.doRate(subject: subject2, censor: true);
+    await lisaN.doRate(subject: subject2, censor: true);
 
     // Rebuild map
     for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
@@ -560,7 +560,7 @@ void main() async {
     expect(network.rootIdentity, homer.token);
 
     // 4. Lisa censors the relate statement itself
-    final ContentStatement censorRelate = await lisaN.doRate(subject: relate13.token, censor: true);
+    await lisaN.doRate(subject: relate13.token, censor: true);
 
     // Rebuild map
     for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {

@@ -6,7 +6,7 @@ import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
+
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 

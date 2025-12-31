@@ -37,6 +37,10 @@ Bugs:
 
 ## NOTES FOR ME - DON'T START WITHOUT ME
 
+- upgrade related tags
+  - don't sort
+  - use equivalence tech
+
 - Submit
   - Verify URLs some
 

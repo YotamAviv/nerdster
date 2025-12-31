@@ -1,6 +1,8 @@
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 
 const String kNerdsterDomain = 'nerdster.org';
 
@@ -17,7 +19,8 @@ class ContentStatement extends Statement {
   final Json? contexts; // (verb == follow)
 
   static void init() {
-    Statement.registerFactory('org.nerdster', _ContentStatementFactory(), ContentStatement, kNerdsterDomain);
+    Statement.registerFactory(
+        'org.nerdster', _ContentStatementFactory(), ContentStatement, kNerdsterDomain);
   }
 
   factory ContentStatement(Jsonish jsonish) {
@@ -62,10 +65,8 @@ class ContentStatement extends Statement {
     required this.contexts,
   });
 
-  // A fancy StatementBuilder would be nice, but the important thing is not to have
-  // strings like 'revokeAt' all over the code, and this avoids most of it.
-  // CONSIDER: A fancy StatementBuilder.
-  // CONSIDER: Factoring a little more into parent.
+  /// Encapsulates the logic for creating content statements, including the conditional 
+  /// tokenization (or not) of subject, other subject.
   static Json make(Json iJson, ContentVerb verb, dynamic subject,
       {String? comment,
       dynamic other,
@@ -73,17 +74,35 @@ class ContentStatement extends Statement {
       bool? dismiss,
       bool? censor,
       Json? contexts}) {
+    dynamic s = subject;
+    dynamic o = other;
+
+    if (verb == ContentVerb.rate || verb == ContentVerb.clear) {
+      final isStatement = (s is Map && s.containsKey('statement')) || s is Statement;
+      if (verb == ContentVerb.clear ||
+          (censor == true) ||
+          (verb == ContentVerb.rate && dismiss == true) ||
+          isStatement) {
+        s = getToken(s);
+      }
+    } else {
+      if (Setting.get(SettingType.debugUseSubjectNotToken).value != true) {
+        s = getToken(s);
+        if (b(o)) o = getToken(o);
+      }
+    }
+
     Json json = {
       'statement': Statement.type<ContentStatement>(),
       'time': clock.nowIso,
       'I': iJson,
-      verb.label: subject,
+      verb.label: s,
     };
     if (comment != null) {
       json['comment'] = comment;
     }
     Json withx = {
-      'otherSubject': other,
+      'otherSubject': o,
       'recommend': recommend,
       'dismiss': dismiss,
       'censor': censor,

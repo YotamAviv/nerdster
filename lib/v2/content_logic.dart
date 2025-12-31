@@ -14,11 +14,7 @@ bool _isStatement(String token) {
   return j != null && j.containsKey('statement');
 }
 
-dynamic _bestSubject(dynamic current, dynamic candidate) {
-  if (candidate == null) return current;
-  if (current is! Map && candidate is Map) return candidate;
-  return current;
-}
+
 
 /// The Pure Function Core of the Content Aggregation Algorithm.
 ///
@@ -273,7 +269,6 @@ ContentAggregation reduceContentAggregation(
 
         final SubjectAggregation agg = subjects.putIfAbsent(canonical, () {
           return SubjectAggregation(
-            canonicalToken: canonical,
             subject: canonical,
             lastActivity: s.time,
           );
@@ -356,7 +351,6 @@ ContentAggregation reduceContentAggregation(
           }
 
           subjects[canonical] = SubjectAggregation(
-            canonicalToken: canonical,
             subject: agg.subject,
             statements: newStatements,
             tags: agg.tags,
@@ -391,14 +385,22 @@ ContentAggregation reduceContentAggregation(
 
         final DateTime lastActivity = s.time.isAfter(agg.lastActivity) ? s.time : agg.lastActivity;
 
+        // Determine the best subject representation
+        dynamic bestSubject = agg.subject;
+        dynamic candidateSubject;
+        if ((equivalence[s.subjectToken] ?? s.subjectToken) == canonical) {
+          candidateSubject = s.subject;
+        } else if (s.other != null && (equivalence[getToken(s.other)] ?? getToken(s.other)) == canonical) {
+          candidateSubject = s.other;
+        }
+        
+        if (bestSubject is String && candidateSubject is! String && candidateSubject != null) {
+          bestSubject = candidateSubject;
+        }
+
         // Update the aggregation
         subjects[canonical] = SubjectAggregation(
-          canonicalToken: canonical,
-          subject: _bestSubject(
-              agg.subject,
-              (equivalence[s.subjectToken] ?? s.subjectToken) == canonical
-                  ? s.subject
-                  : (s.other != null && (equivalence[getToken(s.other)] ?? getToken(s.other)) == canonical ? s.other : null)),
+          subject: bestSubject,
           statements: [...agg.statements, s],
           tags: agg.tags, // Will be updated in Pass 3
           likes: likes,
@@ -455,7 +457,6 @@ ContentAggregation reduceContentAggregation(
       }
 
       subjects[canonical] = SubjectAggregation(
-        canonicalToken: agg.canonicalToken,
         subject: agg.subject,
         statements: agg.statements,
         tags: agg.tags,
@@ -499,9 +500,8 @@ ContentAggregation reduceContentAggregation(
   }
 
   for (final agg in subjects.values) {
-    final Set<String> recursiveTags = collectTagsRecursive(agg.canonicalToken, {});
-    subjects[agg.canonicalToken] = SubjectAggregation(
-      canonicalToken: agg.canonicalToken,
+    final Set<String> recursiveTags = collectTagsRecursive(agg.token, {});
+    subjects[agg.token] = SubjectAggregation(
       subject: agg.subject,
       statements: agg.statements,
       tags: recursiveTags,

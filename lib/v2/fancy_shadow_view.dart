@@ -155,7 +155,7 @@ class ContentBox extends StatelessWidget {
         : [];
 
     return Dismissible(
-      key: Key(aggregation.canonicalToken),
+      key: Key(aggregation.token),
       background: Container(
         color: Colors.green,
         alignment: Alignment.centerLeft,

@@ -7,11 +7,9 @@ import '../oneofus/json_display.dart';
 import '../oneofus/statement.dart';
 import '../content/dialogs/on_off_icon.dart';
 import '../content/dialogs/on_off_icons.dart';
-import '../content/dialogs/lgtm.dart';
 import '../util_ui.dart';
 import 'model.dart';
 import 'source_factory.dart';
-import 'refresh_signal.dart';
 
 enum RateIntent { like, dislike, dismiss, comment, censor, clear, none }
 
@@ -207,23 +205,11 @@ class _V2RateDialogState extends State<V2RateDialog> {
       verb = ContentVerb.rate;
     }
 
-    Object? subject;
-    final rawSubject = widget.aggregation.subject;
-    final isStatement = rawSubject is Map && rawSubject.containsKey('statement');
-
-    if (verb == ContentVerb.clear ||
-        censor.value ||
-        (verb == ContentVerb.rate && dis.value) ||
-        isStatement) {
-      subject = getToken(rawSubject);
-    } else {
-      subject = rawSubject;
-    }
 
     final json = ContentStatement.make(
       i,
       verb,
-      subject,
+      widget.aggregation.subject,
       recommend: like.value,
       dismiss: trueOrNull(dis.value),
       censor: trueOrNull(censor.value),

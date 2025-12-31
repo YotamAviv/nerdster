@@ -140,7 +140,6 @@ class FollowNetwork {
 
 /// Aggregated data for a single subject (or equivalence group).
 class SubjectAggregation {
-  final String canonicalToken;
   final dynamic subject; // The subject JSON or token
   final List<ContentStatement> statements;
   final Set<String> tags;
@@ -156,7 +155,6 @@ class SubjectAggregation {
   final bool isRated; // Rated by the POV
 
   SubjectAggregation({
-    required this.canonicalToken,
     this.subject,
     this.statements = const [],
     this.tags = const {},
@@ -171,6 +169,8 @@ class SubjectAggregation {
     this.isDismissed = false,
     this.isRated = false,
   });
+
+  String get token => getToken(subject);
 }
 
 /// The result of aggregating content for a Follow Network.
