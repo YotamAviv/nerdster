@@ -499,7 +499,7 @@ ContentAggregation reduceContentAggregation(
     return tags;
   }
 
-  for (final agg in subjects.values) {
+  for (final agg in subjects.values.toList()) {
     final Set<String> recursiveTags = collectTagsRecursive(agg.token, {});
     subjects[agg.token] = SubjectAggregation(
       subject: agg.subject,
