@@ -2,61 +2,26 @@
 
 
 NOT LIKE DOC:
-- Remove PoV icons everywhere
 
-- Collapsible sections
 
-- Use icons instead of words
-
-- BUG: I equated to <token>
-
-- BUG: I see related to El Barto regardless of if I'm looking at Art or El Barto 
-{
-  "time": "12/31/2025 3:06 AM",
-  "I": "Lisa@nerdster.org",
-  "relate": {
-    "contentType": "resource",
-    "title": "Art",
-    "url": "https://en.wikipedia.org/wiki/Art"
-  },
-  "with": {
-    "otherSubject": {
-      "contentType": "resource",
-      "title": "El Barto",
-      "url": "https://simpsons.fandom.com/wiki/El_Barto"
-    }
-  }
-}
-
+- Submit
+  - Verify URLs some
 
 Bugs:
-- [x] Rate dialog thumb down is green, not like what's on content view. Unify.
 - trying to rate while not signed in fails silently. The user should be alerted that he's not signed in early.
 - I see content I've dismissed.
-- [x] I disliked a rating
-  - [x] eneded up with a high level statement in the content view
-  - it isn't clear that my dislike did something, or what it did at all.
-  - I shouldn't be encouraged to censor my own statements; I can just clear them instead.
-  - I think the easiest way to clear this up is to remove the bunch of icons and just have a single REACT icon.
-
-- Equate, relate
-  Requirements doc:
-  - Use my legacy equivalence algorithm (legacy equivalence.dart) to reduce equivalences, possibly relations as well.
-  - show equivalent and related subjects in the UI somehow, TODO: Where? How?.
-    - show the statements that related and equated those somewhere as well.
-  - Include ratings on equivalent subjects as being about the canonical subject. that's the whole point.
-  - allow users to state   relate, dontRelate, equate, dontEquate using the UI.
-
+- I shouldn't be encouraged to censor my own statements; I can just clear them instead.
 
 
 ## NOTES FOR ME - DON'T START WITHOUT ME
 
+- follow
+
+- uniform bar/controlls for graph and content views, maybe..
+
 - upgrade related tags
   - don't sort
   - use equivalence tech
-
-- Submit
-  - Verify URLs some
 
 - filter/sort content 
   - filter by type: recipe, video, article, ..

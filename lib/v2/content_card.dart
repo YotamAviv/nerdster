@@ -517,7 +517,11 @@ class _ContentCardState extends State<ContentCard> {
             tooltip: widget.markedSubjectToken == widget.aggregation.token
                 ? 'Unmark'
                 : 'Mark to Relate/Equate',
-            onPressed: () => widget.onMark!(widget.aggregation.token),
+            onPressed: () {
+              if (checkDelegate(context)) {
+                widget.onMark!(widget.aggregation.token);
+              }
+            },
           ),
         IconButton(
           visualDensity: VisualDensity.compact,
@@ -531,25 +535,8 @@ class _ContentCardState extends State<ContentCard> {
     );
   }
 
-  bool _checkDelegate() {
-    if (signInState.delegate == null) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Delegate Key Required'),
-          content: const Text('You are signed in with an identity key, but you need a delegate key to sign content statements (likes, comments, etc.). Please sign in with a delegate key.'),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-          ],
-        ),
-      );
-      return false;
-    }
-    return true;
-  }
-
   Future<void> _react() async {
-    if (!_checkDelegate()) return;
+    if (!checkDelegate(context)) return;
     await V2RateDialog.show(
       context,
       widget.aggregation,
@@ -800,7 +787,11 @@ class SubjectDetailsView extends StatelessWidget {
                     color: markedSubjectToken == s.token ? Colors.orange : Colors.grey,
                   ),
                   tooltip: markedSubjectToken == s.token ? 'Unmark' : 'Mark to Relate/Equate',
-                  onPressed: () => onMark!(s.token),
+                  onPressed: () {
+                    if (checkDelegate(context)) {
+                      onMark!(s.token);
+                    }
+                  },
                 ),
               const SizedBox(width: 8),
               IconButton(
@@ -878,4 +869,21 @@ bool _shouldShowStatement(ContentStatement s, V2FeedModel model) {
     case V2FilterMode.ignoreDisses:
       return true;
   }
+}
+
+bool checkDelegate(BuildContext context) {
+  if (signInState.delegate == null) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delegate Key Required'),
+        content: const Text('You are signed in with an identity key, but you need a delegate key to sign content statements (likes, comments, etc.). Please sign in with a delegate key.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+        ],
+      ),
+    );
+    return false;
+  }
+  return true;
 }
