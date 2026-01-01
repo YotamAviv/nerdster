@@ -4,8 +4,6 @@
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
-allow a more permisive identity layer so that lisa can see burns
-
 ### relating statements
 
 I used the app to relate 2 Bart's relate statement on El Barto and Marge's dontRelate statement on El Barto. This is what I see in LGTM:
@@ -15,7 +13,6 @@ After the statement took effect, I saw that Lisa related the statement to 8 digi
 Clacker looked into it had started working on it, but I stopped it.
 
 I should think about relating statements.
-
 
 
 ### another simpsons demo for a variety of reasons.
@@ -32,27 +29,22 @@ I want to add
 - furthermore, it'd be nice to have the "script" not be a Dart program. I don't want to invent a new language and syntax. Any suggestions?
 
 Enhancements
-- show keys in node detail  interpreted with option to see link to published statements
+- keys in node detail: interpreted with option to see link to published statements
 - show menu in graph view
-- upgrade identityPathsReq to slider.
 
 - Submit
   - Verify URLs some
 
 - follow
 
-- uniform bar/controlls for graph and content views, maybe..
 - filter/sort content 
   - filter by type: recipe, video, article, ..
   - sort by: recent activity
   - sort by: most activity (not just comments)
-- Use same network choices for Content and Graph View
-
 
 - upgrade related tags
   - don't sort
   - use equivalence tech
-
 
 - Crypto proofs
 

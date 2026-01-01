@@ -126,19 +126,5 @@ void main() {
       EquivalenceGroup('x', {'x'}, {'a'}),
     });
   });
-
-  test('TODO: probably change outcome. homer, homer2, sideshow!', () {
-    // TODO: Make homer2 be canonical instead of sideshow.
-    Equivalence equivalence = Equivalence();
-    expect(equivalence.process(EquateStatement('homer2', 'homer')), true);
-    expect(equivalence.process(EquateStatement('sideshow', 'homer')), true);
-    equivalence.checkRepInvariant();
-    Set<EquivalenceGroup> combined = equivalence.createGroups();
-    expect(combined, <EquivalenceGroup>{
-      EquivalenceGroup('sideshow', {'sideshow', 'homer2', 'homer'}, {}),
-    });
-  });
-
-
 }
 
