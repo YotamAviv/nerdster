@@ -1,8 +1,38 @@
 # Current Activity: V2 Rewrite
 
+Graph changes:
+
+Click (Tap) on a node:
+Make this do what "Long Press on a node:" currently does.
+
+Long Press on a node:
+Do nothing, don't even detect it.
+
+Close Focus (X Icon): 
+Remove this
+
+The Content View has these:
+- PoV dropdown
+- Context: [<identity>, <nerdster>, other available follow contexts] 
+Put those same controls on the graph view instead of what's currently there (The FOLLOW/IDENTITY switch and the X Icon)
 
 
-I want another simpsons demo for a variety of reasons.
+
+## NOTES FOR ME - DON'T START WITHOUT ME
+
+### relating statements
+
+I used the app to relate 2 Bart's relate statement on El Barto and Marge's dontRelate statement on El Barto. This is what I see in LGTM:
+
+I was expecting JSON subjects, not tokens.
+After the statement took effect, I saw that Lisa related the statement to 8 digits of gibberish.
+Clacker looked into it had started working on it, but I stopped it.
+
+I should think about relating statements.
+
+
+
+### another simpsons demo for a variety of reasons.
 I want to add
 - reactions on reactions (comment on comment, like  on comment, comment on like, etc..)
 - relations (like simpsons_relate_demo)
@@ -14,19 +44,6 @@ I want to add
   I used to be able to do that when using fake using the menus, but I seem to haev lost that ability
   Having that ability when using the emulator would require exporting and saving a file with the full public/private delegate keys
 - furthermore, it'd be nice to have the "script" not be a Dart program. I don't want to invent a new language and syntax. Any suggestions?
-
-## NOTES FOR ME - DON'T START WITHOUT ME
-
-- relating statements
-
-I used the app to relate 2 Bart's relate statement on El Barto and Marge's dontRelate statement on El Barto. This is what I see in LGTM:
-
-I was expecting JSON subjects, not tokens.
-After the statement took effect, I saw that Lisa related the statement to 8 digits of gibberish.
-Clacker looked into it had started working on it, but I stopped it.
-
-I should think about relating statements.
-
 
 
 - Submit

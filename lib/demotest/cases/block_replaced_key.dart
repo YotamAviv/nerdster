@@ -108,7 +108,7 @@ Future<(DemoKey, DemoKey?)> blockReplacedKey() async {
   signInState.pov = bart2.token;
   await Comp.waitOnComps([keyLabels, oneofusEquiv]);
   myExpect(baseProblemCollector.rejected.length, 2);
-  jsonShowExpect(baseProblemCollector.rejected, {
+  jsonExpect(baseProblemCollector.rejected, {
     r2.token: 'Attempt to replace your key.',
     bart3blocksBart.token: 'Attempt to block trusted key.',
   });

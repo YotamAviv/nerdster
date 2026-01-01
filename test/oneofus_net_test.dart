@@ -824,6 +824,33 @@ void main() async {
 
     print('Stress test executed in ${stopwatch.elapsed}');
   });
+
+  test('interpret token', () async {
+    String token = '86f463922199b2aea29266ada9a1b03e0fee1d87';
+    expect(keyLabels.interpret(token), '<crypto token>');
+  });
+
+  test('interpret revokeAt', () async {
+    String token = '86f463922199b2aea29266ada9a1b03e0fee1d87';
+    Map input = {'revokeAt': token};
+    Map expected = {'revokeAt': '<crypto token>'};
+    expect(keyLabels.interpret(input), expected);
+  });
+
+  test('interpret order', () async {
+    // Input with WRONG order (I at the end)
+    Map<String, dynamic> input = {
+      'with': 'w',
+      'trust': 'tr',
+      'I': 'i',
+      'time': 't',
+      'statement': 's',
+    };
+
+    // interpret should enforce order: time, I, trust, with
+    Map interpreted = keyLabels.interpret(input);
+    expect(interpreted.keys.toList(), ['time', 'I', 'trust', 'with']);
+  });
 }
 
 Future<Set> dfs(NetNode n) async {

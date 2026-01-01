@@ -167,14 +167,19 @@ class KeyLabels with Comp, ChangeNotifier implements Interpreter {
         return d;
       }
     } else if (d is Map) {
-      Map out = Map.of(d);
-      out.remove('statement');
-      out.remove('signature');
-      out.remove('previous');
-      return out.map((key, value) => MapEntry(interpret(key), interpret(value)));
+      List<String> keys = List.of(d.keys.cast<String>())..sort(Jsonish.compareKeys);
+      Map out = {};
+      for (String key in keys) {
+        if (key == 'statement' || key == 'signature' || key == 'previous') continue;
+        out[interpret(key)] = interpret(d[key]);
+      }
+      return out;
     } else if (d is String) {
       String? keyLabel = labelKey(d);
       if (b(keyLabel)) return keyLabel!;
+      if (RegExp(r'^[0-9a-f]{40}$').hasMatch(d)) {
+        return '<crypto token>';
+      }
       try {
         return formatUiDatetime(parseIso(d));
       } catch (e) {

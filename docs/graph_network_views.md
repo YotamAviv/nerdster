@@ -47,11 +47,29 @@ Shows who follows whom within a specific interest context.
 - **Focus**: Clicking a person's link in the feed switches the graph to focus on them.
 - **Highlighting**: The focused node and the paths leading to it are bolded or highlighted.
 - **PoV Shift**: Ability to "become" another node to see the network from their perspective.
+- **Node Details**: Tapping a node opens a details dialog showing information relevant to the current context.
+
+### Node Details Logic
+
+The content of the details dialog depends on the currently selected context:
+
+1.  **Context: `<identity>`**
+    *   Show incoming **Trust** statements (vouches) targeting this identity.
+
+2.  **Context: Specific (e.g., `news`, `music`)**
+    *   Show incoming **Follow/Block** statements that explicitly include the selected context.
+
+3.  **Context: `<nerdster>`**
+    *   *Explanation*: The `<nerdster>` context is a hybrid. It includes explicit follows in the `<nerdster>` context AND "virtual" follows derived from the Identity Trust graph (if you trust someone, you implicitly follow them on Nerdster unless you block them).
+    *   **Section 1: Explicit Follows**
+        *   Show incoming **Follow/Block** statements that explicitly include the `<nerdster>` context.
+    *   **Section 2: Implicit Follows (Trust)**
+        *   Show incoming **Trust** statements (vouches) *only if* there is no explicit `<nerdster>` follow/block statement from that issuer. (Explicit follows override implicit trust-based follows).
 
 ## Integration with Content View
 
 - **Contributor Links**: Clicking a contributor's name in a `ContentCard` opens the graph focused on that person.
-- **Crypto Proofs**: The "Show Crypto" setting applies to the graph as well. Clicking an edge opens the signed statement(s) that justify that trust or follow relationship.
+- **Crypto Proofs**: Yes, see Node Details above
 
 ## Layout Strategy
 

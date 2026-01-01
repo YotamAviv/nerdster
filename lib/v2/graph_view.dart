@@ -3,19 +3,25 @@ import 'package:graphview/GraphView.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/graph_controller.dart';
 import 'package:nerdster/v2/fan_algorithm.dart';
+import 'package:nerdster/v2/feed_controller.dart';
+import 'package:nerdster/follow/follow_net.dart' hide kOneofusContext, kNerdsterContext;
+import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/singletons.dart';
+
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/v2/follow_logic.dart';
+import 'package:nerdster/v2/labeler.dart';
 
 class NerdyGraphView extends StatefulWidget {
-  final V2FeedModel feedModel;
-  final ValueChanged<String?>? onPovChanged;
+  final V2FeedController controller;
   final String? initialFocus;
 
   const NerdyGraphView({
     super.key,
-    required this.feedModel,
-    this.onPovChanged,
+    required this.controller,
     this.initialFocus,
   });
 
@@ -24,7 +30,7 @@ class NerdyGraphView extends StatefulWidget {
 }
 
 class _NerdyGraphViewState extends State<NerdyGraphView> {
-  late GraphController _controller;
+  late GraphController _graphController;
   Graph _graph = Graph();
   final TransformationController _transformationController = TransformationController();
   late Algorithm _algorithm;
@@ -35,12 +41,15 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   @override
   void initState() {
     super.initState();
-    _controller = GraphController(widget.feedModel);
-    _controller.focusedIdentity = widget.initialFocus;
-    _controller.mode = GraphViewMode.values.firstWhere(
-      (m) => m.name == Setting.get<String>(SettingType.graphMode).value,
-      orElse: () => GraphViewMode.follow,
-    );
+    _graphController = GraphController(widget.controller.value!);
+    _graphController.focusedIdentity = widget.initialFocus;
+    
+    final fcontext = widget.controller.value!.fcontext;
+    _graphController.mode = (fcontext == kOneofusContext) 
+        ? GraphViewMode.identity 
+        : GraphViewMode.follow;
+
+    widget.controller.addListener(_onModelChanged);
 
     _updateAlgorithm();
     _refreshGraph();
@@ -51,9 +60,30 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     });
   }
 
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onModelChanged);
+    super.dispose();
+  }
+
+  void _onModelChanged() {
+    if (widget.controller.value != null) {
+      final oldFocus = _graphController.focusedIdentity;
+      _graphController = GraphController(widget.controller.value!);
+      _graphController.focusedIdentity = oldFocus;
+      
+      final fcontext = widget.controller.value!.fcontext;
+      _graphController.mode = (fcontext == kOneofusContext) 
+          ? GraphViewMode.identity 
+          : GraphViewMode.follow;
+          
+      _refreshGraph();
+    }
+  }
+
   void _updateAlgorithm() {
     _algorithm = FanAlgorithm(
-      rootId: _controller.rootIdentity,
+      rootId: _graphController.rootIdentity,
       levelSeparation: 200,
     );
   }
@@ -61,23 +91,16 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   @override
   void didUpdateWidget(NerdyGraphView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.feedModel != widget.feedModel) {
-      final oldFocus = _controller.focusedIdentity;
-      _controller = GraphController(widget.feedModel);
-      _controller.focusedIdentity = oldFocus;
-      _controller.mode = GraphViewMode.values.firstWhere(
-        (m) => m.name == Setting.get<String>(SettingType.graphMode).value,
-        orElse: () => GraphViewMode.follow,
-      );
-      
-      _updateAlgorithm();
-      _refreshGraph();
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller.removeListener(_onModelChanged);
+      widget.controller.addListener(_onModelChanged);
+      _onModelChanged();
     }
   }
 
   void _refreshGraph() {
-    final newData = _controller.buildGraphData();
-    final newPathEdges = _controller.getPathToFocused(newData);
+    final newData = _graphController.buildGraphData();
+    final newPathEdges = _graphController.getPathToFocused(newData);
     
     setState(() {
       _data = newData;
@@ -87,7 +110,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     });
 
     // Reset view when root changes
-    _transformationController.value = Matrix4.identity();
+    // _transformationController.value = Matrix4.identity();
   }
 
   void _buildGraphView() {
@@ -139,7 +162,8 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   @override
   Widget build(BuildContext context) {
-    if (_data == null || _data!.nodes.isEmpty) {
+    final model = widget.controller.value;
+    if (model == null || _data == null || _data!.nodes.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('Network Graph')),
         body: const Center(child: Text('No nodes to display in this context.')),
@@ -148,93 +172,146 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Network Graph'),
-        actions: [
-          _buildModeSelector(),
-          IconButton(
-            icon: const Icon(Icons.center_focus_strong),
-            onPressed: () {
-              setState(() {
-                _controller.focusedIdentity = null;
-                _transformationController.value = Matrix4.identity();
-                _refreshGraph();
-              });
-            },
-          ),
-        ],
+        toolbarHeight: 0, // Hide default AppBar to use custom controls
       ),
-      body: Column(
-        children: [
-          if (_controller.focusedIdentity != null)
-            _buildFocusHeader(),
-          Expanded(
-            child: InteractiveViewer(
-              key: ValueKey(_controller.rootIdentity),
-              transformationController: _transformationController,
-              constrained: false,
-              boundaryMargin: const EdgeInsets.all(500),
-              minScale: 0.01,
-              maxScale: 5.6,
-              child: GraphView(
-                key: ValueKey('${_controller.rootIdentity}_${_data?.nodes.length}_${_data?.edges.length}'),
-                graph: _graph,
-                algorithm: _algorithm,
-                paint: Paint()
-                  ..color = Colors.black
-                  ..strokeWidth = 1
-                  ..style = PaintingStyle.stroke,
-                builder: (Node node) {
-                  final identity = node.key!.value as String;
-                  return _buildNodeWidget(identity);
-                },
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildControls(model),
+            Expanded(
+              child: InteractiveViewer(
+                key: ValueKey(_graphController.rootIdentity),
+                transformationController: _transformationController,
+                constrained: false,
+                boundaryMargin: const EdgeInsets.all(500),
+                minScale: 0.01,
+                maxScale: 5.6,
+                child: GraphView(
+                  key: ValueKey('${_graphController.rootIdentity}_${_data?.nodes.length}_${_data?.edges.length}'),
+                  graph: _graph,
+                  algorithm: _algorithm,
+                  paint: Paint()
+                    ..color = Colors.black
+                    ..strokeWidth = 1
+                    ..style = PaintingStyle.stroke,
+                  builder: (Node node) {
+                    final identity = node.key!.value as String;
+                    return _buildNodeWidget(identity);
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(Icons.center_focus_strong),
+        onPressed: () {
+          setState(() {
+            _transformationController.value = Matrix4.identity();
+            _refreshGraph();
+          });
+        },
       ),
     );
   }
 
-  Widget _buildModeSelector() {
-    return DropdownButton<GraphViewMode>(
-      value: _controller.mode,
-      onChanged: (mode) {
-        if (mode != null) {
-          Setting.get<String>(SettingType.graphMode).value = mode.name;
-          setState(() {
-            _controller.mode = mode;
-            _refreshGraph();
-          });
-        }
-      },
-      items: GraphViewMode.values.map((m) {
-        return DropdownMenuItem(
-          value: m,
-          child: Text(m.name.toUpperCase()),
-        );
-      }).toList(),
-    );
-  }
+  Widget _buildControls(V2FeedModel model) {
+    final fcontext = Setting.get<String>(SettingType.fcontext).value;
+    final currentPov = model.rootToken;
+    final hasError = !model.activeContexts.contains(fcontext) && 
+                     fcontext != kOneofusContext && 
+                     fcontext != kNerdsterContext;
 
-  Widget _buildFocusHeader() {
-    final label = widget.feedModel.labeler.getLabel(_controller.focusedIdentity!);
-    return Container(
-      padding: const EdgeInsets.all(8),
-      color: Colors.blue[50],
-      child: Row(
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
         children: [
-          const Icon(Icons.search, color: Colors.blue),
-          const SizedBox(width: 8),
-          Text('Focusing on: $label', style: const TextStyle(fontWeight: FontWeight.bold)),
-          const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.close),
-            onPressed: () {
-              setState(() {
-                _controller.focusedIdentity = null;
-                _refreshGraph();
-              });
-            },
+          Row(
+            children: [
+              const Text('PoV: ', style: TextStyle(fontWeight: FontWeight.bold)),
+              Flexible(
+                flex: 3,
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  value: (model.trustGraph.distances.containsKey(currentPov) == true
+                          ? currentPov
+                          : null),
+                  hint: Text(model.labeler.getLabel(currentPov)),
+                  items: [
+                    if (signInState.pov != null)
+                      DropdownMenuItem(
+                        value: signInState.pov!,
+                        child: Text('Me (${model.labeler.getLabel(signInState.pov!)})'),
+                      ),
+                    ...model.trustGraph.orderedKeys
+                        .where((k) => k != signInState.pov)
+                        .map((k) {
+                      return DropdownMenuItem(
+                        value: k,
+                        child: Text(model.labeler.getLabel(k)),
+                      );
+                    }),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) {
+                      Setting.get<String?>(SettingType.pov).value = val;
+                      widget.controller.refresh(val, meToken: signInState.identity);
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Text('Context: ', style: TextStyle(fontWeight: FontWeight.bold)),
+              Flexible(
+                flex: 2,
+                child: Row(
+                  children: [
+                    if (hasError)
+                      const Tooltip(
+                        message: 'This PoV does not use this follow context.',
+                        child: Icon(Icons.error_outline, color: Colors.red, size: 16),
+                      ),
+                    Expanded(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: fcontext,
+                        style: hasError ? const TextStyle(color: Colors.red) : null,
+                        items: [
+                          const DropdownMenuItem(value: kOneofusContext, child: Text(kOneofusContext)),
+                          const DropdownMenuItem(value: kNerdsterContext, child: Text(kNerdsterContext)),
+                          ...model.availableContexts
+                              .where((c) => c != kOneofusContext && c != kNerdsterContext)
+                              .map((c) {
+                            final isContextActive = model.activeContexts.contains(c);
+                            return DropdownMenuItem(
+                              value: c,
+                              child: Text(
+                                c,
+                                style: TextStyle(
+                                  color: isContextActive ? null : Colors.grey,
+                                  fontStyle: isContextActive ? null : FontStyle.italic,
+                                ),
+                              ),
+                            );
+                          }),
+                          if (fcontext != kOneofusContext && 
+                              fcontext != kNerdsterContext && 
+                              !model.availableContexts.contains(fcontext))
+                            DropdownMenuItem(value: fcontext, child: Text(fcontext)),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) {
+                            Setting.get<String>(SettingType.fcontext).value = val;
+                            widget.controller.refresh(currentPov, meToken: signInState.identity);
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -254,10 +331,11 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       );
     }
 
-    final label = widget.feedModel.labeler.getLabel(identity);
-    final resolvedRoot = widget.feedModel.labeler.getIdentityForToken(_controller.rootIdentity);
-    final resolvedFocused = _controller.focusedIdentity != null 
-        ? widget.feedModel.labeler.getIdentityForToken(_controller.focusedIdentity!)
+    final model = widget.controller.value!;
+    final label = model.labeler.getLabel(identity);
+    final resolvedRoot = model.labeler.getIdentityForToken(_graphController.rootIdentity);
+    final resolvedFocused = _graphController.focusedIdentity != null 
+        ? model.labeler.getIdentityForToken(_graphController.focusedIdentity!)
         : null;
 
     final isRoot = identity == resolvedRoot;
@@ -265,13 +343,6 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
     return GestureDetector(
       onTap: () {
-        if (identity.startsWith('...')) return;
-        setState(() {
-          _controller.focusedIdentity = identity;
-          _refreshGraph();
-        });
-      },
-      onLongPress: () {
         if (identity.startsWith('...')) return;
         _showNodeDetails(identity);
       },
@@ -306,11 +377,13 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   }
 
   void _showNodeDetails(String identity) {
-    final labeler = widget.feedModel.labeler;
+    final model = widget.controller.value!;
+    final labeler = model.labeler;
     final labels = labeler.getAllLabels(identity);
-    final tg = widget.feedModel.trustGraph;
+    final tg = model.trustGraph;
     final keys = tg.getEquivalenceGroup(identity);
     final delegates = labeler.delegateResolver?.getDelegatesForIdentity(identity) ?? [];
+    final fcontext = model.fcontext;
     
     showDialog(
       context: context,
@@ -339,38 +412,134 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
                 ...delegates.map((d) => Text('• $d', style: const TextStyle(fontSize: 10, color: Colors.blue))),
               ],
               const SizedBox(height: 10),
-              const Text('Incoming Trust Statements:', style: TextStyle(fontWeight: FontWeight.bold)),
-              ...tg.edges.values.expand((l) => l).where((s) => labeler.getIdentityForToken(s.subjectToken) == identity).map((s) {
-                final issuerLabel = labeler.getLabel(labeler.getIdentityForToken(s.iToken));
-                return ExpansionTile(
-                  title: Text('From $issuerLabel (${s.verb.label})', style: const TextStyle(fontSize: 12)),
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      color: Colors.grey[100],
-                      child: SelectableText(
-                        encoder.convert(s.json),
-                        style: const TextStyle(fontFamily: 'monospace', fontSize: 10),
-                      ),
-                    ),
-                  ],
-                );
-              }),
+              
+              if (fcontext == kOneofusContext)
+                _buildIdentityDetails(identity, model)
+              else if (fcontext == kNerdsterContext)
+                _buildNerdsterDetails(identity, model)
+              else
+                _buildContextDetails(identity, model, fcontext),
             ],
           ),
         ),
         actions: [
-          if (widget.onPovChanged != null && identity != _controller.rootIdentity)
+          if (identity != _graphController.rootIdentity)
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                widget.onPovChanged!(identity);
+                Setting.get<String?>(SettingType.pov).value = identity;
+                widget.controller.refresh(identity, meToken: signInState.identity);
               },
               child: const Text('Set as PoV'),
             ),
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
         ],
       ),
+    );
+  }
+
+  Widget _buildIdentityDetails(String identity, V2FeedModel model) {
+    final labeler = model.labeler;
+    final tg = model.trustGraph;
+    
+    final statements = tg.edges.values
+        .expand((l) => l)
+        .where((s) => labeler.getIdentityForToken(s.subjectToken) == identity)
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Incoming Trust Statements:', style: TextStyle(fontWeight: FontWeight.bold)),
+        if (statements.isEmpty) const Text('None'),
+        ...statements.map((s) => _buildStatementTile(s, labeler)),
+      ],
+    );
+  }
+
+  Widget _buildContextDetails(String identity, V2FeedModel model, String context) {
+    final labeler = model.labeler;
+    final fn = model.followNetwork;
+    
+    final statements = fn.edges.values
+        .expand((l) => l)
+        .where((s) => labeler.getIdentityForToken(s.subjectToken) == identity)
+        .where((s) => s.contexts?.containsKey(context) == true)
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Incoming Follows ($context):', style: const TextStyle(fontWeight: FontWeight.bold)),
+        if (statements.isEmpty) const Text('None'),
+        ...statements.map((s) => _buildStatementTile(s, labeler)),
+      ],
+    );
+  }
+
+  Widget _buildNerdsterDetails(String identity, V2FeedModel model) {
+    final labeler = model.labeler;
+    final fn = model.followNetwork;
+    final tg = model.trustGraph;
+
+    // 1. Explicit Follows
+    final explicitStatements = fn.edges.values
+        .expand((l) => l)
+        .where((s) => labeler.getIdentityForToken(s.subjectToken) == identity)
+        .where((s) => s.contexts?.containsKey(kNerdsterContext) == true)
+        .toList();
+
+    final explicitIssuers = explicitStatements
+        .map((s) => labeler.getIdentityForToken(s.iToken))
+        .toSet();
+
+    // 2. Implicit Follows (Trust)
+    // Only show trust statements if the issuer hasn't explicitly followed/blocked in this context
+    final implicitStatements = tg.edges.values
+        .expand((l) => l)
+        .where((s) => labeler.getIdentityForToken(s.subjectToken) == identity)
+        .where((s) {
+          final issuer = labeler.getIdentityForToken(s.iToken);
+          return !explicitIssuers.contains(issuer);
+        })
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Nerdster Context:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
+        const Text(
+          'Includes explicit follows AND implicit follows derived from Trust (unless overridden).',
+          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+        ),
+        const SizedBox(height: 10),
+        
+        const Text('Explicit Follows:', style: TextStyle(fontWeight: FontWeight.bold)),
+        if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
+        ...explicitStatements.map((s) => _buildStatementTile(s, labeler)),
+        
+        const SizedBox(height: 10),
+        const Text('Implicit Follows (Trust):', style: TextStyle(fontWeight: FontWeight.bold)),
+        if (implicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
+        ...implicitStatements.map((s) => _buildStatementTile(s, labeler)),
+      ],
+    );
+  }
+
+  Widget _buildStatementTile(dynamic s, V2Labeler labeler) {
+    final issuerLabel = labeler.getLabel(labeler.getIdentityForToken(s.iToken));
+    final verb = s is TrustStatement ? s.verb.label : (s as ContentStatement).verb.label;
+    
+    return ExpansionTile(
+      title: Text('From $issuerLabel ($verb)', style: const TextStyle(fontSize: 12)),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          color: Colors.grey[100],
+          height: 200,
+          child: JsonDisplay(s.json),
+        ),
+      ],
     );
   }
 }

@@ -131,7 +131,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
              lastActivity: DateTime.now(),
            );
         }
-        if (subject2 == null && token != null) {
+        if (subject2 == null) {
            subject2 = SubjectAggregation(
              subject: token, 
              statements: [],
@@ -139,7 +139,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
            );
         }
 
-        if (subject1 != null && subject2 != null) {
+        if (subject1 != null) {
           V2RelateDialog.show(
             context,
             subject1,
@@ -366,8 +366,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => NerdyGraphView(
-                          feedModel: model,
-                          onPovChanged: _changePov,
+                          controller: _controller,
                         ),
                       ),
                     );
@@ -467,8 +466,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
               context,
               MaterialPageRoute(
                 builder: (context) => NerdyGraphView(
-                  feedModel: model,
-                  onPovChanged: _changePov,
+                  controller: _controller,
                   initialFocus: identity,
                 ),
               ),
