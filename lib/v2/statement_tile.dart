@@ -1,0 +1,287 @@
+import 'package:flutter/material.dart';
+import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/rate_dialog.dart';
+import 'package:nerdster/comment_widget.dart';
+import 'package:nerdster/oneofus/json_display.dart';
+import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+
+class StatementTile extends StatelessWidget {
+  final ContentStatement statement;
+  final V2FeedModel model;
+  final int depth;
+  final SubjectAggregation aggregation;
+  final ValueChanged<String?>? onGraphFocus;
+  final ValueChanged<String>? onMark;
+  final String? markedSubjectToken;
+  final ValueChanged<String>? onInspect;
+  final VoidCallback? onRefresh;
+  final ValueChanged<String>? onTagTap;
+
+  const StatementTile({
+    super.key,
+    required this.statement,
+    required this.model,
+    required this.depth,
+    required this.aggregation,
+    this.onGraphFocus,
+    this.onMark,
+    this.markedSubjectToken,
+    this.onInspect,
+    this.onRefresh,
+    this.onTagTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final s = statement;
+    final label = model.labeler.getLabel(s.iToken);
+    final isMe = signInState.identity != null && model.labeler.getIdentityForToken(s.iToken) == signInState.identity;
+
+    // Find the aggregation for this statement (s)
+    final canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
+    final statementAgg = model.aggregation.subjects[canonicalToken];
+    
+    // Combine statements from the main aggregation (if any are threaded there) and the statement's own aggregation
+    final repliesInParent = aggregation.statements.where((r) => r.subjectToken == s.token).toList();
+    final combinedStatements = [
+        ...repliesInParent,
+        ...(statementAgg?.statements ?? <ContentStatement>[]),
+    ];
+    // Deduplicate based on token
+    final List<ContentStatement> uniqueStatements = {for (var s in combinedStatements) s.token: s}.values.toList();
+
+    // Determine current user's reaction to this statement
+    final myReplies = uniqueStatements.where((r) => 
+      signInState.identity != null && 
+      model.labeler.getIdentityForToken(r.iToken) == signInState.identity
+    ).toList();
+
+    IconData icon = Icons.rate_review_outlined;
+    Color? color;
+    String tooltip;
+    
+    if (myReplies.isNotEmpty) {
+      color = Colors.blue;
+      tooltip = 'You replied to this';
+    } else {
+      color = Colors.grey;
+      tooltip = 'React';
+    }
+
+    // Determine display elements based on verb
+    Widget? verbIcon;
+    String? displayText;
+    String? otherToken;
+
+    if (s.verb == ContentVerb.rate) {
+      // Icons are handled in the row, text is handled in subtitle or here if comment
+    } else {
+      // Relations
+      if (s.verb == ContentVerb.relate) {
+        verbIcon = const Text('≈', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      } else if (s.verb == ContentVerb.dontRelate) {
+        verbIcon = const Text('≉', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      } else if (s.verb == ContentVerb.equate) {
+        verbIcon = const Text('=', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      } else if (s.verb == ContentVerb.dontEquate) {
+        verbIcon = const Text('≠', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      }
+
+      // Determine target subject
+      if (s.other != null) {
+        final sOtherToken = getToken(s.other);
+        // If the statement's subject is THIS card, then the target is s.other
+        // If the statement's other is THIS card, then the target is s.subject
+        
+        if (s.subjectToken == aggregation.token) {
+           otherToken = sOtherToken;
+           // Try to get title from s.other if it's a map
+           if (s.other is Map && s.other['title'] != null) {
+             displayText = s.other['title'];
+           }
+        } else if (sOtherToken == aggregation.token) {
+           otherToken = s.subjectToken;
+           // Try to get title from s.subject if it's a map
+           if (s.subject is Map && s.subject['title'] != null) {
+             displayText = s.subject['title'];
+           }
+        } else {
+           // Fallback
+           otherToken = sOtherToken;
+        }
+
+        if (displayText == null) {
+           final otherAgg = model.aggregation.subjects[otherToken];
+           if (otherAgg != null) {
+             final subject = otherAgg.subject;
+             displayText = (subject is Map) ? (subject['title'] ?? 'Untitled') : model.labeler.getLabel(subject.toString());
+           } else {
+             displayText = model.labeler.getLabel(otherToken);
+           }
+        }
+      }
+    }
+
+    return Container(
+      color: isMe ? Colors.blue[50] : null,
+      padding: EdgeInsets.only(
+        left: 16.0 + (depth * 16.0), 
+        right: 16.0, 
+        top: 4.0, 
+        bottom: 4.0
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              InkWell(
+                onTap: () => onGraphFocus?.call(s.iToken),
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              if (s.like == true) ...[
+                const Icon(Icons.thumb_up, size: 12, color: Colors.green),
+                const SizedBox(width: 2),
+              ],
+              if (s.like == false) ...[
+                const Icon(Icons.thumb_down, size: 12, color: Colors.red),
+                const SizedBox(width: 2),
+              ],
+              if (s.comment != null && s.comment!.isNotEmpty) ...[
+                const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey),
+                const SizedBox(width: 2),
+              ],
+              
+              if (verbIcon != null) ...[
+                const SizedBox(width: 4),
+                verbIcon,
+                const SizedBox(width: 4),
+              ],
+
+              if (displayText != null)
+                Expanded(
+                  child: InkWell(
+                    onTap: () {
+                      if (otherToken != null && onInspect != null) {
+                        onInspect!(otherToken);
+                      }
+                    },
+                    child: Text(
+                      displayText,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          decoration: TextDecoration.underline),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+              else
+                const Spacer(),
+              /* CONSIDER: Enable and fix if/when I decide to allow relating statements
+              if (onMark != null)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: Icon(
+                    Icons.link,
+                    size: 16,
+                    color: markedSubjectToken == s.token ? Colors.orange : Colors.grey,
+                  ),
+                  tooltip: markedSubjectToken == s.token ? 'Unmark' : 'Mark to Relate/Equate',
+                  onPressed: () {
+                    if (checkDelegate(context)) {
+                      onMark!(s.token);
+                    }
+                  },
+                ),
+              */
+              const SizedBox(width: 8),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: Icon(icon, size: 16, color: color),
+                tooltip: tooltip,
+                onPressed: () => V2RateDialog.show(
+                  context,
+                  SubjectAggregation(
+                    subject: s.json,
+                    lastActivity: s.time,
+                    statements: uniqueStatements,
+                  ),
+                  model,
+                  intent: RateIntent.none,
+                  onRefresh: onRefresh,
+                ),
+              ),
+              ValueListenableBuilder<bool>(
+                valueListenable: Setting.get<bool>(SettingType.showCrypto),
+                builder: (context, showCrypto, _) {
+                  if (!showCrypto) return const SizedBox.shrink();
+                  return IconButton(
+                    icon: const Icon(Icons.verified_user, size: 16, color: Colors.blue),
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Cryptographic Proof'),
+                        content: SizedBox(
+                          width: double.maxFinite,
+                          child: JsonDisplay(s.json),
+                        ),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                        ],
+                      ),
+                    ),
+                    visualDensity: VisualDensity.compact,
+                  );
+                },
+              ),
+            ],
+          ),
+          if (s.comment != null && s.comment!.isNotEmpty)
+             Padding(
+               padding: const EdgeInsets.only(left: 0.0, top: 2.0),
+               child: CommentWidget(
+                  text: s.comment!,
+                  onHashtagTap: (tag, _) => onTagTap?.call(tag),
+                  style: const TextStyle(fontSize: 13),
+               ),
+             ),
+        ],
+      ),
+    );
+  }
+}
+
+bool checkDelegate(BuildContext context) {
+  if (signInState.delegate == null) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delegate Key Required'),
+        content: const Text('You are signed in with an identity key, but you need a delegate key to sign content statements (likes, comments, etc.). Please sign in with a delegate key.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+        ],
+      ),
+    );
+    return false;
+  }
+  return true;
+}

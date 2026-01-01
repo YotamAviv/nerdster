@@ -1,17 +1,6 @@
 AI NOTE: This is my (the human) file with my own notes.
 
-# Run the integration tests
-See `docs/testing.md` for instructions on running automated integration tests.
-
-Manual testing:
-- DEV menu => integration test: ...
-- Manually change [Prefs.skipVerify, Prefs.cloudFetchDistinct]
-- (Need to refresh in between for test framework)
-# Run the JavaScript tests
-node js/jsonish.js
 # Corrupt the database and check what happens
-TODO: App won't load, no error shown. Desired would be a notification about 1 corrupt token and 
-just that data missing.
 - Corrupt the data by:
   - deleting 1 statement from a notary chain, or 
   - modifying any value in it.
@@ -71,31 +60,6 @@ add to .bashrc:
 export PATH="$PATH":"$HOME/.pub-cache/bin"
 ```
 
-# Plan:
-
-Instruction:
-- add ? help to tree regarding Oneofus trust / Nerdster follow
-
-Default follow context
-- Hmm... I want a default follow context when folks view as me.
-  - (don't generate a statement every time I just browse)
-
-UI for clear relate/equate.
-
-## BUGS
-
-- net/content.. I've gotten into a state where I see net with wrong controls.
-
-- I noticed that when Fetcher asserts false, it gets lost, not progpagated.
-
-- Revoked delegate says 'replaced'.
-
-- Make keys match Oneofus colors: only active Nerdster delegate should
-  be dark colored.
-
-- Minor: filter by book doesn filters Hillel's comment on the article he
-  submitted about a book which I equated to a book
-
 ### Export PROD Firebase for use by local emulators
 firebase projects:list
 gcloud projects list
@@ -104,7 +68,7 @@ gcloud auth login
 # If running in 2 windows, make sure to set (export) NOW in both
 export NOW=`date3`
 echo $NOW
-export NOW=25-12-25--10-43
+export NOW=25-12-31--20-10
 
 firebase use nerdster
 gcloud config set project nerdster

@@ -4,6 +4,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:nerdster/app.dart' as app;
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/content_card.dart';
+import 'package:nerdster/v2/statement_tile.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -112,15 +113,9 @@ void main() {
       final switchFinder = find.byType(Switch);
       expect(switchFinder, findsOneWidget);
       
-      // 6. Test History Expansion
-      final historyFinder = find.text('History');
-      expect(historyFinder, findsWidgets);
-
-      // Tap the first 'History' to expand it
-      await tester.tap(historyFinder.first);
-      await tester.pumpAndSettle();
-      
-      expect(find.byType(SubjectDetailsView), findsWidgets, reason: 'Expanding History should show SubjectDetailsView');
+      // 6. Verify History/Comments are visible
+      // The new design shows comments by default (up to 2) without an expansion tile title "History"
+      expect(find.byType(StatementTile), findsWidgets, reason: 'Should see StatementTiles (comments/ratings) directly on the card');
     });
   });
 }

@@ -1,19 +1,21 @@
 # Current Activity: V2 Rewrite
 
+## NOTES FOR ME - DON'T START WITHOUT ME
 
-NOT LIKE DOC:
+- relating statements
+
+I used the app to relate 2 Bart's relate statement on El Barto and Marge's dontRelate statement on El Barto. This is what I see in LGTM:
+
+I was expecting JSON subjects, not tokens.
+After the statement took effect, I saw that Lisa related the statement to 8 digits of gibberish.
+Clacker looked into it had started working on it, but I stopped it.
+
+I should think about relating statements.
+
 
 
 - Submit
   - Verify URLs some
-
-Bugs:
-- trying to rate while not signed in fails silently. The user should be alerted that he's not signed in early.
-- I see content I've dismissed.
-- I shouldn't be encouraged to censor my own statements; I can just clear them instead.
-
-
-## NOTES FOR ME - DON'T START WITHOUT ME
 
 - follow
 

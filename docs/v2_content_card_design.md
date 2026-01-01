@@ -21,24 +21,18 @@ The `ContentCard` is the atomic unit of the Nerdster feed. It represents a **Sub
 |  |IMG|  Type:  resource                                               |
 |  +---+  (Click Title -> Open URL or search for subject terms)         |
 +-----------------------------------------------------------------------+
-|  [BRIEF HISTORY] (2 most recent reactions or relations)               |
-|  Lisa@nerdster.org [👍 💬]: "It's a vehicle!" (Truncated 1 line)      |
-|  Bart@nerdster.org [≈]: "Toy" (Click -> Inspect)                      |
+|  (History Section - No Title)                                         |
+|  Lisa@nerdster.org [👍]                                     [💬] [🛡️]|
+|        "It's a vehicle!" (Truncated 1 line)                           |
+|  Bart@nerdster.org [≈] "Toy"                                [💬] [🛡️]|
+|        (Click "Toy" -> Inspect)                                       |
+|  ... (Show all history button if more)                                |
 +-----------------------------------------------------------------------+
-|  [Relationships] [ExpansionTile]                                      |
+|  --------------------- Divider -------------------------------------  |
+|  (Relationships Section - No Title)                                   |
 |  [=] "Transportation"             (Clickable Blue Title)              |
 |  [≈] "Art"                        (Clickable Blue Title)              |
-+-----------------------------------------------------------------------+
-|  [HISTORY SECTION] [ExpansionTile]                                    |
-|  Title: "History (5)"                                                 |
-|                                                                       |
-|  (List of Statements)                                                 |
-|  Me@nerdster.org [≠] "Transportation"                     [Clear Icon]|
-|           (2 hours ago)      (Click "Transportation" -> Inspect)      |
-|  Me@nerdster.org [≉] "Toy"                                [Clear Icon]|
-|                                                                       |
-|  Lisa@nerdster.org [👍 💬] "It's a vehicle!"              [Rate Icon] |
-|           (1 hour ago)      (Icons show Lisa's rating)                |
+|  ... (Show all related button if more)                                |
 +-----------------------------------------------------------------------+
 ```
 
@@ -50,8 +44,7 @@ The items in this section are **aggregated (computed) subjects**, not raw user s
 
 | Icon | Name | Meaning / Action |
 | :--- | :--- | :--- |
-| 🔗 | **Link Icon** | **Toggle Mark**. <br>Gray: Inactive.<br>Orange: Active (Subject is "Marked").<br>Used to start a "Relate" or "Equate" action. |
-| ❌ | **Clear Icon** | **Manage Statement**. <br>Visible only on your own statements.<br>Click to open `RelateDialog` (NOT `RateDialog`) with "Clear" pre-selected. |
+| 🔗 | **Link Icon** | **Toggle Mark** (Currently Disabled). <br>Gray: Inactive.<br>Orange: Active (Subject is "Marked").<br>Used to start a "Relate" or "Equate" action. |
 | 💬 | **React Icon** | **My Stance**. <br>Single generic icon (Text Bubble).<br>Gray: You have not reacted.<br>Blue: You have reacted (Like, Comment, Relate, etc).<br>Click to open `RateDialog`. |
 | 🛡️ | **Guard Icon** | **Verify**. <br>Shows the statement is cryptographically signed.<br>Click to view raw JSON and signature. |
 | @ | **User Link** | **Identity**. <br>Text link (e.g., `Bart@nerdster.org`).<br>Click to focus the Trust Graph on this user. |
@@ -82,6 +75,7 @@ The items in this section are **aggregated (computed) subjects**, not raw user s
 *Note: This also applies to "Equivalents" (Equated content). Clicking an equated subject opens the Inspection Sheet for that specific subject.*
 
 ### UC2: Relating Two Subjects (The "Mark & Relate" Workflow)
+*(Note: The Link Icon is currently disabled in the UI as of recent updates. This workflow is preserved for future re-enablement.)*
 **Goal**: Bart wants to say "Science" is related to "Math".
 
 1.  **Find Subject A**: Bart finds the card for **"Science"**.
@@ -110,25 +104,12 @@ The items in this section are **aggregated (computed) subjects**, not raw user s
 ### UC4: Reacting to a Relation (Comment/Rate)
 **Goal**: Homer liked "Donuts". Marge wants to comment on Homer's like. Or, Marge wants to comment on Bart's relation between "Science" and "Math".
 
-1.  **Expand History**: Marge expands the bottom history section.
+1.  **Expand History**: Marge clicks "Show all history" (if the item is hidden).
 2.  **Find Statement**: She sees "Bart related to 'Math'".
 3.  **React**: She clicks the **Rate Icon** (💬) *on Bart's row* in the history.
 4.  **Dialog**: `RateDialog` opens for *Bart's Statement*.
 5.  **Action**: Marge types "I disagree!" and clicks [Post].
 6.  **Constraint**: Users cannot "Dismiss" a relation. The code ignores dismiss actions on structural statements.
-
-### UC5: Clearing a Relation (Un-relating without Context)
-**Goal**: Bart previously related "El Barto" to "Graffiti". He is now looking at "El Barto" and wants to remove that relation.
-
-1.  **Find Relation**: Bart expands the "Relationships" section and sees "Graffiti".
-2.  **Identify Author**: He sees "Related by: Me" (or his name) with a **Clear Icon** (❌) next to it.
-3.  **Click**: Bart clicks the **Clear Icon**.
-4.  **Dialog**: The `RelateDialog` opens.
-    *   *State*: The verb "Clear" (or "Don't Relate") is pre-selected.
-    *   *Constraint*: This MUST open `RelateDialog`. It must NOT open `RateDialog`.
-    *   *Flexibility*: Bart *could* change it to "Equate" if he changed his mind, but the default intent is clear.
-5.  **Confirm**: Bart clicks **[Okay]**.
-6.  **Result**: A `clear` statement is published. The relation is removed.
 
 ---
 
@@ -137,18 +118,16 @@ The items in this section are **aggregated (computed) subjects**, not raw user s
 *   `ContentCard` (StatefulWidget)
     *   `Card` (Container)
         *   `Column`
-            *   `InkWell` (Expand/Collapse Toggle for Full History)
-                *   `Column`
-                    *   **Header**:
-                        *   **Action Bar**: `Row` (Link Button, Rate Button, Score) - *Top Right*
-                        *   **Content**: `ListTile` (Title, Image)
-                    *   **Brief History**: `Column` (2 most recent reactions or relations, truncated, with icons)
-            *   **Relationships**: `ExpansionTile` (Siblings to Header, not wrapped in InkWell)
-                *   List of `ListTile` (Icon + Title) - Mixed Equivalents and Related
-            *   **History**: `ExpansionTile` (was SubjectDetailsView directly)
-                *   *Note*: Tapping the Header `InkWell` programmatically toggles this tile.
-                *   `SubjectDetailsView` (The tree of statements)
-                    *   `_buildStatementTile` (Recursive builder for comments/ratings)
+            *   **Header**:
+                *   **Action Bar**: `Row` (Link Button, Rate Button, Score) - *Top Right*
+                *   **Content**: `ListTile` (Title, Image)
+            *   **History Section**:
+                *   `Column` of `StatementTile` widgets (Shows top 2 by default)
+                *   "Show all history" button (if > 2 items) - Expands to show full list
+            *   **Divider**
+            *   **Relationships Section**:
+                *   `Column` of custom `Row` widgets (Icon + Clickable Title) (Shows top 2 by default)
+                *   "Show all related" button (if > 2 items) - Expands to show full list
 
 ## 5. Navigation Logic
 
@@ -196,7 +175,7 @@ The **Inspection Sheet** is a modal view that allows users to "peek" at another 
 ## Implementation Plan
 
 1.  **Refine `ContentCard` Layout**:
-    - Implement the "Header / Relationships / History" structure more strictly.
+    - Implement the "Header / History (Top 2 + Expand) / Relationships (Top 2 + Expand)" structure.
 2.  **Fix History Display**:
     - Update `_buildStatementTile` to show the `verb` (Rate, Relate, Equate) and the `other` subject if applicable.
 3.  **Improve Navigation**:

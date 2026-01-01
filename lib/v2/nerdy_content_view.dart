@@ -120,8 +120,24 @@ class _NerdyContentViewState extends State<NerdyContentView> {
       // Relate
       final model = _controller.value;
       if (model != null) {
-        final subject1 = model.aggregation.subjects[_markedSubjectToken];
-        final subject2 = model.aggregation.subjects[token];
+        var subject1 = model.aggregation.subjects[_markedSubjectToken];
+        var subject2 = model.aggregation.subjects[token];
+
+        // Fallback if subjects are missing from aggregation (e.g. they are just related tokens)
+        if (subject1 == null && _markedSubjectToken != null) {
+           subject1 = SubjectAggregation(
+             subject: _markedSubjectToken!, 
+             statements: [],
+             lastActivity: DateTime.now(),
+           );
+        }
+        if (subject2 == null && token != null) {
+           subject2 = SubjectAggregation(
+             subject: token, 
+             statements: [],
+             lastActivity: DateTime.now(),
+           );
+        }
 
         if (subject1 != null && subject2 != null) {
           V2RelateDialog.show(

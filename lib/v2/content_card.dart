@@ -7,13 +7,10 @@ import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
-import 'package:nerdster/comment_widget.dart';
+import 'package:nerdster/v2/statement_tile.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/setting_type.dart';
 
 class ContentCard extends StatefulWidget {
   final SubjectAggregation aggregation;
@@ -43,6 +40,8 @@ class ContentCard extends StatefulWidget {
 
 class _ContentCardState extends State<ContentCard> {
   MetadataResult? _metadata;
+  bool _isHistoryExpanded = false;
+  bool _isRelationshipsExpanded = false;
 
   @override
   void initState() {
@@ -246,24 +245,8 @@ class _ContentCardState extends State<ContentCard> {
                 ),
               ),
             const Divider(),
-            _buildBriefHistory(),
+            _buildHistorySection(),
             _buildRelationshipsSection(),
-            ExpansionTile(
-              title: const Text('History', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-              children: [
-                SubjectDetailsView(
-                  aggregation: widget.aggregation,
-                  model: widget.model,
-                  onRefresh: widget.onRefresh,
-                  onPovChange: widget.onPovChange,
-                  onTagTap: widget.onTagTap,
-                  onGraphFocus: widget.onGraphFocus,
-                  onMark: widget.onMark,
-                  markedSubjectToken: widget.markedSubjectToken,
-                  onInspect: _showInspectionSheet,
-                ),
-              ],
-            ),
           ],
         ),
       ),
@@ -291,7 +274,7 @@ class _ContentCardState extends State<ContentCard> {
     );
   }
 
-  Widget _buildBriefHistory() {
+  Widget _buildHistorySection() {
     final comments = widget.aggregation.statements
         .where((s) => _shouldShowStatement(s, widget.model))
         .toList();
@@ -303,118 +286,54 @@ class _ContentCardState extends State<ContentCard> {
       return distA.compareTo(distB);
     });
 
-    final topComments = comments.take(2).toList();
+    if (comments.isEmpty) return const SizedBox.shrink();
 
-    if (topComments.isEmpty) return const SizedBox.shrink();
+    final topComments = comments.take(2).toList();
+    final hasMore = comments.length > 2;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: topComments.map((s) {
-        final label = widget.model.labeler.getLabel(s.iToken);
+      children: [
+        if (!_isHistoryExpanded)
+          ...topComments.map((s) => StatementTile(
+            statement: s,
+            model: widget.model,
+            depth: 0,
+            aggregation: widget.aggregation,
+            onGraphFocus: widget.onGraphFocus,
+            onMark: widget.onMark,
+            markedSubjectToken: widget.markedSubjectToken,
+            onInspect: _showInspectionSheet,
+            onRefresh: widget.onRefresh,
+            onTagTap: widget.onTagTap,
+          )),
         
-        // Icons for reaction
-        final List<Widget> icons = [];
-        if (s.like == true) icons.add(const Icon(Icons.thumb_up, size: 12, color: Colors.green));
-        if (s.like == false) icons.add(const Icon(Icons.thumb_down, size: 12, color: Colors.red));
-        if (s.comment != null && s.comment!.isNotEmpty) icons.add(const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey));
-        
-        // Relation icons
-        if (s.verb == ContentVerb.relate) icons.add(const Text('≈', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)));
-        if (s.verb == ContentVerb.dontRelate) icons.add(const Text('≉', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)));
-        if (s.verb == ContentVerb.equate) icons.add(const Text('=', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)));
-        if (s.verb == ContentVerb.dontEquate) icons.add(const Text('≠', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)));
-
-        // Determine display text
-        String displayText = '';
-        String? targetToken;
-
-        if (s.comment != null && s.comment!.isNotEmpty) {
-          displayText = s.comment!;
-        } else if (s.other != null) {
-           String? otherToken;
-           String? otherTitle;
-           final sOtherToken = getToken(s.other);
-           
-           if (s.subjectToken == widget.aggregation.token) {
-              otherToken = sOtherToken;
-              if (s.other is Map && s.other['title'] != null) otherTitle = s.other['title'];
-           } else if (sOtherToken == widget.aggregation.token) {
-              otherToken = s.subjectToken;
-              if (s.subject is Map && s.subject['title'] != null) otherTitle = s.subject['title'];
-           } else {
-              otherToken = sOtherToken;
-           }
-           
-           targetToken = otherToken;
-
-           if (otherTitle == null) {
-              final otherAgg = widget.model.aggregation.subjects[otherToken];
-              if (otherAgg != null) {
-                final subject = otherAgg.subject;
-                otherTitle = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
-              } else {
-                otherTitle = widget.model.labeler.getLabel(otherToken);
-              }
-           }
-           displayText = otherTitle ?? '';
-        } else if (s.like == true) {
-           displayText = ''; 
-        } else if (s.like == false) {
-           displayText = ''; 
-        } else {
-           displayText = 'Reacted';
-        }
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2.0),
-          child: Row(
-            children: [
-              InkWell(
-                onTap: () => widget.onGraphFocus?.call(s.iToken),
-                child: Text(
-                  '$label: ',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-              if (icons.isNotEmpty) ...[
-                const Text('[', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                ...icons.expand((i) => [i, const SizedBox(width: 2)]).take(icons.length * 2 - 1),
-                const Text('] ', style: TextStyle(color: Colors.grey, fontSize: 12)),
-              ],
-              if (displayText.isNotEmpty)
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: targetToken != null
-                      ? InkWell(
-                          onTap: () => _showInspectionSheet(targetToken!),
-                          child: Text(
-                            displayText,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              decoration: TextDecoration.underline,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        )
-                      : Text(
-                          displayText,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                  ),
-                ),
-            ],
+        if (_isHistoryExpanded)
+          SubjectDetailsView(
+            aggregation: widget.aggregation,
+            model: widget.model,
+            onRefresh: widget.onRefresh,
+            onPovChange: widget.onPovChange,
+            onTagTap: widget.onTagTap,
+            onGraphFocus: widget.onGraphFocus,
+            onMark: widget.onMark,
+            markedSubjectToken: widget.markedSubjectToken,
+            onInspect: _showInspectionSheet,
           ),
-        );
-      }).toList(),
+
+        if (hasMore || _isHistoryExpanded)
+          Center(
+            child: TextButton.icon(
+              icon: Icon(_isHistoryExpanded ? Icons.expand_less : Icons.expand_more, size: 16),
+              label: Text(_isHistoryExpanded ? 'Show less' : 'Show all history (${comments.length})'),
+              onPressed: () {
+                setState(() {
+                  _isHistoryExpanded = !_isHistoryExpanded;
+                });
+              },
+            ),
+          ),
+      ],
     );
   }
 
@@ -477,10 +396,28 @@ class _ContentCardState extends State<ContentCard> {
 
     if (children.isEmpty) return const SizedBox.shrink();
 
-    return ExpansionTile(
-      title: const Text('Relationships', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-      initiallyExpanded: true,
-      children: children,
+    final topChildren = children.take(2).toList();
+    final hasMore = children.length > 2;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(),
+        ...(_isRelationshipsExpanded ? children : topChildren),
+
+        if (hasMore)
+          Center(
+            child: TextButton.icon(
+              icon: Icon(_isRelationshipsExpanded ? Icons.expand_less : Icons.expand_more, size: 16),
+              label: Text(_isRelationshipsExpanded ? 'Show less' : 'Show all related (${children.length})'),
+              onPressed: () {
+                setState(() {
+                  _isRelationshipsExpanded = !_isRelationshipsExpanded;
+                });
+              },
+            ),
+          ),
+      ],
     );
   }
 
@@ -647,7 +584,18 @@ class SubjectDetailsView extends StatelessWidget {
   void _buildTreeRecursive(BuildContext context, ContentStatement s, int depth, List<Widget> tree) {
     if (!_shouldShowStatement(s, model)) return;
     
-    tree.add(_buildStatementTile(context, s, depth));
+    tree.add(StatementTile(
+      statement: s,
+      model: model,
+      depth: depth,
+      aggregation: aggregation,
+      onGraphFocus: onGraphFocus,
+      onMark: onMark,
+      markedSubjectToken: markedSubjectToken,
+      onInspect: onInspect,
+      onRefresh: onRefresh,
+      onTagTap: onTagTap,
+    ));
     
     final canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
     final replies = [
@@ -667,233 +615,6 @@ class SubjectDetailsView extends StatelessWidget {
     for (final reply in uniqueReplies) {
       _buildTreeRecursive(context, reply, depth + 1, tree);
     }
-  }
-
-  Widget _buildStatementTile(BuildContext context, ContentStatement s, int depth) {
-    final label = model.labeler.getLabel(s.iToken);
-    final isMe = signInState.identity != null && model.labeler.getIdentityForToken(s.iToken) == signInState.identity;
-
-    // Find the aggregation for this statement (s)
-    final canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
-    final statementAgg = model.aggregation.subjects[canonicalToken];
-    
-    // Combine statements from the main aggregation (if any are threaded there) and the statement's own aggregation
-    final repliesInParent = aggregation.statements.where((r) => r.subjectToken == s.token).toList();
-    final combinedStatements = [
-        ...repliesInParent,
-        ...(statementAgg?.statements ?? <ContentStatement>[]),
-    ];
-    // Deduplicate based on token
-    final List<ContentStatement> uniqueStatements = {for (var s in combinedStatements) s.token: s}.values.toList();
-
-    // Determine current user's reaction to this statement
-    final myReplies = uniqueStatements.where((r) => 
-      signInState.identity != null && 
-      model.labeler.getIdentityForToken(r.iToken) == signInState.identity
-    ).toList();
-
-    IconData icon = Icons.rate_review_outlined;
-    Color? color;
-    String tooltip;
-    
-    if (myReplies.isNotEmpty) {
-      color = Colors.blue;
-      tooltip = 'You replied to this';
-    } else {
-      color = Colors.grey;
-      tooltip = 'React';
-    }
-
-    // Determine display elements based on verb
-    Widget? verbIcon;
-    String? displayText;
-    String? otherToken;
-
-    if (s.verb == ContentVerb.rate) {
-      // Icons are handled in the row, text is handled in subtitle or here if comment
-    } else {
-      // Relations
-      if (s.verb == ContentVerb.relate) {
-        verbIcon = const Text('≈', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
-      } else if (s.verb == ContentVerb.dontRelate) {
-        verbIcon = const Text('≉', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
-      } else if (s.verb == ContentVerb.equate) {
-        verbIcon = const Text('=', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
-      } else if (s.verb == ContentVerb.dontEquate) {
-        verbIcon = const Text('≠', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
-      }
-
-      // Determine target subject
-      if (s.other != null) {
-        final sOtherToken = getToken(s.other);
-        // If the statement's subject is THIS card, then the target is s.other
-        // If the statement's other is THIS card, then the target is s.subject
-        
-        if (s.subjectToken == aggregation.token) {
-           otherToken = sOtherToken;
-           // Try to get title from s.other if it's a map
-           if (s.other is Map && s.other['title'] != null) {
-             displayText = s.other['title'];
-           }
-        } else if (sOtherToken == aggregation.token) {
-           otherToken = s.subjectToken;
-           // Try to get title from s.subject if it's a map
-           if (s.subject is Map && s.subject['title'] != null) {
-             displayText = s.subject['title'];
-           }
-        } else {
-           // Fallback
-           otherToken = sOtherToken;
-        }
-
-        if (displayText == null) {
-           final otherAgg = model.aggregation.subjects[otherToken];
-           if (otherAgg != null) {
-             final subject = otherAgg.subject;
-             displayText = (subject is Map) ? (subject['title'] ?? 'Untitled') : model.labeler.getLabel(subject.toString());
-           } else {
-             displayText = model.labeler.getLabel(otherToken);
-           }
-        }
-      }
-    }
-
-    return Container(
-      color: isMe ? Colors.blue[50] : null,
-      padding: EdgeInsets.only(
-        left: 16.0 + (depth * 16.0), 
-        right: 16.0, 
-        top: 4.0, 
-        bottom: 4.0
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              InkWell(
-                onTap: () => onGraphFocus?.call(s.iToken),
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              if (s.like == true) ...[
-                const Icon(Icons.thumb_up, size: 12, color: Colors.green),
-                const SizedBox(width: 2),
-              ],
-              if (s.like == false) ...[
-                const Icon(Icons.thumb_down, size: 12, color: Colors.red),
-                const SizedBox(width: 2),
-              ],
-              if (s.comment != null && s.comment!.isNotEmpty) ...[
-                const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey),
-                const SizedBox(width: 2),
-              ],
-              
-              if (verbIcon != null) ...[
-                const SizedBox(width: 4),
-                verbIcon,
-                const SizedBox(width: 4),
-              ],
-
-              if (displayText != null) ...[
-                Flexible(
-                  child: InkWell(
-                    onTap: () {
-                      if (otherToken != null && onInspect != null) {
-                         onInspect!(otherToken);
-                      }
-                    },
-                    child: Text(
-                      displayText,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-              ],
-
-              const Spacer(),
-              if (onMark != null)
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    Icons.link,
-                    size: 16,
-                    color: markedSubjectToken == s.token ? Colors.orange : Colors.grey,
-                  ),
-                  tooltip: markedSubjectToken == s.token ? 'Unmark' : 'Mark to Relate/Equate',
-                  onPressed: () {
-                    if (checkDelegate(context)) {
-                      onMark!(s.token);
-                    }
-                  },
-                ),
-              const SizedBox(width: 8),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: Icon(icon, size: 16, color: color),
-                tooltip: tooltip,
-                onPressed: () => V2RateDialog.show(
-                  context,
-                  SubjectAggregation(
-                    subject: s.json,
-                    lastActivity: s.time,
-                    statements: uniqueStatements,
-                  ),
-                  model,
-                  intent: RateIntent.none,
-                  onRefresh: onRefresh,
-                ),
-              ),
-              ValueListenableBuilder<bool>(
-                valueListenable: Setting.get<bool>(SettingType.showCrypto),
-                builder: (context, showCrypto, _) {
-                  if (!showCrypto) return const SizedBox.shrink();
-                  return IconButton(
-                    icon: const Icon(Icons.verified_user, size: 16, color: Colors.blue),
-                    onPressed: () => showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Cryptographic Proof'),
-                        content: SizedBox(
-                          width: double.maxFinite,
-                          child: JsonDisplay(s.json),
-                        ),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-                        ],
-                      ),
-                    ),
-                    visualDensity: VisualDensity.compact,
-                  );
-                },
-              ),
-            ],
-          ),
-          if (s.comment != null && s.comment!.isNotEmpty)
-             Padding(
-               padding: const EdgeInsets.only(left: 0.0, top: 2.0),
-               child: CommentWidget(
-                  text: s.comment!,
-                  onHashtagTap: (tag, _) => onTagTap?.call(tag),
-                  style: const TextStyle(fontSize: 13),
-               ),
-             ),
-        ],
-      ),
-    );
   }
 }
 
