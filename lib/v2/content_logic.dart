@@ -1,3 +1,4 @@
+import 'package:nerdster/most_strings.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/tag.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -473,7 +474,7 @@ ContentAggregation reduceContentAggregation(
   }
 
   // Pass 3: Recursive Tag Collection and Most Frequent Tags
-  final Map<String, int> tagCounts = {};
+  final MostStrings mostStrings = MostStrings({});
   
   Set<String> collectTagsRecursive(String token, Set<String> visited) {
     if (visited.contains(token)) return {};
@@ -515,13 +516,10 @@ ContentAggregation reduceContentAggregation(
       isRated: agg.isRated,
     );
     
-    for (final tag in recursiveTags) {
-      tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
-    }
+    mostStrings.process(recursiveTags);
   }
 
-  final List<String> mostTags = tagCounts.keys.toList()
-    ..sort((a, b) => tagCounts[b]!.compareTo(tagCounts[a]!));
+  final List<String> mostTags = mostStrings.most().toList();
 
   return ContentAggregation(
     statements: filteredStatements,

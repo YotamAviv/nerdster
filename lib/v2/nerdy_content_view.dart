@@ -256,11 +256,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
                 value: _controller.tagFilter ?? '-',
                 items: [
                   const DropdownMenuItem(value: '-', child: Text('All')),
-                  ...((model?.aggregation.subjects.values
-                          .expand((s) => s.tags)
-                          .toSet()
-                          .toList() ?? [])
-                        ..sort())
+                  ...(model?.aggregation.mostTags ?? [])
                       .map((t) => DropdownMenuItem(value: t, child: Text(t))),
                 ],
                 onChanged: (val) {

@@ -42,9 +42,7 @@ Enhancements
   - sort by: recent activity
   - sort by: most activity (not just comments)
 
-- upgrade related tags
-  - don't sort
-  - use equivalence tech
+- upgrade related tags to use equivalence tech
 
 - Crypto proofs
 
