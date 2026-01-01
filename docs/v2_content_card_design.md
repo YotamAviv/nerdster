@@ -19,7 +19,8 @@ The `ContentCard` is the atomic unit of the Nerdster feed. It represents a **Sub
 |  [ACTION BAR] [Link Icon] [React Icon] [Score]                        |
 |  +---+  Title: "Skateboard"                                           |
 |  |IMG|  Type:  resource                                               |
-|  +---+  (Click Title -> Open URL or search for subject terms)         |
+|  +---+  #poignant #horses (Aggregated Tags - Clickable)               |
+|         (Click Title -> Open URL or search for subject terms)         |
 +-----------------------------------------------------------------------+
 |  (History Section - No Title)                                         |
 |  Lisa@nerdster.org [👍]                                     [💬] [🛡️]|
@@ -121,6 +122,7 @@ The items in this section are **aggregated (computed) subjects**, not raw user s
             *   **Header**:
                 *   **Action Bar**: `Row` (Link Button, Rate Button, Score) - *Top Right*
                 *   **Content**: `ListTile` (Title, Image)
+                    *   **Tags**: `Wrap` of clickable `#tag` text (Under Type)
             *   **History Section**:
                 *   `Column` of `StatementTile` widgets (Shows top 2 by default)
                 *   "Show all history" button (if > 2 items) - Expands to show full list

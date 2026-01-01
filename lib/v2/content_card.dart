@@ -204,46 +204,61 @@ class _ContentCardState extends State<ContentCard> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          final subject = widget.aggregation.subject;
-                          String? url;
-                          if (subject is Map) {
-                            url = subject['url'];
-                            if (url == null) {
-                              final values = subject.values.where((v) => v != null).join(' ');
-                              url = 'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
-                            }
-                          } else {
-                            url = 'https://www.google.com/search?q=${Uri.encodeComponent(title)}';
-                          }
-                          launchUrl(Uri.parse(url));
-                        },
-                        child: Text(
-                          title,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                decoration: TextDecoration.underline,
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 80),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                final subject = widget.aggregation.subject;
+                                String? url;
+                                if (subject is Map) {
+                                  url = subject['url'];
+                                  if (url == null) {
+                                    final values = subject.values.where((v) => v != null).join(' ');
+                                    url = 'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
+                                  }
+                                } else {
+                                  url = 'https://www.google.com/search?q=${Uri.encodeComponent(title)}';
+                                }
+                                launchUrl(Uri.parse(url));
+                              },
+                              child: Text(
+                                title,
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      decoration: TextDecoration.underline,
+                                    ),
                               ),
+                            ),
+                            Text(type.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
+                          ],
                         ),
-                      ),
-                      Text(type.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
-                    ],
+                        if (widget.aggregation.tags.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Wrap(
+                              spacing: 8.0,
+                              children: widget.aggregation.tags.map((tag) {
+                                final displayTag = tag.startsWith('#') ? tag : '#$tag';
+                                return InkWell(
+                                  onTap: () => widget.onTagTap?.call(tag),
+                                  child: Text(displayTag, style: const TextStyle(color: Colors.blue)),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-            if (widget.aggregation.tags.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Wrap(
-                  spacing: 8.0,
-                  children: widget.aggregation.tags.map((tag) => Text('#$tag', style: const TextStyle(color: Colors.blue))).toList(),
-                ),
-              ),
             const Divider(),
             _buildHistorySection(),
             _buildRelationshipsSection(),
