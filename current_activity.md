@@ -1,24 +1,10 @@
 # Current Activity: V2 Rewrite
 
-Graph changes:
-
-Click (Tap) on a node:
-Make this do what "Long Press on a node:" currently does.
-
-Long Press on a node:
-Do nothing, don't even detect it.
-
-Close Focus (X Icon): 
-Remove this
-
-The Content View has these:
-- PoV dropdown
-- Context: [<identity>, <nerdster>, other available follow contexts] 
-Put those same controls on the graph view instead of what's currently there (The FOLLOW/IDENTITY switch and the X Icon)
 
 
+## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
-## NOTES FOR ME - DON'T START WITHOUT ME
+allow a more permisive identity layer so that lisa can see burns
 
 ### relating statements
 
@@ -45,6 +31,10 @@ I want to add
   Having that ability when using the emulator would require exporting and saving a file with the full public/private delegate keys
 - furthermore, it'd be nice to have the "script" not be a Dart program. I don't want to invent a new language and syntax. Any suggestions?
 
+Enhancements
+- show keys in node detail  interpreted with option to see link to published statements
+- show menu in graph view
+- upgrade identityPathsReq to slider.
 
 - Submit
   - Verify URLs some

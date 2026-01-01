@@ -4,7 +4,6 @@ import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/graph_controller.dart';
 import 'package:nerdster/v2/fan_algorithm.dart';
 import 'package:nerdster/v2/feed_controller.dart';
-import 'package:nerdster/follow/follow_net.dart' hide kOneofusContext, kNerdsterContext;
 import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
@@ -14,6 +13,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/labeler.dart';
+import 'package:nerdster/v2/identity_context_selector.dart';
 
 class NerdyGraphView extends StatefulWidget {
   final V2FeedController controller;
@@ -217,103 +217,13 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   }
 
   Widget _buildControls(V2FeedModel model) {
-    final fcontext = Setting.get<String>(SettingType.fcontext).value;
-    final currentPov = model.rootToken;
-    final hasError = !model.activeContexts.contains(fcontext) && 
-                     fcontext != kOneofusContext && 
-                     fcontext != kNerdsterContext;
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              const Text('PoV: ', style: TextStyle(fontWeight: FontWeight.bold)),
-              Flexible(
-                flex: 3,
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: (model.trustGraph.distances.containsKey(currentPov) == true
-                          ? currentPov
-                          : null),
-                  hint: Text(model.labeler.getLabel(currentPov)),
-                  items: [
-                    if (signInState.pov != null)
-                      DropdownMenuItem(
-                        value: signInState.pov!,
-                        child: Text('Me (${model.labeler.getLabel(signInState.pov!)})'),
-                      ),
-                    ...model.trustGraph.orderedKeys
-                        .where((k) => k != signInState.pov)
-                        .map((k) {
-                      return DropdownMenuItem(
-                        value: k,
-                        child: Text(model.labeler.getLabel(k)),
-                      );
-                    }),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) {
-                      Setting.get<String?>(SettingType.pov).value = val;
-                      widget.controller.refresh(val, meToken: signInState.identity);
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Text('Context: ', style: TextStyle(fontWeight: FontWeight.bold)),
-              Flexible(
-                flex: 2,
-                child: Row(
-                  children: [
-                    if (hasError)
-                      const Tooltip(
-                        message: 'This PoV does not use this follow context.',
-                        child: Icon(Icons.error_outline, color: Colors.red, size: 16),
-                      ),
-                    Expanded(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: fcontext,
-                        style: hasError ? const TextStyle(color: Colors.red) : null,
-                        items: [
-                          const DropdownMenuItem(value: kOneofusContext, child: Text(kOneofusContext)),
-                          const DropdownMenuItem(value: kNerdsterContext, child: Text(kNerdsterContext)),
-                          ...model.availableContexts
-                              .where((c) => c != kOneofusContext && c != kNerdsterContext)
-                              .map((c) {
-                            final isContextActive = model.activeContexts.contains(c);
-                            return DropdownMenuItem(
-                              value: c,
-                              child: Text(
-                                c,
-                                style: TextStyle(
-                                  color: isContextActive ? null : Colors.grey,
-                                  fontStyle: isContextActive ? null : FontStyle.italic,
-                                ),
-                              ),
-                            );
-                          }),
-                          if (fcontext != kOneofusContext && 
-                              fcontext != kNerdsterContext && 
-                              !model.availableContexts.contains(fcontext))
-                            DropdownMenuItem(value: fcontext, child: Text(fcontext)),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) {
-                            Setting.get<String>(SettingType.fcontext).value = val;
-                            widget.controller.refresh(currentPov, meToken: signInState.identity);
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+      child: IdentityContextSelector(
+        availableIdentities: model.trustGraph.orderedKeys,
+        availableContexts: model.availableContexts,
+        activeContexts: model.activeContexts,
+        labeler: model.labeler,
       ),
     );
   }
@@ -472,7 +382,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       children: [
         Text('Incoming Follows ($context):', style: const TextStyle(fontWeight: FontWeight.bold)),
         if (statements.isEmpty) const Text('None'),
-        ...statements.map((s) => _buildStatementTile(s, labeler)),
+        ...statements.map((s) => _buildStatementTile(s, labeler, fcontext: context)),
       ],
     );
   }
@@ -516,7 +426,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
         
         const Text('Explicit Follows:', style: TextStyle(fontWeight: FontWeight.bold)),
         if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
-        ...explicitStatements.map((s) => _buildStatementTile(s, labeler)),
+        ...explicitStatements.map((s) => _buildStatementTile(s, labeler, fcontext: kNerdsterContext)),
         
         const SizedBox(height: 10),
         const Text('Implicit Follows (Trust):', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -526,12 +436,36 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     );
   }
 
-  Widget _buildStatementTile(dynamic s, V2Labeler labeler) {
+  Widget _buildStatementTile(dynamic s, V2Labeler labeler, {String? fcontext}) {
     final issuerLabel = labeler.getLabel(labeler.getIdentityForToken(s.iToken));
-    final verb = s is TrustStatement ? s.verb.label : (s as ContentStatement).verb.label;
+    String verbLabel = s is TrustStatement ? s.verb.label : (s as ContentStatement).verb.label;
+    bool isBlock = false;
+
+    if (s is ContentStatement && s.verb.label == 'follow' && fcontext != null) {
+      final val = s.contexts?[fcontext];
+      if (val != null) {
+         final num v = val is num ? val : num.tryParse(val.toString()) ?? 0;
+         if (v < 0) {
+           verbLabel = '-follow';
+           isBlock = true;
+         }
+      }
+    }
     
     return ExpansionTile(
-      title: Text('From $issuerLabel ($verb)', style: const TextStyle(fontSize: 12)),
+      title: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(text: 'From $issuerLabel ('),
+            TextSpan(
+              text: verbLabel,
+              style: TextStyle(color: isBlock ? Colors.red : null),
+            ),
+            const TextSpan(text: ')'),
+          ],
+        ),
+        style: const TextStyle(fontSize: 12, color: Colors.black),
+      ),
       children: [
         Container(
           padding: const EdgeInsets.all(8),

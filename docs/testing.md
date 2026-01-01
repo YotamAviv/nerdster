@@ -81,9 +81,11 @@ flutter drive \
   --target=integration_test/v2_ui_test.dart \
   -d chrome
 
-# Simpsons Relate Demo
+## Utilities & Demos
 
-To run the Simpsons Relate/Equate demo (V2):
+### Simpsons Relate Demo (Data Seeding)
+
+This script runs as an integration test but functions as a utility to populate the local Firebase Emulator with the "Simpsons" dataset (identities, trust, content). It outputs credentials to the console for manual login. It does not perform assertions.
 
 ```bash
 ./bin/run_simpsons_relate_demo.sh

@@ -5,6 +5,9 @@ import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/v2/trust_logic.dart';
 
 /// A loader widget that runs the TrustPipeline and then shows the visualizer.
 class TrustGraphVisualizerLoader extends StatefulWidget {
@@ -31,6 +34,21 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
     } else {
       _loading = false;
     }
+    Setting.get(SettingType.identityPathsReq).notifier.addListener(_onSettingChanged);
+  }
+
+  @override
+  void dispose() {
+    Setting.get(SettingType.identityPathsReq).notifier.removeListener(_onSettingChanged);
+    super.dispose();
+  }
+
+  void _onSettingChanged() {
+    setState(() {
+      _loading = true;
+      _graph = null;
+    });
+    _load();
   }
 
   Future<void> _load() async {
@@ -38,7 +56,26 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
     if (root == null) return;
     try {
       final source = SourceFactory.get<TrustStatement>(kOneofusDomain);
-      final pipeline = TrustPipeline(source);
+      
+      final identityPathsReq = Setting.get<String>(SettingType.identityPathsReq).value;
+      PathRequirement? pathReq;
+      final reqString = pathsReq[identityPathsReq] ?? pathsReq['standard']!;
+      
+      try {
+        final parts = reqString.split(RegExp(r'[-,\s]+'));
+        final reqs = parts.map(int.parse).toList();
+        if (reqs.isNotEmpty) {
+          pathReq = (int distance) {
+            final index = distance - 1;
+            if (index >= 0 && index < reqs.length) return reqs[index];
+            return reqs.last;
+          };
+        }
+      } catch (e) {
+        debugPrint('Error parsing identityPathsReq: $e');
+      }
+
+      final pipeline = TrustPipeline(source, pathRequirement: pathReq);
       final graph = await pipeline.build(root);
       if (mounted) {
         setState(() {

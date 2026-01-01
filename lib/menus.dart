@@ -26,6 +26,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/fancy_shadow_view.dart';
 import 'package:nerdster/v2/graph_demo.dart';
 import 'package:nerdster/v2/nerdy_content_view.dart';
+import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/verify.dart';
 
 const iconSpacer = SizedBox(width: 3);
@@ -38,6 +39,16 @@ class IntSettingDropdown extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => _IntSettingDropdownState();
+}
+
+class StringSettingDropdown extends StatefulWidget {
+  final String label;
+  final ValueNotifier<String> setting;
+  final Map<String, String> options;
+  const StringSettingDropdown(this.label, this.setting, this.options, {super.key});
+
+  @override
+  State<StatefulWidget> createState() => _StringSettingDropdownState();
 }
 
 class Menus {
@@ -116,6 +127,8 @@ class Menus {
               List<int>.generate(6, (i) => i + 1)),
           IntSettingDropdown('Paths', Setting.get<int>(SettingType.identityNetPaths).notifier,
               List<int>.generate(2, (i) => i + 1)),
+          StringSettingDropdown('Paths Req', Setting.get<String>(SettingType.identityPathsReq).notifier,
+              pathsReq),
         ], child: const Text('Identity network')),
         SubmenuButton(menuChildren: <Widget>[
           IntSettingDropdown('Degrees', Setting.get<int>(SettingType.followNetDegrees).notifier,
@@ -294,6 +307,28 @@ class _IntSettingDropdownState extends State<IntSettingDropdown> {
       },
       items: List.of(widget.values
           .map((i) => DropdownMenuItem<int>(value: i, child: Text('$i ${widget.label}')))),
+    );
+  }
+}
+
+class _StringSettingDropdownState extends State<StringSettingDropdown> {
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<String>(
+      alignment: AlignmentDirectional.centerEnd,
+      isExpanded: true,
+      value: widget.setting.value,
+      onChanged: (String? val) {
+        progress.make(() async {
+          setState(() {
+            widget.setting.value = val!;
+          });
+          await Comp.waitOnComps([keyLabels, contentBase]);
+        }, context);
+      },
+      items: widget.options.entries
+          .map((e) => DropdownMenuItem<String>(value: e.key, child: Text('${e.key} (${e.value})')))
+          .toList(),
     );
   }
 }

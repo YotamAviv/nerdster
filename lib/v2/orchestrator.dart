@@ -20,6 +20,10 @@ class TrustPipeline {
     return 3;
   }
 
+  static int permissivePathRequirement(int distance) {
+    return 1;
+  }
+
   /// Builds the trust graph starting from [rootToken].
   Future<TrustGraph> build(String rootToken) async {
     // Initial State

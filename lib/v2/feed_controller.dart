@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/content_pipeline.dart';
 import 'package:nerdster/v2/follow_logic.dart';
@@ -28,7 +29,30 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   })  : trustSource = CachedSource(trustSource),
         identityContentSource = CachedSource(identityContentSource),
         appContentSource = CachedSource(appContentSource),
-        super(null);
+        super(null) {
+    Setting.get(SettingType.identityPathsReq).notifier.addListener(_onSettingChanged);
+    Setting.get(SettingType.pov).notifier.addListener(_onPovChanged);
+    Setting.get(SettingType.fcontext).notifier.addListener(_onSettingChanged);
+  }
+
+  void _onSettingChanged() {
+    refresh(_latestRequestedToken, meToken: _latestRequestedMeToken);
+  }
+
+  void _onPovChanged() {
+    final newPov = Setting.get<String?>(SettingType.pov).value;
+    if (newPov != null) {
+      refresh(newPov, meToken: _latestRequestedMeToken);
+    }
+  }
+
+  @override
+  void dispose() {
+    Setting.get(SettingType.identityPathsReq).notifier.removeListener(_onSettingChanged);
+    Setting.get(SettingType.pov).notifier.removeListener(_onPovChanged);
+    Setting.get(SettingType.fcontext).notifier.removeListener(_onSettingChanged);
+    super.dispose();
+  }
 
   bool _loading = false;
   bool get loading => _loading;
@@ -194,7 +218,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
            
            if (delegate != null) {
              meKeys.add(delegate);
-             additionalAppKeys!.add(delegate);
+             additionalAppKeys.add(delegate);
            }
         }
         
@@ -219,7 +243,27 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         debugPrint('V2FeedController: Building TrustGraph for $currentToken');
         loadingMessage.value = 'Loading signed content from one-of-us.net (Trust)';
         progress.value = 0.1;
-        final trustPipeline = TrustPipeline(trustSource);
+        
+        final identityPathsReq = Setting.get<String>(SettingType.identityPathsReq).value;
+        PathRequirement? pathReq;
+        
+        final reqString = pathsReq[identityPathsReq] ?? pathsReq['standard']!;
+        
+        try {
+          final parts = reqString.split(RegExp(r'[-,\s]+'));
+          final reqs = parts.map(int.parse).toList();
+          if (reqs.isNotEmpty) {
+            pathReq = (int distance) {
+              final index = distance - 1;
+              if (index >= 0 && index < reqs.length) return reqs[index];
+              return reqs.last;
+            };
+          }
+        } catch (e) {
+          debugPrint('Error parsing identityPathsReq: $e');
+        }
+
+        final trustPipeline = TrustPipeline(trustSource, pathRequirement: pathReq);
         final graph = await trustPipeline.build(currentToken);
         debugPrint('V2FeedController: TrustGraph has ${graph.orderedKeys.length} keys');
         final delegateResolver = DelegateResolver(graph);

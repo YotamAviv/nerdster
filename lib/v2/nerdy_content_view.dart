@@ -7,6 +7,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/identity_context_selector.dart';
 import 'package:nerdster/v2/content_card.dart';
 import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/verify.dart';
@@ -42,7 +43,6 @@ class _NerdyContentViewState extends State<NerdyContentView> {
     );
     _controller.refresh(_currentPov, meToken: signInState.identity);
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
-    Setting.get<String>(SettingType.fcontext).addListener(_onRefresh);
     v2RefreshSignal.addListener(_onRefresh);
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -68,7 +68,6 @@ class _NerdyContentViewState extends State<NerdyContentView> {
   @override
   void dispose() {
     Setting.get<bool>(SettingType.hideSeen).removeListener(_onSettingChanged);
-    Setting.get<String>(SettingType.fcontext).removeListener(_onRefresh);
     v2RefreshSignal.removeListener(_onRefresh);
     _controller.dispose();
     super.dispose();
@@ -213,105 +212,17 @@ class _NerdyContentViewState extends State<NerdyContentView> {
   }
 
   Widget _buildControls(V2FeedModel? model) {
-    final fcontext = Setting.get<String>(SettingType.fcontext).value;
-    final isSpecial = fcontext == kOneofusContext || fcontext == kNerdsterContext;
-    final isActive = model?.activeContexts.contains(fcontext) ?? false;
-    final hasError = !isSpecial && !isActive && model != null;
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          Row(
-            children: [
-              const Text('PoV: ', style: TextStyle(fontWeight: FontWeight.bold)),
-              Flexible(
-                flex: 3,
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: (model?.trustGraph.distances.containsKey(_currentPov) == true
-                          ? _currentPov
-                          : null),
-                  hint: _controller.loading && model?.rootToken != _currentPov
-                      ? const Text('Loading...')
-                      : Text(model != null && _currentPov != null
-                          ? model.labeler.getLabel(_currentPov!)
-                          : (_currentPov ?? '')),
-                  items: [
-                    if (signInState.pov != null)
-                      DropdownMenuItem(
-                        value: signInState.pov!,
-                        child: Text('Me (${model?.labeler.getLabel(signInState.pov!) ?? "Signed In"})'),
-                      ),
-                    if (model != null)
-                      ...model.trustGraph.orderedKeys
-                          .where((k) => k != signInState.pov)
-                          .map((k) {
-                        return DropdownMenuItem(
-                          value: k,
-                          child: Text(model.labeler.getLabel(k)),
-                        );
-                      }),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) _changePov(val);
-                  },
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Text('Context: ', style: TextStyle(fontWeight: FontWeight.bold)),
-              Flexible(
-                flex: 2,
-                child: Row(
-                  children: [
-                    if (hasError)
-                      const Tooltip(
-                        message: 'This PoV does not use this follow context.',
-                        child: Icon(Icons.error_outline, color: Colors.red, size: 16),
-                      ),
-                    Expanded(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: fcontext,
-                        style: hasError ? const TextStyle(color: Colors.red) : null,
-                        items: [
-                          const DropdownMenuItem(value: kOneofusContext, child: Text(kOneofusContext)),
-                          const DropdownMenuItem(value: kNerdsterContext, child: Text(kNerdsterContext)),
-                          if (model != null)
-                            ...model.availableContexts
-                                .where((c) => c != kOneofusContext && c != kNerdsterContext)
-                                .map((c) {
-                              final isContextActive = model.activeContexts.contains(c);
-                              return DropdownMenuItem(
-                                value: c,
-                                child: Text(
-                                  c,
-                                  style: TextStyle(
-                                    color: isContextActive ? null : Colors.grey,
-                                    fontStyle: isContextActive ? null : FontStyle.italic,
-                                  ),
-                                ),
-                              );
-                            }),
-                          // Ensure the current fcontext is always in the list to avoid Dropdown errors
-                          if (fcontext != kOneofusContext && 
-                              fcontext != kNerdsterContext && 
-                              (model == null || !model.availableContexts.contains(fcontext)))
-                            DropdownMenuItem(value: fcontext, child: Text(fcontext)),
-                        ],
-                        onChanged: (val) {
-                          if (val != null) {
-                            Setting.get<String>(SettingType.fcontext).value = val;
-                            _onRefresh();
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          if (model != null)
+            IdentityContextSelector(
+              availableIdentities: model.trustGraph.orderedKeys,
+              availableContexts: model.availableContexts,
+              activeContexts: model.activeContexts,
+              labeler: model.labeler,
+            ),
           Row(
             children: [
               const Text('Sort: ', style: TextStyle(fontWeight: FontWeight.bold)),

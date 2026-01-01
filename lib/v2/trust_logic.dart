@@ -3,6 +3,12 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/model.dart';
 
+final Map<String, String> pathsReq = {
+  'standard': '1-1-2',
+  'strict': '1-2-2-3',
+  'permissive': '1',
+};
+
 typedef PathRequirement = int Function(int distance);
 
 List<List<String>> _findNodeDisjointPaths(String root, String target, Map<String, Set<String>> graph, int limit) {
