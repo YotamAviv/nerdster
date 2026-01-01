@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_bar.dart';
 import 'package:nerdster/content/content_tile.dart';

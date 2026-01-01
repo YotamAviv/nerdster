@@ -19,9 +19,10 @@ The backend logic (Cloud Functions) is tested using the built-in Node.js test ru
 Navigate to the `functions` directory and run:
 
 ```bash
-cd functions
-npm test
+(cd functions && npm test)
 ```
+
+**Note:** Use a subshell `(cd ...)` or chain commands to ensure you return to the project root if running subsequent commands.
 
 This runs all tests in the `functions/test/` directory.
 

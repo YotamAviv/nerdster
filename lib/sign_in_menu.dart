@@ -4,6 +4,8 @@ import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/key_store.dart';
+import 'package:nerdster/demo_setup.dart';
+import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/paste_sign_in.dart';

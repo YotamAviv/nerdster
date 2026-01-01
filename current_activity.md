@@ -1,5 +1,20 @@
 # Current Activity: V2 Rewrite
 
+
+
+I want another simpsons demo for a variety of reasons.
+I want to add
+- reactions on reactions (comment on comment, like  on comment, comment on like, etc..)
+- relations (like simpsons_relate_demo)
+- plenty of subjects (like the current simpsons_demo)
+- some conflicts (like the current simpsons_demo, but different)
+- different  conflicts from different PoVs
+- different high level data shown from different PoVs
+- the ability to use it either fake or emulator and be able to sign in as any person
+  I used to be able to do that when using fake using the menus, but I seem to haev lost that ability
+  Having that ability when using the emulator would require exporting and saving a file with the full public/private delegate keys
+- furthermore, it'd be nice to have the "script" not be a Dart program. I don't want to invent a new language and syntax. Any suggestions?
+
 ## NOTES FOR ME - DON'T START WITHOUT ME
 
 - relating statements
@@ -20,17 +35,17 @@ I should think about relating statements.
 - follow
 
 - uniform bar/controlls for graph and content views, maybe..
+- filter/sort content 
+  - filter by type: recipe, video, article, ..
+  - sort by: recent activity
+  - sort by: most activity (not just comments)
+- Use same network choices for Content and Graph View
+
 
 - upgrade related tags
   - don't sort
   - use equivalence tech
 
-- filter/sort content 
-  - filter by type: recipe, video, article, ..
-  - sort by: recent activity
-  - sort by: most activity (not just comments)
-
-- Use same network choices for Content and Graph View
 
 - Crypto proofs
 

@@ -9,42 +9,34 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/endpoint.dart';
 import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/fire_util.dart';
-import 'package:nerdster/v2/config.dart';
 import 'package:nerdster/oneofus/json_display.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus_fire.dart';
-import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/progress.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/app.dart';
+import 'package:nerdster/v2/config.dart';
 import 'package:nerdster/verify.dart';
 
-import 'package:nerdster/fire_choice.dart';
-export 'package:nerdster/fire_choice.dart';
 import 'firebase_options.dart';
 import 'message_handler.dart' if (dart.library.io) 'stub_message_handler.dart';
 
+export 'package:nerdster/fire_choice.dart';
+
 bool _fireCheckRead = false;
 bool _fireCheckWrite = false;
-
-String? demo;
-
-// This doesn't work. [ContentTree] sets this using [BuildContext].
-// On my Pixel 6a, size is (374.2, 713.1).
-ValueNotifier<bool> isSmall = ValueNotifier<bool>(true);
-
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -183,17 +175,7 @@ Future<void> defaultSignIn({BuildContext? context}) async {
     pov = getToken(povJson);
   }
 
-  if (b(params['demo'])) {
-    if (fireChoice == FireChoice.prod) throw 'not on production';
-    demo = params['demo']!;
-    final (DemoKey identityDemoKey, DemoKey? delegateDemoKey) = await DemoKey.demos[demo]();
-    String identity = identityDemoKey.token;
-    OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
-    DemoKey.dumpDemoCredentials();
-    await signInState.signIn(identity, nerdsterKeyPair, context: context);
-    if (pov != null) signInState.pov = pov;
-    return;
-  }
+  if (await tryDemoSignIn(context, pov: pov)) return;
 
   // Check secure browser storage
   if (fireChoice != FireChoice.fake) {
@@ -213,19 +195,6 @@ Future<void> defaultSignIn({BuildContext? context}) async {
     await signInState.signIn(pov, null, context: context);
     return;
   }
-
-  // Check for hard coded values
-
-  // Check for hard coded values
-  if (b(hardCodedSignIn[fireChoice])) {
-    Json identityJson = Map.of(hardCodedSignIn[fireChoice]!['identity']!);
-    String identity = getToken(identityJson);
-    OouKeyPair? hardDelegate = b(hardCodedSignIn[fireChoice]![kNerdsterDomain])
-        ? await crypto.parseKeyPair(hardCodedSignIn[fireChoice]![kNerdsterDomain]!)
-        : null;
-    await signInState.signIn(identity, hardDelegate, context: context);
-    return;
-  }
 }
 
 Future<void> initPrefs2() async {
@@ -236,7 +205,7 @@ Future<void> initPrefs2() async {
   Setting.get<bool>(SettingType.showStatements).value = devDefault;
   Setting.get<bool>(SettingType.dev).value = devDefault;
 
-  // Sync showStuff with dependent settings
+  // Sync showCrypto with dependent settings
   Setting.get<bool>(SettingType.showCrypto).addListener(() {
     final showStuffValue = Setting.get<bool>(SettingType.showCrypto).value;
     Setting.get<bool>(SettingType.showJson).value = showStuffValue;
@@ -244,21 +213,3 @@ Future<void> initPrefs2() async {
     Setting.get<bool>(SettingType.showStatements).value = showStuffValue;
   });
 }
-
-const Json yotam = {
-  "crv": "Ed25519",
-  "kty": "OKP",
-  "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
-};
-
-var lisa = {"crv": "Ed25519", "kty": "OKP", "x": "cLpFiVQn_bAXK7Yg2JW5oFyibjZXqw6fRopx8xdbRkE"};
-var lisaEmulator = {
-  "crv": "Ed25519",
-  "kty": "OKP",
-  "x": "24pUZag3dUUKPttLAyI1bv8tJBkjS6lqOa9brgnkrOw"
-};
-
-dynamic hardCodedSignIn = {
-  // FireChoice.emulator: {'identity': yotam},
-  // FireChoice.emulator: {'identity': lisaEmulator},
-};
