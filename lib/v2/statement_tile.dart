@@ -210,6 +210,13 @@ class StatementTile extends StatelessWidget {
                   },
                 ),
               */
+              if (uniqueStatements.isNotEmpty) ...[
+                Text(
+                  '${uniqueStatements.length} ${uniqueStatements.length == 1 ? "reaction" : "reactions"}',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                const SizedBox(width: 4),
+              ],
               const SizedBox(width: 8),
               IconButton(
                 visualDensity: VisualDensity.compact,
