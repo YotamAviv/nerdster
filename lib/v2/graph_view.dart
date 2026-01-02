@@ -286,13 +286,13 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   }
 
   void _showNodeDetails(String identity) {
-    final model = widget.controller.value!;
-    final labeler = model.labeler;
-    final labels = labeler.getAllLabels(identity);
-    final tg = model.trustGraph;
-    final keys = tg.getEquivalenceGroup(identity);
-    final delegates = labeler.delegateResolver?.getDelegatesForIdentity(identity) ?? [];
-    final fcontext = model.fcontext;
+    final V2FeedModel model = widget.controller.value!;
+    final V2Labeler labeler = model.labeler;
+    final List<String> labels = labeler.getAllLabels(identity);
+    final TrustGraph tg = model.trustGraph;
+    final List<String> keys = tg.getEquivalenceGroup(identity);
+    final List<String> delegates = labeler.delegateResolver?.getDelegatesForIdentity(identity) ?? [];
+    final String fcontext = model.fcontext;
     
     showDialog(
       context: context,
@@ -321,8 +321,6 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Identity: $identity', style: const TextStyle(fontSize: 10, color: Colors.grey)),
-              const SizedBox(height: 10),
               const Text('All Monikers:', style: TextStyle(fontWeight: FontWeight.bold)),
               if (labels.isEmpty) const Text('None'),
               ...labels.map((l) => Text('• $l')),
@@ -330,13 +328,31 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
               const Text('Key Lineage:', style: TextStyle(fontWeight: FontWeight.bold)),
               ...keys.map((k) {
                 final isCanonical = k == identity;
-                return Text('• $k ${isCanonical ? "(Canonical)" : "(Replaced)"}', 
-                  style: TextStyle(fontSize: 10, color: isCanonical ? Colors.black : Colors.grey));
+                return Builder(
+                  builder: (context) {
+                    TapDownDetails? tapDetails;
+                    return InkWell(
+                      onTapDown: (details) => tapDetails = details,
+                      onTap: () => KeyInfoView.show(context, k, kOneofusDomain, details: tapDetails),
+                      child: Text('• $k ${isCanonical ? "(Canonical)" : "(Replaced)"}', 
+                        style: TextStyle(fontSize: 10, color: isCanonical ? Colors.black : Colors.grey, decoration: TextDecoration.underline)),
+                    );
+                  }
+                );
               }),
               if (delegates.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 const Text('Authorized Delegates:', style: TextStyle(fontWeight: FontWeight.bold)),
-                ...delegates.map((d) => Text('• $d', style: const TextStyle(fontSize: 10, color: Colors.blue))),
+                ...delegates.map((d) => Builder(
+                  builder: (context) {
+                    TapDownDetails? tapDetails;
+                    return InkWell(
+                      onTapDown: (details) => tapDetails = details,
+                      onTap: () => KeyInfoView.show(context, d, kNerdsterDomain, details: tapDetails),
+                      child: Text('• $d', style: const TextStyle(fontSize: 10, color: Colors.blue, decoration: TextDecoration.underline)),
+                    );
+                  }
+                )),
               ],
               const SizedBox(height: 10),
               

@@ -30,6 +30,8 @@ This runs all tests in the `functions/test/` directory.
 
 Integration tests run in a browser environment and interact with local Firebase Emulators.
 
+**AI Note:** Do not kill existing `chromedriver` or `firebase` processes without asking.
+
 ### Prerequisites
 
 1.  **Firebase Emulators**: You must run emulators for both projects (Nerdster and One-of-us-net) simultaneously. Open two terminal tabs and run:

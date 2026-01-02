@@ -56,3 +56,6 @@ You (the AI) wrote this document to guide your future self so you could do a bet
 
 14. **Check for Compile Errors Before Running Tests.**
     - Before running tests, always check for compile-time errors using `get_errors`. Running tests on broken code is a waste of time and confuses the user.
+
+15. **Respect Running Processes.**
+    - Do not kill or restart long-running processes (like emulators, servers, or databases) without asking the user first.
