@@ -12,6 +12,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/identity_context_selector.dart';
+import 'package:nerdster/v2/key_info_view.dart';
 
 class NerdyGraphView extends StatefulWidget {
   final V2FeedController controller;
@@ -296,7 +297,25 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(labeler.getLabel(identity)),
+        title: Builder(
+          builder: (context) {
+            TapDownDetails? tapDetails;
+            return InkWell(
+              onTapDown: (details) => tapDetails = details,
+              onTap: () {
+                KeyInfoView.show(context, identity, kOneofusDomain, details: tapDetails);
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(child: Text(labeler.getLabel(identity))),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.qr_code, size: 20, color: Colors.blue),
+                ],
+              ),
+            );
+          }
+        ),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,6 +1,27 @@
 # Current Activity: V2 Rewrite
 
+Add a new widget for showing keys
+Look at the legacy's JsonQrDisplay. You can include that in this new widget, include componments of it, or just leverage that implementation for code or ideas.
+The new widget should have
+- QR code
+- Json key and the toggle to view it interpreted or raw
+- a link to this key's published, signed statements. You can see how NetTile achieved this in the legacy code (look for kStatements). Since when we're using FakeFirebase, there is no place where signed statements are published, NetTile showed them a different way. You can do that or just skip that link when using FakeFirebase.
+
+Use this new widget in the node details:
+For starters
+- Make the name in node details a link that will pop up that new widget to show the subject user's canonical identity key.
+After that works and is reviewed, we'll move on to using it in a couple of other places
+
+
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
+
+
+### node detail Enhancements
+- keys shown interpreted
+  - link to pop up small dialog with: QR code, JSON key text, link to published statements.
+- abiilty to toggle showCrypto
+  - while viewing the graph
+  - (while modal dialog is up, maybe)
 
 BUGS:
 
@@ -29,19 +50,11 @@ I want to add
   Having that ability when using the emulator would require exporting and saving a file with the full public/private delegate keys
 - furthermore, it'd be nice to have the "script" not be a Dart program. I don't want to invent a new language and syntax. Any suggestions?
 
-### node detail Enhancements
-- keys shown interpreted
-  - link to pop up small dialog with: QR code, JSON key text, link to published statements.
-- abiilty to toggle showCrypto
-  - while viewing the graph
-  - (while modal dialog is up, maybe)
-
+### ..
 
 - follow
 
 - filter/sort content 
-  - filter by type: recipe, video, article, ..
-  - sort by: recent activity
   - sort by: most activity (not just comments)
 
 - upgrade related tags to use equivalence tech
