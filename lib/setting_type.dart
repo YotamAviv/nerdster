@@ -5,7 +5,7 @@ enum SettingType {
   skipCredentials(bool, false, persist: true),
   identityNetDegrees(int, 5, aliases: ['oneofusNetDegrees']),
   identityNetPaths(int, 1, aliases: ['oneofusNetPaths']),
-  identityPathsReq(String, 'standard'),
+  identityPathsReq(String, 'permissive'),
   followNetDegrees(int, 5),
   followNetPaths(int, 1),
 

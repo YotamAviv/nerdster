@@ -14,6 +14,7 @@ import 'package:nerdster/verify.dart';
 import 'package:nerdster/v2/graph_view.dart';
 import 'package:nerdster/v2/relate_dialog.dart';
 import 'package:nerdster/app.dart';
+import 'package:nerdster/content/content_types.dart';
 import 'refresh_signal.dart';
 import 'submit.dart';
 
@@ -217,58 +218,113 @@ class _NerdyContentViewState extends State<NerdyContentView> {
               activeContexts: model.activeContexts,
               labeler: model.labeler,
             ),
-          Row(
-            children: [
-              const Text('Sort: ', style: TextStyle(fontWeight: FontWeight.bold)),
-              DropdownButton<V2SortMode>(
-                value: _controller.sortMode,
-                items: const [
-                  DropdownMenuItem(value: V2SortMode.recentActivity, child: Text('Recent')),
-                  DropdownMenuItem(value: V2SortMode.netLikes, child: Text('Net Likes')),
-                  DropdownMenuItem(value: V2SortMode.mostComments, child: Text('Comments')),
-                ],
-                onChanged: (val) {
-                  if (val != null) _controller.sortMode = val;
-                },
-              ),
-              const SizedBox(width: 16),
-              const Text('Filter: ', style: TextStyle(fontWeight: FontWeight.bold)),
-              DropdownButton<V2FilterMode>(
-                value: _controller.filterMode,
-                items: const [
-                  DropdownMenuItem(value: V2FilterMode.myDisses, child: Text('My Disses')),
-                  DropdownMenuItem(value: V2FilterMode.povDisses, child: Text("PoV's Disses")),
-                  DropdownMenuItem(value: V2FilterMode.ignoreDisses, child: Text('Ignore Disses')),
-                ],
-                onChanged: (val) {
-                  if (val != null) _controller.filterMode = val;
-                },
-              ),
-              const SizedBox(width: 16),
-              const Text('Tag: ', style: TextStyle(fontWeight: FontWeight.bold)),
-              DropdownButton<String>(
-                value: _controller.tagFilter ?? '-',
-                items: [
-                  const DropdownMenuItem(value: '-', child: Text('All')),
-                  ...(model?.aggregation.mostTags ?? [])
-                      .map((t) => DropdownMenuItem(value: t, child: Text(t))),
-                ],
-                onChanged: (val) {
-                  _controller.tagFilter = (val == '-' ? null : val);
-                },
-              ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.add),
-                tooltip: 'Submit Content',
-                onPressed: model == null ? null : () => v2Submit(context, model, onRefresh: _onRefresh),
-              ),
-              const Text('Censor'),
-              Switch(
-                value: _controller.enableCensorship,
-                onChanged: (val) => _controller.enableCensorship = val,
-              ),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                // Submit Button (Prominent)
+                Tooltip(
+                  message: 'Submit new content',
+                  child: FloatingActionButton.small(
+                    onPressed: model == null ? null : () => v2Submit(context, model, onRefresh: _onRefresh),
+                    child: const Icon(Icons.add),
+                  ),
+                ),
+                const SizedBox(width: 16),
+
+                // Sort
+                Row(
+                  children: [
+                    const Text('Sort: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    DropdownButton<V2SortMode>(
+                      value: _controller.sortMode,
+                      items: const [
+                        DropdownMenuItem(value: V2SortMode.recentActivity, child: Text('Recent')),
+                        DropdownMenuItem(value: V2SortMode.netLikes, child: Text('Net Likes')),
+                        DropdownMenuItem(value: V2SortMode.mostComments, child: Text('Comments')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) _controller.sortMode = val;
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+
+                // Type Filter
+                Row(
+                  children: [
+                    const Text('Type: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    DropdownButton<String>(
+                      value: _controller.typeFilter ?? 'all',
+                      items: [
+                        const DropdownMenuItem(value: 'all', child: Text('All')),
+                        ...ContentType.values
+                            .where((t) => t != ContentType.all)
+                            .map((t) => DropdownMenuItem(value: t.name, child: Text(t.name))),
+                      ],
+                      onChanged: (val) {
+                        _controller.typeFilter = (val == 'all' ? null : val);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+
+                // Tag Filter
+                Tooltip(
+                  message: 'Filter by tag',
+                  child: Row(
+                    children: [
+                      const Text('Tag: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      DropdownButton<String>(
+                        value: _controller.tagFilter ?? '-',
+                        items: [
+                          const DropdownMenuItem(value: '-', child: Text('All')),
+                          ...(model?.aggregation.mostTags ?? [])
+                              .map((t) => DropdownMenuItem(value: t, child: Text(t))),
+                        ],
+                        onChanged: (val) {
+                          _controller.tagFilter = (val == '-' ? null : val);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+
+                // Dismissal Filter (formerly "Filter")
+                Tooltip(
+                  message: 'Filter dismissed content',
+                  child: DropdownButton<V2FilterMode>(
+                    value: _controller.filterMode,
+                    items: const [
+                      DropdownMenuItem(value: V2FilterMode.myDisses, child: Text('My Disses')),
+                      DropdownMenuItem(value: V2FilterMode.povDisses, child: Text("PoV's Disses")),
+                      DropdownMenuItem(value: V2FilterMode.ignoreDisses, child: Text('Ignore Disses')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) _controller.filterMode = val;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Censor Switch
+                Tooltip(
+                  message: 'Rely on my network to censor content I should not see',
+                  child: Row(
+                    children: [
+                      const Text('Censor'),
+                      Switch(
+                        value: _controller.enableCensorship,
+                        onChanged: (val) => _controller.enableCensorship = val,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -330,6 +386,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
         model.enableCensorship,
         tagFilter: model.tagFilter,
         tagEquivalence: model.aggregation.tagEquivalence,
+        typeFilter: model.typeFilter,
       );
     }).toList();
 

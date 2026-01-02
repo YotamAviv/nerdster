@@ -101,6 +101,18 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
+  String? _typeFilter;
+  String? get typeFilter => _typeFilter;
+
+  set typeFilter(String? type) {
+    if (_typeFilter != type) {
+      _typeFilter = type;
+      if (value != null) {
+        _updateValueWithSettings();
+      }
+    }
+  }
+
   bool _enableCensorship = true;
   bool get enableCensorship => _enableCensorship;
 
@@ -125,6 +137,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       sortMode: _sortMode,
       filterMode: _filterMode,
       tagFilter: _tagFilter,
+      typeFilter: _typeFilter,
       enableCensorship: _enableCensorship,
       availableContexts: value!.availableContexts,
       activeContexts: value!.activeContexts,
@@ -155,7 +168,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled, {String? tagFilter, Map<String, String>? tagEquivalence}) {
+  bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled, {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) {
     // Don't show statements as top-level cards
     final s = subject.subject;
     if (s is Map && s.containsKey('statement')) return false;
@@ -165,6 +178,22 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
 
     if (censorshipEnabled && subject.isCensored) return false;
+
+    if (typeFilter != null && typeFilter != 'all') {
+       String? subjectType;
+       if (s is Map) {
+         subjectType = s['contentType'];
+       } else if (s is String) {
+         final j = Jsonish.find(s);
+         if (j != null) {
+           subjectType = j['contentType'];
+         }
+       }
+       
+       if (subjectType != typeFilter) {
+         return false;
+       }
+    }
 
     if (tagFilter != null && tagFilter != '-') {
       final canonicalFilter = tagEquivalence?[tagFilter] ?? tagFilter;

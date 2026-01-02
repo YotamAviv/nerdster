@@ -205,6 +205,7 @@ class V2FeedModel {
   final V2SortMode sortMode;
   final V2FilterMode filterMode;
   final String? tagFilter;
+  final String? typeFilter;
   final bool enableCensorship;
   final List<String> availableContexts;
   final Set<String> activeContexts;
@@ -219,6 +220,7 @@ class V2FeedModel {
     required this.sortMode,
     required this.filterMode,
     this.tagFilter,
+    this.typeFilter,
     required this.enableCensorship,
     this.availableContexts = const [],
     this.activeContexts = const {},

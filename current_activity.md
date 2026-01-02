@@ -7,6 +7,8 @@ The legacy code did nothing to verify. Do something reasonable and minial to ver
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
+BUG: Viewing as Lisa with censorship off, I see Marge's rating of Superbad but I don't see the censor icon.
+
 ### relating statements
 
 I used the app to relate 2 Bart's relate statement on El Barto and Marge's dontRelate statement on El Barto. This is what I see in LGTM:
