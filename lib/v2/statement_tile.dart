@@ -245,6 +245,8 @@ class StatementTile extends StatelessWidget {
                 builder: (context, showCrypto, _) {
                   if (!showCrypto) return const SizedBox.shrink();
                   return IconButton(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    constraints: const BoxConstraints(),
                     icon: const Icon(Icons.verified_user, size: 16, color: Colors.blue),
                     onPressed: () => showDialog(
                       context: context,
