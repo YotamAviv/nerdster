@@ -44,7 +44,7 @@ void main() async {
     // Bob trusts Alice (just ot name her)
     await bob.trust(alice, moniker: 'alice');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(root: alice.token), {
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.token), {
       // This works, too. See matching comment above.
       // alice.token: alice.trustStatements.toList(),
       alice.token: [

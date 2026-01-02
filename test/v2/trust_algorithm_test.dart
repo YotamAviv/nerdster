@@ -93,14 +93,14 @@ void main() {
   });
 
   test('Node-Disjoint Paths (Bottleneck Test)', () async {
-    final root = await DemoKey.create('root');
+    final pov = await DemoKey.create('pov');
     final alice = await DemoKey.create('alice');
     final bob = await DemoKey.create('bob');
     final charlie = await DemoKey.create('charlie');
     final dave = await DemoKey.create('dave');
 
-    // root -> alice (dist 1)
-    await root.trust(alice, moniker: 'alice');
+    // pov -> alice (dist 1)
+    await pov.trust(alice, moniker: 'alice');
     
     // alice -> bob, charlie (dist 2)
     await alice.trust(bob, moniker: 'bob');
@@ -115,21 +115,21 @@ void main() {
     // Requirement: 2 paths for distance 3
     final pipeline = TrustPipeline(source, pathRequirement: (d) => d >= 3 ? 2 : 1);
     
-    final graph = await pipeline.build(root.token);
+    final graph = await pipeline.build(pov.token);
     
     // Dave should NOT be trusted because all paths go through Alice
     expect(graph.isTrusted(dave.token), isFalse, reason: 'Dave has a bottleneck at Alice');
     
-    // Now add a second path from root to bypass Alice
+    // Now add a second path from pov to bypass Alice
     final zoe = await DemoKey.create('zoe');
-    await root.trust(zoe, moniker: 'zoe');
+    await pov.trust(zoe, moniker: 'zoe');
     await zoe.trust(bob, moniker: 'bob');
     
     // Now Dave has 2 node-disjoint paths:
-    // 1. root -> alice -> charlie -> dave
-    // 2. root -> zoe -> bob -> dave
+    // 1. pov -> alice -> charlie -> dave
+    // 2. pov -> zoe -> bob -> dave
     
-    final graph2 = await pipeline.build(root.token);
+    final graph2 = await pipeline.build(pov.token);
     expect(graph2.isTrusted(dave.token), isTrue, reason: 'Dave now has 2 node-disjoint paths');
   });
 

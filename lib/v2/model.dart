@@ -34,19 +34,19 @@ class TrustNotification {
 
 /// The immutable result of the Trust Algorithm.
 class TrustGraph {
-  final String root;
+  final String pov;
   final Map<String, int> distances; // Token -> Distance
   final List<String> orderedKeys; // Tokens in discovery order (BFS)
   final Map<String, String> replacements; // OldToken -> NewToken
   final Map<String, String> replacementConstraints; // Token -> RevokeAtToken (Time constraint)
   final Set<String> blocked; // Tokens blocked by the graph
-  final Map<String, List<List<String>>> paths; // Target -> List of node-disjoint paths from root
+  final Map<String, List<List<String>>> paths; // Target -> List of node-disjoint paths from pov
   /// Notifications: key rotation issues, attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
   final Map<String, List<TrustStatement>> edges; // Adjacency list: Issuer -> List<TrustStatement> (Valid statements)
 
   TrustGraph({
-    required this.root,
+    required this.pov,
     this.distances = const {},
     this.orderedKeys = const [],
     this.replacements = const {},
@@ -90,9 +90,9 @@ class TrustGraph {
       ..sort((a, b) => distances[a]!.compareTo(distances[b]!));
   }
 
-  /// Returns all shortest paths from root to [target].
+  /// Returns all shortest paths from pov to [target].
   List<List<String>> getPathsTo(String target) {
-    if (target == root) return [[root]];
+    if (target == pov) return [[pov]];
     if (!distances.containsKey(target)) return [];
 
     final targetDist = distances[target]!;
@@ -120,8 +120,8 @@ class TrustGraph {
 class FollowNetwork {
   final String fcontext;
   final List<String> identities; // Canonical identity tokens in discovery order
-  final String rootIdentity; // The identity from whose POV this network was built
-  final Map<String, List<String>> paths; // Identity -> Path from root
+  final String povIdentity; // The identity from whose POV this network was built
+  final Map<String, List<String>> paths; // Identity -> Path from pov
   /// Notifications: attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
   final Map<String, List<ContentStatement>> edges; // IssuerIdentity -> List of accepted follow/block statements
@@ -129,7 +129,7 @@ class FollowNetwork {
   FollowNetwork({
     required this.fcontext,
     this.identities = const [],
-    required this.rootIdentity,
+    required this.povIdentity,
     this.paths = const {},
     this.notifications = const [],
     this.edges = const {},
@@ -200,7 +200,7 @@ class V2FeedModel {
   final FollowNetwork followNetwork;
   final V2Labeler labeler;
   final ContentAggregation aggregation;
-  final String rootToken;
+  final String povToken;
   final String fcontext;
   final V2SortMode sortMode;
   final V2FilterMode filterMode;
@@ -215,7 +215,7 @@ class V2FeedModel {
     required this.followNetwork,
     required this.labeler,
     required this.aggregation,
-    required this.rootToken,
+    required this.povToken,
     required this.fcontext,
     required this.sortMode,
     required this.filterMode,

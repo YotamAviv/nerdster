@@ -92,7 +92,7 @@ void main() {
 
     // 5. Refresh with Stranger as PoV
     // Stranger does NOT trust Me, so Me is not in the trust graph.
-    await controller.refresh(stranger.token, meToken: me.token);
+    await controller.refresh(stranger.token, meIdentityToken: me.token);
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
@@ -154,5 +154,47 @@ void main() {
     // 7. Verify it is hidden from the feed
     final shouldShow = controller.shouldShow(ratingAsSubject.first, V2FilterMode.ignoreDisses, false);
     expect(shouldShow, isFalse, reason: "The rating statement should be hidden from the feed");
+  });
+
+  test('My delegate statements should be fetched even if I am not in the PoV graph and not signed in with that delegate', () async {
+    // 1. Create Stranger and Me
+    final stranger = await DemoKey.findOrCreate('stranger');
+    final me = await DemoKey.findOrCreate('me');
+    final meDelegate = await me.makeDelegate();
+
+    // 2. Me (via delegate) rates "Secretariat"
+    await meDelegate.doRate(title: 'Secretariat', recommend: true, comment: 'I like horses');
+
+    // 3. Sign in as Me (Identity ONLY, no delegate credential active)
+    await signInState.signIn(me.token, null);
+
+    // 4. Refresh with Stranger as PoV
+    // Stranger does NOT trust Me.
+    await controller.refresh(stranger.token, meIdentityToken: me.token);
+
+    // Wait for controller to finish loading the requested PoV
+    // (Because signIn triggered a refresh for 'Me', the explicit refresh call might have returned early)
+    while (controller.value?.povToken != stranger.token || controller.loading) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
+    expect(controller.error, isNull);
+    final model = controller.value!;
+    
+
+    // 5. Find Secretariat aggregation
+    // It should exist in the map because "Me" rated it, even if it's not "visible" in the feed view.
+    final secretariatAgg = model.aggregation.subjects.values.firstWhere((agg) => 
+      agg.subject is Map && agg.subject['title'] == 'Secretariat',
+      orElse: () => throw Exception('Secretariat not found in aggregation'),
+    );
+    
+    // Main statements should be empty (Stranger doesn't know about this rating)
+    expect(secretariatAgg.statements, isEmpty, reason: "Main aggregation should be empty for Stranger PoV");
+
+    // myDelegateStatements should contain Me's rating
+    final myRatingInMy = secretariatAgg.myDelegateStatements.where((s) => s.iToken == meDelegate.token);
+    expect(myRatingInMy, isNotEmpty, reason: "Me's rating SHOULD be in myDelegateStatements");
+    expect(myRatingInMy.first.comment, equals('I like horses'));
   });
 }

@@ -33,13 +33,13 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   void _onSettingChanged() {
-    refresh(_latestRequestedToken, meToken: _latestRequestedMeToken);
+    refresh(_latestRequestedPovIdentityToken, meIdentityToken: _latestRequestedMeIdentityToken);
   }
 
   void _onPovChanged() {
     final newPov = signInState.pov;
     if (newPov != null) {
-      refresh(newPov, meToken: _latestRequestedMeToken);
+      refresh(newPov, meIdentityToken: _latestRequestedMeIdentityToken);
     }
   }
 
@@ -53,8 +53,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
   bool _loading = false;
   bool get loading => _loading;
-  String? _latestRequestedToken;
-  String? _latestRequestedMeToken;
+  String? _latestRequestedPovIdentityToken;
+  String? _latestRequestedMeIdentityToken;
 
   final ValueNotifier<double> progress = ValueNotifier(0);
   final ValueNotifier<String?> loadingMessage = ValueNotifier(null);
@@ -117,7 +117,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     if (_enableCensorship != enabled) {
       _enableCensorship = enabled;
       // Censorship affects the aggregation pipeline, so we need a full refresh.
-      refresh(_latestRequestedToken, meToken: _latestRequestedMeToken);
+      refresh(_latestRequestedPovIdentityToken, meIdentityToken: _latestRequestedMeIdentityToken);
     }
   }
 
@@ -129,7 +129,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       followNetwork: value!.followNetwork,
       labeler: value!.labeler,
       aggregation: value!.aggregation,
-      rootToken: value!.rootToken,
+      povToken: value!.povToken,
       fcontext: value!.fcontext,
       sortMode: _sortMode,
       filterMode: _filterMode,
@@ -166,6 +166,9 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled, {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) {
+    // Only show subjects that exist in the PoV's feed (have statements from the PoV's network)
+    if (subject.statements.isEmpty) return false;
+
     // Don't show statements as top-level cards
     final s = subject.subject;
     if (s is Map && s.containsKey('statement')) return false;
@@ -211,12 +214,11 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  Future<void> refresh(String? rootToken, {String? meToken}) async {
-    _latestRequestedToken = rootToken;
-    _latestRequestedMeToken = meToken;
+  Future<void> refresh(String? povIdentityToken, {String? meIdentityToken}) async {
+    _latestRequestedPovIdentityToken = povIdentityToken;
+    _latestRequestedMeIdentityToken = meIdentityToken;
     
     if (_loading) {
-      debugPrint('V2FeedController: Already loading, updated target to $rootToken (me: $meToken)');
       return;
     }
     
@@ -227,29 +229,17 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
     try {
       while (true) {
-        final currentToken = _latestRequestedToken;
-        final currentMeToken = _latestRequestedMeToken;
+        final currentPovIdentityToken = _latestRequestedPovIdentityToken;
+        final currentMeIdentityToken = _latestRequestedMeIdentityToken;
         
-        List<String>? meKeys;
-        List<String>? additionalIdentityKeys;
-        List<String>? additionalAppKeys;
+        List<String>? meIdentityKeys;
+        List<String>? meDelegateKeys;
 
-        if (currentMeToken != null && currentMeToken == signInState.identity) {
-           final delegate = signInState.delegate;
-           meKeys = [currentMeToken];
-           additionalIdentityKeys = [currentMeToken];
-           // Also fetch meToken from App Source (nerdster.org)
-           // This allows identities to host content on the app even if they are identities.
-           additionalAppKeys = [currentMeToken];
-           
-           if (delegate != null) {
-             meKeys.add(delegate);
-             additionalAppKeys.add(delegate);
-           }
+        if (currentMeIdentityToken != null && currentMeIdentityToken == signInState.identity) {
+           meIdentityKeys = [currentMeIdentityToken];
         }
         
-        if (currentToken == null) {
-          debugPrint('V2FeedController: rootToken is null, clearing model');
+        if (currentPovIdentityToken == null) {
           value = null;
           break;
         }
@@ -265,7 +255,6 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         contentSource.clear();
 
         // 1. Trust Pipeline
-        debugPrint('V2FeedController: Building TrustGraph for $currentToken');
         loadingMessage.value = 'Loading signed content from one-of-us.net (Trust)';
         progress.value = 0.1;
         
@@ -289,13 +278,38 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         }
 
         final trustPipeline = TrustPipeline(trustSource, pathRequirement: pathReq);
-        final graph = await trustPipeline.build(currentToken);
-        debugPrint('V2FeedController: TrustGraph has ${graph.orderedKeys.length} keys');
+        final graph = await trustPipeline.build(currentPovIdentityToken);
         final delegateResolver = DelegateResolver(graph);
+        
+        // Fix for view-only mode where signInState.delegate is null but the identity has delegates in the graph
+        if (currentMeIdentityToken != null && meIdentityKeys != null) {
+          final Set<String> delegates = {};
+          
+          // 1. Try to find delegates in the current PoV graph
+          delegates.addAll(delegateResolver.getDelegatesForIdentity(currentMeIdentityToken));
+          
+          // 2. If Me is not in the graph, we need to fetch Me's trust statements to find delegates.
+          if (!graph.distances.containsKey(currentMeIdentityToken)) {
+             // Use a separate pipeline to fetch Me's graph (depth 0)
+             // We reuse the same trustSource (which is cached)
+             final mePipeline = TrustPipeline(trustSource, pathRequirement: (_) => 0);
+             final meGraph = await mePipeline.build(currentMeIdentityToken);
+             final meResolver = DelegateResolver(meGraph);
+             final fetchedDelegates = meResolver.getDelegatesForIdentity(currentMeIdentityToken);
+             delegates.addAll(fetchedDelegates);
+          }
+          
+          // Ensure the currently signed-in delegate is included, even if not in the graph
+          if (currentMeIdentityToken == signInState.identity && signInState.delegate != null) {
+            delegates.add(signInState.delegate!);
+          }
+          
+          meDelegateKeys = delegates.toList();
+        }
+
         progress.value = 0.3;
 
       // 2. Content Pipeline
-      debugPrint('V2FeedController: Fetching ContentMap');
       loadingMessage.value = 'Loading signed content from nerdster.org (Content)';
       progress.value = 0.4;
       final contentPipeline = ContentPipeline(
@@ -304,13 +318,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       final contentMap = await contentPipeline.fetchContentMap(
         graph, 
         delegateResolver,
-        additionalKeys: additionalAppKeys,
+        additionalIdentityKeys: meIdentityKeys,
+        additionalDelegateKeys: meDelegateKeys,
       );
-      debugPrint('V2FeedController: ContentMap has ${contentMap.length} entries');
       progress.value = 0.6;
 
       // 3. Follow Network
-      debugPrint('V2FeedController: Reducing FollowNetwork');
       loadingMessage.value = 'Processing follow network...';
       progress.value = 0.7;
       final followNetwork = reduceFollowNetwork(
@@ -319,11 +332,9 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         contentMap,
         fcontext,
       );
-      debugPrint('V2FeedController: FollowNetwork has ${followNetwork.identities.length} identities');
       progress.value = 0.8;
 
       // 4. Content Aggregation
-      debugPrint('V2FeedController: Reducing ContentAggregation');
       loadingMessage.value = 'Aggregating content...';
       progress.value = 0.9;
       final aggregation = reduceContentAggregation(
@@ -332,16 +343,16 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         delegateResolver,
         contentMap,
         enableCensorship: _enableCensorship,
-        meToken: currentMeToken,
-        meKeys: meKeys,
+        meIdentityToken: currentMeIdentityToken,
+        meIdentityKeys: meIdentityKeys,
+        meDelegateKeys: meDelegateKeys,
       );
-      debugPrint('V2FeedController: Aggregation has ${aggregation.statements.length} statements');
       progress.value = 0.95;
 
       // 5. Labeling
       loadingMessage.value = 'Finalizing...';
       final labeler = V2Labeler(graph,
-          delegateResolver: delegateResolver, meToken: currentMeToken);
+          delegateResolver: delegateResolver, meIdentityToken: currentMeIdentityToken);
 
       // 6. Contexts
       final mostContexts = MostStrings({kOneofusContext, kNerdsterContext});
@@ -355,12 +366,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       final availableContexts = mostContexts.most().toList();
 
       final activeContexts = <String>{};
-      final rootIdentity = graph.root;
-      final rootKeys = [
-        ...graph.getEquivalenceGroup(rootIdentity),
-        ...delegateResolver.getDelegatesForIdentity(rootIdentity),
+      final povIdentity = graph.pov;
+      final povKeys = [
+        ...graph.getEquivalenceGroup(povIdentity),
+        ...delegateResolver.getDelegatesForIdentity(povIdentity),
       ];
-      for (final key in rootKeys) {
+      for (final key in povKeys) {
         final statements = contentMap[key];
         if (statements != null) {
           for (final s in statements) {
@@ -371,13 +382,13 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         }
       }
 
-      if (_latestRequestedToken == currentToken && _latestRequestedMeToken == currentMeToken) {
+      if (_latestRequestedPovIdentityToken == currentPovIdentityToken && _latestRequestedMeIdentityToken == currentMeIdentityToken) {
         value = V2FeedModel(
           trustGraph: graph,
           followNetwork: followNetwork,
           labeler: labeler,
           aggregation: aggregation,
-          rootToken: currentToken,
+          povToken: currentPovIdentityToken,
           fcontext: fcontext,
           sortMode: _sortMode,
           filterMode: _filterMode,
@@ -386,10 +397,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
           activeContexts: activeContexts,
         );
         progress.value = 1.0;
-        debugPrint('V2FeedController: Refresh complete for $currentToken');
         break;
       }
-      debugPrint('V2FeedController: Token changed during refresh, retrying (root: $_latestRequestedToken, me: $_latestRequestedMeToken)');
     }
   } catch (e, stack) {
     debugPrint('V2FeedController Error: $e\n$stack');

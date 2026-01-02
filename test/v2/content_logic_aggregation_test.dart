@@ -13,7 +13,7 @@ void main() {
     
     // Mock TrustGraph
     final trustGraph = TrustGraph(
-      root: meToken,
+      pov: meToken,
       distances: {meToken: 0, subjectToken: 1},
       orderedKeys: [meToken, subjectToken],
     );
@@ -21,7 +21,7 @@ void main() {
     // Mock FollowNetwork
     final followNetwork = FollowNetwork(
       fcontext: 'nerd',
-      rootIdentity: meToken,
+      povIdentity: meToken,
       identities: [meToken, subjectToken],
     );
 
@@ -65,8 +65,8 @@ void main() {
       trustGraph,
       delegateResolver,
       byToken,
-      meToken: meToken,
-      meKeys: [meToken],
+      meIdentityToken: meToken,
+      meIdentityKeys: [meToken],
     );
 
     // Verify
@@ -86,14 +86,14 @@ void main() {
     final subjectToken = 'subject_only_follow';
     
     final trustGraph = TrustGraph(
-      root: meToken,
+      pov: meToken,
       distances: {meToken: 0, subjectToken: 1},
       orderedKeys: [meToken, subjectToken],
     );
 
     final followNetwork = FollowNetwork(
       fcontext: 'nerd',
-      rootIdentity: meToken,
+      povIdentity: meToken,
       identities: [meToken, subjectToken],
     );
 
@@ -121,8 +121,8 @@ void main() {
       trustGraph,
       delegateResolver,
       byToken,
-      meToken: meToken,
-      meKeys: [meToken],
+      meIdentityToken: meToken,
+      meIdentityKeys: [meToken],
     );
 
     // Verify
@@ -142,7 +142,7 @@ void main() {
     
     // TrustGraph where bartOld is replaced by bartNew
     final trustGraph = TrustGraph(
-      root: meToken,
+      pov: meToken,
       distances: {meToken: 0, bartNew: 1, bartOld: 1}, // Both trusted
       orderedKeys: [meToken, bartNew, bartOld],
       replacements: {bartOld: bartNew}, // Old -> New
@@ -150,7 +150,7 @@ void main() {
 
     final followNetwork = FollowNetwork(
       fcontext: 'nerd',
-      rootIdentity: meToken,
+      povIdentity: meToken,
       identities: [meToken, bartNew], // Only canonical usually in identities list?
       // Actually identities list comes from FollowNet which uses TrustGraph.
       // If TrustGraph has replacement, FollowNet usually uses canonical.
@@ -181,8 +181,8 @@ void main() {
       trustGraph,
       delegateResolver,
       byToken,
-      meToken: meToken,
-      meKeys: [meToken],
+      meIdentityToken: meToken,
+      meIdentityKeys: [meToken],
     );
 
     // Verify aggregation under NEW key

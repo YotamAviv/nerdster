@@ -38,7 +38,7 @@ void main() async {
     }
 
     final TrustGraph trustGraph = reduceTrustGraph(
-      TrustGraph(root: bart.token),
+      TrustGraph(pov: bart.token),
       allTrustStatements,
     );
 
@@ -61,7 +61,7 @@ void main() async {
 
     // Bart should be in the network
     expect(followNet.contains(bart.token), true);
-    expect(followNet.rootIdentity, bart.token);
+    expect(followNet.povIdentity, bart.token);
     
     // Check some other Simpsons
     final DemoKey homer = DemoKey.findByName('homer')!;
@@ -98,7 +98,7 @@ void main() async {
     final ContentStatement margeRating = margeN.contentStatements.firstWhere((s) => s.verb == ContentVerb.rate);
 
     // --- LISA'S POV ---
-    final TrustGraph trustLisa = reduceTrustGraph(TrustGraph(root: lisa.token), allTrustStatements);
+    final TrustGraph trustLisa = reduceTrustGraph(TrustGraph(pov: lisa.token), allTrustStatements);
     final DelegateResolver delegatesLisa = DelegateResolver(trustLisa);
     
     final FollowNetwork followLisa = reduceFollowNetwork(trustLisa, delegatesLisa, allContentStatements, kNerdsterContext);
@@ -112,7 +112,7 @@ void main() async {
     expect(contentLisa.subjects.values.any((s) => s.token == margeRating.subjectToken), true, reason: "Lisa should see Marge's content");
 
     // --- BART'S POV ---
-    final TrustGraph trustBart = reduceTrustGraph(TrustGraph(root: bart.token), allTrustStatements);
+    final TrustGraph trustBart = reduceTrustGraph(TrustGraph(pov: bart.token), allTrustStatements);
     final DelegateResolver delegatesBart = DelegateResolver(trustBart);
     final FollowNetwork followBart = reduceFollowNetwork(trustBart, delegatesBart, allContentStatements, kNerdsterContext);
     reduceContentAggregation(followBart, trustBart, delegatesBart, allContentStatements);
@@ -121,7 +121,7 @@ void main() async {
     expect(followBart.contains(trustBart.resolveIdentity(lisa.token)), false, reason: 'Bart blocks Lisa');
 
     // --- HOMER'S POV (Homer2) ---
-    final TrustGraph trustHomer = reduceTrustGraph(TrustGraph(root: homer2.token), allTrustStatements);
+    final TrustGraph trustHomer = reduceTrustGraph(TrustGraph(pov: homer2.token), allTrustStatements);
     final DelegateResolver delegatesHomer = DelegateResolver(trustHomer);
     final FollowNetwork followHomer = reduceFollowNetwork(trustHomer, delegatesHomer, allContentStatements, kNerdsterContext);
     reduceContentAggregation(followHomer, trustHomer, delegatesHomer, allContentStatements);
@@ -139,7 +139,7 @@ void main() async {
     }
 
     final TrustGraph trustGraph = reduceTrustGraph(
-      TrustGraph(root: bart.token),
+      TrustGraph(pov: bart.token),
       allTrustStatements,
     );
 
@@ -164,7 +164,7 @@ void main() async {
     final DemoKey lisa = DemoKey.findByName('lisa')!;
 
     expect(familyNet.contains(bart.token), true);
-    expect(familyNet.rootIdentity, bart.token);
+    expect(familyNet.povIdentity, bart.token);
     
     expect(familyNet.contains(trustGraph.resolveIdentity(homer.token)), true);
     expect(familyNet.contains(trustGraph.resolveIdentity(marge.token)), true);
@@ -189,7 +189,7 @@ void main() async {
     await homer.trust(lisa, moniker: 'lisa');
     await homer.trust(bart, moniker: 'bart');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(root: homer.token), {
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
       homer.token: homer.trustStatements,
       bart.token: bart.trustStatements,
       lisa.token: lisa.trustStatements,
@@ -250,7 +250,7 @@ void main() async {
     await homer.trust(bart, moniker: 'bart');
     await homer.trust(lisa, moniker: 'lisa');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(root: homer.token), {
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
       homer.token: homer.trustStatements,
       bart.token: bart.trustStatements,
       lisa.token: lisa.trustStatements,
@@ -353,7 +353,7 @@ void main() async {
       bart.token: [await bart.delegate(bartDelegate, domain: kNerdsterDomain)],
     };
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(root: homer.token), trustStatements);
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), trustStatements);
     expect(graph.isTrusted(bart.token), isTrue);
     expect(graph.isTrusted(bartDelegate.token), isFalse); // Delegate is not in WoT
 
@@ -384,7 +384,7 @@ void main() async {
 
     // Homer should follow Bart
     expect(network.identities, contains(bart.token));
-    expect(network.rootIdentity, homer.token);
+    expect(network.povIdentity, homer.token);
     
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
@@ -409,7 +409,7 @@ void main() async {
     await homer.trust(bart, moniker: 'bart');
     await homer.trust(lisa, moniker: 'lisa');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(root: homer.token), {
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
       homer.token: homer.trustStatements,
       bart.token: bart.trustStatements,
       lisa.token: lisa.trustStatements,
@@ -510,7 +510,7 @@ void main() async {
     await homer.trust(bart, moniker: 'bart');
     await homer.trust(lisa, moniker: 'lisa');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(root: homer.token), {
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
       homer.token: homer.trustStatements,
       bart.token: bart.trustStatements,
       lisa.token: lisa.trustStatements,
@@ -557,7 +557,7 @@ void main() async {
     expect(aggregation.statements.any((s) => s.token == equate12.token), isFalse);
     // The relate statement should remain because neither 1 nor 3 are censored
     expect(aggregation.statements.any((s) => s.token == relate13.token), isTrue);
-    expect(network.rootIdentity, homer.token);
+    expect(network.povIdentity, homer.token);
 
     // 4. Lisa censors the relate statement itself
     await lisaN.doRate(subject: relate13.token, censor: true);
@@ -584,7 +584,7 @@ void main() async {
     final DemoKey homerN = await homer.makeDelegate();
     final DemoKey bartN = await bart.makeDelegate();
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(root: homer.token), {
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
       homer.token: [
         await homer.trust(bart, moniker: 'bart'),
         ...homer.trustStatements,
@@ -630,7 +630,7 @@ void main() async {
     );
 
     expect(aggregation.subjects.containsKey(sToken), isTrue);
-    expect(network.rootIdentity, homer.token);
+    expect(network.povIdentity, homer.token);
     
     final SubjectAggregation agg = aggregation.subjects[sToken]!;
     // Homer's dismissal overwrites his previous like because they are the same subject (token vs map)

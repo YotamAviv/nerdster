@@ -24,11 +24,11 @@ class TrustPipeline {
     return 1;
   }
 
-  /// Builds the trust graph starting from [rootToken].
-  Future<TrustGraph> build(String rootToken) async {
+  /// Builds the trust graph starting from [povToken].
+  Future<TrustGraph> build(String povToken) async {
     // Initial State
-    TrustGraph graph = TrustGraph(root: rootToken);
-    Set<String> frontier = {rootToken};
+    TrustGraph graph = TrustGraph(pov: povToken);
+    Set<String> frontier = {povToken};
     Set<String> visited = {};
     Map<String, List<TrustStatement>> statementsByIssuer = {};
 

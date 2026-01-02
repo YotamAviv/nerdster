@@ -76,8 +76,8 @@ TrustGraph reduceTrustGraph(
   PathRequirement? pathRequirement,
   int maxDegrees = 6,
 }) {
-  final Map<String, int> distances = {current.root: 0};
-  final List<String> orderedKeys = [current.root];
+  final Map<String, int> distances = {current.pov: 0};
+  final List<String> orderedKeys = [current.pov];
   final Map<String, String> replacements = {};
   final Map<String, String> replacementConstraints = {};
   final Set<String> blocked = {};
@@ -86,7 +86,7 @@ TrustGraph reduceTrustGraph(
   final Map<String, List<TrustStatement>> edges = {};
   final Map<String, Set<String>> trustedBy = {};
   final Map<String, Set<String>> graphForPathfinding = {};
-  final Set<String> visited = {current.root};
+  final Set<String> visited = {current.pov};
 
   String resolveCanonical(String token) {
     String current = token;
@@ -119,7 +119,7 @@ TrustGraph reduceTrustGraph(
 
   final req = pathRequirement ?? (d) => 1;
 
-  var currentLayer = {current.root};
+  var currentLayer = {current.pov};
 
   for (int dist = 0; dist < maxDegrees && currentLayer.isNotEmpty; dist++) {
     final nextLayer = <String>{};
@@ -136,7 +136,7 @@ TrustGraph reduceTrustGraph(
         if (decided.contains(subject)) continue;
         decided.add(subject);
 
-        if (subject == current.root) {
+        if (subject == current.pov) {
           notifications.add(TrustNotification(
             subject: subject,
             reason: "Attempt to block your key.",
@@ -190,7 +190,7 @@ TrustGraph reduceTrustGraph(
         if (decided.contains(oldKey)) continue;
         decided.add(oldKey);
 
-        if (oldKey == current.root) {
+        if (oldKey == current.pov) {
           notifications.add(TrustNotification(
             subject: oldKey,
             reason: "Attempt to replace your key.",
@@ -291,7 +291,7 @@ TrustGraph reduceTrustGraph(
 
         String effectiveSubject = resolveCanonical(subject);
         if (effectiveSubject != subject) {
-          final String issuerName = issuer == current.root ? "You" : "Identity $issuer";
+          final String issuerName = issuer == current.pov ? "You" : "Identity $issuer";
           notifications.add(TrustNotification(
             subject: subject,
             reason: "$issuerName trusts a non-canonical key directly (replaced by $effectiveSubject)",
@@ -311,7 +311,7 @@ TrustGraph reduceTrustGraph(
           graphForPathfinding.putIfAbsent(i, () => {}).add(effectiveSubject);
         }
 
-        final foundPaths = _findNodeDisjointPaths(current.root, effectiveSubject, graphForPathfinding, requiredPaths);
+        final foundPaths = _findNodeDisjointPaths(current.pov, effectiveSubject, graphForPathfinding, requiredPaths);
         if (foundPaths.length >= requiredPaths) {
           paths[effectiveSubject] = foundPaths;
           if (!visited.contains(effectiveSubject)) {
@@ -345,7 +345,7 @@ TrustGraph reduceTrustGraph(
   }
 
   return TrustGraph(
-    root: current.root,
+    pov: current.pov,
     distances: distances,
     orderedKeys: orderedKeys,
     replacements: replacements,

@@ -90,7 +90,7 @@ void main() {
     final graph = await pipeline.build(lisa.token);
     final labeler = V2Labeler(graph);
 
-    // Root should be "Lisa" because Marge (and others) name her "Lisa" in the graph.
+    // PoV should be "Lisa" because Marge (and others) name her "Lisa" in the graph.
     expect(labeler.getLabel(lisa.token), 'Lisa');
     
     expect(labeler.getLabel(DemoKey.findByName('marge')!.token), 'Mom');

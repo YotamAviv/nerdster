@@ -40,7 +40,7 @@ void main() async {
     };
 
     final trustGraph = reduceTrustGraph(
-      TrustGraph(root: alice.token),
+      TrustGraph(pov: alice.token),
       allTrustStatements,
     );
 

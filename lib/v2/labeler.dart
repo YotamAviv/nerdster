@@ -25,12 +25,12 @@ import 'package:nerdster/v2/delegates.dart';
 class V2Labeler {
   final TrustGraph graph;
   final DelegateResolver? delegateResolver;
-  final String? meToken;
+  final String? meIdentityToken;
   final Map<String, String> _tokenToName = {};
   final Map<String, Set<String>> _tokenToAllNames = {};
   final Set<String> _usedNames = {};
 
-  V2Labeler(this.graph, {this.delegateResolver, this.meToken}) {
+  V2Labeler(this.graph, {this.delegateResolver, this.meIdentityToken}) {
     _computeLabels();
   }
 
@@ -54,7 +54,7 @@ class V2Labeler {
     }
 
     // 2. Assign names to identities and tokens in discovery order (BFS).
-    // This ensures that names are assigned based on the shortest path from the root.
+    // This ensures that names are assigned based on the shortest path from the pov.
     for (final token in graph.orderedKeys) {
       if (_tokenToName.containsKey(token)) continue;
 
@@ -84,12 +84,12 @@ class V2Labeler {
           }
         }
         
-        // Fallback for the root identity if no one has vouched for it yet.
+        // Fallback for the pov identity if no one has vouched for it yet.
         if (bestMoniker == null) {
-          if (token == graph.root) {
-            if (meToken != null &&
+          if (token == graph.pov) {
+            if (meIdentityToken != null &&
                 graph.resolveIdentity(token) ==
-                    graph.resolveIdentity(meToken!)) {
+                    graph.resolveIdentity(meIdentityToken!)) {
               bestMoniker = "Me";
             } else {
               // Use their moniker from Jsonish or the token itself
@@ -98,7 +98,7 @@ class V2Labeler {
                   (token.length > 8 ? token.substring(0, 8) : token);
             }
           } else {
-            // Skip tokens that have no moniker and aren't the root.
+            // Skip tokens that have no moniker and aren't the pov.
             continue;
           }
         }
@@ -182,7 +182,7 @@ class V2Labeler {
     return _tokenToName.containsKey(token);
   }
 
-  /// Returns all shortest paths from the root to [token] as human-readable strings.
+  /// Returns all shortest paths from the pov to [token] as human-readable strings.
   List<String> getLabeledPaths(String token) {
     final paths = graph.getPathsTo(token);
     return paths

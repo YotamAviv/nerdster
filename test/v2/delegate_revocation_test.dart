@@ -13,6 +13,7 @@ import 'package:nerdster/oneofus/util.dart';
 
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/v2/follow_logic.dart';
 
 void main() {
   late FakeFirebaseFirestore fire;
@@ -53,7 +54,7 @@ void main() {
     final s2 = await marge.doTrust(TrustVerb.delegate, margeN, domain: 'nerdster.org');
 
     final tg = TrustGraph(
-      root: sideshow.token,
+      pov: sideshow.token,
       distances: {sideshow.token: 0, marge.token: 1},
       edges: {
         sideshow.token: [s1],
@@ -89,7 +90,7 @@ void main() {
     final sMargeRevoke = await marge.doTrust(TrustVerb.delegate, margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
     final tg = TrustGraph(
-      root: mel.token,
+      pov: mel.token,
       distances: {mel.token: 0, marge.token: 1},
       orderedKeys: [mel.token, marge.token],
       edges: {
@@ -126,7 +127,7 @@ void main() {
     final d2 = await alice.doTrust(TrustVerb.delegate, delegate, revokeAt: s1.token);
 
     final tg = TrustGraph(
-      root: alice.token,
+      pov: alice.token,
       distances: {alice.token: 0},
       edges: {
         alice.token: [d2, d1],
@@ -158,7 +159,7 @@ void main() {
     final d2 = await bob.doTrust(TrustVerb.delegate, delegate, revokeAt: kSinceAlways);
 
     final tg = TrustGraph(
-      root: bob.token,
+      pov: bob.token,
       distances: {bob.token: 0},
       edges: {
         bob.token: [d2, d1],
@@ -184,7 +185,7 @@ void main() {
     final d1 = await alice.doTrust(TrustVerb.delegate, delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
     final tg = TrustGraph(
-      root: alice.token,
+      pov: alice.token,
       distances: {alice.token: 0},
       edges: {
         alice.token: [d1],
@@ -218,7 +219,7 @@ void main() {
     await upload(delegate.token, s2);
 
     final tg = TrustGraph(
-      root: bob.token,
+      pov: bob.token,
       distances: {bob.token: 0},
       edges: {
         bob.token: [d2, d1], // Sorted by time descending
@@ -242,5 +243,49 @@ void main() {
     expect(delegateStatements.any((s) => s.token == s1.token), isTrue, reason: 'S1 should be present');
     expect(delegateStatements.any((s) => s.token == s2.token), isFalse, reason: 'S2 should be ignored');
     expect(delegateStatements.length, equals(1));
+  });
+
+  test('Bo follows Luke, revokes delegate at follow statement, follow should persist', () async {
+    final bo = await DemoKey.create('bo');
+    final luke = await DemoKey.create('luke');
+    final boD1 = await DemoKey.create('boD1');
+    final boD2 = await DemoKey.create('boD2');
+
+    // 1. Bo delegates to boD1
+    final sDelegate1 = await bo.doTrust(TrustVerb.delegate, boD1, domain: 'nerdster.org');
+
+    // 2. Bo (via boD1) follows Luke
+    final sFollow = await boD1.doFollow(luke, {'social': 1});
+
+    // 3. Bo delegates to boD2
+    final sDelegate2 = await bo.doTrust(TrustVerb.delegate, boD2, domain: 'nerdster.org');
+
+    // 4. Bo revokes boD1 at sFollow.token
+    final sRevoke1 = await bo.doTrust(TrustVerb.delegate, boD1, domain: 'nerdster.org', revokeAt: sFollow.token);
+
+    // Setup Graph
+    final tg = TrustGraph(
+      pov: bo.token,
+      distances: {bo.token: 0},
+      orderedKeys: [bo.token],
+      edges: {
+        bo.token: [sRevoke1, sDelegate2, sDelegate1],
+      },
+    );
+
+    // Setup Content
+    final Map<String, List<ContentStatement>> contentMap = {
+      boD1.token: [sFollow as ContentStatement],
+    };
+
+    final delegateResolver = DelegateResolver(tg);
+    
+    // Run Follow Logic
+    final fn = reduceFollowNetwork(tg, delegateResolver, contentMap, 'social');
+
+    // Assert
+    expect(fn.edges[bo.token], isNotNull);
+    expect(fn.edges[bo.token]!.any((s) => s.subjectToken == luke.token), isTrue,
+        reason: 'Bo should still follow Luke because the delegate was revoked AT the follow statement');
   });
 }

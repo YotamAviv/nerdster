@@ -10,6 +10,43 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
+
+/// This class tracks the sign-in state of the user using 3 main variables:
+/// - identity (an identity key token)
+/// - pov (an identity key token)
+/// - delegate (a delegate key token)
+/// The PoV is expected to change during their session.
+/// 
+/// identity: The identity key token that represents who you are. This is the key you signed in with.
+/// PoV: The point-of-view key token that represents whose perspective you are using to view the site.
+///       This may be the same as identity, or it may be different (e.g., you are viewing as someone you trust).
+/// identity is used in few places, where we want to know who you are.
+/// - reset (if you change PoV and want to go back to your identity)
+/// - to show you your own content when you are using a different PoV and bring up the RateDialog, RelateDialog, edit you follows, etc.
+/// PoV is used everywhere else, to determine what content you see.
+/// If you are signed in with a delegate key, then it necessarily should be associated with your identity.
+///
+/// Summary of Roles:
+/// 1. PoV (Point of View): The **Read Context**.
+///    - Determines the "World" the user is looking at.
+///    - Drives the Trust Graph, Follow Network, and Content Aggregation.
+///    - Answers "What content is visible?" and "How is it ranked?".
+///
+/// 2. Identity: The **Write Context** and **Self-Reflection**.
+///    - Represents the active user.
+///    - Used ONLY to:
+///      * Allow the user to return to their own view (`reset`).
+///      * Overlay the user's own state on top of the PoV's world (e.g., showing "You rated this" in a dialog).
+///      * Authorize actions (signing statements).
+///
+/// 3. Identity without Delegate (View-Only Identity):
+///    It is possible to have an `identity` set but NOT be signed in with a `delegate` key.
+///    This happens when:
+///    - Identity is provided in the URL (e.g. deep link).
+///    - User signs in (via phone app or copy/paste) but does not provide a delegate key.
+///    In this state, the user can see their own content (Self-Reflection) but cannot perform write actions.
+/// 
+
 /// Considerations:
 /// - Signing in is signing in. The user clicked "sign-in", and submitted an identity. We have 
 ///   identity and PoV.

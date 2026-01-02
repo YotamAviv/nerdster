@@ -55,15 +55,15 @@ void main() {
     // 3. Lisa comments on her own rating
     // "I really mean it!"
     final commentText = "I really mean it!";
-    await lisaD.doRate(
-      subject: artRating.json, // Pass the full JSON of the statement as subject
+    await lisaD!.doRate(
+      subject: artRating!.json, // Pass the full JSON of the statement as subject
       comment: commentText,
       recommend: true,
     );
 
     // 4. Verify the new statement exists at the backend
-    final updatedLisaStatementsMap = await appSource.fetch({lisaD.token: null});
-    final updatedLisaStatements = updatedLisaStatementsMap[lisaD.token] ?? [];
+    final updatedLisaStatementsMap = await appSource.fetch({lisaD!.token: null});
+    final updatedLisaStatements = updatedLisaStatementsMap[lisaD!.token] ?? [];
     ContentStatement? nestedRating;
     
     for (final s in updatedLisaStatements) {
@@ -79,15 +79,15 @@ void main() {
     // Verify the subject of the nested rating is indeed the art rating
     // The subject in the statement might be tokenized depending on settings, 
     // but let's check what we get.
-    final subject = nestedRating.subject;
+    final subject = nestedRating!.subject;
     if (subject is String) {
       // It's a token
-      expect(subject, equals(artRating.token));
+      expect(subject, equals(artRating!.token));
     } else if (subject is Map) {
       // It's the object (or statement json)
       // If it's a statement, it should have a signature that matches
       final subjectStatement = ContentStatement(Jsonish(subject as Map<String, dynamic>));
-      expect(subjectStatement.token, equals(artRating.token));
+      expect(subjectStatement.token, equals(artRating!.token));
     }
 
     // 5. Verify via ContentPipeline (simulating FeedController logic)
@@ -106,7 +106,7 @@ void main() {
     final contentMap = await contentPipeline.fetchContentMap(
       graph, 
       delegateResolver,
-      additionalKeys: [lisa.token, lisaD.token], // Explicitly ask for Lisa's keys
+      additionalIdentityKeys: [lisa.token, lisaD!.token], // Explicitly ask for Lisa's keys
     );
 
     final aggregation = reduceContentAggregation(
@@ -115,12 +115,12 @@ void main() {
         delegateResolver,
         contentMap,
         enableCensorship: true,
-        meToken: lisa.token,
-        meKeys: [lisa.token, lisaD.token],
+        meIdentityToken: lisa.token,
+        meIdentityKeys: [lisa.token, lisaD!.token], // Explicitly ask for Lisa's keys
     );
 
     // Check if the nested rating is in the aggregation
-    // It should be in subjects[artRating.token]
+    // It should be in subjects[artRating!.token]
     final nestedAgg = aggregation.subjects[artRating!.token];
     expect(nestedAgg, isNotNull, reason: "Aggregation should exist for the rating statement");
     expect(nestedAgg!.statements.any((s) => s.token == nestedRating!.token), isTrue);

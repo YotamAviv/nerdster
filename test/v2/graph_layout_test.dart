@@ -24,7 +24,7 @@ class MockV2FeedModel extends V2FeedModel {
     followNetwork: followNetwork,
     aggregation: ContentAggregation(),
     labeler: V2Labeler(trustGraph, delegateResolver: delegateResolver),
-    rootToken: trustGraph.root,
+    povToken: trustGraph.pov,
     fcontext: 'test',
     sortMode: V2SortMode.recentActivity,
     filterMode: V2FilterMode.ignoreDisses,
@@ -49,7 +49,7 @@ void main() {
     final s3 = await charlie.trust(lisa, moniker: 'lisa');
 
     final tg = TrustGraph(
-      root: lisa.token,
+      pov: lisa.token,
       distances: {lisa.token: 0, bob.token: 1, charlie.token: 2},
       edges: {
         lisa.token: [s1],
@@ -63,7 +63,7 @@ void main() {
       },
     );
 
-    final fn = FollowNetwork(fcontext: 'test', rootIdentity: lisa.token);
+    final fn = FollowNetwork(fcontext: 'test', povIdentity: lisa.token);
     final model = MockV2FeedModel(trustGraph: tg, followNetwork: fn);
 
     final controller = GraphController(model);
@@ -103,7 +103,7 @@ void main() {
     final s7 = await a1.trust(b2, moniker: 'b2');
 
     final tg = TrustGraph(
-      root: root.token,
+      pov: root.token,
       distances: {
         root.token: 0,
         a1.token: 1,
@@ -127,7 +127,7 @@ void main() {
       },
     );
 
-    final fn = FollowNetwork(fcontext: 'test', rootIdentity: root.token);
+    final fn = FollowNetwork(fcontext: 'test', povIdentity: root.token);
     final model = MockV2FeedModel(trustGraph: tg, followNetwork: fn);
 
     final controller = GraphController(model);
@@ -160,7 +160,7 @@ void main() {
     final s3 = await bart.delegate(bartDelegate, domain: 'nerdster.org');
 
     final tg = TrustGraph(
-      root: lisa.token,
+      pov: lisa.token,
       distances: {lisa.token: 0, homer.token: 1, bart.token: 2},
       edges: {
         lisa.token: [s1],
@@ -177,7 +177,7 @@ void main() {
     final dr = DelegateResolver(tg);
     dr.resolveForIdentity(bart.token);
 
-    final fn = FollowNetwork(fcontext: 'test', rootIdentity: lisa.token);
+    final fn = FollowNetwork(fcontext: 'test', povIdentity: lisa.token);
     final model = MockV2FeedModel(
       trustGraph: tg, 
       followNetwork: fn,

@@ -11,9 +11,9 @@ import 'package:nerdster/v2/trust_logic.dart';
 
 /// A loader widget that runs the TrustPipeline and then shows the visualizer.
 class TrustGraphVisualizerLoader extends StatefulWidget {
-  final String? rootToken;
+  final String? povToken;
 
-  const TrustGraphVisualizerLoader({super.key, this.rootToken});
+  const TrustGraphVisualizerLoader({super.key, this.povToken});
 
   @override
   State<TrustGraphVisualizerLoader> createState() => _TrustGraphVisualizerLoaderState();
@@ -21,15 +21,15 @@ class TrustGraphVisualizerLoader extends StatefulWidget {
 
 class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader> {
   TrustGraph? _graph;
-  String? _currentRoot;
+  String? _currentPov;
   bool _loading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _currentRoot = widget.rootToken;
-    if (_currentRoot != null) {
+    _currentPov = widget.povToken;
+    if (_currentPov != null) {
       _load();
     } else {
       _loading = false;
@@ -52,8 +52,8 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
   }
 
   Future<void> _load() async {
-    final root = _currentRoot;
-    if (root == null) return;
+    final pov = _currentPov;
+    if (pov == null) return;
     try {
       final source = SourceFactory.get<TrustStatement>(kOneofusDomain);
       
@@ -76,7 +76,7 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
       }
 
       final pipeline = TrustPipeline(source, pathRequirement: pathReq);
-      final graph = await pipeline.build(root);
+      final graph = await pipeline.build(pov);
       if (mounted) {
         setState(() {
           _graph = graph;
@@ -95,7 +95,7 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
 
   @override
   Widget build(BuildContext context) {
-    if (_currentRoot == null) {
+    if (_currentPov == null) {
       return const Scaffold(
         body: Center(child: Text('Please sign in to view the trust graph.')),
       );
@@ -115,7 +115,7 @@ class _TrustGraphVisualizerLoaderState extends State<TrustGraphVisualizerLoader>
       graph: _graph!,
       onPovChanged: (newToken) {
         setState(() {
-          _currentRoot = newToken;
+          _currentPov = newToken;
           _loading = true;
           _graph = null;
         });
@@ -235,7 +235,7 @@ class _TrustGraphVisualizerState extends State<TrustGraphVisualizer> {
             final String token = node.key!.value as String;
             final int dist = widget.graph.distances[token] ?? 99;
             final bool isBlocked = widget.graph.blocked.contains(token);
-            final bool isRoot = token == widget.graph.root;
+            final bool isPov = token == widget.graph.pov;
 
             // Fading based on distance
             final double opacity = (1.0 - (dist * 0.2)).clamp(0.1, 1.0);
@@ -244,7 +244,7 @@ class _TrustGraphVisualizerState extends State<TrustGraphVisualizer> {
               opacity: opacity,
               child: GestureDetector(
                 onLongPress: () => _showNodeDetails(token),
-                child: _buildNodeWidget(token, dist, isRoot, isBlocked),
+                child: _buildNodeWidget(token, dist, isPov, isBlocked),
               ),
             );
           },
@@ -279,7 +279,7 @@ class _TrustGraphVisualizerState extends State<TrustGraphVisualizer> {
           ),
         ),
         actions: [
-          if (widget.onPovChanged != null && token != widget.graph.root)
+          if (widget.onPovChanged != null && token != widget.graph.pov)
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -293,17 +293,17 @@ class _TrustGraphVisualizerState extends State<TrustGraphVisualizer> {
     );
   }
 
-  Widget _buildNodeWidget(String token, int dist, bool isRoot, bool isBlocked) {
+  Widget _buildNodeWidget(String token, int dist, bool isPov, bool isBlocked) {
     final label = _labeler.getLabel(token);
     
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isRoot ? Colors.amber[100] : (isBlocked ? Colors.red[50] : Colors.white),
+        color: isPov ? Colors.amber[100] : (isBlocked ? Colors.red[50] : Colors.white),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isRoot ? Colors.amber : (isBlocked ? Colors.red : Colors.blue),
-          width: isRoot ? 3 : 1,
+          color: isPov ? Colors.amber : (isBlocked ? Colors.red : Colors.blue),
+          width: isPov ? 3 : 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -319,11 +319,11 @@ class _TrustGraphVisualizerState extends State<TrustGraphVisualizer> {
           Text(
             label,
             style: TextStyle(
-              fontWeight: isRoot ? FontWeight.bold : FontWeight.normal,
+              fontWeight: isPov ? FontWeight.bold : FontWeight.normal,
               fontSize: 12,
             ),
           ),
-          if (!isRoot)
+          if (!isPov)
             Text(
               'Dist: $dist',
               style: const TextStyle(fontSize: 10, color: Colors.grey),

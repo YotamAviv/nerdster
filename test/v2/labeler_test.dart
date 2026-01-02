@@ -46,7 +46,7 @@ void main() {
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
     
-    final labeler = V2Labeler(graph, meToken: alice.token);
+    final labeler = V2Labeler(graph, meIdentityToken: alice.token);
 
     expect(labeler.getLabel(alice.token), 'Me');
     expect(labeler.getLabel(bob.token), 'Bobby');
@@ -54,7 +54,7 @@ void main() {
     expect(labeler.getLabel(dave.token), 'David');
   });
 
-  test('V2Labeler: Root Moniker Discovery', () async {
+  test('V2Labeler: PoV Moniker Discovery', () async {
     final alice = await DemoKey.create('alice');
     final bob = await DemoKey.create('bob');
 
@@ -69,7 +69,7 @@ void main() {
     
     final labeler = V2Labeler(graph);
 
-    // Alice is the root, but Bob (who she trusts) calls her "Lisa".
+    // Alice is the pov, but Bob (who she trusts) calls her "Lisa".
     expect(labeler.getLabel(alice.token), 'Lisa');
   });
 

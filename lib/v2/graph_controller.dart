@@ -45,12 +45,12 @@ class GraphController {
   
   GraphController(this.feedModel);
 
-  String get rootIdentity => feedModel.rootToken;
+  String get povIdentity => feedModel.povToken;
 
   GraphData buildGraphData() {
     final Set<String> nodes = {};
     final Set<GraphEdgeData> edges = {};
-    final String root = feedModel.labeler.getIdentityForToken(rootIdentity);
+    final String root = feedModel.labeler.getIdentityForToken(povIdentity);
 
     // If no focus, the graph is empty
     if (focusedIdentity == null) {

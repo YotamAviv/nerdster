@@ -11,7 +11,8 @@ import 'package:nerdster/oneofus/json_display.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:collection/collection.dart';
 import 'package:nerdster/v2/source_factory.dart';
-import 'package:nerdster/oneofus/statement.dart';
+import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 class NodeDetails extends StatefulWidget {
   final String identity;
@@ -164,12 +165,12 @@ class _NodeDetailsState extends State<NodeDetails> {
         ),
       ),
       actions: [
-        if (widget.identity != model.trustGraph.root) // Assuming root is POV
+        if (widget.identity != model.trustGraph.pov) // Assuming root is POV
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               signInState.pov = widget.identity;
-              widget.controller.refresh(widget.identity, meToken: signInState.identity);
+              widget.controller.refresh(widget.identity, meIdentityToken: signInState.identity);
             },
             child: const Text('Set as PoV'),
           ),
@@ -249,12 +250,12 @@ class _NodeDetailsState extends State<NodeDetails> {
     );
   }
 
-  Widget _buildContextRow(String context, int value) {
+  Widget _buildContextRow(String contextName, int value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         children: [
-          Expanded(child: Text(context, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13))),
+          Expanded(child: Text(contextName, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13))),
           SegmentedButton<int>(
             segments: const [
               ButtonSegment(value: -1, label: Text('Block'), icon: Icon(Icons.block, size: 14)),
@@ -262,10 +263,11 @@ class _NodeDetailsState extends State<NodeDetails> {
               ButtonSegment(value: 1, label: Text('Follow'), icon: Icon(Icons.check, size: 14)),
             ],
             selected: {value == 0 ? 0 : (value > 0 ? 1 : -1)},
-            onSelectionChanged: (Set<int> newSelection) {
+            onSelectionChanged: (Set<int> newSelection) async {
+              if (!bb(await checkSignedIn(context))) return;
               setState(() {
                 final val = newSelection.first;
-                _pendingContexts[context] = val;
+                _pendingContexts[contextName] = val;
               });
             },
             style: ButtonStyle(
@@ -300,7 +302,8 @@ class _NodeDetailsState extends State<NodeDetails> {
                 return option.contains(textEditingValue.text.toLowerCase());
               });
             },
-            onSelected: (String selection) {
+            onSelected: (String selection) async {
+              if (!bb(await checkSignedIn(context))) return;
               setState(() {
                 _pendingContexts[selection] = 0; // Default to neutral
                 _autocompleteController?.clear();
@@ -320,8 +323,9 @@ class _NodeDetailsState extends State<NodeDetails> {
                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                      border: OutlineInputBorder(),
                    ),
-                   onSubmitted: (String value) {
+                   onSubmitted: (String value) async {
                      if (value.isNotEmpty) {
+                       if (!bb(await checkSignedIn(context))) return;
                        setState(() {
                          _pendingContexts[value] = 0; // Default to neutral
                          controller.clear();
@@ -369,7 +373,7 @@ class _NodeDetailsState extends State<NodeDetails> {
           _pendingContexts.removeWhere((key, value) => value == 0);
           _originalContexts = Map.of(_pendingContexts);
         });
-        widget.controller.refresh(model.trustGraph.root, meToken: signInState.identity);
+        widget.controller.refresh(model.trustGraph.pov, meIdentityToken: signInState.identity);
       }
     } catch (e) {
       if (mounted) {

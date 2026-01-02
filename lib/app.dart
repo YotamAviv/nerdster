@@ -31,12 +31,12 @@ class NerdsterApp extends StatelessWidget {
         listenable: signInState,
         builder: (context, _) {
           final path = Uri.base.path;
-          final rootToken = signInState.pov;
+          final povToken = signInState.pov;
 
           if (path == '/m' || path.startsWith('/m/') || path == '/m.html' || path == '/v2/phone') {
-            return FancyShadowView(rootToken: rootToken);
+            return FancyShadowView(povToken: povToken);
           } else if (path == '/v2/graph') {
-            return TrustGraphVisualizerLoader(rootToken: rootToken);
+            return TrustGraphVisualizerLoader(povToken: povToken);
           } else if (path == '/legacy/content') {
             return ContentTree();
           } else if (path == '/legacy/net') {
@@ -46,7 +46,7 @@ class NerdsterApp extends StatelessWidget {
             return const StandaloneVerify();
           } else {
             // Default to NerdyContentView
-            return NerdyContentView(rootToken: rootToken);
+            return NerdyContentView(povToken: povToken);
           }
         },
       ),

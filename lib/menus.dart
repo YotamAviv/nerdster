@@ -97,15 +97,15 @@ class Menus {
       // Views
       SubmenuButton(menuChildren: [
         MenuItemButton(
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NerdyContentView(rootToken: signInState.pov))),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NerdyContentView(povToken: signInState.pov))),
           child: const Text('Nerdy Feed (V2)'),
         ),
         MenuItemButton(
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FancyShadowView(rootToken: signInState.pov))),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FancyShadowView(povToken: signInState.pov))),
           child: const Text('Fancy Shadow View (V2)'),
         ),
         MenuItemButton(
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TrustGraphVisualizerLoader(rootToken: signInState.pov))),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TrustGraphVisualizerLoader(povToken: signInState.pov))),
           child: const Text('Trust Graph (V2)'),
         ),
         MenuItemButton(

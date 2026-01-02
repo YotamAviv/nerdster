@@ -37,7 +37,7 @@ void main() async {
     // User's snippet
     // await alice.trust(bob, moniker: 'bob'); 
     // await alice.trust(charlie, moniker: 'charlie');
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(root: alice.token), {
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.token), {
       alice.token: [
         await alice.trust(charlie, moniker: 'charlie'), 
         await alice.trust(bob, moniker: 'bob'), 

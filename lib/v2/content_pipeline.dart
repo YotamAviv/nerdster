@@ -13,7 +13,8 @@ class ContentPipeline {
   Future<Map<String, List<ContentStatement>>> fetchContentMap(
     TrustGraph graph,
     DelegateResolver delegateResolver, {
-    List<String>? additionalKeys,
+    List<String>? additionalIdentityKeys,
+    List<String>? additionalDelegateKeys,
   }) async {
     // 1. Identify Trusted Users
     // We only care about users who are trusted (distance < maxDegrees, which is implicit in the graph)
@@ -48,8 +49,13 @@ class ContentPipeline {
     }
 
     // Add additional keys (e.g. "me" and my delegate)
-    if (additionalKeys != null) {
-      for (final key in additionalKeys) {
+    if (additionalIdentityKeys != null) {
+      for (final key in additionalIdentityKeys) {
+        fetchMap[key] = null;
+      }
+    }
+    if (additionalDelegateKeys != null) {
+      for (final key in additionalDelegateKeys) {
         fetchMap[key] = null;
       }
     }
@@ -64,7 +70,8 @@ class ContentPipeline {
       final bool isTrustedIdentity = graph.isTrusted(key);
       final bool isAuthorizedDelegate =
           delegateResolver.getIdentityForDelegate(key) != null;
-      final bool isAdditional = additionalKeys?.contains(key) ?? false;
+      final bool isAdditional = (additionalIdentityKeys?.contains(key) ?? false) ||
+          (additionalDelegateKeys?.contains(key) ?? false);
 
       if (!isTrustedIdentity && !isAuthorizedDelegate && !isAdditional) {
         throw 'Pipeline Error: Source returned content from unauthorized key: $key';

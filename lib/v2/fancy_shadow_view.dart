@@ -15,9 +15,9 @@ import 'refresh_signal.dart';
 import 'submit.dart';
 
 class FancyShadowView extends StatefulWidget {
-  final String? rootToken;
+  final String? povToken;
 
-  const FancyShadowView({super.key, this.rootToken});
+  const FancyShadowView({super.key, this.povToken});
 
   @override
   State<FancyShadowView> createState() => _FancyShadowViewState();
@@ -36,7 +36,7 @@ class _FancyShadowViewState extends State<FancyShadowView> {
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
-    _controller.refresh(widget.rootToken, meToken: signInState.identity);
+    _controller.refresh(widget.povToken, meIdentityToken: signInState.identity);
     v2RefreshSignal.addListener(_onRefresh);
     Setting.get<String>(SettingType.tag).addListener(_onSettingChanged);
   }
@@ -54,7 +54,7 @@ class _FancyShadowViewState extends State<FancyShadowView> {
   }
 
   void _onRefresh() {
-    _controller.refresh(widget.rootToken, meToken: signInState.identity);
+    _controller.refresh(widget.povToken, meIdentityToken: signInState.identity);
   }
 
   @override

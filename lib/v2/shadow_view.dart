@@ -13,9 +13,9 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
 class ShadowView extends StatefulWidget {
-  final String rootToken;
+  final String povToken;
 
-  const ShadowView({super.key, required this.rootToken});
+  const ShadowView({super.key, required this.povToken});
 
   @override
   State<ShadowView> createState() => _ShadowViewState();
@@ -42,7 +42,7 @@ class _ShadowViewState extends State<ShadowView> {
     try {
       // 1. Identity Pipeline
       final trustPipeline = TrustPipeline(_cachedIdentity);
-      final graph = await trustPipeline.build(widget.rootToken);
+      final graph = await trustPipeline.build(widget.povToken);
       final delegateResolver = DelegateResolver(graph);
 
       // 2. Content Pipeline

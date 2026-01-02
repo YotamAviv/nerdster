@@ -10,7 +10,7 @@ void main() {
   });
 
   test('Path Requirement Logic: 2 paths for 3 and 4 degrees', () {
-    final root = 'root';
+    final pov = 'pov';
     final a1 = 'a1';
     final b1 = 'b1';
     final a2 = 'a2';
@@ -19,17 +19,17 @@ void main() {
     // PoV -> A1, B1
     final s1 = TrustStatement(Jsonish({
       'token': 's1',
-      'issuer': root,
+      'issuer': pov,
       'trust': a1,
       'time': '2025-01-01T00:00:00Z',
-      'I': {'key': root},
+      'I': {'key': pov},
     }));
     final s2 = TrustStatement(Jsonish({
       'token': 's2',
-      'issuer': root,
+      'issuer': pov,
       'trust': b1,
       'time': '2025-01-01T00:00:00Z',
-      'I': {'key': root},
+      'I': {'key': pov},
     }));
 
     // A1 -> A2
@@ -60,7 +60,7 @@ void main() {
     }));
 
     final byIssuer = {
-      root: [s1, s2],
+      pov: [s1, s2],
       a1: [s3],
       b1: [s4],
       a2: [s5],
@@ -73,7 +73,7 @@ void main() {
     }
 
     final tg = reduceTrustGraph(
-      TrustGraph(root: root),
+      TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
     );
@@ -82,20 +82,20 @@ void main() {
     expect(tg.distances.containsKey(a1), isTrue);
     expect(tg.distances.containsKey(b1), isTrue);
 
-    // A2 is at distance 2. It has only 1 path (root -> a1 -> a2).
+    // A2 is at distance 2. It has only 1 path (pov -> a1 -> a2).
     // Requirement for dist 2 is 2 paths. So A2 should NOT be in.
     expect(tg.distances.containsKey(a2), isFalse, reason: 'A2 has only 1 path, needs 2');
 
-    // B2 is at distance 2 (root -> b1 -> b2) and distance 3 (root -> a1 -> a2 -> b2).
+    // B2 is at distance 2 (pov -> b1 -> b2) and distance 3 (pov -> a1 -> a2 -> b2).
     // However, the path through A2 is only valid if A2 is trusted.
     // Since A2 is NOT trusted, it cannot pass trust to B2.
-    // So B2 only has 1 valid path (root -> b1 -> b2).
+    // So B2 only has 1 valid path (pov -> b1 -> b2).
     // Requirement for dist 2 is 2 paths. So B2 should NOT be in.
     expect(tg.distances.containsKey(b2), isFalse, reason: 'B2 only has 1 valid path because A2 is not trusted');
   });
 
   test('Path Requirement Logic: B2 is IN if A2 is also IN', () {
-    final root = 'root';
+    final pov = 'pov';
     final a1 = 'a1';
     final b1 = 'b1';
     final c1 = 'c1';
@@ -104,13 +104,13 @@ void main() {
 
     // PoV -> A1, B1, C1
     final s1 = TrustStatement(Jsonish({
-      'token': 's1', 'issuer': root, 'trust': a1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's1', 'issuer': pov, 'trust': a1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
     final s2 = TrustStatement(Jsonish({
-      'token': 's2', 'issuer': root, 'trust': b1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's2', 'issuer': pov, 'trust': b1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
     final s3 = TrustStatement(Jsonish({
-      'token': 's3', 'issuer': root, 'trust': c1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's3', 'issuer': pov, 'trust': c1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
 
     // A1 -> A2, C1 -> A2
@@ -130,7 +130,7 @@ void main() {
     }));
 
     final byIssuer = {
-      root: [s1, s2, s3],
+      pov: [s1, s2, s3],
       a1: [s4],
       c1: [s5],
       b1: [s6],
@@ -143,25 +143,25 @@ void main() {
     }
 
     final tg = reduceTrustGraph(
-      TrustGraph(root: root),
+      TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
     );
 
-    // A2 now has 2 paths: (root->a1->a2) and (root->c1->a2).
+    // A2 now has 2 paths: (pov->a1->a2) and (pov->c1->a2).
     // So A2 is IN.
     expect(tg.distances.containsKey(a2), isTrue, reason: 'A2 has 2 node-disjoint paths');
 
-    // B2 now has 2 paths: (root->b1->b2) and (root->a1->a2->b2).
+    // B2 now has 2 paths: (pov->b1->b2) and (pov->a1->a2->b2).
     // Wait, are they node-disjoint?
-    // Path 1: {root, b1, b2}
-    // Path 2: {root, a1, a2, b2}
+    // Path 1: {pov, b1, b2}
+    // Path 2: {pov, a1, a2, b2}
     // Yes!
     expect(tg.distances.containsKey(b2), isTrue, reason: 'B2 has 2 node-disjoint paths');
   });
 
   test('Path Requirement Logic: Mutual Trust at Degree 2 (Insufficient Paths)', () {
-    final root = 'root';
+    final pov = 'pov';
     final i1 = 'I1';
     final i2 = 'I2';
     final a = 'A';
@@ -169,10 +169,10 @@ void main() {
 
     // Me -> I1, Me -> I2
     final s1 = TrustStatement(Jsonish({
-      'token': 's1', 'issuer': root, 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's1', 'issuer': pov, 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
     final s2 = TrustStatement(Jsonish({
-      'token': 's2', 'issuer': root, 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's2', 'issuer': pov, 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
 
     // I1 -> A, I2 -> B
@@ -192,7 +192,7 @@ void main() {
     }));
 
     final byIssuer = {
-      root: [s1, s2],
+      pov: [s1, s2],
       i1: [s3],
       i2: [s4],
       a: [s5],
@@ -203,7 +203,7 @@ void main() {
     int pathRequirement(int dist) => (dist >= 2) ? 2 : 1;
 
     final tg = reduceTrustGraph(
-      TrustGraph(root: root),
+      TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
     );
@@ -213,8 +213,8 @@ void main() {
     expect(tg.distances.containsKey(i2), isTrue);
 
     // A and B are at distance 2.
-    // A has paths: (root->i1->a) and (root->i2->b->a).
-    // However, (root->i2->b->a) is only valid if B is already trusted.
+    // A has paths: (pov->i1->a) and (pov->i2->b->a).
+    // However, (pov->i2->b->a) is only valid if B is already trusted.
     // In a greedy BFS, at the moment we evaluate distance 2, neither A nor B are trusted yet.
     // So they both only see 1 path from the "already trusted" set (distance 0 and 1).
     // Thus, they both fail the 2-path requirement.
@@ -223,7 +223,7 @@ void main() {
   });
 
   test('Path Requirement Logic: Mutual Trust at Degree 2 (Sufficient Paths)', () {
-    final root = 'root';
+    final pov = 'pov';
     final i1 = 'I1';
     final i2 = 'I2';
     final i3 = 'I3';
@@ -232,13 +232,13 @@ void main() {
 
     // Me -> I1, Me -> I2, Me -> I3
     final s1 = TrustStatement(Jsonish({
-      'token': 's1', 'issuer': root, 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's1', 'issuer': pov, 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
     final s2 = TrustStatement(Jsonish({
-      'token': 's2', 'issuer': root, 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's2', 'issuer': pov, 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
     final s3 = TrustStatement(Jsonish({
-      'token': 's3', 'issuer': root, 'trust': i3, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's3', 'issuer': pov, 'trust': i3, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
 
     // I1 -> A, I3 -> A  (A has 2 paths)
@@ -266,7 +266,7 @@ void main() {
     }));
 
     final byIssuer = {
-      root: [s1, s2, s3],
+      pov: [s1, s2, s3],
       i1: [s4],
       i3: [s5, s7],
       i2: [s6],
@@ -278,7 +278,7 @@ void main() {
     int pathRequirement(int dist) => (dist >= 2) ? 2 : 1;
 
     final tg = reduceTrustGraph(
-      TrustGraph(root: root),
+      TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
     );
@@ -289,20 +289,20 @@ void main() {
     expect(tg.distances.containsKey(i3), isTrue);
 
     // A and B are at distance 2.
-    // A has 2 paths from {I1, I2, I3}: (root->i1->a) and (root->i3->a).
-    // B has 2 paths from {I1, I2, I3}: (root->i2->b) and (root->i3->b).
+    // A has 2 paths from {I1, I2, I3}: (pov->i1->a) and (pov->i3->a).
+    // B has 2 paths from {I1, I2, I3}: (pov->i2->b) and (pov->i3->b).
     expect(tg.distances.containsKey(a), isTrue, reason: 'A has 2 paths from trusted nodes');
     expect(tg.distances.containsKey(b), isTrue, reason: 'B has 2 paths from trusted nodes');
 
     // Now that A and B are both IN, they can see each other's mutual trust.
-    // For example, B now has a 3rd path: (root->i1->a->b).
+    // For example, B now has a 3rd path: (pov->i1->a->b).
     // However, reduceTrustGraph only stores up to 'pathRequirement' paths.
     expect(tg.paths[a]!.length, equals(2));
     expect(tg.paths[b]!.length, equals(2));
   });
 
   test('Path Requirement Logic: Adding trust should not remove trust', () {
-    final root = 'root';
+    final pov = 'pov';
     final i1 = 'I1';
     final i2 = 'I2';
     final i3 = 'I3';
@@ -314,16 +314,16 @@ void main() {
 
     // Me -> I1, I2, I3, I4
     final s1 = TrustStatement(Jsonish({
-      'token': 's1', 'issuer': root, 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's1', 'issuer': pov, 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
     final s2 = TrustStatement(Jsonish({
-      'token': 's2', 'issuer': root, 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's2', 'issuer': pov, 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
     final s3 = TrustStatement(Jsonish({
-      'token': 's3', 'issuer': root, 'trust': i3, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's3', 'issuer': pov, 'trust': i3, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
     final s4 = TrustStatement(Jsonish({
-      'token': 's4', 'issuer': root, 'trust': i4, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's4', 'issuer': pov, 'trust': i4, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
 
     // I1 -> A, I2 -> A (A has 2 paths at dist 2)
@@ -351,7 +351,7 @@ void main() {
     }));
 
     final byIssuer = {
-      root: [s1, s2, s3, s4],
+      pov: [s1, s2, s3, s4],
       i1: [sA1],
       i2: [sA2],
       i3: [sB1],
@@ -364,7 +364,7 @@ void main() {
     int pathRequirement(int dist) => (dist >= 2) ? 2 : 1;
 
     final tg1 = reduceTrustGraph(
-      TrustGraph(root: root),
+      TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
     );
@@ -375,14 +375,14 @@ void main() {
 
     // Now add Me -> I5 and I5 -> X (X is now at distance 2 via I5)
     final s5 = TrustStatement(Jsonish({
-      'token': 's5', 'issuer': root, 'trust': i5, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root},
+      'token': 's5', 'issuer': pov, 'trust': i5, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov},
     }));
     final s6 = TrustStatement(Jsonish({
       'token': 's6', 'issuer': i5, 'trust': x, 'time': '2025-01-01T00:00:00Z', 'I': {'key': i5},
     }));
 
     final byIssuer2 = {
-      root: [s1, s2, s3, s4, s5],
+      pov: [s1, s2, s3, s4, s5],
       i1: [sA1],
       i2: [sA2],
       i3: [sB1],
@@ -393,7 +393,7 @@ void main() {
     };
 
     final tg2 = reduceTrustGraph(
-      TrustGraph(root: root),
+      TrustGraph(pov: pov),
       byIssuer2,
       pathRequirement: pathRequirement,
     );
@@ -406,17 +406,17 @@ void main() {
   });
 
   test('Path Requirement Logic: X at 2 degrees (1 path) and 3 degrees (1 path)', () {
-    final root = 'root';
+    final pov = 'pov';
     final i1 = 'I1';
     final i2 = 'I2';
     final i3 = 'I3';
     final a = 'A';
     final x = 'X';
 
-    // root -> I1, I2, I3 (dist 1 / 2 degrees)
-    final s1 = TrustStatement(Jsonish({'token': 's1', 'issuer': root, 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root}}));
-    final s2 = TrustStatement(Jsonish({'token': 's2', 'issuer': root, 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root}}));
-    final s3 = TrustStatement(Jsonish({'token': 's3', 'issuer': root, 'trust': i3, 'time': '2025-01-01T00:00:00Z', 'I': {'key': root}}));
+    // pov -> I1, I2, I3 (dist 1 / 2 degrees)
+    final s1 = TrustStatement(Jsonish({'token': 's1', 'issuer': pov, 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov}}));
+    final s2 = TrustStatement(Jsonish({'token': 's2', 'issuer': pov, 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov}}));
+    final s3 = TrustStatement(Jsonish({'token': 's3', 'issuer': pov, 'trust': i3, 'time': '2025-01-01T00:00:00Z', 'I': {'key': pov}}));
 
     // I1 -> X (X at dist 2 / 3 degrees)
     final s4 = TrustStatement(Jsonish({'token': 's4', 'issuer': i1, 'trust': x, 'time': '2025-01-01T00:00:00Z', 'I': {'key': i1}}));
@@ -429,7 +429,7 @@ void main() {
     final s7 = TrustStatement(Jsonish({'token': 's7', 'issuer': a, 'trust': x, 'time': '2025-01-01T00:00:00Z', 'I': {'key': a}}));
 
     final byIssuer = {
-      root: [s1, s2, s3],
+      pov: [s1, s2, s3],
       i1: [s4],
       i2: [s5],
       i3: [s6],
@@ -440,7 +440,7 @@ void main() {
     int pathRequirement(int dist) => (dist >= 2) ? 2 : 1;
 
     final tg = reduceTrustGraph(
-      TrustGraph(root: root),
+      TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
     );

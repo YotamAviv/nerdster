@@ -77,7 +77,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   void _updateAlgorithm() {
     _algorithm = FanAlgorithm(
-      rootId: _graphController.rootIdentity,
+      rootId: _graphController.povIdentity,
       levelSeparation: 200,
     );
   }
@@ -174,14 +174,14 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
             _buildControls(model),
             Expanded(
               child: InteractiveViewer(
-                key: ValueKey(_graphController.rootIdentity),
+                key: ValueKey(_graphController.povIdentity),
                 transformationController: _transformationController,
                 constrained: false,
                 boundaryMargin: const EdgeInsets.all(500),
                 minScale: 0.01,
                 maxScale: 5.6,
                 child: GraphView(
-                  key: ValueKey('${_graphController.rootIdentity}_${_data?.nodes.length}_${_data?.edges.length}'),
+                  key: ValueKey('${_graphController.povIdentity}_${_data?.nodes.length}_${_data?.edges.length}'),
                   graph: _graph,
                   algorithm: _algorithm,
                   paint: Paint()
@@ -237,7 +237,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
     final model = widget.controller.value!;
     final label = model.labeler.getLabel(identity);
-    final resolvedRoot = model.labeler.getIdentityForToken(_graphController.rootIdentity);
+    final resolvedRoot = model.labeler.getIdentityForToken(_graphController.povIdentity);
     final resolvedFocused = _graphController.focusedIdentity != null 
         ? model.labeler.getIdentityForToken(_graphController.focusedIdentity!)
         : null;

@@ -29,7 +29,7 @@ void main() {
     final s1 = await aliceNew.doTrust(TrustVerb.replace, alice);
 
     final tg = reduceTrustGraph(
-      TrustGraph(root: aliceNew.token),
+      TrustGraph(pov: aliceNew.token),
       {
         aliceNew.token: [s1],
       },
@@ -50,7 +50,7 @@ void main() {
     final sReplace = await aliceNew.doTrust(TrustVerb.replace, alice, revokeAt: sBob.token);
 
     final tg = reduceTrustGraph(
-      TrustGraph(root: aliceNew.token),
+      TrustGraph(pov: aliceNew.token),
       {
         aliceNew.token: [sReplace],
         bob.token: [sBob],
@@ -66,7 +66,7 @@ void main() {
     final sAlice = await alice.doTrust(TrustVerb.trust, bob, moniker: 'bob');
     
     final tg2 = reduceTrustGraph(
-      TrustGraph(root: aliceNew.token),
+      TrustGraph(pov: aliceNew.token),
       {
         aliceNew.token: [sReplace],
         bob.token: [sBob],

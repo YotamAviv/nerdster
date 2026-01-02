@@ -14,35 +14,35 @@ void main() {
 
   group('GraphController', () {
     test('builds identity graph data', () {
-      final root = 'root';
+      final pov = 'pov';
       final alice = 'alice';
 
       final t1 = TrustStatement(Jsonish({
         'token': 't1',
-        'issuer': root,
+        'issuer': pov,
         'trust': alice,
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': root},
+        'I': {'key': pov},
       }));
 
       final trustGraph = TrustGraph(
-        root: root,
-        distances: {root: 0, alice: 1},
-        orderedKeys: [root, alice],
+        pov: pov,
+        distances: {pov: 0, alice: 1},
+        orderedKeys: [pov, alice],
         edges: {
-          root: [t1],
+          pov: [t1],
         },
         paths: {
-          alice: [[root, alice]],
+          alice: [[pov, alice]],
         },
       );
 
       final feedModel = V2FeedModel(
         trustGraph: trustGraph,
-        followNetwork: FollowNetwork(rootIdentity: root, fcontext: '<identity>'),
+        followNetwork: FollowNetwork(povIdentity: pov, fcontext: '<identity>'),
         labeler: V2Labeler(trustGraph),
         aggregation: ContentAggregation(),
-        rootToken: root,
+        povToken: pov,
         fcontext: '<identity>',
         sortMode: V2SortMode.recentActivity,
         filterMode: V2FilterMode.ignoreDisses,
@@ -54,36 +54,36 @@ void main() {
       controller.mode = GraphViewMode.identity;
       final data = controller.buildGraphData();
 
-      expect(data.nodes, containsAll([root, alice]));
+      expect(data.nodes, containsAll([pov, alice]));
       expect(data.edges.length, 1);
-      expect(data.edges.first.fromIdentity, root);
+      expect(data.edges.first.fromIdentity, pov);
       expect(data.edges.first.toIdentity, alice);
       expect(data.edges.first.isIdentity, isTrue);
     });
 
     test('builds follow graph data', () {
-      final root = 'root';
+      final pov = 'pov';
       final alice = 'alice';
 
       final f1 = ContentStatement(Jsonish({
         'token': 'f1',
-        'issuer': root,
+        'issuer': pov,
         'follow': alice,
         'with': {'contexts': {'news': 1}},
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': root},
+        'I': {'key': pov},
       }));
 
-      final trustGraph = TrustGraph(root: root, distances: {root: 0, alice: 1});
+      final trustGraph = TrustGraph(pov: pov, distances: {pov: 0, alice: 1});
       final followNetwork = FollowNetwork(
         fcontext: 'news',
-        identities: [root, alice],
-        rootIdentity: root,
+        identities: [pov, alice],
+        povIdentity: pov,
         edges: {
-          root: [f1],
+          pov: [f1],
         },
         paths: {
-          alice: [root, alice],
+          alice: [pov, alice],
         },
       );
 
@@ -92,7 +92,7 @@ void main() {
         followNetwork: followNetwork,
         labeler: V2Labeler(trustGraph),
         aggregation: ContentAggregation(),
-        rootToken: root,
+        povToken: pov,
         fcontext: 'news',
         sortMode: V2SortMode.recentActivity,
         filterMode: V2FilterMode.ignoreDisses,
@@ -104,36 +104,36 @@ void main() {
       controller.mode = GraphViewMode.follow;
       final data = controller.buildGraphData();
 
-      expect(data.nodes, containsAll([root, alice]));
+      expect(data.nodes, containsAll([pov, alice]));
       expect(data.edges.length, 1);
-      expect(data.edges.first.fromIdentity, root);
+      expect(data.edges.first.fromIdentity, pov);
       expect(data.edges.first.toIdentity, alice);
       expect(data.edges.first.isFollow, isTrue);
     });
 
     test('identifies conflicts in graph data', () {
-      final root = 'root';
+      final pov = 'pov';
       final alice = 'alice';
 
       final f1 = ContentStatement(Jsonish({
         'token': 'f1',
-        'issuer': root,
+        'issuer': pov,
         'follow': alice,
         'with': {'contexts': {'news': 1}},
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': root},
+        'I': {'key': pov},
       }));
 
-      final trustGraph = TrustGraph(root: root, distances: {root: 0, alice: 1});
+      final trustGraph = TrustGraph(pov: pov, distances: {pov: 0, alice: 1});
       final followNetwork = FollowNetwork(
         fcontext: 'news',
-        identities: [root, alice],
-        rootIdentity: root,
+        identities: [pov, alice],
+        povIdentity: pov,
         edges: {
-          root: [f1],
+          pov: [f1],
         },
         paths: {
-          alice: [root, alice],
+          alice: [pov, alice],
         },
         notifications: [
           TrustNotification(subject: alice, reason: 'conflict', relatedStatement: f1.token, isConflict: true),
@@ -145,7 +145,7 @@ void main() {
         followNetwork: followNetwork,
         labeler: V2Labeler(trustGraph),
         aggregation: ContentAggregation(),
-        rootToken: root,
+        povToken: pov,
         fcontext: 'news',
         sortMode: V2SortMode.recentActivity,
         filterMode: V2FilterMode.ignoreDisses,

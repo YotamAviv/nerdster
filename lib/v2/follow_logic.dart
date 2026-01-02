@@ -26,7 +26,7 @@ FollowNetwork reduceFollowNetwork(
   final List<String> identities = [];
   final List<TrustNotification> notifications = [];
   final Map<String, List<ContentStatement>> edges = {};
-  final Map<String, List<String>> paths = {trustGraph.root: [trustGraph.root]};
+  final Map<String, List<String>> paths = {trustGraph.pov: [trustGraph.pov]};
 
   // 1. Handle <one-of-us> context (Identity Layer only)
   if (fcontext == kOneofusContext) {
@@ -43,7 +43,7 @@ FollowNetwork reduceFollowNetwork(
     return FollowNetwork(
       fcontext: fcontext,
       identities: identities,
-      rootIdentity: trustGraph.root,
+      povIdentity: trustGraph.pov,
       paths: paths,
       notifications: notifications,
       edges: edges,
@@ -51,10 +51,10 @@ FollowNetwork reduceFollowNetwork(
   }
 
   // 2. Handle <nerdster> and custom contexts
-  final Map<String, int> followDistances = {trustGraph.root: 0};
-  final List<String> orderedIdentities = [trustGraph.root];
+  final Map<String, int> followDistances = {trustGraph.pov: 0};
+  final List<String> orderedIdentities = [trustGraph.pov];
   final Set<String> blocked = {};
-  final Set<String> initialLayer = {trustGraph.root};
+  final Set<String> initialLayer = {trustGraph.pov};
 
   var layer = initialLayer;
   for (int dist = 0; dist < maxDegrees && layer.isNotEmpty; dist++) {
@@ -62,13 +62,16 @@ FollowNetwork reduceFollowNetwork(
 
     for (final String issuerIdentity in layer) {
       // Get all follow/block statements from this identity's keys and its delegates
-      final List<String> allKeys = [
-        ...trustGraph.getEquivalenceGroup(issuerIdentity),
-        ...delegateResolver.getDelegatesForIdentity(issuerIdentity),
-      ];
-      
       final List<Iterable<ContentStatement>> sources = [];
-      for (final String key in allKeys) {
+      
+      // Identity Keys
+      for (final String key in trustGraph.getEquivalenceGroup(issuerIdentity)) {
+        final list = byToken[key];
+        if (list != null && list.isNotEmpty) sources.add(list);
+      }
+      
+      // Delegate Keys
+      for (final String key in delegateResolver.getDelegatesForIdentity(issuerIdentity)) {
         final list = byToken[key];
         if (list != null && list.isNotEmpty) sources.add(list);
       }
@@ -97,7 +100,7 @@ FollowNetwork reduceFollowNetwork(
 
         if (w < 0) {
           // Block
-          if (subjectIdentity == trustGraph.root) {
+          if (subjectIdentity == trustGraph.pov) {
             notifications.add(TrustNotification(
               subject: subjectIdentity,
               reason: "Attempt to block yourself in context $fcontext",
@@ -166,7 +169,7 @@ FollowNetwork reduceFollowNetwork(
   return FollowNetwork(
     fcontext: fcontext,
     identities: filteredIdentities,
-    rootIdentity: trustGraph.root,
+    povIdentity: trustGraph.pov,
     paths: paths,
     notifications: notifications,
     edges: edges,

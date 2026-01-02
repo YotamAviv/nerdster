@@ -47,7 +47,7 @@ void main() {
     final contentMap = await contentPipeline.fetchContentMap(
       graph, 
       delegateResolver,
-      additionalKeys: [lisa.token, lisaD!.token],
+      additionalIdentityKeys: [lisa.token, lisaD!.token],
     );
 
     final aggregation = reduceContentAggregation(
@@ -56,8 +56,8 @@ void main() {
         delegateResolver,
         contentMap,
         enableCensorship: true,
-        meToken: lisa.token,
-        meKeys: [lisa.token, lisaD.token],
+        meIdentityToken: lisa.token,
+        meIdentityKeys: [lisa.token, lisaD.token],
     );
 
     // 3. Verify Equivalence

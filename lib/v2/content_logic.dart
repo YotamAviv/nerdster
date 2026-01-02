@@ -32,8 +32,9 @@ ContentAggregation reduceContentAggregation(
   DelegateResolver delegateResolver,
   Map<String, List<ContentStatement>> byToken, {
   bool enableCensorship = true,
-  String? meToken,
-  List<String>? meKeys,
+  String? meIdentityToken,
+  List<String>? meIdentityKeys,
+  List<String>? meDelegateKeys,
 }) {
   final Set<String> censored = {};
   
@@ -43,14 +44,17 @@ ContentAggregation reduceContentAggregation(
     final List<String> identitiesToProcess = [...followNetwork.identities];
 
     for (final String identity in identitiesToProcess) {
-      final List<String> allKeys = [
-        ...delegateResolver.getDelegatesForIdentity(identity),
-      ];
-
       final List<Iterable<ContentStatement>> sources = [];
-      for (final String key in allKeys) {
+      
+      // Identity Keys
+      if (byToken.containsKey(identity)) sources.add(byToken[identity]!);
+      
+      // Delegate Keys
+      final List<String> delegateKeys = delegateResolver.getDelegatesForIdentity(identity);
+      for (final String key in delegateKeys) {
         if (byToken.containsKey(key)) sources.add(byToken[key]!);
       }
+
       final Iterable<ContentStatement> statements = Merger.merge(sources);
 
       for (final ContentStatement s
@@ -72,17 +76,21 @@ ContentAggregation reduceContentAggregation(
   final List<String> identitiesToProcess = [...followNetwork.identities];
 
   for (final String identity in identitiesToProcess) {
-    final List<String> allKeys = [
-      identity,
-      ...delegateResolver.getDelegatesForIdentity(identity),
-    ];
-
     final List<Iterable<ContentStatement>> sources = [];
-    for (final String key in allKeys) {
+    
+    // Identity Keys
+    if (byToken.containsKey(identity)) {
+      sources.add(byToken[identity]!);
+    }
+
+    // Delegate Keys
+    final List<String> delegateKeys = delegateResolver.getDelegatesForIdentity(identity);
+    for (final String key in delegateKeys) {
       if (byToken.containsKey(key)) {
         sources.add(byToken[key]!);
       }
     }
+
     final Iterable<ContentStatement> statements = distinct(
       Merger.merge(sources),
       transformer: (_) => identity,
@@ -121,14 +129,28 @@ ContentAggregation reduceContentAggregation(
   // 1. Purity of the PoV's view (no pollution from untrusted "Me").
   // 2. Availability of "Me's" data for UI widgets.
   final List<ContentStatement> myFilteredStatements = [];
-  if (meKeys != null) {
-    final List<Iterable<ContentStatement>> sources = [];
-    for (final String key in meKeys) {
+  final List<Iterable<ContentStatement>> mySources = [];
+  
+  if (meIdentityKeys != null) {
+    for (final String key in meIdentityKeys) {
       if (byToken.containsKey(key)) {
-        sources.add(byToken[key]!);
+        mySources.add(byToken[key]!);
       }
     }
-    final Iterable<ContentStatement> statements = Merger.merge(sources);
+  }
+  
+  if (meDelegateKeys != null) {
+    for (final String key in meDelegateKeys) {
+      if (byToken.containsKey(key)) {
+        mySources.add(byToken[key]!);
+      } else {
+        print('reduceContentAggregation: meDelegateKey $key not found in byToken');
+      }
+    }
+  }
+
+  if (mySources.isNotEmpty) {
+    final Iterable<ContentStatement> statements = Merger.merge(mySources);
     for (final ContentStatement s in statements) {
       // Note: We DO include follow statements here so they appear in NodeDetails
       if (enableCensorship) {
@@ -364,14 +386,14 @@ ContentAggregation reduceContentAggregation(
 
           // Also clear isRated if the signer is the PoV
           bool isRated = agg.isRated;
-          if (signerIdentity == followNetwork.rootIdentity) {
+          if (signerIdentity == followNetwork.povIdentity) {
              // If we removed any rate statements, we might need to re-check isRated.
              // But simpler: just re-check from newStatements.
              isRated = newStatements.any((stmt) {
                 final sid = trustGraph.isTrusted(stmt.iToken)
                     ? trustGraph.resolveIdentity(stmt.iToken)
                     : delegateResolver.getIdentityForDelegate(stmt.iToken);
-                return sid == followNetwork.rootIdentity && stmt.verb == ContentVerb.rate;
+                return sid == followNetwork.povIdentity && stmt.verb == ContentVerb.rate;
              });
           }
 
@@ -393,7 +415,7 @@ ContentAggregation reduceContentAggregation(
           continue;
         }
 
-        if (signerIdentity == followNetwork.rootIdentity) {
+        if (signerIdentity == followNetwork.povIdentity) {
           if (s.verb == ContentVerb.rate) isRated = true;
           if (s.dismiss == true) {
             if (povDismissalTimestamp == null || s.time.isAfter(povDismissalTimestamp)) {
@@ -402,7 +424,7 @@ ContentAggregation reduceContentAggregation(
           }
         }
 
-        if (s.dismiss == true && meToken != null && signerIdentity == trustGraph.resolveIdentity(meToken)) {
+        if (s.dismiss == true && meIdentityToken != null && signerIdentity == trustGraph.resolveIdentity(meIdentityToken)) {
           if (userDismissalTimestamp == null || s.time.isAfter(userDismissalTimestamp)) {
             userDismissalTimestamp = s.time;
           }
@@ -462,8 +484,12 @@ ContentAggregation reduceContentAggregation(
       // we create it if we have statements about it (e.g. I follow it).
       // But we initialize it with empty statements so it doesn't pollute the feed.
       final SubjectAggregation agg = subjects.putIfAbsent(canonical, () {
+        dynamic subjectContent = canonical;
+        if (s.subjectToken == canonical) {
+           subjectContent = s.subject;
+        }
         return SubjectAggregation(
-          subject: canonical,
+          subject: subjectContent,
           lastActivity: s.time,
         );
       });

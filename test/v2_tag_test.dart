@@ -50,9 +50,9 @@ void main() {
         'time': now,
       }));
 
-      final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
+      final followNetwork = FollowNetwork(fcontext: 'test', povIdentity: identityToken, identities: [identityToken]);
       final trustGraph = TrustGraph(
-        root: identityToken, 
+        pov: identityToken, 
         distances: {identityToken: 0},
         edges: {identityToken: [delegateStatement]}
       );
@@ -104,9 +104,9 @@ void main() {
         'time': now,
       }));
 
-      final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
+      final followNetwork = FollowNetwork(fcontext: 'test', povIdentity: identityToken, identities: [identityToken]);
       final trustGraph = TrustGraph(
-        root: identityToken, 
+        pov: identityToken, 
         distances: {identityToken: 0},
         edges: {identityToken: [delegateStatement]}
       );
@@ -161,9 +161,9 @@ void main() {
         'time': now,
       }));
 
-      final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
+      final followNetwork = FollowNetwork(fcontext: 'test', povIdentity: identityToken, identities: [identityToken]);
       final trustGraph = TrustGraph(
-        root: identityToken, 
+        pov: identityToken, 
         distances: {identityToken: 0},
         edges: {identityToken: [delegateStatement]}
       );
@@ -213,9 +213,9 @@ void main() {
         'time': now,
       }));
 
-      final followNetwork = FollowNetwork(fcontext: 'test', rootIdentity: identityToken, identities: [identityToken]);
+      final followNetwork = FollowNetwork(fcontext: 'test', povIdentity: identityToken, identities: [identityToken]);
       final trustGraph = TrustGraph(
-        root: identityToken, 
+        pov: identityToken, 
         distances: {identityToken: 0},
         edges: {identityToken: [delegateStatement]}
       );

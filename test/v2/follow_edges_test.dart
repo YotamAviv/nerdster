@@ -14,16 +14,16 @@ void main() {
 
   group('FollowNetwork Edges', () {
     test('populates edges for follow statements', () {
-      final root = 'root';
+      final pov = 'pov';
       final alice = 'alice';
       final bob = 'bob';
 
       final t1 = TrustStatement(Jsonish({
         'token': 't1',
-        'issuer': root,
+        'issuer': pov,
         'trust': alice,
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': root},
+        'I': {'key': pov},
       }));
 
       final t2 = TrustStatement(Jsonish({
@@ -35,24 +35,24 @@ void main() {
       }));
 
       final trustGraph = TrustGraph(
-        root: root,
-        distances: {root: 0, alice: 1, bob: 2},
-        orderedKeys: [root, alice, bob],
+        pov: pov,
+        distances: {pov: 0, alice: 1, bob: 2},
+        orderedKeys: [pov, alice, bob],
         edges: {
-          root: [t1],
+          pov: [t1],
           alice: [t2],
         },
       );
 
       final f1 = ContentStatement(Jsonish({
         'token': 'f1',
-        'issuer': root,
+        'issuer': pov,
         'follow': alice,
         'with': {
           'contexts': {'news': 1},
         },
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': root},
+        'I': {'key': pov},
       }));
 
       final f2 = ContentStatement(Jsonish({
@@ -67,7 +67,7 @@ void main() {
       }));
 
       final Map<String, List<ContentStatement>> byToken = {
-        root: [f1],
+        pov: [f1],
         alice: [f2],
       };
 
@@ -78,45 +78,45 @@ void main() {
         'news',
       );
 
-      expect(network.identities, containsAll([root, alice, bob]));
-      expect(network.edges[root], contains(f1));
+      expect(network.identities, containsAll([pov, alice, bob]));
+      expect(network.edges[pov], contains(f1));
       expect(network.edges[alice], contains(f2));
     });
 
     test('detects conflicts in follow network', () {
-      final root = 'root';
+      final pov = 'pov';
       final alice = 'alice';
 
       final t1 = TrustStatement(Jsonish({
         'token': 't1',
-        'issuer': root,
+        'issuer': pov,
         'trust': alice,
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': root},
+        'I': {'key': pov},
       }));
 
       final trustGraph = TrustGraph(
-        root: root,
-        distances: {root: 0, alice: 1},
-        orderedKeys: [root, alice],
+        pov: pov,
+        distances: {pov: 0, alice: 1},
+        orderedKeys: [pov, alice],
         edges: {
-          root: [t1],
+          pov: [t1],
         },
       );
 
       final blockSelf = ContentStatement(Jsonish({
         'token': 'f1_block',
-        'issuer': root,
-        'follow': root,
+        'issuer': pov,
+        'follow': pov,
         'with': {
           'contexts': {'news': -1},
         },
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': root},
+        'I': {'key': pov},
       }));
 
       final Map<String, List<ContentStatement>> byToken = {
-        root: [blockSelf],
+        pov: [blockSelf],
       };
 
       final network = reduceFollowNetwork(

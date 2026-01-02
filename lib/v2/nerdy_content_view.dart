@@ -19,9 +19,9 @@ import 'refresh_signal.dart';
 import 'submit.dart';
 
 class NerdyContentView extends StatefulWidget {
-  final String? rootToken;
+  final String? povToken;
 
-  const NerdyContentView({super.key, this.rootToken});
+  const NerdyContentView({super.key, this.povToken});
 
   @override
   State<NerdyContentView> createState() => _NerdyContentViewState();
@@ -35,12 +35,12 @@ class _NerdyContentViewState extends State<NerdyContentView> {
   @override
   void initState() {
     super.initState();
-    _currentPov = widget.rootToken;
+    _currentPov = widget.povToken;
     _controller = V2FeedController(
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
-    _controller.refresh(_currentPov, meToken: signInState.identity);
+    _controller.refresh(_currentPov, meIdentityToken: signInState.identity);
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     v2RefreshSignal.addListener(_onRefresh);
     
@@ -52,10 +52,10 @@ class _NerdyContentViewState extends State<NerdyContentView> {
   @override
   void didUpdateWidget(NerdyContentView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.rootToken != widget.rootToken) {
-      debugPrint('NerdyContentView: rootToken changed from ${oldWidget.rootToken} to ${widget.rootToken}');
+    if (oldWidget.povToken != widget.povToken) {
+      debugPrint('NerdyContentView: povToken changed from ${oldWidget.povToken} to ${widget.povToken}');
       setState(() {
-        _currentPov = widget.rootToken;
+        _currentPov = widget.povToken;
         _markedSubjectToken = null;
       });
       // We use a small delay to ensure the previous refresh (if any) has a chance to see the loading state
@@ -80,7 +80,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
     if (!mounted) return;
 
     // The controller handles overlapping refreshes internally.
-    await _controller.refresh(_currentPov, meToken: signInState.identity);
+    await _controller.refresh(_currentPov, meIdentityToken: signInState.identity);
   }
 
   void _changePov(String? newToken) {
