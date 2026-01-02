@@ -31,7 +31,7 @@ class IdentityContextSelector extends StatelessWidget {
         Flexible(
           flex: 3,
           child: ValueListenableBuilder<String?>(
-            valueListenable: Setting.get<String?>(SettingType.pov).notifier,
+            valueListenable: signInState.povNotifier,
             builder: (context, currentPov, _) {
               return DropdownButton<String>(
                 isExpanded: true,
@@ -56,7 +56,7 @@ class IdentityContextSelector extends StatelessWidget {
                 ],
                 onChanged: (val) {
                   if (val != null) {
-                    Setting.get<String?>(SettingType.pov).value = val;
+                    signInState.pov = val;
                   }
                 },
               );

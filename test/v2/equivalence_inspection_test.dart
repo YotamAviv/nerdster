@@ -40,16 +40,14 @@ void main() {
     final followNetwork = reduceFollowNetwork(graph, delegateResolver, {}, 'nerdster');
 
     final appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
-    final identitySource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kOneofusDomain));
     final contentPipeline = ContentPipeline(
-      identitySource: identitySource,
-      appSource: appSource,
+      contentSource: appSource,
     );
 
     final contentMap = await contentPipeline.fetchContentMap(
       graph, 
       delegateResolver,
-      additionalAppKeys: [lisa.token, lisaD!.token],
+      additionalKeys: [lisa.token, lisaD!.token],
     );
 
     final aggregation = reduceContentAggregation(

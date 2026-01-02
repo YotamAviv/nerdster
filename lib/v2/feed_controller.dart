@@ -19,19 +19,16 @@ import 'package:nerdster/singletons.dart';
 
 class V2FeedController extends ValueNotifier<V2FeedModel?> {
   final CachedSource<TrustStatement> trustSource;
-  final CachedSource<ContentStatement> identityContentSource;
-  final CachedSource<ContentStatement> appContentSource;
+  final CachedSource<ContentStatement> contentSource;
 
   V2FeedController({
     required StatementSource<TrustStatement> trustSource,
-    required StatementSource<ContentStatement> identityContentSource,
-    required StatementSource<ContentStatement> appContentSource,
+    required StatementSource<ContentStatement> contentSource,
   })  : trustSource = CachedSource(trustSource),
-        identityContentSource = CachedSource(identityContentSource),
-        appContentSource = CachedSource(appContentSource),
+        contentSource = CachedSource(contentSource),
         super(null) {
     Setting.get(SettingType.identityPathsReq).notifier.addListener(_onSettingChanged);
-    Setting.get(SettingType.pov).notifier.addListener(_onPovChanged);
+    signInState.povNotifier.addListener(_onPovChanged);
     Setting.get(SettingType.fcontext).notifier.addListener(_onSettingChanged);
   }
 
@@ -40,7 +37,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   void _onPovChanged() {
-    final newPov = Setting.get<String?>(SettingType.pov).value;
+    final newPov = signInState.pov;
     if (newPov != null) {
       refresh(newPov, meToken: _latestRequestedMeToken);
     }
@@ -49,7 +46,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   @override
   void dispose() {
     Setting.get(SettingType.identityPathsReq).notifier.removeListener(_onSettingChanged);
-    Setting.get(SettingType.pov).notifier.removeListener(_onPovChanged);
+    signInState.povNotifier.removeListener(_onPovChanged);
     Setting.get(SettingType.fcontext).notifier.removeListener(_onSettingChanged);
     super.dispose();
   }
@@ -265,8 +262,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
         // Clear caches to ensure we get the latest statements (e.g. after a new like/comment)
         trustSource.clear();
-        identityContentSource.clear();
-        appContentSource.clear();
+        contentSource.clear();
 
         // 1. Trust Pipeline
         debugPrint('V2FeedController: Building TrustGraph for $currentToken');
@@ -300,17 +296,15 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
       // 2. Content Pipeline
       debugPrint('V2FeedController: Fetching ContentMap');
-      loadingMessage.value = 'Loading signed content from one-of-us.net and nerdster.org (Content)';
+      loadingMessage.value = 'Loading signed content from nerdster.org (Content)';
       progress.value = 0.4;
       final contentPipeline = ContentPipeline(
-        identitySource: identityContentSource,
-        appSource: appContentSource,
+        contentSource: contentSource,
       );
       final contentMap = await contentPipeline.fetchContentMap(
         graph, 
         delegateResolver,
-        additionalIdentityKeys: additionalIdentityKeys,
-        additionalAppKeys: additionalAppKeys,
+        additionalKeys: additionalAppKeys,
       );
       debugPrint('V2FeedController: ContentMap has ${contentMap.length} entries');
       progress.value = 0.6;

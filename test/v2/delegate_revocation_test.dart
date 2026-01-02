@@ -139,7 +139,7 @@ void main() {
     expect(resolver.getConstraintForDelegate(delegate.token), equals(s1.token));
 
     // 4. Fetch content
-    final pipeline = ContentPipeline(identitySource: contentSource, appSource: contentSource);
+    final pipeline = ContentPipeline(contentSource: contentSource);
     final contentMap = await pipeline.fetchContentMap(tg, resolver);
 
     final delegateStatements = contentMap[delegate.token] ?? [];
@@ -170,7 +170,7 @@ void main() {
 
     expect(resolver.getConstraintForDelegate(delegate.token), equals(kSinceAlways));
 
-    final pipeline = ContentPipeline(identitySource: contentSource, appSource: contentSource);
+    final pipeline = ContentPipeline(contentSource: contentSource);
     final contentMap = await pipeline.fetchContentMap(tg, resolver);
 
     expect(contentMap[delegate.token], isEmpty);
@@ -233,7 +233,7 @@ void main() {
     expect(resolver.getConstraintForDelegate(delegate.token), equals(s1.token));
 
     // Verify content filtering
-    final pipeline = ContentPipeline(identitySource: contentSource, appSource: contentSource);
+    final pipeline = ContentPipeline(contentSource: contentSource);
     final contentMap = await pipeline.fetchContentMap(tg, resolver);
 
     final delegateStatements = contentMap[delegate.token] ?? [];

@@ -35,8 +35,7 @@ void main() {
 
     controller = V2FeedController(
       trustSource: DirectFirestoreSource<TrustStatement>(oneofusFire),
-      identityContentSource: DirectFirestoreSource<ContentStatement>(oneofusFire),
-      appContentSource: DirectFirestoreSource<ContentStatement>(nerdsterFire),
+      contentSource: DirectFirestoreSource<ContentStatement>(nerdsterFire),
     );
   });
 

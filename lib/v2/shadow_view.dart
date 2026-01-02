@@ -47,8 +47,7 @@ class _ShadowViewState extends State<ShadowView> {
 
       // 2. Content Pipeline
       final contentPipeline = ContentPipeline(
-        identitySource: _cachedIdentityContent,
-        appSource: _cachedAppContent,
+        contentSource: _cachedAppContent,
       );
       final contentMap =
           await contentPipeline.fetchContentMap(graph, delegateResolver);

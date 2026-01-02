@@ -98,17 +98,15 @@ void main() {
     final delegateResolver = DelegateResolver(graph);
     final followNetwork = reduceFollowNetwork(graph, delegateResolver, {}, 'nerdster'); // Empty content map for follow net is fine for this test
 
-    final identitySource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kOneofusDomain));
     final contentPipeline = ContentPipeline(
-      identitySource: identitySource,
-      appSource: appSource,
+      contentSource: appSource,
     );
 
     // Fetch content map for Lisa (and her delegate)
     final contentMap = await contentPipeline.fetchContentMap(
       graph, 
       delegateResolver,
-      additionalAppKeys: [lisa.token, lisaD.token], // Explicitly ask for Lisa's keys
+      additionalKeys: [lisa.token, lisaD.token], // Explicitly ask for Lisa's keys
     );
 
     final aggregation = reduceContentAggregation(

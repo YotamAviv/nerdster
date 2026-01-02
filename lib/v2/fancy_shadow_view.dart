@@ -34,8 +34,7 @@ class _FancyShadowViewState extends State<FancyShadowView> {
     super.initState();
     _controller = V2FeedController(
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
-      identityContentSource: SourceFactory.get<ContentStatement>(kOneofusDomain),
-      appContentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
+      contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
     _controller.refresh(widget.rootToken, meToken: signInState.identity);
     v2RefreshSignal.addListener(_onRefresh);

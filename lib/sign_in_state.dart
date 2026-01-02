@@ -50,7 +50,7 @@ Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterK
 }
 
 class SignInState with ChangeNotifier {
-  String? _pov;
+  final ValueNotifier<String?> povNotifier = ValueNotifier<String?>(null);
   String? _identity;
   Json? _delegatePublicKeyJson;
   String? _delegate;
@@ -62,18 +62,19 @@ class SignInState with ChangeNotifier {
   factory SignInState() => _singleton;
 
   set pov(String? oneofusToken) {
-    assert(b(Jsonish.find(oneofusToken!)));
-    _pov = oneofusToken;
-    // NEXT: Reconsider. Sometimes no one is signed in.
-    // NEXT: show [pov, identity, delegate] in credentials display
-    if (!b(_identity)) _identity = _pov; 
+    if (oneofusToken != null) {
+      assert(b(Jsonish.find(oneofusToken)));
+    }
+    povNotifier.value = oneofusToken;
+    // CONSIDER: show [pov, identity, delegate] in credentials display
+    if (!b(_identity)) _identity = povNotifier.value; 
     notifyListeners();
   }
 
   Future<void> signIn(String identity, OouKeyPair? delegateKeyPair,
       {BuildContext? context}) async {
     _identity = identity;
-    _pov = identity;
+    povNotifier.value = identity;
     if (b(delegateKeyPair)) {
       OouPublicKey delegatePublicKey = await delegateKeyPair!.publicKey;
       _delegatePublicKeyJson = await delegatePublicKey.json;
@@ -106,7 +107,7 @@ class SignInState with ChangeNotifier {
   }
 
   // inputs
-  String? get pov => _pov; // PoV, CODE: Maybe rename
+  String? get pov => povNotifier.value;
   Json? get identityJson => b(identity) ? Jsonish.find(identity!)!.json : null;
 
   // derived

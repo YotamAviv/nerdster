@@ -5,8 +5,6 @@ import 'package:nerdster/v2/graph_controller.dart';
 import 'package:nerdster/v2/fan_algorithm.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/oneofus/json_display.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
 import 'package:nerdster/content/content_statement.dart';
@@ -337,7 +335,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                Setting.get<String?>(SettingType.pov).value = identity;
+                signInState.pov = identity;
                 widget.controller.refresh(identity, meToken: signInState.identity);
               },
               child: const Text('Set as PoV'),

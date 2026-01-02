@@ -38,8 +38,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
     _currentPov = widget.rootToken;
     _controller = V2FeedController(
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
-      identityContentSource: SourceFactory.get<ContentStatement>(kOneofusDomain),
-      appContentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
+      contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
     _controller.refresh(_currentPov, meToken: signInState.identity);
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
@@ -85,7 +84,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
   }
 
   void _changePov(String? newToken) {
-    Setting.get<String?>(SettingType.pov).value = newToken;
+    signInState.pov = newToken;
     setState(() {
       _currentPov = newToken;
       _markedSubjectToken = null;

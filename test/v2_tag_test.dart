@@ -234,8 +234,7 @@ void main() {
 
       final controller = V2FeedController(
         trustSource: MockSource(),
-        identityContentSource: MockSource(),
-        appContentSource: MockSource(),
+        contentSource: MockSource(),
       );
 
       final sub1 = aggregation.subjects['subject1']!;

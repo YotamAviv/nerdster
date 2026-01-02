@@ -1,13 +1,9 @@
 # Current Activity: V2 Rewrite
 
-
-
-Add a way to Submit, probably an icon on the second bar visible on the content view
-The legacy code did nothing to verify. Do something reasonable and minial to verify URLs at least a little.
-
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
-BUG: Viewing as Lisa with censorship off, I see Marge's rating of Superbad but I don't see the censor icon.
+BUGS:
+
 
 ### relating statements
 
@@ -33,9 +29,13 @@ I want to add
   Having that ability when using the emulator would require exporting and saving a file with the full public/private delegate keys
 - furthermore, it'd be nice to have the "script" not be a Dart program. I don't want to invent a new language and syntax. Any suggestions?
 
-Enhancements
-- keys in node detail: interpreted with option to see link to published statements
-- show menu in graph view
+### node detail Enhancements
+- keys shown interpreted
+  - link to pop up small dialog with: QR code, JSON key text, link to published statements.
+- abiilty to toggle showCrypto
+  - while viewing the graph
+  - (while modal dialog is up, maybe)
+
 
 - follow
 
