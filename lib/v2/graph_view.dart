@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:graphview/GraphView.dart';
 import 'package:nerdster/v2/model.dart';
@@ -311,6 +312,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     final delegates = labeler.delegateResolver?.getDelegatesForIdentity(identity) ?? [];
     final fcontext = model.fcontext;
     final showCrypto = Setting.get<bool>(SettingType.showCrypto).value;
+    final qrWidth = min(MediaQuery.of(context).size.width * 0.7, 300.0);
     
     showDialog(
       context: context,
@@ -322,7 +324,11 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (showCrypto)
-                JsonQrDisplay(identity)
+                SizedBox(
+                  width: qrWidth,
+                  height: qrWidth * 1.5,
+                  child: JsonQrDisplay(identity),
+                )
               else
                 Text('Identity: $identity', style: const TextStyle(fontSize: 10, color: Colors.grey)),
               const SizedBox(height: 10),
