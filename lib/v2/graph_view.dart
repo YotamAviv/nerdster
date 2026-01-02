@@ -5,6 +5,7 @@ import 'package:nerdster/v2/graph_controller.dart';
 import 'package:nerdster/v2/fan_algorithm.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/oneofus/json_display.dart';
+import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
@@ -219,11 +220,26 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   Widget _buildControls(V2FeedModel model) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: IdentityContextSelector(
-        availableIdentities: model.trustGraph.orderedKeys,
-        availableContexts: model.availableContexts,
-        activeContexts: model.activeContexts,
-        labeler: model.labeler,
+      child: Row(
+        children: [
+          Expanded(
+            child: IdentityContextSelector(
+              availableIdentities: model.trustGraph.orderedKeys,
+              availableContexts: model.availableContexts,
+              activeContexts: model.activeContexts,
+              labeler: model.labeler,
+            ),
+          ),
+          const SizedBox(width: 8),
+          ValueListenableBuilder<bool>(
+            valueListenable: Setting.get<bool>(SettingType.showCrypto).notifier,
+            builder: (context, val, _) => IconButton(
+              icon: Icon(val ? Icons.lock_open : Icons.lock),
+              onPressed: () => Setting.get<bool>(SettingType.showCrypto).value = !val,
+              tooltip: 'Toggle Crypto Details',
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -294,6 +310,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     final keys = tg.getEquivalenceGroup(identity);
     final delegates = labeler.delegateResolver?.getDelegatesForIdentity(identity) ?? [];
     final fcontext = model.fcontext;
+    final showCrypto = Setting.get<bool>(SettingType.showCrypto).value;
     
     showDialog(
       context: context,
@@ -304,24 +321,29 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Identity: $identity', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              if (showCrypto)
+                JsonQrDisplay(identity)
+              else
+                Text('Identity: $identity', style: const TextStyle(fontSize: 10, color: Colors.grey)),
               const SizedBox(height: 10),
               const Text('All Monikers:', style: TextStyle(fontWeight: FontWeight.bold)),
               if (labels.isEmpty) const Text('None'),
               ...labels.map((l) => Text('• $l')),
               const SizedBox(height: 10),
-              const Text('Key Lineage:', style: TextStyle(fontWeight: FontWeight.bold)),
-              ...keys.map((k) {
-                final isCanonical = k == identity;
-                return Text('• $k ${isCanonical ? "(Canonical)" : "(Replaced)"}', 
-                  style: TextStyle(fontSize: 10, color: isCanonical ? Colors.black : Colors.grey));
-              }),
-              if (delegates.isNotEmpty) ...[
+              if (showCrypto) ...[
+                const Text('Key Lineage:', style: TextStyle(fontWeight: FontWeight.bold)),
+                ...keys.map((k) {
+                  final isCanonical = k == identity;
+                  return Text('• $k ${isCanonical ? "(Canonical)" : "(Replaced)"}', 
+                    style: TextStyle(fontSize: 10, color: isCanonical ? Colors.black : Colors.grey));
+                }),
+                if (delegates.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  const Text('Authorized Delegates:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ...delegates.map((d) => Text('• $d', style: const TextStyle(fontSize: 10, color: Colors.blue))),
+                ],
                 const SizedBox(height: 10),
-                const Text('Authorized Delegates:', style: TextStyle(fontWeight: FontWeight.bold)),
-                ...delegates.map((d) => Text('• $d', style: const TextStyle(fontSize: 10, color: Colors.blue))),
               ],
-              const SizedBox(height: 10),
               
               if (fcontext == kOneofusContext)
                 _buildIdentityDetails(identity, model)
