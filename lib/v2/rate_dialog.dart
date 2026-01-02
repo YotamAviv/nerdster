@@ -11,6 +11,9 @@ import '../util_ui.dart';
 import 'model.dart';
 import 'source_factory.dart';
 
+import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/oneofus/util.dart';
+
 enum RateIntent { like, dislike, dismiss, comment, censor, clear, none }
 
 class V2RateDialog extends StatefulWidget {
@@ -32,6 +35,8 @@ class V2RateDialog extends StatefulWidget {
     RateIntent intent = RateIntent.none,
     VoidCallback? onRefresh,
   }) async {
+    if (!bb(await checkSignedIn(context))) return;
+
     final result = await showDialog<Json>(
       context: context,
       builder: (context) => V2RateDialog(

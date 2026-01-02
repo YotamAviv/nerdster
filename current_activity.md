@@ -2,6 +2,9 @@
 
 
 
+Add a way to Submit, probably an icon on the second bar visible on the content view
+The legacy code did nothing to verify. Do something reasonable and minial to verify URLs at least a little.
+
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
 ### relating statements
@@ -31,9 +34,6 @@ I want to add
 Enhancements
 - keys in node detail: interpreted with option to see link to published statements
 - show menu in graph view
-
-- Submit
-  - Verify URLs some
 
 - follow
 

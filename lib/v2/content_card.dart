@@ -11,6 +11,8 @@ import 'package:nerdster/v2/statement_tile.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 class ContentCard extends StatefulWidget {
   final SubjectAggregation aggregation;
@@ -514,8 +516,8 @@ class _ContentCardState extends State<ContentCard> {
             tooltip: widget.markedSubjectToken == widget.aggregation.token
                 ? 'Unmark'
                 : 'Mark to Relate/Equate',
-            onPressed: () {
-              if (checkDelegate(context)) {
+            onPressed: () async {
+              if (bb(await checkSignedIn(context))) {
                 widget.onMark!(widget.aggregation.token);
               }
             },
@@ -533,7 +535,6 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   Future<void> _react() async {
-    if (!checkDelegate(context)) return;
     await V2RateDialog.show(
       context,
       widget.aggregation,
@@ -652,19 +653,4 @@ bool _shouldShowStatement(ContentStatement s, V2FeedModel model) {
   }
 }
 
-bool checkDelegate(BuildContext context) {
-  if (signInState.delegate == null) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delegate Key Required'),
-        content: const Text('You are signed in with an identity key, but you need a delegate key to sign content statements (likes, comments, etc.). Please sign in with a delegate key.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-        ],
-      ),
-    );
-    return false;
-  }
-  return true;
-}
+

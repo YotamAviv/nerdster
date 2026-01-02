@@ -4,6 +4,7 @@ import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/follow/follow_net.dart' show kOneofusContext, kNerdsterContext;
+import 'package:nerdster/v2/refresh_signal.dart';
 
 class IdentityContextSelector extends StatelessWidget {
   final List<String> availableIdentities;
@@ -143,6 +144,11 @@ class IdentityContextSelector extends StatelessWidget {
               );
             },
           ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: () => v2RefreshSignal.signal(),
+          tooltip: 'Refresh',
         ),
       ],
     );

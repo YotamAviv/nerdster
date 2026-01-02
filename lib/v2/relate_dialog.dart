@@ -4,6 +4,8 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
+import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 class V2RelateDialog extends StatefulWidget {
   final SubjectAggregation subject1;
@@ -24,6 +26,8 @@ class V2RelateDialog extends StatefulWidget {
     V2FeedModel model, {
     VoidCallback? onRefresh,
   }) async {
+    if (!bb(await checkSignedIn(context))) return;
+
     final result = await showDialog<Json>(
       context: context,
       builder: (context) => V2RelateDialog(

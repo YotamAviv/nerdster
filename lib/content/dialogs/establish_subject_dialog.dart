@@ -104,6 +104,34 @@ class _SubjectFieldsState extends State<SubjectFields> {
   }
 
   void _okHandler() async {
+    // Validate all fields are non-empty
+    for (final entry in key2controller.entries) {
+      if (entry.value.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please fill in the ${entry.key} field'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+
+    // Validate URL format if present
+    if (contentType.type2field2type.containsKey('url')) {
+      final url = key2controller['url']?.text.trim() ?? '';
+      final uri = Uri.tryParse(url);
+      if (uri == null || !uri.hasScheme || !['http', 'https'].contains(uri.scheme)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enter a valid URL starting with http:// or https://'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+
     Map<String, dynamic> map = <String, dynamic>{};
     map['contentType'] = contentType.label;
     for (final entry in key2controller.entries) {

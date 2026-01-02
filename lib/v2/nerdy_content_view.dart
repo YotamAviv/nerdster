@@ -12,7 +12,6 @@ import 'package:nerdster/v2/content_card.dart';
 import 'package:nerdster/nerdster_menu.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/v2/graph_view.dart';
-import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/relate_dialog.dart';
 import 'package:nerdster/app.dart';
 import 'refresh_signal.dart';
@@ -200,12 +199,7 @@ class _NerdyContentViewState extends State<NerdyContentView> {
               ],
             ),
           ),
-          floatingActionButton: model != null
-              ? FloatingActionButton(
-                  onPressed: () => v2Submit(context, model, onRefresh: _onRefresh),
-                  child: const Icon(Icons.add),
-                )
-              : null,
+          floatingActionButton: null,
         );
       },
     );
@@ -265,29 +259,14 @@ class _NerdyContentViewState extends State<NerdyContentView> {
               ),
               const Spacer(),
               IconButton(
-                icon: const Icon(Icons.auto_graph),
-                tooltip: 'Network Graph',
-                onPressed: () {
-                  if (model != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => NerdyGraphView(
-                          controller: _controller,
-                        ),
-                      ),
-                    );
-                  }
-                },
+                icon: const Icon(Icons.add),
+                tooltip: 'Submit Content',
+                onPressed: model == null ? null : () => v2Submit(context, model, onRefresh: _onRefresh),
               ),
               const Text('Censor'),
               Switch(
                 value: _controller.enableCensorship,
                 onChanged: (val) => _controller.enableCensorship = val,
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _onRefresh,
               ),
             ],
           ),

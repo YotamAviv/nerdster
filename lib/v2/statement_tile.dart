@@ -160,6 +160,10 @@ class StatementTile extends StatelessWidget {
                 const Icon(Icons.thumb_down, size: 12, color: Colors.red),
                 const SizedBox(width: 2),
               ],
+              if (s.censor == true) ...[
+                const Icon(Icons.delete, size: 12, color: Colors.red),
+                const SizedBox(width: 2),
+              ],
               if (s.comment != null && s.comment!.isNotEmpty) ...[
                 const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey),
                 const SizedBox(width: 2),
@@ -276,19 +280,4 @@ class StatementTile extends StatelessWidget {
   }
 }
 
-bool checkDelegate(BuildContext context) {
-  if (signInState.delegate == null) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delegate Key Required'),
-        content: const Text('You are signed in with an identity key, but you need a delegate key to sign content statements (likes, comments, etc.). Please sign in with a delegate key.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-        ],
-      ),
-    );
-    return false;
-  }
-  return true;
-}
+
