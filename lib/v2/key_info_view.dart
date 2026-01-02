@@ -7,14 +7,18 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:nerdster/v2/io.dart';
+
 class KeyInfoView extends StatelessWidget {
   final Jsonish jsonish;
   final String domain;
+  final StatementSource? source;
 
   const KeyInfoView({
     super.key, 
     required this.jsonish, 
     required this.domain,
+    this.source,
   });
 
   @override
@@ -56,7 +60,13 @@ class KeyInfoView extends StatelessWidget {
   }
 
   Future<void> _showFakeStatements(BuildContext context) async {
-    Iterable statements = Fetcher(jsonish.token, domain).statements;
+    Iterable statements;
+    if (source != null) {
+      final map = await source!.fetch({jsonish.token: null});
+      statements = map[jsonish.token] ?? [];
+    } else {
+      statements = Fetcher(jsonish.token, domain).statements;
+    }
     List<dynamic> jsons = List.from(statements.map((s) => s.json));
     Map<String, dynamic> j = {jsonish.token: jsons};
 
@@ -74,7 +84,7 @@ class KeyInfoView extends StatelessWidget {
   }
   
   static Future<void> show(BuildContext context, String token, String domain,
-      {TapDownDetails? details}) {
+      {TapDownDetails? details, StatementSource? source}) {
     
     final jsonish = Jsonish.find(token);
     if (jsonish == null) {
@@ -120,7 +130,7 @@ class KeyInfoView extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: KeyInfoView(
-                            jsonish: jsonish, domain: domain),
+                            jsonish: jsonish, domain: domain, source: source),
                       ),
                     ),
                   ),
@@ -137,7 +147,7 @@ class KeyInfoView extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: KeyInfoView(
-                        jsonish: jsonish, domain: domain),
+                        jsonish: jsonish, domain: domain, source: source),
                   )));
         });
   }

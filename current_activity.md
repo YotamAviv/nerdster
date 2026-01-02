@@ -1,5 +1,6 @@
 # Current Activity: V2 Rewrite
 
+
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
 
@@ -42,14 +43,7 @@ I want to add
 
 - upgrade related tags to use equivalence tech
 
-- Crypto proofs
-
-  - Similar to JsonQrDisplay, interpreted
-  - maybe explain: Statement signed by...
-
-- Show Path(s) from PoV on other users, delegate keys
-
-- allow change how I follow/block
+- Show Path(s) from PoV on other users, delegate keys (phase 2, 3 from graph doc)
 
 - Make link to this view work
 

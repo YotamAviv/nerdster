@@ -130,7 +130,7 @@ ContentAggregation reduceContentAggregation(
     }
     final Iterable<ContentStatement> statements = Merger.merge(sources);
     for (final ContentStatement s in statements) {
-      if (s.verb == ContentVerb.follow) continue;
+      // Note: We DO include follow statements here so they appear in NodeDetails
       if (enableCensorship) {
         if (censored.contains(s.token)) continue;
         if (censored.contains(s.subjectToken)) continue;
@@ -142,6 +142,11 @@ ContentAggregation reduceContentAggregation(
 
   // 3. Equivalence Grouping
   final Equivalence eqLogic = Equivalence();
+
+  // Include TrustGraph replacements as equivalence
+  for (final entry in trustGraph.replacements.entries) {
+    eqLogic.process(EquateStatement(entry.key, entry.value));
+  }
 
   for (final ContentStatement s in filteredStatements) {
     if (s.verb == ContentVerb.equate || s.verb == ContentVerb.dontEquate) {
@@ -161,8 +166,22 @@ ContentAggregation reduceContentAggregation(
   final Set<EquivalenceGroup> groups = eqLogic.createGroups();
   
   for (final EquivalenceGroup group in groups) {
+    String canonical = group.canonical;
+
+    // Prefer TrustGraph canonicals for identities
     for (final String token in group.all) {
-      equivalence[token] = group.canonical;
+      // Check if this token is part of the trust graph (either trusted or replaced)
+      if (trustGraph.distances.containsKey(token) || trustGraph.replacements.containsKey(token)) {
+        final String tgCanonical = trustGraph.resolveIdentity(token);
+        if (group.all.contains(tgCanonical)) {
+          canonical = tgCanonical;
+          break;
+        }
+      }
+    }
+
+    for (final String token in group.all) {
+      equivalence[token] = canonical;
     }
   }
 
@@ -232,22 +251,29 @@ ContentAggregation reduceContentAggregation(
 
   // Pass 1: Identify all canonical tokens that should be top-level subjects.
   final Set<String> topLevelSubjects = {};
-  for (final ContentStatement s in filteredStatements) {
-    final String canonical1 = equivalence[s.subjectToken] ?? s.subjectToken;
-    final String? canonical2 =
-        s.other != null ? (equivalence[getToken(s.other)] ?? getToken(s.other)) : null;
+  
+  void processPass1(Iterable<ContentStatement> stmts) {
+    for (final ContentStatement s in stmts) {
+      final String canonical1 = equivalence[s.subjectToken] ?? s.subjectToken;
+      final String? canonical2 =
+          s.other != null ? (equivalence[getToken(s.other)] ?? getToken(s.other)) : null;
 
-    if ((s.verb == ContentVerb.clear && s.subject is Map) ||
-        s.verb == ContentVerb.rate ||
-        s.verb == ContentVerb.relate ||
-        s.verb == ContentVerb.dontRelate ||
-        s.verb == ContentVerb.equate) {
-      topLevelSubjects.add(canonical1);
-      if (canonical2 != null) {
-        topLevelSubjects.add(canonical2);
+      if ((s.verb == ContentVerb.clear && s.subject is Map) ||
+          s.verb == ContentVerb.rate ||
+          s.verb == ContentVerb.relate ||
+          s.verb == ContentVerb.dontRelate ||
+          s.verb == ContentVerb.equate ||
+          s.verb == ContentVerb.follow) { // Include follow
+        topLevelSubjects.add(canonical1);
+        if (canonical2 != null) {
+          topLevelSubjects.add(canonical2);
+        }
       }
     }
   }
+  
+  processPass1(filteredStatements);
+  processPass1(myFilteredStatements);
 
   // Pass 2: Aggregate all statements into those subjects.
   for (final String identity in followNetwork.identities) {
@@ -433,10 +459,14 @@ ContentAggregation reduceContentAggregation(
       if (!topLevelSubjects.contains(canonical)) continue;
 
       // If the subject doesn't exist in the aggregation (because PoV doesn't see it),
-      // we skip it. "I should see their view exactly as they would".
-      if (!subjects.containsKey(canonical)) continue;
-
-      final SubjectAggregation agg = subjects[canonical]!;
+      // we create it if we have statements about it (e.g. I follow it).
+      // But we initialize it with empty statements so it doesn't pollute the feed.
+      final SubjectAggregation agg = subjects.putIfAbsent(canonical, () {
+        return SubjectAggregation(
+          subject: canonical,
+          lastActivity: s.time,
+        );
+      });
 
       // Update dismissal timestamps
       DateTime? userDismissalTimestamp = agg.userDismissalTimestamp;

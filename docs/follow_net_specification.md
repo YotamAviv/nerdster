@@ -5,6 +5,10 @@ Nerdster is a decentralized content aggregation platform built on the **Identity
 
 **Core Principle**: All participants in the network are humans with singular **identity keys**. The Follow Network is built exclusively upon the Identity Web of Trust; content is only aggregated from identities that are reachable from the user's Point of View (PoV).
 
+**Important Distinction**:
+*   **Identity Layer (Trust Graph)**: Managed by **Identity Keys**. Nerdster (the app) *cannot* modify this layer (Trust/Block/Replace) because it does not possess the user's private identity key. It only has a delegate key.
+*   **Follow Network (Content Layer)**: Managed by **Delegate Keys**. Nerdster *can* modify this layer by issuing `ContentStatement`s with the `follow` verb. This allows users to Follow or Block identities for specific contexts (e.g., "nerd", "politics") *on top of* the Identity Layer. You can only follow/block identities that are already established in the Identity Layer.
+
 ---
 
 ## 1. Expression: Content Statements (`org.nerdster`)
