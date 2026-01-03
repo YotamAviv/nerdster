@@ -1,6 +1,7 @@
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/merger.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
@@ -24,6 +25,13 @@ FollowNetwork reduceFollowNetwork(
   String fcontext, {
   int maxDegrees = 6,
 }) {
+  assert(() {
+    for (final entry in contentResult.delegateContent.entries) {
+      Statement.validateStatementTimesAndTypes(entry.value);
+    }
+    return true;
+  }());
+
   final List<String> identities = [];
   final List<TrustNotification> notifications = [];
   final Map<String, List<ContentStatement>> edges = {};

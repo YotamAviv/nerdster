@@ -35,23 +35,18 @@ void main() async {
     final DemoKey bobN = await bob.makeDelegate();
     final DemoKey charlieN = await charlie.makeDelegate();
 
-    // User's snippet
-    // await alice.trust(bob, moniker: 'bob'); 
-    // await alice.trust(charlie, moniker: 'charlie');
+    final t1 = await alice.trust(charlie, moniker: 'charlie');
+    final t2 = await alice.trust(bob, moniker: 'bob');
+    final t3 = await bob.trust(charlie, moniker: 'charlie');
+    final t4 = await bob.trust(alice, moniker: 'alice');
+
+    final t5 = await charlie.trust(bob, moniker: 'bob');
+    final t6 = await charlie.trust(alice, moniker: 'alice');
+
     final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.token), {
-      alice.token: [
-        await alice.trust(charlie, moniker: 'charlie'), 
-        await alice.trust(bob, moniker: 'bob'), 
-      ],
-      // alice.token: alice.trustStatements,
-      bob.token: [
-        await bob.trust(charlie, moniker: 'charlie'),
-        await bob.trust(alice, moniker: 'alice')
-      ],
-      charlie.token: [
-        await charlie.trust(bob, moniker: 'bob'),
-        await charlie.trust(alice, moniker: 'alice')
-      ],
+      alice.token: [t2, t1],
+      bob.token: [t4, t3],
+      charlie.token: [t6, t5],
     });
     
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -65,12 +60,12 @@ void main() async {
     final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver, ContentResult(delegateContent: delegateContent), kNerdsterContext);
     final V2Labeler labeler = V2Labeler(graph);
     
-    final List<String> expected = [alice.token, charlie.token, bob.token];
+    final List<String> expected = [alice.token, bob.token, charlie.token];
     final List<String> actual = netAlice.identities;
 
     final List<String> expectedNames = expected.map((t) => labeler.getLabel(t)).toList();
     final List<String> actualNames = actual.map((t) => labeler.getLabel(t)).toList();
 
-    expect(actualNames, equals(expectedNames), reason: 'Network order should be Alice, then Charlie, then Bob');
+    expect(actualNames, equals(expectedNames), reason: 'Network order should be Alice, then Bob, then Charlie');
   });
 }

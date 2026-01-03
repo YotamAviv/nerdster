@@ -34,6 +34,32 @@ abstract class Statement {
 
   static String typeForDomain(String domain) => _domain2type[domain]!;
 
+  /// Verifies that a collection of statements is ordered by time (descending)
+  /// and contains only one type of statement (TrustStatement or ContentStatement).
+  static bool validateStatementTimesAndTypes(Iterable<Statement> statements) {
+    if (statements.isEmpty) return true;
+    final Type firstType = statements.first.runtimeType;
+
+    Statement? previous;
+    int i = 0;
+    for (final Statement current in statements) {
+      if (current.runtimeType != firstType) {
+        throw 'Collection contains mixed statement types: $firstType and ${current.runtimeType}';
+      }
+
+      if (previous != null) {
+        if (previous.time.isBefore(current.time)) {
+          throw 'Statements are not in descending time order.\n'
+              'Index ${i - 1}: ${previous.time}\n'
+              'Index $i: ${current.time}';
+        }
+      }
+      previous = current;
+      i++;
+    }
+    return true;
+  }
+
   Statement(this.jsonish, this.subject)
       : time = parseIso(jsonish['time']),
         i = jsonish['I'],

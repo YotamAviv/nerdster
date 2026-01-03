@@ -45,13 +45,13 @@ void main() async {
     // Bob trusts Alice (just ot name her)
     await bob.trust(alice, moniker: 'alice');
 
+    final t2 = await alice.trust(bob, moniker: 'bob');
+    final t1 = await alice.trust(charlie, moniker: 'charlie');
+
     final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.token), {
       // This works, too. See matching comment above.
       // alice.token: alice.trustStatements.toList(),
-      alice.token: [
-        await alice.trust(charlie, moniker: 'charlie'),
-        await alice.trust(bob, moniker: 'bob'),
-      ],
+      alice.token: [t1, t2],
       bob.token: bob.trustStatements.toList(),
       charlie.token: charlie.trustStatements.toList(),
     });

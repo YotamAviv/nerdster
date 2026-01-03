@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/model.dart';
@@ -76,6 +77,13 @@ TrustGraph reduceTrustGraph(
   PathRequirement? pathRequirement,
   int maxDegrees = 6,
 }) {
+  assert(() {
+    for (final entry in byIssuer.entries) {
+      Statement.validateStatementTimesAndTypes(entry.value);
+    }
+    return true;
+  }());
+
   final Map<String, int> distances = {current.pov: 0};
   final List<String> orderedKeys = [current.pov];
   final Map<String, String> replacements = {};
