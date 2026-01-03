@@ -10,6 +10,7 @@ import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/labeler.dart';
+import 'package:nerdster/v2/keys.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -56,12 +57,12 @@ void main() async {
     final DelegateResolver delegateResolver = DelegateResolver(graph);
 
     // Collect statements
-    final Map<String, List<ContentStatement>> allStatements = {};
+    final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
     for (final dk in [alice, aliceN, bob, bobN, charlie, charlieN]) {
-      if (dk.isDelegate) allStatements[dk.token] = dk.contentStatements;
+      if (dk.isDelegate) delegateContent[DelegateKey(dk.token)] = dk.contentStatements;
     }
 
-    final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver, allStatements, kNerdsterContext);
+    final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver, ContentResult(delegateContent: delegateContent), kNerdsterContext);
     final V2Labeler labeler = V2Labeler(graph);
     
     final List<String> expected = [alice.token, charlie.token, bob.token];

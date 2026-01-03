@@ -1,6 +1,7 @@
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/labeler.dart';
+import 'package:nerdster/v2/keys.dart';
 
 enum V2SortMode {
   recentActivity,
@@ -119,8 +120,8 @@ class TrustGraph {
 /// The result of building a Follow Network for a specific context.
 class FollowNetwork {
   final String fcontext;
-  final List<String> identities; // Canonical identity tokens in discovery order
   final String povIdentity; // The identity from whose POV this network was built
+  final List<String> identities; // Canonical identity tokens in discovery order
   final Map<String, List<String>> paths; // Identity -> Path from pov
   /// Notifications: attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
@@ -128,8 +129,8 @@ class FollowNetwork {
 
   FollowNetwork({
     required this.fcontext,
-    this.identities = const [],
     required this.povIdentity,
+    this.identities = const [],
     this.paths = const {},
     this.notifications = const [],
     this.edges = const {},
@@ -224,6 +225,15 @@ class V2FeedModel {
     required this.enableCensorship,
     this.availableContexts = const [],
     this.activeContexts = const {},
+  });
+}
+
+/// The result of fetching content for specific keys.
+class ContentResult {
+  final Map<DelegateKey, List<ContentStatement>> delegateContent;
+
+  ContentResult({
+    this.delegateContent = const {},
   });
 }
 

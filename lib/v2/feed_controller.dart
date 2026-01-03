@@ -1,21 +1,21 @@
 import 'package:flutter/foundation.dart';
-import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/v2/trust_logic.dart';
-import 'package:nerdster/v2/orchestrator.dart';
-import 'package:nerdster/v2/content_pipeline.dart';
-import 'package:nerdster/v2/follow_logic.dart';
-import 'package:nerdster/v2/content_logic.dart';
-import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/io.dart';
-import 'package:nerdster/v2/cached_source.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/setting_type.dart';
-import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/most_strings.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/cached_source.dart';
+import 'package:nerdster/v2/content_logic.dart';
+import 'package:nerdster/v2/content_pipeline.dart';
+import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/follow_logic.dart';
+import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/v2/labeler.dart';
+import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/orchestrator.dart';
+import 'package:nerdster/v2/trust_logic.dart';
 
 class V2FeedController extends ValueNotifier<V2FeedModel?> {
   final CachedSource<TrustStatement> trustSource;
@@ -123,7 +123,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
   void _updateValueWithSettings() {
     if (value == null) return;
-    
+
     value = V2FeedModel(
       trustGraph: value!.trustGraph,
       followNetwork: value!.followNetwork,
@@ -156,8 +156,10 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         break;
       case V2SortMode.mostComments:
         subjects.sort((a, b) {
-          final commentsA = a.statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;
-          final commentsB = b.statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;
+          final commentsA =
+              a.statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;
+          final commentsB =
+              b.statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;
           if (commentsA != commentsB) return commentsB.compareTo(commentsA);
           return b.lastActivity.compareTo(a.lastActivity);
         });
@@ -165,7 +167,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled, {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) {
+  bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled,
+      {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) {
     // Only show subjects that exist in the PoV's feed (have statements from the PoV's network)
     if (subject.statements.isEmpty) return false;
 
@@ -180,19 +183,19 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     if (censorshipEnabled && subject.isCensored) return false;
 
     if (typeFilter != null && typeFilter != 'all') {
-       String? subjectType;
-       if (s is Map) {
-         subjectType = s['contentType'];
-       } else if (s is String) {
-         final j = Jsonish.find(s);
-         if (j != null) {
-           subjectType = j['contentType'];
-         }
-       }
-       
-       if (subjectType != typeFilter) {
-         return false;
-       }
+      String? subjectType;
+      if (s is Map) {
+        subjectType = s['contentType'];
+      } else if (s is String) {
+        final j = Jsonish.find(s);
+        if (j != null) {
+          subjectType = j['contentType'];
+        }
+      }
+
+      if (subjectType != typeFilter) {
+        return false;
+      }
     }
 
     if (tagFilter != null && tagFilter != '-') {
@@ -217,11 +220,11 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   Future<void> refresh(String? povIdentityToken, {String? meIdentityToken}) async {
     _latestRequestedPovIdentityToken = povIdentityToken;
     _latestRequestedMeIdentityToken = meIdentityToken;
-    
+
     if (_loading) {
       return;
     }
-    
+
     _loading = true;
     loadingMessage.value = 'Starting refresh...';
     progress.value = 0;
@@ -231,19 +234,19 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       while (true) {
         final currentPovIdentityToken = _latestRequestedPovIdentityToken;
         final currentMeIdentityToken = _latestRequestedMeIdentityToken;
-        
-        List<String>? meIdentityKeys;
-        List<String>? meDelegateKeys;
+
+        List<IdentityKey>? meIdentityKeys;
+        List<DelegateKey>? meDelegateKeys;
 
         if (currentMeIdentityToken != null && currentMeIdentityToken == signInState.identity) {
-           meIdentityKeys = [currentMeIdentityToken];
+          meIdentityKeys = [IdentityKey(currentMeIdentityToken)];
         }
-        
+
         if (currentPovIdentityToken == null) {
           value = null;
           break;
         }
-        
+
         _error = null;
         loadingMessage.value = 'Initializing...';
         notifyListeners();
@@ -257,12 +260,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         // 1. Trust Pipeline
         loadingMessage.value = 'Loading signed content from one-of-us.net (Trust)';
         progress.value = 0.1;
-        
+
         final identityPathsReq = Setting.get<String>(SettingType.identityPathsReq).value;
         PathRequirement? pathReq;
-        
+
         final reqString = pathsReq[identityPathsReq] ?? pathsReq['standard']!;
-        
+
         try {
           final parts = reqString.split(RegExp(r'[-,\s]+'));
           final reqs = parts.map(int.parse).toList();
@@ -280,133 +283,149 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         final trustPipeline = TrustPipeline(trustSource, pathRequirement: pathReq);
         final graph = await trustPipeline.build(currentPovIdentityToken);
         final delegateResolver = DelegateResolver(graph);
-        
+
         // Fix for view-only mode where signInState.delegate is null but the identity has delegates in the graph
         if (currentMeIdentityToken != null && meIdentityKeys != null) {
           final Set<String> delegates = {};
-          
+
           // 1. Try to find delegates in the current PoV graph
           delegates.addAll(delegateResolver.getDelegatesForIdentity(currentMeIdentityToken));
-          
+
           // 2. If Me is not in the graph, we need to fetch Me's trust statements to find delegates.
           if (!graph.distances.containsKey(currentMeIdentityToken)) {
-             // Use a separate pipeline to fetch Me's graph (depth 0)
-             // We reuse the same trustSource (which is cached)
-             final mePipeline = TrustPipeline(trustSource, pathRequirement: (_) => 0);
-             final meGraph = await mePipeline.build(currentMeIdentityToken);
-             final meResolver = DelegateResolver(meGraph);
-             final fetchedDelegates = meResolver.getDelegatesForIdentity(currentMeIdentityToken);
-             delegates.addAll(fetchedDelegates);
+            // Use a separate pipeline to fetch Me's graph (depth 0)
+            // We reuse the same trustSource (which is cached)
+            final mePipeline = TrustPipeline(trustSource, pathRequirement: (_) => 0);
+            final meGraph = await mePipeline.build(currentMeIdentityToken);
+            final meResolver = DelegateResolver(meGraph);
+            final fetchedDelegates = meResolver.getDelegatesForIdentity(currentMeIdentityToken);
+            delegates.addAll(fetchedDelegates);
           }
-          
+
           // Ensure the currently signed-in delegate is included, even if not in the graph
           if (currentMeIdentityToken == signInState.identity && signInState.delegate != null) {
             delegates.add(signInState.delegate!);
           }
-          
-          meDelegateKeys = delegates.toList();
+
+          meDelegateKeys = delegates.map((d) => DelegateKey(d)).toList();
         }
 
         progress.value = 0.3;
 
-      // 2. Content Pipeline
-      loadingMessage.value = 'Loading signed content from nerdster.org (Content)';
-      progress.value = 0.4;
-      final contentPipeline = ContentPipeline(
-        contentSource: contentSource,
-      );
-      final contentMap = await contentPipeline.fetchContentMap(
-        graph, 
-        delegateResolver,
-        additionalIdentityKeys: meIdentityKeys,
-        additionalDelegateKeys: meDelegateKeys,
-      );
-      progress.value = 0.6;
+        // 2. Content Pipeline (Delegate Layer)
+        loadingMessage.value = 'Loading delegate content...';
+        progress.value = 0.4;
+        final contentPipeline = ContentPipeline(
+          delegateSource: contentSource,
+        );
 
-      // 3. Follow Network
-      loadingMessage.value = 'Processing follow network...';
-      progress.value = 0.7;
-      final followNetwork = reduceFollowNetwork(
-        graph,
-        delegateResolver,
-        contentMap,
-        fcontext,
-      );
-      progress.value = 0.8;
-
-      // 4. Content Aggregation
-      loadingMessage.value = 'Aggregating content...';
-      progress.value = 0.9;
-      final aggregation = reduceContentAggregation(
-        followNetwork,
-        graph,
-        delegateResolver,
-        contentMap,
-        enableCensorship: _enableCensorship,
-        meIdentityToken: currentMeIdentityToken,
-        meIdentityKeys: meIdentityKeys,
-        meDelegateKeys: meDelegateKeys,
-      );
-      progress.value = 0.95;
-
-      // 5. Labeling
-      loadingMessage.value = 'Finalizing...';
-      final labeler = V2Labeler(graph,
-          delegateResolver: delegateResolver, meIdentityToken: currentMeIdentityToken);
-
-      // 6. Contexts
-      final mostContexts = MostStrings({kOneofusContext, kNerdsterContext});
-      for (final statements in contentMap.values) {
-        for (final s in statements) {
-          if (s.verb == ContentVerb.follow && s.contexts != null) {
-            mostContexts.process(s.contexts!.keys);
-          }
+        // Identify delegates for all trusted identities (to find follows and ratings)
+        final Set<DelegateKey> delegateKeysToFetch = {};
+        for (final identity in graph.orderedKeys) {
+          final delegates = delegateResolver.getDelegatesForIdentity(identity);
+          delegateKeysToFetch.addAll(delegates.map((d) => DelegateKey(d)));
         }
-      }
-      final availableContexts = mostContexts.most().toList();
 
-      final activeContexts = <String>{};
-      final povIdentity = graph.pov;
-      final povKeys = [
-        ...graph.getEquivalenceGroup(povIdentity),
-        ...delegateResolver.getDelegatesForIdentity(povIdentity),
-      ];
-      for (final key in povKeys) {
-        final statements = contentMap[key];
-        if (statements != null) {
+        // Add my delegates
+        if (meDelegateKeys != null) {
+          delegateKeysToFetch.addAll(meDelegateKeys);
+        }
+
+        final delegateContent = await contentPipeline.fetchDelegateContent(
+          delegateKeysToFetch,
+          delegateResolver: delegateResolver,
+          graph: graph,
+        );
+
+        final contentResult = ContentResult(
+          delegateContent: delegateContent,
+        );
+
+        // 3. Follow Network
+        loadingMessage.value = 'Processing follow network...';
+        progress.value = 0.7;
+
+        final followNetwork = reduceFollowNetwork(
+          graph,
+          delegateResolver,
+          contentResult,
+          fcontext,
+        );
+
+        progress.value = 0.8;
+
+        // 5. Content Aggregation
+        loadingMessage.value = 'Aggregating content...';
+        progress.value = 0.9;
+        final aggregation = reduceContentAggregation(
+          followNetwork,
+          graph,
+          delegateResolver,
+          contentResult,
+          enableCensorship: _enableCensorship,
+          meIdentityKeys: meIdentityKeys,
+          meDelegateKeys: meDelegateKeys,
+        );
+        progress.value = 0.95;
+
+        // 6. Labeling
+        loadingMessage.value = 'Finalizing...';
+        final labeler = V2Labeler(graph,
+            delegateResolver: delegateResolver, meIdentityToken: currentMeIdentityToken);
+
+        // 6. Contexts
+        final mostContexts = MostStrings({kOneofusContext, kNerdsterContext});
+        for (final statements in contentResult.delegateContent.values) {
           for (final s in statements) {
             if (s.verb == ContentVerb.follow && s.contexts != null) {
-              activeContexts.addAll(s.contexts!.entries.where((e) => e.value > 0).map((e) => e.key));
+              mostContexts.process(s.contexts!.keys);
             }
           }
         }
-      }
+        final availableContexts = mostContexts.most().toList();
 
-      if (_latestRequestedPovIdentityToken == currentPovIdentityToken && _latestRequestedMeIdentityToken == currentMeIdentityToken) {
-        value = V2FeedModel(
-          trustGraph: graph,
-          followNetwork: followNetwork,
-          labeler: labeler,
-          aggregation: aggregation,
-          povToken: currentPovIdentityToken,
-          fcontext: fcontext,
-          sortMode: _sortMode,
-          filterMode: _filterMode,
-          enableCensorship: _enableCensorship,
-          availableContexts: availableContexts,
-          activeContexts: activeContexts,
-        );
-        progress.value = 1.0;
-        break;
+        final activeContexts = <String>{};
+        final povIdentity = graph.pov;
+
+        for (final keyStr in delegateResolver.getDelegatesForIdentity(povIdentity)) {
+          final key = DelegateKey(keyStr);
+          final statements = contentResult.delegateContent[key];
+          if (statements != null) {
+            for (final s in statements) {
+              if (s.verb == ContentVerb.follow && s.contexts != null) {
+                activeContexts
+                    .addAll(s.contexts!.entries.where((e) => e.value > 0).map((e) => e.key));
+              }
+            }
+          }
+        }
+
+        if (_latestRequestedPovIdentityToken == currentPovIdentityToken &&
+            _latestRequestedMeIdentityToken == currentMeIdentityToken) {
+          value = V2FeedModel(
+            trustGraph: graph,
+            followNetwork: followNetwork,
+            labeler: labeler,
+            aggregation: aggregation,
+            povToken: currentPovIdentityToken,
+            fcontext: fcontext,
+            sortMode: _sortMode,
+            filterMode: _filterMode,
+            enableCensorship: _enableCensorship,
+            availableContexts: availableContexts,
+            activeContexts: activeContexts,
+          );
+          progress.value = 1.0;
+          break;
+        }
       }
+    } catch (e, stack) {
+      debugPrint('V2FeedController Error: $e\n$stack');
+      _error = e.toString();
+    } finally {
+      _loading = false;
+      loadingMessage.value = null;
+      notifyListeners();
     }
-  } catch (e, stack) {
-    debugPrint('V2FeedController Error: $e\n$stack');
-    _error = e.toString();
-  } finally {
-    _loading = false;
-    loadingMessage.value = null;
-    notifyListeners();
   }
-}
 }

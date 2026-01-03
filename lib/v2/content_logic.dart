@@ -6,16 +6,30 @@ import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/keys.dart';
 import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/eg.dart';
 
-bool _isStatement(String token) {
-  final j = Jsonish.find(token);
-  return j != null && j.containsKey('statement');
+
+List<Iterable<ContentStatement>> _collectSources(
+  String identity,
+  TrustGraph trustGraph,
+  DelegateResolver delegateResolver,
+  ContentResult contentResult,
+) {
+  final List<Iterable<ContentStatement>> sources = [];
+  
+  // Delegate Keys
+  for (final String keyStr in delegateResolver.getDelegatesForIdentity(identity)) {
+    final key = DelegateKey(keyStr);
+    if (contentResult.delegateContent.containsKey(key)) {
+      sources.add(contentResult.delegateContent[key]!);
+    }
+  }
+  
+  return sources;
 }
-
-
 
 /// The Pure Function Core of the Content Aggregation Algorithm.
 ///
@@ -30,30 +44,23 @@ ContentAggregation reduceContentAggregation(
   FollowNetwork followNetwork,
   TrustGraph trustGraph,
   DelegateResolver delegateResolver,
-  Map<String, List<ContentStatement>> byToken, {
+  ContentResult contentResult, {
   bool enableCensorship = true,
-  String? meIdentityToken,
-  List<String>? meIdentityKeys,
-  List<String>? meDelegateKeys,
+  List<IdentityKey>? meIdentityKeys,
+  List<DelegateKey>? meDelegateKeys,
 }) {
   final Set<String> censored = {};
   
   // 1. Decentralized Censorship (Proximity Wins)
   if (enableCensorship) {
     // Process identities in trust order (discovery order in FollowNetwork)
-    final List<String> identitiesToProcess = [...followNetwork.identities];
-
-    for (final String identity in identitiesToProcess) {
-      final List<Iterable<ContentStatement>> sources = [];
-      
-      // Identity Keys
-      if (byToken.containsKey(identity)) sources.add(byToken[identity]!);
-      
-      // Delegate Keys
-      final List<String> delegateKeys = delegateResolver.getDelegatesForIdentity(identity);
-      for (final String key in delegateKeys) {
-        if (byToken.containsKey(key)) sources.add(byToken[key]!);
-      }
+    for (final String identity in followNetwork.identities) {
+      final List<Iterable<ContentStatement>> sources = _collectSources(
+        identity,
+        trustGraph,
+        delegateResolver,
+        contentResult,
+      );
 
       final Iterable<ContentStatement> statements = Merger.merge(sources);
 
@@ -73,23 +80,13 @@ ContentAggregation reduceContentAggregation(
   final List<ContentStatement> filteredStatements = [];
   final Map<String, List<ContentStatement>> filteredByIdentity = {};
 
-  final List<String> identitiesToProcess = [...followNetwork.identities];
-
-  for (final String identity in identitiesToProcess) {
-    final List<Iterable<ContentStatement>> sources = [];
-    
-    // Identity Keys
-    if (byToken.containsKey(identity)) {
-      sources.add(byToken[identity]!);
-    }
-
-    // Delegate Keys
-    final List<String> delegateKeys = delegateResolver.getDelegatesForIdentity(identity);
-    for (final String key in delegateKeys) {
-      if (byToken.containsKey(key)) {
-        sources.add(byToken[key]!);
-      }
-    }
+  for (final String identity in followNetwork.identities) {
+    final List<Iterable<ContentStatement>> sources = _collectSources(
+      identity,
+      trustGraph,
+      delegateResolver,
+      contentResult,
+    );
 
     final Iterable<ContentStatement> statements = distinct(
       Merger.merge(sources),
@@ -131,20 +128,12 @@ ContentAggregation reduceContentAggregation(
   final List<ContentStatement> myFilteredStatements = [];
   final List<Iterable<ContentStatement>> mySources = [];
   
-  if (meIdentityKeys != null) {
-    for (final String key in meIdentityKeys) {
-      if (byToken.containsKey(key)) {
-        mySources.add(byToken[key]!);
-      }
-    }
-  }
-  
   if (meDelegateKeys != null) {
-    for (final String key in meDelegateKeys) {
-      if (byToken.containsKey(key)) {
-        mySources.add(byToken[key]!);
+    for (final DelegateKey key in meDelegateKeys) {
+      if (contentResult.delegateContent.containsKey(key)) {
+        mySources.add(contentResult.delegateContent[key]!);
       } else {
-        print('reduceContentAggregation: meDelegateKey $key not found in byToken');
+        print('reduceContentAggregation: meDelegateKey ${key.value} not found in byToken');
       }
     }
   }
@@ -424,9 +413,12 @@ ContentAggregation reduceContentAggregation(
           }
         }
 
-        if (s.dismiss == true && meIdentityToken != null && signerIdentity == trustGraph.resolveIdentity(meIdentityToken)) {
-          if (userDismissalTimestamp == null || s.time.isAfter(userDismissalTimestamp)) {
-            userDismissalTimestamp = s.time;
+        if (s.dismiss == true && meIdentityKeys != null) {
+          final isMe = meIdentityKeys.any((k) => trustGraph.resolveIdentity(k.value) == signerIdentity);
+          if (isMe) {
+            if (userDismissalTimestamp == null || s.time.isAfter(userDismissalTimestamp)) {
+              userDismissalTimestamp = s.time;
+            }
           }
         }
 

@@ -4,6 +4,7 @@ import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/keys.dart';
 
 const String kOneofusContext = '<identity>';
 const String kNerdsterContext = '<nerdster>';
@@ -19,7 +20,7 @@ const String kNerdsterContext = '<nerdster>';
 FollowNetwork reduceFollowNetwork(
   TrustGraph trustGraph,
   DelegateResolver delegateResolver,
-  Map<String, List<ContentStatement>> byToken,
+  ContentResult contentResult,
   String fcontext, {
   int maxDegrees = 6,
 }) {
@@ -64,15 +65,10 @@ FollowNetwork reduceFollowNetwork(
       // Get all follow/block statements from this identity's keys and its delegates
       final List<Iterable<ContentStatement>> sources = [];
       
-      // Identity Keys
-      for (final String key in trustGraph.getEquivalenceGroup(issuerIdentity)) {
-        final list = byToken[key];
-        if (list != null && list.isNotEmpty) sources.add(list);
-      }
-      
       // Delegate Keys
-      for (final String key in delegateResolver.getDelegatesForIdentity(issuerIdentity)) {
-        final list = byToken[key];
+      for (final String keyStr in delegateResolver.getDelegatesForIdentity(issuerIdentity)) {
+        final key = DelegateKey(keyStr);
+        final list = contentResult.delegateContent[key];
         if (list != null && list.isNotEmpty) sources.add(list);
       }
 

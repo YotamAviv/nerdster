@@ -2,90 +2,51 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/keys.dart';
 
 class ContentPipeline {
-  final StatementSource<ContentStatement> contentSource;
+  final StatementSource<ContentStatement> delegateSource;
 
-  ContentPipeline({required this.contentSource});
+  ContentPipeline({
+    required this.delegateSource,
+  });
 
-  /// Fetches content based on the TrustGraph and DelegateResolver.
-  /// Returns a map of Token -> List of ContentStatements.
-  Future<Map<String, List<ContentStatement>>> fetchContentMap(
-    TrustGraph graph,
-    DelegateResolver delegateResolver, {
-    List<String>? additionalIdentityKeys,
-    List<String>? additionalDelegateKeys,
+  /// Fetches delegate content for specific delegate keys.
+  Future<Map<DelegateKey, List<ContentStatement>>> fetchDelegateContent(
+    Iterable<DelegateKey> keys, {
+    required DelegateResolver delegateResolver,
+    required TrustGraph graph,
   }) async {
-    // 1. Identify Trusted Users
-    // We only care about users who are trusted (distance < maxDegrees, which is implicit in the graph)
-    // and NOT blocked.
-    // ORDERING: Must be ordered by Trust Distance (ascending).
-    final List<String> trustedIdentities =
-        graph.getEquivalenceGroups().keys.toList();
+    final Map<String, String?> delegateFetchMap = {};
+    final Set<DelegateKey> knownDelegateKeys = {};
 
-    trustedIdentities.sort((a, b) {
-      final int distA = graph.distances[a]!;
-      final int distB = graph.distances[b]!;
-      if (distA != distB) return distA.compareTo(distB);
-      return a.compareTo(b); // Stable tie-break
-    });
-
-    // 2. Map Identities to all their authorized keys (Identity Keys + Delegate Keys)
-    final Map<String, String?> fetchMap = {};
-
-    for (final String identity in trustedIdentities) {
-      // Identity Keys
-      final List<String> identityKeys = graph.getEquivalenceGroup(identity);
-      for (final String key in identityKeys) {
-        fetchMap[key] = graph.replacementConstraints[key];
-      }
-
-      // Delegate Keys
-      final List<String> delegateKeys =
-          delegateResolver.getDelegatesForIdentity(identity);
-      for (final String key in delegateKeys) {
-        fetchMap[key] = delegateResolver.getConstraintForDelegate(key);
-      }
-    }
-
-    // Add additional keys (e.g. "me" and my delegate)
-    if (additionalIdentityKeys != null) {
-      for (final key in additionalIdentityKeys) {
-        fetchMap[key] = null;
-      }
-    }
-    if (additionalDelegateKeys != null) {
-      for (final key in additionalDelegateKeys) {
-        fetchMap[key] = null;
-      }
+    for (final DelegateKey key in keys) {
+      // We need to find the constraint for this delegate.
+      // The DelegateResolver stores constraints by key.
+      delegateFetchMap[key.value] = delegateResolver.getConstraintForDelegate(key.value);
+      knownDelegateKeys.add(key);
     }
 
     // 3. Fetch Content
-    final Map<String, List<ContentStatement>> contentMap =
-        await contentSource.fetch(fetchMap);
+    final Map<String, List<ContentStatement>> rawDelegateContent =
+        await delegateSource.fetch(delegateFetchMap);
 
-    // 4. Verify Content
-    // The source should only return content for the requested keys.
-    for (final String key in contentMap.keys) {
-      final bool isTrustedIdentity = graph.isTrusted(key);
-      final bool isAuthorizedDelegate =
-          delegateResolver.getIdentityForDelegate(key) != null;
-      final bool isAdditional = (additionalIdentityKeys?.contains(key) ?? false) ||
-          (additionalDelegateKeys?.contains(key) ?? false);
+    // 4. Verify
+    final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
 
-      if (!isTrustedIdentity && !isAuthorizedDelegate && !isAdditional) {
-        throw 'Pipeline Error: Source returned content from unauthorized key: $key';
+    for (final String keyStr in rawDelegateContent.keys) {
+      if (!knownDelegateKeys.contains(DelegateKey(keyStr))) {
+        throw 'Pipeline Error: Delegate Source returned content from unauthorized key: $keyStr';
       }
 
-      final String? identity = isTrustedIdentity
-          ? graph.resolveIdentity(key)
-          : delegateResolver.getIdentityForDelegate(key);
-
+      final String? identity = delegateResolver.getIdentityForDelegate(keyStr);
       if (identity != null && graph.blocked.contains(identity)) {
         throw 'Pipeline Error: Source returned content from blocked identity: $identity';
       }
+
+      delegateContent[DelegateKey(keyStr)] = rawDelegateContent[keyStr]!;
     }
     
-    return contentMap;
+    return delegateContent;
   }
 }

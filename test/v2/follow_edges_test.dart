@@ -5,6 +5,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/v2/keys.dart';
 
 void main() {
   setUpAll(() {
@@ -34,13 +35,34 @@ void main() {
         'I': {'key': alice},
       }));
 
+      final povD = 'povD';
+      final aliceD = 'aliceD';
+
+      final d1 = TrustStatement(Jsonish({
+        'token': 'd1',
+        'issuer': pov,
+        'delegate': povD,
+        'with': {'domain': 'nerdster.org'},
+        'time': DateTime.now().toIso8601String(),
+        'I': {'key': pov},
+      }));
+
+      final d2 = TrustStatement(Jsonish({
+        'token': 'd2',
+        'issuer': alice,
+        'delegate': aliceD,
+        'with': {'domain': 'nerdster.org'},
+        'time': DateTime.now().toIso8601String(),
+        'I': {'key': alice},
+      }));
+
       final trustGraph = TrustGraph(
         pov: pov,
         distances: {pov: 0, alice: 1, bob: 2},
         orderedKeys: [pov, alice, bob],
         edges: {
-          pov: [t1],
-          alice: [t2],
+          pov: [t1, d1],
+          alice: [t2, d2],
         },
       );
 
@@ -66,15 +88,15 @@ void main() {
         'I': {'key': alice},
       }));
 
-      final Map<String, List<ContentStatement>> byToken = {
-        pov: [f1],
-        alice: [f2],
+      final Map<DelegateKey, List<ContentStatement>> delegateContent = {
+        DelegateKey(povD): [f1],
+        DelegateKey(aliceD): [f2],
       };
 
       final network = reduceFollowNetwork(
         trustGraph,
         DelegateResolver(trustGraph),
-        byToken,
+        ContentResult(delegateContent: delegateContent),
         'news',
       );
 
@@ -95,12 +117,23 @@ void main() {
         'I': {'key': pov},
       }));
 
+      final povD = 'povD';
+
+      final d1 = TrustStatement(Jsonish({
+        'token': 'd1',
+        'issuer': pov,
+        'delegate': povD,
+        'with': {'domain': 'nerdster.org'},
+        'time': DateTime.now().toIso8601String(),
+        'I': {'key': pov},
+      }));
+
       final trustGraph = TrustGraph(
         pov: pov,
         distances: {pov: 0, alice: 1},
         orderedKeys: [pov, alice],
         edges: {
-          pov: [t1],
+          pov: [t1, d1],
         },
       );
 
@@ -115,14 +148,14 @@ void main() {
         'I': {'key': pov},
       }));
 
-      final Map<String, List<ContentStatement>> byToken = {
-        pov: [blockSelf],
+      final Map<DelegateKey, List<ContentStatement>> delegateContent = {
+        DelegateKey(povD): [blockSelf],
       };
 
       final network = reduceFollowNetwork(
         trustGraph,
         DelegateResolver(trustGraph),
-        byToken,
+        ContentResult(delegateContent: delegateContent),
         'news',
       );
 

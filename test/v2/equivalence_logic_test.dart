@@ -11,6 +11,7 @@ import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/labeler.dart';
+import 'package:nerdster/v2/keys.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -74,14 +75,15 @@ void main() async {
     await charlieN.doRelate(ContentVerb.dontEquate, subject: sB, other: sC);
 
     // Collect statements
-    final Map<String, List<ContentStatement>> contentStatements = {};
+    final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
     for (final dk in [aliceN, bobN, charlieN]) {
-      contentStatements[dk.token] = dk.contentStatements;
+      delegateContent[DelegateKey(dk.token)] = dk.contentStatements;
     }
+    final contentResult = ContentResult(delegateContent: delegateContent);
 
     // Use <nerdster> context
     final FollowNetwork netAlice =
-        reduceFollowNetwork(graph, delegateResolver, contentStatements, kNerdsterContext);
+        reduceFollowNetwork(graph, delegateResolver, contentResult, kNerdsterContext);
 
     // Verify Network Order
     final V2Labeler labeler = V2Labeler(graph);
@@ -94,7 +96,7 @@ void main() async {
         reason: 'Network order should be Alice, then Charlie, then Bob');
 
     final ContentAggregation aggAlice =
-        reduceContentAggregation(netAlice, graph, delegateResolver, contentStatements);
+        reduceContentAggregation(netAlice, graph, delegateResolver, contentResult);
 
     final String? canonA = aggAlice.equivalence[sA];
     final String? canonB = aggAlice.equivalence[sB];

@@ -3,6 +3,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/keys.dart';
 import 'package:nerdster/v2/model.dart';
 
 void main() {
@@ -55,9 +56,9 @@ void main() {
 
     // Input map
     // Ensure sorted descending (newest first)
-    final Map<String, List<ContentStatement>> byToken = {
-      meToken: [rateStatement, followStatement],
-    };
+    final ContentResult byToken = ContentResult(
+      delegateContent: {DelegateKey(meToken): [rateStatement, followStatement]},
+    );
 
     // Run reduction
     final aggregation = reduceContentAggregation(
@@ -65,8 +66,8 @@ void main() {
       trustGraph,
       delegateResolver,
       byToken,
-      meIdentityToken: meToken,
-      meIdentityKeys: [meToken],
+      
+      meDelegateKeys: [DelegateKey(meToken)],
     );
 
     // Verify
@@ -111,9 +112,9 @@ void main() {
     };
     final followStatement = ContentStatement(Jsonish(followJson));
 
-    final Map<String, List<ContentStatement>> byToken = {
-      meToken: [followStatement],
-    };
+    final ContentResult byToken = ContentResult(
+      delegateContent: {DelegateKey(meToken): [followStatement]},
+    );
 
     // Run reduction
     final aggregation = reduceContentAggregation(
@@ -121,8 +122,8 @@ void main() {
       trustGraph,
       delegateResolver,
       byToken,
-      meIdentityToken: meToken,
-      meIdentityKeys: [meToken],
+      
+      meDelegateKeys: [DelegateKey(meToken)],
     );
 
     // Verify
@@ -171,9 +172,9 @@ void main() {
     };
     final followStatement = ContentStatement(Jsonish(followJson));
 
-    final Map<String, List<ContentStatement>> byToken = {
-      meToken: [followStatement],
-    };
+    final ContentResult byToken = ContentResult(
+      delegateContent: {DelegateKey(meToken): [followStatement]},
+    );
 
     // Run reduction
     final aggregation = reduceContentAggregation(
@@ -181,8 +182,8 @@ void main() {
       trustGraph,
       delegateResolver,
       byToken,
-      meIdentityToken: meToken,
-      meIdentityKeys: [meToken],
+      
+      meDelegateKeys: [DelegateKey(meToken)],
     );
 
     // Verify aggregation under NEW key

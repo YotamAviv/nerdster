@@ -13,6 +13,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/v2/keys.dart';
 import 'package:nerdster/v2/model.dart';
 
 void main() {
@@ -37,27 +38,31 @@ void main() {
     final trustPipeline = TrustPipeline(trustSource);
     final graph = await trustPipeline.build(lisa.token);
     final delegateResolver = DelegateResolver(graph);
-    final followNetwork = reduceFollowNetwork(graph, delegateResolver, {}, 'nerdster');
+    final followNetwork = reduceFollowNetwork(graph, delegateResolver, ContentResult(), 'nerdster');
 
     final appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
     final contentPipeline = ContentPipeline(
-      contentSource: appSource,
+      delegateSource: appSource,
     );
 
-    final contentMap = await contentPipeline.fetchContentMap(
-      graph, 
-      delegateResolver,
-      additionalIdentityKeys: [lisa.token, lisaD!.token],
+    final delegateContent = await contentPipeline.fetchDelegateContent(
+      {DelegateKey(lisaD!.token)},
+      delegateResolver: delegateResolver,
+      graph: graph,
+    );
+
+    final contentResult = ContentResult(
+      delegateContent: delegateContent,
     );
 
     final aggregation = reduceContentAggregation(
         followNetwork,
         graph,
         delegateResolver,
-        contentMap,
+        contentResult,
         enableCensorship: true,
-        meIdentityToken: lisa.token,
-        meIdentityKeys: [lisa.token, lisaD.token],
+        meIdentityKeys: [IdentityKey(lisa.token)],
+        meDelegateKeys: [DelegateKey(lisaD.token)],
     );
 
     // 3. Verify Equivalence

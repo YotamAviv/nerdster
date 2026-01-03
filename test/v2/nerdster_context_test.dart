@@ -10,6 +10,7 @@ import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/keys.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() async {
@@ -47,12 +48,12 @@ void main() async {
     final delegateResolver = DelegateResolver(trustGraph);
 
     // No explicit follow statements
-    final allContentStatements = <String, List<ContentStatement>>{};
+    final contentResult = ContentResult();
 
     final followNet = reduceFollowNetwork(
       trustGraph,
       delegateResolver,
-      allContentStatements,
+      contentResult,
       kNerdsterContext,
     );
 

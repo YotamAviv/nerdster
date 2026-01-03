@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nerdster/v2/keys.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -59,14 +60,14 @@ void main() {
       final delegateResolver = DelegateResolver(trustGraph);
       
       final byToken = {
-        delegateToken: [s1, s2],
+        DelegateKey(delegateToken): [s1, s2],
       };
 
       final aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
-        byToken,
+        ContentResult(delegateContent: byToken),
       );
 
       final subjectAgg = aggregation.subjects['subject1'];
@@ -113,14 +114,14 @@ void main() {
       final delegateResolver = DelegateResolver(trustGraph);
       
       final byToken = {
-        delegateToken: [s1, s2],
+        DelegateKey(delegateToken): [s1, s2],
       };
 
       final aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
-        byToken,
+        ContentResult(delegateContent: byToken),
       );
 
       final newsCanonical = aggregation.tagEquivalence['#news'];
@@ -170,14 +171,14 @@ void main() {
       final delegateResolver = DelegateResolver(trustGraph);
       
       final byToken = {
-        delegateToken: [s1, s2],
+        DelegateKey(delegateToken): [s1, s2],
       };
 
       final aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
-        byToken,
+        ContentResult(delegateContent: byToken),
       );
 
       expect(aggregation.mostTags.first, equals('#common'));
@@ -222,14 +223,14 @@ void main() {
       final delegateResolver = DelegateResolver(trustGraph);
       
       final byToken = {
-        delegateToken: [s1, s2],
+        DelegateKey(delegateToken): [s1, s2],
       };
 
       final aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
-        byToken,
+        ContentResult(delegateContent: byToken),
       );
 
       final controller = V2FeedController(

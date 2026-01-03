@@ -3,6 +3,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/keys.dart';
 import 'package:nerdster/v2/content_pipeline.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/fire_choice.dart';
@@ -140,10 +141,17 @@ void main() {
     expect(resolver.getConstraintForDelegate(delegate.token), equals(s1.token));
 
     // 4. Fetch content
-    final pipeline = ContentPipeline(contentSource: contentSource);
-    final contentMap = await pipeline.fetchContentMap(tg, resolver);
+    final pipeline = ContentPipeline(
+      delegateSource: contentSource,
+    );
+    final delegateKey = DelegateKey(delegate.token);
+    final delegateContent = await pipeline.fetchDelegateContent(
+      {delegateKey},
+      delegateResolver: resolver,
+      graph: tg,
+    );
 
-    final delegateStatements = contentMap[delegate.token] ?? [];
+    final delegateStatements = delegateContent[delegateKey] ?? [];
     expect(delegateStatements.length, equals(1));
     expect(delegateStatements.first.token, equals(s1.token));
   });
@@ -171,10 +179,17 @@ void main() {
 
     expect(resolver.getConstraintForDelegate(delegate.token), equals(kSinceAlways));
 
-    final pipeline = ContentPipeline(contentSource: contentSource);
-    final contentMap = await pipeline.fetchContentMap(tg, resolver);
+    final pipeline = ContentPipeline(
+      delegateSource: contentSource,
+    );
+    final delegateKey = DelegateKey(delegate.token);
+    final delegateContent = await pipeline.fetchDelegateContent(
+      {delegateKey},
+      delegateResolver: resolver,
+      graph: tg,
+    );
 
-    expect(contentMap[delegate.token], isEmpty);
+    expect(delegateContent[delegateKey], isEmpty);
   });
 
   test('Delegate Revocation: Should authorize even if revokeAt is present', () async {
@@ -234,10 +249,17 @@ void main() {
     expect(resolver.getConstraintForDelegate(delegate.token), equals(s1.token));
 
     // Verify content filtering
-    final pipeline = ContentPipeline(contentSource: contentSource);
-    final contentMap = await pipeline.fetchContentMap(tg, resolver);
+    final pipeline = ContentPipeline(
+      delegateSource: contentSource,
+    );
+    final delegateKey = DelegateKey(delegate.token);
+    final delegateContent = await pipeline.fetchDelegateContent(
+      {delegateKey},
+      delegateResolver: resolver,
+      graph: tg,
+    );
 
-    final delegateStatements = contentMap[delegate.token] ?? [];
+    final delegateStatements = delegateContent[delegateKey] ?? [];
     
     // Should only contain S1
     expect(delegateStatements.any((s) => s.token == s1.token), isTrue, reason: 'S1 should be present');
@@ -274,14 +296,17 @@ void main() {
     );
 
     // Setup Content
-    final Map<String, List<ContentStatement>> contentMap = {
-      boD1.token: [sFollow as ContentStatement],
-    };
+    final delegateKey = DelegateKey(boD1.token);
+    final contentResult = ContentResult(
+      delegateContent: {
+        delegateKey: [sFollow as ContentStatement],
+      },
+    );
 
     final delegateResolver = DelegateResolver(tg);
     
     // Run Follow Logic
-    final fn = reduceFollowNetwork(tg, delegateResolver, contentMap, 'social');
+    final fn = reduceFollowNetwork(tg, delegateResolver, contentResult, 'social');
 
     // Assert
     expect(fn.edges[bo.token], isNotNull);

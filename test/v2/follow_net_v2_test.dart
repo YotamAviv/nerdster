@@ -13,6 +13,7 @@ import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/keys.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() async {
@@ -47,10 +48,7 @@ void main() async {
     final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
 
     // 2. Build FollowNetwork for <nerdster> context
-    final Map<String, List<ContentStatement>> allContentStatements = {};
-    for (final DemoKey dk in DemoKey.all.where((k) => k.isDelegate)) {
-      allContentStatements[dk.token] = dk.contentStatements;
-    }
+    final ContentResult allContentStatements = buildContentResult(DemoKey.all.where((k) => k.isDelegate));
 
     final FollowNetwork followNet = reduceFollowNetwork(
       trustGraph,
@@ -86,13 +84,10 @@ void main() async {
     final DemoKey marge = DemoKey.findByName('marge')!;
 
     final Map<String, List<TrustStatement>> allTrustStatements = {};
-    final Map<String, List<ContentStatement>> allContentStatements = {};
     for (final DemoKey dk in DemoKey.all.where((k) => k.isIdentity)) {
       allTrustStatements[dk.token] = dk.trustStatements;
     }
-    for (final DemoKey dk in DemoKey.all.where((k) => k.isDelegate)) {
-      allContentStatements[dk.token] = dk.contentStatements;
-    }
+    final ContentResult allContentStatements = buildContentResult(DemoKey.all.where((k) => k.isDelegate));
 
     final DemoKey margeN = DemoKey.findByName('marge-nerdster0')!;
     final ContentStatement margeRating = margeN.contentStatements.firstWhere((s) => s.verb == ContentVerb.rate);
@@ -145,10 +140,7 @@ void main() async {
 
     final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
 
-    final Map<String, List<ContentStatement>> allContentStatements = {};
-    for (final DemoKey dk in DemoKey.all.where((k) => k.isDelegate)) {
-      allContentStatements[dk.token] = dk.contentStatements;
-    }
+    final ContentResult allContentStatements = buildContentResult(DemoKey.all.where((k) => k.isDelegate));
 
     // 'family' is a custom follow context used in the Simpsons demo data
     final FollowNetwork familyNet = reduceFollowNetwork(
@@ -204,10 +196,7 @@ void main() async {
     // Lisa also censors spam
     await lisaN.doRate(subject: spam, censor: true);
 
-    final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    final ContentResult allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final FollowNetwork followNet = reduceFollowNetwork(
       graph,
@@ -262,10 +251,7 @@ void main() async {
     await homerN.doFollow(bart.token, {'news': 1});
     await homerN.doFollow(lisa.token, {'news': 1});
     
-    final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    var allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, 'news');
 
@@ -280,9 +266,7 @@ void main() async {
     final ContentStatement homerRate = await homerN.doRate(subject: spamUrl, recommend: true);
 
     // Rebuild map to include new statements
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
@@ -304,9 +288,7 @@ void main() async {
     final ContentStatement bartCensorship = await bartN.doRate(subject: spamUrl, censor: true);
     
     // Rebuild map again
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final ContentAggregation aggregation2 = reduceContentAggregation(
       network,
@@ -319,9 +301,7 @@ void main() async {
     await lisaN.doRate(subject: bartCensorship.token, censor: true);
 
     // Rebuild map again
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final ContentAggregation aggregation3 = reduceContentAggregation(
       network,
@@ -370,10 +350,7 @@ void main() async {
     final String news = 'https://news.com/1';
     await bartDelegate.doRate(subject: news, recommend: true);
 
-    final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartDelegate].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    final ContentResult allStatementsByToken = buildContentResult([homer, homerN, bart, bartDelegate].where((k) => k.isDelegate));
 
     final FollowNetwork network = reduceFollowNetwork(
       graph,
@@ -421,10 +398,7 @@ void main() async {
     await homerN.doFollow(bart.token, {'news': 1});
     await homerN.doFollow(lisa.token, {'news': 1});
     
-    final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    var allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, 'news');
 
@@ -439,9 +413,7 @@ void main() async {
     final ContentStatement homerRate = await homerN.doRate(subject: spamUrl, recommend: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
@@ -462,9 +434,7 @@ void main() async {
     final ContentStatement bartCensorship = await bartN.doRate(subject: spamUrl, censor: true);
     
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final ContentAggregation aggregation2 = reduceContentAggregation(
       network,
@@ -480,9 +450,7 @@ void main() async {
     await lisaN.doRate(subject: bartCensorship.token, censor: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final ContentAggregation aggregation3 = reduceContentAggregation(
       network,
@@ -522,10 +490,7 @@ void main() async {
     await homerN.doFollow(bart.token, {newsContext: 1});
     await homerN.doFollow(lisa.token, {newsContext: 1});
 
-    final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    var allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, newsContext);
 
@@ -542,9 +507,7 @@ void main() async {
     await lisaN.doRate(subject: subject2, censor: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
@@ -563,9 +526,7 @@ void main() async {
     await lisaN.doRate(subject: relate13.token, censor: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
 
     final ContentAggregation aggregation2 = reduceContentAggregation(
       network,
@@ -597,10 +558,7 @@ void main() async {
     const String newsContext = 'news-context';
     await homerN.doFollow(bart.token, {newsContext: 1});
 
-    final Map<String, List<ContentStatement>> allStatementsByToken = {};
-    for (final DemoKey dk in [homer, homerN, bart, bartN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    var allStatementsByToken = buildContentResult([homer, homerN, bart, bartN].where((k) => k.isDelegate));
 
     final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, newsContext);
 
@@ -618,9 +576,7 @@ void main() async {
     await homerN.doRate(subject: subject1, dismiss: true);
 
     // Rebuild map
-    for (final DemoKey dk in [homer, homerN, bart, bartN].where((k) => k.isDelegate)) {
-      allStatementsByToken[dk.token] = dk.contentStatements;
-    }
+    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN].where((k) => k.isDelegate));
 
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
@@ -643,4 +599,15 @@ void main() async {
     expect(agg.subject, isA<Map>());
     expect(agg.subject['title'], equals('News 1'));
   });
+}
+
+ContentResult buildContentResult(Iterable<DemoKey> keys) {
+  final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
+  
+  for (final k in keys) {
+    if (k.isDelegate) {
+      delegateContent[DelegateKey(k.token)] = k.contentStatements;
+    }
+  }
+  return ContentResult(delegateContent: delegateContent);
 }
