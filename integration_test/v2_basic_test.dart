@@ -1,22 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nerdster/app.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/demotest/cases/v2_verification.dart';
+import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/firebase_options.dart';
+import 'package:nerdster/oneofus/endpoint.dart';
+import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
+import 'package:nerdster/oneofus/oou_verifier.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus_fire.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/cloud_functions_source.dart';
 import 'package:nerdster/v2/config.dart';
-import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
-import 'package:nerdster/oneofus/endpoint.dart';
-import 'package:nerdster/oneofus_fire.dart';
-import 'package:nerdster/app.dart';
-
-import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/demotest/cases/v2_verification.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -59,26 +60,35 @@ void main() {
   testWidgets('V2 Integration: Basic Scenario', (WidgetTester tester) async {
     try {
       // Define permutations to test
-      final permutations = [
-        (name: 'No Optimization', omit: null),
-        (name: 'Full Optimization', omit: ['statement', 'I']),
-        (name: 'Omit Statement Only', omit: ['statement']),
-        (name: 'Omit I Only', omit: ['I']),
+      final List<({String name, Map<String, dynamic>? params})> permutations = [
+        (name: 'Default', params: null),
+        (name: 'No Optimization', params: {'omit': []}),
+        (name: 'Full Optimization', params: {'omit': ['statement', 'I']}),
+        (name: 'Omit Statement Only', params: {'omit': ['statement']}),
+        (name: 'Omit I Only', params: {'omit': ['I']}),
+        (name: 'Check Previous True', params: {'checkPrevious': 'true'}),
+        (name: 'Check Previous False', params: {'checkPrevious': 'false'}),
       ];
 
-      for (final p in permutations) {
-        debugPrint('\n--- Testing Permutation: ${p.name} ---');
-        
-        // Manually construct source to inject omit params
-        final url = V2Config.getUrl(kOneofusDomain)!;
-        final source = CloudFunctionsSource<TrustStatement>(
-          baseUrl: url, 
-          omit: p.omit,
-        );
-        
-        await testBasicScenario(source: source, description: p.name);
-        
-        debugPrint('Permutation ${p.name} Verified!');
+      for (final skipVerify in [true, false]) {
+        Setting.get<bool>(SettingType.skipVerify).value = skipVerify;
+        debugPrint('\n=== Testing with skipVerify: $skipVerify ===');
+
+        for (final p in permutations) {
+          debugPrint('\n--- Testing Permutation: ${p.name} (skipVerify: $skipVerify) ---');
+          
+          // Manually construct source to inject params
+          final url = V2Config.getUrl(kOneofusDomain)!;
+          final source = CloudFunctionsSource<TrustStatement>(
+            baseUrl: url, 
+            paramsOverride: p.params,
+            verifier: OouVerifier(),
+          );
+          
+          await testBasicScenario(source: source, description: '${p.name} (skipVerify: $skipVerify)');
+          
+          debugPrint('Permutation ${p.name} Verified!');
+        }
       }
       
       debugPrint('All Permutations Verified!');

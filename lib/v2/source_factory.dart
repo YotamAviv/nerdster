@@ -3,6 +3,7 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/cloud_functions_source.dart';
 import 'package:nerdster/v2/config.dart';
@@ -15,7 +16,10 @@ class SourceFactory {
       (fireChoice == FireChoice.fake ||
               !Setting.get<bool>(SettingType.httpFetch).value)
           ? DirectFirestoreSource<T>(FireFactory.find(domain))
-          : CloudFunctionsSource<T>(baseUrl: V2Config.getUrl(domain)!);
+          : CloudFunctionsSource<T>(
+              baseUrl: V2Config.getUrl(domain)!,
+              verifier: OouVerifier(),
+            );
 
   static StatementWriter getWriter(String domain, {BuildContext? context}) {
     StatementWriter writer = DirectFirestoreWriter(FireFactory.find(domain));

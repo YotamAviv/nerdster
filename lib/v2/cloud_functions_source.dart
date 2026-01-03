@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/statement.dart';
+import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/io.dart';
 
 /// Fetches statements using the Cloud Function HTTP endpoint.
@@ -17,12 +19,23 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final String baseUrl;
   final String statementType;
   final http.Client client;
-  final List<String>? omit;
+  final StatementVerifier verifier;
+  final Map<String, dynamic>? paramsOverride;
+
+  static const Map<String, dynamic> _paramsProto = {
+    "distinct": "true",
+    "orderStatements": "false",
+    "includeId": "true",
+    "checkPrevious": "true",
+    // "omit": ['statement', 'I', 'signature', 'previous'], // EXPERIMENTAL
+    "omit": ['statement', 'I'],
+  };
 
   CloudFunctionsSource({
     required this.baseUrl,
     http.Client? client,
-    this.omit = const ['statement', 'I'],
+    required this.verifier,
+    this.paramsOverride,
   })  : statementType = Statement.type<T>(),
         client = client ?? http.Client();
 
@@ -35,15 +48,11 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
       return {e.key: e.value};
     }).toList();
 
-    final Map<String, dynamic> params = {
-      'distinct': 'true',
-      'orderStatements': 'false',
-      'includeId': 'true',
-      'spec': jsonEncode(spec),
-    };
-    if (omit != null) {
-      params['omit'] = omit;
+    final Map<String, dynamic> params = Map.of(_paramsProto);
+    if (paramsOverride != null) {
+      params.addAll(paramsOverride!);
     }
+    params['spec'] = jsonEncode(spec);
 
     final Uri uri = Uri.parse(baseUrl).replace(queryParameters: params);
 
@@ -51,15 +60,14 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     final http.StreamedResponse response = await client.send(request);
 
     if (response.statusCode != 200) {
-      throw Exception(
-          'Failed to fetch statements from $baseUrl: ${response.statusCode}');
+      throw Exception('Failed to fetch statements from $baseUrl: ${response.statusCode}');
     }
 
     final Map<String, List<T>> results = {};
+    final bool skipVerify = Setting.get<bool>(SettingType.skipVerify).value;
 
-    await for (final String line in response.stream
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())) {
+    await for (final String line
+        in response.stream.transform(utf8.decoder).transform(const LineSplitter())) {
       if (line.trim().isEmpty) continue;
 
       final Map<String, dynamic> jsonToken2Statements = jsonDecode(line);
@@ -86,12 +94,15 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
           final String? serverToken = json['id'];
           if (serverToken != null) json.remove('id');
 
-          final Jsonish jsonish = Jsonish(json, serverToken);
-          final Statement statement = Statement.make(jsonish);
-          if (statement is T) {
-            list.add(statement);
+          Jsonish jsonish;
+          if (!skipVerify) {
+            jsonish = await Jsonish.makeVerify(json, verifier);
+          } else {
+            jsonish = Jsonish(json, serverToken);
           }
-          // Silently skip statements of other types (e.g. TrustStatements when fetching ContentStatements)
+
+          final Statement statement = Statement.make(jsonish);
+          list.add(statement as T);
         }
       }
     }
@@ -99,3 +110,22 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     return results;
   }
 }
+
+// EXPERIMENTAL: "EXPERIMENTAL" tagged where the code allows us to not compute the tokens
+// but just use the stored values, which allows us to not ask for [signature, previous].
+// The changes worked, but the performance hardly changed. And with this, we wouldn't have
+// [signature, previous] locally, couldn't verify statements, and there'd be more code
+// paths. So, no.
+//
+// String serverToken = j['id'];
+// Jsonish jsonish = Jsonish(j, serverToken);
+// j.remove('id');
+// assert(jsonish.token == serverToken);
+//
+// static const Json paramsProto = {
+//   "includeId": true,
+//   "distinct": true,
+//   "checkPrevious": true,
+//   "omit": ['statement', 'I', 'signature', 'previous']
+//   "orderStatements": false,
+// };

@@ -33,8 +33,8 @@ enum SettingType {
   bogus(bool, true),
 
   skipVerify(bool, true),
-  httpFetch(bool, true),
-  batchFetch(bool, true),
+  httpFetch(bool, true), //  legacy
+  batchFetch(bool, true), // legacy
 
   verifyImmediately(bool, false, param: true),
   verify(String, null, param: true),
