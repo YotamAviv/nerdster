@@ -55,6 +55,10 @@ I want to add
 
 - embed in home page and on aviv.net
 
+Still thinking... ??
+- diss + like = show it to me again in case of new likes, comments
+  - diss + dislike = never show it to me again
+  - diss (no rating) = show me in case of ???
 
 ## NerdyContentView
 
@@ -128,27 +132,10 @@ Lay the graph out better.
 
 ## implement in cloud
 
-## content layer
-
-- document censor, dismiss, relate/not, equate/not
-  - tags
-  - options: type, sort, tags
-    - check what else..
-- display it
-  - not necessarily as a tree
-    - ideally without deprecated libraries
-  - crypto on
-    - statements
-
 ## implement in cloud, Nerdster queries ONE-OF-US.NET
 
 - estimate cost
 - prototype performance
-
-## simple view
-
-- suitable for phones
-- less feature rich
 
 # phone rewrite
 
