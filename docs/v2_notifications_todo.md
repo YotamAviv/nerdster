@@ -1,5 +1,7 @@
 # V2 Notifications TODO
 
+TODO: Also document all V2 notifications that are detected.
+
 This document tracks legacy notifications (from V1) that appear to be missing or silently handled in the V2 architecture. These should be implemented as `TrustNotification`s to provide visibility into network conflicts and data integrity issues.
 
 ## 1. Delegate Conflicts (`delegateAlreadyClaimed`)
