@@ -98,9 +98,8 @@ FollowNetwork reduceFollowNetwork(
           // Block
           if (subjectIdentity == trustGraph.pov) {
             notifications.add(TrustNotification(
-              subject: subjectIdentity,
               reason: "Attempt to block yourself in context $fcontext",
-              relatedStatement: s.token,
+              relatedStatement: s,
               isConflict: true,
             ));
             continue;
@@ -109,9 +108,8 @@ FollowNetwork reduceFollowNetwork(
             blocked.add(subjectIdentity);
           } else {
             notifications.add(TrustNotification(
-              subject: subjectIdentity,
               reason: "Attempt to block followed identity $subjectIdentity in context $fcontext",
-              relatedStatement: s.token,
+              relatedStatement: s,
               isConflict: true,
             ));
           }
@@ -119,9 +117,8 @@ FollowNetwork reduceFollowNetwork(
           // Follow
           if (blocked.contains(subjectIdentity)) {
             notifications.add(TrustNotification(
-              subject: subjectIdentity,
               reason: "Attempt to follow blocked identity $subjectIdentity in context $fcontext",
-              relatedStatement: s.token,
+              relatedStatement: s,
               isConflict: true,
             ));
             continue;

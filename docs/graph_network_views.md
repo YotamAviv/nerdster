@@ -80,10 +80,10 @@ The content of the details dialog depends on the currently selected context:
 
 ## Implementation Phases
 
-### Phase 1: Show paths to subject node (In Progress)
+### Phase 1: Show paths to subject node (Completed)
 Show the required number of paths to the subject node (the node clicked in the content view).
 
-### Phase 2: Interesting Edges & Conflicts (Planned)
+### Phase 2: Interesting Edges & Conflicts (In Progress)
 - **Cross-Path Edges**: If multiple paths exist to the subject, show edges between nodes on different paths.
 - **Conflict Visualization**: Show rejected statements (blocks, invalid replaces) that relate to nodes on the paths to the subject.
 

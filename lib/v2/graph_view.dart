@@ -142,6 +142,8 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
     if (e.isConflict) {
       color = Colors.orange;
+    } else if (e.isNonCanonical) {
+      color = Colors.green;
     } else if (e.isIdentity) {
       color = Colors.green;
     } else if (e.isFollow) {
@@ -151,7 +153,8 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     return Paint()
       ..color = color.withOpacity(isPath ? 1.0 : 0.6)
       ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
   }
 
   @override

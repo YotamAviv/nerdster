@@ -15,46 +15,45 @@ void main() {
 
   group('FollowNetwork Edges', () {
     test('populates edges for follow statements', () {
-      final pov = 'pov';
-      final alice = 'alice';
-      final bob = 'bob';
+      final povKey = {'kty': 'mock', 'val': 'pov'};
+      final pov = Jsonish(povKey).token;
+      final aliceKey = {'kty': 'mock', 'val': 'alice'};
+      final alice = Jsonish(aliceKey).token;
+      final bobKey = {'kty': 'mock', 'val': 'bob'};
+      final bob = Jsonish(bobKey).token;
 
       final t1 = TrustStatement(Jsonish({
-        'token': 't1',
-        'issuer': pov,
+        'statement': 'net.one-of-us',
         'trust': alice,
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': pov},
-      }));
+        'I': povKey,
+      }, 't1'));
 
       final t2 = TrustStatement(Jsonish({
-        'token': 't2',
-        'issuer': alice,
+        'statement': 'net.one-of-us',
         'trust': bob,
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': alice},
-      }));
+        'I': aliceKey,
+      }, 't2'));
 
       final povD = 'povD';
       final aliceD = 'aliceD';
 
       final d1 = TrustStatement(Jsonish({
-        'token': 'd1',
-        'issuer': pov,
+        'statement': 'net.one-of-us',
         'delegate': povD,
         'with': {'domain': 'nerdster.org'},
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': pov},
-      }));
+        'I': povKey,
+      }, 'd1'));
 
       final d2 = TrustStatement(Jsonish({
-        'token': 'd2',
-        'issuer': alice,
+        'statement': 'net.one-of-us',
         'delegate': aliceD,
         'with': {'domain': 'nerdster.org'},
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': alice},
-      }));
+        'I': aliceKey,
+      }, 'd2'));
 
       final trustGraph = TrustGraph(
         pov: pov,
@@ -67,26 +66,24 @@ void main() {
       );
 
       final f1 = ContentStatement(Jsonish({
-        'token': 'f1',
-        'issuer': pov,
+        'statement': 'org.nerdster',
         'follow': alice,
         'with': {
           'contexts': {'news': 1},
         },
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': pov},
-      }));
+        'I': povKey,
+      }, 'f1'));
 
       final f2 = ContentStatement(Jsonish({
-        'token': 'f2',
-        'issuer': alice,
+        'statement': 'org.nerdster',
         'follow': bob,
         'with': {
           'contexts': {'news': 1},
         },
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': alice},
-      }));
+        'I': aliceKey,
+      }, 'f2'));
 
       final Map<DelegateKey, List<ContentStatement>> delegateContent = {
         DelegateKey(povD): [f1],
@@ -106,27 +103,27 @@ void main() {
     });
 
     test('detects conflicts in follow network', () {
-      final pov = 'pov';
-      final alice = 'alice';
+      final povKey = {'kty': 'mock', 'val': 'pov'};
+      final pov = Jsonish(povKey).token;
+      final aliceKey = {'kty': 'mock', 'val': 'alice'};
+      final alice = Jsonish(aliceKey).token;
 
       final t1 = TrustStatement(Jsonish({
-        'token': 't1',
-        'issuer': pov,
+        'statement': 'net.one-of-us',
         'trust': alice,
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': pov},
-      }));
+        'I': povKey,
+      }, 't1'));
 
       final povD = 'povD';
 
       final d1 = TrustStatement(Jsonish({
-        'token': 'd1',
-        'issuer': pov,
+        'statement': 'net.one-of-us',
         'delegate': povD,
         'with': {'domain': 'nerdster.org'},
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': pov},
-      }));
+        'I': povKey,
+      }, 'd1'));
 
       final trustGraph = TrustGraph(
         pov: pov,
@@ -138,15 +135,14 @@ void main() {
       );
 
       final blockSelf = ContentStatement(Jsonish({
-        'token': 'f1_block',
-        'issuer': pov,
+        'statement': 'org.nerdster',
         'follow': pov,
         'with': {
           'contexts': {'news': -1},
         },
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': pov},
-      }));
+        'I': povKey,
+      }, 'f1_block'));
 
       final Map<DelegateKey, List<ContentStatement>> delegateContent = {
         DelegateKey(povD): [blockSelf],

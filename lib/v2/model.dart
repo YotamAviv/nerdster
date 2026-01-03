@@ -1,5 +1,7 @@
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/keys.dart';
 
@@ -17,17 +19,19 @@ enum V2FilterMode {
 
 /// Represents a notification or conflict discovered during graph construction.
 class TrustNotification {
-  final String subject;
   final String reason;
-  final String relatedStatement;
+  final Statement relatedStatement;
   final bool isConflict;
 
   TrustNotification({
-    required this.subject,
     required this.reason,
     required this.relatedStatement,
     this.isConflict = false,
   });
+
+  String get subject => relatedStatement.subjectToken;
+
+  String get issuer => relatedStatement.iToken;
 
   @override
   String toString() => '${isConflict ? "Conflict" : "Notification"}($subject): $reason';
@@ -44,7 +48,8 @@ class TrustGraph {
   final Map<String, List<List<String>>> paths; // Target -> List of node-disjoint paths from pov
   /// Notifications: key rotation issues, attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
-  final Map<String, List<TrustStatement>> edges; // Adjacency list: Issuer -> List<TrustStatement> (Valid statements)
+  final Map<String, List<TrustStatement>>
+      edges; // Adjacency list: Issuer -> List<TrustStatement> (Valid statements)
 
   TrustGraph({
     required this.pov,
@@ -59,7 +64,7 @@ class TrustGraph {
   });
 
   bool isTrusted(String token) => distances.containsKey(token);
-  
+
   List<TrustNotification> get conflicts => notifications.where((n) => n.isConflict).toList();
 
   /// Returns the active identity token for a given key.
@@ -93,7 +98,10 @@ class TrustGraph {
 
   /// Returns all shortest paths from pov to [target].
   List<List<String>> getPathsTo(String target) {
-    if (target == pov) return [[pov]];
+    if (target == pov)
+      return [
+        [pov]
+      ];
     if (!distances.containsKey(target)) return [];
 
     final targetDist = distances[target]!;
@@ -125,7 +133,8 @@ class FollowNetwork {
   final Map<String, List<String>> paths; // Identity -> Path from pov
   /// Notifications: attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
-  final Map<String, List<ContentStatement>> edges; // IssuerIdentity -> List of accepted follow/block statements
+  final Map<String, List<ContentStatement>>
+      edges; // IssuerIdentity -> List of accepted follow/block statements
 
   FollowNetwork({
     required this.fcontext,
@@ -236,4 +245,3 @@ class ContentResult {
     this.delegateContent = const {},
   });
 }
-

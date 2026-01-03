@@ -89,6 +89,17 @@ class GraphController {
       }
     }
 
+    // Phase 2: Add Cross-Path Edges and Conflicts
+    // Add any edge from allEdges where both start and end nodes are in the graph
+    for (final edge in allEdges) {
+      if (nodes.contains(edge.fromIdentity) && nodes.contains(edge.toIdentity)) {
+        edges.add(edge);
+      }
+    }
+
+    // Add Conflicts
+    _addConflictEdges(nodes, edges);
+
     // Ensure root is first for algorithms that pick the first node as root
     final orderedNodes = [root, ...nodes.where((n) => n != root)];
 
@@ -239,5 +250,48 @@ class GraphController {
       }
     }
     edges.add(newEdge);
+  }
+
+  void _addConflictEdges(Set<String> nodes, Set<GraphEdgeData> edges) {
+    final List<TrustNotification> conflicts = [...feedModel.trustGraph.conflicts];
+
+    if (mode == GraphViewMode.follow) {
+      conflicts.addAll(feedModel.followNetwork.notifications.where((n) => n.isConflict));
+    }
+
+    for (final conflict in conflicts) {
+      final fromId = feedModel.labeler.getIdentityForToken(conflict.issuer);
+      final toId = feedModel.labeler.getIdentityForToken(conflict.subject);
+
+      if (nodes.contains(fromId) && nodes.contains(toId)) {
+        GraphEdgeData? match;
+        for (final e in edges) {
+          if (e.fromIdentity == fromId && e.toIdentity == toId) {
+            match = e;
+            break;
+          }
+        }
+
+        if (match != null) {
+          edges.remove(match);
+          edges.add(GraphEdgeData(
+            fromIdentity: fromId,
+            toIdentity: toId,
+            statements: [...match.statements, conflict],
+            isIdentity: match.isIdentity,
+            isFollow: match.isFollow,
+            isConflict: true,
+            isNonCanonical: match.isNonCanonical,
+          ));
+        } else {
+          edges.add(GraphEdgeData(
+            fromIdentity: fromId,
+            toIdentity: toId,
+            statements: [conflict],
+            isConflict: true,
+          ));
+        }
+      }
+    }
   }
 }

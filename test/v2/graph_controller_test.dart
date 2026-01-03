@@ -14,16 +14,17 @@ void main() {
 
   group('GraphController', () {
     test('builds identity graph data', () {
-      final pov = 'pov';
-      final alice = 'alice';
+      final povKey = {'kty': 'mock', 'val': 'pov'};
+      final pov = Jsonish(povKey).token;
+      final aliceKey = {'kty': 'mock', 'val': 'alice'};
+      final alice = Jsonish(aliceKey).token;
 
       final t1 = TrustStatement(Jsonish({
-        'token': 't1',
-        'issuer': pov,
+        'statement': 'net.one-of-us',
         'trust': alice,
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': pov},
-      }));
+        'I': povKey,
+      }, 't1'));
 
       final trustGraph = TrustGraph(
         pov: pov,
@@ -62,17 +63,18 @@ void main() {
     });
 
     test('builds follow graph data', () {
-      final pov = 'pov';
-      final alice = 'alice';
+      final povKey = {'kty': 'mock', 'val': 'pov'};
+      final pov = Jsonish(povKey).token;
+      final aliceKey = {'kty': 'mock', 'val': 'alice'};
+      final alice = Jsonish(aliceKey).token;
 
       final f1 = ContentStatement(Jsonish({
-        'token': 'f1',
-        'issuer': pov,
+        'statement': 'org.nerdster',
         'follow': alice,
         'with': {'contexts': {'news': 1}},
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': pov},
-      }));
+        'I': povKey,
+      }, 'f1'));
 
       final trustGraph = TrustGraph(pov: pov, distances: {pov: 0, alice: 1});
       final followNetwork = FollowNetwork(
@@ -112,17 +114,18 @@ void main() {
     });
 
     test('identifies conflicts in graph data', () {
-      final pov = 'pov';
-      final alice = 'alice';
+      final povKey = {'kty': 'mock', 'val': 'pov'};
+      final pov = Jsonish(povKey).token;
+      final aliceKey = {'kty': 'mock', 'val': 'alice'};
+      final alice = Jsonish(aliceKey).token;
 
       final f1 = ContentStatement(Jsonish({
-        'token': 'f1',
-        'issuer': pov,
+        'statement': 'org.nerdster',
         'follow': alice,
         'with': {'contexts': {'news': 1}},
         'time': DateTime.now().toIso8601String(),
-        'I': {'key': pov},
-      }));
+        'I': povKey,
+      }, 'f1'));
 
       final trustGraph = TrustGraph(pov: pov, distances: {pov: 0, alice: 1});
       final followNetwork = FollowNetwork(
@@ -136,7 +139,7 @@ void main() {
           alice: [pov, alice],
         },
         notifications: [
-          TrustNotification(subject: alice, reason: 'conflict', relatedStatement: f1.token, isConflict: true),
+          TrustNotification(reason: 'conflict', relatedStatement: f1, isConflict: true),
         ],
       );
 

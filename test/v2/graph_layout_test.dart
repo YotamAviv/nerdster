@@ -76,8 +76,10 @@ void main() {
     expect(data.root, equals(lisa.token));
     expect(data.nodes.first, equals(lisa.token), reason: 'Root should be the first node');
     expect(data.nodes, containsAll([lisa.token, bob.token, charlie.token]));
-    // Path lisa -> bob -> charlie has 2 edges
-    expect(data.edges.length, equals(2));
+    // Path lisa -> bob -> charlie has 2 edges.
+    // Plus the back-edge charlie -> lisa makes 3.
+    expect(data.edges.length, equals(3));
+    expect(data.edges.any((e) => e.fromIdentity == charlie.token && e.toIdentity == lisa.token), isTrue);
   });
 
   test('GraphController: Node-Disjoint Path Selection', () async {
