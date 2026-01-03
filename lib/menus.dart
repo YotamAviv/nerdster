@@ -5,6 +5,7 @@ import 'package:nerdster/app.dart';
 import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_tree.dart';
+import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/demotest/cases/fetcher_integration_test.dart';
 import 'package:nerdster/demotest/cases/integration_tests.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -12,9 +13,7 @@ import 'package:nerdster/dev/corruption_check.dart';
 import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/nerdster_link.dart';
-import 'package:nerdster/net/net_tree.dart';
 import 'package:nerdster/notifications_menu.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/prefs.dart';
@@ -23,9 +22,8 @@ import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/fancy_shadow_view.dart';
-import 'package:nerdster/v2/graph_demo.dart';
-import 'package:nerdster/v2/nerdy_content_view.dart';
+import 'package:nerdster/v2/content_view.dart';
+import 'package:nerdster/v2/phone_view.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/verify.dart';
 
@@ -97,24 +95,16 @@ class Menus {
       // Views
       SubmenuButton(menuChildren: [
         MenuItemButton(
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NerdyContentView(povToken: signInState.pov))),
-          child: const Text('Nerdy Feed (V2)'),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ContentView(povToken: signInState.pov))),
+          child: const Text('Content View (V2)'),
         ),
         MenuItemButton(
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => FancyShadowView(povToken: signInState.pov))),
-          child: const Text('Fancy Shadow View (V2)'),
-        ),
-        MenuItemButton(
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TrustGraphVisualizerLoader(povToken: signInState.pov))),
-          child: const Text('Trust Graph (V2)'),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => PhoneView(povToken: signInState.pov))),
+          child: const Text('Phone View (V2)'),
         ),
         MenuItemButton(
           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ContentTree())),
-          child: const Text('Legacy Content Tree'),
-        ),
-        MenuItemButton(
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => NetTreeView(NetTreeView.makeRoot()))),
-          child: const Text('Legacy Network Tree'),
+          child: const Text('Legacy Content View'),
         ),
       ], child: const Row(children: [Icon(Icons.visibility), iconSpacer, Text('Views')])),
 

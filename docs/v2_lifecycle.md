@@ -24,10 +24,10 @@ The user signs in using one of two methods:
 
 ## 2. Feed Initialization (The Pipeline)
 
-Once signed in, the `App` navigates to the main view, typically `FancyShadowView`.
+Once signed in, the `App` navigates to the main view, typically `PhoneView`.
 
 ### Initialization
-`FancyShadowView` initializes a `V2FeedController`. This controller is the central orchestrator for fetching and processing data.
+`PhoneView` initializes a `V2FeedController`. This controller is the central orchestrator for fetching and processing data.
 
 ### The "Waterfall" Fetch
 The `V2FeedController.refresh()` method executes the following pipeline:
@@ -62,7 +62,7 @@ The `V2FeedController.refresh()` method executes the following pipeline:
 
 ## 3. Publishing a Rating
 
-The user interacts with a `ContentCard` in the `NerdyContentView` and decides to rate a subject.
+The user interacts with a `ContentCard` in the `ContentView` and decides to rate a subject.
 
 ### Interaction
 1.  User clicks "Rate" (or similar action).
@@ -90,7 +90,7 @@ After publishing, the view needs to update to show the new rating.
 
 ### Trigger
 -   `V2RateDialog` accepts an `onRefresh` callback.
--   `FancyShadowView` passes a callback that triggers `_controller.refresh()`.
+-   `PhoneView` passes a callback that triggers `_controller.refresh()`.
 -   Alternatively, `V2RefreshSignal` can trigger a refresh globally.
 
 ### Refresh Execution
@@ -98,7 +98,7 @@ After publishing, the view needs to update to show the new rating.
 2.  **Optimization**: The `CachedSource`s used by the controller may return cached data for the `TrustGraph` and `IdentityContent` if they haven't changed (using `HEAD` requests or memory cache).
 3.  **New Fetch**: The `DelegateContentSource` will fetch the new data from Nerdster Firestore, including the just-published rating.
 4.  **Re-Aggregation**: The pipeline runs `reduceContentAggregation` again with the new data.
-5.  **UI Update**: The `V2FeedController` notifies its listeners. `FancyShadowView` rebuilds `NerdyContentView` with the updated `ContentAggregation`.
+5.  **UI Update**: The `V2FeedController` notifies its listeners. `PhoneView` rebuilds the UI with the updated `ContentAggregation`.
 
 **Key Classes:**
 -   `V2RefreshSignal`: Global signal for refreshes.

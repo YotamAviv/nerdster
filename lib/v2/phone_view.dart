@@ -69,12 +69,6 @@ class _PhoneViewState extends State<PhoneView> {
             title: const Text('Nerdster Feed', style: TextStyle(color: Colors.white)),
             actions: [
               IconButton(
-                icon: const Icon(Icons.account_tree, color: Colors.white),
-                onPressed: () {
-                  // TODO: Use TrustGraphVisualizer when ready
-                },
-              ),
-              IconButton(
                 icon: const Icon(Icons.refresh, color: Colors.white),
                 onPressed: _controller.loading ? null : _onRefresh,
               ),

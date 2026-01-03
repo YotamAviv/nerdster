@@ -63,7 +63,7 @@ void main() {
   });
 
   group('V2 UI Integration Tests', () {
-    testWidgets('Verify NerdyContentView loads and displays monikers', (WidgetTester tester) async {
+    testWidgets('Verify ContentView loads and displays monikers', (WidgetTester tester) async {
       // 1. Setup environment for Emulator
       fireChoice = FireChoice.emulator;
       

@@ -6,7 +6,7 @@ import 'package:nerdster/v2/fan_algorithm.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 
 import 'package:nerdster/v2/follow_logic.dart';
-import 'package:nerdster/v2/identity_context_selector.dart';
+import 'package:nerdster/v2/trust_settings_bar.dart';
 import 'package:nerdster/v2/node_details.dart';
 
 class NerdyGraphView extends StatefulWidget {
@@ -213,7 +213,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   Widget _buildControls(V2FeedModel model) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: IdentityContextSelector(
+      child: TrustSettingsBar(
         availableIdentities: model.trustGraph.orderedKeys,
         availableContexts: model.availableContexts,
         activeContexts: model.activeContexts,

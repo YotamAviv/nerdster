@@ -3,6 +3,17 @@
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
+## required for prod
+
+
+- Make link to this view work
+
+- Notifications
+  - corrupt key
+  - look for all legacy notifcations not in V2
+  - Reach goal: Recommended actions, warnings
+
+
 
 ### node detail Enhancements
 - ability to toggle showCrypto in graph view
@@ -48,37 +59,12 @@ I want to add
 
 - Show Path(s) from PoV on other users, delegate keys (phase 2, 3 from graph doc)
 
-- Make link to this view work
-
-- Notifications
-  - Reach goal: Recommended actions, warnings
-
 - embed in home page and on aviv.net
 
 Still thinking... ??
 - diss + like = show it to me again in case of new likes, comments
   - diss + dislike = never show it to me again
   - diss (no rating) = show me in case of ???
-
-## NerdyContentView
-
-- [x] Document requirements in `docs/v2_nerdy_content_view_spec.md`
-- [ ] consider UI testing
-- [x] implement (Stable with Multi-View Routing)
-
-## Multi-View Routing & Navigation
-
-- [x] Implement path-based routing in `app.dart`
-- [x] Add "Views" menu to `NerdsterMenu`
-- [x] Restore legacy views (`ContentTree`, `NetTreeView`)
-- [x] Link V2 Feed to V2 Trust Tree and Graph
-
-## Follow Network & Content Aggregation (V2)
-
-- [x] Document requirements in `docs/follow_net_specification.md`
-- [x] Implement V2 `FollowNetwork` logic (Stable)
-- [x] Implement V2 `ContentAggregator` logic (Stable)
-- [x] Port and expand tests to V2 (36 tests passing)
 
 # Probably next - DO NOT GET STARTED.
 

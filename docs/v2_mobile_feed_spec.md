@@ -3,7 +3,7 @@
 Status: Total draft / fantasy quick spec from AI.
 Missing: PoV, options to follow/block (for context) 
 
-The V2 Mobile Feed (FancyShadowView) is a mobile-optimized, gesture-driven interface for exploring and interacting with aggregated content.
+The V2 Mobile Feed (PhoneView) is a mobile-optimized, gesture-driven interface for exploring and interacting with aggregated content.
 
 ## 1. Visual Elements (The "Content Card")
 
