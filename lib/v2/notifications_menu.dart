@@ -11,9 +11,9 @@ import 'package:nerdster/v2/model.dart';
 class V2NotificationsMenu extends StatelessWidget {
   final TrustGraph? trustGraph;
   final FollowNetwork? followNetwork;
-  final V2Labeler? labeler;
+  final V2Labeler labeler;
 
-  const V2NotificationsMenu({super.key, this.trustGraph, this.followNetwork, this.labeler});
+  const V2NotificationsMenu({super.key, this.trustGraph, this.followNetwork, required this.labeler});
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +44,9 @@ class V2NotificationsMenu extends StatelessWidget {
 
   MenuItemButton _buildNotificationItem(TrustNotification notification, BuildContext context) {
     String reason = notification.reason;
-    if (labeler != null) {
-      reason = reason.replaceAllMapped(RegExp(r'[0-9a-f]{40}'), (match) {
-        return labeler!.getLabel(match.group(0)!);
-      });
-    }
+    reason = reason.replaceAllMapped(RegExp(r'[0-9a-f]{40}'), (match) {
+      return labeler.getLabel(match.group(0)!);
+    });
 
     return MenuItemButton(
       onPressed: () {
@@ -78,16 +76,16 @@ class V2NotificationsMenu extends StatelessWidget {
 
 class _V2StatementNotification extends StatelessWidget {
   final TrustNotification notification;
-  final V2Labeler? labeler;
+  final V2Labeler labeler;
 
-  const _V2StatementNotification(this.notification, {this.labeler});
+  const _V2StatementNotification(this.notification, {required this.labeler});
 
   @override
   Widget build(BuildContext context) {
     final Statement statement = notification.relatedStatement;
     final Jsonish jsonish = statement.jsonish;
-    final String issuerName = labeler?.getLabel(statement.iToken) ?? statement.iToken;
-    final String subjectName = labeler?.getLabel(statement.subjectToken) ?? statement.subjectToken;
+    final String issuerName = labeler.getLabel(statement.iToken);
+    final String subjectName = labeler.getLabel(statement.subjectToken);
 
     return SingleChildScrollView(
       child: ListBody(

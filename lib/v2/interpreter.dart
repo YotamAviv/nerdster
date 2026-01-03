@@ -5,7 +5,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/labeler.dart';
 
 class V2Interpreter implements Interpreter {
-  final V2Labeler? labeler;
+  final V2Labeler labeler;
 
   V2Interpreter(this.labeler);
 
@@ -16,7 +16,19 @@ class V2Interpreter implements Interpreter {
   }
 
   String? _labelKey(String token) {
-    return labeler?.getLabel(token);
+    String label = labeler.getLabel(token);
+
+    // If the label is just a truncated version of the token,
+    // AND the token doesn't look like a crypto token,
+    // then it's probably just a random string that got truncated.
+    // We should return null to let interpret handle it (e.g. as a date or raw string).
+    if (token.length > 8 && label == token.substring(0, 8)) {
+      if (RegExp(r'^[0-9a-f]{40}$').hasMatch(token)) {
+        return label;
+      }
+      return null;
+    }
+    return label;
   }
 
   @override
