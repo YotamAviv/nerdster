@@ -169,7 +169,7 @@ void main() async {
     }
 
     // Verify Follow Notifications
-    expect(followNetwork.notifications.any((n) => n.reason.contains("Attempt to block yourself")), isTrue);
+    expect(followNetwork.notifications.any((n) => n.reason.contains("Attempt to block you")), isTrue);
     expect(followNetwork.notifications.any((n) => n.reason.contains("Attempt to block followed identity")), isTrue);
     expect(followNetwork.notifications.any((n) => n.reason.contains("Attempt to follow blocked identity")), isTrue);
 

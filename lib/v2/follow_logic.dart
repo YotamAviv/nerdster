@@ -106,7 +106,7 @@ FollowNetwork reduceFollowNetwork(
           // Block
           if (subjectIdentity == trustGraph.pov) {
             notifications.add(TrustNotification(
-              reason: "Attempt to block yourself in context $fcontext",
+              reason: "Attempt to block you in context $fcontext",
               relatedStatement: s,
               isConflict: true,
             ));

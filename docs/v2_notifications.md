@@ -53,7 +53,7 @@
 ### Follow Logic (Content Layer)
 
 10. **Self-Block in Context**
-    *   **Reason:** "Attempt to block yourself in context $fcontext"
+    *   **Reason:** "Attempt to block you in context $fcontext"
     *   **Type:** Conflict
     *   **Cause:** An issuer attempts to block the POV in a specific context (e.g., 'news').
 

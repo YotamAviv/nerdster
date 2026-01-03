@@ -50,7 +50,7 @@ class StringSettingDropdown extends StatefulWidget {
 }
 
 class Menus {
-  static List<Widget> build(BuildContext context) {
+  static List<Widget> build(BuildContext context, {Widget? v2Notifications}) {
     List<Widget> demos = <Widget>[];
     for (final e in DemoKey.demos.entries) {
       String name = e.key;
@@ -141,6 +141,7 @@ class Menus {
 
       // Notifications
       NotificationsMenu(),
+      if (v2Notifications != null) v2Notifications,
 
       // Share
       SubmenuButton(menuChildren: <Widget>[

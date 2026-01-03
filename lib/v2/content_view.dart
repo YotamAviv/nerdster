@@ -7,6 +7,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/notifications_menu.dart';
 import 'package:nerdster/v2/trust_settings_bar.dart';
 import 'package:nerdster/v2/content_card.dart';
 import 'package:nerdster/nerdster_menu.dart';
@@ -169,7 +170,15 @@ class _ContentViewState extends State<ContentView> {
           body: SafeArea(
             child: Column(
               children: [
-                NerdsterMenu(),
+                NerdsterMenu(
+                  v2Notifications: (model != null && (model.trustGraph.notifications.isNotEmpty || model.followNetwork.notifications.isNotEmpty))
+                    ? V2NotificationsMenu(
+                        trustGraph: model.trustGraph,
+                        followNetwork: model.followNetwork,
+                        labeler: model.labeler,
+                      )
+                    : null,
+                ),
                 if (_controller.loading)
                   Column(
                     children: [

@@ -19,7 +19,7 @@ import 'package:nerdster/oneofus/util.dart';
 /// 9. Identity trusts a non-canonical key directly
 ///
 /// Follow Notifications:
-/// 10. Attempt to block yourself
+/// 10. Attempt to block you
 /// 11. Attempt to block followed identity
 /// 12. Attempt to follow blocked identity
 Future<(DemoKey, DemoKey?)> notificationsGallery() async {

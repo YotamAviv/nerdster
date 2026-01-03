@@ -5,9 +5,9 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 
 class NerdsterMenu extends StatefulWidget {
-  static const NerdsterMenu _singleton = NerdsterMenu._internal();
-  factory NerdsterMenu() => _singleton;
-  const NerdsterMenu._internal();
+  final Widget? v2Notifications;
+
+  const NerdsterMenu({super.key, this.v2Notifications});
 
   @override
   State<StatefulWidget> createState() => _NerdsterMenuState();
@@ -38,7 +38,7 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
   Widget build(BuildContext context) {
     return IntrinsicHeight(
         child: Stack(children: [
-      Row(children: [Expanded(child: MenuBar(children: Menus.build(context)))]),
+      Row(children: [Expanded(child: MenuBar(children: Menus.build(context, v2Notifications: widget.v2Notifications)))]),
       Align(
           alignment: Alignment.centerRight,
           child: Padding(

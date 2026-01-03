@@ -155,7 +155,7 @@ void main() {
         'news',
       );
 
-      expect(network.notifications.any((n) => n.isConflict && n.reason.contains('block yourself')), isTrue);
+      expect(network.notifications.any((n) => n.isConflict && n.reason.contains('block you')), isTrue);
     });
   });
 }
