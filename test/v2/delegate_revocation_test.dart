@@ -43,17 +43,18 @@ void main() {
         .set(s.jsonish.json);
   }
 
-  test('DelegateResolver: Should not pick up revoked delegates', () async {
+  test('DelegateResolver: Revoked delegate is still claimed by revoker (Proximity wins)', () async {
     final sideshow = await DemoKey.create('sideshow');
     final marge = await DemoKey.create('marge');
     final margeN = await DemoKey.create('margeN');
 
-    // Sideshow revokes margeN as a delegate (even though he doesn't own it)
-    final s1 = await sideshow.doTrust(TrustVerb.delegate, margeN, revokeAt: kSinceAlways);
-    
-    // Marge delegates to margeN
+    // Marge delegates to margeN (Time T1)
     final s2 = await marge.doTrust(TrustVerb.delegate, margeN, domain: 'nerdster.org');
 
+    // Sideshow revokes margeN as a delegate (Time T2)
+    // Even though this is later in time, Sideshow is closer in the graph (Dist 0 vs Dist 1)
+    final s1 = await sideshow.doTrust(TrustVerb.delegate, margeN, revokeAt: kSinceAlways);
+    
     final tg = TrustGraph(
       pov: sideshow.token,
       distances: {sideshow.token: 0, marge.token: 1},
@@ -61,19 +62,22 @@ void main() {
         sideshow.token: [s1],
         marge.token: [s2],
       },
+      notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
     
-    // Resolve for sideshow
+    // Resolve for sideshow (Distance 0)
     resolver.resolveForIdentity(sideshow.token);
     expect(resolver.getIdentityForDelegate(margeN.token), equals(sideshow.token), 
-      reason: 'Sideshow claimed margeN (even if he revoked it)');
+      reason: 'Sideshow claims margeN because he is closer, even though his statement is later');
+    expect(resolver.getConstraintForDelegate(margeN.token), equals(kSinceAlways),
+      reason: 'The delegate is claimed but revoked');
 
-    // Resolve for marge
+    // Resolve for marge (Distance 1)
     resolver.resolveForIdentity(marge.token);
     expect(resolver.getIdentityForDelegate(margeN.token), equals(sideshow.token),
-      reason: 'Sideshow still owns it because he claimed it first');
+      reason: 'Marge cannot claim margeN because Sideshow already claimed it');
   });
 
   test('V2Labeler: Should label delegate correctly when revoked by owner', () async {
@@ -98,6 +102,7 @@ void main() {
         mel.token: [sMelMarge],
         marge.token: [sMargeRevoke, sMargeDelegate],
       },
+      notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
@@ -133,6 +138,7 @@ void main() {
       edges: {
         alice.token: [d2, d1],
       },
+      notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
@@ -172,6 +178,7 @@ void main() {
       edges: {
         bob.token: [d2, d1],
       },
+      notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
@@ -205,6 +212,7 @@ void main() {
       edges: {
         alice.token: [d1],
       },
+      notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
@@ -239,6 +247,7 @@ void main() {
       edges: {
         bob.token: [d2, d1], // Sorted by time descending
       },
+      notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
@@ -293,6 +302,7 @@ void main() {
       edges: {
         bo.token: [sRevoke1, sDelegate2, sDelegate1],
       },
+      notifications: [],
     );
 
     // Setup Content
@@ -312,5 +322,38 @@ void main() {
     expect(fn.edges[bo.token], isNotNull);
     expect(fn.edges[bo.token]!.any((s) => s.subjectToken == luke.token), isTrue,
         reason: 'Bo should still follow Luke because the delegate was revoked AT the follow statement');
+  });
+
+  test('V2Labeler: Should number multiple delegates for same identity and domain', () async {
+    final bob = await DemoKey.create('bob');
+    final d1 = await DemoKey.create('d1');
+    final d2 = await DemoKey.create('d2');
+
+    // Bob delegates to d1 and d2
+    final s1 = await bob.doTrust(TrustVerb.delegate, d1, domain: 'nerdster.org');
+    final s2 = await bob.doTrust(TrustVerb.delegate, d2, domain: 'nerdster.org');
+    
+    // Bob is trusted by POV (me) so he gets a name
+    final me = await DemoKey.create('me');
+    final sTrust = await me.doTrust(TrustVerb.trust, bob, moniker: 'Bob');
+
+    final tg = TrustGraph(
+      pov: me.token,
+      distances: {me.token: 0, bob.token: 1},
+      orderedKeys: [me.token, bob.token],
+      edges: {
+        me.token: [sTrust],
+        bob.token: [s1, s2], 
+      },
+      notifications: [],
+    );
+
+    final resolver = DelegateResolver(tg);
+    resolver.resolveForIdentity(bob.token);
+
+    final labeler = V2Labeler(tg, delegateResolver: resolver);
+
+    expect(labeler.getLabel(d1.token), equals('Bob@nerdster.org'));
+    expect(labeler.getLabel(d2.token), equals('Bob@nerdster.org (2)'));
   });
 }

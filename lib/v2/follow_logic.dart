@@ -105,30 +105,18 @@ FollowNetwork reduceFollowNetwork(
         if (w < 0) {
           // Block
           if (subjectIdentity == trustGraph.pov) {
-            notifications.add(TrustNotification(
-              reason: "Attempt to block you in context $fcontext",
-              relatedStatement: s,
-              isConflict: true,
-            ));
+            // Attempt to block you in context
             continue;
           }
           if (!followDistances.containsKey(subjectIdentity) || followDistances[subjectIdentity]! > dist) {
             blocked.add(subjectIdentity);
           } else {
-            notifications.add(TrustNotification(
-              reason: "Attempt to block followed identity $subjectIdentity in context $fcontext",
-              relatedStatement: s,
-              isConflict: true,
-            ));
+            // Attempt to block followed identity
           }
         } else if (weight > 0) {
           // Follow
           if (blocked.contains(subjectIdentity)) {
-            notifications.add(TrustNotification(
-              reason: "Attempt to follow blocked identity $subjectIdentity in context $fcontext",
-              relatedStatement: s,
-              isConflict: true,
-            ));
+            // Attempt to follow blocked identity
             continue;
           }
           if (!followDistances.containsKey(subjectIdentity)) {

@@ -54,6 +54,12 @@ class DelegateResolver {
         _delegateToIdentity[delegateKey] = identity;
         _delegateToDomain[delegateKey] = s.domain ?? 'unknown';
         _identityToDelegates.putIfAbsent(identity, () => []).add(delegateKey);
+      } else if (_delegateToIdentity[delegateKey] != identity) {
+        graph.notifications.add(TrustNotification(
+          reason: "Delegate key $delegateKey already claimed by ${_delegateToIdentity[delegateKey]}",
+          relatedStatement: s,
+          isConflict: true,
+        ));
       }
     }
     _resolvedIdentities.add(identity);

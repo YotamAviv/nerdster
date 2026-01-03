@@ -155,6 +155,15 @@ class V2Labeler {
       if (identity != null) {
         final identityLabel = getLabel(identity);
         final domain = delegateResolver!.getDomainForDelegate(token);
+        
+        // Handle multiple delegates for the same identity and domain
+        final allDelegates = delegateResolver!.getDelegatesForIdentity(identity);
+        final domainDelegates = allDelegates.where((d) => delegateResolver!.getDomainForDelegate(d) == domain).toList();
+        
+        final index = domainDelegates.indexOf(token);
+        if (index > 0) {
+          return "$identityLabel@$domain (${index + 1})";
+        }
         return "$identityLabel@$domain";
       }
     }

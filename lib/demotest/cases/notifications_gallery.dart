@@ -1,6 +1,12 @@
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/demotest/cases/test_utils.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/orchestrator.dart';
+import 'package:nerdster/v2/source_factory.dart';
+import 'package:nerdster/v2/labeler.dart';
 
 /// A gallery of all possible Trust and Follow notifications.
 ///
@@ -41,6 +47,7 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
   final DemoKey distantBob = await DemoKey.findOrCreate('distantBob');
   final DemoKey meContent = await DemoKey.findOrCreate('meContent');
   final DemoKey aliceContent = await DemoKey.findOrCreate('aliceContent');
+  final DemoKey blocker = await DemoKey.findOrCreate('blocker');
 
   // --- TRUST LOGIC SCENARIOS ---
 
@@ -48,8 +55,9 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
   await me.delegate(meContent, domain: 'nerdster.org');
   await alice.delegate(aliceContent, domain: 'nerdster.org');
 
-  // 1. Self-Block Attempt: Alice blocks Me
-  await alice.block(me);
+  // 1. Self-Block Attempt: Blocker blocks Me
+  await me.trust(blocker, moniker: 'blocker');
+  await blocker.block(me);
 
   // 2. Trusted Key Block Attempt: Me trusts Bob, Alice blocks Bob
   await me.trust(bob, moniker: 'bob');
@@ -92,23 +100,17 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
   await me.trust(mallory, moniker: 'mallory');
   await mallory.trust(oldKey, moniker: 'oldKey');
 
+  // 10. Delegate Already Claimed: Bob claims AliceContent (already claimed by Alice)
+  await bob.delegate(aliceContent, domain: 'nerdster.org');
 
-  // --- FOLLOW LOGIC SCENARIOS ---
-  // Context: 'news'
-
-  // Me follows Alice so we can see her follow statements
-  await meContent.doFollow(alice, {'news': 1});
-
-  // 10. Self-Block in Context: Alice follows Me with -1
-  await aliceContent.doFollow(me, {'news': -1});
-
-  // 11. Followed Identity Block: Me follows Bob, Alice follows Bob with -1
-  await meContent.doFollow(bob, {'news': 1});
-  await aliceContent.doFollow(bob, {'news': -1});
-
-  // 12. Follow Blocked Identity: Me follows BadGuy with -1, Alice follows BadGuy
-  await meContent.doFollow(badGuy, {'news': -1});
-  await aliceContent.doFollow(badGuy, {'news': 1});
+  // 11. Multiple Delegates: Bob creates a second delegate
+  final DemoKey bobContent2 = await bob.makeDelegate();
+  await bobContent2.doRate(subject: {
+      'contentType': 'book',
+      'title': 'Bob Book 2',
+      'author': 'unknown',
+      'year': 2025
+  });
 
   // Add a delegate key for each player, and have them submit their name as a bogus book
   final List<DemoKey> players = [
@@ -144,6 +146,45 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
       'year': 2025
     });
   }
+
+  // Verify
+  final src = SourceFactory.get<TrustStatement>(kOneofusDomain);
+  final pipeline = TrustPipeline(src);
+  final trustGraph = await pipeline.build(me.token);
+
+  // Trigger delegate resolution to generate notifications
+  final resolver = DelegateResolver(trustGraph);
+  resolver.resolveForIdentity(alice.token);
+  resolver.resolveForIdentity(bob.token);
+
+  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block your key")), "Missing: Attempt to block your key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block trusted key")), "Missing: Attempt to block trusted key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to replace your key")), "Missing: Attempt to replace your key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Blocked key")), "Missing: Blocked key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Replacement constraint ignored")), "Missing: Replacement constraint ignored");
+  check(trustGraph.notifications.any((n) => n.reason.contains("replaced by both")), "Missing: replaced by both");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Trusted key") && n.reason.contains("is being replaced")), "Missing: Trusted key is being replaced");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to trust blocked key")), "Missing: Attempt to trust blocked key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("trusts a non-canonical key")), "Missing: trusts a non-canonical key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Delegate key ${aliceContent.token} already claimed by ${alice.token}")), "Missing: Delegate key already claimed");
+
+  // Verify Labels
+  final labeler = V2Labeler(trustGraph, delegateResolver: resolver);
+  final bobDelegates = resolver.getDelegatesForIdentity(bob.token);
+  final nerdsterDelegates = bobDelegates.where((d) => resolver.getDomainForDelegate(d) == 'nerdster.org').toList();
+  
+  check(nerdsterDelegates.length >= 2, "Missing: Bob should have at least 2 delegates");
+  
+  final label1 = labeler.getLabel(nerdsterDelegates[0]);
+  final label2 = labeler.getLabel(nerdsterDelegates[1]);
+  
+  // Note: The order depends on the order in resolver.getDelegatesForIdentity which depends on statement order.
+  // We expect them to be ordered by appearance or something deterministic.
+  // If not, we might need to check if set of labels matches.
+  
+  final labels = nerdsterDelegates.map((d) => labeler.getLabel(d)).toSet();
+  check(labels.contains("bob@nerdster.org"), "Missing label: bob@nerdster.org");
+  check(labels.contains("bob@nerdster.org (2)"), "Missing label: bob@nerdster.org (2)");
 
   return (me, null);
 }
