@@ -5,12 +5,15 @@
 
 
 ### node detail Enhancements
-- abiilty to toggle showCrypto in graph view
+- ability to toggle showCrypto in graph view
   - while viewing the graph
-  - (while KeyInfoDetail dialog is up, maybe)
+  - Reach goal: while KeyInfoDetail dialog is up
 
 BUGS:
-
+- images
+  - YouTube
+  - NYT
+  Maybe employ a stock article, video image, maybe stock NYT article, YouTube video ...
 
 ### relating statements
 

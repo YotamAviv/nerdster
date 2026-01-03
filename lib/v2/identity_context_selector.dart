@@ -134,7 +134,7 @@ class IdentityContextSelector extends StatelessWidget {
         const SizedBox(width: 16),
         const Tooltip(
           message: 'Require more redundant paths to detect and prevent fraud',
-          child: Text('Trust: ', style: TextStyle(fontWeight: FontWeight.bold)),
+          child: Text('Confidence: ', style: TextStyle(fontWeight: FontWeight.bold)),
         ),
         Expanded(
           flex: 2,

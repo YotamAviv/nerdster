@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/v2/source_factory.dart';
+import 'package:flutter/material.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/metadata_service.dart';
-import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/source_factory.dart';
+
 import 'refresh_signal.dart';
 import 'submit.dart';
 
@@ -139,17 +139,14 @@ class ContentBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subject = aggregation.subject;
-    final title = (subject is Map || subject is Jsonish) ? subject['title'] : subject.toString();
-    final type = (subject is Map || subject is Jsonish) ? subject['contentType'] : 'unknown';
-    
-    // Fail Fast: Ensure we have the required fields
-    assert(title != null, 'Subject must have a title');
-    assert(type != null, 'Subject must have a contentType');
+    assert(aggregation.subject !is Json, 'Unexpected: ${Jsonish.find(aggregation.subject)}');
+    final Json subject = aggregation.subject;
+    final String title = subject['title'];
+    final String type = subject['contentType'];
 
-    final url = (subject is Map || subject is Jsonish) ? subject['url']?.toString() : null;
-    final author = (subject is Map || subject is Jsonish) ? subject['author']?.toString() : null;
-    final List<String> images = (subject is Map || subject is Jsonish) && subject['images'] != null 
+    final url = subject['url']?.toString();
+    final author = subject['author'];
+    final List<String> images = subject['images'] != null 
         ? List<String>.from(subject['images']) 
         : [];
 

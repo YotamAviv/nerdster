@@ -273,8 +273,7 @@ ContentAggregation reduceContentAggregation(
           s.verb == ContentVerb.rate ||
           s.verb == ContentVerb.relate ||
           s.verb == ContentVerb.dontRelate ||
-          s.verb == ContentVerb.equate ||
-          s.verb == ContentVerb.follow) { // Include follow
+          s.verb == ContentVerb.equate) {
         topLevelSubjects.add(canonical1);
         if (canonical2 != null) {
           topLevelSubjects.add(canonical2);
