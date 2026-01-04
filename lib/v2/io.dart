@@ -1,5 +1,6 @@
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/v2/model.dart';
 
 /// Interface for fetching statements (Trust or Content).
 abstract class StatementSource<T extends Statement> {
@@ -8,6 +9,9 @@ abstract class StatementSource<T extends Statement> {
   /// If a constraint is provided, only statements up to (and including) that token are returned.
   /// Returns a map of Identity Token -> List of Statements.
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys);
+
+  /// Returns any notifications (e.g. corruption, warnings) generated during the last fetch.
+  List<TrustNotification> get notifications;
 }
 
 /// Interface for writing statements.

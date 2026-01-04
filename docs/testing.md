@@ -83,6 +83,41 @@ flutter drive \
   --target=integration_test/v2_ui_test.dart \
   -d chrome
 
+## Corruption Testing
+
+[Aviv, the human]: I tested corruption detection manually and it worked.
+TODO: Automate this after V2 
+
+Corruption testing involves two parts: generating corrupted data and verifying that the system detects it.
+
+### 1. Generate Corruption Data (Integration Test)
+
+This script runs in the browser (Chrome) to generate keys and sign statements, then intentionally corrupts them (e.g., invalid signature, broken chain) and saves the tokens to `integration_test/corruption_data.json`.
+
+**Run with:**
+```bash
+./bin/generate_corruption_data.sh
+```
+*Or manually:*
+```bash
+flutter drive \
+  --driver=test_driver/integration_test.dart \
+  --target=integration_test/generate_corruption_data.dart \
+  -d chrome
+```
+
+### 2. Verify Detection (Integration Test)
+
+The verification test reads the generated tokens and asserts that the V2 pipeline detects the corruption (via `TrustNotification`).
+
+**Run with:**
+```bash
+flutter drive \
+  --driver=test_driver/integration_test.dart \
+  --target=integration_test/corruption_test.dart \
+  -d chrome
+```
+
 ## Utilities & Demos
 
 ### Simpsons Relate Demo (Data Seeding)

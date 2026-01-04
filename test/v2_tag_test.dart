@@ -12,6 +12,9 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 
 class MockSource<T extends Statement> implements StatementSource<T> {
   @override
+  List<TrustNotification> get notifications => [];
+
+  @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async => {};
 }
 

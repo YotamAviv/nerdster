@@ -1,5 +1,6 @@
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/v2/model.dart';
 
 /// A caching decorator for [StatementSource].
 /// Stores fetched statements in memory to avoid redundant network calls.
@@ -19,6 +20,9 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
   final Map<String, (String, List<T>)> _partialCache = {};
 
   CachedSource(this._delegate);
+
+  @override
+  List<TrustNotification> get notifications => _delegate.notifications;
 
   void clear() {
     _fullCache.clear();

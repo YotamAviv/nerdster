@@ -5,6 +5,7 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/v2/model.dart';
 
 /// Fetches statements using the Cloud Function HTTP endpoint.
 /// This is the preferred method for Production and Emulator environments as it is more efficient.
@@ -21,6 +22,7 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final http.Client client;
   final StatementVerifier verifier;
   final Map<String, dynamic>? paramsOverride;
+  final List<TrustNotification> _notifications = [];
 
   static const Map<String, dynamic> _paramsProto = {
     "distinct": "true",
@@ -40,7 +42,11 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
         client = client ?? http.Client();
 
   @override
+  List<TrustNotification> get notifications => List.unmodifiable(_notifications);
+
+  @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
+    _notifications.clear();
     if (keys.isEmpty) return {};
 
     final List<dynamic> spec = keys.entries.map((e) {
@@ -96,7 +102,19 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
 
           Jsonish jsonish;
           if (!skipVerify) {
-            jsonish = await Jsonish.makeVerify(json, verifier);
+            try {
+              jsonish = await Jsonish.makeVerify(json, verifier);
+            } catch (e) {
+              // Create unverified statement to report corruption
+              final unverifiedJsonish = Jsonish(json, serverToken);
+              final statement = Statement.make(unverifiedJsonish);
+              _notifications.add(TrustNotification(
+                reason: 'Invalid Signature: $e',
+                relatedStatement: statement,
+                isConflict: true,
+              ));
+              continue; // Skip corrupt statement
+            }
           } else {
             jsonish = Jsonish(json, serverToken);
           }

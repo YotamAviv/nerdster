@@ -2,8 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/cached_source.dart';
-
-
+import 'package:nerdster/v2/model.dart';
 
 /// ## Reasoning: Greedy-Safe Caching in V2
 ///
@@ -32,6 +31,9 @@ class MockSource implements StatementSource<TrustStatement> {
   int fetchCount = 0;
 
   MockSource(this.data);
+
+  @override
+  List<TrustNotification> get notifications => [];
 
   @override
   Future<Map<String, List<TrustStatement>>> fetch(Map<String, String?> keys) async {

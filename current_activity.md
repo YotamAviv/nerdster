@@ -3,17 +3,20 @@
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
-## required for prod
-
+## Required for V2 switch to PROD
 
 - Make link to this view work
+  - verify
+  - verify2
+
+- embed on home.js, aviv.net works
+
+
+## Not required for V2 switch to PROD
 
 - Notifications
   - corrupt key
-  - look for all legacy notifcations not in V2
   - Reach goal: Recommended actions, warnings
-
-
 
 ### node detail Enhancements
 - ability to toggle showCrypto in graph view

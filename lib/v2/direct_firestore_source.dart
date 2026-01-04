@@ -4,6 +4,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/refresh_signal.dart';
 
 /// Fetches statements directly from Firestore.
@@ -17,6 +18,9 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
   final FirebaseFirestore _fire;
 
   DirectFirestoreSource(this._fire);
+
+  @override
+  List<TrustNotification> get notifications => [];
 
   @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {

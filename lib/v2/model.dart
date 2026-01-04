@@ -67,6 +67,30 @@ class TrustGraph {
 
   List<TrustNotification> get conflicts => notifications.where((n) => n.isConflict).toList();
 
+  TrustGraph copyWith({
+    String? pov,
+    Map<String, int>? distances,
+    List<String>? orderedKeys,
+    Map<String, String>? replacements,
+    Map<String, String>? replacementConstraints,
+    Set<String>? blocked,
+    Map<String, List<List<String>>>? paths,
+    List<TrustNotification>? notifications,
+    Map<String, List<TrustStatement>>? edges,
+  }) {
+    return TrustGraph(
+      pov: pov ?? this.pov,
+      distances: distances ?? this.distances,
+      orderedKeys: orderedKeys ?? this.orderedKeys,
+      replacements: replacements ?? this.replacements,
+      replacementConstraints: replacementConstraints ?? this.replacementConstraints,
+      blocked: blocked ?? this.blocked,
+      paths: paths ?? this.paths,
+      notifications: notifications ?? this.notifications,
+      edges: edges ?? this.edges,
+    );
+  }
+
   /// Returns the active identity token for a given key.
   /// If the key is replaced, returns the replacement (recursively).
   String resolveIdentity(String token) {
