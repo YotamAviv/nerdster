@@ -4,6 +4,7 @@ import 'package:json_diff/json_diff.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/interpreter.dart';
 
 // CODE: Rename to test_util
 
@@ -18,8 +19,9 @@ void myExpect(dynamic actual, dynamic matcher) {
 }
 
 void jsonShowExpect(dynamic actual, dynamic expected) {
-  final actual2 = keyLabels.interpret(actual);
-  final expected2 = keyLabels.interpret(expected);
+  final interpreter = null; // TODO: Pass interpreter
+  final actual2 = interpreter != null ? interpreter.interpret(actual) : actual;
+  final expected2 = interpreter != null ? interpreter.interpret(expected) : expected;
   JsonDiffer differ = JsonDiffer.fromJson(actual2, expected2);
   DiffNode diffNode = differ.diff();
   if (!diffNode.hasNothing) {

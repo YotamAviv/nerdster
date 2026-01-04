@@ -83,7 +83,7 @@ void main() async {
 
     // Use <nerdster> context
     final FollowNetwork netAlice =
-        reduceFollowNetwork(graph, delegateResolver, contentResult, kNerdsterContext);
+        reduceFollowNetwork(graph, delegateResolver, contentResult, kFollowContextNerdster);
 
     // Verify Network Order
     final V2Labeler labeler = V2Labeler(graph);

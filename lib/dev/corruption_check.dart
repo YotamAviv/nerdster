@@ -1,60 +1,76 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
-import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/follow/follow_net.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
+import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/singletons.dart';
+import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/v2/direct_firestore_source.dart';
 
-// CONSIDER: TEST: Say, on simpsons for exmaple
+/// BUG: Totally broken.
+/// DirectFirestoreSource does not expose a way to fetch all statements for a given identity token.
+/// Futhermore, it skips past problems.
+/// This could/should use CloudFunctionsSource.
+///
 class CorruptionCheck {
   static final OouVerifier _oouVerifier = OouVerifier();
-  static Future<void> make() async {
-    await Comp.waitOnComps([oneofusNet, oneofusLabels]);
 
-    print('oneofus');
-    for (String oneofus in oneofusNet.network.keys) {
-      Fetcher fetcher = Fetcher(oneofus, kOneofusDomain);
-      assert(fetcher.token == oneofus);
-      await check(fetcher);
+  // TODO: Restore iteration over all keys when V2 key discovery is available.
+  static Future<void> make(List<String> keysToCheck) async {
+    print('Checking ${keysToCheck.length} keys...');
+
+    for (String token in keysToCheck) {
+      // TODO: Determine correct domain/type for each key.
+      // For now, checking both domains as both types.
+      await check<TrustStatement>(token, kOneofusDomain);
+      await check<ContentStatement>(token, kNerdsterDomain);
     }
-
-    print('delegates');
-    followNet.fcontext = kOneofusContext;
-    await Comp.waitOnComps([followNet, keyLabels]);
-    for (String delegate in followNet.delegate2oneofus.keys) {
-      Fetcher fetcher = Fetcher(delegate, kNerdsterDomain);
-      assert(fetcher.token == delegate);
-      await check(fetcher);
-    }
-
-    print('out');
   }
 
-  static Future<void> check(Fetcher fetcher) async {
+  static Future<void> check<T extends Statement>(String token, String domain) async {
+    // Use DirectFirestoreSource to fetch raw statements without verification
+    // We temporarily disable verification in settings to get raw data
+    final bool originalSkipVerify = Setting.get<bool>(SettingType.skipVerify).value;
+    Setting.get<bool>(SettingType.skipVerify).value = true;
+
+    try {
+      final fire = FireFactory.find(domain);
+      final source = DirectFirestoreSource<T>(fire);
+
+      final Map<String, List<T>> results = await source.fetch({token: null});
+      final List<T> statements = results[token]!;
+
+      await _validateStatements(statements, token, domain);
+    } catch (e) {
+      print('Fetch failed for $token on $domain: $e');
+    } finally {
+      Setting.get<bool>(SettingType.skipVerify).value = originalSkipVerify;
+    }
+  }
+
+  static Future<void> _validateStatements(
+      List<Statement> statements, String identityToken, String domain) async {
     String? previousToken;
     DateTime? previousTime;
-    for (Statement s in await fetcher.fetchAllNoVerify()) {
+
+    for (Statement s in statements) {
       String token = s.token;
       DateTime time = s.time;
 
       // Validate notary chain, decending order
       if (previousTime == null) {
-        // no check
+        // no check for first (newest) statement
       } else {
         if (s.token != previousToken) {
-          String error =
-              '${keyLabels.labelKey(fetcher.token)} $time !notary: $token != $previousToken';
+          String error = '$identityToken $time !notary: $token != $previousToken';
           print(error);
         }
         if (!time.isBefore(previousTime)) {
-          String error = '${keyLabels.labelKey(fetcher.token)} $time !desc: $time >= $previousTime';
+          String error = '$identityToken $time !desc: $time >= $previousTime';
           print(error);
         }
       }
@@ -75,14 +91,17 @@ class CorruptionCheck {
         print(error);
       }
 
-      // Validate verb
-      // If Statement (s) succeeded so far, then there's nothing to check regarding
-      if (fetcher.domain == kOneofusDomain) {
-        // print((s as TrustStatement).verb);
-      } else if (fetcher.domain == kNerdsterDomain) {
-        // print((s as ContentStatement).verb);
+      // Validate verb (Well, we have a Statement, and so something up the chain should have crashed with a bad verb)
+      if (domain == kOneofusDomain) {
+        if (s is! TrustStatement) {
+          print('!type: Expected TrustStatement, got ${s.runtimeType}');
+        }
+      } else if (domain == kNerdsterDomain) {
+        if (s is! ContentStatement) {
+          print('!type: Expected ContentStatement, got ${s.runtimeType}');
+        }
       } else {
-        assert(false, fetcher.domain);
+        assert(false, domain);
       }
 
       print(',');

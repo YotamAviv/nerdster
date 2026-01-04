@@ -1,8 +1,10 @@
-import 'package:nerdster/oneofus/json_display.dart';
+import 'package:nerdster/v2/json_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/labeler.dart';
+
+const kUnknown = '<unknown>';
 
 class V2Interpreter implements Interpreter {
   final V2Labeler labeler;
@@ -15,22 +17,10 @@ class V2Interpreter implements Interpreter {
     return;
   }
 
-  String? _labelKey(String token) {
-    String label = labeler.getLabel(token);
-
-    // If the label is just a truncated version of the token,
-    // AND the token doesn't look like a crypto token,
-    // then it's probably just a random string that got truncated.
-    // We should return null to let interpret handle it (e.g. as a date or raw string).
-    if (token.length > 8 && label == token.substring(0, 8)) {
-      if (RegExp(r'^[0-9a-f]{40}$').hasMatch(token)) {
-        return label;
-      }
-      return null;
-    }
-    return label;
-  }
-
+  // Label, convert, strip:
+  // - "gibberish" (crypto keys, tokens, ['signature', 'previous'] stripped)
+  // - datetimes.,
+  // - lists and maps of those above
   @override
   dynamic interpret(dynamic d) {
     if (d is Jsonish) {
@@ -38,11 +28,11 @@ class V2Interpreter implements Interpreter {
     } else if (d is Statement) {
       return interpret(d.json);
     } else if (d is Iterable) {
-      return List.of(d.map(interpret));
+      return List.of(d.map(interpret)); // Json converter doesn't like Iterable, and so List.of
     } else if (d is Json && d['crv'] == 'Ed25519') {
       try {
         String token = getToken(d);
-        return b(_labelKey(token)) ? _labelKey(token) : '<unknown>';
+        return labeler.hasLabel(token) ? labeler.getLabel(token) : kUnknown;
       } catch (e) {
         return d;
       }
@@ -55,8 +45,7 @@ class V2Interpreter implements Interpreter {
       }
       return out;
     } else if (d is String) {
-      String? keyLabel = _labelKey(d);
-      if (b(keyLabel)) return keyLabel!;
+      if (labeler.hasLabel(d)) return labeler.getLabel(d);
       if (RegExp(r'^[0-9a-f]{40}$').hasMatch(d)) {
         return '<crypto token>';
       }

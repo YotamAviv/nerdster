@@ -9,8 +9,6 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
-import 'package:nerdster/oneofus/endpoint.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/app.dart';
 
@@ -39,12 +37,6 @@ void main() {
     
     V2Config.registerUrl(kOneofusDomain, oneofusUrl);
     V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
-
-    // Configure Fetcher Endpoints
-    Fetcher.initEndpoint(kOneofusDomain,
-        const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
-    Fetcher.initEndpoint(kNerdsterDomain,
-        const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
 
     FireFactory.register(kOneofusDomain, OneofusFire.firestore, null);
     FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, null);

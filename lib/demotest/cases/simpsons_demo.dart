@@ -1,10 +1,10 @@
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/follow/follow_net.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/v2/follow_logic.dart';
 
 /// Simpson public demo
 /// - Lisa's view clean, no porn, no notifications
@@ -210,9 +210,9 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   // nerd: bart trusts Milhouse, milhouse trusts lisa and bart.
   // family. lisa follows all family; there are other paths.
   await bartN.doFollow(milhouse, {'social': 1}, export: 'bart-follow-milhouse-social');
-  await bartN.doFollow(lisa, {'family': 1, 'social': -1, kNerdsterContext: -1});
+  await bartN.doFollow(lisa, {'family': 1, 'social': -1, kFollowContextNerdster: -1});
   await bartN.doFollow(homer, {'family': 1});
-  await bartN.doFollow(marge, {kNerdsterContext: -1});
+  await bartN.doFollow(marge, {kFollowContextNerdster: -1});
   await milhouseN.doFollow(bart, {'social': 1});
   await milhouseN.doFollow(lisa, {'social': 1});
   await lisaN.doFollow(bart, {'social': 1, 'family': 1});
@@ -223,10 +223,10 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   // await homer2N.doFollow(marge, {'family': 1});
   await margeN.doFollow(lisa, {'family': 1});
   await margeN.doFollow(maggie, {'family': 1});
-  await burnsN.doFollow(lisa, {kNerdsterContext: -1});
-  await burnsN.doFollow(bart, {kNerdsterContext: -1});
-  await burnsN.doFollow(marge, {kNerdsterContext: -1});
-  await burnsN.doFollow(homer2, {kNerdsterContext: -1});
+  await burnsN.doFollow(lisa, {kFollowContextNerdster: -1});
+  await burnsN.doFollow(bart, {kFollowContextNerdster: -1});
+  await burnsN.doFollow(marge, {kFollowContextNerdster: -1});
+  await burnsN.doFollow(homer2, {kFollowContextNerdster: -1});
 
   useClock(LiveClock());
 

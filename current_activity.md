@@ -1,20 +1,33 @@
 # Current Activity: V2 Rewrite
 
+Remove dead code.
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
 ## Required for V2 switch to PROD
 
-- Make link to this view work
+Notifications (not TrustNotifications)
+- you're not in this network
+- your delegate key is revoked
+- 
+
+Don't show notifcations for someone else trust a replaced key directly.
+
+CredentialsDisplay:
+- possible cleanup: make it listen to signInState and show the keys using a snackbar.
+
+- embed on home.js, aviv.net (seems to work)
   - verify
-  - verify2
-
-- embed on home.js, aviv.net works
-
+  - verifyImmediately
 
 ## Not required for V2 switch to PROD
 
-- Notifications
+Restore integration tests from browser
+- misc demos, maybe some old DemoKey samples.
+- anything else?
+- corrupt a key?
+
+- Notifications (not TrustNotifications)
   - corrupt key
   - Reach goal: Recommended actions, warnings
 

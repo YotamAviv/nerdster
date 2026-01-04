@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/fire_choice.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
-import 'package:nerdster/oneofus/json_display.dart';
+import 'package:nerdster/v2/json_display.dart';
+import 'package:nerdster/v2/interpreter.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:nerdster/v2/config.dart';
 import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/v2/source_factory.dart';
 
 class KeyInfoView extends StatelessWidget {
   final Jsonish jsonish;
   final String domain;
-  final StatementSource? source;
+  final StatementSource source;
+  final V2Labeler labeler;
 
   const KeyInfoView({
     super.key, 
     required this.jsonish, 
     required this.domain,
-    this.source,
+    required this.labeler,
+    required this.source,
   });
 
   @override
@@ -26,7 +31,7 @@ class KeyInfoView extends StatelessWidget {
     return Column(
       children: [
         Expanded(
-          child: JsonQrDisplay(jsonish.json, interpret: ValueNotifier(true)),
+          child: JsonQrDisplay(jsonish.json, interpret: ValueNotifier(true), interpreter: V2Interpreter(labeler)),
         ),
         _buildStatementsLink(context),
       ],
@@ -35,7 +40,11 @@ class KeyInfoView extends StatelessWidget {
 
   Widget _buildStatementsLink(BuildContext context) {
     if (fireChoice != FireChoice.fake) {
-      final Uri uri = Fetcher.makeSimpleUri(domain, jsonish.token);
+      String? revokeAt;
+      final token = jsonish.token;
+      revokeAt = labeler.graph.replacementConstraints[token];
+
+      final Uri uri = V2Config.makeSimpleUri(domain, jsonish.token, revokeAt: revokeAt);
       return InkWell(
         onTap: () => launchUrl(uri),
         child: Padding(
@@ -60,13 +69,8 @@ class KeyInfoView extends StatelessWidget {
   }
 
   Future<void> _showFakeStatements(BuildContext context) async {
-    Iterable statements;
-    if (source != null) {
-      final map = await source!.fetch({jsonish.token: null});
-      statements = map[jsonish.token] ?? [];
-    } else {
-      statements = Fetcher(jsonish.token, domain).statements;
-    }
+    final map = await source.fetch({jsonish.token: null});
+    final statements = map[jsonish.token] ?? [];
     List<dynamic> jsons = List.from(statements.map((s) => s.json));
     Map<String, dynamic> j = {jsonish.token: jsons};
 
@@ -75,7 +79,7 @@ class KeyInfoView extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
             title: const Text('Signed by this key'),
-            content: SingleChildScrollView(child: JsonDisplay(j)),
+            content: SingleChildScrollView(child: V2JsonDisplay(j, interpreter: V2Interpreter(labeler))),
             actions: [
               TextButton(child: const Text('Okay'), onPressed: () => Navigator.of(context).pop())
             ]);
@@ -84,7 +88,7 @@ class KeyInfoView extends StatelessWidget {
   }
   
   static Future<void> show(BuildContext context, String token, String domain,
-      {TapDownDetails? details, StatementSource? source}) {
+      {TapDownDetails? details, required StatementSource source, required V2Labeler labeler}) {
     
     final jsonish = Jsonish.find(token);
     if (jsonish == null) {
@@ -130,7 +134,7 @@ class KeyInfoView extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: KeyInfoView(
-                            jsonish: jsonish, domain: domain, source: source),
+                            jsonish: jsonish, domain: domain, source: source, labeler: labeler),
                       ),
                     ),
                   ),
@@ -147,7 +151,7 @@ class KeyInfoView extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: KeyInfoView(
-                        jsonish: jsonish, domain: domain, source: source),
+                        jsonish: jsonish, domain: domain, source: source, labeler: labeler),
                   )));
         });
   }

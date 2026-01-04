@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:nerdster/app.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
-// DEFER: add other network settings: degrees? (statements?, numOneofus?, numFollow?, )
+// TODO: Fix: type book, etc...
+// CONSIDER: identity and PoV
 String generateLink() {
   Map<String, String> params = <String, String>{};
 

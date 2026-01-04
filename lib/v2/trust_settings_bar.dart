@@ -3,7 +3,7 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/follow/follow_net.dart' show kOneofusContext, kNerdsterContext;
+import 'package:nerdster/v2/follow_logic.dart' show kFollowContextIdentity, kFollowContextNerdster;
 import 'package:nerdster/v2/refresh_signal.dart';
 
 class TrustSettingsBar extends StatelessWidget {
@@ -78,8 +78,8 @@ class TrustSettingsBar extends StatelessWidget {
               valueListenable: Setting.get<String>(SettingType.fcontext).notifier,
               builder: (context, fcontext, _) {
                 final hasError = !activeContexts.contains(fcontext) &&
-                    fcontext != kOneofusContext &&
-                    fcontext != kNerdsterContext;
+                    fcontext != kFollowContextIdentity &&
+                    fcontext != kFollowContextNerdster;
 
                 return Row(
                   children: [
@@ -95,11 +95,11 @@ class TrustSettingsBar extends StatelessWidget {
                         style: hasError ? const TextStyle(color: Colors.red) : null,
                         items: [
                           const DropdownMenuItem(
-                              value: kOneofusContext, child: Text(kOneofusContext)),
+                              value: kFollowContextIdentity, child: Text(kFollowContextIdentity)),
                           const DropdownMenuItem(
-                              value: kNerdsterContext, child: Text(kNerdsterContext)),
+                              value: kFollowContextNerdster, child: Text(kFollowContextNerdster)),
                           ...availableContexts
-                              .where((c) => c != kOneofusContext && c != kNerdsterContext)
+                              .where((c) => c != kFollowContextIdentity && c != kFollowContextNerdster)
                               .map((c) {
                             final isContextActive = activeContexts.contains(c);
                             return DropdownMenuItem(
@@ -113,8 +113,8 @@ class TrustSettingsBar extends StatelessWidget {
                               ),
                             );
                           }),
-                          if (fcontext != kOneofusContext &&
-                              fcontext != kNerdsterContext &&
+                          if (fcontext != kFollowContextIdentity &&
+                              fcontext != kFollowContextNerdster &&
                               !availableContexts.contains(fcontext))
                             DropdownMenuItem(value: fcontext, child: Text(fcontext)),
                         ],

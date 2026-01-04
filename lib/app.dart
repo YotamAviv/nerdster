@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/content_tree.dart';
-import 'package:nerdster/net/net_tree.dart';
+// import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
@@ -8,6 +7,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/content_view.dart';
 import 'package:nerdster/v2/phone_view.dart';
 import 'package:nerdster/verify.dart';
+import 'package:nerdster/qr_sign_in.dart';
 
 export 'package:nerdster/fire_choice.dart';
 export 'package:nerdster/oneofus/jsonish.dart';
@@ -23,6 +23,17 @@ class NerdsterApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check for qrSignIn query parameter on startup
+    if (Uri.base.queryParameters.containsKey('qrSignIn') && 
+        Uri.base.queryParameters['qrSignIn'] == 'true') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final context = navigatorKey.currentContext;
+        if (context != null) {
+          qrSignIn(context);
+        }
+      });
+    }
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
@@ -34,10 +45,6 @@ class NerdsterApp extends StatelessWidget {
 
           if (path == '/m' || path.startsWith('/m/') || path == '/m.html' || path == '/v2/phone') {
             return PhoneView(povToken: povToken);
-          } else if (path == '/legacy/content') {
-            return ContentTree();
-          } else if (path == '/legacy/net') {
-            return NetTreeView(NetTreeView.makeRoot());
           } else if (Uri.base.queryParameters.containsKey('verifyFullScreen') &&
               b(Setting.get(SettingType.verify).value)) {
             return const StandaloneVerify();

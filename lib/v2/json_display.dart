@@ -4,8 +4,15 @@ import 'package:nerdster/oneofus/json_highlighter.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/interpreter.dart';
 
-import '../oneofus/json_display.dart'; // For Interpreter
+abstract class Interpreter {
+  dynamic interpret(dynamic d);
+  Future<void> waitUntilReady();
+}
+
+Color? interpretedColor = Colors.green[900];
 
 class V2JsonDisplay extends StatefulWidget {
   static Set<String> highlightKeys = {};
@@ -28,7 +35,6 @@ class _State extends State<V2JsonDisplay> {
   @override
   void initState() {
     super.initState();
-    initAsync();
     Setting.get<bool>(SettingType.bogus).addListener(listener);
   }
 
@@ -40,19 +46,9 @@ class _State extends State<V2JsonDisplay> {
 
   void listener() => setState(() {});
 
-  Future<void> initAsync() async {
-    final interpreter = widget.interpreter ?? JsonDisplay.interpreter;
-    if (b(interpreter)) {
-      // KLUDGE: repaint when keyLabels is ready, and so we should see "<unknown>" and then "tom".
-      await interpreter!.waitUntilReady();
-      if (!mounted) return;
-      setState(() {});
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final interpreter = widget.interpreter ?? JsonDisplay.interpreter;
+    final Interpreter? interpreter = widget.interpreter;
     var useSubject = !Setting.get<bool>(SettingType.bogus).value
         ? widget.subject
         : widget.bogusSubject ?? widget.subject;
@@ -70,7 +66,7 @@ class _State extends State<V2JsonDisplay> {
     );
 
     List<TextSpan> spans =
-        highlightJsonKeys(display, baseStyle, keysToHighlight: JsonDisplay.highlightKeys);
+        highlightJsonKeys(display, baseStyle, keysToHighlight: V2JsonDisplay.highlightKeys);
 
     return Stack(
       children: [
@@ -80,7 +76,7 @@ class _State extends State<V2JsonDisplay> {
             bottom: 0,
             right: 0,
             child: FloatingActionButton(
-                heroTag: 'Interpret',
+                heroTag: null, // Fix for multiple FABs
                 mini: true, // 40x40 instead of 56x56
                 tooltip: !widget.interpret.value
                     ? '''Raw JSON shown; click to interpret (make more human readable):

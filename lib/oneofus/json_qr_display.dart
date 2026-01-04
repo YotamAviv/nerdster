@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import 'json_display.dart';
+import 'package:nerdster/v2/json_display.dart';
 import 'jsonish.dart';
 import 'util.dart';
 
@@ -11,8 +11,9 @@ class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null
   final dynamic bogusSubject; //
   final ValueNotifier<bool>? interpret;
+  final Interpreter? interpreter;
 
-  const JsonQrDisplay(this.subject, {super.key, this.interpret, this.bogusSubject});
+  const JsonQrDisplay(this.subject, {super.key, this.interpret, this.bogusSubject, this.interpreter});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,7 @@ class JsonQrDisplay extends StatelessWidget {
                 height: qrSize / 2,
                 child: Padding(
                     padding: kPadding,
-                    child: JsonDisplay(subject, bogusSubject: bogusSubject, interpret: interpret))),
+                    child: V2JsonDisplay(subject, bogusSubject: bogusSubject, interpret: interpret, interpreter: interpreter))),
           ],
         );
       } else {
@@ -61,7 +62,7 @@ class JsonQrDisplay extends StatelessWidget {
                 child: SizedBox(
                     width: x,
                     height: x * 3 / 2,
-                    child: JsonQrDisplay(subject, interpret: interpret)));
+                    child: JsonQrDisplay(subject, interpret: interpret, interpreter: interpreter)));
           });
         });
   }

@@ -3,7 +3,8 @@ import '../singletons.dart';
 import '../content/content_statement.dart';
 import '../oneofus/jsonish.dart';
 import '../oneofus/util.dart';
-import '../oneofus/json_display.dart';
+import 'json_display.dart';
+import 'interpreter.dart';
 import '../oneofus/statement.dart';
 import '../content/dialogs/on_off_icon.dart';
 import '../content/dialogs/on_off_icons.dart';
@@ -12,7 +13,6 @@ import 'model.dart';
 import 'source_factory.dart';
 
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
-import 'package:nerdster/oneofus/util.dart';
 
 enum RateIntent { like, dislike, dismiss, comment, censor, clear, none }
 
@@ -48,7 +48,7 @@ class V2RateDialog extends StatefulWidget {
 
     if (result != null) {
       try {
-        final writer = SourceFactory.getWriter(kNerdsterDomain, context: context);
+        final writer = SourceFactory.getWriter(kNerdsterDomain, context: context, labeler: model.labeler);
         await writer.push(result, signInState.signer!);
         onRefresh?.call();
       } catch (e, stackTrace) {
@@ -292,10 +292,11 @@ class _V2RateDialogState extends State<V2RateDialog> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
                 child: SizedBox(
                   height: 150,
-                  child: JsonDisplay(
+                  child: V2JsonDisplay(
                     isMap ? rawSubject : {'token': rawSubject},
                     interpret: interpret, 
-                    strikethrough: censor.value
+                    strikethrough: censor.value,
+                    interpreter: V2Interpreter(widget.model.labeler),
                   )
                 )
               ),

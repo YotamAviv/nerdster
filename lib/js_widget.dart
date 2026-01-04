@@ -4,6 +4,7 @@ import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/interpreter.dart';
 
 class JSWidget extends StatelessWidget {
   final Jsonish jsonish;
@@ -14,7 +15,8 @@ class JSWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var dyn = keyLabels.interpret(jsonish);
+    final interpreter = null; // TODO: Pass interpreter
+    var dyn = interpreter != null ? interpreter.interpret(jsonish) : jsonish;
     String message;
     if (dyn is Jsonish) {
       message = encoder.convert(dyn.json);

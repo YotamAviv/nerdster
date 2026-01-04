@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/comp.dart';
 import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/json_highlighter.dart';
@@ -13,11 +12,23 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/interpreter.dart';
 
-/// from: https://www.urlencoder.org/
-/// ?verify=%0A%7B%0A%20%20%22statement%22%3A%20%22org.nerdster%22%2C%0A%20%20%22time%22%3A%20%222025-07-03T14%3A11%3A25.901Z%22%2C%0A%20%20%22I%22%3A%20%7B%0A%20%20%20%20%22crv%22%3A%20%22Ed25519%22%2C%0A%20%20%20%20%22kty%22%3A%20%22OKP%22%2C%0A%20%20%20%20%22x%22%3A%20%22qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI%22%0A%20%20%7D%2C%0A%20%20%22rate%22%3A%20%7B%0A%20%20%20%20%22contentType%22%3A%20%22book%22%2C%0A%20%20%20%20%22author%22%3A%20%22Ring%20Lardner%22%2C%0A%20%20%20%20%22title%22%3A%20%22Champion%22%0A%20%20%7D%2C%0A%20%20%22with%22%3A%20%7B%0A%20%20%20%20%22recommend%22%3A%20true%0A%20%20%7D%2C%0A%20%20%22comment%22%3A%20%22A%20long-form%20cynical%20joke%2C%20fantastic%20counterpoint%20dessert%20piece%20to%20%5C%22Ghosts%20of%20Manila%5C%22%2C%20a%2020%20page%20setup%20to%20punch%20line%20%28no%20pun%20intended%29.%22%2C%0A%20%20%22previous%22%3A%20%226282a02d21eff999e0a3a9216a087f7a4ce79d0c%22%2C%0A%20%20%22signature%22%3A%20%22276f15ca9c32a02fcaaaec68019df09a0768ab7cd0109723811df4d7eda313fdd10afeee8a9dcf3f368f238dc2fc7543c671f3f9d855ba82573c0723ce84a107%22%0A%7D
+/// This Verify feature is for:
+/// - The ONE-OF-US.NET home page, where the Nerdster is embedded in a frame.
+///   - to show that signatures work.
+///     In this case, it covers the entire screen and doesn't load any ONE-OF-US.NET
+///     content.
+///   - to show that with context of whose key is who, we can interpret the signer
+///     and subject (e.g. Bart@nerdster.org follows Millhouse).
+///     In this case, it only covers some of the screen, and the trust pipeline needs
+///     to run so that Labeler is functional.
+///   Even in cases where we haven't processed the trust pipeline, we still want to
+///   interpret some stuff (formats, dates), and we specifically want to show that
+///   the signer is "<unknown>".
+/// - (Also, just for nerds.)
 
-OouVerifier _oouVerifier = OouVerifier();
+final OouVerifier _oouVerifier = OouVerifier();
 
 const String kVerify = 'Verify, Tokenize';
 const Widget _space = SizedBox(height: 20);
@@ -88,8 +99,7 @@ void verifyInit(GlobalKey<NavigatorState> navigatorKey) {
           return Dialog(
               // Doesn't work: shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
               child: Navigator(onGenerateRoute: (settings) {
-            return MaterialPageRoute(
-                builder: (_) => Verify(input: value));
+            return MaterialPageRoute(builder: (_) => Verify(input: value));
           }));
         });
     dialogContext = null;
@@ -299,18 +309,18 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
   @override
   void initState() {
     super.initState();
-    keyLabels.addListener(_onKeyLabelsChanged);
     _startProcessing();
+    globalLabeler.addListener(_onLabelerChanged);
   }
 
   @override
   void dispose() {
-    keyLabels.removeListener(_onKeyLabelsChanged);
+    globalLabeler.removeListener(_onLabelerChanged);
     super.dispose();
   }
 
-  void _onKeyLabelsChanged() {
-    _startProcessing();
+  void _onLabelerChanged() {
+    if (mounted) _startProcessing();
   }
 
   void _set(Widget child) {
@@ -324,7 +334,6 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
   }
 
   Future<void> _startProcessing() async {
-    await Comp.waitOnComps([keyLabels]);
     if (!mounted) return;
 
     final input = widget.input;
@@ -422,14 +431,13 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
       _notifyStatus('Not signed', Colors.grey[700]!);
     }
 
-    final String interpreted = encoder.convert(keyLabels.interpret(json));
-    if (interpreted != ppJson) {
-      children.addAll([
-        _space,
-        headline('Interpreted'),
-        monospacedBlock(interpreted),
-      ]);
-    }
+    V2Interpreter interpreter = V2Interpreter(globalLabeler.value);
+    final String interpreted = encoder.convert(interpreter.interpret(json));
+    children.addAll([
+      _space,
+      headline('Interpreted'),
+      monospacedBlock(interpreted),
+    ]);
 
     final String token = sha1.convert(utf8.encode(ppJson)).toString();
     children.addAll([

@@ -188,7 +188,10 @@ class V2Labeler {
 
   /// Returns true if the token has been assigned a human-readable label.
   bool hasLabel(String token) {
-    return _tokenToName.containsKey(token);
+    if (_tokenToName.containsKey(token)) return true;
+    if (delegateResolver != null &&
+        delegateResolver!.getIdentityForDelegate(token) != null) return true;
+    return false;
   }
 
   /// Returns all shortest paths from the pov to [token] as human-readable strings.

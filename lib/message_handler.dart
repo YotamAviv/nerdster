@@ -1,9 +1,9 @@
 import 'dart:js_interop';
 
-import 'package:nerdster/bar_refresh.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/content/content_tree.dart';
+// import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:web/web.dart' as web;
 
@@ -22,13 +22,10 @@ void initMessageListener() {
             final token = getToken(identity);
             print('Token: $token');
 
-            final context = ContentTree.rootContext;
-            final state = ContentTree.contentKey.currentState;
-            if (!(state != null && state.mounted && context != null)) return;
+            // CONSIDER: final context = navigatorKey.currentContext;
             Future.microtask(() async {
-              if (!state.mounted) return;
-              await signInState.signIn(token, null, context: context);
-              await BarRefresh.refresh(context);
+              await signInState.signIn(token, null);
+              // CONSIDER: await signInState.signIn(token, null, context: context);
             });
           }
 

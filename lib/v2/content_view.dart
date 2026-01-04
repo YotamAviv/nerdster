@@ -41,6 +41,11 @@ class _ContentViewState extends State<ContentView> {
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
+    _controller.addListener(() {
+      if (_controller.value != null) {
+        globalLabeler.value = _controller.value!.labeler;
+      }
+    });
     _controller.refresh(_currentPov, meIdentityToken: signInState.identity);
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     v2RefreshSignal.addListener(_onRefresh);
@@ -72,6 +77,7 @@ class _ContentViewState extends State<ContentView> {
     _controller.dispose();
     super.dispose();
   }
+
 
   void _onSettingChanged() {
     if (mounted) setState(() {});

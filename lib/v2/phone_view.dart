@@ -77,9 +77,11 @@ class _PhoneViewState extends State<PhoneView> {
           body: _controller.loading
               ? const Center(child: CircularProgressIndicator())
               : _controller.error != null
-                  ? Center(child: Text(_controller.error!, style: const TextStyle(color: Colors.red)))
+                  ? Center(
+                      child: Text(_controller.error!, style: const TextStyle(color: Colors.red)))
                   : (model == null || model.aggregation.subjects.isEmpty)
-                      ? const Center(child: Text('No content', style: TextStyle(color: Colors.white)))
+                      ? const Center(
+                          child: Text('No content', style: TextStyle(color: Colors.white)))
                       : _buildFeed(model),
           floatingActionButton: FloatingActionButton(
             backgroundColor: Colors.blueAccent,
@@ -133,16 +135,15 @@ class ContentBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    assert(aggregation.subject !is Json, 'Unexpected: ${Jsonish.find(aggregation.subject)}');
+    assert(aggregation.subject! is Json, 'Unexpected: ${Jsonish.find(aggregation.subject)}');
     final Json subject = aggregation.subject;
     final String title = subject['title'];
     final String type = subject['contentType'];
 
     final url = subject['url']?.toString();
     final author = subject['author'];
-    final List<String> images = subject['images'] != null 
-        ? List<String>.from(subject['images']) 
-        : [];
+    final List<String> images =
+        subject['images'] != null ? List<String>.from(subject['images']) : [];
 
     return Dismissible(
       key: Key(aggregation.token),
@@ -228,14 +229,19 @@ class ContentBox extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('Rate "$title"', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Rate "$title"',
+                            style: const TextStyle(
+                                color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 20),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: List.generate(5, (index) => IconButton(
-                            icon: const Icon(Icons.star_border, color: Colors.amber, size: 40),
-                            onPressed: () => Navigator.pop(context),
-                          )),
+                          children: List.generate(
+                              5,
+                              (index) => IconButton(
+                                    icon: const Icon(Icons.star_border,
+                                        color: Colors.amber, size: 40),
+                                    onPressed: () => Navigator.pop(context),
+                                  )),
                         ),
                         const SizedBox(height: 20),
                         TextField(
@@ -245,13 +251,16 @@ class ContentBox extends StatelessWidget {
                             hintStyle: TextStyle(color: Colors.grey[600]),
                             filled: true,
                             fillColor: Colors.grey[850],
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none),
                           ),
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
+                          style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50)),
                           child: const Text('Post Review'),
                         ),
                       ],
@@ -309,7 +318,8 @@ class ContentBox extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               '${aggregation.likes}',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              style:
+                                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),
@@ -355,10 +365,12 @@ class ContentBox extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 8.0),
                       child: Wrap(
                         spacing: 6,
-                        children: aggregation.tags.map((tag) => Text(
-                          tag,
-                          style: const TextStyle(color: Colors.blue, fontSize: 12),
-                        )).toList(),
+                        children: aggregation.tags
+                            .map((tag) => Text(
+                                  tag,
+                                  style: const TextStyle(color: Colors.blue, fontSize: 12),
+                                ))
+                            .toList(),
                       ),
                     ),
                   ...aggregation.statements.take(2).map((s) {
@@ -406,21 +418,31 @@ class ContentBox extends StatelessWidget {
 
   Color _getTypeColor(String type) {
     switch (type) {
-      case 'movie': return Colors.redAccent;
-      case 'book': return Colors.blueAccent;
-      case 'article': return Colors.greenAccent;
-      case 'album': return Colors.purpleAccent;
-      default: return Colors.blueGrey;
+      case 'movie':
+        return Colors.redAccent;
+      case 'book':
+        return Colors.blueAccent;
+      case 'article':
+        return Colors.greenAccent;
+      case 'album':
+        return Colors.purpleAccent;
+      default:
+        return Colors.blueGrey;
     }
   }
 
   IconData _getTypeIcon(String type) {
     switch (type) {
-      case 'movie': return Icons.movie;
-      case 'book': return Icons.book;
-      case 'article': return Icons.description;
-      case 'album': return Icons.album;
-      default: return Icons.star;
+      case 'movie':
+        return Icons.movie;
+      case 'book':
+        return Icons.book;
+      case 'article':
+        return Icons.description;
+      case 'album':
+        return Icons.album;
+      default:
+        return Icons.star;
     }
   }
 }
@@ -480,7 +502,11 @@ class _DynamicImageState extends State<DynamicImage> {
   @override
   void didUpdateWidget(DynamicImage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url || oldWidget.title != widget.title || oldWidget.author != widget.author || oldWidget.initialImage != widget.initialImage || oldWidget.contentType != widget.contentType) {
+    if (oldWidget.url != widget.url ||
+        oldWidget.title != widget.title ||
+        oldWidget.author != widget.author ||
+        oldWidget.initialImage != widget.initialImage ||
+        oldWidget.contentType != widget.contentType) {
       _fetchedUrl = widget.initialImage;
       _checkCacheAndFetch();
     }
@@ -519,7 +545,8 @@ class _DynamicImageState extends State<DynamicImage> {
           String finalUrl = result.image!;
           if (kIsWeb) {
             // Use wsrv.nl as a CORS proxy and image resizer for web
-            finalUrl = 'https://wsrv.nl/?url=${Uri.encodeComponent(finalUrl)}&w=600&h=600&fit=cover';
+            finalUrl =
+                'https://wsrv.nl/?url=${Uri.encodeComponent(finalUrl)}&w=600&h=600&fit=cover';
           }
           final cacheKey = widget.url ?? widget.title;
           if (cacheKey != null) {
@@ -538,36 +565,36 @@ class _DynamicImageState extends State<DynamicImage> {
     final imageUrl = _fetchedUrl;
 
     return ClipRRect(
-      child: imageUrl != null 
-        ? Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Container(
-                color: Colors.grey[850],
-                child: Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                        : null,
-                    color: Colors.white24,
+      child: imageUrl != null
+          ? Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: Colors.grey[850],
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                      color: Colors.white24,
+                    ),
                   ),
-                ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) => Container(
+                );
+              },
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.grey[850],
+                child: const Icon(Icons.broken_image, color: Colors.white24, size: 80),
+              ),
+            )
+          : Container(
               color: Colors.grey[850],
-              child: const Icon(Icons.broken_image, color: Colors.white24, size: 80),
+              child: const Center(
+                child: Icon(Icons.image_outlined, color: Colors.white10, size: 80),
+              ),
             ),
-          )
-        : Container(
-            color: Colors.grey[850],
-            child: const Center(
-              child: Icon(Icons.image_outlined, color: Colors.white10, size: 80),
-            ),
-          ),
     );
   }
 }
-

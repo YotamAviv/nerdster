@@ -39,7 +39,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     _graphController.focusedIdentity = widget.initialFocus;
     
     final fcontext = widget.controller.value!.fcontext;
-    _graphController.mode = (fcontext == kOneofusContext) 
+    _graphController.mode = (fcontext == kFollowContextIdentity) 
         ? GraphViewMode.identity 
         : GraphViewMode.follow;
 
@@ -67,7 +67,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       _graphController.focusedIdentity = oldFocus;
       
       final fcontext = widget.controller.value!.fcontext;
-      _graphController.mode = (fcontext == kOneofusContext) 
+      _graphController.mode = (fcontext == kFollowContextIdentity) 
           ? GraphViewMode.identity 
           : GraphViewMode.follow;
           

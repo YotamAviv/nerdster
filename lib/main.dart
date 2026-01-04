@@ -11,20 +11,16 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/oneofus/endpoint.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/fire_util.dart';
-import 'package:nerdster/oneofus/json_display.dart';
+import 'package:nerdster/v2/json_display.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus_fire.dart';
-import 'package:nerdster/progress.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/config.dart';
@@ -42,7 +38,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Prefs.init();
 
-  JsonDisplay.highlightKeys = Set.unmodifiable({
+  V2JsonDisplay.highlightKeys = Set.unmodifiable({
     'I',
     'moniker',
     'domain',
@@ -100,20 +96,10 @@ Future<void> main() async {
 
   switch (fireChoice) {
     case FireChoice.fake:
-      Fetcher.initEndpoint(
-          kOneofusDomain, const Endpoint('http', '127.0.0.1', 'bogus/export', port: 5002));
-      Fetcher.initEndpoint(
-          kNerdsterDomain, const Endpoint('http', '127.0.0.1', 'bogus/export', port: 5001));
       break;
     case FireChoice.emulator:
       const oneofusUrl = 'http://127.0.0.1:5002/one-of-us-net/us-central1/export';
       const nerdsterUrl = 'http://127.0.0.1:5001/nerdster/us-central1/export';
-
-      Fetcher.initEndpoint(kOneofusDomain,
-          const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
-      Fetcher.initEndpoint(kNerdsterDomain,
-          const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
-
       V2Config.registerUrl(kOneofusDomain, oneofusUrl);
       V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;
@@ -124,18 +110,11 @@ Future<void> main() async {
       /// there is no other identity... but there could be)
       const oneofusUrl = 'https://export.one-of-us.net';
       const nerdsterUrl = 'https://export.nerdster.org';
-
-      Fetcher.initEndpoint(kOneofusDomain, const Endpoint('https', 'export.one-of-us.net', ''));
-      Fetcher.initEndpoint(kNerdsterDomain, const Endpoint('https', 'export.nerdster.org', ''));
-
       V2Config.registerUrl(kOneofusDomain, oneofusUrl);
       V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;
   }
 
-  ProgressDialog(); // Just to get its Measure instance to be first
-  Fetcher.setCorruptionCollector(baseProblemCollector);
-  JsonDisplay.interpreter = keyLabels;
   TrustStatement.init();
   ContentStatement.init();
   await defaultSignIn();
@@ -143,7 +122,7 @@ Future<void> main() async {
   await About.init();
 
   // ----
-  // This didn't work. [ContentTree] sets this using actual width (using [BuildContext]).
+  // This didn't work, and so [ContentTree] sets this using actual width (using [BuildContext]).
   // isSmall.value = defaultTargetPlatform == TargetPlatform.iOS ||
   //     defaultTargetPlatform == TargetPlatform.android;
   isSmall.addListener(() => print('isSmall=${isSmall.value}'));

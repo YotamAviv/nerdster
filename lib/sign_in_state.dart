@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/bar_refresh.dart';
 import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -76,14 +75,6 @@ Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterK
 
   final String oneofusToken = getToken(await oneofusPublicKey.json);
   await signInState.signIn(oneofusToken, nerdsterKeyPair, context: context);
-  
-  // V2 views handle their own refresh via didUpdateWidget or listeners.
-  // V1 still needs a manual refresh trigger.
-  final path = Uri.base.path;
-  final isV2 = path == '/' || path.contains('/v2/') || path == '/v2';
-  if (!isV2) {
-    await BarRefresh.refresh(context);
-  }
 }
 
 class SignInState with ChangeNotifier {

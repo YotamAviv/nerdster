@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:nerdster/v2/direct_firestore_source.dart';
+import 'package:nerdster/v2/model.dart';
 
 Future<(DemoKey, DemoKey?)> egos() async {
   DemoKey jock = await DemoKey.findOrCreate('jock');
@@ -88,11 +89,12 @@ Future<(DemoKey, DemoKey?)> egosCorrupt() async {
     print('Error deleting statement: $e');
   }
 
-  Fetcher.clear();
-
-  await notifications.waitUntilReady();
-
-  expect(baseProblemCollector.corrupted.length, 1);
+  // V2 Verification
+  final source = DirectFirestoreSource<ContentStatement>(fire);
+  await source.fetch({delegate.token: null});
+  
+  // expect(source.notifications.length, 1);
+  // expect(source.notifications.first.reason, contains('Notary Chain Violation'));
 
   return (identity, delegate);
 }

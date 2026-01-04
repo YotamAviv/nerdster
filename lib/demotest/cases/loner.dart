@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
@@ -31,6 +30,8 @@ Future<(DemoKey, DemoKey?)> lonerRevokeDelegate() async {
   await identity.doTrust(TrustVerb.delegate, delegate!,
       domain: kNerdsterDomain, revokeAt: 'yes, please');
 
+  // BUG: missing notification
+
   return (identity, delegate);
 }
 
@@ -39,12 +40,16 @@ Future<(DemoKey, DemoKey?)> lonerClearDelegate() async {
 
   await identity.doTrust(TrustVerb.clear, delegate!);
 
+  // BUG: missing notification
+
   return (identity, delegate);
 }
 
 Future<(DemoKey, DemoKey?)> lonerBadDelegate() async {
   final (DemoKey identity, DemoKey? delegate) = await loner();
   DemoKey other = await DemoKey.findOrCreate('someone');
+
+  // BUG: missing notification
 
   return (other, delegate);
 }
@@ -71,7 +76,6 @@ Future<(DemoKey, DemoKey?)> lonerCorrupt() async {
     print('Error deleting statement: $e');
   }
 
-  Fetcher.clear();
 
   return (identity, delegate);
 }

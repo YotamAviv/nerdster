@@ -7,7 +7,8 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 
 import 'package:nerdster/content/content_statement.dart';
@@ -89,9 +90,9 @@ void main() {
         TrustVerb.trust,
         domain: null, 
         moniker: null);
-    final fetcher = Fetcher(alice.token, kOneofusDomain);
+    final StatementWriter writer = SourceFactory.getWriter(kOneofusDomain);
     final signer = await OouSigner.make(alice.keyPair);
-    await fetcher.push(json, signer);
+    await writer.push(json, signer);
     
     // Bob2 replaces Bob1
     await bob2.replace(bob1);

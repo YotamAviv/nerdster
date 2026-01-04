@@ -57,7 +57,7 @@ void main() async {
       if (dk.isDelegate) delegateContent[DelegateKey(dk.token)] = dk.contentStatements;
     }
 
-    final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver, ContentResult(delegateContent: delegateContent), kNerdsterContext);
+    final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver, ContentResult(delegateContent: delegateContent), kFollowContextNerdster);
     final V2Labeler labeler = V2Labeler(graph);
     
     final List<String> expected = [alice.token, bob.token, charlie.token];

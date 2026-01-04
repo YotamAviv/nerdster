@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
+import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -60,7 +60,8 @@ class DumpAllStatements extends StatelessWidget {
 }
 
 Future<void> dump(String domain, String token) async {
-  Iterable<Statement> statements = await Fetcher(token, domain).fetchAllNoVerify();
+  Map<String, List<Statement>> result = await SourceFactory.get(domain).fetch({token: null});
+  Iterable<Statement> statements = result[token] ?? [];
   for (Statement statement in statements) {
     print('${statement.token} = ${statement.jsonish.ppJson}');
   }

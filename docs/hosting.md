@@ -43,7 +43,8 @@ I should be able to view and debug these:
 All of the pages related to either project should work during development with the exception that the one-of-us.net/index.html is not there and is at one-of-us.net/oneofus.html instead.
 
 ## deployment
-### TODO / Deploy scripts
+### Deploy scripts
+Not great, but functional
 - See:
   - bin/stage_nerdster.sh
   -`bin/stage_oneofus.sh`

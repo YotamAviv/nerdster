@@ -1,3 +1,4 @@
+read AI.md
 
 
 read AI.md

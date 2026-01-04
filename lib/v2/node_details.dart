@@ -7,12 +7,15 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/json_display.dart';
+import 'package:nerdster/v2/json_display.dart';
+import 'package:nerdster/v2/interpreter.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:collection/collection.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 
 class NodeDetails extends StatefulWidget {
   final String identity;
@@ -99,7 +102,7 @@ class _NodeDetailsState extends State<NodeDetails> {
           return InkWell(
             onTapDown: (details) => tapDetails = details,
             onTap: () {
-              KeyInfoView.show(context, widget.identity, kOneofusDomain, details: tapDetails, source: widget.controller.trustSource);
+              KeyInfoView.show(context, widget.identity, kOneofusDomain, details: tapDetails, source: widget.controller.trustSource, labeler: labeler);
             },
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -131,7 +134,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                   TapDownDetails? tapDetails;
                   return InkWell(
                     onTapDown: (details) => tapDetails = details,
-                    onTap: () => KeyInfoView.show(context, k, kOneofusDomain, details: tapDetails, source: widget.controller.trustSource),
+                    onTap: () => KeyInfoView.show(context, k, kOneofusDomain, details: tapDetails, source: widget.controller.trustSource, labeler: labeler),
                     child: Text('• $k ${isCanonical ? "(Canonical)" : "(Replaced)"}', 
                       style: TextStyle(fontSize: 10, color: isCanonical ? Colors.black : Colors.grey, decoration: TextDecoration.underline)),
                   );
@@ -146,7 +149,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                   TapDownDetails? tapDetails;
                   return InkWell(
                     onTapDown: (details) => tapDetails = details,
-                    onTap: () => KeyInfoView.show(context, d, kNerdsterDomain, details: tapDetails, source: widget.controller.contentSource),
+                    onTap: () => KeyInfoView.show(context, d, kNerdsterDomain, details: tapDetails, source: widget.controller.contentSource, labeler: labeler),
                     child: Text('• $d', 
                       style: TextStyle(fontSize: 10, color: Colors.blue, decoration: TextDecoration.underline)),
                   );
@@ -155,9 +158,9 @@ class _NodeDetailsState extends State<NodeDetails> {
             ],
             const SizedBox(height: 10),
             
-            if (fcontext == kOneofusContext)
+            if (fcontext == kFollowContextIdentity)
               _buildIdentityDetails(widget.identity, model)
-            else if (fcontext == kNerdsterContext)
+            else if (fcontext == kFollowContextNerdster)
               _buildNerdsterDetails(widget.identity, model)
             else
               _buildContextDetails(widget.identity, model, fcontext),
@@ -285,7 +288,7 @@ class _NodeDetailsState extends State<NodeDetails> {
 
   Widget _buildAddContextRow() {
     final List<String> suggestions = [
-      kNerdsterContext,
+      kFollowContextNerdster,
       'social', 'family', 'news', 'music', 'tech'
     ].where((c) => !_pendingContexts.containsKey(c)).toList();
 
@@ -361,7 +364,7 @@ class _NodeDetailsState extends State<NodeDetails> {
         contexts: contextsToSave,
       );
 
-      final writer = SourceFactory.getWriter(kNerdsterDomain, context: context);
+      final writer = SourceFactory.getWriter(kNerdsterDomain, context: context, labeler: widget.controller.value!.labeler);
       await writer.push(json, signer);
 
       if (mounted) {
@@ -437,7 +440,7 @@ class _NodeDetailsState extends State<NodeDetails> {
     final explicitStatements = fn.edges.values
         .expand((l) => l)
         .where((s) => labeler.getIdentityForToken(s.subjectToken) == identity)
-        .where((s) => s.contexts?.containsKey(kNerdsterContext) == true)
+        .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
         .where((s) => s.iToken != myId) // Filter out me
         .toList();
 
@@ -467,7 +470,7 @@ class _NodeDetailsState extends State<NodeDetails> {
         
         const Text('Explicit Follows:', style: TextStyle(fontWeight: FontWeight.bold)),
         if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
-        ...explicitStatements.map((s) => _buildStatementTile(s, labeler, fcontext: kNerdsterContext)),
+        ...explicitStatements.map((s) => _buildStatementTile(s, labeler, fcontext: kFollowContextNerdster)),
         
         const SizedBox(height: 10),
         const Text('Implicit Follows (Trust):', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -494,25 +497,61 @@ class _NodeDetailsState extends State<NodeDetails> {
     }
     
     return ExpansionTile(
-      title: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: 'From $issuerLabel ('),
-            TextSpan(
-              text: verbLabel,
-              style: TextStyle(color: isBlock ? Colors.red : null),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: 'From $issuerLabel ('),
+                  TextSpan(
+                    text: verbLabel,
+                    style: TextStyle(color: isBlock ? Colors.red : null),
+                  ),
+                  const TextSpan(text: ')'),
+                ],
+              ),
+              style: const TextStyle(fontSize: 12, color: Colors.black),
             ),
-            const TextSpan(text: ')'),
-          ],
-        ),
-        style: const TextStyle(fontSize: 12, color: Colors.black),
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: Setting.get<bool>(SettingType.showCrypto),
+            builder: (context, showCrypto, _) {
+              if (!showCrypto) return const SizedBox.shrink();
+              return IconButton(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.verified_user, size: 16, color: Colors.blue),
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Cryptographic Proof'),
+                    content: SizedBox(
+                      width: double.maxFinite,
+                      child: V2JsonDisplay(s.json, interpreter: V2Interpreter(labeler)),
+                    ),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                    ],
+                  ),
+                ),
+                visualDensity: VisualDensity.compact,
+              );
+            },
+          ),
+        ],
       ),
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           color: Colors.grey[100],
           height: 200,
-          child: JsonDisplay(s.json),
+          child: SingleChildScrollView(
+            child: V2JsonDisplay(s.json,
+                interpreter: widget.controller.value != null
+                    ? V2Interpreter(widget.controller.value!.labeler)
+                    : null),
+          ),
         ),
       ],
     );

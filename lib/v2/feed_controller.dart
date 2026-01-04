@@ -374,7 +374,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
             delegateResolver: delegateResolver, meIdentityToken: currentMeIdentityToken);
 
         // 6. Contexts
-        final mostContexts = MostStrings({kOneofusContext, kNerdsterContext});
+        final mostContexts = MostStrings({kFollowContextIdentity, kFollowContextNerdster});
         for (final statements in contentResult.delegateContent.values) {
           for (final s in statements) {
             if (s.verb == ContentVerb.follow && s.contexts != null) {

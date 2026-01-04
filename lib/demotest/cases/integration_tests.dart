@@ -1,8 +1,5 @@
-import 'package:nerdster/demotest/cases/block_replaced_key.dart';
-import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
-import 'package:nerdster/demotest/cases/multiple_blocks.dart';
-import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/demotest/demo_key.dart';
+
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -25,21 +22,13 @@ void integrationTests() async {
     DemoKey.reset();
   });
 
-  test('blockReplacedKey', () async {
-    await blockReplacedKey();
-  });
+  // test('multipleBlocks', () async {
+  //   await multipleBlocks();
+  // });
 
-  test('equivalentKeysStateConflict', () async {
-    await equivalentKeysStateConflict();
-  });
-
-  test('multipleBlocks', () async {
-    await multipleBlocks();
-  });
-
-  test('trustBlockConflict', () async {
-    await trustBlockConflict();
-  });
+  // test('trustBlockConflict', () async {
+  //   await trustBlockConflict();
+  // });
 
   // Only on [FakeFirebase]
   // test('egosCorrupt', () async {

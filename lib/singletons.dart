@@ -1,21 +1,8 @@
-import 'package:nerdster/content/content_base.dart';
-import 'package:nerdster/follow/follow_net.dart';
-import 'package:nerdster/follow/my_delegate_statements.dart';
-import 'package:nerdster/net/key_lables.dart';
-import 'package:nerdster/net/oneofus_equiv.dart';
-import 'package:nerdster/net/oneofus_net.dart';
-import 'package:nerdster/notifications.dart';
-import 'package:nerdster/progress.dart';
+import 'package:flutter/foundation.dart';
 import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/v2/labeler.dart';
 
-final ProgressDialog progress = ProgressDialog();
-final Notifications notifications = Notifications();
+import 'package:nerdster/v2/model.dart';
+
 final SignInState signInState = SignInState();
-final BaseProblemCollector baseProblemCollector = BaseProblemCollector();
-final OneofusNet oneofusNet = OneofusNet();
-final OneofusEquiv oneofusEquiv = OneofusEquiv();
-final FollowNet followNet = FollowNet();
-final MyDelegateStatements myDelegateStatements = MyDelegateStatements();
-final ContentBase contentBase = ContentBase();
-final OneofusLabels oneofusLabels = OneofusLabels();
-final KeyLabels keyLabels = KeyLabels();
+final ValueNotifier<V2Labeler> globalLabeler = ValueNotifier(V2Labeler(TrustGraph(pov: 'anonymous')));

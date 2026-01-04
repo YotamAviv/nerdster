@@ -4,7 +4,8 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
 import 'package:nerdster/comment_widget.dart';
-import 'package:nerdster/oneofus/json_display.dart';
+import 'package:nerdster/v2/json_display.dart';
+import 'package:nerdster/v2/interpreter.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/prefs.dart';
@@ -254,7 +255,7 @@ class StatementTile extends StatelessWidget {
                         title: const Text('Cryptographic Proof'),
                         content: SizedBox(
                           width: double.maxFinite,
-                          child: JsonDisplay(s.json),
+                          child: V2JsonDisplay(s.json, interpreter: V2Interpreter(model.labeler)),
                         ),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),

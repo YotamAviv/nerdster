@@ -54,7 +54,7 @@ void main() async {
       trustGraph,
       delegateResolver,
       allContentStatements,
-      kNerdsterContext, // Using the standard <nerdster> follow context
+      kFollowContextNerdster, // Using the standard <nerdster> follow context
     );
 
     // Bart should be in the network
@@ -96,7 +96,7 @@ void main() async {
     final TrustGraph trustLisa = reduceTrustGraph(TrustGraph(pov: lisa.token), allTrustStatements);
     final DelegateResolver delegatesLisa = DelegateResolver(trustLisa);
     
-    final FollowNetwork followLisa = reduceFollowNetwork(trustLisa, delegatesLisa, allContentStatements, kNerdsterContext);
+    final FollowNetwork followLisa = reduceFollowNetwork(trustLisa, delegatesLisa, allContentStatements, kFollowContextNerdster);
     final ContentAggregation contentLisa = reduceContentAggregation(followLisa, trustLisa, delegatesLisa, allContentStatements);
 
     // Lisa should see content from Marge and Homer2
@@ -109,7 +109,7 @@ void main() async {
     // --- BART'S POV ---
     final TrustGraph trustBart = reduceTrustGraph(TrustGraph(pov: bart.token), allTrustStatements);
     final DelegateResolver delegatesBart = DelegateResolver(trustBart);
-    final FollowNetwork followBart = reduceFollowNetwork(trustBart, delegatesBart, allContentStatements, kNerdsterContext);
+    final FollowNetwork followBart = reduceFollowNetwork(trustBart, delegatesBart, allContentStatements, kFollowContextNerdster);
     reduceContentAggregation(followBart, trustBart, delegatesBart, allContentStatements);
 
     // Bart blocks Lisa in <nerdster> context in simpsons.dart
@@ -118,7 +118,7 @@ void main() async {
     // --- HOMER'S POV (Homer2) ---
     final TrustGraph trustHomer = reduceTrustGraph(TrustGraph(pov: homer2.token), allTrustStatements);
     final DelegateResolver delegatesHomer = DelegateResolver(trustHomer);
-    final FollowNetwork followHomer = reduceFollowNetwork(trustHomer, delegatesHomer, allContentStatements, kNerdsterContext);
+    final FollowNetwork followHomer = reduceFollowNetwork(trustHomer, delegatesHomer, allContentStatements, kFollowContextNerdster);
     reduceContentAggregation(followHomer, trustHomer, delegatesHomer, allContentStatements);
 
     expect(followHomer.contains(trustHomer.resolveIdentity(lisa.token)), true, reason: 'Homer2 should follow Lisa');
@@ -202,7 +202,7 @@ void main() async {
       graph,
       delegateResolver,
       allStatementsByToken,
-      kNerdsterContext,
+      kFollowContextNerdster,
     );
 
     // 3. Content Aggregation

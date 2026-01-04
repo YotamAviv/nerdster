@@ -2,14 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/comp.dart';
-import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/net/oneofus_tree_node.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
+
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
@@ -20,16 +16,16 @@ Map<String, String?> dumpNetwork(Map<String, Node> network) => network.map((toke
     MapEntry(token, b(node.revokeAtTime) ? formatUiDatetime(node.revokeAtTime!) : null));
 
 Future<Json> dumpDump(BuildContext? context) async {
-  await Comp.waitOnComps([keyLabels, contentBase]);
+  // await Comp.waitOnComps([contentBase]);
 
   Json out = {
     'center': Jsonish.find(signInState.pov!)!.json,
-    'domain2token2statements': await dumpStatements(),
+    // 'domain2token2statements': await dumpStatements(),
     // Above is required for importing.
     // Below is for strictly for testing / viewing.
-    'network': dumpNetwork(oneofusNet.network),
-    'nerds': await OneofusTreeNode.root.dump(),
-    'content': contentBase.dump(),
+    // 'network': dumpNetwork(oneofusNet.network),
+    // 'nerds': await OneofusTreeNode.root.dump(),
+    // 'content': contentBase.dump(),
     // 'netTree': NetTreeNode.root.dump(),
     // 'contentTree': contentBase.dump(),
   };
@@ -72,6 +68,7 @@ Future<void> loadDump(Json dump) async {
 }
 
 Future<void> loadStatements(Json domain2token2statements) async {
+  /*
   for (String domain in [kOneofusDomain, kNerdsterDomain]) {
     final domainData = domain2token2statements[domain];
     if (domainData == null) continue;
@@ -86,9 +83,11 @@ Future<void> loadStatements(Json domain2token2statements) async {
       }
     }
   }
+  */
 }
 
 Future<Map<String, Map<String, List>>> dumpStatements() async {
+  /*
   await followNet.waitUntilReady();
 
   Map<String, Map<String, List>> out = <String, Map<String, List>>{};
@@ -115,6 +114,8 @@ Future<Map<String, Map<String, List>>> dumpStatements() async {
     }
   }
   return out;
+  */
+  return {};
 }
 
 void _showDump(BuildContext context, dynamic dump) {

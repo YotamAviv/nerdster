@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -78,7 +77,7 @@ Future<void> qrSignIn(BuildContext context) async {
       Json? endpointJson = data['endpoint'];
       if (endpointJson != null) {
         print('got endpoint: $endpointJson');
-        assert(deepCollectionEquality.equals(endpointJson, Fetcher.getEndpoint(kOneofusDomain)));
+        // assert(deepCollectionEquality.equals(endpointJson, Fetcher.getEndpoint(kOneofusDomain)));
       }
 
       // Unpack identity public key

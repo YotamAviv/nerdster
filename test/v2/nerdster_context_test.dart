@@ -54,7 +54,7 @@ void main() async {
       trustGraph,
       delegateResolver,
       contentResult,
-      kNerdsterContext,
+      kFollowContextNerdster,
     );
 
     // Alice should follow Bob because of direct trust

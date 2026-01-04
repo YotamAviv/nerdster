@@ -1,14 +1,11 @@
-import 'package:nerdster/follow/follow_net.dart';
+import 'package:nerdster/v2/follow_logic.dart';
 
 enum SettingType {
   skipLgtm(bool, false, persist: true),
   skipCredentials(bool, false, persist: true),
-  identityNetDegrees(int, 5, aliases: ['oneofusNetDegrees']),
-  identityNetPaths(int, 1, aliases: ['oneofusNetPaths']),
   identityPathsReq(String, 'permissive'),
-  followNetDegrees(int, 5),
-  followNetPaths(int, 1),
-
+  fcontext(String, kFollowContextNerdster),
+  
   censor(bool, true),
   hideDisliked(bool, false),
   hideSeen(bool, false, persist: true),
@@ -18,13 +15,6 @@ enum SettingType {
   timeframe(String, 'all'),
   tag(String, '-'),
 
-  fcontext(String, kNerdsterContext, aliases: ['follow']),
-
-  graphMode(String, 'follow'),
-
-  netView(bool, false),
-  netTreeOneofus(bool, true), // Clacker change
-
   showCrypto(bool, false, aliases: ['showStuff']),
   showJson(bool, false, param: false),
   showKeys(bool, false, param: false),
@@ -33,8 +23,6 @@ enum SettingType {
   bogus(bool, true),
 
   skipVerify(bool, true),
-  httpFetch(bool, true), //  legacy
-  batchFetch(bool, true), // legacy
 
   verifyImmediately(bool, false, param: true),
   verify(String, null, param: true),

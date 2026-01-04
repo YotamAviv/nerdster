@@ -3,7 +3,6 @@ import 'package:nerdster/equivalence/equivalence_bridge.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/trust/greedy_bfs_trust.dart';
 
 /// Unlike the other equivalence where different folks collaborate to form equivalence group,
 /// this is supposed to form just one person's equivalence group of his own keys. 

@@ -106,5 +106,4 @@ These are in flux, but I've been using
 - CONSIDER
 - PERFORMANCE
 - DEFER
-Maybe shift to TODO1 or TODO(1) through 5 
 

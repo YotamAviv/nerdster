@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/bar_refresh.dart';
-import 'package:nerdster/credentials_display.dart';
-import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/key_store.dart';
+import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/demo_setup.dart';
+import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/fire_choice.dart';
+import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/paste_sign_in.dart';
@@ -25,19 +24,19 @@ class SignInMenu extends StatefulWidget {
 class _SignInMenuState extends State<SignInMenu> {
   _SignInMenuState() {
     signInState.addListener(listen);
-    keyLabels.addListener(listen);
+    // keyLabels.addListener(listen);
     listen();
   }
 
   Future<void> listen() async {
-    await keyLabels.waitUntilReady();
-    setState(() {});
+    // await keyLabels.waitUntilReady();
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
     signInState.removeListener(listen);
-    keyLabels.removeListener(listen);
+    // keyLabels.removeListener(listen);
     super.dispose();
   }
 
@@ -80,14 +79,6 @@ class _SignInMenuState extends State<SignInMenu> {
           demoSignIns.add(MenuItemButton(
               onPressed: () async {
                 await signInState.signIn(key.token, nerdsterKeyPair, context: context);
-
-                // V2 views handle their own refresh via didUpdateWidget or listeners.
-                // V1 still needs a manual refresh trigger.
-                final path = Uri.base.path;
-                final isV2 = path == '/' || path.contains('/v2/') || path == '/v2';
-                if (!isV2) {
-                  await BarRefresh.refresh(context);
-                }
               },
               child: Text(name)));
         }

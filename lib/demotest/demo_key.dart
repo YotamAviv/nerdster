@@ -1,29 +1,26 @@
 import 'dart:collection';
 
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/demotest/cases/block_replaced_key.dart';
-import 'package:nerdster/demotest/cases/decapitate.dart';
-import 'package:nerdster/demotest/cases/delegate_merge.dart';
-import 'package:nerdster/demotest/cases/deletions.dart';
 import 'package:nerdster/demotest/cases/egos.dart';
-import 'package:nerdster/demotest/cases/equivalent_keys_state_conflict.dart';
 import 'package:nerdster/demotest/cases/loner.dart';
-import 'package:nerdster/demotest/cases/multiple_blocks.dart';
 import 'package:nerdster/demotest/cases/notifications_gallery.dart';
+
 import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
-import 'package:nerdster/demotest/cases/trust_block_conflict.dart';
 import 'package:nerdster/demotest/cases/v2_verification.dart';
+
+
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/v2/io.dart';
+import 'package:nerdster/v2/source_factory.dart';
 
 /// For testing, development, and maybe demo.
 ///
@@ -64,20 +61,17 @@ class DemoKey {
     'lonerRevokeDelegate': lonerRevokeDelegate,
     'simpsons': simpsons,
     'loner': loner,
-    'trustBlockConflict': trustBlockConflict,
-    'egos': egos,
-    'egosCircle': egosCircle,
-    'delegateMerge': delegateMerge,
-    'delete3': deletions3,
-    'blockReplacedKey': blockReplacedKey,
-    'multipleBlocks': multipleBlocks,
-    'equivalentKeysStateConflict': equivalentKeysStateConflict,
-    'lonerEquate': lonerEquate,
-    'decap': decap,
-    'decap2': decap2,
-    'blockDecap': blockDecap,
+    // 'trustBlockConflict': trustBlockConflict,
+    // 'egos': egos,
+    // 'egosCircle': egosCircle,
+    // 'delegateMerge': delegateMerge,
+    // 'delete3': deletions3,
+    // 'multipleBlocks': multipleBlocks,
+    // 'equivalentKeysStateConflict': equivalentKeysStateConflict,
+    // 'lonerEquate': lonerEquate,
     'stress': stress,
   };
+
 
   static void reset() {
     _name2key.clear();
@@ -251,9 +245,9 @@ class DemoKey {
   }
 
   Future<ContentStatement> _pushContent(Json json) async {
-    final Fetcher fetcher = Fetcher(token, kNerdsterDomain);
+    final StatementWriter writer = SourceFactory.getWriter(kNerdsterDomain);
     final OouSigner signer = await OouSigner.make(keyPair);
-    final Statement statement = await fetcher.push(json, signer);
+    final Statement statement = await writer.push(json, signer);
     final ContentStatement content = statement as ContentStatement;
     _checkUsage(content);
     _localStatements.insert(0, content);
@@ -326,9 +320,9 @@ class DemoKey {
 
     final Json json = await makeTrust(verb, other,
         moniker: moniker, comment: comment, domain: domain, revokeAt: revokeAt);
-    final Fetcher fetcher = Fetcher(token, kOneofusDomain);
+    final StatementWriter writer = SourceFactory.getWriter(kOneofusDomain);
     final OouSigner signer = await OouSigner.make(keyPair);
-    final Statement statement = await fetcher.push(json, signer);
+    final Statement statement = await writer.push(json, signer);
     final TrustStatement trust = statement as TrustStatement;
     _checkUsage(trust);
     _localStatements.insert(0, trust);

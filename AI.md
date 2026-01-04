@@ -4,12 +4,15 @@ You (the AI) wrote this document to guide your future self so you could do a bet
 
 1. **Do not apologize.**
 
-2. **Always answer the question first before taking any other action.**
+2. **Answer the question.**
+
+   - Do that asap, before taking any other action.
 
 3. **Obey!**
 
 4. **Don't guess.**
 
+   - Don't guess what I might want.
    - If you are unsure about a term or a requirement, ask.
    - Ask for clarification instead of guessing.
 
@@ -51,11 +54,8 @@ You (the AI) wrote this document to guide your future self so you could do a bet
     - When the human asks you to document how something works, that's the task.
     - If you don't like how it currently works, you can't invent it to work differently and document that instead.
 
-13. **Be Accurate About Status.**
-    - If the answer to the user's yes/no question is no, don't say, yes blah, blah, blah, blah, blah, blah, blah, blah, expect for something that negates that.
-
-14. **Check for Compile Errors Before Running Tests.**
+13. **Check for Compile Errors Before Running Tests.**
     - Before running tests, always check for compile-time errors using `get_errors`. Running tests on broken code is a waste of time and confuses the user.
 
-15. **Respect Running Processes.**
+14. **Respect Running Processes.**
     - Do not kill or restart long-running processes (like emulators, servers, or databases) without asking the user first.

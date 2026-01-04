@@ -7,8 +7,8 @@ import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/keys.dart';
 
-const String kOneofusContext = '<identity>';
-const String kNerdsterContext = '<nerdster>';
+const String kFollowContextIdentity = '<identity>';
+const String kFollowContextNerdster = '<nerdster>';
 
 /// The Pure Function Core of the Follow Network Algorithm.
 ///
@@ -38,7 +38,7 @@ FollowNetwork reduceFollowNetwork(
   final Map<String, List<String>> paths = {trustGraph.pov: [trustGraph.pov]};
 
   // 1. Handle <one-of-us> context (Identity Layer only)
-  if (fcontext == kOneofusContext) {
+  if (fcontext == kFollowContextIdentity) {
     for (final token in trustGraph.orderedKeys) {
       final String canonical = trustGraph.resolveIdentity(token);
       if (identities.contains(canonical)) continue;
@@ -129,7 +129,7 @@ FollowNetwork reduceFollowNetwork(
       }
 
       // Special case for <nerdster> context: also include WoT trusts
-      if (fcontext == kNerdsterContext) {
+      if (fcontext == kFollowContextNerdster) {
         // Only identity keys can sign trust statements.
         final List<String> identityKeys = trustGraph.getEquivalenceGroup(issuerIdentity);
         for (final String key in identityKeys) {

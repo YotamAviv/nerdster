@@ -1,15 +1,11 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:nerdster/app.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/oneofus/endpoint.dart';
-import 'package:nerdster/oneofus/fetcher.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/prefs.dart';
@@ -18,9 +14,7 @@ import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/cloud_functions_source.dart';
 import 'package:nerdster/v2/config.dart';
-import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/orchestrator.dart';
-import 'package:nerdster/v2/source_factory.dart';
 
 /// Tests for corruption detection.
 ///
@@ -54,10 +48,10 @@ void main() {
     V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
 
     // Configure Fetcher Endpoints
-    Fetcher.initEndpoint(kOneofusDomain,
-        const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
-    Fetcher.initEndpoint(kNerdsterDomain,
-        const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
+    // Fetcher.initEndpoint(kOneofusDomain,
+    //    const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
+    // Fetcher.initEndpoint(kNerdsterDomain,
+    //    const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
 
     // Initialize Statements
     TrustStatement.init();
