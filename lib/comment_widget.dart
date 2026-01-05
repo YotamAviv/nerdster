@@ -11,11 +11,33 @@ class CommentWidget extends StatelessWidget {
   final String text;
   final OnHashtagTap? onHashtagTap;
   final TextStyle? style;
+  final int? maxLines;
 
-  const CommentWidget({super.key, required this.text, this.onHashtagTap, this.style});
+  const CommentWidget({
+    super.key,
+    required this.text,
+    this.onHashtagTap,
+    this.style,
+    this.maxLines,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (maxLines != null) {
+      return Linkify(
+        text: text,
+        style: style,
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+        linkifiers: [_HashtagLinkifier()],
+        onOpen: (LinkableElement link) => onHashtagTap?.call(link.url, context),
+        linkStyle: const TextStyle(
+          color: Colors.blue,
+          decoration: TextDecoration.underline,
+        ),
+      );
+    }
+
     return SelectableLinkify(
       text: text,
       style: style,

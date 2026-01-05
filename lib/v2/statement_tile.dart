@@ -21,6 +21,7 @@ class StatementTile extends StatelessWidget {
   final ValueChanged<String>? onInspect;
   final VoidCallback? onRefresh;
   final ValueChanged<String>? onTagTap;
+  final int? maxLines;
 
   const StatementTile({
     super.key,
@@ -34,6 +35,7 @@ class StatementTile extends StatelessWidget {
     this.onInspect,
     this.onRefresh,
     this.onTagTap,
+    this.maxLines,
   });
 
   @override
@@ -275,6 +277,7 @@ class StatementTile extends StatelessWidget {
                   text: s.comment!,
                   onHashtagTap: (tag, _) => onTagTap?.call(tag),
                   style: const TextStyle(fontSize: 13),
+                  maxLines: maxLines,
                ),
              ),
         ],

@@ -323,6 +323,7 @@ class _ContentCardState extends State<ContentCard> {
             onInspect: _showInspectionSheet,
             onRefresh: widget.onRefresh,
             onTagTap: widget.onTagTap,
+            maxLines: 1,
           )),
         
         if (_isHistoryExpanded)
