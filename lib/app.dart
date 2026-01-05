@@ -14,9 +14,7 @@ export 'package:nerdster/oneofus/jsonish.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-// This doesn't work. [ContentTree] sets this using [BuildContext].
-// On my Pixel 6a, size is (374.2, 713.1).
-ValueNotifier<bool> isSmall = ValueNotifier<bool>(true);
+ValueNotifier<bool> isSmall = ValueNotifier<bool>(false);
 
 class NerdsterApp extends StatelessWidget {
   const NerdsterApp({super.key});
@@ -24,7 +22,7 @@ class NerdsterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Check for qrSignIn query parameter on startup
-    if (Uri.base.queryParameters.containsKey('qrSignIn') && 
+    if (Uri.base.queryParameters.containsKey('qrSignIn') &&
         Uri.base.queryParameters['qrSignIn'] == 'true') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final context = navigatorKey.currentContext;
@@ -42,6 +40,13 @@ class NerdsterApp extends StatelessWidget {
         builder: (context, _) {
           final path = Uri.base.path;
           final povToken = signInState.pov;
+
+          final bool smallNow = MediaQuery.of(context).size.width < 600;
+          if (smallNow != isSmall.value) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              isSmall.value = smallNow;
+            });
+          }
 
           if (path == '/m' || path.startsWith('/m/') || path == '/m.html' || path == '/v2/phone') {
             return PhoneView(povToken: povToken);

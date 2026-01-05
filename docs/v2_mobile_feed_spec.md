@@ -4,9 +4,10 @@ The V2 Mobile Feed (PhoneView) is a mobile-optimized, gesture-driven interface f
 
 ## Based on the Content Card, but less
 * no guard icons for crypto proofs
-* no option to relate
+* DEFER: option to relate
+* DEFER: graph
 
-TODO: I do want to repect relations, but I don't think we have room for the card that pops up, probably just insert it below in the feed if it's clicked.
+TODO: I do want to repect relations and show them, but we have less room for the card that pops up, might just insert it below in the feed if it's clicked. Maybe inform the user about that with a snackbar.
 
 # new Dismiss options
 

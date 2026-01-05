@@ -104,7 +104,6 @@ Future<void> main() async {
       V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;
     case FireChoice.prod:
-
       /// DEFER: Get export.one-of-us.net from the QR sign in process instead of having it hard-coded here.
       /// Furthermore, replace "one-of-us.net" with "identity" everywhere (for elegance only as
       /// there is no other identity... but there could be)
@@ -120,12 +119,6 @@ Future<void> main() async {
   await defaultSignIn();
   await initPrefs2();
   await About.init();
-
-  // ----
-  // This didn't work, and so [ContentTree] sets this using actual width (using [BuildContext]).
-  // isSmall.value = defaultTargetPlatform == TargetPlatform.iOS ||
-  //     defaultTargetPlatform == TargetPlatform.android;
-  isSmall.addListener(() => print('isSmall=${isSmall.value}'));
 
   // ----
   // Stream to communicate messages from JavaScript to Flutter
