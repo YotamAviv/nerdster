@@ -35,7 +35,7 @@ class V2RateDialog extends StatefulWidget {
     RateIntent intent = RateIntent.none,
     VoidCallback? onRefresh,
   }) async {
-    if (!bb(await checkSignedIn(context))) return;
+    if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
 
     final result = await showDialog<Json>(
       context: context,

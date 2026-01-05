@@ -267,7 +267,7 @@ class _NodeDetailsState extends State<NodeDetails> {
             ],
             selected: {value == 0 ? 0 : (value > 0 ? 1 : -1)},
             onSelectionChanged: (Set<int> newSelection) async {
-              if (!bb(await checkSignedIn(context))) return;
+              if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
               setState(() {
                 final val = newSelection.first;
                 _pendingContexts[contextName] = val;
@@ -306,7 +306,7 @@ class _NodeDetailsState extends State<NodeDetails> {
               });
             },
             onSelected: (String selection) async {
-              if (!bb(await checkSignedIn(context))) return;
+              if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
               setState(() {
                 _pendingContexts[selection] = 0; // Default to neutral
                 _autocompleteController?.clear();
@@ -328,7 +328,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                    ),
                    onSubmitted: (String value) async {
                      if (value.isNotEmpty) {
-                       if (!bb(await checkSignedIn(context))) return;
+                       if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
                        setState(() {
                          _pendingContexts[value] = 0; // Default to neutral
                          controller.clear();

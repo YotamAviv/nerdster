@@ -110,7 +110,7 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
               final statement = Statement.make(unverifiedJsonish);
               _notifications.add(TrustNotification(
                 reason: 'Invalid Signature: $e',
-                relatedStatement: statement,
+                rejectedStatement: statement,
                 isConflict: true,
               ));
               continue; // Skip corrupt statement

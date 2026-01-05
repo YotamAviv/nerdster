@@ -517,7 +517,7 @@ class _ContentCardState extends State<ContentCard> {
                 ? 'Unmark'
                 : 'Mark to Relate/Equate',
             onPressed: () async {
-              if (bb(await checkSignedIn(context))) {
+              if (bb(await checkSignedIn(context, trustGraph: widget.model.trustGraph))) {
                 widget.onMark!(widget.aggregation.token);
               }
             },

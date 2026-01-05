@@ -7,7 +7,7 @@ import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 Future<void> v2Submit(BuildContext context, V2FeedModel model, {VoidCallback? onRefresh}) async {
-  if (!bb(await checkSignedIn(context))) return;
+  if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
 
   Jsonish? subject = await establishSubjectDialog(context);
   if (subject != null) {

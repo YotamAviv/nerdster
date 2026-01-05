@@ -139,7 +139,7 @@ void main() {
           alice: [pov, alice],
         },
         notifications: [
-          TrustNotification(reason: 'conflict', relatedStatement: f1, isConflict: true),
+          TrustNotification(reason: 'conflict', rejectedStatement: f1, isConflict: true),
         ],
       );
 

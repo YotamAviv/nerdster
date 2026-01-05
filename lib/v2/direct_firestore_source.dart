@@ -79,7 +79,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
             } catch (e) {
               _notifications.add(TrustNotification(
                 reason: 'Invalid Signature: $e',
-                relatedStatement: Statement.make(Jsonish(json)),
+                rejectedStatement: Statement.make(Jsonish(json)),
                 isConflict: true,
               ));
               continue;
@@ -93,7 +93,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
             _notifications.add(TrustNotification(
               reason:
                   'Integrity Violation: Document ID ${doc.id} does not match content hash ${jsonish.token}',
-              relatedStatement: Statement.make(jsonish),
+              rejectedStatement: Statement.make(jsonish),
               isConflict: true,
             ));
           }
@@ -112,7 +112,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
               _notifications.add(TrustNotification(
                 reason:
                     'Notary Chain Violation: Broken chain. Statement ${jsonish.token} is not linked from previous.',
-                relatedStatement: Statement.make(jsonish),
+                rejectedStatement: Statement.make(jsonish),
                 isConflict: true,
               ));
               break;
@@ -123,7 +123,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
               _notifications.add(TrustNotification(
                 reason:
                     'Notary Chain Violation: Expected previous $previousToken, got ${jsonish.token}',
-                relatedStatement: Statement.make(jsonish),
+                rejectedStatement: Statement.make(jsonish),
                 isConflict: true,
               ));
               // Stop processing this chain on violation

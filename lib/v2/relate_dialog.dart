@@ -26,7 +26,7 @@ class V2RelateDialog extends StatefulWidget {
     V2FeedModel model, {
     VoidCallback? onRefresh,
   }) async {
-    if (!bb(await checkSignedIn(context))) return;
+    if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
 
     final result = await showDialog<Json>(
       context: context,

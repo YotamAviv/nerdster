@@ -1,19 +1,30 @@
 # Current Activity: V2 Rewrite
 
-Notifications better screen
-The legacy system showed text around a 
+Done (or in progress)
 
+New Notifications that are not TrustNotifications
+You're not in this network:
+This *warning* should be shown when your identity is not included among the identities defining the view you are seeing.
+
+Your delegate key is revoked (This is not a TrustStatement as no statement has been rejected)
+This *warning* should be shown when your identity is revoked.
+Additionally, all actions that use your delegate key to sign and published statements should not be allowed.
+
+Your delegate key is not associated with you (not a TrustStatement - but no statement has been rejected.)
+This *warning* should be shown when your identity is revoked.
+Additionally, all actions that use your delegate key to sign and published statements should not be allowed.
+
+Next:
+Don't show notifcations for someone else trusting a replaced key directly.
+Furthermore, only *warn* for TrustNotifications that are not marked "conflict".
+
+Display "warnings" less severely than "conflicts".
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
 ## Required for V2 switch to PROD
 
 
-Notifications (not TrustNotifications)
-- you're not in this network
-- your delegate key is revoked (Okay, yes TrustStatement)
-
-Don't show notifcations for someone else trusting a replaced key directly.
 
 CredentialsDisplay:
 - possible cleanup: make it listen to signInState and show the keys using a snackbar.

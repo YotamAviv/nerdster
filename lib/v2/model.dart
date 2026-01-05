@@ -20,18 +20,18 @@ enum V2FilterMode {
 /// Represents a notification or conflict discovered during graph construction.
 class TrustNotification {
   final String reason;
-  final Statement relatedStatement;
+  final Statement rejectedStatement;
   final bool isConflict;
 
   TrustNotification({
     required this.reason,
-    required this.relatedStatement,
+    required this.rejectedStatement,
     this.isConflict = false,
   });
 
-  String get subject => relatedStatement.subjectToken;
+  String get subject => rejectedStatement.subjectToken;
 
-  String get issuer => relatedStatement.iToken;
+  String get issuer => rejectedStatement.iToken;
 
   @override
   String toString() => '${isConflict ? "Conflict" : "Notification"}($subject): $reason';

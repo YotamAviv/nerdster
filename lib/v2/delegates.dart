@@ -57,7 +57,7 @@ class DelegateResolver {
       } else if (_delegateToIdentity[delegateKey] != identity) {
         graph.notifications.add(TrustNotification(
           reason: "Delegate key $delegateKey already claimed by ${_delegateToIdentity[delegateKey]}",
-          relatedStatement: s,
+          rejectedStatement: s,
           isConflict: true,
         ));
       }

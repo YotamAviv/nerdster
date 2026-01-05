@@ -23,6 +23,8 @@ import 'package:nerdster/v2/cached_source.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster/oneofus/util.dart';
 
 class V2NotificationsMenu extends StatelessWidget {
   final TrustGraph? trustGraph;
@@ -43,6 +45,80 @@ class V2NotificationsMenu extends StatelessWidget {
     }
 
     List<MenuItemButton> items = [];
+
+    // Check for "Not in network" warning
+    final myIdentity = signInState.identity;
+    if (b(myIdentity) && followNetwork != null) {
+      final canonicalIdentity = trustGraph?.resolveIdentity(myIdentity!) ?? myIdentity!;
+      if (!followNetwork!.identities.contains(canonicalIdentity)) {
+        items.add(MenuItemButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => const AlertDialog(
+                title: Text("You're not in this network"),
+                content: Text(
+                    "Your identity is not included among the identities defining the view you are seeing.\n\n"
+                    "This means your posts and actions may not be visible to others in this context."),
+              ),
+            );
+          },
+          child: const Text("⚠️ You're not in this network", style: TextStyle(color: Colors.orange)),
+        ));
+      }
+    }
+
+    // Check for "Delegate key revoked" warning
+    final myDelegate = signInState.delegate;
+    if (b(myDelegate) && trustGraph != null) {
+      // Check if the delegate key is replaced
+      if (trustGraph!.replacements.containsKey(myDelegate)) {
+         items.add(MenuItemButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => const AlertDialog(
+                title: Text("Your delegate key is revoked"),
+                content: Text(
+                    "Your current delegate key has been replaced or revoked by your identity.\n\n"
+                    "You cannot perform actions (like posting or liking) until you sign in with a valid key."),
+              ),
+            );
+          },
+          child: const Text("⛔ Your delegate key is revoked", style: TextStyle(color: Colors.red)),
+        ));
+      } else if (b(myIdentity) && trustGraph!.isTrusted(myIdentity!)) {
+        // Check if the delegate key is associated with the identity
+        // We can check if the identity has a 'delegate' statement for this key in the graph edges
+        bool isAssociated = false;
+        final statements = trustGraph!.edges[myIdentity];
+        if (statements != null) {
+          for (final s in statements) {
+            if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
+              isAssociated = true;
+              break;
+            }
+          }
+        }
+        
+        if (!isAssociated) {
+           items.add(MenuItemButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const AlertDialog(
+                  title: Text("Delegate key not associated"),
+                  content: Text(
+                      "Your current delegate key is not associated with your identity."),
+                ),
+              );
+            },
+            child: const Text("⛔ Delegate key not associated", style: TextStyle(color: Colors.red)),
+          ));
+        }
+      }
+    }
+
     for (final notification in allNotifications) {
       items.add(_buildNotificationItem(notification, context));
     }
@@ -102,7 +178,7 @@ class _V2StatementNotification extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Statement statement = notification.relatedStatement;
+    final Statement statement = notification.rejectedStatement;
     final Jsonish jsonish = statement.jsonish;
 
     return SingleChildScrollView(

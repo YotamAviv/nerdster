@@ -147,7 +147,7 @@ TrustGraph reduceTrustGraph(
         if (subject == current.pov) {
           notifications.add(TrustNotification(
             reason: "Attempt to block your key.",
-            relatedStatement: s,
+            rejectedStatement: s,
             isConflict: true,
           ));
           continue;
@@ -156,7 +156,7 @@ TrustGraph reduceTrustGraph(
         if (distances.containsKey(subject) && distances[subject]! <= dist) {
           notifications.add(TrustNotification(
             reason: "Attempt to block trusted key by $issuer",
-            relatedStatement: s,
+            rejectedStatement: s,
             isConflict: true,
           ));
         } else {
@@ -199,7 +199,7 @@ TrustGraph reduceTrustGraph(
         if (oldKey == current.pov) {
           notifications.add(TrustNotification(
             reason: "Attempt to replace your key.",
-            relatedStatement: s,
+            rejectedStatement: s,
             isConflict: true,
           ));
           continue;
@@ -208,7 +208,7 @@ TrustGraph reduceTrustGraph(
         if (blocked.contains(oldKey)) {
           notifications.add(TrustNotification(
             reason: "Blocked key $oldKey is being replaced by $issuer",
-            relatedStatement: s,
+            rejectedStatement: s,
             isConflict: false,
           ));
           // Do not add blocked keys to the pathfinding graph
@@ -221,7 +221,7 @@ TrustGraph reduceTrustGraph(
           }
           notifications.add(TrustNotification(
             reason: "Trusted key $oldKey is being replaced by $issuer (Replacement constraint ignored due to distance)",
-            relatedStatement: s,
+            rejectedStatement: s,
             isConflict: false,
           ));
           continue;
@@ -232,7 +232,7 @@ TrustGraph reduceTrustGraph(
           if (existingNewKey != issuer) {
             notifications.add(TrustNotification(
               reason: "Key $oldKey replaced by both $existingNewKey and $issuer",
-              relatedStatement: s,
+              rejectedStatement: s,
               isConflict: true,
             ));
             continue;
@@ -242,7 +242,7 @@ TrustGraph reduceTrustGraph(
         if (distances.containsKey(oldKey)) {
           notifications.add(TrustNotification(
             reason: "Trusted key $oldKey is being replaced by $issuer",
-            relatedStatement: s,
+            rejectedStatement: s,
             isConflict: false,
           ));
         }
@@ -283,7 +283,7 @@ TrustGraph reduceTrustGraph(
         if (blocked.contains(subject)) {
           notifications.add(TrustNotification(
             reason: "Attempt to trust blocked key by $issuer",
-            relatedStatement: s,
+            rejectedStatement: s,
             isConflict: true,
           ));
           continue;
@@ -294,7 +294,7 @@ TrustGraph reduceTrustGraph(
           final String issuerName = issuer == current.pov ? "You" : "Identity $issuer";
           notifications.add(TrustNotification(
             reason: "$issuerName trusts a non-canonical key ($subject) directly (replaced by $effectiveSubject)",
-            relatedStatement: s,
+            rejectedStatement: s,
             isConflict: false,
           ));
         }
