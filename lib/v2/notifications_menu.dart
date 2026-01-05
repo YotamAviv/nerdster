@@ -141,6 +141,10 @@ class V2NotificationsMenu extends StatelessWidget {
       return labeler.getLabel(match.group(0)!);
     });
 
+    final isConflict = notification.isConflict;
+    final icon = isConflict ? Icons.error_outline : Icons.warning_amber_rounded;
+    final color = isConflict ? Colors.red : Colors.orange;
+
     return MenuItemButton(
       onPressed: () {
         showDialog<void>(
@@ -163,7 +167,13 @@ class V2NotificationsMenu extends StatelessWidget {
           },
         );
       },
-      child: Text(reason),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 8),
+          Text(reason, style: TextStyle(color: color)),
+        ],
+      ),
     );
   }
 }

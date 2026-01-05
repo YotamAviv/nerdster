@@ -290,14 +290,8 @@ TrustGraph reduceTrustGraph(
         }
 
         String effectiveSubject = resolveCanonical(subject);
-        if (effectiveSubject != subject) {
-          final String issuerName = issuer == current.pov ? "You" : "Identity $issuer";
-          notifications.add(TrustNotification(
-            reason: "$issuerName trusts a non-canonical key ($subject) directly (replaced by $effectiveSubject)",
-            rejectedStatement: s,
-            isConflict: false,
-          ));
-        }
+        // Non-canonical trusts by the POV are caught by the replacement logic as 'Trusted key ... is being replaced'.
+        // Non-canonical trusts by others are ignored to reduce noise.
 
         if (blocked.contains(effectiveSubject)) continue;
 

@@ -1,19 +1,15 @@
 # Current Activity: V2 Rewrite
 
-Use SettingType for contentType so that Share Link for this view works
-
 ## Required for V2 switch to PROD
+
+## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
+
 
 CredentialsDisplay:
 - possible cleanup: make it listen to signInState and show the keys using a snackbar.
 
-- embed on home.js, aviv.net (seems to work)
-  - verify
-  - verifyImmediately
 
-
-## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
-
+### Notifications related
 Done (or in progress)
 
 New Notifications that are not TrustNotifications
@@ -28,11 +24,10 @@ Your delegate key is not associated with you (not a TrustStatement - but no stat
 This *warning* should be shown when your identity is revoked.
 Additionally, all actions that use your delegate key to sign and published statements should not be allowed.
 
-Next:
 Don't show notifcations for someone else trusting a replaced key directly.
 Furthermore, only *warn* for TrustNotifications that are not marked "conflict".
 
-Display "warnings" less severely than "conflicts".
+Next:
 
 
 ## Not required for V2 switch to PROD

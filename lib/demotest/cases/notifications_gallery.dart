@@ -97,6 +97,7 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
   await eve.trust(badGuy, moniker: 'badGuy');
 
   // 9. Non-Canonical Trust: Mallory trusts OldKey (who is replaced by Charlie)
+  // This should NOT generate a notification for the POV.
   await me.trust(mallory, moniker: 'mallory');
   await mallory.trust(oldKey, moniker: 'oldKey');
 
@@ -165,7 +166,7 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
   check(trustGraph.notifications.any((n) => n.reason.contains("replaced by both")), "Missing: replaced by both");
   check(trustGraph.notifications.any((n) => n.reason.contains("Trusted key") && n.reason.contains("is being replaced")), "Missing: Trusted key is being replaced");
   check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to trust blocked key")), "Missing: Attempt to trust blocked key");
-  check(trustGraph.notifications.any((n) => n.reason.contains("trusts a non-canonical key")), "Missing: trusts a non-canonical key");
+  check(!trustGraph.notifications.any((n) => n.reason.contains("trust a non-canonical key")), "Unexpected: trust a non-canonical key notification found");
   check(trustGraph.notifications.any((n) => n.reason.contains("Delegate key ${aliceContent.token} already claimed by ${alice.token}")), "Missing: Delegate key already claimed");
 
   // Verify Labels

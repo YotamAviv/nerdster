@@ -272,14 +272,32 @@ void main() {
     await alice.trust(charlie, moniker: 'charlie');
     await alice.trust(bobNew, moniker: 'bobNew');
     await bobNew.replace(bob);
-    await charlie.trust(bob, moniker: 'bob'); // Charlie trusts the OLD key directly, but BobNew (also trusted) replaced it
+    
+    // Case 1: Charlie trusts the OLD key directly.
+    // Since Charlie is NOT the POV (Alice), this should NOT generate a notification.
+    await charlie.trust(bob, moniker: 'bob'); 
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
     expect(graph.isTrusted(bobNew.token), isTrue);
-    expect(graph.notifications.any((n) => n.reason.contains('non-canonical')), isTrue);
+    expect(graph.notifications.any((n) => n.reason.contains('non-canonical')), isFalse, reason: "Should not notify for others' mistakes");
+
+    // Case 2: Alice (POV) trusts the OLD key directly.
+    // Since the replacement comes from 'bobNew' (dist 1), and Alice trusts 'bob' (dist 1),
+    // the replacement is discovered in Layer 1 processing.
+    // 'bob' is already in the graph (from Layer 0 processing).
+    // So the replacement logic sees 'bob' in 'distances' and triggers "Trusted key ... is being replaced".
+    // The "non-canonical" notification is NOT triggered because Alice (Layer 0) is processed before the replacement is known.
+    
+    await alice.trust(bob, moniker: 'bob');
+    
+    final pipeline2 = TrustPipeline(source);
+    final graph2 = await pipeline2.build(alice.token);
+    
+    expect(graph2.notifications.any((n) => n.reason.contains('is being replaced by')), isTrue, 
+      reason: "Should notify that a trusted key is being replaced");
   });
 
   test('Distance Authority: Deep Replacement Constraint Ignored', () async {
