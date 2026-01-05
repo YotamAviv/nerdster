@@ -85,8 +85,8 @@ A subject matches a tag filter if:
 `SubjectAggregation` will be updated to include:
 
 - `lastActivity`: Timestamp of the most recent statement in the cluster.
-- `userDismissalTimestamp`: Timestamp of the current user's latest dismissal.
-- `povDismissalTimestamp`: Timestamp of the PoV's latest dismissal.
+- `isUserDismissed`: Boolean indicating if the subject is dismissed by the current user (considering "snooze" and qualified activity).
+- `isDismissed`: Boolean indicating if the subject is dismissed by the PoV (considering "snooze" and qualified activity).
 - `isCensored`: Boolean indicating if any trusted statement has the `censor` flag.
 - `tags`: A set of all tags found in the subject or its comments.
 
@@ -100,12 +100,10 @@ bool shouldShow(SubjectAggregation subject, FilterMode mode, bool censorshipEnab
 
   switch (mode) {
     case FilterMode.myDisses:
-      if (subject.userDismissalTimestamp == null) return true;
-      return subject.lastActivity > subject.userDismissalTimestamp;
+      return !subject.isUserDismissed;
 
     case FilterMode.povDisses:
-      if (subject.povDismissalTimestamp == null) return true;
-      return subject.lastActivity > subject.povDismissalTimestamp;
+      return !subject.isDismissed;
 
     case FilterMode.ignoreDisses:
       return true;

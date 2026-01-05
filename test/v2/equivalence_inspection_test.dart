@@ -129,11 +129,8 @@ void main() {
              tags: canonicalAgg.tags,
              lastActivity: canonicalAgg.lastActivity,
              isCensored: canonicalAgg.isCensored,
-             userDismissalTimestamp: canonicalAgg.userDismissalTimestamp,
-             povDismissalTimestamp: canonicalAgg.povDismissalTimestamp,
-             isDismissed: canonicalAgg.isDismissed,
-             isRated: canonicalAgg.isRated,
              myDelegateStatements: canonicalAgg.myDelegateStatements,
+             povStatements: canonicalAgg.povStatements,
            );
         }
       }

@@ -112,11 +112,8 @@ class _ContentCardState extends State<ContentCard> {
              tags: canonicalAgg.tags,
              lastActivity: canonicalAgg.lastActivity,
              isCensored: canonicalAgg.isCensored,
-             userDismissalTimestamp: canonicalAgg.userDismissalTimestamp,
-             povDismissalTimestamp: canonicalAgg.povDismissalTimestamp,
-             isDismissed: canonicalAgg.isDismissed,
-             isRated: canonicalAgg.isRated,
              myDelegateStatements: canonicalAgg.myDelegateStatements,
+             povStatements: canonicalAgg.povStatements,
            );
         }
       }
@@ -644,11 +641,9 @@ bool _shouldShowStatement(ContentStatement s, V2FeedModel model) {
 
   switch (model.filterMode) {
     case V2FilterMode.myDisses:
-      if (subjectAgg.userDismissalTimestamp == null) return true;
-      return subjectAgg.lastActivity.isAfter(subjectAgg.userDismissalTimestamp!);
+      return !subjectAgg.isUserDismissed;
     case V2FilterMode.povDisses:
-      if (subjectAgg.povDismissalTimestamp == null) return true;
-      return subjectAgg.lastActivity.isAfter(subjectAgg.povDismissalTimestamp!);
+      return !subjectAgg.isDismissed;
     case V2FilterMode.ignoreDisses:
       return true;
   }

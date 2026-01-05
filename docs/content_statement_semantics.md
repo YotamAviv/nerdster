@@ -58,6 +58,30 @@ Expresses a disposition or opinion about a subject.
     }
     ```
 
+### Dismiss
+*   **Meaning**: Hide the subject from the feed.
+*   **`with` Clause**: The `dismiss` field can be one of:
+    *   `true`: **Dismissed**. The subject is hidden indefinitely, regardless of future activity.
+    *   `"snooze"`: **Snoozed**. The subject is hidden until *qualified new activity* occurs.
+        *   **Qualified New Activity** (wakes up the subject):
+            *   A `rate` statement with a `comment` or `recommend` (true or false).
+            *   Any `relate` statement.
+        *   **Disqualified Activity** (does not wake up the subject):
+            *   A `rate` statement with `censor` or `dismiss`.
+            *   Any `equate`, `dontRelate`, or `dontEquate` statement.
+    *   *(Note: `null` and `false` are not used; omitting the `dismiss` field implies the subject is visible.)*
+    *   **Re-Snoozing**: A user may issue a new "snooze" statement even if their current disposition is already "snooze". This is necessary to re-hide an item that was woken up by new activity, as the new statement's timestamp will be later than the activity.
+*   **Example**:
+    ```json
+    {
+      "rate": <subject JSON or token>,
+      "with": {
+        "dismiss": "snooze"
+      }
+    }
+    ```
+
+
 ### `relate` / `dontRelate`
 *   **Meaning**: The `subject` is related (or not related) to the `otherSubject`.
 *   **`with` Clause**: Requires `otherSubject`.

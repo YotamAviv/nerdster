@@ -11,6 +11,7 @@ import '../content/dialogs/on_off_icons.dart';
 import '../util_ui.dart';
 import 'model.dart';
 import 'source_factory.dart';
+import 'dismiss_toggle.dart';
 
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 
@@ -76,7 +77,7 @@ class V2RateDialog extends StatefulWidget {
 
 class _V2RateDialogState extends State<V2RateDialog> {
   late ValueNotifier<bool?> like;
-  late ValueNotifier<bool> dis;
+  late ValueNotifier<String?> dis;
   late ValueNotifier<bool> censor;
   late ValueNotifier<bool> erase;
   late ValueNotifier<bool> okEnabled;
@@ -102,7 +103,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
     }
 
     like = ValueNotifier(priorStatement?.like);
-    dis = ValueNotifier(priorStatement?.dismiss ?? false);
+    dis = ValueNotifier(priorStatement?.dismiss);
     censor = ValueNotifier(priorStatement?.censor ?? false);
     erase = ValueNotifier(false);
     okEnabled = ValueNotifier(false);
@@ -117,7 +118,14 @@ class _V2RateDialogState extends State<V2RateDialog> {
         like.value = (like.value == false ? null : false);
         break;
       case RateIntent.dismiss:
-        dis.value = !dis.value;
+        // Toggle between null and snooze
+        if (dis.value == null) {
+          dis.value = 'snooze';
+        } else if (dis.value == 'snooze') {
+          dis.value = 'forever';
+        } else {
+          dis.value = null;
+        }
         break;
       case RateIntent.comment:
         break;
@@ -150,7 +158,10 @@ class _V2RateDialogState extends State<V2RateDialog> {
   }
 
   void listener() {
-    okEnabled.value = !compareToPrior || censor.value;
+    // Allow re-submit if it's a snooze (to re-snooze woken items)
+    bool isReSnooze = dis.value == 'snooze' && priorStatement?.dismiss == 'snooze';
+    okEnabled.value = !compareToPrior || censor.value || isReSnooze;
+    
     if (bAllFieldsClear && b(priorStatement)) {
       erase.value = true;
     }
@@ -169,7 +180,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
   void setToPrior() {
     if (b(priorStatement)) {
       like.value = priorStatement!.like;
-      dis.value = b(priorStatement!.dismiss);
+      dis.value = priorStatement!.dismiss;
       censor.value = b(priorStatement!.censor);
       commentController.text = priorStatement!.comment ?? '';
     }
@@ -178,7 +189,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
   bool get compareToPrior {
     if (b(priorStatement)) {
       return like.value == priorStatement!.like &&
-          dis.value == b(priorStatement!.dismiss) &&
+          dis.value == priorStatement!.dismiss &&
           censor.value == b(priorStatement!.censor) &&
           commentController.text == (priorStatement!.comment ?? '');
     } else {
@@ -188,13 +199,13 @@ class _V2RateDialogState extends State<V2RateDialog> {
 
   void clearFields() {
     like.value = null;
-    dis.value = false;
+    dis.value = null;
     censor.value = false;
     commentController.text = '';
   }
 
   bool get bAllFieldsClear =>
-      !b(like.value) && !dis.value && !censor.value && commentController.text.isEmpty;
+      !b(like.value) && dis.value == null && !censor.value && commentController.text.isEmpty;
 
   bool? trueOrNull(bool b) => b ? true : null;
 
@@ -216,7 +227,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
       verb,
       widget.aggregation.subject,
       recommend: like.value,
-      dismiss: trueOrNull(dis.value),
+      dismiss: dis.value,
       censor: trueOrNull(censor.value),
       comment: comment,
     );
@@ -252,12 +263,12 @@ class _V2RateDialogState extends State<V2RateDialog> {
         key2colors: const {true: Colors.green, false: Colors.red},
         callback: listener,
         disabled: !editingEnabled);
-    OnOffIcon disButton = OnOffIcon(dis, Icons.swipe_left, Icons.swipe_left_outlined,
-        text: 'Dismiss',
-        tooltipText: 'Dismiss (I don\'t care to see this again)',
-        color: Colors.brown,
-        callback: listener,
-        disabled: !editingEnabled);
+    
+    Widget disButton = DismissToggle(
+      notifier: dis,
+      disabled: !editingEnabled,
+      callback: listener,
+    );
     
     String censorTooltip;
     if (subjectIsMyStatement) {

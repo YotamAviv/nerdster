@@ -327,11 +327,6 @@ ContentAggregation reduceContentAggregation(
           }
         }
 
-        // Update dismissal timestamps
-        DateTime? userDismissalTimestamp = agg.userDismissalTimestamp;
-        DateTime? povDismissalTimestamp = agg.povDismissalTimestamp;
-        bool isRated = agg.isRated;
-
         final String? signerIdentity = trustGraph.isTrusted(s.iToken)
             ? trustGraph.resolveIdentity(s.iToken)
             : delegateResolver.getIdentityForDelegate(s.iToken);
@@ -372,17 +367,10 @@ ContentAggregation reduceContentAggregation(
             }
           }
 
-          // Also clear isRated if the signer is the PoV
-          bool isRated = agg.isRated;
+          // Clear povStatements if signer is POV
+          List<ContentStatement> newPovStatements = agg.povStatements;
           if (signerIdentity == followNetwork.povIdentity) {
-             // If we removed any rate statements, we might need to re-check isRated.
-             // But simpler: just re-check from newStatements.
-             isRated = newStatements.any((stmt) {
-                final sid = trustGraph.isTrusted(stmt.iToken)
-                    ? trustGraph.resolveIdentity(stmt.iToken)
-                    : delegateResolver.getIdentityForDelegate(stmt.iToken);
-                return sid == followNetwork.povIdentity && stmt.verb == ContentVerb.rate;
-             });
+             newPovStatements = [];
           }
 
           subjects[canonical] = SubjectAggregation(
@@ -394,31 +382,15 @@ ContentAggregation reduceContentAggregation(
             lastActivity: s.time.isAfter(agg.lastActivity) ? s.time : agg.lastActivity,
             related: newRelated,
             myDelegateStatements: agg.myDelegateStatements,
-            userDismissalTimestamp: agg.userDismissalTimestamp,
-            povDismissalTimestamp: agg.povDismissalTimestamp,
+            povStatements: newPovStatements,
             isCensored: agg.isCensored,
-            isDismissed: agg.isDismissed,
-            isRated: isRated,
           );
           continue;
         }
 
+        List<ContentStatement> newPovStatements = agg.povStatements;
         if (signerIdentity == followNetwork.povIdentity) {
-          if (s.verb == ContentVerb.rate) isRated = true;
-          if (s.dismiss == true) {
-            if (povDismissalTimestamp == null || s.time.isAfter(povDismissalTimestamp)) {
-              povDismissalTimestamp = s.time;
-            }
-          }
-        }
-
-        if (s.dismiss == true && meIdentityKeys != null) {
-          final isMe = meIdentityKeys.any((k) => trustGraph.resolveIdentity(k.value) == signerIdentity);
-          if (isMe) {
-            if (userDismissalTimestamp == null || s.time.isAfter(userDismissalTimestamp)) {
-              userDismissalTimestamp = s.time;
-            }
-          }
+           newPovStatements = [...newPovStatements, s];
         }
 
         final DateTime lastActivity = s.time.isAfter(agg.lastActivity) ? s.time : agg.lastActivity;
@@ -446,11 +418,8 @@ ContentAggregation reduceContentAggregation(
           lastActivity: lastActivity,
           related: relatedSet,
           myDelegateStatements: agg.myDelegateStatements,
-          userDismissalTimestamp: userDismissalTimestamp,
-          povDismissalTimestamp: povDismissalTimestamp,
+          povStatements: newPovStatements,
           isCensored: censored.contains(canonical) || censored.contains(s.subjectToken),
-          isDismissed: povDismissalTimestamp != null && !lastActivity.isAfter(povDismissalTimestamp),
-          isRated: isRated,
         );
       }
     }
@@ -485,14 +454,6 @@ ContentAggregation reduceContentAggregation(
         );
       });
 
-      // Update dismissal timestamps
-      DateTime? userDismissalTimestamp = agg.userDismissalTimestamp;
-      if (s.dismiss == true) {
-        if (userDismissalTimestamp == null || s.time.isAfter(userDismissalTimestamp)) {
-          userDismissalTimestamp = s.time;
-        }
-      }
-
       // Update myDelegateStatements
       List<ContentStatement> myDelegateStatements = agg.myDelegateStatements;
       if (s.verb == ContentVerb.clear) {
@@ -511,11 +472,8 @@ ContentAggregation reduceContentAggregation(
         lastActivity: agg.lastActivity,
         related: agg.related,
         myDelegateStatements: myDelegateStatements,
-        userDismissalTimestamp: userDismissalTimestamp,
-        povDismissalTimestamp: agg.povDismissalTimestamp,
+        povStatements: agg.povStatements,
         isCensored: agg.isCensored,
-        isDismissed: agg.isDismissed,
-        isRated: agg.isRated,
       );
     }
   }
@@ -556,11 +514,8 @@ ContentAggregation reduceContentAggregation(
       lastActivity: agg.lastActivity,
       related: agg.related,
       myDelegateStatements: agg.myDelegateStatements,
-      userDismissalTimestamp: agg.userDismissalTimestamp,
-      povDismissalTimestamp: agg.povDismissalTimestamp,
+      povStatements: agg.povStatements,
       isCensored: agg.isCensored,
-      isDismissed: agg.isDismissed,
-      isRated: agg.isRated,
     );
     
     mostStrings.process(recursiveTags);

@@ -1,15 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
-import 'package:nerdster/v2/model.dart';
 
+/// Can be useful for simple scenarios at: http://localhost:38621/?fire=fake&demo=egosCircle
 Future<(DemoKey, DemoKey?)> egos() async {
   DemoKey jock = await DemoKey.findOrCreate('jock');
   DemoKey poser = await DemoKey.findOrCreate('poser');

@@ -29,6 +29,29 @@ Furthermore, only *warn* for TrustNotifications that are not marked "conflict".
 
 Next:
 
+## Dismiss semantics overhaul
+
+Currently, Nerdster rate verb expects
+"with": {
+  "dismiss": true (or missing)
+}
+
+Considering
+"with": {
+  "dismiss": "snooze" (or "forever"or missing. true defaults to snooze)
+}
+
+
+
+New semantics:
+- <missing>: default content, shown as usual
+- snooze: not shown unless a rating about this subject is newer than the user's dismiss rating.
+- "forever": not shown.
+
+
+My concern is not with writing the program; it's with dealing with existing signed statements
+
+The alternative would be to have a global dis "disposition" where you treat all of your disses as being "untilActivityHappens".
 
 ## Not required for V2 switch to PROD
 
@@ -50,6 +73,7 @@ BUGS:
   - YouTube
   - NYT
   Maybe employ a stock article, video image, maybe stock NYT article, YouTube video ...
+- embeded Nerdster sign in (send identity) should sign out (if it was signed in with a delegate through secure storage)
 
 ### relating statements
 

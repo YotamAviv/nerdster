@@ -14,7 +14,7 @@ class ContentStatement extends Statement {
   // with
   final dynamic other;
   final bool? like;
-  final bool? dismiss;
+  final String? dismiss;
   final bool? censor;
   final Json? contexts; // (verb == follow)
 
@@ -37,16 +37,25 @@ class ContentStatement extends Statement {
     assert(b(subject));
 
     Json? withx = jsonish['with'];
+    
+    dynamic rawDismiss = withx?['dismiss'];
+    String? dismissVal;
+    if (rawDismiss is bool && rawDismiss == true) {
+      dismissVal = 'forever';
+    } else if (rawDismiss is String) {
+      dismissVal = rawDismiss;
+    }
+
     ContentStatement s = ContentStatement._internal(
       jsonish,
       subject,
       verb: verb!,
       // with (would be nice if Dart would let me pass the Map as the args)
-      other: b(withx) ? withx!['otherSubject'] : null,
-      like: b(withx) ? withx!['recommend'] : null,
-      dismiss: b(withx) ? withx!['dismiss'] : null,
-      censor: b(withx) ? withx!['censor'] : null,
-      contexts: b(withx) ? withx!['contexts'] : null,
+      other: withx?['otherSubject'],
+      like: withx?['recommend'],
+      dismiss: dismissVal,
+      censor: withx?['censor'],
+      contexts: withx?['contexts'],
     );
     _cache[s.token] = s;
     return s;
@@ -71,11 +80,19 @@ class ContentStatement extends Statement {
       {String? comment,
       dynamic other,
       bool? recommend,
-      bool? dismiss,
+      dynamic dismiss,
       bool? censor,
       Json? contexts}) {
     dynamic s = subject;
     dynamic o = other;
+
+    // Backward compatibility for dismiss: true -> 'forever'
+    String? dismissVal;
+    if (dismiss is bool && dismiss == true) {
+      dismissVal = 'forever';
+    } else if (dismiss is String) {
+      dismissVal = dismiss;
+    }
 
     final bool debugUseSubjectNotToken = Setting.get(SettingType.debugUseSubjectNotToken).value;
 
@@ -83,7 +100,7 @@ class ContentStatement extends Statement {
       final isStatement = (s is Map && s.containsKey('statement')) || s is Statement;
       if (verb == ContentVerb.clear ||
           (censor == true) ||
-          (verb == ContentVerb.rate && dismiss == true) ||
+          (verb == ContentVerb.rate && dismissVal != null) ||
           isStatement) {
         if (!debugUseSubjectNotToken) {
           s = getToken(s);
@@ -108,7 +125,7 @@ class ContentStatement extends Statement {
     Json withx = {
       'otherSubject': o,
       'recommend': recommend,
-      'dismiss': dismiss,
+      'dismiss': dismissVal,
       'censor': censor,
       'contexts': contexts,
     };

@@ -232,11 +232,9 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
     switch (mode) {
       case V2FilterMode.myDisses:
-        if (subject.userDismissalTimestamp == null) return true;
-        return subject.lastActivity.isAfter(subject.userDismissalTimestamp!);
+        return !subject.isUserDismissed;
       case V2FilterMode.povDisses:
-        if (subject.povDismissalTimestamp == null) return true;
-        return subject.lastActivity.isAfter(subject.povDismissalTimestamp!);
+        return !subject.isDismissed;
       case V2FilterMode.ignoreDisses:
         return true;
     }

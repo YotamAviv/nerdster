@@ -62,8 +62,8 @@ class DemoKey {
     'simpsons': simpsons,
     'loner': loner,
     // 'trustBlockConflict': trustBlockConflict,
-    // 'egos': egos,
-    // 'egosCircle': egosCircle,
+    'egos': egos,
+    'egosCircle': egosCircle,
     // 'delegateMerge': delegateMerge,
     // 'delete3': deletions3,
     // 'multipleBlocks': multipleBlocks,
@@ -162,7 +162,7 @@ class DemoKey {
       ContentVerb verb = ContentVerb.rate,
       String? comment,
       bool? recommend,
-      bool? dismiss,
+      dynamic dismiss,
       bool? censor,
       dynamic other}) async {
     return ContentStatement.make(await publicKey.json, verb, subject,
@@ -191,7 +191,7 @@ class DemoKey {
       String? title,
       String? comment,
       bool? recommend,
-      bool? dismiss,
+      dynamic dismiss,
       bool? censor,
       String? export}) async {
     assert(i(title) + i(subject) == 1);

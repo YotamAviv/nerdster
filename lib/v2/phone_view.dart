@@ -98,15 +98,18 @@ class _PhoneViewState extends State<PhoneView> {
   }
 
   Widget _buildFeed(V2FeedModel model) {
-    final tagSetting = Setting.get<String>(SettingType.tag).value;
     final subjects = model.aggregation.subjects.values.where((s) {
-      if (tagSetting == '-') return true;
-      final normalizedTag = tagSetting.toLowerCase();
-      final searchTag = normalizedTag.startsWith('#') ? normalizedTag : '#$normalizedTag';
-      return s.tags.contains(searchTag);
+      return _controller.shouldShow(
+        s,
+        model.filterMode,
+        model.enableCensorship,
+        tagFilter: model.tagFilter,
+        tagEquivalence: model.aggregation.tagEquivalence,
+        typeFilter: model.typeFilter,
+      );
     }).toList();
 
-    subjects.sort((a, b) => b.lastActivity.compareTo(a.lastActivity));
+    _controller.sortSubjects(subjects);
 
     return ListView.builder(
       itemCount: subjects.length,
@@ -278,6 +281,7 @@ class ContentBox extends StatelessWidget {
                       author: author,
                       initialImage: images.isNotEmpty ? images[0] : null,
                       contentType: type,
+                      tags: aggregation.tags.toList(),
                       imageCache: imageCache,
                     ),
                   ),
@@ -334,23 +338,29 @@ class ContentBox extends StatelessWidget {
               child: Row(
                 children: [
                   _ActionButton(
-                    icon: aggregation.likes > 0 ? Icons.favorite : Icons.favorite_border,
-                    color: aggregation.likes > 0 ? Colors.red : Colors.white,
-                    onTap: () {},
-                  ),
-                  _ActionButton(
-                    icon: Icons.mode_comment_outlined,
-                    onTap: () {},
-                  ),
-                  _ActionButton(
-                    icon: Icons.repeat,
+                    icon: Icons.rate_review_outlined,
                     onTap: () {},
                   ),
                   const Spacer(),
-                  _ActionButton(
-                    icon: Icons.bookmark_border,
-                    onTap: () {},
-                  ),
+                  if (aggregation.likes > 0 || aggregation.dislikes > 0)
+                    Row(
+                      children: [
+                        if (aggregation.likes > 0) ...[
+                          const Icon(Icons.thumb_up, color: Colors.green, size: 16),
+                          const SizedBox(width: 4),
+                          Text('${aggregation.likes}',
+                              style: const TextStyle(color: Colors.white)),
+                          const SizedBox(width: 8),
+                        ],
+                        if (aggregation.dislikes > 0) ...[
+                          const Icon(Icons.thumb_down, color: Colors.red, size: 16),
+                          const SizedBox(width: 4),
+                          Text('${aggregation.dislikes}',
+                              style: const TextStyle(color: Colors.white)),
+                        ],
+                        const SizedBox(width: 8),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -377,25 +387,35 @@ class ContentBox extends StatelessWidget {
                     final label = labeler.getLabel(s.iToken);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 4.0),
-                      child: RichText(
-                        text: TextSpan(
-                          style: const TextStyle(fontSize: 13),
-                          children: [
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: Text(
-                                '$label ',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                      child: Row(
+                        children: [
+                          Text(
+                            '$label ',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 13,
                             ),
-                            TextSpan(
-                              text: s.comment ?? s.verb.label,
-                              style: TextStyle(color: Colors.grey[300]),
-                            ),
+                          ),
+                          if (s.like == true) ...[
+                            const Icon(Icons.thumb_up, size: 12, color: Colors.green),
+                            const SizedBox(width: 4),
                           ],
-                        ),
+                          if (s.like == false) ...[
+                            const Icon(Icons.thumb_down, size: 12, color: Colors.red),
+                            const SizedBox(width: 4),
+                          ],
+                          Expanded(
+                            child: Text(
+                              s.comment ?? s.verb.label,
+                              style: TextStyle(color: Colors.grey[300], fontSize: 13),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.rate_review_outlined, size: 16, color: Colors.grey),
+                        ],
                       ),
                     );
                   }),
@@ -473,6 +493,7 @@ class DynamicImage extends StatefulWidget {
   final String? author;
   final String? initialImage;
   final String contentType;
+  final List<String> tags;
   final Map<String, String> imageCache;
 
   const DynamicImage({
@@ -482,6 +503,7 @@ class DynamicImage extends StatefulWidget {
     this.author,
     this.initialImage,
     required this.contentType,
+    this.tags = const [],
     required this.imageCache,
   });
 
@@ -560,41 +582,43 @@ class _DynamicImageState extends State<DynamicImage> {
     );
   }
 
+  String _getFallbackUrl() {
+    // Use tags or content type as keywords
+    final keywords = widget.tags.isNotEmpty
+        ? widget.tags.map((t) => t.replaceAll('#', '')).join(',')
+        : widget.contentType;
+    // Use title or url hash for deterministic lock
+    final lock = (widget.url ?? widget.title ?? '').hashCode;
+    return 'https://loremflickr.com/600/600/$keywords?lock=$lock';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final imageUrl = _fetchedUrl;
+    final imageUrl = _fetchedUrl ?? _getFallbackUrl();
 
     return ClipRRect(
-      child: imageUrl != null
-          ? Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  color: Colors.grey[850],
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                      color: Colors.white24,
-                    ),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: Colors.grey[850],
-                child: const Icon(Icons.broken_image, color: Colors.white24, size: 80),
-              ),
-            )
-          : Container(
-              color: Colors.grey[850],
-              child: const Center(
-                child: Icon(Icons.image_outlined, color: Colors.white10, size: 80),
+      child: Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: Colors.grey[850],
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                    : null,
+                color: Colors.white24,
               ),
             ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: Colors.grey[850],
+          child: const Icon(Icons.broken_image, color: Colors.white24, size: 80),
+        ),
+      ),
     );
   }
 }

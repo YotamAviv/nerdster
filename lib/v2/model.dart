@@ -182,11 +182,9 @@ class SubjectAggregation {
   final DateTime lastActivity;
   final Set<String> related; // Canonical tokens of related subjects
   final List<ContentStatement> myDelegateStatements;
-  final DateTime? userDismissalTimestamp;
-  final DateTime? povDismissalTimestamp;
+  final List<ContentStatement> povStatements;
+
   final bool isCensored;
-  final bool isDismissed; // Dismissed by the POV (lastActivity <= povDismissalTimestamp)
-  final bool isRated; // Rated by the POV
 
   SubjectAggregation({
     this.subject,
@@ -197,14 +195,75 @@ class SubjectAggregation {
     required this.lastActivity,
     this.related = const {},
     this.myDelegateStatements = const [],
-    this.userDismissalTimestamp,
-    this.povDismissalTimestamp,
+    this.povStatements = const [],
     this.isCensored = false,
-    this.isDismissed = false,
-    this.isRated = false,
   });
 
   String get token => getToken(subject);
+
+  DateTime? get userDismissalTimestamp => _getDismissalTimestamp(myDelegateStatements);
+  DateTime? get povDismissalTimestamp => _getDismissalTimestamp(povStatements);
+
+  bool get isRated => povStatements.any((s) => s.verb == ContentVerb.rate);
+
+  bool get isDismissed => _checkIsDismissed(povStatements);
+  bool get isUserDismissed => _checkIsDismissed(myDelegateStatements);
+
+  bool _checkIsDismissed(List<ContentStatement> dispositionStatements) {
+    final dismissalTimestamp = _getDismissalTimestamp(dispositionStatements);
+    if (dismissalTimestamp == null) return false;
+
+    // If dismissed forever (timestamp is far future), it's dismissed regardless of activity
+    if (dismissalTimestamp.year >= 3000) return true;
+
+    // If snoozed (timestamp is the time of snooze), check for qualified new activity
+    if (lastActivity.isAfter(dismissalTimestamp)) {
+      // Find the statement that caused the last activity
+      // We assume statements are sorted or we just find the one matching lastActivity
+      // Since lastActivity is the max time, we can just look for it.
+      // Note: There could be multiple statements with the same time, but they would be from different
+      // identities or about different things.
+      // We need to check if *any* statement at lastActivity is a "Qualified New Activity".
+      
+      final activityStatements = statements.where((s) => s.time.isAtSameMomentAs(lastActivity));
+      
+      for (final activityStatement in activityStatements) {
+         // Qualified New Activity:
+         // - Rate with comment or recommend (true/false)
+         // - Relate
+         if (activityStatement.verb == ContentVerb.relate) return false; // Wakes up
+         
+         if (activityStatement.verb == ContentVerb.rate) {
+           // Disqualified: censor or dismiss
+           if (activityStatement.censor == true || activityStatement.dismiss != null) continue; // Does not wake up
+           
+           // Qualified: comment or recommend
+           if (activityStatement.comment != null || activityStatement.like != null) return false; // Wakes up
+         }
+         // Equate/DontEquate/DontRelate are disqualified (they don't wake up)
+      }
+      // If we found no qualified activity among the statements at lastActivity, it remains dismissed.
+      return true;
+    }
+
+    return true;
+  }
+
+  DateTime? _getDismissalTimestamp(List<ContentStatement> stmts) {
+    // The user's disposition is singular. The first rate statement encountered
+    // is the effective one.
+    for (final s in stmts) {
+      if (s.verb == ContentVerb.rate) {
+        if (s.dismiss == 'forever') {
+          return DateTime(3000);
+        } else if (s.dismiss == 'snooze') {
+          return s.time;
+        }
+        return null;
+      }
+    }
+    return null;
+  }
 }
 
 /// The result of aggregating content for a Follow Network.
