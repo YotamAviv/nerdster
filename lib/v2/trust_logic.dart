@@ -293,7 +293,7 @@ TrustGraph reduceTrustGraph(
         if (effectiveSubject != subject) {
           final String issuerName = issuer == current.pov ? "You" : "Identity $issuer";
           notifications.add(TrustNotification(
-            reason: "$issuerName trusts a non-canonical key directly (replaced by $effectiveSubject)",
+            reason: "$issuerName trusts a non-canonical key ($subject) directly (replaced by $effectiveSubject)",
             relatedStatement: s,
             isConflict: false,
           ));

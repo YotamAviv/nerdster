@@ -1,17 +1,19 @@
 # Current Activity: V2 Rewrite
 
-Remove dead code.
+Notifications better screen
+The legacy system showed text around a 
+
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
 ## Required for V2 switch to PROD
 
+
 Notifications (not TrustNotifications)
 - you're not in this network
-- your delegate key is revoked
-- 
+- your delegate key is revoked (Okay, yes TrustStatement)
 
-Don't show notifcations for someone else trust a replaced key directly.
+Don't show notifcations for someone else trusting a replaced key directly.
 
 CredentialsDisplay:
 - possible cleanup: make it listen to signInState and show the keys using a snackbar.
@@ -29,7 +31,6 @@ Restore integration tests from browser
 
 - Notifications (not TrustNotifications)
   - corrupt key
-  - Reach goal: Recommended actions, warnings
 
 ### node detail Enhancements
 - ability to toggle showCrypto in graph view
