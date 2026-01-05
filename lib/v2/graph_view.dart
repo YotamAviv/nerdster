@@ -8,6 +8,7 @@ import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/trust_settings_bar.dart';
 import 'package:nerdster/v2/node_details.dart';
+import 'package:nerdster/v2/labeler.dart';
 
 class NerdyGraphView extends StatefulWidget {
   final V2FeedController controller;
@@ -24,7 +25,7 @@ class NerdyGraphView extends StatefulWidget {
 }
 
 class _NerdyGraphViewState extends State<NerdyGraphView> {
-  late GraphController _graphController;
+  GraphController? _graphController;
   Graph _graph = Graph();
   final TransformationController _transformationController = TransformationController();
   late Algorithm _algorithm;
@@ -35,13 +36,15 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   @override
   void initState() {
     super.initState();
-    _graphController = GraphController(widget.controller.value!);
-    _graphController.focusedIdentity = widget.initialFocus;
-    
-    final fcontext = widget.controller.value!.fcontext;
-    _graphController.mode = (fcontext == kFollowContextIdentity) 
-        ? GraphViewMode.identity 
-        : GraphViewMode.follow;
+    if (widget.controller.value != null) {
+      _graphController = GraphController(widget.controller.value!);
+      _graphController!.focusedIdentity = widget.initialFocus;
+      
+      final fcontext = widget.controller.value!.fcontext;
+      _graphController!.mode = (fcontext == kFollowContextIdentity) 
+          ? GraphViewMode.identity 
+          : GraphViewMode.follow;
+    }
 
     widget.controller.addListener(_onModelChanged);
 
@@ -62,22 +65,26 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   void _onModelChanged() {
     if (widget.controller.value != null) {
-      final oldFocus = _graphController.focusedIdentity;
+      final oldFocus = _graphController?.focusedIdentity;
       _graphController = GraphController(widget.controller.value!);
-      _graphController.focusedIdentity = oldFocus;
+      _graphController!.focusedIdentity = oldFocus;
       
       final fcontext = widget.controller.value!.fcontext;
-      _graphController.mode = (fcontext == kFollowContextIdentity) 
+      _graphController!.mode = (fcontext == kFollowContextIdentity) 
           ? GraphViewMode.identity 
           : GraphViewMode.follow;
           
+      _refreshGraph();
+    } else {
+      _graphController = null;
       _refreshGraph();
     }
   }
 
   void _updateAlgorithm() {
+    if (_graphController == null) return;
     _algorithm = FanAlgorithm(
-      rootId: _graphController.povIdentity,
+      rootId: _graphController!.povIdentity,
       levelSeparation: 200,
     );
   }
@@ -93,8 +100,16 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   }
 
   void _refreshGraph() {
-    final newData = _graphController.buildGraphData();
-    final newPathEdges = _graphController.getPathToFocused(newData);
+    if (_graphController == null) {
+      setState(() {
+        _data = null;
+        _pathEdges = {};
+        _buildGraphView();
+      });
+      return;
+    }
+    final newData = _graphController!.buildGraphData();
+    final newPathEdges = _graphController!.getPathToFocused(newData);
     
     setState(() {
       _data = newData;
@@ -163,7 +178,14 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     if (model == null || _data == null || _data!.nodes.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('Network Graph')),
-        body: const Center(child: Text('No nodes to display in this context.')),
+        body: Column(
+          children: [
+            _buildControls(model),
+            const Expanded(
+              child: Center(child: Text('No nodes to display in this context.')),
+            ),
+          ],
+        ),
       );
     }
 
@@ -174,14 +196,14 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
             _buildControls(model),
             Expanded(
               child: InteractiveViewer(
-                key: ValueKey(_graphController.povIdentity),
+                key: ValueKey(_graphController!.povIdentity),
                 transformationController: _transformationController,
                 constrained: false,
                 boundaryMargin: const EdgeInsets.all(500),
                 minScale: 0.01,
                 maxScale: 5.6,
                 child: GraphView(
-                  key: ValueKey('${_graphController.povIdentity}_${_data?.nodes.length}_${_data?.edges.length}'),
+                  key: ValueKey('${_graphController!.povIdentity}_${_data?.nodes.length}_${_data?.edges.length}'),
                   graph: _graph,
                   algorithm: _algorithm,
                   paint: Paint()
@@ -210,22 +232,24 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     );
   }
 
-  Widget _buildControls(V2FeedModel model) {
+  Widget _buildControls(V2FeedModel? model) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
+          FloatingActionButton.small(
+            heroTag: 'graph_back',
             onPressed: () => Navigator.of(context).pop(),
             tooltip: 'Back',
+            child: const Icon(Icons.arrow_back),
           ),
+          const SizedBox(width: 8),
           Expanded(
             child: TrustSettingsBar(
-              availableIdentities: model.trustGraph.orderedKeys,
-              availableContexts: model.availableContexts,
-              activeContexts: model.activeContexts,
-              labeler: model.labeler,
+              availableIdentities: model?.trustGraph.orderedKeys ?? [],
+              availableContexts: model?.availableContexts ?? [],
+              activeContexts: model?.activeContexts ?? {},
+              labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: '')),
             ),
           ),
         ],
@@ -248,9 +272,9 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
     final model = widget.controller.value!;
     final label = model.labeler.getLabel(identity);
-    final resolvedRoot = model.labeler.getIdentityForToken(_graphController.povIdentity);
-    final resolvedFocused = _graphController.focusedIdentity != null 
-        ? model.labeler.getIdentityForToken(_graphController.focusedIdentity!)
+    final resolvedRoot = model.labeler.getIdentityForToken(_graphController!.povIdentity);
+    final resolvedFocused = _graphController!.focusedIdentity != null 
+        ? model.labeler.getIdentityForToken(_graphController!.focusedIdentity!)
         : null;
 
     final isRoot = identity == resolvedRoot;

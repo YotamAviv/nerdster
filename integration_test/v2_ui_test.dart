@@ -109,6 +109,13 @@ void main() {
       expect(monikerFinder, findsWidgets, reason: 'Should find human-readable names (monikers)');
 
       // 5. Verify "Hide Seen" Toggle
+      // The switch is now inside the filter drawer, which is hidden by default.
+      // We need to open the drawer first.
+      final filterButton = find.byIcon(Icons.tune);
+      expect(filterButton, findsOneWidget);
+      await tester.tap(filterButton);
+      await tester.pumpAndSettle();
+
       final switchFinder = find.byType(Switch);
       expect(switchFinder, findsOneWidget);
       

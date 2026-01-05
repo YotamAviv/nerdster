@@ -23,7 +23,9 @@ import 'package:nerdster/verify.dart';
 const iconSpacer = SizedBox(width: 3);
 
 class Menus {
-  static List<Widget> build(BuildContext context, {Widget? v2Notifications}) {
+  static List<Widget> build(BuildContext context, {
+    required Widget v2Notifications,
+  }) {
     List<Widget> demos = <Widget>[];
     for (final e in DemoKey.demos.entries) {
       String name = e.key;
@@ -65,11 +67,11 @@ class Menus {
       // Sign in
       SignInMenu(),
 
+
+
       // Settings
       SubmenuButton(menuChildren: [
-        // Cleaning up the UI, removing much..
-        // MyCheckbox(Prefs.censor, '''hide content censored by my network'''),
-        // const Text('--------- nerdier ---------'),
+        MyCheckbox(Setting.get<bool>(SettingType.censor).notifier, '''Hide content censored by my network'''),
         SubmenuButton(menuChildren: [
           MyCheckbox(Setting.get<bool>(SettingType.skipCredentials).notifier,
               'Sign-in credentials received',
@@ -83,7 +85,7 @@ class Menus {
       ], child: const Row(children: [Icon(Icons.settings), iconSpacer, Text('Settings')])),
 
       // Notifications
-      if (v2Notifications != null) v2Notifications,
+      v2Notifications,
 
       // Share
       SubmenuButton(menuChildren: <Widget>[
@@ -187,3 +189,4 @@ $link''',
 
   Menus._();
 }
+
