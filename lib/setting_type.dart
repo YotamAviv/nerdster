@@ -4,7 +4,7 @@ enum SettingType {
   skipLgtm(bool, false, persist: true),
   skipCredentials(bool, false, persist: true),
   identityPathsReq(String, 'permissive'),
-  fcontext(String, kFollowContextNerdster),
+  fcontext(String, kFollowContextNerdster, aliases: ['follow']),
   
   censor(bool, true),
   hideDisliked(bool, false),
