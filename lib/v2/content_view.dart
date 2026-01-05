@@ -180,13 +180,24 @@ class _ContentViewState extends State<ContentView> {
             child: Column(
               children: [
                 NerdsterMenu(
-                  v2Notifications: (model != null && (model.trustGraph.notifications.isNotEmpty || model.followNetwork.notifications.isNotEmpty))
-                    ? V2NotificationsMenu(
+                  v2Notifications: Builder(builder: (context) {
+                    final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
+                    final hasTrust = model?.trustGraph.notifications.isNotEmpty ?? false;
+                    final hasFollow = model?.followNetwork.notifications.isNotEmpty ?? false;
+                    
+                    if (model != null && (hasTrust || hasFollow || hasErrors)) {
+                      if (hasErrors) {
+                         debugPrint('ContentView: Displaying ${model.sourceErrors.length} errors');
+                      }
+                      return V2NotificationsMenu(
                         trustGraph: model.trustGraph,
                         followNetwork: model.followNetwork,
                         labeler: model.labeler,
-                      )
-                    : const SizedBox.shrink(),
+                        sourceErrors: model.sourceErrors,
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
                 ),
                 if (_controller.loading)
                   Column(

@@ -4,6 +4,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/v2/source_error.dart';
 
 enum V2SortMode {
   recentActivity,
@@ -302,6 +303,7 @@ class V2FeedModel {
   final bool enableCensorship;
   final List<String> availableContexts;
   final Set<String> activeContexts;
+  final List<SourceError> sourceErrors;
 
   V2FeedModel({
     required this.trustGraph,
@@ -317,6 +319,7 @@ class V2FeedModel {
     required this.enableCensorship,
     this.availableContexts = const [],
     this.activeContexts = const {},
+    this.sourceErrors = const [],
   });
 }
 

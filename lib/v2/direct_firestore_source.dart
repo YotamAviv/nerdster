@@ -7,7 +7,7 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/io.dart';
-import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/source_error.dart';
 import 'package:nerdster/v2/refresh_signal.dart';
 
 /// Fetches statements directly from Firestore.
@@ -24,14 +24,14 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
   DirectFirestoreSource(this._fire, {StatementVerifier? verifier})
       : verifier = verifier ?? OouVerifier();
 
-  final List<TrustNotification> _notifications = [];
+  final List<SourceError> _errors = [];
 
   @override
-  List<TrustNotification> get notifications => _notifications;
+  List<SourceError> get errors => List.unmodifiable(_errors);
 
   @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
-    _notifications.clear();
+    _errors.clear();
     final Map<String, List<T>> results = {};
     final bool skipVerify = Setting.get<bool>(SettingType.skipVerify).value;
 
@@ -77,12 +77,11 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
             try {
               jsonish = await Jsonish.makeVerify(json, verifier);
             } catch (e) {
-              _notifications.add(TrustNotification(
-                reason: 'Invalid Signature: $e',
-                rejectedStatement: Statement.make(Jsonish(json)),
-                isConflict: true,
-              ));
-              continue;
+              throw SourceError(
+                'Invalid Signature: $e',
+                token: token,
+                originalError: e,
+              );
             }
           } else {
             jsonish = Jsonish(json);
@@ -90,12 +89,10 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
 
           // Verify Integrity (Doc ID matches Content Hash)
           if (jsonish.token != doc.id) {
-            _notifications.add(TrustNotification(
-              reason:
-                  'Integrity Violation: Document ID ${doc.id} does not match content hash ${jsonish.token}',
-              rejectedStatement: Statement.make(jsonish),
-              isConflict: true,
-            ));
+            throw SourceError(
+              'Integrity Violation: Document ID ${doc.id} does not match content hash ${jsonish.token}',
+              token: token,
+            );
           }
 
           final DateTime time = parseIso(jsonish['time']);
@@ -104,31 +101,17 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
           if (first) {
             first = false;
           } else {
-            // TODO: These aren't TrustNotifications, and they never show up.
-            // BUG: The reduceTrustGraph function (in trust_logic.dart) rebuilds the graph from scratch and initializes a new, empty list of notifications, ignoring the ones passed in via the graph argument.
             if (previousToken == null) {
-              print(
-                  'Notary Chain Violation: Expected previous $previousToken, got ${jsonish.token}');
-              _notifications.add(TrustNotification(
-                reason:
-                    'Notary Chain Violation: Broken chain. Statement ${jsonish.token} is not linked from previous.',
-                rejectedStatement: Statement.make(jsonish),
-                isConflict: true,
-              ));
-              break;
+              throw SourceError(
+                'Notary Chain Violation: Broken chain. Statement ${jsonish.token} is not linked from previous.',
+                token: token,
+              );
             }
             if (jsonish.token != previousToken) {
-              print(
-                  'Notary Chain Violation: Expected previous $previousToken, got ${jsonish.token}');
-              _notifications.add(TrustNotification(
-                reason:
-                    'Notary Chain Violation: Expected previous $previousToken, got ${jsonish.token}',
-                rejectedStatement: Statement.make(jsonish),
-                isConflict: true,
-              ));
-              // Stop processing this chain on violation
-              // TODO: BUG: return 0 statements instead.
-              break;
+              throw SourceError(
+                'Notary Chain Violation: Expected previous $previousToken, got ${jsonish.token}',
+                token: token,
+              );
             }
           }
 
@@ -145,8 +128,17 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
         final List<T> distinctChain = d.distinct(chain).toList();
         results[token] = distinctChain;
       } catch (e) {
-        print('Error fetching $token: $e');
-        results[token] = [];
+        if (e is SourceError) {
+          _errors.add(e);
+        } else {
+          _errors.add(SourceError(
+            'Error fetching $token: $e',
+            token: token,
+            originalError: e,
+          ));
+        }
+        print('DirectFirestoreSource: Corruption detected for $token. Discarding all statements. Error: $e');
+        results.remove(token);
       }
     }));
 

@@ -50,17 +50,10 @@ class TrustPipeline {
       statementsByIssuer.addAll(newStatementsMap);
 
       // Collect notifications from source (e.g. corruption)
-      final sourceNotifications = source.notifications;
-      if (sourceNotifications.isNotEmpty) {
-        // We need to merge these into the graph.
-        // Since reduceTrustGraph takes the previous graph, we can add them to the graph
-        // before passing it to the reducer, or let the reducer handle it if we passed them in.
-        // Currently, the reducer calculates notifications based on logic.
-        // We should append these source notifications to the graph's notification list.
-        graph = graph.copyWith(
-          notifications: [...graph.notifications, ...sourceNotifications],
-        );
-      }
+      // Note: Source errors are now handled by the FeedController/Model directly,
+      // but if we wanted to include them in the graph, we could.
+      // For now, we just let the reducer run.
+      // The FeedController will merge source.errors into the model.sourceErrors.
 
       // 2. REDUCE (Pure Logic)
       // We re-run the reducer on the accumulated history.

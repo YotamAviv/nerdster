@@ -38,7 +38,7 @@ void main() {
     // We need to fetch statements authored by Lisa's delegate
     final appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
     final lisaStatementsMap = await appSource.fetch({lisaD!.token: null});
-    final lisaStatements = lisaStatementsMap[lisaD!.token] ?? [];
+    final lisaStatements = lisaStatementsMap[lisaD.token] ?? [];
     
     ContentStatement? artRating;
     for (final s in lisaStatements) {
@@ -57,15 +57,15 @@ void main() {
     // 3. Lisa comments on her own rating
     // "I really mean it!"
     final commentText = "I really mean it!";
-    await lisaD!.doRate(
+    await lisaD.doRate(
       subject: artRating!.json, // Pass the full JSON of the statement as subject
       comment: commentText,
       recommend: true,
     );
 
     // 4. Verify the new statement exists at the backend
-    final updatedLisaStatementsMap = await appSource.fetch({lisaD!.token: null});
-    final updatedLisaStatements = updatedLisaStatementsMap[lisaD!.token] ?? [];
+    final updatedLisaStatementsMap = await appSource.fetch({lisaD.token: null});
+    final updatedLisaStatements = updatedLisaStatementsMap[lisaD.token] ?? [];
     ContentStatement? nestedRating;
     
     for (final s in updatedLisaStatements) {
@@ -84,7 +84,7 @@ void main() {
     final subject = nestedRating!.subject;
     if (subject is String) {
       // It's a token
-      expect(subject, equals(artRating!.token));
+      expect(subject, equals(artRating.token));
     } else if (subject is Map) {
       // It's the object (or statement json)
       // If it's a statement, it should have a signature that matches

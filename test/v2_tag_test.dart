@@ -10,9 +10,11 @@ import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
+import 'package:nerdster/v2/source_error.dart';
+
 class MockSource<T extends Statement> implements StatementSource<T> {
   @override
-  List<TrustNotification> get notifications => [];
+  List<SourceError> get errors => [];
 
   @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async => {};
@@ -204,14 +206,18 @@ void main() {
         'with': {'domain': 'nerdster.org'}
       }));
 
+      // Use valid subjects that have a contentType so they pass the filter
+      final subject1 = {'contentType': 'test', 'id': 'sub1'};
+      final subject2 = {'contentType': 'test', 'id': 'sub2'};
+
       final s1 = ContentStatement(Jsonish({
-        'rate': 'subject1',
+        'rate': subject1,
         'comment': '#news #politics',
         'I': delegateJsonish.json,
         'time': now,
       }));
       final s2 = ContentStatement(Jsonish({
-        'rate': 'subject2',
+        'rate': subject2,
         'comment': '#world',
         'I': delegateJsonish.json,
         'time': now,
@@ -241,8 +247,8 @@ void main() {
         contentSource: MockSource(),
       );
 
-      final sub1 = aggregation.subjects['subject1']!;
-      final sub2 = aggregation.subjects['subject2']!;
+      final sub1 = aggregation.subjects.values.firstWhere((s) => (s.subject as Map)['id'] == 'sub1');
+      final sub2 = aggregation.subjects.values.firstWhere((s) => (s.subject as Map)['id'] == 'sub2');
 
       // Filter by #politics, should show subject1 (because it has #news which is equivalent to #politics)
       expect(controller.shouldShow(sub1, V2FilterMode.ignoreDisses, false, tagFilter: '#politics', tagEquivalence: aggregation.tagEquivalence), isTrue);

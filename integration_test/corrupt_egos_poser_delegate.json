@@ -1,0 +1,65 @@
+{
+  "jock": {
+    "token": "3954bd26f290107e6ac68113e8f868acc940b8a7",
+    "keyPair": {
+      "crv": "Ed25519",
+      "d": "jyVhp7S9SC-cF3SU2vP2wl1F7D0WXjVqxLb_DuW6NKs",
+      "kty": "OKP",
+      "x": "hbIm0bplPDN8Mu_LoBk8lgEYrdGiKC_Kh0yh7_dp53g"
+    }
+  },
+  "poser": {
+    "token": "5872c30782a2f38ea02d480bd5c3fe94a61ad082",
+    "keyPair": {
+      "crv": "Ed25519",
+      "d": "oBfCMjod9mVJaQGB4n31pEP7VkI6AEmLYTYpxSxWMFI",
+      "kty": "OKP",
+      "x": "Act1Lg_mMfsHU776H2H1SWaQWqjqg-GPlxCsbdDHe1Y"
+    }
+  },
+  "hipster": {
+    "token": "755a6ee9b6fe8367ecc0c2b7ea09e1c5b462c002",
+    "keyPair": {
+      "crv": "Ed25519",
+      "d": "YAFV9mGnLcSwB6Rr6T0g7EOtPIl8FCZ2deriMOVPo5k",
+      "kty": "OKP",
+      "x": "Sf-EQHCY94WB_4QFzEQWkO2SYFNTBgtfsc-Ic25oL84"
+    }
+  },
+  "jock-nerdster0": {
+    "token": "2e4b87bc803974f57f5b2e077f86bfa7e5526545",
+    "keyPair": {
+      "crv": "Ed25519",
+      "d": "IRS4CcMRdcuogNcj1pl7UnnP5RvM2qLtAu9JIFvuCbY",
+      "kty": "OKP",
+      "x": "-PD9JGI858s5ndX5ACO7Vx8hu9hgDnvD0dvZeo0CvVs"
+    }
+  },
+  "poser-nerdster0": {
+    "token": "a17afe7abd9e116e51ca8631e9deb9fa98d6ffa2",
+    "keyPair": {
+      "crv": "Ed25519",
+      "d": "QIjx8EcdhYXoCNlS774zRzorrnMbqkmQWhiBQsNcANg",
+      "kty": "OKP",
+      "x": "l-YNnZQ26ECRbfLMpHs7lNPxavzc1O66BZb3qRE_31g"
+    }
+  },
+  "hipster-nerdster0": {
+    "token": "b5a279bb3557195e2c60043634d646aaee0dbf29",
+    "keyPair": {
+      "crv": "Ed25519",
+      "d": "aCUki0JvpkbwgO5zGwqFSZw2gF5oOrajBGb5-jMZy4M",
+      "kty": "OKP",
+      "x": "A9gEjL5vmAQJpKDkp9OlKCa2YsyYrIKpCqKgk3WeQhw"
+    }
+  },
+  "hipster-nerdster1": {
+    "token": "28ccbcf2efacfc61492b444b5c568faac90339a0",
+    "keyPair": {
+      "crv": "Ed25519",
+      "d": "1dnNj5G5VNb3V6h7jO2dVlvIpdYNXKVSzH0_3Sd1ya8",
+      "kty": "OKP",
+      "x": "jFWp_7EpltYbLFERPduvz-8LidA981_5xVbgRdiUk-k"
+    }
+  }
+}

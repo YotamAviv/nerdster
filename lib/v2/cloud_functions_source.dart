@@ -5,7 +5,7 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/io.dart';
-import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/source_error.dart';
 
 /// Fetches statements using the Cloud Function HTTP endpoint.
 /// This is the preferred method for Production and Emulator environments as it is more efficient.
@@ -22,7 +22,7 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final http.Client client;
   final StatementVerifier verifier;
   final Map<String, dynamic>? paramsOverride;
-  final List<TrustNotification> _notifications = [];
+  final Map<String, SourceError> _errors = {};
 
   static const Map<String, dynamic> _paramsProto = {
     "distinct": "true",
@@ -42,11 +42,11 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
         client = client ?? http.Client();
 
   @override
-  List<TrustNotification> get notifications => List.unmodifiable(_notifications);
+  List<SourceError> get errors => List.unmodifiable(_errors.values);
 
   @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
-    _notifications.clear();
+    for (final key in keys.keys) _errors.remove(key);
     if (keys.isEmpty) return {};
 
     final List<dynamic> spec = keys.entries.map((e) {
@@ -76,51 +76,71 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
         in response.stream.transform(utf8.decoder).transform(const LineSplitter())) {
       if (line.trim().isEmpty) continue;
 
+      // Expect: { "abc": [...] } or { "abc": { "error": "..." } }
       final Map<String, dynamic> jsonToken2Statements = jsonDecode(line);
 
       for (final MapEntry<String, dynamic> entry in jsonToken2Statements.entries) {
         final String token = entry.key;
-        final List<dynamic> statementsJson = entry.value;
+        final dynamic value = entry.value;
+
+        if (value is Map && value.containsKey('error')) {
+           final String msg = value['error'];
+           _errors[token] = SourceError(msg, token: token);
+           results.remove(token);
+           continue;
+        }
+
+        final List<dynamic> statementsJson = value as List<dynamic>;
 
         final List<T> list = results.putIfAbsent(token, () => []);
 
         final Map<String, String> iJson = {'I': token};
 
-        for (final dynamic json in statementsJson) {
-          if (!json.containsKey('I')) {
-            final Jsonish? cached = Jsonish.find(token);
-            if (cached != null) {
-              json['I'] = cached.json;
+        try {
+          for (final dynamic json in statementsJson) {
+            if (!json.containsKey('I')) {
+              final Jsonish? cached = Jsonish.find(token);
+              if (cached != null) {
+                json['I'] = cached.json;
+              } else {
+                json['I'] = iJson;
+              }
+            }
+            if (!json.containsKey('statement')) json['statement'] = statementType;
+
+            final String? serverToken = json['id'];
+            if (serverToken != null) json.remove('id');
+
+            Jsonish jsonish;
+            if (!skipVerify) {
+              try {
+                jsonish = await Jsonish.makeVerify(json, verifier);
+              } catch (e) {
+                throw SourceError(
+                  'Invalid Signature: $e',
+                  token: token,
+                  originalError: e,
+                );
+              }
             } else {
-              json['I'] = iJson;
+              jsonish = Jsonish(json, serverToken);
             }
+
+            final Statement statement = Statement.make(jsonish);
+            list.add(statement as T);
           }
-          if (!json.containsKey('statement')) json['statement'] = statementType;
-
-          final String? serverToken = json['id'];
-          if (serverToken != null) json.remove('id');
-
-          Jsonish jsonish;
-          if (!skipVerify) {
-            try {
-              jsonish = await Jsonish.makeVerify(json, verifier);
-            } catch (e) {
-              // Create unverified statement to report corruption
-              final unverifiedJsonish = Jsonish(json, serverToken);
-              final statement = Statement.make(unverifiedJsonish);
-              _notifications.add(TrustNotification(
-                reason: 'Invalid Signature: $e',
-                rejectedStatement: statement,
-                isConflict: true,
-              ));
-              continue; // Skip corrupt statement
-            }
+        } catch (e) {
+          if (e is SourceError) {
+            _errors[token] = e;
           } else {
-            jsonish = Jsonish(json, serverToken);
+            _errors[token] = SourceError(
+              'Error processing statements: $e',
+              token: token,
+              originalError: e,
+            );
           }
-
-          final Statement statement = Statement.make(jsonish);
-          list.add(statement as T);
+          results.remove(token);
+          continue;
         }
       }
     }

@@ -1,6 +1,6 @@
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/io.dart';
-import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/source_error.dart';
 
 /// A caching decorator for [StatementSource].
 /// Stores fetched statements in memory to avoid redundant network calls.
@@ -19,14 +19,17 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
   // Partial histories: Map<Token, (revokeAt, List<Statement>)>
   final Map<String, (String, List<T>)> _partialCache = {};
 
+  final Map<String, SourceError> _errorCache = {};
+
   CachedSource(this._delegate);
 
   @override
-  List<TrustNotification> get notifications => _delegate.notifications;
+  List<SourceError> get errors => List.unmodifiable(_errorCache.values);
 
   void clear() {
     _fullCache.clear();
     _partialCache.clear();
+    _errorCache.clear();
   }
 
   /// Clears all cached partial histories. 
@@ -44,6 +47,12 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
     for (var entry in keys.entries) {
       final token = entry.key;
       final revokeAt = entry.value;
+
+      if (_errorCache.containsKey(token)) {
+        // If we have a cached error, do not return any statements or fetch again.
+        // The error is already in the 'errors' list.
+        continue;
+      }
 
       if (_fullCache.containsKey(token)) {
         // Full history is always safe to use; logic layer will filter if needed.
@@ -64,6 +73,13 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
 
       // 3. Update cache and results
       for (var token in missing.keys) {
+        // If delegate reported an error for this token, cache it
+        final error = _delegate.errors.where((e) => e.token == token).firstOrNull;
+        if (error != null) {
+            _errorCache[token] = error;
+            continue; // Do not process statements for this token
+        }
+
         final statements = fetched[token] ?? [];
         final revokeAt = missing[token];
 

@@ -185,13 +185,19 @@ exports.signin = onRequest({ cors: true }, async (req, res) => {
 /**
  * Exports statements as a JSON stream.
  * Mapped to https://export.nerdster.org
+ * 
+ * Note regarding errors:
+ * If an error occurs while processing a specific key (e.g. notarization violation),
+ * the stream will NOT terminate. Instead, it emits a specific error object for that key:
+ * { "token": { "error": "Error message" } }
+ * This allows the client to handle partial failures (some keys succeed, some fail)
+ * and display appropriate notifications for the corrupted keys while showing
+ * content for the valid ones.
  */
 exports.export = onRequest({ cors: true }, async (req, res) => {
-  res.writeHead(200, {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
 
   try {
     const specParam = req.query.spec;
@@ -205,11 +211,17 @@ exports.export = onRequest({ cors: true }, async (req, res) => {
     const omit = params.omit;
 
     for (const spec of specs) {
-      const token2revoked = parseIrevoke(spec);
-      const token = Object.keys(token2revoked)[0];
-      const statements = await fetchStatements(token2revoked, params, omit);
-      
-      res.write(JSON.stringify({ [token]: statements }) + '\n');
+      let token = "unknown";
+      try {
+        const token2revoked = parseIrevoke(spec);
+        token = Object.keys(token2revoked)[0];
+        const statements = await fetchStatements(token2revoked, params, omit);
+        
+        res.write(JSON.stringify({ [token]: statements }) + '\n');
+      } catch (e) {
+         logger.error(`[export] Error processing ${typeof spec === 'string' ? spec : JSON.stringify(spec)}: ${e.message}`);
+         res.write(JSON.stringify({ [token]: { error: e.message } }) + '\n');
+      }
     }
     res.end();
   } catch (e) {

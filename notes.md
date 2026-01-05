@@ -11,6 +11,9 @@ AI NOTE: This is my (the human) file with my own notes.
 ?fire=fake&demo=egosCircle
 &netView=true
 
+?identity={"crv": "Ed25519","kty": "OKP","x": "Sf-EQHCY94WB_4QFzEQWkO2SYFNTBgtfsc-Ic25oL84"}&skipVerify=false&dev=true
+
+
 # Fake simpsonsRelateDemo
 ?fire=fake&demo=simpsonsRelateDemo&debugUseSubjectNotToken=true
 
@@ -75,7 +78,7 @@ gcloud auth login
 # If running in 2 windows, make sure to set (export) NOW in both
 export NOW=`date3`
 echo $NOW
-export NOW=25-12-31--20-10
+export NOW=26-01-05--16-45
 
 firebase use nerdster
 gcloud config set project nerdster

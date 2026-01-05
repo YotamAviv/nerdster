@@ -25,14 +25,21 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/v2/source_error.dart';
 
 class V2NotificationsMenu extends StatelessWidget {
   final TrustGraph? trustGraph;
   final FollowNetwork? followNetwork;
   final V2Labeler labeler;
+  final List<SourceError> sourceErrors;
 
-  const V2NotificationsMenu(
-      {super.key, this.trustGraph, this.followNetwork, required this.labeler});
+  const V2NotificationsMenu({
+    super.key,
+    this.trustGraph,
+    this.followNetwork,
+    required this.labeler,
+    this.sourceErrors = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +52,59 @@ class V2NotificationsMenu extends StatelessWidget {
     }
 
     List<MenuItemButton> items = [];
+
+    // Source Errors (Corruption)
+    for (final error in sourceErrors) {
+      items.add(MenuItemButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Data Corruption Error'),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Token: ${labeler.getLabel(error.token ?? "Unknown")}'),
+                    const SizedBox(height: 8),
+                    Text('Message: ${error.reason}'),
+                    if (error.originalError != null) ...[
+                      const SizedBox(height: 8),
+                      const Text('Original Error:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(error.originalError.toString()),
+                    ],
+                    const SizedBox(height: 16),
+                    const Text(
+                      'All statements for this key have been discarded.',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          );
+        },
+        child: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.red),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Corruption: ${labeler.getLabel(error.token ?? "Unknown")}',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ));
+    }
 
     // Check for "Not in network" warning
     final myIdentity = signInState.identity;
@@ -305,7 +365,7 @@ class DummySource<T extends Statement> implements StatementSource<T> {
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async => {};
   
   @override
-  List<TrustNotification> get notifications => [];
+  List<SourceError> get errors => [];
 }
 
 class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2FeedController {

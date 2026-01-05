@@ -110,6 +110,9 @@ async function fetchStatements(token2revokeAt, params = {}, omit = []) {
       prevToken = s.previous;
       prevTime = s.time;
     }
+    if (!after && prevToken) {
+      throw new Error(`Notarization violation: Chain ends prematurely at ${prevToken}`);
+    }
   }
 
   // Omit keys

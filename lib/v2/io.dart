@@ -1,6 +1,6 @@
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/source_error.dart';
 
 /// Interface for fetching statements (Trust or Content).
 abstract class StatementSource<T extends Statement> {
@@ -11,7 +11,7 @@ abstract class StatementSource<T extends Statement> {
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys);
 
   /// Returns any notifications (e.g. corruption, warnings) generated during the last fetch.
-  List<TrustNotification> get notifications;
+  List<SourceError> get errors;
 }
 
 /// Interface for writing statements.

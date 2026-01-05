@@ -163,6 +163,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       enableCensorship: enableCensorship,
       availableContexts: value!.availableContexts,
       activeContexts: value!.activeContexts,
+      sourceErrors: value!.sourceErrors,
     );
   }
 
@@ -197,13 +198,19 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     // Only show subjects that exist in the PoV's feed (have statements from the PoV's network)
     if (subject.statements.isEmpty) return false;
 
-    // Don't show statements as top-level cards
+    // Only show valid subjects with a "contentType" as top-level cards
+    // This effectively filters out statements (which don't have contentType) and other non-content data
     final s = subject.subject;
-    if (s is Map && s.containsKey('statement')) return false;
-    if (s is String) {
+    bool hasContentType = false;
+    if (s is Map && s.containsKey('contentType')) {
+      hasContentType = true;
+    } else if (s is String) {
       final j = Jsonish.find(s);
-      if (j != null && j.containsKey('statement')) return false;
+      if (j != null && j.containsKey('contentType')) {
+        hasContentType = true;
+      }
     }
+    if (!hasContentType) return false;
 
     if (censorshipEnabled && subject.isCensored) return false;
 
@@ -425,6 +432,11 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
         if (_latestRequestedPovIdentityToken == currentPovIdentityToken &&
             _latestRequestedMeIdentityToken == currentMeIdentityToken) {
+          final allErrors = [
+            ...trustSource.errors,
+            ...contentSource.errors,
+          ];
+
           value = V2FeedModel(
             trustGraph: graph,
             followNetwork: followNetwork,
@@ -439,6 +451,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
             enableCensorship: enableCensorship,
             availableContexts: availableContexts,
             activeContexts: activeContexts,
+            sourceErrors: allErrors,
           );
           progress.value = 1.0;
           break;
@@ -447,6 +460,32 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     } catch (e, stack) {
       debugPrint('V2FeedController Error: $e\n$stack');
       _error = e.toString();
+      
+      // Even on error, expose source errors
+      final allErrors = [
+        ...trustSource.errors,
+        ...contentSource.errors,
+      ];
+      if (allErrors.isNotEmpty) {
+           debugPrint('V2FeedController: Recovering from error to show ${allErrors.length} source errors');
+           // Construct a minimal model to show errors
+           final dummyGraph = TrustGraph(pov: _latestRequestedPovIdentityToken ?? 'error');
+           value = V2FeedModel(
+              trustGraph: dummyGraph,
+              followNetwork: FollowNetwork(
+                fcontext: Setting.get(SettingType.fcontext).value,
+                povIdentity: _latestRequestedPovIdentityToken ?? 'error',
+              ),
+              aggregation: ContentAggregation(),
+              labeler: V2Labeler(dummyGraph),
+              povToken: _latestRequestedPovIdentityToken ?? 'error',
+              fcontext: Setting.get(SettingType.fcontext).value,
+              sortMode: sortMode,
+              filterMode: filterMode,
+              enableCensorship: enableCensorship,
+              sourceErrors: allErrors,
+           );
+      }
     } finally {
       _loading = false;
       loadingMessage.value = null;

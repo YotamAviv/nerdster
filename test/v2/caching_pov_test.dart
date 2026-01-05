@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/cached_source.dart';
-import 'package:nerdster/v2/model.dart';
 
 /// ## Reasoning: Greedy-Safe Caching in V2
 ///
@@ -26,6 +25,8 @@ import 'package:nerdster/v2/model.dart';
 /// - `CachedSource` maintains separate caches for full and partial histories.
 /// - Full histories are never cleared (unless explicitly requested).
 /// - Partial histories are cleared via `resetRevokeAt()` whenever the PoV changes.
+import 'package:nerdster/v2/source_error.dart';
+
 class MockSource implements StatementSource<TrustStatement> {
   final Map<String, List<TrustStatement>> data;
   int fetchCount = 0;
@@ -33,7 +34,7 @@ class MockSource implements StatementSource<TrustStatement> {
   MockSource(this.data);
 
   @override
-  List<TrustNotification> get notifications => [];
+  List<SourceError> get errors => [];
 
   @override
   Future<Map<String, List<TrustStatement>>> fetch(Map<String, String?> keys) async {

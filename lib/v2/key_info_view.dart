@@ -10,7 +10,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:nerdster/v2/config.dart';
 import 'package:nerdster/v2/io.dart';
-import 'package:nerdster/v2/source_factory.dart';
 
 class KeyInfoView extends StatelessWidget {
   final Jsonish jsonish;
