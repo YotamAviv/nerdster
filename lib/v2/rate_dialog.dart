@@ -162,8 +162,8 @@ class _V2RateDialogState extends State<V2RateDialog> {
     bool isReSnooze = dis.value == 'snooze' && priorStatement?.dismiss == 'snooze';
     okEnabled.value = !compareToPrior || censor.value || isReSnooze;
     
-    if (bAllFieldsClear && b(priorStatement)) {
-      erase.value = true;
+    if (b(priorStatement)) {
+      erase.value = bAllFieldsClear;
     }
     if (mounted) setState(() {});
   }
@@ -249,8 +249,6 @@ class _V2RateDialogState extends State<V2RateDialog> {
       }
     }
 
-    bool editingEnabled = !erase.value;
-
     const Map<Object, (IconData, IconData)> key2icons = {
       true: (Icons.thumb_up, Icons.thumb_up_outlined),
       false: (Icons.thumb_down, Icons.thumb_down_outlined)
@@ -261,12 +259,10 @@ class _V2RateDialogState extends State<V2RateDialog> {
         tooltipText: 'Like or dislike',
         color: Colors.green,
         key2colors: const {true: Colors.green, false: Colors.red},
-        callback: listener,
-        disabled: !editingEnabled);
+        callback: listener);
     
     Widget disButton = DismissToggle(
       notifier: dis,
-      disabled: !editingEnabled,
       callback: listener,
     );
     
@@ -280,7 +276,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
         text: 'Censor!',
         tooltipText: censorTooltip,
         color: Colors.red,
-        disabled: subjectIsMyStatement || !editingEnabled,
+        disabled: subjectIsMyStatement,
         callback: listener);
     OnOffIcon eraseButton = OnOffIcon(erase, Icons.cancel, Icons.cancel_outlined,
         text: 'Clear',
@@ -318,7 +314,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
               ),
               const SizedBox(height: 16),
               TextField(
-                enabled: editingEnabled,
+                enabled: !erase.value,
                 controller: commentController,
                 decoration: const InputDecoration(
                   hintText: 'Add a comment...\n#hashtag',

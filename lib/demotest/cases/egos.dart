@@ -7,7 +7,7 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 
-/// Can be useful for simple scenarios at: http://localhost:38621/?fire=fake&demo=egosCircle
+/// Can be useful for simple scenarios at: http://localhost:<port>/?fire=fake&demo=egosCircle
 Future<(DemoKey, DemoKey?)> egos() async {
   DemoKey jock = await DemoKey.findOrCreate('jock');
   DemoKey poser = await DemoKey.findOrCreate('poser');
