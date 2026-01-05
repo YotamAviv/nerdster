@@ -15,10 +15,7 @@ enum SettingType {
   timeframe(String, 'all'),
   tag(String, '-'),
 
-  showCrypto(bool, false, aliases: ['showStuff']),
-  showJson(bool, false, param: false),
-  showKeys(bool, false, param: false),
-  showStatements(bool, false, param: false),
+  showCrypto(bool, false),
   dev(bool, false),
   bogus(bool, true),
 

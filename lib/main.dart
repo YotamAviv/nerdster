@@ -179,16 +179,5 @@ Future<void> defaultSignIn({BuildContext? context}) async {
 Future<void> initPrefs2() async {
   final bool devDefault = fireChoice != FireChoice.prod;
   Setting.get<bool>(SettingType.showCrypto).value = devDefault;
-  Setting.get<bool>(SettingType.showJson).value = devDefault;
-  Setting.get<bool>(SettingType.showKeys).value = devDefault;
-  Setting.get<bool>(SettingType.showStatements).value = devDefault;
   Setting.get<bool>(SettingType.dev).value = devDefault;
-
-  // Sync showCrypto with dependent settings
-  Setting.get<bool>(SettingType.showCrypto).addListener(() {
-    final showStuffValue = Setting.get<bool>(SettingType.showCrypto).value;
-    Setting.get<bool>(SettingType.showJson).value = showStuffValue;
-    Setting.get<bool>(SettingType.showKeys).value = showStuffValue;
-    Setting.get<bool>(SettingType.showStatements).value = showStuffValue;
-  });
 }
