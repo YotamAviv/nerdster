@@ -11,9 +11,9 @@ manually deleted one of the statements in Poser's delegate key collection.
 See: corrupt_egos_poser_delegate_missing_statement.json
 I expect to see the notification (using hipster's identity):
 ?fire=emulator&identity={"crv": "Ed25519","kty": "OKP","x": "bNGvuBKSoDCHlYWzBMRVzfBgQK-Rr34jkVI_EdMOjcw"}&skipVerify=false&dev=true
-TODO: Need to push functions
 ?fire=prod&identity={"crv": "Ed25519","kty": "OKP","x": "bNGvuBKSoDCHlYWzBMRVzfBgQK-Rr34jkVI_EdMOjcw"}&skipVerify=false&dev=true
 
+TODO: Test corrupted identity keys on the ONE-OF-US.NET servers
 
 ********** scratch **************
 
