@@ -153,8 +153,10 @@ class V2NotificationsMenu extends StatelessWidget {
           builder: (BuildContext context) {
             return AlertDialog(
               title: SelectableText(reason),
-              content:
-                  _V2StatementNotification(notification, labeler: labeler, trustGraph: trustGraph, followNetwork: followNetwork),
+              content: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.9,
+                child: _V2StatementNotification(notification, labeler: labeler, trustGraph: trustGraph, followNetwork: followNetwork),
+              ),
               actions: <Widget>[
                 TextButton(
                   child: const Text('Close'),
