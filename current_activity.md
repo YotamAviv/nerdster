@@ -1,5 +1,19 @@
 # Current Activity: V2 Rewrite
 
+Use SettingType for contentType so that Share Link for this view works
+
+## Required for V2 switch to PROD
+
+CredentialsDisplay:
+- possible cleanup: make it listen to signInState and show the keys using a snackbar.
+
+- embed on home.js, aviv.net (seems to work)
+  - verify
+  - verifyImmediately
+
+
+## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
+
 Done (or in progress)
 
 New Notifications that are not TrustNotifications
@@ -20,18 +34,6 @@ Furthermore, only *warn* for TrustNotifications that are not marked "conflict".
 
 Display "warnings" less severely than "conflicts".
 
-## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
-
-## Required for V2 switch to PROD
-
-
-
-CredentialsDisplay:
-- possible cleanup: make it listen to signInState and show the keys using a snackbar.
-
-- embed on home.js, aviv.net (seems to work)
-  - verify
-  - verifyImmediately
 
 ## Not required for V2 switch to PROD
 

@@ -30,9 +30,25 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     Setting.get(SettingType.identityPathsReq).notifier.addListener(_onSettingChanged);
     signInState.povNotifier.addListener(_onPovChanged);
     Setting.get(SettingType.fcontext).notifier.addListener(_onSettingChanged);
+
+    Setting.get(SettingType.sort).notifier.addListener(_onDisplaySettingChanged);
+    Setting.get(SettingType.dis).notifier.addListener(_onDisplaySettingChanged);
+    Setting.get(SettingType.tag).notifier.addListener(_onDisplaySettingChanged);
+    Setting.get(SettingType.contentType).notifier.addListener(_onDisplaySettingChanged);
+    Setting.get(SettingType.censor).notifier.addListener(_onCensorChanged);
   }
 
   void _onSettingChanged() {
+    refresh(_latestRequestedPovIdentityToken, meIdentityToken: _latestRequestedMeIdentityToken);
+  }
+
+  void _onDisplaySettingChanged() {
+    if (value != null) {
+      _updateValueWithSettings();
+    }
+  }
+
+  void _onCensorChanged() {
     refresh(_latestRequestedPovIdentityToken, meIdentityToken: _latestRequestedMeIdentityToken);
   }
 
@@ -48,6 +64,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     Setting.get(SettingType.identityPathsReq).notifier.removeListener(_onSettingChanged);
     signInState.povNotifier.removeListener(_onPovChanged);
     Setting.get(SettingType.fcontext).notifier.removeListener(_onSettingChanged);
+
+    Setting.get(SettingType.sort).notifier.removeListener(_onDisplaySettingChanged);
+    Setting.get(SettingType.dis).notifier.removeListener(_onDisplaySettingChanged);
+    Setting.get(SettingType.tag).notifier.removeListener(_onDisplaySettingChanged);
+    Setting.get(SettingType.contentType).notifier.removeListener(_onDisplaySettingChanged);
+    Setting.get(SettingType.censor).notifier.removeListener(_onCensorChanged);
     super.dispose();
   }
 
@@ -62,63 +84,66 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   String? _error;
   String? get error => _error;
 
-  V2SortMode _sortMode = V2SortMode.recentActivity;
-  V2SortMode get sortMode => _sortMode;
+  V2SortMode get sortMode {
+    final val = Setting.get(SettingType.sort).value as String;
+    return V2SortMode.values.firstWhere((e) => e.name == val, orElse: () => V2SortMode.recentActivity);
+  }
 
   set sortMode(V2SortMode mode) {
-    if (_sortMode != mode) {
-      _sortMode = mode;
-      if (value != null) {
-        _updateValueWithSettings();
-      }
-    }
+    Setting.get(SettingType.sort).value = mode.name;
   }
 
-  V2FilterMode _filterMode = V2FilterMode.myDisses;
-  V2FilterMode get filterMode => _filterMode;
+  V2FilterMode get filterMode {
+    final val = Setting.get(SettingType.dis).value as String;
+    switch (val) {
+      case 'me':
+        return V2FilterMode.myDisses;
+      case 'ignore':
+        return V2FilterMode.ignoreDisses;
+      case 'pov':
+      default:
+        return V2FilterMode.povDisses;
+    }
+  }
 
   set filterMode(V2FilterMode mode) {
-    if (_filterMode != mode) {
-      _filterMode = mode;
-      if (value != null) {
-        _updateValueWithSettings();
-      }
+    String val;
+    switch (mode) {
+      case V2FilterMode.myDisses:
+        val = 'me';
+        break;
+      case V2FilterMode.ignoreDisses:
+        val = 'ignore';
+        break;
+      case V2FilterMode.povDisses:
+        val = 'pov';
+        break;
     }
+    Setting.get(SettingType.dis).value = val;
   }
 
-  String? _tagFilter;
-  String? get tagFilter => _tagFilter;
+  String? get tagFilter {
+    final val = Setting.get(SettingType.tag).value as String;
+    return val == '-' ? null : val;
+  }
 
   set tagFilter(String? tag) {
-    if (_tagFilter != tag) {
-      _tagFilter = tag;
-      if (value != null) {
-        _updateValueWithSettings();
-      }
-    }
+    Setting.get(SettingType.tag).value = tag ?? '-';
   }
 
-  String? _typeFilter;
-  String? get typeFilter => _typeFilter;
+  String? get typeFilter {
+    final val = Setting.get(SettingType.contentType).value as String;
+    return val == 'all' ? null : val;
+  }
 
   set typeFilter(String? type) {
-    if (_typeFilter != type) {
-      _typeFilter = type;
-      if (value != null) {
-        _updateValueWithSettings();
-      }
-    }
+    Setting.get(SettingType.contentType).value = type ?? 'all';
   }
 
-  bool _enableCensorship = true;
-  bool get enableCensorship => _enableCensorship;
+  bool get enableCensorship => Setting.get(SettingType.censor).value as bool;
 
   set enableCensorship(bool enabled) {
-    if (_enableCensorship != enabled) {
-      _enableCensorship = enabled;
-      // Censorship affects the aggregation pipeline, so we need a full refresh.
-      refresh(_latestRequestedPovIdentityToken, meIdentityToken: _latestRequestedMeIdentityToken);
-    }
+    Setting.get(SettingType.censor).value = enabled;
   }
 
   void _updateValueWithSettings() {
@@ -131,18 +156,18 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       aggregation: value!.aggregation,
       povToken: value!.povToken,
       fcontext: value!.fcontext,
-      sortMode: _sortMode,
-      filterMode: _filterMode,
-      tagFilter: _tagFilter,
-      typeFilter: _typeFilter,
-      enableCensorship: _enableCensorship,
+      sortMode: sortMode,
+      filterMode: filterMode,
+      tagFilter: tagFilter,
+      typeFilter: typeFilter,
+      enableCensorship: enableCensorship,
       availableContexts: value!.availableContexts,
       activeContexts: value!.activeContexts,
     );
   }
 
   void sortSubjects(List<SubjectAggregation> subjects) {
-    switch (_sortMode) {
+    switch (sortMode) {
       case V2SortMode.recentActivity:
         subjects.sort((a, b) => b.lastActivity.compareTo(a.lastActivity));
         break;
@@ -362,7 +387,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
           graph,
           delegateResolver,
           contentResult,
-          enableCensorship: _enableCensorship,
+          enableCensorship: enableCensorship,
           meIdentityKeys: meIdentityKeys,
           meDelegateKeys: meDelegateKeys,
         );
@@ -409,9 +434,11 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
             aggregation: aggregation,
             povToken: currentPovIdentityToken,
             fcontext: fcontext,
-            sortMode: _sortMode,
-            filterMode: _filterMode,
-            enableCensorship: _enableCensorship,
+            sortMode: sortMode,
+            filterMode: filterMode,
+            tagFilter: tagFilter,
+            typeFilter: typeFilter,
+            enableCensorship: enableCensorship,
             availableContexts: availableContexts,
             activeContexts: activeContexts,
           );
