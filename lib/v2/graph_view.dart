@@ -168,9 +168,6 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 0, // Hide default AppBar to use custom controls
-      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -216,11 +213,22 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   Widget _buildControls(V2FeedModel model) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: TrustSettingsBar(
-        availableIdentities: model.trustGraph.orderedKeys,
-        availableContexts: model.availableContexts,
-        activeContexts: model.activeContexts,
-        labeler: model.labeler,
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+            tooltip: 'Back',
+          ),
+          Expanded(
+            child: TrustSettingsBar(
+              availableIdentities: model.trustGraph.orderedKeys,
+              availableContexts: model.availableContexts,
+              activeContexts: model.activeContexts,
+              labeler: model.labeler,
+            ),
+          ),
+        ],
       ),
     );
   }
