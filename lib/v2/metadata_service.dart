@@ -2,6 +2,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/content_types.dart';
 
 class MetadataResult {
   final String? title;
@@ -12,7 +13,7 @@ class MetadataResult {
   MetadataResult({this.title, this.image, this.images, this.error});
 }
 
-String getFallbackImageUrl(String? url, String? contentType, String? title, {List<String>? tags}) {
+String getFallbackImageUrl(String? url, String contentType, String? title, {List<String>? tags}) {
   // 1. YouTube
   if (url != null && (url.contains('youtube.com') || url.contains('youtu.be'))) {
     final videoId = _extractYoutubeId(url);
@@ -21,40 +22,43 @@ String getFallbackImageUrl(String? url, String? contentType, String? title, {Lis
 
   // 2. NYT
   if (url != null && (url.contains('nytimes.com'))) {
-    return 'https://upload.wikimedia.org/wikipedia/commons/4/40/New_York_Times_logo_variation.jpg';
+    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/The_New_York_Times_logo.png/800px-The_New_York_Times_logo.png';
   }
 
-  // 3. Content Type / Tags
-  String keywords;
-  if (tags != null && tags.isNotEmpty) {
-    keywords = tags.map((t) => t.replaceAll('#', '')).join(',');
-  } else {
-    // Map known types to better search terms
-    switch (contentType?.toLowerCase()) {
-      case 'movie':
-        keywords = 'movie,film,poster';
-        break;
-      case 'book':
-        keywords = 'book,cover';
-        break;
-      case 'article':
-        keywords = 'news,newspaper,article';
-        break;
-      case 'video':
-        keywords = 'cinema,video';
-        break;
-      case 'music':
-      case 'album':
-        keywords = 'music,album,art';
-        break;
-      default:
-        keywords = contentType ?? 'abstract';
-    }
+  // 3. Hard-coded Content Type Fallbacks
+  final ContentType type = ContentType.values.byName(contentType);
+  // Weird: switching on the type seemed to reveal a Flutter bug. It ended up in default!?
+  switch (type.name) {
+    case 'album':
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Music_font_awesome.svg/512px-Music_font_awesome.svg.png';
+    case 'video':
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Video_camera_font_awesome.svg/512px-Video_camera_font_awesome.svg.png';
+    case 'movie':
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Clapperboard.svg/600px-Clapperboard.svg.png';
+    case 'book':
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Book_font_awesome.svg/512px-Book_font_awesome.svg.png';
+    case 'article':
+      return 'https://tile.loc.gov/storage-services/service/pnp/fsa/8b07000/8b07900/8b07923v.jpg';
+    case 'recipe':
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Fork_and_knife_icon.svg/512px-Fork_and_knife_icon.svg.png';
+    case 'all':
+      assert(false, 'ContentType.all is a hack for the dropdown');
+      break;
+    case 'podcast':
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Podcast_font_awesome.svg/512px-Podcast_font_awesome.svg.png';
+    case 'event':
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Calendar_font_awesome.svg/512px-Calendar_font_awesome.svg.png';
+    case 'resource':
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Feed-icon.svg/512px-Feed-icon.svg.png';
+    default:
+      assert(false,
+          'contentType: $contentType, ${contentType.runtimeType}. type: $type, ${type.runtimeType}');
+      break;
   }
 
-  // Deterministic lock based on title or URL
-  final lock = (url ?? title ?? '').hashCode;
-  return 'https://loremflickr.com/600/600/$keywords?lock=$lock';
+  assert(false,
+      'contentType: $contentType, ${contentType.runtimeType}. type: $type, ${type.runtimeType}');
+  return 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/600px-No_image_available.svg.png';
 }
 
 String? _extractYoutubeId(String url) {
@@ -98,15 +102,15 @@ Future<void> fetchImages({
     debugPrint('MetadataService: Firebase Functions not initialized');
     return;
   }
-  
+
   // Fail Fast: Ensure we have the required fields for a subject
   assert(subject['contentType'] != null, 'Subject must have a contentType');
-  
+
   // Basic validation to avoid unnecessary cloud calls
   if (subject.isEmpty) return;
 
-  // TODO: Improve image relevance. 
-  // Currently, we rely on the cloud function to find images. 
+  // TODO: Improve image relevance.
+  // Currently, we rely on the cloud function to find images.
   // We should explore using more specific search queries (e.g., including author/year)
   // or using specialized APIs (Google Books, TMDB, etc.) based on contentType.
 
