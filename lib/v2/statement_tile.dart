@@ -42,7 +42,6 @@ class StatementTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = statement;
     final label = model.labeler.getLabel(s.iToken);
-    final isMe = signInState.identity != null && model.labeler.getIdentityForToken(s.iToken) == signInState.identity;
 
     // Find the aggregation for this statement (s)
     final canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
@@ -130,7 +129,6 @@ class StatementTile extends StatelessWidget {
     }
 
     return Container(
-      color: isMe ? Colors.blue[50] : null,
       padding: EdgeInsets.only(
         left: 16.0 + (depth * 16.0), 
         right: 16.0, 
