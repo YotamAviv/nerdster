@@ -169,7 +169,13 @@ class _ContentCardState extends State<ContentCard> {
     String? metaImage = _metadata?.image;
     if (metaImage != null && metaImage.isEmpty) metaImage = null;
 
-    final imageUrl = metaImage ?? 'https://picsum.photos/seed/${widget.aggregation.token}/600/400';
+    final imageUrl = metaImage ??
+        getFallbackImageUrl(
+          (subject is Map) ? subject['url'] : null,
+          type,
+          title,
+          tags: widget.aggregation.tags.toList(),
+        );
 
     return Card(
       margin: const EdgeInsets.all(8.0),

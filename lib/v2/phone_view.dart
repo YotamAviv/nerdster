@@ -583,13 +583,7 @@ class _DynamicImageState extends State<DynamicImage> {
   }
 
   String _getFallbackUrl() {
-    // Use tags or content type as keywords
-    final keywords = widget.tags.isNotEmpty
-        ? widget.tags.map((t) => t.replaceAll('#', '')).join(',')
-        : widget.contentType;
-    // Use title or url hash for deterministic lock
-    final lock = (widget.url ?? widget.title ?? '').hashCode;
-    return 'https://loremflickr.com/600/600/$keywords?lock=$lock';
+    return getFallbackImageUrl(widget.url, widget.contentType, widget.title, tags: widget.tags);
   }
 
   @override

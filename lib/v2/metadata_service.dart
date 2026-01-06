@@ -12,6 +12,64 @@ class MetadataResult {
   MetadataResult({this.title, this.image, this.images, this.error});
 }
 
+String getFallbackImageUrl(String? url, String? contentType, String? title, {List<String>? tags}) {
+  // 1. YouTube
+  if (url != null && (url.contains('youtube.com') || url.contains('youtu.be'))) {
+    final videoId = _extractYoutubeId(url);
+    if (videoId != null) return 'https://img.youtube.com/vi/$videoId/0.jpg';
+  }
+
+  // 2. NYT
+  if (url != null && (url.contains('nytimes.com'))) {
+    return 'https://upload.wikimedia.org/wikipedia/commons/4/40/New_York_Times_logo_variation.jpg';
+  }
+
+  // 3. Content Type / Tags
+  String keywords;
+  if (tags != null && tags.isNotEmpty) {
+    keywords = tags.map((t) => t.replaceAll('#', '')).join(',');
+  } else {
+    // Map known types to better search terms
+    switch (contentType?.toLowerCase()) {
+      case 'movie':
+        keywords = 'movie,film,poster';
+        break;
+      case 'book':
+        keywords = 'book,cover';
+        break;
+      case 'article':
+        keywords = 'news,newspaper,article';
+        break;
+      case 'video':
+        keywords = 'cinema,video';
+        break;
+      case 'music':
+      case 'album':
+        keywords = 'music,album,art';
+        break;
+      default:
+        keywords = contentType ?? 'abstract';
+    }
+  }
+
+  // Deterministic lock based on title or URL
+  final lock = (url ?? title ?? '').hashCode;
+  return 'https://loremflickr.com/600/600/$keywords?lock=$lock';
+}
+
+String? _extractYoutubeId(String url) {
+  RegExp regExp = RegExp(
+    r'.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|e\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*',
+    caseSensitive: false,
+    multiLine: false,
+  );
+  final match = regExp.firstMatch(url);
+  if (match != null && match.groupCount >= 1) {
+    return match.group(1);
+  }
+  return null;
+}
+
 FirebaseFunctions? get _functions => FireFactory.findFunctions(kNerdsterDomain);
 
 /// Use Case 1: Establish Subject (Canonicalization)

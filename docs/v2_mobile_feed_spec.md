@@ -11,6 +11,22 @@ TODO: I do want to repect relations and show them, but we have less room for the
 
 # new Dismiss options
 
+## The following are currently on the quick mock phone view but are just stubs, not connected to any actual data
+
+### Interactive Elements (Clickable but do nothing):
+* **Swipe Gestures:** Swiping left (Red/Dismiss) or right (Green/Like) only removes the card visually from the UI. It does not save any rating or hide preference to the backend.
+* **Action Bar Buttons:**
+     * **Rate/Review Icon:** The `rate_review_outlined` icon below the image has an empty `onTap: () {}` action.
+     * **"View all reviews" Link:** The text "View all 5 reviews" (dynamic number, static action) has an empty `onTap: () {}` action.
+ * **Modal Sheet (Tap on Image):**
+     * **Star Selection:** Clicking any stars immediately closes the modal without saving a rating.
+     * **Text Field:** You can type in "Add a comment...", but the text is lost immediately.
+     * **"Post Review" Button:** Closes the modal without submitting any data.
+
+### Static Display Elements (Non-interactive):
+ * **Header "More" Icon:** The `Icons.more_horiz` (three dots) in the top-right of the card is just an `Icon` widget. It is not clickable (no `IconButton` or `GestureDetector` wrapper).
+ * **Comment Actions:** Each individual comment row shows a small `rate_review_outlined` icon on the far right, which is purely decorative and not interactive.
+ * **Fallback Imagery:** Uses `loremflickr.com` with a hash of the title to generate random images when `og:image` is missing.
 
 ## 1. Visual Elements (The "Content Card")
 
