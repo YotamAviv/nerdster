@@ -18,8 +18,8 @@ class KeyInfoView extends StatelessWidget {
   final V2Labeler labeler;
 
   const KeyInfoView({
-    super.key, 
-    required this.jsonish, 
+    super.key,
+    required this.jsonish,
     required this.domain,
     required this.labeler,
     required this.source,
@@ -30,7 +30,8 @@ class KeyInfoView extends StatelessWidget {
     return Column(
       children: [
         Expanded(
-          child: JsonQrDisplay(jsonish.json, interpret: ValueNotifier(true), interpreter: V2Interpreter(labeler)),
+          child: JsonQrDisplay(jsonish.json,
+              interpret: ValueNotifier(true), interpreter: V2Interpreter(labeler)),
         ),
         _buildStatementsLink(context),
       ],
@@ -78,17 +79,24 @@ class KeyInfoView extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
             title: const Text('Signed by this key'),
-            content: SingleChildScrollView(child: V2JsonDisplay(j, interpreter: V2Interpreter(labeler))),
+            content:
+                SingleChildScrollView(child: V2JsonDisplay(j, interpreter: V2Interpreter(labeler))),
             actions: [
               TextButton(child: const Text('Okay'), onPressed: () => Navigator.of(context).pop())
             ]);
       },
     );
   }
-  
-  static Future<void> show(BuildContext context, String token, String domain,
-      {TapDownDetails? details, required StatementSource source, required V2Labeler labeler}) {
-    
+
+  static Future<void> show(
+    BuildContext context,
+    String token,
+    String domain, {
+    TapDownDetails? details,
+    required StatementSource source,
+    required V2Labeler labeler,
+    BoxConstraints? constraints,
+  }) {
     final jsonish = Jsonish.find(token);
     if (jsonish == null) {
       throw Exception('KeyInfoView: Could not find JSON for token $token');
@@ -97,7 +105,10 @@ class KeyInfoView extends StatelessWidget {
     return showDialog(
         context: context,
         builder: (context) {
-          const double width = 300;
+          double width = 300;
+          if (constraints != null && constraints.maxWidth < width) {
+            width = constraints.maxWidth;
+          }
           const double height = 400;
 
           if (details != null) {
@@ -113,6 +124,21 @@ class KeyInfoView extends StatelessWidget {
               top = screenSize.height - height - 10;
             }
 
+            // Also constrain to passed constraints if details were provided (popup)
+            // But usually constraints are for dialog mode?
+            // Let's apply constraints to the container size if applicable.
+            // But width is currently fixed at 300.
+            // If constraints.maxWidth is passed (e.g. 600), checking < 300 is weird.
+
+            // The user asked to CONSTRAIN the popup to be not super wide.
+            // If the popup is currently fixed at 300, it's not wide.
+            // Ah, maybe the user wants to INCREASE it? Or user thinks it is wide?
+            // "The popup is super wide. Constrain it."
+            // Wait, if I am passing maxWidth: 600, but here width is 300...
+            // It might be that the stack/material is not constrained.
+
+            // Wait, look at the Dialog return path below.
+
             return Stack(
               children: [
                 Positioned(
@@ -126,9 +152,7 @@ class KeyInfoView extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: kBorderRadius,
-                        boxShadow: const [
-                          BoxShadow(blurRadius: 10, color: Colors.black26)
-                        ],
+                        boxShadow: const [BoxShadow(blurRadius: 10, color: Colors.black26)],
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -144,13 +168,17 @@ class KeyInfoView extends StatelessWidget {
 
           return Dialog(
               shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-              child: SizedBox(
-                  width: width,
-                  height: height,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: KeyInfoView(
-                        jsonish: jsonish, domain: domain, source: source, labeler: labeler),
+              child: ConstrainedBox(
+                  constraints:
+                      constraints ?? const BoxConstraints(maxWidth: 600), // Default safeguard
+                  child: SizedBox(
+                    width: width,
+                    height: height,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: KeyInfoView(
+                          jsonish: jsonish, domain: domain, source: source, labeler: labeler),
+                    ),
                   )));
         });
   }

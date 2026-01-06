@@ -1,67 +1,16 @@
 # Current Activity: V2 Rewrite
 
-## Required for V2 switch to PROD
-
-## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
-
+- graph view and !showCrypto 
+  - NodeDetails:
+    - Don'ts show "Key Lineage"
 
 CredentialsDisplay:
 - possible cleanup: make it listen to signInState and show the keys using a snackbar.
 
-
-### Notifications related
-Done (or in progress)
-
-New Notifications that are not TrustNotifications
-You're not in this network:
-This *warning* should be shown when your identity is not included among the identities defining the view you are seeing.
-
-Your delegate key is revoked (This is not a TrustStatement as no statement has been rejected)
-This *warning* should be shown when your identity is revoked.
-Additionally, all actions that use your delegate key to sign and published statements should not be allowed.
-
-Your delegate key is not associated with you (not a TrustStatement - but no statement has been rejected.)
-This *warning* should be shown when your identity is revoked.
-Additionally, all actions that use your delegate key to sign and published statements should not be allowed.
-
-Don't show notifcations for someone else trusting a replaced key directly.
-Furthermore, only *warn* for TrustNotifications that are not marked "conflict".
-
-Next:
-
-## Dismiss semantics overhaul
-
-Currently, Nerdster rate verb expects
-"with": {
-  "dismiss": true (or missing)
-}
-
-Considering
-"with": {
-  "dismiss": "snooze" (or "forever"or missing. true defaults to snooze)
-}
-
-
-
-New semantics:
-- <missing>: default content, shown as usual
-- snooze: not shown unless a rating about this subject is newer than the user's dismiss rating.
-- "forever": not shown.
-
-
-My concern is not with writing the program; it's with dealing with existing signed statements
-
-The alternative would be to have a global dis "disposition" where you treat all of your disses as being "untilActivityHappens".
+## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
 ## Not required for V2 switch to PROD
 
-Restore integration tests from browser
-- misc demos, maybe some old DemoKey samples.
-- anything else?
-- corrupt a key?
-
-- Notifications (not TrustNotifications)
-  - corrupt key
 
 ### node detail Enhancements
 - ability to toggle showCrypto in graph view
