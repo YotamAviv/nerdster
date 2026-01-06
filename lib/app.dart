@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/credentials_display.dart';
 // import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/util.dart';
@@ -35,10 +36,11 @@ class NerdsterApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: ListenableBuilder(
-        listenable: signInState,
-        builder: (context, _) {
-          final path = Uri.base.path;
+      home: CredentialsWatcher(
+        child: ListenableBuilder(
+          listenable: signInState,
+          builder: (context, _) {
+            final path = Uri.base.path;
           final povToken = signInState.pov;
 
           final bool smallNow = MediaQuery.of(context).size.width < 600;
@@ -59,6 +61,6 @@ class NerdsterApp extends StatelessWidget {
           }
         },
       ),
-    );
+    ));
   }
 }

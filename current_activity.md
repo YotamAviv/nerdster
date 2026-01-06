@@ -1,11 +1,10 @@
 # Current Activity: V2 Rewrite
 
-- graph view and !showCrypto 
-  - NodeDetails:
-    - Don'ts show "Key Lineage"
-
-CredentialsDisplay:
-- possible cleanup: make it listen to signInState and show the keys using a snackbar.
+CredentialsDisplay cleanup:
+The code in place is Kludgey.
+I want to show the current identity and delegate keys that SignInState whenever they change (unless setting_type: skipCredentials)
+I think a snackbar would be cleaner than the current attempt at not exactly modal dialogs over some kind of "_topRightOverlayEntry".
+It would also be cleaner if something listened to those state changes instead of having them hard coded into the code paths
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 

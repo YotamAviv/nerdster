@@ -16,7 +16,7 @@ Future<bool> tryDemoSignIn(BuildContext? context, {String? pov}) async {
     String identity = identityDemoKey.token;
     OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
     DemoKey.dumpDemoCredentials();
-    await signInState.signIn(identity, nerdsterKeyPair, context: context);
+    await signInState.signIn(identity, nerdsterKeyPair);
     if (pov != null) signInState.pov = pov;
     return true;
   }

@@ -1,12 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:nerdster/credentials_display.dart';
+import 'package:flutter/foundation.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
-import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 
 
@@ -65,8 +62,7 @@ import 'package:nerdster/singletons.dart';
 /// nice to have Progress. One way to achieve that would be to have the UI watch those notifiers in 
 /// StatefulWidgets.
 
-Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
-    BuildContext context) async {
+Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
   if (store) {
     await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
   } else {
@@ -74,7 +70,7 @@ Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterK
   }
 
   final String oneofusToken = getToken(await oneofusPublicKey.json);
-  await signInState.signIn(oneofusToken, nerdsterKeyPair, context: context);
+  await signInState.signIn(oneofusToken, nerdsterKeyPair);
 }
 
 class SignInState with ChangeNotifier {
@@ -99,8 +95,7 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signIn(String identity, OouKeyPair? delegateKeyPair,
-      {BuildContext? context}) async {
+  Future<void> signIn(String identity, OouKeyPair? delegateKeyPair) async {
     _identity = identity;
     povNotifier.value = identity;
     if (b(delegateKeyPair)) {
@@ -108,28 +103,20 @@ class SignInState with ChangeNotifier {
       _delegatePublicKeyJson = await delegatePublicKey.json;
       _delegate = getToken(_delegatePublicKeyJson);
       _signer = await OouSigner.make(delegateKeyPair);
-    }
-
-    if (b(context) &&
-        !Uri.base.queryParameters.containsKey('skipCredentialsDisplay') &&
-        !Setting.get<bool>(SettingType.skipCredentials).value) {
-      showTopRightDialog(
-          context!, CredentialsDisplay(identityJson, delegatePublicKeyJson));
-    }
+    } else {
+      _delegatePublicKeyJson = null;
+      _delegate = null;
+      _signer = null;
+      }
 
     notifyListeners();
   }
 
-  void signOut({bool? clearIdentity = false, BuildContext? context}) {
+  void signOut({bool? clearIdentity = false}) {
     if (clearIdentity == true) _identity = null;
     _delegatePublicKeyJson = null;
     _delegate = null;
     _signer = null;
-
-    if (b(context) && !Setting.get<bool>(SettingType.skipCredentials).value) {
-      showTopRightDialog(
-          context!, CredentialsDisplay(identityJson, delegatePublicKeyJson));
-    }
 
     notifyListeners();
   }

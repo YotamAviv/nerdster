@@ -22,10 +22,8 @@ void initMessageListener() {
             final token = getToken(identity);
             print('Token: $token');
 
-            // CONSIDER: final context = navigatorKey.currentContext;
             Future.microtask(() async {
               await signInState.signIn(token, null);
-              // CONSIDER: await signInState.signIn(token, null, context: context);
             });
           }
 

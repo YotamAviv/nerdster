@@ -111,7 +111,7 @@ Future<void> qrSignIn(BuildContext context) async {
 
       // DEFER: delete session
 
-      await signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
+      await signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
     },
   );
 

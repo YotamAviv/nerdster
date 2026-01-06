@@ -58,7 +58,7 @@ class Menus {
                                 onPressed: () => Navigator.pop(context), child: const Text('Close'))
                           ]));
             }
-            await signInState.signIn(oneofus.token, delegate?.keyPair, context: context);
+            await signInState.signIn(oneofus.token, delegate?.keyPair);
           },
           child: Text(name)));
     }

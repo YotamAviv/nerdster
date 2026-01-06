@@ -34,7 +34,7 @@ Future<void> pasteSignIn(BuildContext context) async {
   }
 
   // ignore: unawaited_futures
-  signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, context);
+  signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
 }
 
 class PasteSignInWidget extends StatefulWidget {

@@ -156,7 +156,7 @@ Future<void> defaultSignIn({BuildContext? context}) async {
     (identityPublicKey, nerdsterKeyPair) = await KeyStore.readKeys();
     if (b(identityPublicKey) && b(nerdsterKeyPair)) {
       String identity = getToken(await identityPublicKey!.json);
-      await signInState.signIn(identity, nerdsterKeyPair, context: context);
+      await signInState.signIn(identity, nerdsterKeyPair);
       if (pov != null) signInState.pov = pov;
       return;
     }
@@ -164,7 +164,7 @@ Future<void> defaultSignIn({BuildContext? context}) async {
 
   // If we have a POV from the URL but no keys, sign in as that identity (view-only)
   if (pov != null) {
-    await signInState.signIn(pov, null, context: context);
+    await signInState.signIn(pov, null);
     return;
   }
 }
