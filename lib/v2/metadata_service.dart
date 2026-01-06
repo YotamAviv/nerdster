@@ -76,6 +76,9 @@ String? _extractYoutubeId(String url) {
 
 FirebaseFunctions? get _functions => FireFactory.findFunctions(kNerdsterDomain);
 
+// Simple in-memory cache to prevent redundant fetches on scroll
+final Map<String, MetadataResult> _metadataCache = {};
+
 /// Use Case 1: Establish Subject (Canonicalization)
 /// Fetches ONLY the title from a URL to help the user create a canonical subject.
 Future<String?> fetchTitle(String url) async {
@@ -109,6 +112,12 @@ Future<void> fetchImages({
   // Basic validation to avoid unnecessary cloud calls
   if (subject.isEmpty) return;
 
+  final cacheKey = subject['url'] ?? subject['title'] ?? subject.toString();
+  if (_metadataCache.containsKey(cacheKey)) {
+    onResult(_metadataCache[cacheKey]!);
+    return;
+  }
+
   // TODO: Improve image relevance.
   // Currently, we rely on the cloud function to find images.
   // We should explore using more specific search queries (e.g., including author/year)
@@ -127,17 +136,23 @@ Future<void> fetchImages({
       images = List<String>.from(retval.data["images"]);
     }
 
-    onResult(MetadataResult(
+    final result = MetadataResult(
       title: retval.data["title"],
       image: retval.data["image"],
       images: images,
-    ));
+    );
+    _metadataCache[cacheKey] = result;
+    onResult(result);
   } on FirebaseFunctionsException catch (e) {
     String error = [e.message, if (e.details != null) e.details].join(', ');
     debugPrint('fetchImages error: $error');
-    onResult(MetadataResult(error: error));
+    final result = MetadataResult(error: error);
+    _metadataCache[cacheKey] = result;
+    onResult(result);
   } catch (e) {
     debugPrint('fetchImages unexpected error: $e');
-    onResult(MetadataResult(error: e.toString()));
+    final result = MetadataResult(error: e.toString());
+    _metadataCache[cacheKey] = result;
+    onResult(result);
   }
 }

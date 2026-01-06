@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
@@ -78,43 +77,43 @@ class _ContentCardState extends State<ContentCard> {
 
   void _showInspectionSheet(String token) {
     var agg = widget.model.aggregation.subjects[token];
-    
+
     if (agg == null) {
       // Check if it's an equivalent subject
       final canonical = widget.model.aggregation.equivalence[token];
       if (canonical != null) {
         final canonicalAgg = widget.model.aggregation.subjects[canonical];
         if (canonicalAgg != null) {
-           // Found the canonical parent.
-           // Try to find the subject object for 'token' in the statements.
-           dynamic subjectObj;
-           for (final s in canonicalAgg.statements) {
-             if (s.subjectToken == token) {
-               subjectObj = s.subject;
-               break;
-             }
-             if (s.other != null && getToken(s.other) == token) {
-               subjectObj = s.other;
-               break;
-             }
-           }
-           
-           if (subjectObj == null) {
-             subjectObj = token; 
-           }
+          // Found the canonical parent.
+          // Try to find the subject object for 'token' in the statements.
+          dynamic subjectObj;
+          for (final s in canonicalAgg.statements) {
+            if (s.subjectToken == token) {
+              subjectObj = s.subject;
+              break;
+            }
+            if (s.other != null && getToken(s.other) == token) {
+              subjectObj = s.other;
+              break;
+            }
+          }
 
-           agg = SubjectAggregation(
-             subject: subjectObj,
-             statements: canonicalAgg.statements,
-             likes: canonicalAgg.likes,
-             dislikes: canonicalAgg.dislikes,
-             related: canonicalAgg.related,
-             tags: canonicalAgg.tags,
-             lastActivity: canonicalAgg.lastActivity,
-             isCensored: canonicalAgg.isCensored,
-             myDelegateStatements: canonicalAgg.myDelegateStatements,
-             povStatements: canonicalAgg.povStatements,
-           );
+          if (subjectObj == null) {
+            subjectObj = token;
+          }
+
+          agg = SubjectAggregation(
+            subject: subjectObj,
+            statements: canonicalAgg.statements,
+            likes: canonicalAgg.likes,
+            dislikes: canonicalAgg.dislikes,
+            related: canonicalAgg.related,
+            tags: canonicalAgg.tags,
+            lastActivity: canonicalAgg.lastActivity,
+            isCensored: canonicalAgg.isCensored,
+            myDelegateStatements: canonicalAgg.myDelegateStatements,
+            povStatements: canonicalAgg.povStatements,
+          );
         }
       }
     }
@@ -193,18 +192,36 @@ class _ContentCardState extends State<ContentCard> {
                   height: 80,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(4),
-                    child: Image.network(
-                      kIsWeb 
-                        ? 'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=200&h=200&fit=cover'
-                        : imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.image_not_supported, size: 20),
-                        );
-                      },
-                    ),
+                    child: kIsWeb
+                        ? Image.network(
+                            'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=200&h=200&fit=cover',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              // Fallback: Try loading directly if proxy fails
+                              return Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.image_not_supported,
+                                        size: 20),
+                                  );
+                                },
+                              );
+                            },
+                          )
+                        : Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[300],
+                                child:
+                                    const Icon(Icons.image_not_supported, size: 20),
+                              );
+                            },
+                          ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -226,10 +243,12 @@ class _ContentCardState extends State<ContentCard> {
                                   url = subject['url'];
                                   if (url == null) {
                                     final values = subject.values.where((v) => v != null).join(' ');
-                                    url = 'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
+                                    url =
+                                        'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
                                   }
                                 } else {
-                                  url = 'https://www.google.com/search?q=${Uri.encodeComponent(title)}';
+                                  url =
+                                      'https://www.google.com/search?q=${Uri.encodeComponent(title)}';
                                 }
                                 launchUrl(Uri.parse(url));
                               },
@@ -253,7 +272,8 @@ class _ContentCardState extends State<ContentCard> {
                                 final displayTag = tag.startsWith('#') ? tag : '#$tag';
                                 return InkWell(
                                   onTap: () => widget.onTagTap?.call(tag),
-                                  child: Text(displayTag, style: const TextStyle(color: Colors.blue)),
+                                  child:
+                                      Text(displayTag, style: const TextStyle(color: Colors.blue)),
                                 );
                               }).toList(),
                             ),
@@ -295,9 +315,8 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   Widget _buildHistorySection() {
-    final comments = widget.aggregation.statements
-        .where((s) => _shouldShowStatement(s, widget.model))
-        .toList();
+    final comments =
+        widget.aggregation.statements.where((s) => _shouldShowStatement(s, widget.model)).toList();
 
     // Sort by trust distance of the author (closest first)
     comments.sort((a, b) {
@@ -316,19 +335,18 @@ class _ContentCardState extends State<ContentCard> {
       children: [
         if (!_isHistoryExpanded)
           ...topComments.map((s) => StatementTile(
-            statement: s,
-            model: widget.model,
-            depth: 0,
-            aggregation: widget.aggregation,
-            onGraphFocus: widget.onGraphFocus,
-            onMark: widget.onMark,
-            markedSubjectToken: widget.markedSubjectToken,
-            onInspect: _showInspectionSheet,
-            onRefresh: widget.onRefresh,
-            onTagTap: widget.onTagTap,
-            maxLines: 1,
-          )),
-        
+                statement: s,
+                model: widget.model,
+                depth: 0,
+                aggregation: widget.aggregation,
+                onGraphFocus: widget.onGraphFocus,
+                onMark: widget.onMark,
+                markedSubjectToken: widget.markedSubjectToken,
+                onInspect: _showInspectionSheet,
+                onRefresh: widget.onRefresh,
+                onTagTap: widget.onTagTap,
+                maxLines: 1,
+              )),
         if (_isHistoryExpanded)
           SubjectDetailsView(
             aggregation: widget.aggregation,
@@ -341,12 +359,12 @@ class _ContentCardState extends State<ContentCard> {
             markedSubjectToken: widget.markedSubjectToken,
             onInspect: _showInspectionSheet,
           ),
-
         if (hasMore || _isHistoryExpanded)
           Center(
             child: TextButton.icon(
               icon: Icon(_isHistoryExpanded ? Icons.expand_less : Icons.expand_more, size: 16),
-              label: Text(_isHistoryExpanded ? 'Show less' : 'Show all history (${comments.length})'),
+              label:
+                  Text(_isHistoryExpanded ? 'Show less' : 'Show all history (${comments.length})'),
               onPressed: () {
                 setState(() {
                   _isHistoryExpanded = !_isHistoryExpanded;
@@ -369,50 +387,56 @@ class _ContentCardState extends State<ContentCard> {
 
     if (equivalentTokens.isNotEmpty) {
       final Map<String, String> tokenToTitle = {};
-      
+
       // Try to find titles in current statements
       for (final s in widget.aggregation.statements) {
         if (equivalentTokens.contains(s.subjectToken)) {
           final subject = s.subject;
-          final title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
+          final title = (subject is Map)
+              ? (subject['title'] ?? 'Untitled')
+              : widget.model.labeler.getLabel(subject.toString());
           tokenToTitle[s.subjectToken] = title;
         }
       }
-      
+
       // Also check global aggregation map if missing
       for (final token in equivalentTokens) {
-         if (!tokenToTitle.containsKey(token)) {
-             final agg = widget.model.aggregation.subjects[token];
-             if (agg != null) {
-                final subject = agg.subject;
-                final title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
-                tokenToTitle[token] = title;
-             } else {
-                tokenToTitle[token] = widget.model.labeler.getLabel(token);
-             }
-         }
+        if (!tokenToTitle.containsKey(token)) {
+          final agg = widget.model.aggregation.subjects[token];
+          if (agg != null) {
+            final subject = agg.subject;
+            final title = (subject is Map)
+                ? (subject['title'] ?? 'Untitled')
+                : widget.model.labeler.getLabel(subject.toString());
+            tokenToTitle[token] = title;
+          } else {
+            tokenToTitle[token] = widget.model.labeler.getLabel(token);
+          }
+        }
       }
 
       for (final entry in tokenToTitle.entries) {
-         children.add(_buildRelationTile('=', entry.key, entry.value));
+        children.add(_buildRelationTile('=', entry.key, entry.value));
       }
     }
 
     // 2. Related
-    final relatedTokens = widget.aggregation.related.where((token) => 
-      widget.model.aggregation.equivalence[token] != widget.aggregation.token
-    ).toList();
+    final relatedTokens = widget.aggregation.related
+        .where((token) => widget.model.aggregation.equivalence[token] != widget.aggregation.token)
+        .toList();
 
     for (final token in relatedTokens) {
-        final relatedAgg = widget.model.aggregation.subjects[token];
-        String title;
-        if (relatedAgg != null) {
-            final subject = relatedAgg.subject;
-            title = (subject is Map) ? (subject['title'] ?? 'Untitled') : widget.model.labeler.getLabel(subject.toString());
-        } else {
-            title = widget.model.labeler.getLabel(token);
-        }
-        children.add(_buildRelationTile('≈', token, title));
+      final relatedAgg = widget.model.aggregation.subjects[token];
+      String title;
+      if (relatedAgg != null) {
+        final subject = relatedAgg.subject;
+        title = (subject is Map)
+            ? (subject['title'] ?? 'Untitled')
+            : widget.model.labeler.getLabel(subject.toString());
+      } else {
+        title = widget.model.labeler.getLabel(token);
+      }
+      children.add(_buildRelationTile('≈', token, title));
     }
 
     if (children.isEmpty) return const SizedBox.shrink();
@@ -425,12 +449,13 @@ class _ContentCardState extends State<ContentCard> {
       children: [
         const Divider(),
         ...(_isRelationshipsExpanded ? children : topChildren),
-
         if (hasMore)
           Center(
             child: TextButton.icon(
-              icon: Icon(_isRelationshipsExpanded ? Icons.expand_less : Icons.expand_more, size: 16),
-              label: Text(_isRelationshipsExpanded ? 'Show less' : 'Show all related (${children.length})'),
+              icon:
+                  Icon(_isRelationshipsExpanded ? Icons.expand_less : Icons.expand_more, size: 16),
+              label: Text(
+                  _isRelationshipsExpanded ? 'Show less' : 'Show all related (${children.length})'),
               onPressed: () {
                 setState(() {
                   _isRelationshipsExpanded = !_isRelationshipsExpanded;
@@ -449,7 +474,8 @@ class _ContentCardState extends State<ContentCard> {
         children: [
           SizedBox(
             width: 24,
-            child: Text(iconText, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            child:
+                Text(iconText, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ),
           Expanded(
             child: Align(
@@ -484,13 +510,13 @@ class _ContentCardState extends State<ContentCard> {
       );
     }
 
-    final myStatements = widget.aggregation.statements.where((s) => 
-      widget.model.labeler.getIdentityForToken(s.iToken) == signInState.identity
-    ).toList();
-    
+    final myStatements = widget.aggregation.statements
+        .where((s) => widget.model.labeler.getIdentityForToken(s.iToken) == signInState.identity)
+        .toList();
+
     // Sort by time descending to find the latest
     myStatements.sort((a, b) => b.time.compareTo(a.time));
-    
+
     final hasPrior = myStatements.any((s) => s.verb == ContentVerb.rate);
 
     IconData icon = Icons.rate_review_outlined;
@@ -577,9 +603,10 @@ class SubjectDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Build the tree
     final List<Widget> tree = [];
-    
+
     final roots = aggregation.statements.where((s) {
-      final isReplyToOtherInAgg = aggregation.statements.any((other) => other.token == s.subjectToken);
+      final isReplyToOtherInAgg =
+          aggregation.statements.any((other) => other.token == s.subjectToken);
       return !isReplyToOtherInAgg;
     }).toList();
 
@@ -603,7 +630,7 @@ class SubjectDetailsView extends StatelessWidget {
 
   void _buildTreeRecursive(BuildContext context, ContentStatement s, int depth, List<Widget> tree) {
     if (!_shouldShowStatement(s, model)) return;
-    
+
     tree.add(StatementTile(
       statement: s,
       model: model,
@@ -616,7 +643,7 @@ class SubjectDetailsView extends StatelessWidget {
       onRefresh: onRefresh,
       onTagTap: onTagTap,
     ));
-    
+
     final canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
     final replies = [
       ...aggregation.statements.where((other) => other.subjectToken == s.token),
@@ -654,5 +681,3 @@ bool _shouldShowStatement(ContentStatement s, V2FeedModel model) {
       return true;
   }
 }
-
-

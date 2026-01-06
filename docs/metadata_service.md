@@ -3,6 +3,13 @@
 ## Overview
 The metadata service extracts rich info (titles, images) from URLs and content types to populate the UI. It uses a tiered approach combining Cloud Functions and deterministic client-side fallbacks.
 
+
+## Future Next Steps
+
+-   **Streaming Responses**: Have the server stream the response to the client so that the first available image is not delayed by the rest (e.g., YouTube check returns immediately while Wikipedia fetch continues).
+-   **Strategy Attribution**: Include a strategy name (e.g., `youtube`, `opengraph`, `openlibrary`) to the client along with each image. Update the debug server page to show these strategy names.
+-   **Learning & Optimization**: The plan would be to over time learn which strategies are effective for which subjects and improve the client logic.
+
 ## Components
 
 ### 1. `MetadataService` (Client-Side)
@@ -48,9 +55,19 @@ The Cloud Function (`fetchImages`) employs a "wide net" strategy to maximize the
 **Note on Usage**: The server returns both a single "best" `image` and a list of all candidates `images`. Currently, the client **only uses the first image** and disregards the rest.
 
 ## Caching & Performance
-Currently, the `MetadataService` does **not** implement active caching.
-- **Behavior**: Each call to `fetchImages` triggers a new Cloud Function invocation.
-- **Impact**: Since `ContentCard` widgets are created and destroyed during list scrolling, scrolling back to an item will cause the metadata to be re-fetched.
+Since `ContentCard` widgets are frequently created and destroyed during list scrolling, `MetadataService` implements a simple **client-side in-memory cache** (`_metadataCache`).
+- **Key**: Unique URL or Title.
+- **Behavior**: Stores both successful results and errors.
+- **Benefit**: Prevents redundant Cloud Function invocations (costs/latency) when a card scrolls back into view.
+
+## Image Proxies & Fallbacks (Web Only)
+On Flutter Web (`kIsWeb`), images are often blocked by CORS policies.
+- **Strategy**: The app attempts to load images via `wsrv.nl` (a CORS proxy and resizer).
+- **Issue**: Some servers (like Wikimedia) or specific filenames may cause the proxy to fail (404/Block), even if the original URL is valid and accessible.
+- **Resolution**: The `ContentCard` implements a "try-both" mechanism:
+  1.  Try `wsrv.nl` proxy.
+  2.  If it fails (`errorBuilder`), fallback to the direct `imageUrl`.
+  3.  If both fail, show `Icons.image_not_supported`.
 
 ## System Feedback
 - **Stateless**: The system does not "learn" or track which URLs fail.

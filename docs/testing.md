@@ -134,6 +134,46 @@ This script runs as an integration test but functions as a utility to populate t
 *   **"Unable to start a WebDriver session"**: Ensure `chromedriver` is running on port 4444.
 *   **"Failed to connect to the VM Service"**: Ensure you are using `-d chrome` (or `-d web-server` if configured correctly) and that the port is not blocked.
 
+## Metadata Debugging (Images)
+
+To test and improve the image fetching logic without running the full Flutter app or Emulators, we use a standalone Node.js debug server. This allows you to rapidly iterate on the `metadata_fetchers.js` logic.
+
+### 1. Start the Debug Server
+
+Navigate to the `functions` directory:
+
+```bash
+cd functions
+node debug_server.js
+```
+
+### 2. Use the Debugger
+
+1.  Open your browser to [http://localhost:3000](http://localhost:3000).
+2.  Enter a URL (string) or a JSON subject object:
+    ```json
+    {
+      "contentType": "movie",
+      "title": "Big Vape: The Rise and Fall of Juul",
+      "year": "2023"
+    }
+    ```
+3.  Click "Fetch Images". The server will use your **local** internet connection to scrape data and display the results.
+
+### Note on Proxies
+The debug server runs locally and hits the target sites directly. The production app runs via Cloud Functions (in Google's Datacenter), and the client may use a proxy (`wsrv.nl`). This environment difference can sometimes lead to discrepancies (e.g. blocking).
+
+**Visual Verification**: The debug server automatically displays both the direct image and the proxied version (`wsrv.nl`) side-by-side. If the "Proxy" image is broken while "Direct" works, the app's fallback logic is required.
+
+**Manual Construction**:
+To manually verify a proxy link using the command line (e.g., if you suspect encoding issues), run:
+
+```bash
+node -e 'console.log("https://wsrv.nl/?url=" + encodeURIComponent("YOUR_IMAGE_URL") + "&w=200&h=200&fit=cover")'
+```
+
+Then `curl -I` the output URL to check the headers.
+
 ## TODO: Image Relevance Regression Testing
 
 We need a way to ensure that the images fetched for subjects (books, movies, etc.) remain relevant and high-quality.
@@ -142,4 +182,5 @@ We need a way to ensure that the images fetched for subjects (books, movies, etc
     1.  **Golden Set**: Maintain a list of subjects with known "good" image URLs.
     2.  **Automated Check**: A test that runs the `fetchImages` cloud function for these subjects and verifies that the returned images are still in the golden set or meet certain criteria (e.g., resolution, source domain).
     3.  **AI-Assisted Review**: Periodically use a vision model to score the relevance of fetched images against the subject's title and tags.
+
 
