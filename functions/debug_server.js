@@ -69,14 +69,18 @@ const HTML = `
         html += '<div class=\"images\">';
         
         if (data.images && data.images.length > 0) {
-          data.images.forEach(img => {
-            const proxyUrl = 'https://wsrv.nl/?url=' + encodeURIComponent(img) + '&w=200&h=200&fit=cover';
+          data.images.forEach(imgObj => {
+            const imgUrl = (typeof imgObj === 'string') ? imgObj : imgObj.url;
+            const source = (imgObj.source) ? imgObj.source : 'unknown';
+            
+            const proxyUrl = 'https://wsrv.nl/?url=' + encodeURIComponent(imgUrl) + '&w=200&h=200&fit=cover';
             html += \`
               <div class="img-card">
+                <div style="background: #eef; padding: 2px 5px; font-weight: bold; margin-bottom: 5px;">Source: \${source}</div>
                 <div style="margin-bottom: 10px;">
                   <strong style="display:block; margin-bottom:4px;">Direct</strong>
-                  <img src="\${img}" />
-                  <p><a href="\${img}" target="_blank">Open Direct</a></p>
+                  <img src="\${imgUrl}" />
+                  <p><a href="\${imgUrl}" target="_blank">Open Direct</a></p>
                 </div>
                 <div style="border-top: 1px dashed #ccc; padding-top: 10px;">
                   <strong style="display:block; margin-bottom:4px;">Proxy (wsrv.nl)</strong>
@@ -122,7 +126,11 @@ const server = http.createServer(async (req, res) => {
           error: (...args) => console.error('[ERROR]', ...args),
         };
         
-        const result = await executeFetchImages(subject, logger);
+        // Debug mode: Request all images (pass null or large number)
+        // Check if query param or body overrides it, otherwise default to all for debugging
+        const maxImages = subject.maxImages || 100;
+
+        const result = await executeFetchImages(subject, logger, maxImages);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(result));
       } catch (e) {

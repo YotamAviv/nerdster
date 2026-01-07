@@ -7,8 +7,16 @@ The metadata service extracts rich info (titles, images) from URLs and content t
 ## Future Next Steps
 
 -   **Streaming Responses**: Have the server stream the response to the client so that the first available image is not delayed by the rest (e.g., YouTube check returns immediately while Wikipedia fetch continues).
--   **Strategy Attribution**: Include a strategy name (e.g., `youtube`, `opengraph`, `openlibrary`) to the client along with each image. Update the debug server page to show these strategy names.
--   **Learning & Optimization**: The plan would be to over time learn which strategies are effective for which subjects and improve the client logic.
+-   **Strategy Attribution**: Update the API schema (simultaneous client/server deploy) to return structured objects `{ url, strategy }` instead of simple strings. This allows the client and debug tools to identify the source of each image.
+-   **Manual Optimization**: Use the `debug_server.js` tool to manually review image relevance. By seeing the attributed strategy for "bad" images, we can refine the fetcher logic without building an automated feedback loop yet.
+
+My (the human) notes:
+- Source: wikipedia is bad for YouTube videos
+  - Source: opengraph: good, (proxy not required)
+  - Source: youtube: good, (proxy not required)
+- album Natalia M. King Bluezzin T'il Dawn 2015
+  - amazon good
+  - we fail
 
 ## Components
 

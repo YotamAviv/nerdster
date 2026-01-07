@@ -76,7 +76,9 @@ exports.fetchTitle = onCall(async (request) => {
  */
 exports.fetchImages = onCall(async (request) => {
   try {
-    return await executeFetchImages(request.data.subject, logger);
+    // Determine maxImages from request or default to 1 (client optimized)
+    const maxImages = request.data.maxImages || 1;
+    return await executeFetchImages(request.data.subject, logger, maxImages);
   } catch (e) {
     if (e.message && (e.message.startsWith("Missing subject") || e.message.startsWith("Subject must have"))) {
       throw new HttpsError("invalid-argument", e.message);

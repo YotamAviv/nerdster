@@ -133,12 +133,15 @@ Future<void> fetchImages({
 
     List<String>? images;
     if (retval.data["images"] != null) {
-      images = List<String>.from(retval.data["images"]);
+      final rawImages = retval.data["images"] as List;
+      images = rawImages.map<String>((e) {
+        return e['url'] as String;
+      }).toList();
     }
 
     final result = MetadataResult(
       title: retval.data["title"],
-      image: retval.data["image"],
+      image: images != null && images.isNotEmpty ? images.first : null,
       images: images,
     );
     _metadataCache[cacheKey] = result;

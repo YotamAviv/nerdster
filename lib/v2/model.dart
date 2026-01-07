@@ -175,7 +175,7 @@ class FollowNetwork {
 
 /// Aggregated data for a single subject (or equivalence group).
 class SubjectAggregation {
-  // TODO(aviv): I want to know why subject can't be Json (non-null, Map<String, dynamic>)
+  // TODO(aviv): subject should alwways be Json (non-null, Map<String, dynamic>, and with contentType)
   final dynamic subject; // The subject JSON or token
   final List<ContentStatement> statements;
   final Set<String> tags;

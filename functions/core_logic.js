@@ -12,9 +12,10 @@ const {
  * Core implementation of fetchImages, decoupled from Firebase context.
  * @param {Object} subject - The subject object {url, title, contentType, author, ...}
  * @param {Object} logger - Logger object (defaults to console-like interface)
+ * @param {number} maxImages - Optional limit. If set, creating 'maxImages' early terminates further fetching.
  * @returns {Promise<Object>} - { title, image, images }
  */
-async function executeFetchImages(subject, logger = console) {
+async function executeFetchImages(subject, logger = console, maxImages = null) {
   if (!subject) {
     throw new Error("Missing subject object.");
   }
@@ -35,8 +36,16 @@ async function executeFetchImages(subject, logger = console) {
 
   // 1. YouTube check
   if (url && (url.includes('youtube.com') || url.includes('youtu.be'))) {
-    const ytImages = fetchFromYouTube(url);
+    const ytImages = await fetchFromYouTube(url);
     images = [...images, ...ytImages];
+  }
+
+  // Early termination if we have enough images
+  if (maxImages && images.length >= maxImages) {
+    return {
+      "title": title,
+      "images": images.slice(0, maxImages)
+    };
   }
 
   // 2. Fetch HTML if URL is present
@@ -59,39 +68,54 @@ async function executeFetchImages(subject, logger = console) {
     }
   }
 
-  // 3. Smart Fetch (Wikipedia/OpenLibrary) for specific types
-  const smartTypes = ['book', 'movie', 'person', 'place', 'work', 'video'];
-  if (title && (images.length === 0 || smartTypes.includes(type))) {
-    // Skip hash-like titles (e.g. content-addressed IDs)
-    if (!/^[0-9a-f]{32,40}$/i.test(title)) {
-      let searchTitle = title.replace(/ - Amazon\.com:.*$/i, '').replace(/ - YouTube$/i, '').trim();
-      let cleanAuthor = (author && author.length < 50) ? author : "";
+  // Early termination
+  if (maxImages && images.length >= maxImages) {
+    return {
+      "title": title,
+      "images": images.slice(0, maxImages)
+    };
+  }
 
-      if (type === 'book') {
-        let ol = await fetchFromOpenLibrary(searchTitle, cleanAuthor);
-        if (ol.length === 0 && searchTitle.includes(':')) {
-          ol = await fetchFromOpenLibrary(searchTitle.split(':')[0].trim(), cleanAuthor);
-        }
-        images = [...ol, ...images];
+  // 3. Smart Fetch (Wikipedia/OpenLibrary)
+  // Skip hash-like titles (e.g. content-addressed IDs)
+  if (!/^[0-9a-f]{32,40}$/i.test(title)) {
+    let searchTitle = title.replace(/ - Amazon\.com:.*$/i, '').replace(/ - YouTube$/i, '').trim();
+    let cleanAuthor = (author && author.length < 50) ? author : "";
+
+    if (type === 'book') {
+      let ol = await fetchFromOpenLibrary(searchTitle, cleanAuthor);
+      if (ol.length === 0 && searchTitle.includes(':')) {
+        ol = await fetchFromOpenLibrary(searchTitle.split(':')[0].trim(), cleanAuthor);
       }
-      
-      // Fallback or supplement with Wikipedia
-      if (images.length === 0 || type !== 'book') {
-        let wiki = await fetchFromWikipedia(searchTitle);
-        if (wiki.length === 0 && searchTitle.includes(':')) {
-          wiki = await fetchFromWikipedia(searchTitle.split(':')[0].trim());
-        }
-        images = [...wiki, ...images];
+      images = [...images, ...ol];
+    }
+    
+    // Fallback or supplement with Wikipedia
+    if (images.length === 0 || type !== 'book') {
+      let wiki = await fetchFromWikipedia(searchTitle);
+      if (wiki.length === 0 && searchTitle.includes(':')) {
+        wiki = await fetchFromWikipedia(searchTitle.split(':')[0].trim());
       }
+      images = [...images, ...wiki];
     }
   }
 
   // Final cleanup: unique, valid URLs
-  images = [...new Set(images)].filter(img => img && typeof img === 'string' && img.startsWith('http'));
+  const uniqueImages = [];
+  const seenUrls = new Set();
+  
+  for (const img of images) {
+    if (img && img.url && typeof img.url === 'string' && img.url.startsWith('http')) {
+       if (!seenUrls.has(img.url)) {
+         seenUrls.add(img.url);
+         uniqueImages.push(img);
+       }
+    }
+  }
+  images = uniqueImages;
   
   return {
     "title": title,
-    "image": images.length > 0 ? images[0] : null,
     "images": images
   };
 }

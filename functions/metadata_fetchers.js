@@ -31,7 +31,7 @@ async function fetchFromOpenLibrary(title, author = "", url = "") {
       const response = await fetch(searchUrl, { timeout: 5000 });
       const data = await response.json();
       if (data.covers && data.covers.length > 0) {
-        return [`https://covers.openlibrary.org/b/id/${data.covers[0]}-L.jpg`];
+        return [{ url: `https://covers.openlibrary.org/b/id/${data.covers[0]}-L.jpg`, source: 'openlibrary' }];
       }
     }
 
@@ -43,7 +43,7 @@ async function fetchFromOpenLibrary(title, author = "", url = "") {
       const response = await fetch(searchUrl, { timeout: 5000 });
       const data = await response.json();
       if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
-        return [`https://covers.openlibrary.org/b/id/${data.docs[0].cover_i}-L.jpg`];
+        return [{ url: `https://covers.openlibrary.org/b/id/${data.docs[0].cover_i}-L.jpg`, source: 'openlibrary' }];
       }
     }
   } catch (e) {
@@ -89,7 +89,7 @@ async function fetchFromWikipedia(title, url = "") {
       const pages = data.query.pages;
       const pageId = Object.keys(pages)[0];
       if (pageId !== "-1" && pages[pageId].thumbnail) {
-        return [pages[pageId].thumbnail.source];
+        return [{ url: pages[pageId].thumbnail.source, source: 'wikipedia' }];
       }
 
       // 2. Fallback: Scrape the infobox image
@@ -108,7 +108,7 @@ async function fetchFromWikipedia(title, url = "") {
             const parts = fullImgUrl.split('/');
             fullImgUrl = parts.slice(0, parts.length - 1).join('/').replace('/thumb/', '/');
           }
-          return [fullImgUrl];
+          return [{ url: fullImgUrl, source: 'wikipedia' }];
         }
       }
     }
@@ -149,7 +149,9 @@ function extractImages($, url) {
   ];
   metaSelectors.forEach(selector => {
     const content = $(selector).attr('content') || $(selector).attr('href');
-    if (content && !images.includes(content)) images.push(content);
+    if (content && !images.some(img => img.url === content)) {
+      images.push({ url: content, source: 'opengraph' });
+    }
   });
 
   // 2. Scrape <img> tags (limit to 10)
@@ -157,16 +159,19 @@ function extractImages($, url) {
     if (images.length >= 10) return false;
     let src = $(el).attr('src');
     if (src && !src.includes('icon') && !src.includes('logo') && !src.includes('pixel')) {
-      images.push(src);
+       // Check duplication against URL
+       if (!images.some(img => img.url === src)) {
+          images.push({ url: src, source: 'html-scrape' });
+       }
     }
   });
 
   // Normalize relative URLs
   return images.map(img => {
-    if (img && !img.startsWith('http')) {
+    if (img.url && !img.url.startsWith('http')) {
       try {
         const baseUrl = new URL(url);
-        return new URL(img, baseUrl.origin).href;
+        return { ...img, url: new URL(img.url, baseUrl.origin).href };
       } catch (e) {
         return img;
       }
@@ -178,7 +183,7 @@ function extractImages($, url) {
 /**
  * Extracts YouTube thumbnails from a URL.
  */
-function fetchFromYouTube(url) {
+async function fetchFromYouTube(url) {
   if (!url) return [];
   let videoId = null;
   if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split(/[?#]/)[0];
@@ -186,9 +191,24 @@ function fetchFromYouTube(url) {
   else if (url.includes('embed/')) videoId = url.split('embed/')[1].split(/[?#]/)[0];
 
   if (videoId) {
+    const maxResUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+    const hqUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    
+    try {
+      // Check if maxresdefault exists
+      const response = await fetch(maxResUrl, { method: 'HEAD', timeout: 2000 });
+      if (response.ok) {
+        return [
+          { url: maxResUrl, source: 'youtube' },
+          { url: hqUrl, source: 'youtube' }
+        ];
+      }
+    } catch (e) {
+      // ignore error, fallback to hqdefault
+    }
+
     return [
-      `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-      `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+      { url: hqUrl, source: 'youtube' }
     ];
   }
   return [];
