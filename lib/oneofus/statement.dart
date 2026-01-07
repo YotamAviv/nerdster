@@ -7,7 +7,7 @@ abstract class Statement {
   final Jsonish jsonish;
   final DateTime time;
   final Json i;
-  final String iToken;
+  final String iToken; // TODO: IdentityToken
 
   final dynamic
       subject; // Object of verb, may be Json or a token (like, for censor) or a statement..
@@ -66,13 +66,10 @@ abstract class Statement {
         iToken = getToken(jsonish['I']),
         comment = jsonish['comment'];
 
-  String get subjectToken {
-    if (subject is String) {
-      return subject;
-    } else {
-      return getToken(subject);
-    }
-  }
+  // TODO: CONSIDER: IdentityKey, DelegateKey, or ContentKey depending on verb
+  // This would have to be done differently by ContentStatement and TrustStatement.
+  // The same would be needed for other subject (content statement only, depends on follow or rate)
+  String get subjectToken => (subject is String) ? subject: getToken(subject);
 
   String get token => jsonish.token;
 

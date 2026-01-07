@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:nerdster/v2/model.dart';
+import 'package:flutter/material.dart';import 'package:nerdster/v2/keys.dart';import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -31,8 +30,8 @@ class ContentView extends StatefulWidget {
 
 class _ContentViewState extends State<ContentView> {
   late final V2FeedController _controller;
-  String? _currentPov;
-  String? _markedSubjectToken;
+  String? _currentPov; // TODO: Use ContentKey
+  String? _markedSubjectToken; // TODO: Use ContentKey
   final ValueNotifier<bool> _showFilters = ValueNotifier(false);
 
   @override
@@ -106,7 +105,7 @@ class _ContentViewState extends State<ContentView> {
     _controller.tagFilter = tag;
   }
 
-  void _onMark(String? token) {
+  void _onMark(String? token) { // TODO: Use ContentKey
     if (token == null) {
       setState(() {
         _markedSubjectToken = null;
@@ -128,8 +127,9 @@ class _ContentViewState extends State<ContentView> {
       // Relate
       final model = _controller.value;
       if (model != null) {
-        final SubjectAggregation subject1 = model.aggregation.subjects[_markedSubjectToken]!;
-        final SubjectAggregation subject2 = model.aggregation.subjects[token]!;
+        final SubjectAggregation subject1 =
+            model.aggregation.subjects[ContentKey(_markedSubjectToken!)]!;
+        final SubjectAggregation subject2 = model.aggregation.subjects[ContentKey(token)]!;
 
         V2RelateDialog.show(
           context,

@@ -137,10 +137,7 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
 
   String _getTitle(SubjectAggregation agg) {
     final subject = agg.subject;
-    if (subject is Map) {
-      return subject['title'] ?? 'Untitled';
-    }
-    return widget.model.labeler.getLabel(subject.toString());
+    return subject['title'] ?? 'Untitled';
   }
 
   Future<void> _submit() async {

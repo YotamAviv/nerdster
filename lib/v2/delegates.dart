@@ -5,11 +5,11 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 /// This resolver is lazy: it only resolves delegates for identities when requested.
 class DelegateResolver {
   final TrustGraph graph;
-  final Map<String, String> _delegateToIdentity = {};
-  final Map<String, String> _delegateToDomain = {};
-  final Map<String, List<String>> _identityToDelegates = {};
-  final Map<String, String> _delegateConstraints = {}; // delegateKey -> revokeAtToken
-  final Set<String> _resolvedIdentities = {};
+  final Map<String, String> _delegateToIdentity = {}; // TODO: Use DelegateKey and IdentityKey types
+  final Map<String, String> _delegateToDomain = {}; // TODO: Use DelegateKey types
+  final Map<String, List<String>> _identityToDelegates = {};  // TODO: Use DelegateKey and IdentityKey types
+  final Map<String, String> _delegateConstraints = {}; // delegateKey -> revokeAtToken  // TODO: Use DelegateKey types
+  final Set<String> _resolvedIdentities = {}; // TODO: Document what this is
 
   DelegateResolver(this.graph);
 

@@ -184,17 +184,17 @@ class SubjectAggregation {
   final int likes;
   final int dislikes;
   final DateTime lastActivity;
-  final Set<String> related; // Canonical tokens of related subjects
+  final Set<ContentKey> related; // Canonical tokens of related subjects
   final List<ContentStatement> myDelegateStatements;
   final List<ContentStatement> povStatements;
 
   final bool isCensored;
   // TODO: Ensure that canonicalToken is accurate
-  final String canonicalToken;
+  final ContentKey canonicalToken;
 
   SubjectAggregation({
     required this.subject,
-    String? canonicalTokenIn,
+    ContentKey? canonicalTokenIn,
     this.statements = const [],
     this.tags = const {},
     this.likes = 0,
@@ -204,7 +204,7 @@ class SubjectAggregation {
     this.myDelegateStatements = const [],
     this.povStatements = const [],
     this.isCensored = false,
-  }) : canonicalToken = canonicalTokenIn ?? getToken(subject) {
+  }) : canonicalToken = canonicalTokenIn ?? ContentKey(getToken(subject)) {
     // FAILS: TODO: DOC and make sure: assert(canonicalToken == null || canonicalToken == getToken(subject));
     assert(Statement.validateStatementTimesAndTypes(statements));
     assert(Statement.validateStatementTimesAndTypes(myDelegateStatements));
@@ -280,11 +280,11 @@ class SubjectAggregation {
 class ContentAggregation {
   final List<ContentStatement> statements;
   final Set<String> censored;
-  final Map<String, String> equivalence; // SubjectToken -> CanonicalSubjectToken
-  final Map<String, Set<String>> related; // SubjectToken -> Set of RelatedSubjectTokens
+  final Map<ContentKey, ContentKey> equivalence; // SubjectToken -> CanonicalSubjectToken
+  final Map<ContentKey, Set<ContentKey>> related; // SubjectToken -> Set of RelatedSubjectTokens
   final Map<String, String> tagEquivalence; // Tag -> Canonical Tag
   final List<String> mostTags; // Tags ordered by frequency
-  final Map<String, SubjectAggregation> subjects; // CanonicalToken -> Aggregation
+  final Map<ContentKey, SubjectAggregation> subjects; // CanonicalToken -> Aggregation
 
   ContentAggregation({
     this.statements = const [],

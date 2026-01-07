@@ -82,8 +82,11 @@ void main() {
     final skateboard = createTestSubject(type: ContentType.resource, title: 'Skateboard', url: 'https://en.wikipedia.org/wiki/Skateboard');
     final skateboardToken = getToken(skateboard);
 
-    final canonicalToy = aggregation.equivalence[toyToken];
-    final canonicalSkateboard = aggregation.equivalence[skateboardToken];
+    final toyKey = ContentKey(toyToken);
+    final skateboardKey = ContentKey(skateboardToken);
+
+    final canonicalToy = aggregation.equivalence[toyKey];
+    final canonicalSkateboard = aggregation.equivalence[skateboardKey];
 
     print('Toy Token: $toyToken');
     print('Skateboard Token: $skateboardToken');
@@ -96,10 +99,10 @@ void main() {
     // Or maybe just arbitrary.
     
     // Ensure they are equivalent
-    expect(canonicalToy == canonicalSkateboard || canonicalToy == skateboardToken || canonicalSkateboard == toyToken, isTrue);
+    expect(canonicalToy == canonicalSkateboard || canonicalToy == skateboardKey || canonicalSkateboard == toyKey, isTrue);
     
-    final canonical = canonicalToy ?? toyToken;
-    final nonCanonical = (canonical == toyToken) ? skateboardToken : toyToken;
+    final canonical = canonicalToy ?? toyKey;
+    final nonCanonical = (canonical == toyKey) ? skateboardKey : toyKey;
 
     // The non-canonical one should NOT be in subjects map
     expect(aggregation.subjects.containsKey(nonCanonical), isFalse);
@@ -116,13 +119,13 @@ void main() {
            dynamic subjectObj;
            for (final s in canonicalAgg.statements) {
              // print('Checking statement subject: ${s.subjectToken} vs $nonCanonical');
-             if (s.subjectToken == nonCanonical) {
+             if (s.subjectToken == nonCanonical.value) {
                subjectObj = s.subject;
                break;
              }
              if (s.other != null) {
                 // print('Checking statement other: ${getToken(s.other)} vs $nonCanonical');
-                if (getToken(s.other) == nonCanonical) {
+                if (getToken(s.other) == nonCanonical.value) {
                    subjectObj = s.other;
                    break;
                 }
@@ -132,7 +135,7 @@ void main() {
            if (subjectObj == null || subjectObj is! Map) {
              // Should not happen in strict mode if data is adequately supplied
              // Use a valid placeholder only if strictly necessary for the test to proceed
-             subjectObj = createTestSubject(type: ContentType.article, url: nonCanonical, title: 'Unknown');
+             subjectObj = createTestSubject(type: ContentType.article, url: nonCanonical.value, title: 'Unknown');
            }
 
            inspectAgg = SubjectAggregation(
@@ -156,6 +159,6 @@ void main() {
     expect(inspectAgg!.canonicalToken, equals(nonCanonical));
     
     // Verify we found the actual object, not just the token (if possible)
-    expect(inspectAgg.subject['title'], equals(nonCanonical == toyToken ? 'Toy' : 'Skateboard'));
+    expect(inspectAgg.subject['title'], equals(nonCanonical.value == toyToken ? 'Toy' : 'Skateboard'));
   });
 }

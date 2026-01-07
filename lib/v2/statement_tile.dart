@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:nerdster/v2/model.dart';
+import 'package:flutter/material.dart';import 'package:nerdster/v2/keys.dart';import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
@@ -45,7 +44,8 @@ class StatementTile extends StatelessWidget {
     final label = model.labeler.getLabel(s.iToken);
 
     // Find the aggregation for this statement (s)
-    final String canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
+    final ContentKey canonicalToken =
+        model.aggregation.equivalence[ContentKey(s.token)] ?? ContentKey(s.token);
     final statementAgg = model.aggregation.subjects[canonicalToken];
     
     // Combine statements from the main aggregation (if any are threaded there) and the statement's own aggregation
@@ -78,7 +78,7 @@ class StatementTile extends StatelessWidget {
     // Determine display elements based on verb
     Widget? verbIcon;
     String? displayText;
-    String? otherToken;
+    ContentKey? otherToken;
 
     if (s.verb == ContentVerb.rate) {
       // Icons are handled in the row, text is handled in subtitle or here if comment
@@ -101,31 +101,31 @@ class StatementTile extends StatelessWidget {
         // If the statement's other is THIS card, then the target is s.subject
         
         // TODO: Careful here. Should we use getToken(aggregation.subject) instead of token?
-        if (s.subjectToken == aggregation.canonicalToken) {
-           otherToken = sOtherToken;
+        if (s.subjectToken == aggregation.canonicalToken.value) {
+           otherToken = ContentKey(sOtherToken);
            // Try to get title from s.other if it's a map
            if (s.other is Map && s.other['title'] != null) {
              displayText = s.other['title'];
            }
         // TODO: Careful here. Should we use getToken(aggregation.subject) instead of token?
-        } else if (sOtherToken == aggregation.canonicalToken) {
-           otherToken = s.subjectToken;
+        } else if (sOtherToken == aggregation.canonicalToken.value) {
+           otherToken = ContentKey(s.subjectToken);
            // Try to get title from s.subject if it's a map
            if (s.subject is Map && s.subject['title'] != null) {
              displayText = s.subject['title'];
            }
         } else {
            // Fallback
-           otherToken = sOtherToken;
+           otherToken = ContentKey(sOtherToken);
         }
 
         if (displayText == null) {
            final otherAgg = model.aggregation.subjects[otherToken];
            if (otherAgg != null) {
              final subject = otherAgg.subject;
-             displayText = (subject is Map) ? (subject['title'] ?? 'Untitled') : model.labeler.getLabel(subject.toString());
+             displayText = subject['title'] ?? 'Untitled';
            } else {
-             displayText = model.labeler.getLabel(otherToken);
+             displayText = model.labeler.getLabel(otherToken!.value);
            }
         }
       }
@@ -184,7 +184,7 @@ class StatementTile extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       if (otherToken != null && onInspect != null) {
-                        onInspect!(otherToken);
+                        onInspect!(otherToken!.value);
                       }
                     },
                     child: Text(

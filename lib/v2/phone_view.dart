@@ -149,7 +149,7 @@ class ContentBox extends StatelessWidget {
 
     return Dismissible(
       // TODO: Careful here. Should we use getToken(aggregation.subject) instead?
-      key: Key(aggregation.canonicalToken),
+      key: Key(aggregation.canonicalToken.value),
       background: Container(
         color: Colors.green,
         alignment: Alignment.centerLeft,

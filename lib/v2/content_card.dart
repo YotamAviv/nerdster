@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-
-import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/keys.dart';import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -378,16 +377,16 @@ class _ContentCardState extends State<ContentCard> {
         .toSet();
 
     if (equivalentTokens.isNotEmpty) {
-      final Map<String, String> tokenToTitle = {};
+      final Map<ContentKey, String> tokenToTitle = {};
 
       // Try to find titles in current statements
       for (final s in widget.aggregation.statements) {
-        if (equivalentTokens.contains(s.subjectToken)) {
+        if (equivalentTokens.contains(ContentKey(s.subjectToken))) {
           final subject = s.subject;
           final title = (subject is Map)
               ? subject['title']!
               : widget.model.labeler.getLabel(subject.toString());
-          tokenToTitle[s.subjectToken] = title;
+          tokenToTitle[ContentKey(s.subjectToken)] = title;
         }
       }
 
@@ -400,19 +399,20 @@ class _ContentCardState extends State<ContentCard> {
             final title = subject['title']!;
             tokenToTitle[token] = title;
           } else {
-            tokenToTitle[token] = widget.model.labeler.getLabel(token);
+            tokenToTitle[token] = widget.model.labeler.getLabel(token.value);
           }
         }
       }
 
       for (final entry in tokenToTitle.entries) {
-        children.add(_buildRelationTile('=', entry.key, entry.value));
+        children.add(_buildRelationTile('=', entry.key.value, entry.value));
       }
     }
 
     // 2. Related
     final relatedTokens = widget.aggregation.related
-        .where((token) => widget.model.aggregation.equivalence[token] != widget.aggregation.canonicalToken)
+        .where((token) =>
+            widget.model.aggregation.equivalence[token] != widget.aggregation.canonicalToken)
         .toList();
 
     for (final token in relatedTokens) {
@@ -422,9 +422,9 @@ class _ContentCardState extends State<ContentCard> {
         final subject = relatedAgg.subject;
         title = subject['title']!;
       } else {
-        title = widget.model.labeler.getLabel(token);
+        title = widget.model.labeler.getLabel(token.value);
       }
-      children.add(_buildRelationTile('≈', token, title));
+      children.add(_buildRelationTile('≈', token.value, title));
     }
 
     if (children.isEmpty) return const SizedBox.shrink();
@@ -527,16 +527,16 @@ class _ContentCardState extends State<ContentCard> {
             visualDensity: VisualDensity.compact,
             icon: Icon(
               Icons.link,
-              color: widget.markedSubjectToken == widget.aggregation.canonicalToken
+              color: widget.markedSubjectToken == widget.aggregation.canonicalToken.value
                   ? Colors.orange
                   : Colors.grey,
             ),
-            tooltip: widget.markedSubjectToken == widget.aggregation.canonicalToken
+            tooltip: widget.markedSubjectToken == widget.aggregation.canonicalToken.value
                 ? 'Unmark'
                 : 'Mark to Relate/Equate',
             onPressed: () async {
               if (bb(await checkSignedIn(context, trustGraph: widget.model.trustGraph))) {
-                widget.onMark!(widget.aggregation.canonicalToken);
+                widget.onMark!(widget.aggregation.canonicalToken.value);
               }
             },
           ),

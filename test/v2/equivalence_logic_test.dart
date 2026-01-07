@@ -69,10 +69,6 @@ void main() async {
     final String sCToken = getToken(sC);
 
     // Statements
-    // Note: To satisfy the strictly descending time requirement of SubjectAggregation,
-    // we must create statements in reverse order of the Identity processing order.
-    // Order: Alice (POV), Charlie, Bob.
-    // So creation must be: Bob, then Charlie, then Alice.
 
     // Bob says B == C
     await bobN.doRelate(ContentVerb.equate, subject: sB, other: sC);
@@ -114,9 +110,9 @@ void main() async {
     final ContentAggregation aggAlice =
         reduceContentAggregation(netAlice, graph, delegateResolver, contentResult);
 
-    final String? canonA = aggAlice.equivalence[sAToken];
-    final String? canonB = aggAlice.equivalence[sBToken];
-    final String? canonC = aggAlice.equivalence[sCToken];
+    final ContentKey? canonA = aggAlice.equivalence[ContentKey(sAToken)];
+    final ContentKey? canonB = aggAlice.equivalence[ContentKey(sBToken)];
+    final ContentKey? canonC = aggAlice.equivalence[ContentKey(sCToken)];
 
     // Expectation: A == B, but B != C (because Charlie says dontEquate B-C and Charlie > Bob)
     expect(canonA, isNotNull);

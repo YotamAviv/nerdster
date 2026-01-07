@@ -237,7 +237,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
   @override
   Widget build(BuildContext context) {
     final rawSubject = widget.aggregation.subject;
-    final isMap = rawSubject is Map;
+    final isMap = true;
     final isStatement = isMap && rawSubject.containsKey('statement');
 
     bool subjectIsMyStatement = false;
@@ -300,7 +300,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
                 child: SizedBox(
                   height: 150,
                   child: V2JsonDisplay(
-                    isMap ? rawSubject : {'token': rawSubject},
+                    rawSubject,
                     interpret: interpret, 
                     strikethrough: censor.value,
                     interpreter: V2Interpreter(widget.model.labeler),
