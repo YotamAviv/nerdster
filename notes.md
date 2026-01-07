@@ -60,7 +60,6 @@ flutter build web --release; firebase --project=nerdster deploy --except functio
 ./bin/stage_nerdster.sh deploy
 ./bin/stage_oneofus.sh deploy
 firebase --project=nerdster deploy --only functions
-firebase --project=nerdster deploy --only functions:streamstatements
 firebase --project=one-of-us-net deploy --only functions:export
 firebase --project=one-of-us-net deploy --only functions
 (flutter clean)
