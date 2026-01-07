@@ -312,7 +312,6 @@ class _ContentViewState extends State<ContentView> {
                   items: [
                     const DropdownMenuItem(value: 'all', child: Text('All')),
                     ...ContentType.values
-                        .where((t) => t != ContentType.all)
                         .map((t) => DropdownMenuItem(value: t.name, child: Text(t.name))),
                   ],
                   onChanged: (val) {

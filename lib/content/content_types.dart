@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 
 enum ContentType {
-  all(
-    'all',
-    (Icons.star, Icons.star_outline),
-    {'url': 'url', 'title': 'string'},
-  ),
   article(
     'article',
     (Icons.article, Icons.article_outlined),

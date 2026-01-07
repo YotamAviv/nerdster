@@ -41,9 +41,6 @@ String getFallbackImageUrl(String? url, String contentType, String? title, {List
       return 'https://tile.loc.gov/storage-services/service/pnp/fsa/8b07000/8b07900/8b07923v.jpg';
     case 'recipe':
       return 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Fork_and_knife_icon.svg/512px-Fork_and_knife_icon.svg.png';
-    case 'all':
-      assert(false, 'ContentType.all is a hack for the dropdown');
-      break;
     case 'podcast':
       return 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Podcast_font_awesome.svg/512px-Podcast_font_awesome.svg.png';
     case 'event':
