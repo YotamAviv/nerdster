@@ -206,6 +206,9 @@ class SubjectAggregation {
     this.isCensored = false,
   }) : canonicalToken = canonicalTokenIn ?? getToken(subject) {
     // FAILS: TODO: DOC and make sure: assert(canonicalToken == null || canonicalToken == getToken(subject));
+    assert(Statement.validateStatementTimesAndTypes(statements));
+    assert(Statement.validateStatementTimesAndTypes(myDelegateStatements));
+    assert(Statement.validateStatementTimesAndTypes(povStatements));
   }
 
   DateTime? get userDismissalTimestamp => _getDismissalTimestamp(myDelegateStatements);

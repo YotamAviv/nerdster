@@ -6,6 +6,7 @@ Some of the code is suspect or not clear even though no bug or failing test has 
 
 Current, known bugs:
 - Can't see who's like (or dislike) that is on the ContentCard.
+  Address this by allowing the user to click on the counts.
 
 Plan:
 - update the spec regarding what we should see where (likes, related content, equivalent content, ..):

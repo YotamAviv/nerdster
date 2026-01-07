@@ -68,15 +68,11 @@ void main() async {
     final String sBToken = getToken(sB);
     final String sCToken = getToken(sC);
 
-    // Define subjects by rating them (so their Map definition exists in the graph)
-    await aliceN.doRate(subject: sA, recommend: true);
-    await aliceN.doRate(subject: sB, recommend: true);
-    await aliceN.doRate(subject: sC, recommend: true);
-    // Note: It doesn't matter who rates them, as long as someone in the graph does.
-
     // Statements
-    // Alice says A == B
-    await aliceN.doRelate(ContentVerb.equate, subject: sA, other: sB);
+    // Note: To satisfy the strictly descending time requirement of SubjectAggregation,
+    // we must create statements in reverse order of the Identity processing order.
+    // Order: Alice (POV), Charlie, Bob.
+    // So creation must be: Bob, then Charlie, then Alice.
 
     // Bob says B == C
     await bobN.doRelate(ContentVerb.equate, subject: sB, other: sC);
@@ -84,6 +80,15 @@ void main() async {
     // Charlie says A == B but B != C
     await charlieN.doRelate(ContentVerb.equate, subject: sA, other: sB);
     await charlieN.doRelate(ContentVerb.dontEquate, subject: sB, other: sC);
+
+    // Define subjects by rating them (so their Map definition exists in the graph)
+    await aliceN.doRate(subject: sA, recommend: true);
+    await aliceN.doRate(subject: sB, recommend: true);
+    await aliceN.doRate(subject: sC, recommend: true);
+    // Note: It doesn't matter who rates them, as long as someone in the graph does.
+
+    // Alice says A == B
+    await aliceN.doRelate(ContentVerb.equate, subject: sA, other: sB);
 
     // Collect statements
     final Map<DelegateKey, List<ContentStatement>> delegateContent = {};

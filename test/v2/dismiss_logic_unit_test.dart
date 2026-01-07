@@ -6,33 +6,11 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 
 void main() {
+  ContentStatement.init();
   group('Dismiss Logic', () {
-    // Helper to create a dummy statement
-    ContentStatement makeStatement({
-      required String verb, // TODO: ContentVerb verb,
-      String? dismiss,
-      String? comment,
-      bool? recommend,
-      bool? censor,
-      DateTime? time,
-    }) {
-      final json = {
-        'statement': 'org.nerdster',
-        'time': (time ?? DateTime.now()).toIso8601String(),
-        'I': {'k': 'key', 'a': 'algo'}, // Dummy key
-        verb: 'subject_token', // TODO: use actual subject structure
-      };
-      if (comment != null) json['comment'] = comment;
-      
-      final withx = <String, dynamic>{};
-      if (dismiss != null) withx['dismiss'] = dismiss;
-      if (recommend != null) withx['recommend'] = recommend;
-      if (censor != null) withx['censor'] = censor;
-      
-      if (withx.isNotEmpty) json['with'] = withx;
-
-      return ContentStatement(Jsonish(json));
-    }
+    // Shared test data
+    final iJson = {'token': 'test_identity', 'handle': 'tester'};
+    final testSubject = createTestSubject();
 
     test('SubjectAggregation.isDismissed logic', () {
       final t0 = DateTime(2025, 1, 1);
@@ -40,91 +18,155 @@ void main() {
 
       // Case 1: Not dismissed (no dismissal statement)
       var agg = SubjectAggregation(
-        subject: createTestSubject(),
+        subject: testSubject,
         lastActivity: t1,
         povStatements: [
-          makeStatement(verb: 'rate', time: t0), // Just a rating
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+          )..['time'] = t0.toIso8601String())), // Just a rating
         ],
         statements: [
-          makeStatement(verb: 'rate', time: t1), // New activity
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+          )..['time'] = t1.toIso8601String())), // New activity
         ],
       );
       expect(agg.isDismissed, false);
 
       // Case 2: Dismissed Forever
       agg = SubjectAggregation(
-        subject: createTestSubject(),
+        subject: testSubject,
         lastActivity: t1,
         povStatements: [
-          makeStatement(verb: 'rate', dismiss: 'forever', time: t0),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+            dismiss: 'forever',
+          )..['time'] = t0.toIso8601String())),
         ],
         statements: [
-          makeStatement(verb: 'rate', time: t1), // New activity
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+          )..['time'] = t1.toIso8601String())), // New activity
         ],
       );
       expect(agg.isDismissed, true);
 
       // Case 3: Snoozed, no new activity
       agg = SubjectAggregation(
-        subject: createTestSubject(),
+        subject: testSubject,
         lastActivity: t0,
-        // TODO: Explain or remove. Why 2 statements at same time?
         povStatements: [
-          makeStatement(verb: 'rate', dismiss: 'snooze', time: t0),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+            dismiss: 'snooze',
+          )..['time'] = t0.toIso8601String())),
         ],
         statements: [
-          makeStatement(verb: 'rate', dismiss: 'snooze', time: t0),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+            dismiss: 'snooze',
+          )..['time'] = t0.toIso8601String())),
         ],
       );
       expect(agg.isDismissed, true);
 
       // Case 4: Snoozed, Qualified Activity (Comment)
       agg = SubjectAggregation(
-        subject: createTestSubject(),
+        subject: testSubject,
         lastActivity: t1,
         povStatements: [
-          makeStatement(verb: 'rate', dismiss: 'snooze', time: t0),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+            dismiss: 'snooze',
+          )..['time'] = t0.toIso8601String())),
         ],
         statements: [
-          makeStatement(verb: 'rate', comment: 'Hello', time: t1),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+            comment: 'Hello',
+          )..['time'] = t1.toIso8601String())),
         ],
       );
       expect(agg.isDismissed, false);
 
       // Case 5: Snoozed, Disqualified Activity (Censor)
       agg = SubjectAggregation(
-        subject: createTestSubject(),
+        subject: testSubject,
         lastActivity: t1,
         povStatements: [
-          makeStatement(verb: 'rate', dismiss: 'snooze', time: t0),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+            dismiss: 'snooze',
+          )..['time'] = t0.toIso8601String())),
         ],
         statements: [
-          makeStatement(verb: 'rate', censor: true, time: t1),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+            censor: true,
+          )..['time'] = t1.toIso8601String())),
         ],
       );
       expect(agg.isDismissed, true);
-      
+
       // Case 6: Snoozed, Qualified Activity (Relate)
       agg = SubjectAggregation(
-        subject: createTestSubject(),
+        subject: testSubject,
         lastActivity: t1,
         povStatements: [
-          makeStatement(verb: 'rate', dismiss: 'snooze', time: t0),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+            dismiss: 'snooze',
+          )..['time'] = t0.toIso8601String())),
         ],
         statements: [
-          makeStatement(verb: 'relate', time: t1),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.relate,
+            testSubject,
+          )..['time'] = t1.toIso8601String())),
         ],
       );
       expect(agg.isDismissed, false);
       // Case 6: User Dismissal (myDelegateStatements)
       agg = SubjectAggregation(
-        subject: createTestSubject(),
+        subject: testSubject,
         lastActivity: t1,
         myDelegateStatements: [
-          makeStatement(verb: 'rate', dismiss: 'forever', time: t0),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+            dismiss: 'forever',
+          )..['time'] = t0.toIso8601String())),
         ],
         statements: [
-          makeStatement(verb: 'rate', time: t1),
+          ContentStatement(Jsonish(ContentStatement.make(
+            iJson,
+            ContentVerb.rate,
+            testSubject,
+          )..['time'] = t1.toIso8601String())),
         ],
       );
       expect(agg.isUserDismissed, true);
