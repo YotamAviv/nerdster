@@ -202,13 +202,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     // This effectively filters out statements (which don't have contentType) and other non-content data
     final s = subject.subject;
     bool hasContentType = false;
-    if (s is Map && s.containsKey('contentType')) {
+    if (s.containsKey('contentType')) {
       hasContentType = true;
-    } else if (s is String) {
-      final j = Jsonish.find(s);
-      if (j != null && j.containsKey('contentType')) {
-        hasContentType = true;
-      }
     }
     if (!hasContentType) return false;
 
@@ -216,14 +211,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
     if (typeFilter != null && typeFilter != 'all') {
       String? subjectType;
-      if (s is Map) {
-        subjectType = s['contentType'];
-      } else if (s is String) {
-        final j = Jsonish.find(s);
-        if (j != null) {
-          subjectType = j['contentType'];
-        }
-      }
+      subjectType = s['contentType'];
 
       if (subjectType != typeFilter) {
         return false;

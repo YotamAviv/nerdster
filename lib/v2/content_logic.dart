@@ -11,7 +11,6 @@ import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/eg.dart';
 
-
 List<Iterable<ContentStatement>> _collectSources(
   String identity,
   TrustGraph trustGraph,
@@ -19,7 +18,7 @@ List<Iterable<ContentStatement>> _collectSources(
   ContentResult contentResult,
 ) {
   final List<Iterable<ContentStatement>> sources = [];
-  
+
   // Delegate Keys
   for (final String keyStr in delegateResolver.getDelegatesForIdentity(identity)) {
     final key = DelegateKey(keyStr);
@@ -27,7 +26,7 @@ List<Iterable<ContentStatement>> _collectSources(
       sources.add(contentResult.delegateContent[key]!);
     }
   }
-  
+
   return sources;
 }
 
@@ -50,7 +49,7 @@ ContentAggregation reduceContentAggregation(
   List<DelegateKey>? meDelegateKeys,
 }) {
   final Set<String> censored = {};
-  
+
   // 1. Decentralized Censorship (Proximity Wins)
   if (enableCensorship) {
     // Process identities in trust order (discovery order in FollowNetwork)
@@ -67,7 +66,7 @@ ContentAggregation reduceContentAggregation(
       for (final ContentStatement s
           in statements.where((s) => s.verb == ContentVerb.rate && s.censor == true)) {
         // If the censor statement itself is already censored (by someone more trusted obviously because
-        // this already happened; we're working from most to least trusted), then it is censored, 
+        // this already happened; we're working from most to least trusted), then it is censored,
         // and we ignore the censorship its trying to apply.
         if (censored.contains(s.token)) continue;
 
@@ -127,7 +126,7 @@ ContentAggregation reduceContentAggregation(
   // 2. Availability of "Me's" data for UI widgets.
   final List<ContentStatement> myFilteredStatements = [];
   final List<Iterable<ContentStatement>> mySources = [];
-  
+
   if (meDelegateKeys != null) {
     for (final DelegateKey key in meDelegateKeys) {
       if (contentResult.delegateContent.containsKey(key)) {
@@ -152,51 +151,26 @@ ContentAggregation reduceContentAggregation(
   }
 
   // 3. Equivalence Grouping
+  final Map<String, String> subjectEquivalence = {};
   final Equivalence eqLogic = Equivalence();
-
-  // Include TrustGraph replacements as equivalence
-  for (final entry in trustGraph.replacements.entries) {
-    eqLogic.process(EquateStatement(entry.key, entry.value));
-  }
-
   for (final ContentStatement s in filteredStatements) {
     if (s.verb == ContentVerb.equate || s.verb == ContentVerb.dontEquate) {
       final String s1 = s.subjectToken;
       final String s2 = getToken(s.other);
-      if (s1 == s2) continue;
-
-      eqLogic.process(EquateStatement(
-        s1, 
-        s2, 
-        dont: s.verb == ContentVerb.dontEquate
-      ));
+      assert(s1 != s2);
+      eqLogic.process(EquateStatement(s1, s2, dont: s.verb == ContentVerb.dontEquate));
     }
   }
-
-  final Map<String, String> equivalence = {};
   final Set<EquivalenceGroup> groups = eqLogic.createGroups();
-  
   for (final EquivalenceGroup group in groups) {
     String canonical = group.canonical;
-
-    // Prefer TrustGraph canonicals for identities
     for (final String token in group.all) {
-      // Check if this token is part of the trust graph (either trusted or replaced)
-      if (trustGraph.distances.containsKey(token) || trustGraph.replacements.containsKey(token)) {
-        final String tgCanonical = trustGraph.resolveIdentity(token);
-        if (group.all.contains(tgCanonical)) {
-          canonical = tgCanonical;
-          break;
-        }
-      }
-    }
-
-    for (final String token in group.all) {
-      equivalence[token] = canonical;
+      subjectEquivalence[token] = canonical;
     }
   }
 
   // Tag Equivalence Grouping
+  final Map<String, String> tagEquivalence = {};
   final Map<String, Set<String>> tagEdges = {};
   for (final s in filteredStatements) {
     if (s.comment != null) {
@@ -211,8 +185,6 @@ ContentAggregation reduceContentAggregation(
       }
     }
   }
-
-  final Map<String, String> tagEquivalence = {};
   final Set<String> tagVisited = {};
   for (final tag in tagEdges.keys) {
     if (tagVisited.contains(tag)) continue;
@@ -230,7 +202,6 @@ ContentAggregation reduceContentAggregation(
         }
       }
     }
-
     final List<String> sorted = component.toList()..sort();
     final String canonicalTag = sorted.first;
     for (final String t in component) {
@@ -240,13 +211,11 @@ ContentAggregation reduceContentAggregation(
 
   // 4. Relational Discovery (Related)
   final Map<String, Set<String>> related = {};
-
   for (final ContentStatement s in filteredStatements) {
     if (s.verb == ContentVerb.relate) {
-      final String s1 = equivalence[s.subjectToken] ?? s.subjectToken;
-      final String s2 = equivalence[getToken(s.other)] ?? getToken(s.other);
-      if (s1 == s2) continue;
-
+      final String s1 = subjectEquivalence[s.subjectToken] ?? s.subjectToken;
+      final String s2 = subjectEquivalence[getToken(s.other)] ?? getToken(s.other);
+      assert(s1 != s2);
       related.putIfAbsent(s1, () => {}).add(s2);
       related.putIfAbsent(s2, () => {}).add(s1);
     }
@@ -254,20 +223,38 @@ ContentAggregation reduceContentAggregation(
 
   // 5. Aggregation
   final Map<String, SubjectAggregation> subjects = {};
+  // TODO: Be clear: Is by canonical token or original token or all merged (it looks like all merged)?
   final Map<String, List<ContentStatement>> statementsBySubject = {};
   for (final s in filteredStatements) {
-    final canonical = equivalence[s.subjectToken] ?? s.subjectToken;
+    final canonical = subjectEquivalence[s.subjectToken] ?? s.subjectToken;
     statementsBySubject.putIfAbsent(canonical, () => []).add(s);
+    if (s.other != null) {
+      final String canonicalOther = subjectEquivalence[getToken(s.other)] ?? getToken(s.other);
+      statementsBySubject.putIfAbsent(canonicalOther, () => []).add(s);
+    }
+  }
+
+  // TODO(aviv): this looks like a BUG!
+  // consider a A => B, B => C. A, B, C are equivalent, C is canonical, we'll find B as canonical first.
+  // We should use equivalence to find the canonical subject.
+  // Helper to find the best subject definition from a list of statements
+  // TODO: Add a unit test that fails with this code as is.
+  Json? findSubject(String canonical, List<ContentStatement> stmts) {
+    return stmts
+      .where((s) => s.subject is Map)
+      .where((s) => (subjectEquivalence[s.subjectToken] ?? s.subjectToken) == canonical)
+      .map((s) => s.subject as Json)
+      .firstOrNull;
   }
 
   // Pass 1: Identify all canonical tokens that should be top-level subjects.
   final Set<String> topLevelSubjects = {};
-  
+
   void processPass1(Iterable<ContentStatement> stmts) {
     for (final ContentStatement s in stmts) {
-      final String canonical1 = equivalence[s.subjectToken] ?? s.subjectToken;
+      final String canonical1 = subjectEquivalence[s.subjectToken] ?? s.subjectToken;
       final String? canonical2 =
-          s.other != null ? (equivalence[getToken(s.other)] ?? getToken(s.other)) : null;
+          s.other != null ? (subjectEquivalence[getToken(s.other)] ?? getToken(s.other)) : null;
 
       if ((s.verb == ContentVerb.clear && s.subject is Map) ||
           s.verb == ContentVerb.rate ||
@@ -281,7 +268,7 @@ ContentAggregation reduceContentAggregation(
       }
     }
   }
-  
+
   processPass1(filteredStatements);
   processPass1(myFilteredStatements);
 
@@ -289,9 +276,9 @@ ContentAggregation reduceContentAggregation(
   for (final String identity in followNetwork.identities) {
     final List<ContentStatement> statements = filteredByIdentity[identity] ?? [];
     for (final ContentStatement s in statements) {
-      final String canonical1 = equivalence[s.subjectToken] ?? s.subjectToken;
+      final String canonical1 = subjectEquivalence[s.subjectToken] ?? s.subjectToken;
       final String? canonical2 =
-          s.other != null ? (equivalence[getToken(s.other)] ?? getToken(s.other)) : null;
+          s.other != null ? (subjectEquivalence[getToken(s.other)] ?? getToken(s.other)) : null;
 
       final List<String> targets = [canonical1];
       if (canonical2 != null && canonical2 != canonical1) {
@@ -302,12 +289,21 @@ ContentAggregation reduceContentAggregation(
         // Only aggregate if this canonical token is a top-level subject.
         if (!topLevelSubjects.contains(canonical)) continue;
 
-        final SubjectAggregation agg = subjects.putIfAbsent(canonical, () {
-          return SubjectAggregation(
-            subject: canonical,
+        SubjectAggregation? agg = subjects[canonical];
+        if (agg == null) {
+          Json? subject = findSubject(canonical, statementsBySubject[canonical] ?? []);
+          // If we can't find a subject, skip it.
+          // This can happen if the subject is only referenced in "other"
+          // but we have no statements that define it.
+          if (subject == null) continue;
+          
+          agg = SubjectAggregation(
+            canonicalTokenIn: canonical,
+            subject: subject,
             lastActivity: s.time,
           );
-        });
+          subjects[canonical] = agg;
+        }
 
         // Update stats
         int likes = agg.likes;
@@ -349,15 +345,18 @@ ContentAggregation reduceContentAggregation(
             }
           }
 
-          final newStatements = agg.statements.where((existing) => !toRemove.contains(existing)).toList();
+          final newStatements =
+              agg.statements.where((existing) => !toRemove.contains(existing)).toList();
 
           Set<String> newRelated = agg.related;
           if (toRemove.any((r) => r.verb == ContentVerb.relate)) {
             newRelated = {};
             for (final stmt in newStatements) {
               if (stmt.verb == ContentVerb.relate) {
-                final c1 = equivalence[stmt.subjectToken] ?? stmt.subjectToken;
-                final c2 = stmt.other != null ? (equivalence[getToken(stmt.other)] ?? getToken(stmt.other)) : null;
+                final c1 = subjectEquivalence[stmt.subjectToken] ?? stmt.subjectToken;
+                final c2 = stmt.other != null
+                    ? (subjectEquivalence[getToken(stmt.other)] ?? getToken(stmt.other))
+                    : null;
                 if (canonical == c1 && c2 != null) {
                   newRelated.add(c2);
                 } else if (canonical == c2) {
@@ -370,10 +369,11 @@ ContentAggregation reduceContentAggregation(
           // Clear povStatements if signer is POV
           List<ContentStatement> newPovStatements = agg.povStatements;
           if (signerIdentity == followNetwork.povIdentity) {
-             newPovStatements = [];
+            newPovStatements = [];
           }
 
           subjects[canonical] = SubjectAggregation(
+            canonicalTokenIn: canonical,
             subject: agg.subject,
             statements: newStatements,
             tags: agg.tags,
@@ -390,27 +390,15 @@ ContentAggregation reduceContentAggregation(
 
         List<ContentStatement> newPovStatements = agg.povStatements;
         if (signerIdentity == followNetwork.povIdentity) {
-           newPovStatements = [...newPovStatements, s];
+          newPovStatements = [...newPovStatements, s];
         }
 
         final DateTime lastActivity = s.time.isAfter(agg.lastActivity) ? s.time : agg.lastActivity;
 
-        // Determine the best subject representation
-        dynamic bestSubject = agg.subject;
-        dynamic candidateSubject;
-        if ((equivalence[s.subjectToken] ?? s.subjectToken) == canonical) {
-          candidateSubject = s.subject;
-        } else if (s.other != null && (equivalence[getToken(s.other)] ?? getToken(s.other)) == canonical) {
-          candidateSubject = s.other;
-        }
-        
-        if (bestSubject is String && candidateSubject is! String && candidateSubject != null) {
-          bestSubject = candidateSubject;
-        }
-
         // Update the aggregation
         subjects[canonical] = SubjectAggregation(
-          subject: bestSubject,
+          canonicalTokenIn: canonical,
+          subject: agg.subject,
           statements: [...agg.statements, s],
           tags: agg.tags, // Will be updated in Pass 3
           likes: likes,
@@ -427,9 +415,9 @@ ContentAggregation reduceContentAggregation(
 
   // Pass 2b: Aggregate My Statements
   for (final ContentStatement s in myFilteredStatements) {
-    final String canonical1 = equivalence[s.subjectToken] ?? s.subjectToken;
+    final String canonical1 = subjectEquivalence[s.subjectToken] ?? s.subjectToken;
     final String? canonical2 =
-        s.other != null ? (equivalence[getToken(s.other)] ?? getToken(s.other)) : null;
+        s.other != null ? (subjectEquivalence[getToken(s.other)] ?? getToken(s.other)) : null;
 
     final List<String> targets = [canonical1];
     if (canonical2 != null && canonical2 != canonical1) {
@@ -443,16 +431,30 @@ ContentAggregation reduceContentAggregation(
       // If the subject doesn't exist in the aggregation (because PoV doesn't see it),
       // we create it if we have statements about it (e.g. I follow it).
       // But we initialize it with empty statements so it doesn't pollute the feed.
-      final SubjectAggregation agg = subjects.putIfAbsent(canonical, () {
-        dynamic subjectContent = canonical;
-        if (s.subjectToken == canonical) {
-           subjectContent = s.subject;
+      SubjectAggregation? agg = subjects[canonical];
+      if (agg == null) {
+        // Find best definition from me (if available) or fallback
+        Json subjectContent;
+        if (s.subject is Map && s.subjectToken == canonical) {
+          subjectContent = s.subject as Json;
+        } else {
+          if (findSubject(canonical, statementsBySubject[canonical] ?? []) == null) {
+            // If we can't find a definition for this subject, skip it.
+            // This can happen if the subject is only referenced in "other"
+            // but we have no statements that define it.
+            continue;
+          }
+          subjectContent = findSubject(canonical, statementsBySubject[canonical] ?? [])!;
         }
-        return SubjectAggregation(
+        assert(getToken(subjectContent) ==
+            canonical); // TODO: Consider removing SubjectAggregation.token, or put this assert there.
+        agg = SubjectAggregation(
+          canonicalTokenIn: canonical,
           subject: subjectContent,
           lastActivity: s.time,
         );
-      });
+        subjects[canonical] = agg;
+      }
 
       // Update myDelegateStatements
       List<ContentStatement> myDelegateStatements = agg.myDelegateStatements;
@@ -464,6 +466,7 @@ ContentAggregation reduceContentAggregation(
       }
 
       subjects[canonical] = SubjectAggregation(
+        canonicalTokenIn: canonical,
         subject: agg.subject,
         statements: agg.statements,
         tags: agg.tags,
@@ -480,13 +483,13 @@ ContentAggregation reduceContentAggregation(
 
   // Pass 3: Recursive Tag Collection and Most Frequent Tags
   final MostStrings mostStrings = MostStrings({});
-  
+
   Set<String> collectTagsRecursive(String token, Set<String> visited) {
     if (visited.contains(token)) return {};
     visited.add(token);
-    
+
     final Set<String> tags = {};
-    
+
     // Tags from the subject itself if it has a comment
     final subject = Jsonish.find(token);
     if (subject != null && subject['comment'] != null) {
@@ -504,8 +507,9 @@ ContentAggregation reduceContentAggregation(
   }
 
   for (final agg in subjects.values.toList()) {
-    final Set<String> recursiveTags = collectTagsRecursive(agg.token, {});
-    subjects[agg.token] = SubjectAggregation(
+    final Set<String> recursiveTags = collectTagsRecursive(agg.canonicalToken, {});
+    subjects[agg.canonicalToken] = SubjectAggregation(
+      canonicalTokenIn: agg.canonicalToken,
       subject: agg.subject,
       statements: agg.statements,
       tags: recursiveTags,
@@ -517,7 +521,7 @@ ContentAggregation reduceContentAggregation(
       povStatements: agg.povStatements,
       isCensored: agg.isCensored,
     );
-    
+
     mostStrings.process(recursiveTags);
   }
 
@@ -526,7 +530,7 @@ ContentAggregation reduceContentAggregation(
   return ContentAggregation(
     statements: filteredStatements,
     censored: censored,
-    equivalence: equivalence,
+    equivalence: subjectEquivalence,
     related: related,
     tagEquivalence: tagEquivalence,
     mostTags: mostTags,

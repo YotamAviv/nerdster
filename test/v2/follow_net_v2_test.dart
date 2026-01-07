@@ -104,7 +104,7 @@ void main() async {
     expect(followLisa.contains(trustLisa.resolveIdentity(homer.token)), true, reason: 'Lisa should follow Homer (Homer2)');
     
     // Check if Marge's content is there (MargeN signed it)
-    expect(contentLisa.subjects.values.any((s) => s.token == margeRating.subjectToken), true, reason: "Lisa should see Marge's content");
+    expect(contentLisa.subjects.values.any((s) => s.canonicalToken == margeRating.subjectToken), true, reason: "Lisa should see Marge's content");
 
     // --- BART'S POV ---
     final TrustGraph trustBart = reduceTrustGraph(TrustGraph(pov: bart.token), allTrustStatements);
@@ -174,9 +174,13 @@ void main() async {
     final DemoKey bartN = await bart.makeDelegate();
     final DemoKey lisaN = await lisa.makeDelegate();
 
-    final String news1 = 'https://news.com/1';
-    final String news2 = 'https://news.com/2';
-    final String spam = 'https://spam.com';
+    final Json news1 = {'contentType': 'url', 'url': 'https://news.com/1'};
+    final Json news2 = {'contentType': 'url', 'url': 'https://news.com/2'};
+    final Json spam = {'contentType': 'url', 'url': 'https://spam.com'};
+
+    final String news1Token = getToken(news1);
+    final String news2Token = getToken(news2);
+    final String spamToken = getToken(spam);
 
     await homer.trust(lisa, moniker: 'lisa');
     await homer.trust(bart, moniker: 'bart');
@@ -221,9 +225,9 @@ void main() async {
     );
 
     // Spam should be censored
-    expect(contentAgg.censored, contains(spam));
+    expect(contentAgg.censored, contains(spamToken));
     // news1 and news2 should be equated
-    expect(contentAgg.equivalence[news2], contentAgg.equivalence[news1]);
+    expect(contentAgg.equivalence[news2Token], contentAgg.equivalence[news1Token]);
   });
 
   test('V2 Content Aggregation: Censorship Overrides', () async {
@@ -256,14 +260,15 @@ void main() async {
     final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, 'news');
 
     // 1. Bart rates a spam URL
-    final String spamUrl = 'https://spam.com';
-    final ContentStatement spamRate = await bartN.doRate(subject: spamUrl, recommend: true);
+    final Json spamMap = {'contentType': 'url', 'url': 'https://spam.com'};
+    final String spamToken = getToken(spamMap);
+    final ContentStatement spamRate = await bartN.doRate(subject: spamMap, recommend: true);
     
     // 2. Lisa censors Bart's rating statement
     await lisaN.doRate(subject: spamRate.token, censor: true);
 
     // 3. Homer also rates the spam URL (he likes it)
-    final ContentStatement homerRate = await homerN.doRate(subject: spamUrl, recommend: true);
+    final ContentStatement homerRate = await homerN.doRate(subject: spamMap, recommend: true);
 
     // Rebuild map to include new statements
     allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
@@ -278,14 +283,14 @@ void main() async {
     // Lisa censored Bart's statement, so Bart's rating should be gone.
     // But the URL itself was NOT censored, so Homer's rating should remain.
     expect(aggregation.censored, contains(spamRate.token));
-    expect(aggregation.censored, isNot(contains(spamUrl)));
+    expect(aggregation.censored, isNot(contains(spamToken)));
     
     final Set<String> remainingTokens = aggregation.statements.map((s) => s.token).toSet();
     expect(remainingTokens, contains(homerRate.token));
     expect(remainingTokens, isNot(contains(spamRate.token)));
 
     // 4. Now Bart censors the URL itself
-    final ContentStatement bartCensorship = await bartN.doRate(subject: spamUrl, censor: true);
+    final ContentStatement bartCensorship = await bartN.doRate(subject: spamMap, censor: true);
     
     // Rebuild map again
     allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
@@ -314,7 +319,7 @@ void main() async {
     // Lisa censored Bart's censorship of the URL.
     // So the URL should NOT be censored anymore.
     expect(aggregation3.censored, contains(bartCensorship.token));
-    expect(aggregation3.censored, isNot(contains(spamUrl)));
+    expect(aggregation3.censored, isNot(contains(spamToken)));
     expect(aggregation3.statements.map((s) => s.token), contains(homerRate.token));
   });
 
@@ -347,8 +352,9 @@ void main() async {
     await homerN.doFollow(bart.token, {newsContext: 1});
 
     // Bart's delegate signs a content statement
-    final String news = 'https://news.com/1';
-    await bartDelegate.doRate(subject: news, recommend: true);
+    final Json newsMap = {'contentType': 'url', 'url': 'https://news.com/1'};
+    final String newsToken = getToken(newsMap);
+    await bartDelegate.doRate(subject: newsMap, recommend: true);
 
     final ContentResult allStatementsByToken = buildContentResult([homer, homerN, bart, bartDelegate].where((k) => k.isDelegate));
 
@@ -371,7 +377,7 @@ void main() async {
     );
 
     // Bart's delegate's statement should be included
-    expect(aggregation.statements.any((s) => s.subjectToken == news), isTrue);
+    expect(aggregation.statements.any((s) => s.subjectToken == newsToken), isTrue);
   });
 
   test('V2 Content Aggregation: Proximity-Based Censorship (Censor-the-Censor)', () async {
@@ -403,14 +409,15 @@ void main() async {
     final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, 'news');
 
     // 1. Bart rates a spam URL
-    final String spamUrl = 'https://spam.com';
-    final ContentStatement spamRate = await bartN.doRate(subject: spamUrl, recommend: true);
+    final Json spamMap = {'contentType': 'url', 'url': 'https://spam.com'};
+    final String spamToken = getToken(spamMap);
+    final ContentStatement spamRate = await bartN.doRate(subject: spamMap, recommend: true);
     
     // 2. Lisa censors Bart's rating statement
     await lisaN.doRate(subject: spamRate.token, censor: true);
 
     // 3. Homer also rates the spam URL (he likes it)
-    final ContentStatement homerRate = await homerN.doRate(subject: spamUrl, recommend: true);
+    final ContentStatement homerRate = await homerN.doRate(subject: spamMap, recommend: true);
 
     // Rebuild map
     allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
@@ -424,14 +431,14 @@ void main() async {
 
     // Lisa censored Bart's statement, so Bart's rating should be gone.
     expect(aggregation.censored, contains(spamRate.token));
-    expect(aggregation.censored, isNot(contains(spamUrl)));
+    expect(aggregation.censored, isNot(contains(spamToken)));
     
     final Set<String> remainingTokens = aggregation.statements.map((s) => s.token).toSet();
     expect(remainingTokens, contains(homerRate.token));
     expect(remainingTokens, isNot(contains(spamRate.token)));
 
     // 4. Now Bart censors the URL itself
-    final ContentStatement bartCensorship = await bartN.doRate(subject: spamUrl, censor: true);
+    final ContentStatement bartCensorship = await bartN.doRate(subject: spamMap, censor: true);
     
     // Rebuild map
     allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((k) => k.isDelegate));
@@ -444,7 +451,7 @@ void main() async {
     );
 
     // Now the URL is censored by Bart.
-    expect(aggregation2.censored, contains(spamUrl));
+    expect(aggregation2.censored, contains(spamToken));
 
     // 5. Lisa censors Bart's censorship statement
     await lisaN.doRate(subject: bartCensorship.token, censor: true);
@@ -462,7 +469,7 @@ void main() async {
     // Lisa censored Bart's censorship of the URL.
     // So the URL should NOT be censored anymore.
     expect(aggregation3.censored, contains(bartCensorship.token));
-    expect(aggregation3.censored, isNot(contains(spamUrl)));
+    expect(aggregation3.censored, isNot(contains(spamToken)));
     expect(aggregation3.statements.map((s) => s.token), contains(homerRate.token));
   });
 
@@ -494,9 +501,13 @@ void main() async {
 
     final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, newsContext);
 
-    final String subject1 = 'https://news.com/1';
-    final String subject2 = 'https://news.com/2';
-    final String subject3 = 'https://news.com/3';
+    final Json subject1 = {'contentType': 'url', 'url': 'https://news.com/1'};
+    final Json subject2 = {'contentType': 'url', 'url': 'https://news.com/2'};
+    final Json subject3 = {'contentType': 'url', 'url': 'https://news.com/3'};
+
+    final String subject1Token = getToken(subject1);
+    final String subject2Token = getToken(subject2);
+    final String subject3Token = getToken(subject3);
 
     // 1. Bart equates 1 and 2
     final ContentStatement equate12 = await bartN.doRelate(ContentVerb.equate, subject: subject1, other: subject2);
@@ -562,7 +573,7 @@ void main() async {
 
     final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, newsContext);
 
-    final Map<String, dynamic> subject1 = {'url': 'https://news.com/1', 'title': 'News 1'};
+    final Map<String, dynamic> subject1 = {'contentType': 'url', 'url': 'https://news.com/1', 'title': 'News 1'};
     final String sToken = getToken(subject1);
     final String subject2 = sToken; // Use the actual token
 

@@ -1,10 +1,23 @@
-# Current Activity: V2 Rewrite
+# Current Activity:
 
-CredentialsDisplay cleanup:
-The code in place is Kludgey.
-I want to show the current identity and delegate keys that SignInState whenever they change (unless setting_type: skipCredentials)
-I think a snackbar would be cleaner than the current attempt at not exactly modal dialogs over some kind of "_topRightOverlayEntry".
-It would also be cleaner if something listened to those state changes instead of having them hard coded into the code paths
+Clean up the code and docs, especially regarding subject equivalence.
+Address several bugs and misunderstandings related to subject equivalence
+Some of the code is suspect or not clear even though no bug or failing test has been found.
+
+Current, known bugs:
+- Can't see who's like (or dislike) that is on the ContentCard.
+
+Plan:
+- update the spec regarding what we should see where (likes, related content, equivalent content, ..):
+- update the code docs regarding the model classes like SubjectAggregation.
+- upgrade the code
+  - leverage Dart typing: IdentityKey, DelegateKey.
+  - Add TODOs
+  - Address TODOs
+- add more tests
+  - if the fail, fix the code
+
+
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
@@ -17,6 +30,7 @@ It would also be cleaner if something listened to those state changes instead of
   - Reach goal: while KeyInfoDetail dialog is up
 
 BUGS:
+- skipCredentialDisplay doesn't skip when switching Poser, Hipster, Jock
 - images
   - YouTube
   - NYT

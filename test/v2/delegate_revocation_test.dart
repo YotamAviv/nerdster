@@ -309,7 +309,7 @@ void main() {
     final delegateKey = DelegateKey(boD1.token);
     final contentResult = ContentResult(
       delegateContent: {
-        delegateKey: [sFollow as ContentStatement],
+        delegateKey: [sFollow],
       },
     );
 

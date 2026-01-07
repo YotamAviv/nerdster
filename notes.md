@@ -8,7 +8,7 @@ AI NOTE: This is my (the human) file with my own notes.
 # Misc...
 ?fire=emulator
 ?fire=emulator&skipCredentialsDisplay
-?fire=fake&demo=egosCircle
+?fire=fake&demo=egosCircle&skipCredentialsDisplay
 &netView=true
 
 ?identity={"crv": "Ed25519","kty": "OKP","x": "Sf-EQHCY94WB_4QFzEQWkO2SYFNTBgtfsc-Ic25oL84"}&skipVerify=false&dev=true

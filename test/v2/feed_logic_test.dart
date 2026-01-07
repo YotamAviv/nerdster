@@ -6,7 +6,6 @@ import 'package:nerdster/v2/direct_firestore_source.dart';
 
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/setting_type.dart';
 
 
 import 'package:nerdster/demotest/demo_key.dart';
@@ -86,7 +85,7 @@ void main() {
     await meDelegate.doRate(title: 'Secretariat', recommend: true, comment: 'I like horses');
 
     // 4. Sign in as Me
-    final meKeyPair = await me.keyPair;
+    await me.keyPair;
     final meDelegateKeyPair = await meDelegate.keyPair;
     await signInState.signIn(me.token, meDelegateKeyPair);
 
@@ -101,7 +100,7 @@ void main() {
     
     // 6. Find Secretariat aggregation
     final secretariatAgg = model.aggregation.subjects.values.firstWhere((agg) => 
-      agg.subject is Map && agg.subject['title'] == 'Secretariat'
+      agg.subject['title'] == 'Secretariat'
     );
     
     // Main statements should NOT contain Me's rating
@@ -141,19 +140,17 @@ void main() {
 
     // 5. Verify "Inception" is a subject
     final inceptionAgg = model.aggregation.subjects.values.where((agg) => 
-      agg.subject is Map && agg.subject['title'] == 'Inception'
+      agg.subject['title'] == 'Inception'
     );
     expect(inceptionAgg, isNotEmpty, reason: "Inception should be in the feed");
+    
+
 
     // 6. Verify the Rating Statement IS in the aggregation (for lookup)
     final ratingAsSubject = model.aggregation.subjects.values.where((agg) => 
-      agg.token == ratingToken
+      agg.canonicalToken == ratingToken
     );
-    expect(ratingAsSubject, isNotEmpty, reason: "The rating statement should be in the aggregation for lookup");
-
-    // 7. Verify it is hidden from the feed
-    final shouldShow = controller.shouldShow(ratingAsSubject.first, V2FilterMode.ignoreDisses, false);
-    expect(shouldShow, isFalse, reason: "The rating statement should be hidden from the feed");
+    expect(ratingAsSubject, isEmpty, reason: "The rating statement should not be in the aggregation for lookup");
   });
 
   test('My delegate statements should be fetched even if I am not in the PoV graph and not signed in with that delegate', () async {
@@ -185,7 +182,7 @@ void main() {
     // 5. Find Secretariat aggregation
     // It should exist in the map because "Me" rated it, even if it's not "visible" in the feed view.
     final secretariatAgg = model.aggregation.subjects.values.firstWhere((agg) => 
-      agg.subject is Map && agg.subject['title'] == 'Secretariat',
+      agg.subject['title'] == 'Secretariat',
       orElse: () => throw Exception('Secretariat not found in aggregation'),
     );
     

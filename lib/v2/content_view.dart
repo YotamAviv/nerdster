@@ -128,39 +128,21 @@ class _ContentViewState extends State<ContentView> {
       // Relate
       final model = _controller.value;
       if (model != null) {
-        var subject1 = model.aggregation.subjects[_markedSubjectToken];
-        var subject2 = model.aggregation.subjects[token];
+        final SubjectAggregation subject1 = model.aggregation.subjects[_markedSubjectToken]!;
+        final SubjectAggregation subject2 = model.aggregation.subjects[token]!;
 
-        // Fallback if subjects are missing from aggregation (e.g. they are just related tokens)
-        if (subject1 == null && _markedSubjectToken != null) {
-           subject1 = SubjectAggregation(
-             subject: _markedSubjectToken!, 
-             statements: [],
-             lastActivity: DateTime.now(),
-           );
-        }
-        if (subject2 == null) {
-           subject2 = SubjectAggregation(
-             subject: token, 
-             statements: [],
-             lastActivity: DateTime.now(),
-           );
-        }
-
-        if (subject1 != null) {
-          V2RelateDialog.show(
-            context,
-            subject1,
-            subject2,
-            model,
-            onRefresh: () {
-              _onRefresh();
-              setState(() {
-                _markedSubjectToken = null;
-              });
-            },
-          );
-        }
+        V2RelateDialog.show(
+          context,
+          subject1,
+          subject2,
+          model,
+          onRefresh: () {
+            _onRefresh();
+            setState(() {
+              _markedSubjectToken = null;
+            });
+          },
+        );
       }
     }
   }

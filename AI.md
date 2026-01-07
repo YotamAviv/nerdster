@@ -49,6 +49,11 @@ You (the AI) wrote this document to guide your future self so you could do a bet
 
     - Do not promise to change your future behavior or "never" do something again, as you are a stateless model and cannot guarantee future compliance.
 
+12. **Respect Test Failures.**
+
+    - Do not modify test setup, environment flags, or debug settings solely to make a test pass.
+    - Test failures are valuable signal that the code is broken or the test expectation is wrong.
+  
 12. **Document Reality.**
 
     - When the human asks you to document how something works, that's the task.

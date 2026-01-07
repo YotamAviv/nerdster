@@ -53,7 +53,7 @@ class _ContentCardState extends State<ContentCard> {
   @override
   void didUpdateWidget(ContentCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.aggregation.token != widget.aggregation.token) {
+    if (oldWidget.aggregation.canonicalToken != widget.aggregation.canonicalToken) {
       _metadata = null;
       _fetchMetadata();
     }
@@ -61,9 +61,9 @@ class _ContentCardState extends State<ContentCard> {
 
   Future<void> _fetchMetadata() async {
     final subject = widget.aggregation.subject;
-    if (subject is Map && (subject.containsKey('url') || subject.containsKey('title'))) {
+    if (subject.containsKey('url') || subject.containsKey('title')) {
       await fetchImages(
-        subject: Map<String, dynamic>.from(subject),
+        subject: subject,
         onResult: (result) {
           if (mounted) {
             setState(() {
@@ -160,17 +160,15 @@ class _ContentCardState extends State<ContentCard> {
   @override
   Widget build(BuildContext context) {
     final subject = widget.aggregation.subject;
-    final String title = (subject is Map)
-        ? (subject['title'] ?? 'Untitled')
-        : widget.model.labeler.getLabel(subject.toString());
-    final String type = (subject is Map) ? (subject['contentType'] ?? 'UNKNOWN') : 'IDENTITY';
+    final String title = subject['title']!;
+    final String type = subject['contentType']!;
 
     String? metaImage = _metadata?.image;
     if (metaImage != null && metaImage.isEmpty) metaImage = null;
 
     final imageUrl = metaImage ??
         getFallbackImageUrl(
-          (subject is Map) ? subject['url'] : null,
+          subject['url'],
           type,
           title,
           tags: widget.aggregation.tags.toList(),
@@ -238,17 +236,11 @@ class _ContentCardState extends State<ContentCard> {
                             InkWell(
                               onTap: () {
                                 final subject = widget.aggregation.subject;
-                                String? url;
-                                if (subject is Map) {
-                                  url = subject['url'];
-                                  if (url == null) {
-                                    final values = subject.values.where((v) => v != null).join(' ');
-                                    url =
-                                        'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
-                                  }
-                                } else {
+                                String? url = subject['url'];
+                                if (url == null) {
+                                  final values = subject.values.where((v) => v != null).join(' ');
                                   url =
-                                      'https://www.google.com/search?q=${Uri.encodeComponent(title)}';
+                                      'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
                                 }
                                 launchUrl(Uri.parse(url));
                               },
@@ -381,7 +373,7 @@ class _ContentCardState extends State<ContentCard> {
 
     // 1. Equivalents
     final equivalentTokens = widget.model.aggregation.equivalence.entries
-        .where((e) => e.value == widget.aggregation.token && e.key != widget.aggregation.token)
+        .where((e) => e.value == widget.aggregation.canonicalToken && e.key != widget.aggregation.canonicalToken)
         .map((e) => e.key)
         .toSet();
 
@@ -393,7 +385,7 @@ class _ContentCardState extends State<ContentCard> {
         if (equivalentTokens.contains(s.subjectToken)) {
           final subject = s.subject;
           final title = (subject is Map)
-              ? (subject['title'] ?? 'Untitled')
+              ? subject['title']!
               : widget.model.labeler.getLabel(subject.toString());
           tokenToTitle[s.subjectToken] = title;
         }
@@ -405,9 +397,7 @@ class _ContentCardState extends State<ContentCard> {
           final agg = widget.model.aggregation.subjects[token];
           if (agg != null) {
             final subject = agg.subject;
-            final title = (subject is Map)
-                ? (subject['title'] ?? 'Untitled')
-                : widget.model.labeler.getLabel(subject.toString());
+            final title = subject['title']!;
             tokenToTitle[token] = title;
           } else {
             tokenToTitle[token] = widget.model.labeler.getLabel(token);
@@ -422,7 +412,7 @@ class _ContentCardState extends State<ContentCard> {
 
     // 2. Related
     final relatedTokens = widget.aggregation.related
-        .where((token) => widget.model.aggregation.equivalence[token] != widget.aggregation.token)
+        .where((token) => widget.model.aggregation.equivalence[token] != widget.aggregation.canonicalToken)
         .toList();
 
     for (final token in relatedTokens) {
@@ -430,9 +420,7 @@ class _ContentCardState extends State<ContentCard> {
       String title;
       if (relatedAgg != null) {
         final subject = relatedAgg.subject;
-        title = (subject is Map)
-            ? (subject['title'] ?? 'Untitled')
-            : widget.model.labeler.getLabel(subject.toString());
+        title = subject['title']!;
       } else {
         title = widget.model.labeler.getLabel(token);
       }
@@ -539,16 +527,16 @@ class _ContentCardState extends State<ContentCard> {
             visualDensity: VisualDensity.compact,
             icon: Icon(
               Icons.link,
-              color: widget.markedSubjectToken == widget.aggregation.token
+              color: widget.markedSubjectToken == widget.aggregation.canonicalToken
                   ? Colors.orange
                   : Colors.grey,
             ),
-            tooltip: widget.markedSubjectToken == widget.aggregation.token
+            tooltip: widget.markedSubjectToken == widget.aggregation.canonicalToken
                 ? 'Unmark'
                 : 'Mark to Relate/Equate',
             onPressed: () async {
               if (bb(await checkSignedIn(context, trustGraph: widget.model.trustGraph))) {
-                widget.onMark!(widget.aggregation.token);
+                widget.onMark!(widget.aggregation.canonicalToken);
               }
             },
           ),

@@ -138,7 +138,6 @@ class ContentBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    assert(aggregation.subject! is Json, 'Unexpected: ${Jsonish.find(aggregation.subject)}');
     final Json subject = aggregation.subject;
     final String title = subject['title'];
     final String type = subject['contentType'];
@@ -149,7 +148,8 @@ class ContentBox extends StatelessWidget {
         subject['images'] != null ? List<String>.from(subject['images']) : [];
 
     return Dismissible(
-      key: Key(aggregation.token),
+      // TODO: Careful here. Should we use getToken(aggregation.subject) instead?
+      key: Key(aggregation.canonicalToken),
       background: Container(
         color: Colors.green,
         alignment: Alignment.centerLeft,

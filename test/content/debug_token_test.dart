@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nerdster/content/content_types.dart';
+import '../test_utils.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/prefs.dart';
@@ -17,18 +19,18 @@ void main() {
       "x": "UYB3b66cl4JFkKy3REWI2TvBNc6q2z9-ghrFoneM9eg"
     };
     
-    final Map<String, dynamic> subjectObj = {
-      'contentType': 'resource',
-      'title': 'Test Subject',
-      'url': 'https://example.com/test'
-    };
+    final Map<String, dynamic> subjectObj = createTestSubject(
+      type: ContentType.resource,
+      title: 'Test Subject',
+      url: 'https://example.com/test',
+    );
     final String subjectToken = getToken(subjectObj);
 
-    final Map<String, dynamic> otherObj = {
-      'contentType': 'resource',
-      'title': 'Other Subject',
-      'url': 'https://example.com/other'
-    };
+    final Map<String, dynamic> otherObj = createTestSubject(
+      type: ContentType.resource,
+      title: 'Other Subject',
+      url: 'https://example.com/other',
+    );
     final String otherToken = getToken(otherObj);
 
     // Test both settings

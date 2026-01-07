@@ -24,8 +24,8 @@ import 'package:nerdster/v2/delegates.dart';
 ///      with prime notation (e.g., "Bob'", "Bob''") to indicate their status.
 class V2Labeler {
   final TrustGraph graph;
-  final DelegateResolver? delegateResolver;
-  final String? meIdentityToken;
+  final DelegateResolver? delegateResolver; // TODO: Why allow null?
+  final String? meIdentityToken; // TODO: Why allow null? Use IdentityToken
   final Map<String, String> _tokenToName = {};
   final Map<String, Set<String>> _tokenToAllNames = {};
   final Set<String> _usedNames = {};
@@ -171,6 +171,10 @@ class V2Labeler {
     return token.length > 8 ? token.substring(0, 8) : token;
   }
 
+  /// TODO: I don't like this where token is identity key or delegate key.
+  /// TODO: I don't like that this is in Labeler. Get canonical identity of equivalent
+  /// CONSIDER: Leverage Dart typing: IdentityKey/DelegateKey
+  /// identities from Graph, of delegate keys frmo delegateResolver.
   /// Returns the canonical identity for a given token (key or delegate).
   String getIdentityForToken(String token) {
     if (delegateResolver != null) {

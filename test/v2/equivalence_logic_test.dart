@@ -16,6 +16,8 @@ import 'package:nerdster/fire_choice.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 
+import 'package:flutter_test/flutter_test.dart';
+
 void main() async {
   fireChoice = FireChoice.fake;
   FireFactory.register(kOneofusDomain, FakeFirebaseFirestore(), null);
@@ -49,9 +51,8 @@ void main() async {
     final t1 = await alice.trust(charlie, moniker: 'charlie');
 
     final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.token), {
-      // This works, too. See matching comment above.
       // alice.token: alice.trustStatements.toList(),
-      alice.token: [t1, t2],
+      alice.token: alice.trustStatements.toList(),
       bob.token: bob.trustStatements.toList(),
       charlie.token: charlie.trustStatements.toList(),
     });
@@ -59,9 +60,19 @@ void main() async {
     final DelegateResolver delegateResolver = DelegateResolver(graph);
 
     // Subjects
-    final String sA = 'https://example.com/A';
-    final String sB = 'https://example.com/B';
-    final String sC = 'https://example.com/C';
+    final Json sA = {'contentType': 'article', 'title': 'A', 'url': 'https://example.com/A'};
+    final Json sB = {'contentType': 'article', 'title': 'B', 'url': 'https://example.com/B'};
+    final Json sC = {'contentType': 'article', 'title': 'C', 'url': 'https://example.com/C'};
+
+    final String sAToken = getToken(sA);
+    final String sBToken = getToken(sB);
+    final String sCToken = getToken(sC);
+
+    // Define subjects by rating them (so their Map definition exists in the graph)
+    await aliceN.doRate(subject: sA, recommend: true);
+    await aliceN.doRate(subject: sB, recommend: true);
+    await aliceN.doRate(subject: sC, recommend: true);
+    // Note: It doesn't matter who rates them, as long as someone in the graph does.
 
     // Statements
     // Alice says A == B
@@ -98,9 +109,9 @@ void main() async {
     final ContentAggregation aggAlice =
         reduceContentAggregation(netAlice, graph, delegateResolver, contentResult);
 
-    final String? canonA = aggAlice.equivalence[sA];
-    final String? canonB = aggAlice.equivalence[sB];
-    final String? canonC = aggAlice.equivalence[sC];
+    final String? canonA = aggAlice.equivalence[sAToken];
+    final String? canonB = aggAlice.equivalence[sBToken];
+    final String? canonC = aggAlice.equivalence[sCToken];
 
     // Expectation: A == B, but B != C (because Charlie says dontEquate B-C and Charlie > Bob)
     expect(canonA, isNotNull);

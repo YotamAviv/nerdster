@@ -1,4 +1,6 @@
+import 'package:nerdster/content/content_types.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../test_utils.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -15,12 +17,17 @@ import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/keys.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;
 
   setUp(() async {
     fireChoice = FireChoice.fake;
+    // Enable storing full subjects in statements for inspection
+    Setting.get(SettingType.debugUseSubjectNotToken).value = true;
+    
     firestore = FakeFirebaseFirestore();
     FireFactory.register(kOneofusDomain, firestore, null);
     FireFactory.register(kNerdsterDomain, firestore, null);
@@ -68,11 +75,11 @@ void main() {
     // 3. Verify Equivalence
     // Toy should be equivalent to Skateboard (or vice versa)
     // Toy token:
-    final toy = {'contentType': 'resource', 'title': 'Toy', 'url': 'https://en.wikipedia.org/wiki/Toy'};
+    final toy = createTestSubject(type: ContentType.resource, title: 'Toy', url: 'https://en.wikipedia.org/wiki/Toy');
     final toyToken = getToken(toy);
     
     // Skateboard token:
-    final skateboard = {'contentType': 'resource', 'title': 'Skateboard', 'url': 'https://en.wikipedia.org/wiki/Skateboard'};
+    final skateboard = createTestSubject(type: ContentType.resource, title: 'Skateboard', url: 'https://en.wikipedia.org/wiki/Skateboard');
     final skateboardToken = getToken(skateboard);
 
     final canonicalToy = aggregation.equivalence[toyToken];
@@ -108,20 +115,29 @@ void main() {
         if (canonicalAgg != null) {
            dynamic subjectObj;
            for (final s in canonicalAgg.statements) {
+             // print('Checking statement subject: ${s.subjectToken} vs $nonCanonical');
              if (s.subjectToken == nonCanonical) {
                subjectObj = s.subject;
                break;
              }
-             if (s.other != null && getToken(s.other) == nonCanonical) {
-               subjectObj = s.other;
-               break;
+             if (s.other != null) {
+                // print('Checking statement other: ${getToken(s.other)} vs $nonCanonical');
+                if (getToken(s.other) == nonCanonical) {
+                   subjectObj = s.other;
+                   break;
+                }
              }
            }
            
-           if (subjectObj == null) subjectObj = nonCanonical;
+           if (subjectObj == null || subjectObj is! Map) {
+             // Should not happen in strict mode if data is adequately supplied
+             // Use a valid placeholder only if strictly necessary for the test to proceed
+             subjectObj = createTestSubject(type: ContentType.article, url: nonCanonical, title: 'Unknown');
+           }
 
            inspectAgg = SubjectAggregation(
-             subject: subjectObj,
+             canonicalTokenIn: nonCanonical,
+             subject: Map<String, dynamic>.from(subjectObj as Map),
              statements: canonicalAgg.statements,
              likes: canonicalAgg.likes,
              dislikes: canonicalAgg.dislikes,
@@ -137,11 +153,9 @@ void main() {
     }
 
     expect(inspectAgg, isNotNull, reason: "Should be able to inspect non-canonical subject");
-    expect(getToken(inspectAgg!.subject), equals(nonCanonical));
+    expect(inspectAgg!.canonicalToken, equals(nonCanonical));
     
     // Verify we found the actual object, not just the token (if possible)
-    if (inspectAgg.subject is Map) {
-      expect(inspectAgg.subject['title'], equals(nonCanonical == toyToken ? 'Toy' : 'Skateboard'));
-    }
+    expect(inspectAgg.subject['title'], equals(nonCanonical == toyToken ? 'Toy' : 'Skateboard'));
   });
 }

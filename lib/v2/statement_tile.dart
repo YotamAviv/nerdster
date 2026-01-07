@@ -10,6 +10,7 @@ import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 
+// Question: Do ... canonical/equivalent..?
 class StatementTile extends StatelessWidget {
   final ContentStatement statement;
   final V2FeedModel model;
@@ -44,11 +45,11 @@ class StatementTile extends StatelessWidget {
     final label = model.labeler.getLabel(s.iToken);
 
     // Find the aggregation for this statement (s)
-    final canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
+    final String canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
     final statementAgg = model.aggregation.subjects[canonicalToken];
     
     // Combine statements from the main aggregation (if any are threaded there) and the statement's own aggregation
-    final repliesInParent = aggregation.statements.where((r) => r.subjectToken == s.token).toList();
+    final repliesInParent = aggregation.statements.where((ContentStatement r) => r.subjectToken == s.token).toList();
     final combinedStatements = [
         ...repliesInParent,
         ...(statementAgg?.statements ?? <ContentStatement>[]),
@@ -99,13 +100,15 @@ class StatementTile extends StatelessWidget {
         // If the statement's subject is THIS card, then the target is s.other
         // If the statement's other is THIS card, then the target is s.subject
         
-        if (s.subjectToken == aggregation.token) {
+        // TODO: Careful here. Should we use getToken(aggregation.subject) instead of token?
+        if (s.subjectToken == aggregation.canonicalToken) {
            otherToken = sOtherToken;
            // Try to get title from s.other if it's a map
            if (s.other is Map && s.other['title'] != null) {
              displayText = s.other['title'];
            }
-        } else if (sOtherToken == aggregation.token) {
+        // TODO: Careful here. Should we use getToken(aggregation.subject) instead of token?
+        } else if (sOtherToken == aggregation.canonicalToken) {
            otherToken = s.subjectToken;
            // Try to get title from s.subject if it's a map
            if (s.subject is Map && s.subject['title'] != null) {
@@ -268,6 +271,7 @@ class StatementTile extends StatelessWidget {
               ),
             ],
           ),
+          // BUG: We need to show who made ratings without comments.. who's like, dislike, etc.
           if (s.comment != null && s.comment!.isNotEmpty)
              Padding(
                padding: const EdgeInsets.only(left: 0.0, top: 2.0),

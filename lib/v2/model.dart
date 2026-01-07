@@ -175,9 +175,11 @@ class FollowNetwork {
 
 /// Aggregated data for a single subject (or equivalence group).
 class SubjectAggregation {
-  // TODO(aviv): subject should alwways be Json (non-null, Map<String, dynamic>, and with contentType)
-  final dynamic subject; // The subject JSON or token
-  final List<ContentStatement> statements;
+  // A complete proper Json subject
+  // must have "contentType" which must be a ContentType name (see: enum ContentType)
+  // and all of those have a "title" field.
+  final Json subject;
+  final List<ContentStatement> statements; // Who needs all statements?
   final Set<String> tags;
   final int likes;
   final int dislikes;
@@ -187,9 +189,12 @@ class SubjectAggregation {
   final List<ContentStatement> povStatements;
 
   final bool isCensored;
+  // TODO: Ensure that canonicalToken is accurate
+  final String canonicalToken;
 
   SubjectAggregation({
-    this.subject,
+    required this.subject,
+    String? canonicalTokenIn,
     this.statements = const [],
     this.tags = const {},
     this.likes = 0,
@@ -199,9 +204,9 @@ class SubjectAggregation {
     this.myDelegateStatements = const [],
     this.povStatements = const [],
     this.isCensored = false,
-  });
-
-  String get token => getToken(subject);
+  }) : canonicalToken = canonicalTokenIn ?? getToken(subject) {
+    // FAILS: TODO: DOC and make sure: assert(canonicalToken == null || canonicalToken == getToken(subject));
+  }
 
   DateTime? get userDismissalTimestamp => _getDismissalTimestamp(myDelegateStatements);
   DateTime? get povDismissalTimestamp => _getDismissalTimestamp(povStatements);
@@ -227,8 +232,8 @@ class SubjectAggregation {
       // identities or about different things.
       // We need to check if *any* statement at lastActivity is a "Qualified New Activity".
       
+      // TODO: This makes no sense to me.
       final activityStatements = statements.where((s) => s.time.isAtSameMomentAs(lastActivity));
-      
       for (final activityStatement in activityStatements) {
          // Qualified New Activity:
          // - Rate with comment or recommend (true/false)

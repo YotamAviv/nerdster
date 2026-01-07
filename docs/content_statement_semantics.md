@@ -18,6 +18,19 @@ People can:
 *   state that subjects are specifically related, not related, equivalent, or not.
 *   `follow` or `block` others for the default `<nerdster>` context or for specific contexts like `music`, `news`, `local`, etc.
 
+## Subject Integrity & Tokenization
+
+Statements about high-level subjects (books, movies, URLs) **must** include the full definition of the subject (the JSON map). This ensures that anyone reading the statement knows exactly what is being discussed without needing to perform a lookup in a separate database.
+
+Exceptions:
+1.  **Statements about Statements**: When a user comments on or rates another user's statement (e.g., liking a comment), the subject is the **token** (hash) of the target statement as statements are never "high-level results" in themselves.
+2.  **Suppression & Management**: When the intent is to suppress, hide, or manage content, the **token** is sufficient. This applies to:
+    *   **Censorship**: `rate` with `censor: true`.
+    *   **Dismissal**: `rate` with `dismiss: ...` (true or snooze).
+    *   **Equivalence**: `equate` (merging a subject into another).
+
+````
+
 
 ## Verbs
 
@@ -48,10 +61,14 @@ Expresses a disposition or opinion about a subject.
     *   `recommend`: True to recommend/like.
     *   `dismiss`: True to hide/dismiss.
     *   `censor`: True to censor.
+*   **Subject**:
+    *   **High-level subjects**: Must be the full JSON object.
+        *   *Exception*: If `censor` or `dismiss` is used, the subject **token** is allowed.
+    *   **Statements**: Use the statement token (string).
 *   **Example**:
     ```json
     {
-      "rate": <subject JSON or token (token in case of censor for obvious reasons)>,
+      "rate": <subject JSON (if high-level) OR subject token (if suppressing or rating a statement)>,
       "with": {
         "recommend": true
       }
@@ -74,7 +91,7 @@ Expresses a disposition or opinion about a subject.
 *   **Example**:
     ```json
     {
-      "rate": <subject JSON or token>,
+      "rate": <subject JSON>,
       "with": {
         "dismiss": "snooze"
       }
@@ -88,22 +105,23 @@ Expresses a disposition or opinion about a subject.
 *   **Example**:
     ```json
     {
-      "relate": <Subject JSON or token>,
+      "relate": <Subject JSON>,
       "with": {
-        "otherSubject": <Other subject JSON or token>
+        "otherSubject": <Other subject JSON>
       }
     }
     ```
 
 ### `equate` / `dontEquate`
 *   **Meaning**: The `subject` is equivalent (or not) to the `otherSubject` (e.g., different URLs for the same content).
+*   **Subject**: Full JSON object preferred, but **token** is allowed (especially for the "duplicate" being merged).
 *   **`with` Clause**: Requires `otherSubject`.
 *   **Example**:
     ```json
     {
-      "equate": <Subject JSON or token>,
+      "equate": <Subject JSON>,
       "with": {
-        "otherSubject": <Other subject JSON or token>
+        "otherSubject": <Other subject JSON>
       }
     }
     ```

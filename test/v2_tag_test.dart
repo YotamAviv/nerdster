@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nerdster/content/content_types.dart';
+import 'test_utils.dart';
 import 'package:nerdster/v2/keys.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/content_logic.dart';
@@ -43,14 +45,17 @@ void main() {
         'with': {'domain': 'nerdster.org'}
       }));
 
+      final Json subject1 = {'url': 'subject1'};
+      final String subject1Token = getToken(subject1);
+
       final s1 = ContentStatement(Jsonish({
-        'rate': 'subject1',
+        'rate': subject1,
         'comment': 'Hello #world',
         'I': delegateJsonish.json,
         'time': now,
       }));
       final s2 = ContentStatement(Jsonish({
-        'rate': s1.token, // Reply to s1
+        'rate': s1.jsonish.json, // Reply to s1
         'comment': 'Reply with #tag2',
         'I': delegateJsonish.json,
         'time': now,
@@ -75,7 +80,7 @@ void main() {
         ContentResult(delegateContent: byToken),
       );
 
-      final subjectAgg = aggregation.subjects['subject1'];
+      final subjectAgg = aggregation.subjects[subject1Token];
       expect(subjectAgg, isNotNull);
       expect(subjectAgg!.tags, contains('#world'));
       expect(subjectAgg.tags, contains('#tag2'));
@@ -97,14 +102,17 @@ void main() {
         'with': {'domain': 'nerdster.org'}
       }));
 
+      final Json subject1 = {'url': 'subject1'};
+      final Json subject2 = {'url': 'subject2'};
+
       final s1 = ContentStatement(Jsonish({
-        'rate': 'subject1',
+        'rate': subject1,
         'comment': 'Co-occurrence #news #politics',
         'I': delegateJsonish.json,
         'time': now,
       }));
       final s2 = ContentStatement(Jsonish({
-        'rate': 'subject2',
+        'rate': subject2,
         'comment': 'Co-occurrence #politics #world',
         'I': delegateJsonish.json,
         'time': now,
@@ -154,14 +162,17 @@ void main() {
         'with': {'domain': 'nerdster.org'}
       }));
 
+      final Json subject1 = {'url': 'subject1'};
+      final Json subject2 = {'url': 'subject2'};
+
       final s1 = ContentStatement(Jsonish({
-        'rate': 'subject1',
+        'rate': subject1,
         'comment': '#common #rare',
         'I': delegateJsonish.json,
         'time': now,
       }));
       final s2 = ContentStatement(Jsonish({
-        'rate': 'subject2',
+        'rate': subject2,
         'comment': '#common',
         'I': delegateJsonish.json,
         'time': now,
@@ -207,8 +218,8 @@ void main() {
       }));
 
       // Use valid subjects that have a contentType so they pass the filter
-      final subject1 = {'contentType': 'test', 'id': 'sub1'};
-      final subject2 = {'contentType': 'test', 'id': 'sub2'};
+      final subject1 = createTestSubject(type: ContentType.article, url: 'https://sub1.com')..['id'] = 'sub1';
+      final subject2 = createTestSubject(type: ContentType.article, url: 'https://sub2.com')..['id'] = 'sub2';
 
       final s1 = ContentStatement(Jsonish({
         'rate': subject1,
