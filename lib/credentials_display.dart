@@ -39,26 +39,28 @@ class CredentialsDisplay extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Column(
+                    Expanded(
+                        child: Column(
                       children: [
-                        Text('Identity'),
+                        const Text('Identity', textAlign: TextAlign.center),
                         SizedBox(
                             width: w,
                             height: h,
                             child: JsonQrDisplay(identityJson,
                                 interpret: interpret, interpreter: interpreter))
                       ],
-                    ),
-                    Column(
+                    )),
+                    Expanded(
+                        child: Column(
                       children: [
-                        Text('Nerdster delegate'),
+                        const Text('Nerdster delegate', textAlign: TextAlign.center),
                         SizedBox(
                             width: w,
                             height: h,
                             child: JsonQrDisplay(delegateJson,
                                 interpret: interpret, interpreter: interpreter))
                       ],
-                    ),
+                    )),
                   ],
                 ),
                 if (showDontShow)

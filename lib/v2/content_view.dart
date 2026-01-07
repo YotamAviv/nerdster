@@ -30,8 +30,8 @@ class ContentView extends StatefulWidget {
 
 class _ContentViewState extends State<ContentView> {
   late final V2FeedController _controller;
-  String? _currentPov; // TODO: Use ContentKey
-  String? _markedSubjectToken; // TODO: Use ContentKey
+  String? _currentPov; // TODO: IdentityKey
+  ContentKey? _markedSubjectToken;
   final ValueNotifier<bool> _showFilters = ValueNotifier(false);
 
   @override
@@ -105,7 +105,7 @@ class _ContentViewState extends State<ContentView> {
     _controller.tagFilter = tag;
   }
 
-  void _onMark(String? token) { // TODO: Use ContentKey
+  void _onMark(ContentKey? token) {
     if (token == null) {
       setState(() {
         _markedSubjectToken = null;
@@ -128,8 +128,8 @@ class _ContentViewState extends State<ContentView> {
       final model = _controller.value;
       if (model != null) {
         final SubjectAggregation subject1 =
-            model.aggregation.subjects[ContentKey(_markedSubjectToken!)]!;
-        final SubjectAggregation subject2 = model.aggregation.subjects[ContentKey(token)]!;
+            model.aggregation.subjects[_markedSubjectToken!]!;
+        final SubjectAggregation subject2 = model.aggregation.subjects[token]!;
 
         V2RelateDialog.show(
           context,

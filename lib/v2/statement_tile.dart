@@ -16,9 +16,9 @@ class StatementTile extends StatelessWidget {
   final int depth;
   final SubjectAggregation aggregation;
   final ValueChanged<String?>? onGraphFocus;
-  final ValueChanged<String>? onMark;
-  final String? markedSubjectToken;
-  final ValueChanged<String>? onInspect;
+  final ValueChanged<ContentKey>? onMark;
+  final ContentKey? markedSubjectToken;
+  final ValueChanged<ContentKey>? onInspect;
   final VoidCallback? onRefresh;
   final ValueChanged<String>? onTagTap;
   final int? maxLines;
@@ -184,7 +184,7 @@ class StatementTile extends StatelessWidget {
                   child: InkWell(
                     onTap: () {
                       if (otherToken != null && onInspect != null) {
-                        onInspect!(otherToken!.value);
+                        onInspect!(otherToken!);
                       }
                     },
                     child: Text(

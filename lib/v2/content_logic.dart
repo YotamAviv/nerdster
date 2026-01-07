@@ -332,13 +332,13 @@ ContentAggregation reduceContentAggregation(
           }
         }
 
-        final String? signerIdentity = trustGraph.isTrusted(s.iToken)
-            ? trustGraph.resolveIdentity(s.iToken)
-            : delegateResolver.getIdentityForDelegate(s.iToken);
+        final String signerIdentity = delegateResolver.getIdentityForDelegate(s.iToken)!;
+        assert(trustGraph.isTrusted(signerIdentity));
 
         if (s.verb == ContentVerb.clear) {
           // Remove prior statements by this identity
           final toRemove = agg.statements.where((existing) {
+            assert(trustGraph.isTrusted(existing.iToken));
             final existingIdentity = trustGraph.isTrusted(existing.iToken)
                 ? trustGraph.resolveIdentity(existing.iToken)
                 : delegateResolver.getIdentityForDelegate(existing.iToken);
@@ -401,7 +401,7 @@ ContentAggregation reduceContentAggregation(
 
         List<ContentStatement> newPovStatements = agg.povStatements;
         if (signerIdentity == followNetwork.povIdentity) {
-          newPovStatements = [...newPovStatements, s];
+          newPovStatements = [...newPovStatements, s]..sort((a, b) => b.time.compareTo(a.time));
         }
 
         final DateTime lastActivity = s.time.isAfter(agg.lastActivity) ? s.time : agg.lastActivity;
@@ -410,7 +410,8 @@ ContentAggregation reduceContentAggregation(
         subjects[canonical] = SubjectAggregation(
           canonicalTokenIn: canonical,
           subject: agg.subject,
-          statements: [...agg.statements, s],
+          // TODO: We shouldn't sort.
+          statements: [...agg.statements, s]..sort((a, b) => b.time.compareTo(a.time)),
           tags: agg.tags, // Will be updated in Pass 3
           likes: likes,
           dislikes: dislikes,
@@ -468,13 +469,15 @@ ContentAggregation reduceContentAggregation(
         subjects[canonical] = agg;
       }
 
+      print('agg.myDelegateStatements(${agg.myDelegateStatements.length}).contains(s)=${agg.myDelegateStatements.contains(s)}');
+      assert(!agg.myDelegateStatements.contains(s));
       // Update myDelegateStatements
       List<ContentStatement> myDelegateStatements = agg.myDelegateStatements;
       if (s.verb == ContentVerb.clear) {
         // Clear all my previous statements on this subject
         myDelegateStatements = [];
       } else {
-        myDelegateStatements = [...myDelegateStatements, s];
+        myDelegateStatements = [...myDelegateStatements, s]..sort((a, b) => b.time.compareTo(a.time));
       }
 
       subjects[canonical] = SubjectAggregation(

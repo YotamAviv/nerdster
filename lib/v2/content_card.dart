@@ -19,8 +19,8 @@ class ContentCard extends StatefulWidget {
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String?>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
-  final String? markedSubjectToken;
-  final ValueChanged<String?>? onMark;
+  final ContentKey? markedSubjectToken;
+  final ValueChanged<ContentKey?>? onMark;
 
   const ContentCard({
     super.key,
@@ -74,7 +74,8 @@ class _ContentCardState extends State<ContentCard> {
     }
   }
 
-  void _showInspectionSheet(String token) {
+  void _showInspectionSheet(ContentKey token) {
+    // Lookup using ContentKey
     var agg = widget.model.aggregation.subjects[token];
 
     if (agg == null) {
@@ -87,18 +88,18 @@ class _ContentCardState extends State<ContentCard> {
           // Try to find the subject object for 'token' in the statements.
           dynamic subjectObj;
           for (final s in canonicalAgg.statements) {
-            if (s.subjectToken == token) {
+            if (s.subjectToken == token.value) {
               subjectObj = s.subject;
               break;
             }
-            if (s.other != null && getToken(s.other) == token) {
+            if (s.other != null && getToken(s.other) == token.value) {
               subjectObj = s.other;
               break;
             }
           }
 
           if (subjectObj == null) {
-            subjectObj = token;
+            subjectObj = token.value;
           }
 
           agg = SubjectAggregation(
@@ -331,7 +332,7 @@ class _ContentCardState extends State<ContentCard> {
                 depth: 0,
                 aggregation: widget.aggregation,
                 onGraphFocus: widget.onGraphFocus,
-                onMark: widget.onMark,
+                onMark: (token) => widget.onMark?.call(token),
                 markedSubjectToken: widget.markedSubjectToken,
                 onInspect: _showInspectionSheet,
                 onRefresh: widget.onRefresh,
@@ -405,7 +406,7 @@ class _ContentCardState extends State<ContentCard> {
       }
 
       for (final entry in tokenToTitle.entries) {
-        children.add(_buildRelationTile('=', entry.key.value, entry.value));
+        children.add(_buildRelationTile('=', entry.key, entry.value));
       }
     }
 
@@ -424,7 +425,7 @@ class _ContentCardState extends State<ContentCard> {
       } else {
         title = widget.model.labeler.getLabel(token.value);
       }
-      children.add(_buildRelationTile('≈', token.value, title));
+      children.add(_buildRelationTile('≈', token, title));
     }
 
     if (children.isEmpty) return const SizedBox.shrink();
@@ -455,7 +456,7 @@ class _ContentCardState extends State<ContentCard> {
     );
   }
 
-  Widget _buildRelationTile(String iconText, String token, String title) {
+  Widget _buildRelationTile(String iconText, ContentKey token, String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
       child: Row(
@@ -527,16 +528,16 @@ class _ContentCardState extends State<ContentCard> {
             visualDensity: VisualDensity.compact,
             icon: Icon(
               Icons.link,
-              color: widget.markedSubjectToken == widget.aggregation.canonicalToken.value
+              color: widget.markedSubjectToken == widget.aggregation.canonicalToken
                   ? Colors.orange
                   : Colors.grey,
             ),
-            tooltip: widget.markedSubjectToken == widget.aggregation.canonicalToken.value
+            tooltip: widget.markedSubjectToken == widget.aggregation.canonicalToken
                 ? 'Unmark'
                 : 'Mark to Relate/Equate',
             onPressed: () async {
               if (bb(await checkSignedIn(context, trustGraph: widget.model.trustGraph))) {
-                widget.onMark!(widget.aggregation.canonicalToken.value);
+                widget.onMark!(widget.aggregation.canonicalToken);
               }
             },
           ),
@@ -570,9 +571,9 @@ class SubjectDetailsView extends StatelessWidget {
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
-  final ValueChanged<String>? onMark;
-  final String? markedSubjectToken;
-  final ValueChanged<String>? onInspect;
+  final ValueChanged<ContentKey>? onMark;
+  final ContentKey? markedSubjectToken;
+  final ValueChanged<ContentKey>? onInspect;
 
   const SubjectDetailsView({
     super.key,

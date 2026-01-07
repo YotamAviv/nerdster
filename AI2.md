@@ -12,10 +12,9 @@ read the testing docs
 run all tests, unti and integration tests included.
 
 
-read AI.md
-run git status
-run git diff on every change
-read those changes
-Let me know if you notice anything that might be problematic.
-If not, suggest a commit message based only on the GIT diffs, not based on your memory
-Output ONLY the commit message here in this file right here:
+fix: Sort statements in ContentLogic and refactor UI to use ContentKey
+
+- Fixes 'Statements are not in descending time order' error by sorting statement lists in `reduceContentAggregation`.
+- Simplifies identity resolution in `content_logic.dart` (assumes trusted signer).
+- Fixes `RenderFlex overflowed` in `credentials_display.dart` by wrapping children in `Expanded`.
+- Refactors `ContentCard`, `ContentView`, and `StatementTile` to use `ContentKey` instead of String for tagged subjects.
