@@ -5,7 +5,7 @@ import 'package:nerdster/oneofus/keys.dart';
 
 enum GraphViewMode {
   identity, // Pure Identity Network
-  follow,   // Pure Follow Network for current context
+  follow, // Pure Follow Network for current context
 }
 
 class GraphEdgeData {
@@ -44,26 +44,21 @@ class GraphController {
   final V2FeedModel feedModel;
   GraphViewMode mode = GraphViewMode.follow;
   IdentityKey? focusedIdentity;
-  
+
   GraphController(this.feedModel);
 
   IdentityKey get povIdentity => feedModel.povToken;
 
-  /// Resolves any token to its canonical Identity Key.
-  /// This handles Delegate resolution and Identity Merge/Replacement (aliasing).
-  IdentityKey _resolve(IdentityKey token) {
-    final IdentityKey? delegateIdentity = feedModel.delegateResolver.getIdentityForDelegate(DelegateKey(token.value));
-    final IdentityKey candidate = delegateIdentity ?? token;
-
-    if (feedModel.trustGraph.isTrusted(candidate)) {
-      return feedModel.trustGraph.resolveIdentity(candidate);
+  IdentityKey _resolveAlias(IdentityKey token) {
+    if (feedModel.trustGraph.isTrusted(token)) {
+      return feedModel.trustGraph.resolveIdentity(token);
     }
-    return candidate;
+    return token;
   }
-  
+
   GraphData buildGraphData() {
     final Set<String> nodes = {};
-    final String root = _resolve(povIdentity).value;
+    final String root = _resolveAlias(povIdentity).value;
 
     if (focusedIdentity == null) {
       return GraphData(
@@ -80,7 +75,15 @@ class GraphController {
       _addFollowEdges(nodes, allEdges);
     }
 
-    final String target = _resolve(focusedIdentity!).value;
+    IdentityKey targetKey = focusedIdentity!;
+    // Handle potential delegate in focus
+    // TODO: The UI should probably resolve this before setting it on the controller
+    final IdentityKey? delegateMatch =
+        feedModel.delegateResolver.getIdentityForDelegate(DelegateKey(targetKey.value));
+    if (delegateMatch != null) {
+      targetKey = delegateMatch;
+    }
+    final String target = _resolveAlias(targetKey).value;
 
     // Reset nodes and edges to only what's needed for the paths
     nodes.clear();
@@ -90,6 +93,7 @@ class GraphController {
     final Set<GraphEdgeData> edges = {};
 
     if (mode == GraphViewMode.identity) {
+      // Identity graph paths are always key-based
       final List<List<IdentityKey>>? paths = feedModel.trustGraph.paths[IdentityKey(target)];
       if (paths != null) {
         for (final List<IdentityKey> path in paths) {
@@ -97,9 +101,10 @@ class GraphController {
         }
       }
     } else {
+      // Follow network paths are always key-based
       final List<IdentityKey>? path = feedModel.followNetwork.paths[IdentityKey(target)];
       if (path != null) {
-         _addPathToGraph(path, allEdges, nodes, edges);
+        _addPathToGraph(path, allEdges, nodes, edges);
       }
     }
 
@@ -123,16 +128,17 @@ class GraphController {
     );
   }
 
-  void _addPathToGraph(List<IdentityKey> path, List<GraphEdgeData> allEdges, Set<String> nodes, Set<GraphEdgeData> edges) {
+  void _addPathToGraph(List<IdentityKey> path, List<GraphEdgeData> allEdges, Set<String> nodes,
+      Set<GraphEdgeData> edges) {
     for (int i = 0; i < path.length - 1; i++) {
-      final String fromId = _resolve(path[i]).value;
-      final String toId = _resolve(path[i + 1]).value;
-      
+      final String fromId = _resolveAlias(path[i]).value;
+      final String toId = _resolveAlias(path[i + 1]).value;
+
       if (fromId == toId) continue;
 
       nodes.add(fromId);
       nodes.add(toId);
-      
+
       try {
         final GraphEdgeData edge = allEdges.firstWhere((e) => e.from == fromId && e.to == toId);
         edges.add(edge);
@@ -146,8 +152,15 @@ class GraphController {
     if (focusedIdentity == null) return {};
     final Set<String> keepNodes = {};
     final Set<GraphEdgeData> pathEdges = {};
-    final String target = _resolve(focusedIdentity!).value;
-    
+
+    IdentityKey targetKey = focusedIdentity!;
+    final IdentityKey? delegateMatch =
+        feedModel.delegateResolver.getIdentityForDelegate(DelegateKey(targetKey.value));
+    if (delegateMatch != null) {
+      targetKey = delegateMatch;
+    }
+    final String target = _resolveAlias(targetKey).value;
+
     if (mode == GraphViewMode.identity) {
       final List<List<IdentityKey>>? paths = feedModel.trustGraph.paths[IdentityKey(target)];
       if (paths != null) {
@@ -158,7 +171,7 @@ class GraphController {
     } else {
       final List<IdentityKey>? path = feedModel.followNetwork.paths[IdentityKey(target)];
       if (path != null) {
-         _addPathToGraph(path, data.edges, keepNodes, pathEdges);
+        _addPathToGraph(path, data.edges, keepNodes, pathEdges);
       }
     }
     return pathEdges;
@@ -168,22 +181,28 @@ class GraphController {
     final tg = feedModel.trustGraph;
 
     for (final IdentityKey issuer in tg.edges.keys) {
-      final String issuerIdentity = _resolve(issuer).value;
+      final String issuerIdentity = _resolveAlias(issuer).value;
       for (final TrustStatement s in tg.edges[issuer]!) {
-        if (s.verb == TrustVerb.trust || s.verb == TrustVerb.block || s.verb == TrustVerb.replace || s.verb == TrustVerb.delegate) {
-          final String subjectIdentity = _resolve(IdentityKey(s.subjectToken)).value;
+        if (s.verb == TrustVerb.trust ||
+            s.verb == TrustVerb.block ||
+            s.verb == TrustVerb.replace ||
+            s.verb == TrustVerb.delegate) {
+          final String subjectIdentity = _resolveAlias(IdentityKey(s.subjectToken)).value;
           final bool isNonCanonical = tg.replacements.containsKey(IdentityKey(s.subjectToken));
-          
-          final bool isConflict = tg.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
 
-          _mergeOrAddEdge(edges, GraphEdgeData(
-            from: issuerIdentity,
-            to: subjectIdentity,
-            statements: [s],
-            isIdentity: true,
-            isConflict: isConflict,
-            isNonCanonical: isNonCanonical,
-          ));
+          final bool isConflict =
+              tg.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
+
+          _mergeOrAddEdge(
+              edges,
+              GraphEdgeData(
+                from: issuerIdentity,
+                to: subjectIdentity,
+                statements: [s],
+                isIdentity: true,
+                isConflict: isConflict,
+                isNonCanonical: isNonCanonical,
+              ));
         }
       }
     }
@@ -193,19 +212,29 @@ class GraphController {
     final fn = feedModel.followNetwork;
 
     for (final IdentityKey issuerIdentity in fn.edges.keys) {
-      final String resolvedIssuer = _resolve(issuerIdentity).value;
+      final String resolvedIssuer = _resolveAlias(issuerIdentity).value;
       for (final ContentStatement s in fn.edges[issuerIdentity]!) {
-        final String subjectIdentity = _resolve(IdentityKey(s.subjectToken)).value;
-        
-        final bool isConflict = fn.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
+        // Subjects in follow network can be delegates. Resolve them.
+        IdentityKey subjectKey = IdentityKey(s.subjectToken);
+        final IdentityKey? delegateMatch =
+            feedModel.delegateResolver.getIdentityForDelegate(DelegateKey(s.subjectToken));
+        if (delegateMatch != null) {
+          subjectKey = delegateMatch;
+        }
+        final String subjectIdentity = _resolveAlias(subjectKey).value;
 
-        _mergeOrAddEdge(edges, GraphEdgeData(
-          from: resolvedIssuer,
-          to: subjectIdentity,
-          statements: [s],
-          isFollow: true,
-          isConflict: isConflict,
-        ));
+        final bool isConflict =
+            fn.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
+
+        _mergeOrAddEdge(
+            edges,
+            GraphEdgeData(
+              from: resolvedIssuer,
+              to: subjectIdentity,
+              statements: [s],
+              isFollow: true,
+              isConflict: isConflict,
+            ));
       }
     }
 
@@ -213,22 +242,24 @@ class GraphController {
       final tg = feedModel.trustGraph;
       for (final IdentityKey issuer in tg.edges.keys) {
         if (!fn.contains(issuer)) continue;
-        
-        final String issuerIdentity = _resolve(issuer).value;
-        
+
+        final String issuerIdentity = _resolveAlias(issuer).value;
+
         for (final TrustStatement s in tg.edges[issuer]!) {
           if (s.verb != TrustVerb.trust) continue;
           final IdentityKey subjectKey = IdentityKey(s.subjectToken);
           if (!fn.contains(subjectKey)) continue;
 
-          final String subjectIdentity = _resolve(subjectKey).value;
+          final String subjectIdentity = _resolveAlias(subjectKey).value;
 
-          _mergeOrAddEdge(edges, GraphEdgeData(
-            from: issuerIdentity,
-            to: subjectIdentity,
-            statements: [s],
-            isIdentity: true,
-          ));
+          _mergeOrAddEdge(
+              edges,
+              GraphEdgeData(
+                from: issuerIdentity,
+                to: subjectIdentity,
+                statements: [s],
+                isIdentity: true,
+              ));
         }
       }
     }
@@ -261,12 +292,12 @@ class GraphController {
     }
 
     for (final TrustNotification conflict in conflicts) {
-      final IdentityKey issuerKey = IdentityKey(getToken(conflict.rejectedStatement.i)); 
+      final IdentityKey issuerKey = IdentityKey(getToken(conflict.rejectedStatement.i));
       final IdentityKey subjectKey = IdentityKey(conflict.rejectedStatement.subjectToken);
 
-      final String fromId = _resolve(issuerKey).value; 
+      final String fromId = _resolveAlias(issuerKey).value;
 
-      final String toId = _resolve(subjectKey).value;
+      final String toId = _resolveAlias(subjectKey).value;
 
       if (nodes.contains(fromId) && nodes.contains(toId)) {
         GraphEdgeData? match;
