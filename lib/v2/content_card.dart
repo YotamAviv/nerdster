@@ -312,8 +312,8 @@ class _ContentCardState extends State<ContentCard> {
 
     // Sort by trust distance of the author (closest first)
     comments.sort((a, b) {
-      final distA = widget.model.labeler.graph.distances[a.iToken] ?? 999;
-      final distB = widget.model.labeler.graph.distances[b.iToken] ?? 999;
+      final distA = widget.model.labeler.graph.distances[IdentityKey(a.iToken)] ?? 999;
+      final distB = widget.model.labeler.graph.distances[IdentityKey(b.iToken)] ?? 999;
       return distA.compareTo(distB);
     });
 
@@ -602,8 +602,8 @@ class SubjectDetailsView extends StatelessWidget {
     }).toList();
 
     roots.sort((a, b) {
-      final distA = model.labeler.graph.distances[a.iToken] ?? 999;
-      final distB = model.labeler.graph.distances[b.iToken] ?? 999;
+      final distA = model.labeler.graph.distances[IdentityKey(a.iToken)] ?? 999;
+      final distB = model.labeler.graph.distances[IdentityKey(b.iToken)] ?? 999;
       return distA.compareTo(distB);
     });
 
@@ -635,7 +635,7 @@ class SubjectDetailsView extends StatelessWidget {
       onTagTap: onTagTap,
     ));
 
-    final canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
+    final canonicalToken = model.aggregation.equivalence[ContentKey(s.token)] ?? ContentKey(s.token);
     final replies = [
       ...aggregation.statements.where((other) => other.subjectToken == s.token),
       ...(model.aggregation.subjects[canonicalToken]?.statements ?? []),
@@ -645,8 +645,8 @@ class SubjectDetailsView extends StatelessWidget {
     final uniqueReplies = replies.where((r) => seen.add(r.token)).toList();
 
     uniqueReplies.sort((a, b) {
-      final distA = model.labeler.graph.distances[a.iToken] ?? 999;
-      final distB = model.labeler.graph.distances[b.iToken] ?? 999;
+      final distA = model.labeler.graph.distances[IdentityKey(a.iToken)] ?? 999;
+      final distB = model.labeler.graph.distances[IdentityKey(b.iToken)] ?? 999;
       return distA.compareTo(distB);
     });
 
@@ -657,7 +657,7 @@ class SubjectDetailsView extends StatelessWidget {
 }
 
 bool _shouldShowStatement(ContentStatement s, V2FeedModel model) {
-  final canonicalToken = model.aggregation.equivalence[s.token] ?? s.token;
+  final canonicalToken = model.aggregation.equivalence[ContentKey(s.token)] ?? ContentKey(s.token);
   final subjectAgg = model.aggregation.subjects[canonicalToken];
   if (subjectAgg == null) return true;
 

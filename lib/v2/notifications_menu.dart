@@ -7,6 +7,7 @@
 //    into a `V2FeedController` required by `NerdyGraphView`.
 // 4. Launch `NerdyGraphView` in a dialog or new screen when the buttons are clicked.
 
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:nerdster/menus.dart';
@@ -26,7 +27,6 @@ import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/source_error.dart';
 
 class V2NotificationsMenu extends StatelessWidget {
@@ -111,7 +111,7 @@ class V2NotificationsMenu extends StatelessWidget {
     // Check for "Not in network" warning
     final myIdentity = signInState.identity;
     if (b(myIdentity) && followNetwork != null) {
-      final canonicalIdentity = trustGraph?.resolveIdentity(myIdentity!) ?? myIdentity!;
+      final canonicalIdentity = trustGraph?.resolveIdentity(IdentityKey(myIdentity!)) ?? IdentityKey(myIdentity!);
       if (!followNetwork!.identities.contains(canonicalIdentity)) {
         items.add(MenuItemButton(
           onPressed: () {
@@ -134,7 +134,7 @@ class V2NotificationsMenu extends StatelessWidget {
     final myDelegate = signInState.delegate;
     if (b(myDelegate) && trustGraph != null) {
       // Check if the delegate key is replaced
-      if (trustGraph!.replacements.containsKey(myDelegate)) {
+      if (trustGraph!.replacements.containsKey(IdentityKey(myDelegate!))) {
          items.add(MenuItemButton(
           onPressed: () {
             showDialog(
@@ -149,11 +149,11 @@ class V2NotificationsMenu extends StatelessWidget {
           },
           child: const Text("⛔ Your delegate key is revoked", style: TextStyle(color: Colors.red)),
         ));
-      } else if (b(myIdentity) && trustGraph!.isTrusted(myIdentity!)) {
+      } else if (b(myIdentity) && trustGraph!.isTrusted(IdentityKey(myIdentity!))) {
         // Check if the delegate key is associated with the identity
         // We can check if the identity has a 'delegate' statement for this key in the graph edges
         bool isAssociated = false;
-        final statements = trustGraph!.edges[myIdentity];
+        final statements = trustGraph!.edges[IdentityKey(myIdentity!)];
         if (statements != null) {
           for (final s in statements) {
             if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
@@ -381,7 +381,7 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
   CachedSource<TrustStatement> get trustSource => CachedSource(DummySource<TrustStatement>());
 
   @override
-  Future<void> refresh(String? povIdentityToken, {String? meIdentityToken}) async {}
+  Future<void> refresh(IdentityKey? povIdentityToken, {IdentityKey? meIdentityToken}) async {}
 
   @override
   bool get loading => false;

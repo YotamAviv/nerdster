@@ -49,7 +49,7 @@ class _ContentViewState extends State<ContentView> {
         globalLabeler.value = _controller.value!.labeler;
       }
     });
-    _controller.refresh(_currentPov != null ? IdentityKey(_currentPov!) : null, meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+    _controller.refresh(_currentPov != null ? IdentityKey(_currentPov!) : null, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     v2RefreshSignal.addListener(_onRefresh);
 
@@ -90,7 +90,7 @@ class _ContentViewState extends State<ContentView> {
     if (!mounted) return;
 
     // The controller handles overlapping refreshes internally.
-    await _controller.refresh(_currentPov != null ? IdentityKey(_currentPov!) : null, meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+    await _controller.refresh(_currentPov != null ? IdentityKey(_currentPov!) : null, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
   }
 
   void _changePov(String? newToken) {
@@ -412,7 +412,7 @@ class _ContentViewState extends State<ContentView> {
     }
 
     final subjects = model.aggregation.subjects.values.where((s) {
-      return _controller.shouldShow(s);
+      return _controller.shouldShow(s, model.filterMode, model.enableCensorship, tagFilter: model.tagFilter, typeFilter: model.typeFilter);
     }).toList();
 
     // Sort using the controller's logic

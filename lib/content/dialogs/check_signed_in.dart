@@ -3,6 +3,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/oneofus/keys.dart';
 
 Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) async {
   String? issue;
@@ -12,12 +13,12 @@ Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) asy
     final myDelegate = signInState.delegate;
     final myIdentity = signInState.identity;
 
-    if (trustGraph.replacements.containsKey(myDelegate)) {
+    if (trustGraph.replacements.containsKey(IdentityKey(myDelegate!))) {
       issue = 'Your delegate key is revoked';
-    } else if (b(myIdentity) && trustGraph.isTrusted(myIdentity!)) {
+    } else if (b(myIdentity) && trustGraph.isTrusted(IdentityKey(myIdentity!))) {
       // Check association
       bool isAssociated = false;
-      final statements = trustGraph.edges[myIdentity];
+      final statements = trustGraph.edges[IdentityKey(myIdentity!)];
       if (statements != null) {
         for (final s in statements) {
           if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {

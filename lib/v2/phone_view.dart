@@ -10,6 +10,7 @@ import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
+import 'package:nerdster/oneofus/keys.dart';
 
 import 'refresh_signal.dart';
 import 'submit.dart';
@@ -36,7 +37,7 @@ class _PhoneViewState extends State<PhoneView> {
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
-    _controller.refresh(widget.povToken, meIdentityToken: signInState.identity);
+    _controller.refresh(widget.povToken != null ? IdentityKey(widget.povToken!) : null, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
     v2RefreshSignal.addListener(_onRefresh);
     Setting.get<String>(SettingType.tag).addListener(_onSettingChanged);
   }
@@ -54,7 +55,7 @@ class _PhoneViewState extends State<PhoneView> {
   }
 
   void _onRefresh() {
-    _controller.refresh(widget.povToken, meIdentityToken: signInState.identity);
+    _controller.refresh(widget.povToken != null ? IdentityKey(widget.povToken!) : null, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
   }
 
   @override

@@ -39,9 +39,9 @@ class ContentPipeline {
         throw 'Pipeline Error: Delegate Source returned content from unauthorized key: $keyStr';
       }
 
-      final String? identity = delegateResolver.getIdentityForDelegate(DelegateKey(keyStr))?.value;
-      if (identity != null && graph.blocked.contains(identity)) {
-        throw 'Pipeline Error: Source returned content from blocked identity: $identity';
+      final IdentityKey? identityKey = delegateResolver.getIdentityForDelegate(DelegateKey(keyStr));
+      if (identityKey != null && graph.blocked.contains(identityKey)) {
+        throw 'Pipeline Error: Source returned content from blocked identity: ${identityKey.value}';
       }
 
       delegateContent[DelegateKey(keyStr)] = rawDelegateContent[keyStr]!;

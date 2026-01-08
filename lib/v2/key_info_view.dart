@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/v2/json_display.dart';
 import 'package:nerdster/v2/interpreter.dart';
@@ -42,7 +43,7 @@ class KeyInfoView extends StatelessWidget {
     if (fireChoice != FireChoice.fake) {
       String? revokeAt;
       final token = jsonish.token;
-      revokeAt = labeler.graph.replacementConstraints[token];
+      revokeAt = labeler.graph.replacementConstraints[IdentityKey(token)];
 
       final Uri uri = V2Config.makeSimpleUri(domain, jsonish.token, revokeAt: revokeAt);
       return InkWell(

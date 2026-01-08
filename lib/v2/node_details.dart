@@ -228,7 +228,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
             onPressed: () {
               // Updating global POV
               signInState.pov = widget.identity.value;
-              widget.controller.refresh(widget.identity.value, meIdentityToken: signInState.identity);
+              widget.controller.refresh(widget.identity, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
               Navigator.pop(context); // Close sheet
             },
             child: const Text('Set as PoV'),
@@ -415,7 +415,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           _pendingContexts.removeWhere((key, value) => value == 0);
           _originalContexts = Map.of(_pendingContexts);
         });
-        widget.controller.refresh(model.trustGraph.pov.value, meIdentityToken: signInState.identity);
+        widget.controller.refresh(model.trustGraph.pov, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
       }
     } catch (e) {
       if (mounted) {
