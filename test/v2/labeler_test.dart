@@ -50,10 +50,10 @@ void main() {
     
     final labeler = V2Labeler(graph, meIdentityToken: alice.id);
 
-    expect(labeler.getIdentityLabel(IdentityKey(alice.token)), 'Me');
-    expect(labeler.getIdentityLabel(IdentityKey(bob.token)), 'Bobby');
-    expect(labeler.getIdentityLabel(IdentityKey(charlie.token)), 'Chuck');
-    expect(labeler.getIdentityLabel(IdentityKey(dave.token)), 'David');
+    expect(labeler.getIdentityLabel(alice.id), 'Me');
+    expect(labeler.getIdentityLabel(bob.id), 'Bobby');
+    expect(labeler.getIdentityLabel(charlie.id), 'Chuck');
+    expect(labeler.getIdentityLabel(dave.id), 'David');
   });
 
   test('V2Labeler: PoV Moniker Discovery', () async {
@@ -106,8 +106,8 @@ void main() {
 
     // Since Bob2 replaces Bob1, Bob2 is canonical and Bob1 is old.
     // Both should have unique labels.
-    expect(labeler.getIdentityLabel(IdentityKey(bob2.token)), 'Bob');
-    expect(labeler.getIdentityLabel(IdentityKey(bob1.token)), "Bob'");
+    expect(labeler.getIdentityLabel(bob2.id), 'Bob');
+    expect(labeler.getIdentityLabel(bob1.id), "Bob'");
   });
 
   test('V2Labeler: Name Conflicts (Disambiguation)', () async {
@@ -128,8 +128,8 @@ void main() {
 
     // Order in orderedKeys depends on newest-first. 
     // Bob2 was trusted last, so it comes first in the BFS layer.
-    expect(labeler.getIdentityLabel(IdentityKey(bob2.token)), 'Bob');
-    expect(labeler.getIdentityLabel(IdentityKey(bob1.token)), 'Bob (2)');
+    expect(labeler.getIdentityLabel(bob2.id), 'Bob');
+    expect(labeler.getIdentityLabel(bob1.id), 'Bob (2)');
   });
 
   test('V2Labeler: Complex Conflict (Old + Collision)', () async {
@@ -161,11 +161,11 @@ void main() {
 
     // Charlie identity was trusted last by Alice, so it comes first in orderedKeys.
     // Charlie identity (also named "Bob"). Charlie2 is canonical.
-    expect(labeler.getIdentityLabel(IdentityKey(charlie2.token)), 'Bob');
-    expect(labeler.getIdentityLabel(IdentityKey(charlie1.token)), "Bob'");
+    expect(labeler.getIdentityLabel(charlie2.id), 'Bob');
+    expect(labeler.getIdentityLabel(charlie1.id), "Bob'");
 
     // Bob identity. Bob2 is canonical.
-    expect(labeler.getIdentityLabel(IdentityKey(bob2.token)), 'Bob (2)');
-    expect(labeler.getIdentityLabel(IdentityKey(bob1.token)), "Bob (2)'");
+    expect(labeler.getIdentityLabel(bob2.id), 'Bob (2)');
+    expect(labeler.getIdentityLabel(bob1.id), "Bob (2)'");
   });
 }

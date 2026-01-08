@@ -39,11 +39,11 @@ void main() async {
     }
 
     final TrustGraph trustGraph = reduceTrustGraph(
-      TrustGraph(pov: IdentityKey(bart.token)),
+      TrustGraph(pov: bart.id),
       allTrustStatements,
     );
 
-    expect(trustGraph.isTrusted(IdentityKey(bart.token)), true);
+    expect(trustGraph.isTrusted(bart.id), true);
     
     final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
 
@@ -58,20 +58,20 @@ void main() async {
     );
 
     // Bart should be in the network
-    expect(followNet.contains(IdentityKey(bart.token)), true);
+    expect(followNet.contains(bart.id), true);
     expect(followNet.povIdentity, bart.token);
     
     // Check some other Simpsons
     final DemoIdentityKey homer = DemoIdentityKey.findByName('homer')!;
     final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
     
-    expect(followNet.contains(trustGraph.resolveIdentity(IdentityKey(homer.token))), true);
+    expect(followNet.contains(trustGraph.resolveIdentity(homer.id)), true);
     // Lisa is blocked in <nerdster> context by Bart
-    expect(followNet.contains(trustGraph.resolveIdentity(IdentityKey(lisa.token))), false);
+    expect(followNet.contains(trustGraph.resolveIdentity(lisa.id)), false);
     
     // Check order (discovery order)
-    expect(followNet.identities.indexOf(IdentityKey(bart.token)), 0);
-    expect(followNet.identities.indexOf(trustGraph.resolveIdentity(IdentityKey(homer.token))), greaterThan(0));
+    expect(followNet.identities.indexOf(bart.id), 0);
+    expect(followNet.identities.indexOf(trustGraph.resolveIdentity(homer.id)), greaterThan(0));
   });
 
   test('Simpsons Demo: Multi-POV Content Verification', () async {
@@ -93,35 +93,35 @@ void main() async {
     final ContentStatement margeRating = margeN.contentStatements.firstWhere((s) => s.verb == ContentVerb.rate);
 
     // --- LISA'S POV ---
-    final TrustGraph trustLisa = reduceTrustGraph(TrustGraph(pov: IdentityKey(lisa.token)), allTrustStatements);
+    final TrustGraph trustLisa = reduceTrustGraph(TrustGraph(pov: lisa.id), allTrustStatements);
     final DelegateResolver delegatesLisa = DelegateResolver(trustLisa);
     
     final FollowNetwork followLisa = reduceFollowNetwork(trustLisa, delegatesLisa, allContentStatements, kFollowContextNerdster);
     final ContentAggregation contentLisa = reduceContentAggregation(followLisa, trustLisa, delegatesLisa, allContentStatements);
 
     // Lisa should see content from Marge and Homer2
-    expect(followLisa.contains(trustLisa.resolveIdentity(IdentityKey(marge.token))), true, reason: 'Lisa should follow Marge');
-    expect(followLisa.contains(trustLisa.resolveIdentity(IdentityKey(homer.token))), true, reason: 'Lisa should follow Homer (Homer2)');
+    expect(followLisa.contains(trustLisa.resolveIdentity(marge.id)), true, reason: 'Lisa should follow Marge');
+    expect(followLisa.contains(trustLisa.resolveIdentity(homer.id)), true, reason: 'Lisa should follow Homer (Homer2)');
     
     // Check if Marge's content is there (MargeN signed it)
-    expect(contentLisa.subjects.values.any((s) => s.canonicalToken == margeRating.subjectToken), true, reason: "Lisa should see Marge's content");
+    expect(contentLisa.subjects.values.any((s) => s.canonicalToken == ContentKey(margeRating.subjectToken!)), true, reason: "Lisa should see Marge's content");
 
     // --- BART'S POV ---
-    final TrustGraph trustBart = reduceTrustGraph(TrustGraph(pov: IdentityKey(bart.token)), allTrustStatements);
+    final TrustGraph trustBart = reduceTrustGraph(TrustGraph(pov: bart.id), allTrustStatements);
     final DelegateResolver delegatesBart = DelegateResolver(trustBart);
     final FollowNetwork followBart = reduceFollowNetwork(trustBart, delegatesBart, allContentStatements, kFollowContextNerdster);
     reduceContentAggregation(followBart, trustBart, delegatesBart, allContentStatements);
 
     // Bart blocks Lisa in <nerdster> context in simpsons.dart
-    expect(followBart.contains(trustBart.resolveIdentity(IdentityKey(lisa.token))), false, reason: 'Bart blocks Lisa');
+    expect(followBart.contains(trustBart.resolveIdentity(lisa.id)), false, reason: 'Bart blocks Lisa');
 
     // --- HOMER'S POV (Homer2) ---
-    final TrustGraph trustHomer = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer2.token)), allTrustStatements);
+    final TrustGraph trustHomer = reduceTrustGraph(TrustGraph(pov: homer2.id), allTrustStatements);
     final DelegateResolver delegatesHomer = DelegateResolver(trustHomer);
     final FollowNetwork followHomer = reduceFollowNetwork(trustHomer, delegatesHomer, allContentStatements, kFollowContextNerdster);
     reduceContentAggregation(followHomer, trustHomer, delegatesHomer, allContentStatements);
 
-    expect(followHomer.contains(trustHomer.resolveIdentity(IdentityKey(lisa.token))), true, reason: 'Homer2 should follow Lisa');
+    expect(followHomer.contains(trustHomer.resolveIdentity(lisa.id)), true, reason: 'Homer2 should follow Lisa');
   });
 
   test('Custom Context Filtering (V2)', () async {
@@ -134,7 +134,7 @@ void main() async {
     }
 
     final TrustGraph trustGraph = reduceTrustGraph(
-      TrustGraph(pov: IdentityKey(bart.token)),
+      TrustGraph(pov: bart.id),
       allTrustStatements,
     );
 
@@ -155,14 +155,14 @@ void main() async {
     final DemoIdentityKey milhouse = DemoIdentityKey.findByName('milhouse')!;
     final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
 
-    expect(familyNet.contains(IdentityKey(bart.token)), true);
+    expect(familyNet.contains(bart.id), true);
     expect(familyNet.povIdentity, bart.token);
     
-    expect(familyNet.contains(trustGraph.resolveIdentity(IdentityKey(homer.token))), true);
-    expect(familyNet.contains(trustGraph.resolveIdentity(IdentityKey(marge.token))), true);
-    expect(familyNet.contains(trustGraph.resolveIdentity(IdentityKey(lisa.token))), true);
+    expect(familyNet.contains(trustGraph.resolveIdentity(homer.id)), true);
+    expect(familyNet.contains(trustGraph.resolveIdentity(marge.id)), true);
+    expect(familyNet.contains(trustGraph.resolveIdentity(lisa.id)), true);
     // Milhouse is not family
-    expect(familyNet.contains(trustGraph.resolveIdentity(IdentityKey(milhouse.token))), false);
+    expect(familyNet.contains(trustGraph.resolveIdentity(milhouse.id)), false);
   });
 
   test('V2 Content Aggregation: Censorship and Equivalence', () async {
@@ -185,10 +185,10 @@ void main() async {
     await homer.trust(lisa, moniker: 'lisa');
     await homer.trust(bart, moniker: 'bart');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
-      IdentityKey(homer.token): homer.trustStatements,
-      IdentityKey(bart.token): bart.trustStatements,
-      IdentityKey(lisa.token): lisa.trustStatements,
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.id), {
+      homer.id: homer.trustStatements,
+      bart.id: bart.trustStatements,
+      lisa.id: lisa.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -225,9 +225,9 @@ void main() async {
     );
 
     // Spam should be censored
-    expect(contentAgg.censored, contains(spamToken));
+    expect(contentAgg.censored, contains(ContentKey(spamToken)));
     // news1 and news2 should be equated
-    expect(contentAgg.equivalence[news2Token], contentAgg.equivalence[news1Token]);
+    expect(contentAgg.equivalence[ContentKey(news2Token)], contentAgg.equivalence[ContentKey(news1Token)]);
   });
 
   test('V2 Content Aggregation: Censorship Overrides', () async {
@@ -243,10 +243,10 @@ void main() async {
     await homer.trust(bart, moniker: 'bart');
     await homer.trust(lisa, moniker: 'lisa');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
-      IdentityKey(homer.token): homer.trustStatements,
-      IdentityKey(bart.token): bart.trustStatements,
-      IdentityKey(lisa.token): lisa.trustStatements,
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.id), {
+      homer.id: homer.trustStatements,
+      bart.id: bart.trustStatements,
+      lisa.id: lisa.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -334,18 +334,18 @@ void main() async {
     await homer.trust(bart, moniker: 'bart');
 
     final Map<IdentityKey, List<TrustStatement>> trustStatements = {
-      IdentityKey(homer.token): homer.trustStatements,
-      IdentityKey(bart.token): [await bart.delegate(bartDelegate, domain: kNerdsterDomain)],
+      homer.id: homer.trustStatements,
+      bart.id: [await bart.delegate(bartDelegate, domain: kNerdsterDomain)],
     };
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), trustStatements);
-    expect(graph.isTrusted(IdentityKey(bart.token)), isTrue);
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.id), trustStatements);
+    expect(graph.isTrusted(bart.id), isTrue);
     expect(graph.isTrusted(IdentityKey(bartDelegate.token)), isFalse); // Delegate is not in WoT
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
     // In the lazy resolver, we must resolve the identity to see its delegates
-    expect(delegateResolver.getDelegatesForIdentity(IdentityKey(bart.token)), contains(DelegateKey(bartDelegate.token)));
-    expect(delegateResolver.getIdentityForDelegate(DelegateKey(bartDelegate.token)), IdentityKey(bart.token));
+    expect(delegateResolver.getDelegatesForIdentity(bart.id), contains(bartDelegate.id));
+    expect(delegateResolver.getIdentityForDelegate(bartDelegate.id), bart.id);
 
     // 2. Homer follows Bart in 'news-context'
     const String newsContext = 'news-context';
@@ -392,10 +392,10 @@ void main() async {
     await homer.trust(bart, moniker: 'bart');
     await homer.trust(lisa, moniker: 'lisa');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
-      IdentityKey(homer.token): homer.trustStatements,
-      IdentityKey(bart.token): bart.trustStatements,
-      IdentityKey(lisa.token): lisa.trustStatements,
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.id), {
+      homer.id: homer.trustStatements,
+      bart.id: bart.trustStatements,
+      lisa.id: lisa.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -485,10 +485,10 @@ void main() async {
     await homer.trust(bart, moniker: 'bart');
     await homer.trust(lisa, moniker: 'lisa');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
-      IdentityKey(homer.token): homer.trustStatements,
-      IdentityKey(bart.token): bart.trustStatements,
-      IdentityKey(lisa.token): lisa.trustStatements,
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.id), {
+      homer.id: homer.trustStatements,
+      bart.id: bart.trustStatements,
+      lisa.id: lisa.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -556,12 +556,12 @@ void main() async {
     final DemoDelegateKey homerN = await homer.makeDelegate();
     final DemoDelegateKey bartN = await bart.makeDelegate();
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
-      IdentityKey(homer.token): [
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.id), {
+      homer.id: [
         await homer.trust(bart, moniker: 'bart'),
         ...homer.trustStatements,
       ],
-      IdentityKey(bart.token): bart.trustStatements,
+      bart.id: bart.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -596,10 +596,10 @@ void main() async {
       allStatementsByToken,
     );
 
-    expect(aggregation.subjects.containsKey(sToken), isTrue);
-    expect(network.povIdentity, homer.token);
+    expect(aggregation.subjects.containsKey(ContentKey(sToken)), isTrue);
+    expect(network.povIdentity, homer.id);
     
-    final SubjectAggregation agg = aggregation.subjects[sToken]!;
+    final SubjectAggregation agg = aggregation.subjects[ContentKey(sToken)]!;
     // Homer's dismissal overwrites his previous like because they are the same subject (token vs map)
     expect(agg.likes, equals(1)); 
     expect(agg.tags, contains('#news'));

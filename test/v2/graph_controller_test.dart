@@ -6,6 +6,7 @@ import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/keys.dart';
 
 void main() {
   setUpAll(() {
@@ -16,13 +17,13 @@ void main() {
   group('GraphController', () {
     test('builds identity graph data', () {
       final povKey = {'kty': 'mock', 'val': 'pov'};
-      final pov = Jsonish(povKey).token;
+      final pov = IdentityKey(Jsonish(povKey).token);
       final aliceKey = {'kty': 'mock', 'val': 'alice'};
-      final alice = Jsonish(aliceKey).token;
+      final alice = IdentityKey(Jsonish(aliceKey).token);
 
       final t1 = TrustStatement(Jsonish({
         'statement': 'net.one-of-us',
-        'trust': alice,
+        'trust': alice.value,
         'time': DateTime.now().toIso8601String(),
         'I': povKey,
       }, 't1'));
@@ -59,20 +60,20 @@ void main() {
 
       expect(data.nodes, containsAll([pov, alice]));
       expect(data.edges.length, 1);
-      expect(data.edges.first.fromIdentity, pov);
-      expect(data.edges.first.toIdentity, alice);
+      expect(data.edges.first.from, pov);
+      expect(data.edges.first.to, alice);
       expect(data.edges.first.isIdentity, isTrue);
     });
 
     test('builds follow graph data', () {
       final povKey = {'kty': 'mock', 'val': 'pov'};
-      final pov = Jsonish(povKey).token;
+      final pov = IdentityKey(Jsonish(povKey).token);
       final aliceKey = {'kty': 'mock', 'val': 'alice'};
-      final alice = Jsonish(aliceKey).token;
+      final alice = IdentityKey(Jsonish(aliceKey).token);
 
       final f1 = ContentStatement(Jsonish({
         'statement': 'org.nerdster',
-        'follow': alice,
+        'follow': alice.value,
         'with': {'contexts': {'news': 1}},
         'time': DateTime.now().toIso8601String(),
         'I': povKey,
@@ -111,20 +112,20 @@ void main() {
 
       expect(data.nodes, containsAll([pov, alice]));
       expect(data.edges.length, 1);
-      expect(data.edges.first.fromIdentity, pov);
-      expect(data.edges.first.toIdentity, alice);
+      expect(data.edges.first.from, pov);
+      expect(data.edges.first.to, alice);
       expect(data.edges.first.isFollow, isTrue);
     });
 
     test('identifies conflicts in graph data', () {
       final povKey = {'kty': 'mock', 'val': 'pov'};
-      final pov = Jsonish(povKey).token;
+      final pov = IdentityKey(Jsonish(povKey).token);
       final aliceKey = {'kty': 'mock', 'val': 'alice'};
-      final alice = Jsonish(aliceKey).token;
+      final alice = IdentityKey(Jsonish(aliceKey).token);
 
       final f1 = ContentStatement(Jsonish({
         'statement': 'org.nerdster',
-        'follow': alice,
+        'follow': alice.value,
         'with': {'contexts': {'news': 1}},
         'time': DateTime.now().toIso8601String(),
         'I': povKey,

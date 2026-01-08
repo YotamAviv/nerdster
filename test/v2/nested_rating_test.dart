@@ -96,7 +96,7 @@ void main() {
     // We need a TrustGraph to resolve delegates
     final trustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final trustPipeline = TrustPipeline(trustSource);
-    final graph = await trustPipeline.build(lisa.token);
+    final graph = await trustPipeline.build(lisa.id);
     final delegateResolver = DelegateResolver(graph);
     final followNetwork = reduceFollowNetwork(graph, delegateResolver, ContentResult(), 'nerdster'); // Empty content map for follow net is fine for this test
 
@@ -106,9 +106,8 @@ void main() {
 
     // Fetch content map for valid delegates
     // We must include delegates that define the subjects Lisa refers to (e.g. Bart defines Skateboard)
-    final allDelegateKeys = DemoKey.all
-        .where((k) => k.isDelegate)
-        .map((k) => DelegateKey(k.token))
+    final allDelegateKeys = DemoDelegateKey.all
+        .map((k) => k.id)
         .toSet();
 
     final delegateContent = await contentPipeline.fetchDelegateContent(
@@ -127,13 +126,13 @@ void main() {
         delegateResolver,
         contentResult,
         enableCensorship: true,
-        meIdentityKeys: [IdentityKey(lisa.token)],
-        meDelegateKeys: [DelegateKey(lisaD.token)],
+        meIdentityKeys: [lisa.id],
+        meDelegateKeys: [lisaD.id],
     );
 
     // Check if the nested rating is in the aggregation
     // It should be in subjects[artRating!.token]
-    final SubjectAggregation? nestedAgg = aggregation.subjects[artRating!.token];
+    final SubjectAggregation? nestedAgg = aggregation.subjects[ContentKey(artRating!.token)];
     // TODO: False! Remove: expect(nestedAgg, isNotNull, reason: "Aggregation should exist for the rating statement");
     // expect(nestedAgg!.statements.any((s) => s.token == nestedRating!.token), isTrue);
 

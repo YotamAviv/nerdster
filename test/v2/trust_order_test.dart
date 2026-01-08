@@ -43,10 +43,10 @@ void main() async {
     final t5 = await charlie.trust(bob, moniker: 'bob');
     final t6 = await charlie.trust(alice, moniker: 'alice');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(alice.token)), {
-      IdentityKey(alice.token): [t2, t1],
-      IdentityKey(bob.token): [t4, t3],
-      IdentityKey(charlie.token): [t6, t5],
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.id), {
+      alice.id: [t2, t1],
+      bob.id: [t4, t3],
+      charlie.id: [t6, t5],
     });
     
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -54,7 +54,7 @@ void main() async {
     // Collect statements
     final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
     for (final dk in [alice, aliceN, bob, bobN, charlie, charlieN]) {
-      if (dk is DemoDelegateKey) delegateContent[DelegateKey(dk.token)] = dk.contentStatements;
+      if (dk is DemoDelegateKey) delegateContent[dk.id] = dk.contentStatements;
     }
 
     final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver, ContentResult(delegateContent: delegateContent), kFollowContextNerdster);

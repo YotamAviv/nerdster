@@ -22,9 +22,9 @@ AI NOTE: This is my (the human) file with my own notes.
 
 # Emulator simpsonsDemo from PROD
 # Lisa
-?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}
+?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}&skipCredentials=true
 # Bart
-?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22DLKWtnSsw7P9ePCizuMP1Yxg5knCvT3Y7a7X7oMnxwc%22%20}
+?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22DLKWtnSsw7P9ePCizuMP1Yxg5knCvT3Y7a7X7oMnxwc%22%20}&skipCredentials=true
 
 
 # Emulator yotam

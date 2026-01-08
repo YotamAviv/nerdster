@@ -50,11 +50,11 @@ void main() async {
     final t2 = await alice.trust(bob, moniker: 'bob');
     final t1 = await alice.trust(charlie, moniker: 'charlie');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(alice.token)), {
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.id), {
       // alice.token: alice.trustStatements.toList(),
-      IdentityKey(alice.token): alice.trustStatements.toList(),
-      IdentityKey(bob.token): bob.trustStatements.toList(),
-      IdentityKey(charlie.token): charlie.trustStatements.toList(),
+      alice.id: alice.trustStatements.toList(),
+      bob.id: bob.trustStatements.toList(),
+      charlie.id: charlie.trustStatements.toList(),
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -89,7 +89,7 @@ void main() async {
     // Collect statements
     final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
     for (final dk in [aliceN, bobN, charlieN]) {
-      delegateContent[DelegateKey(dk.token)] = dk.contentStatements;
+      delegateContent[dk.id] = dk.contentStatements;
     }
     final contentResult = ContentResult(delegateContent: delegateContent);
 

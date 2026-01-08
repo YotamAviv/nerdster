@@ -56,11 +56,11 @@ void main() {
     final s1 = await sideshow.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
     
     final tg = TrustGraph(
-      pov: IdentityKey(sideshow.token),
-      distances: {IdentityKey(sideshow.token): 0, IdentityKey(marge.token): 1},
+      pov: sideshow.id,
+      distances: {sideshow.id: 0, marge.id: 1},
       edges: {
-        IdentityKey(sideshow.token): [s1],
-        IdentityKey(marge.token): [s2],
+        sideshow.id: [s1],
+        marge.id: [s2],
       },
       notifications: [],
     );
@@ -68,15 +68,15 @@ void main() {
     final resolver = DelegateResolver(tg);
     
     // Resolve for sideshow (Distance 0)
-    resolver.resolveForIdentity(IdentityKey(sideshow.token));
-    expect(resolver.getIdentityForDelegate(DelegateKey(margeN.token)), equals(IdentityKey(sideshow.token)), 
+    resolver.resolveForIdentity(sideshow.id);
+    expect(resolver.getIdentityForDelegate(margeN.id), equals(sideshow.id), 
       reason: 'Sideshow claims margeN because he is closer, even though his statement is later');
-    expect(resolver.getConstraintForDelegate(DelegateKey(margeN.token)), equals(kSinceAlways),
+    expect(resolver.getConstraintForDelegate(margeN.id), equals(kSinceAlways),
       reason: 'The delegate is claimed but revoked');
 
     // Resolve for marge (Distance 1)
-    resolver.resolveForIdentity(IdentityKey(marge.token));
-    expect(resolver.getIdentityForDelegate(DelegateKey(margeN.token)), equals(IdentityKey(sideshow.token)),
+    resolver.resolveForIdentity(marge.id);
+    expect(resolver.getIdentityForDelegate(margeN.id), equals(sideshow.id),
       reason: 'Marge cannot claim margeN because Sideshow already claimed it');
   });
 
@@ -95,19 +95,19 @@ void main() {
     final sMargeRevoke = await marge.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
     final tg = TrustGraph(
-      pov: IdentityKey(mel.token),
-      distances: {IdentityKey(mel.token): 0, IdentityKey(marge.token): 1},
-      orderedKeys: [IdentityKey(mel.token), IdentityKey(marge.token)],
+      pov: mel.id,
+      distances: {mel.id: 0, marge.id: 1},
+      orderedKeys: [mel.id, marge.id],
       edges: {
-        IdentityKey(mel.token): [sMelMarge],
-        IdentityKey(marge.token): [sMargeRevoke, sMargeDelegate],
+        mel.id: [sMelMarge],
+        marge.id: [sMargeRevoke, sMargeDelegate],
       },
       notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
-    resolver.resolveForIdentity(IdentityKey(mel.token));
-    resolver.resolveForIdentity(IdentityKey(marge.token));
+    resolver.resolveForIdentity(mel.id);
+    resolver.resolveForIdentity(marge.id);
 
     final labeler = V2Labeler(tg, delegateResolver: resolver);
 
@@ -134,24 +134,24 @@ void main() {
     final d2 = await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: s1.token);
 
     final tg = TrustGraph(
-      pov: IdentityKey(alice.token),
-      distances: {IdentityKey(alice.token): 0},
+      pov: alice.id,
+      distances: {alice.id: 0},
       edges: {
-        IdentityKey(alice.token): [d2, d1],
+        alice.id: [d2, d1],
       },
       notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
-    resolver.resolveForIdentity(IdentityKey(alice.token));
+    resolver.resolveForIdentity(alice.id);
 
-    expect(resolver.getConstraintForDelegate(DelegateKey(delegate.token)), equals(IdentityKey(s1.token)));
+    expect(resolver.getConstraintForDelegate(delegate.id), equals(ContentKey(s1.token)));
 
     // 4. Fetch content
     final pipeline = ContentPipeline(
       delegateSource: contentSource,
     );
-    final delegateKey = DelegateKey(delegate.token);
+    final delegateKey = delegate.id;
     final delegateContent = await pipeline.fetchDelegateContent(
       {delegateKey},
       delegateResolver: resolver,
@@ -160,7 +160,7 @@ void main() {
 
     final delegateStatements = delegateContent[delegateKey] ?? [];
     expect(delegateStatements.length, equals(1));
-    expect(IdentityKey(delegateStatements.first.token), equals(IdentityKey(s1.token)));
+    expect(ContentKey(delegateStatements.first.token), equals(ContentKey(s1.token)));
   });
 
   test('Delegate Revocation: "<since always>" should revoke everything', () async {
@@ -174,23 +174,23 @@ void main() {
     final d2 = await bob.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
     final tg = TrustGraph(
-      pov: IdentityKey(bob.token),
-      distances: {IdentityKey(bob.token): 0},
+      pov: bob.id,
+      distances: {bob.id: 0},
       edges: {
-        IdentityKey(bob.token): [d2, d1],
+        bob.id: [d2, d1],
       },
       notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
-    resolver.resolveForIdentity(IdentityKey(bob.token));
+    resolver.resolveForIdentity(bob.id);
 
-    expect(resolver.getConstraintForDelegate(DelegateKey(delegate.token)), equals(kSinceAlways));
+    expect(resolver.getConstraintForDelegate(delegate.id), equals(kSinceAlways));
 
     final pipeline = ContentPipeline(
       delegateSource: contentSource,
     );
-    final delegateKey = DelegateKey(delegate.token);
+    final delegateKey = delegate.id;
     final delegateContent = await pipeline.fetchDelegateContent(
       {delegateKey},
       delegateResolver: resolver,
@@ -208,20 +208,20 @@ void main() {
     final d1 = await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
     final tg = TrustGraph(
-      pov: IdentityKey(alice.token),
-      distances: {IdentityKey(alice.token): 0},
+      pov: alice.id,
+      distances: {alice.id: 0},
       edges: {
-        IdentityKey(alice.token): [d1],
+        alice.id: [d1],
       },
       notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
-    resolver.resolveForIdentity(IdentityKey(alice.token));
+    resolver.resolveForIdentity(alice.id);
 
-    expect(resolver.getIdentityForDelegate(DelegateKey(delegate.token)), equals(IdentityKey(alice.token)),
+    expect(resolver.getIdentityForDelegate(delegate.id), equals(alice.id),
       reason: 'Delegate should be authorized even if revokeAt is present');
-    expect(resolver.getConstraintForDelegate(DelegateKey(delegate.token)), equals(kSinceAlways));
+    expect(resolver.getConstraintForDelegate(delegate.id), equals(kSinceAlways));
   });
 
   test('Delegate Revocation: Comprehensive test (Revoked but still a delegate)', () async {
@@ -243,26 +243,26 @@ void main() {
     await upload(delegate.token, s2);
 
     final tg = TrustGraph(
-      pov: IdentityKey(bob.token),
-      distances: {IdentityKey(bob.token): 0},
+      pov: bob.id,
+      distances: {bob.id: 0},
       edges: {
-        IdentityKey(bob.token): [d2, d1], // Sorted by time descending
+        bob.id: [d2, d1], // Sorted by time descending
       },
       notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
-    resolver.resolveForIdentity(IdentityKey(bob.token));
+    resolver.resolveForIdentity(bob.id);
 
     // Verify it's still a delegate
-    expect(resolver.getIdentityForDelegate(DelegateKey(delegate.token)), equals(IdentityKey(bob.token)));
-    expect(resolver.getConstraintForDelegate(DelegateKey(delegate.token)), equals(IdentityKey(s1.token)));
+    expect(resolver.getIdentityForDelegate(delegate.id), equals(bob.id));
+    expect(resolver.getConstraintForDelegate(delegate.id), equals(IdentityKey(s1.token)));
 
     // Verify content filtering
     final pipeline = ContentPipeline(
       delegateSource: contentSource,
     );
-    final delegateKey = DelegateKey(delegate.token);
+    final delegateKey = delegate.id;
     final delegateContent = await pipeline.fetchDelegateContent(
       {delegateKey},
       delegateResolver: resolver,
@@ -292,22 +292,22 @@ void main() {
     // 3. Bo delegates to boD2
     final sDelegate2 = await bo.delegate(boD2, domain: 'nerdster.org');
 
-    // 4. Bo revokes boD1 at IdentityKey(sFollow.token)
+    // 4. Bo revokes boD1 at sFollow.id
     final sRevoke1 = await bo.delegate(boD1, domain: 'nerdster.org', revokeAt: sFollow.token);
 
     // Setup Graph
     final tg = TrustGraph(
-      pov: IdentityKey(bo.token),
-      distances: {IdentityKey(bo.token): 0},
-      orderedKeys: [IdentityKey(bo.token)],
+      pov: bo.id,
+      distances: {bo.id: 0},
+      orderedKeys: [bo.id],
       edges: {
-        IdentityKey(bo.token): [sRevoke1, sDelegate2, sDelegate1],
+        bo.id: [sRevoke1, sDelegate2, sDelegate1],
       },
       notifications: [],
     );
 
     // Setup Content
-    final delegateKey = DelegateKey(boD1.token);
+    final delegateKey = boD1.id;
     final contentResult = ContentResult(
       delegateContent: {
         delegateKey: [sFollow],
@@ -320,8 +320,8 @@ void main() {
     final fn = reduceFollowNetwork(tg, delegateResolver, contentResult, 'social');
 
     // Assert
-    expect(fn.edges[IdentityKey(bo.token)], isNotNull);
-    expect(fn.edges[IdentityKey(bo.token)]!.any((s) => s.subjectToken == IdentityKey(luke.token)), isTrue,
+    expect(fn.edges[bo.id], isNotNull);
+    expect(fn.edges[bo.id]!.any((s) => IdentityKey(s.subjectToken!) == luke.id), isTrue,
         reason: 'Bo should still follow Luke because the delegate was revoked AT the follow statement');
   });
 
@@ -339,18 +339,18 @@ void main() {
     final sTrust = await me.doTrust(TrustVerb.trust, bob, moniker: 'Bob');
 
     final tg = TrustGraph(
-      pov: IdentityKey(me.token),
-      distances: {IdentityKey(me.token): 0, IdentityKey(bob.token): 1},
-      orderedKeys: [IdentityKey(me.token), IdentityKey(bob.token)],
+      pov: me.id,
+      distances: {me.id: 0, bob.id: 1},
+      orderedKeys: [me.id, bob.id],
       edges: {
-        IdentityKey(me.token): [sTrust],
-        IdentityKey(bob.token): [s1, s2], 
+        me.id: [sTrust],
+        bob.id: [s1, s2], 
       },
       notifications: [],
     );
 
     final resolver = DelegateResolver(tg);
-    resolver.resolveForIdentity(IdentityKey(bob.token));
+    resolver.resolveForIdentity(bob.id);
 
     final labeler = V2Labeler(tg, delegateResolver: resolver);
 

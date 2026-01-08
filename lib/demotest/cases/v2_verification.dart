@@ -27,13 +27,13 @@ Future<void> testBasicScenario({
 
   final src = source ?? SourceFactory.get<TrustStatement>(kOneofusDomain);
   final pipeline = TrustPipeline(src);
-  final graph = await pipeline.build(marge.token);
+  final graph = await pipeline.build(marge.id);
 
   final p = description != null ? '[$description] ' : '';
 
-  check(graph.isTrusted(IdentityKey(lisa.token)), '${p}Marge should trust Lisa');
-  check(graph.distances[IdentityKey(lisa.token)] == 1, '${p}Lisa should be distance 1');
+  check(graph.isTrusted(lisa.id), '${p}Marge should trust Lisa');
+  check(graph.distances[lisa.id] == 1, '${p}Lisa should be distance 1');
 
-  check(graph.isTrusted(IdentityKey(bart.token)), '${p}Marge should trust Bart');
-  check(graph.distances[IdentityKey(bart.token)] == 1, '${p}Bart should be distance 1');
+  check(graph.isTrusted(bart.id), '${p}Marge should trust Bart');
+  check(graph.distances[bart.id] == 1, '${p}Bart should be distance 1');
 }

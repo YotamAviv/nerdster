@@ -51,41 +51,41 @@ void main() {
     final s3 = await charlie.trust(lisa, moniker: 'lisa');
 
     final tg = TrustGraph(
-      pov: IdentityKey(lisa.token),
+      pov: lisa.id,
       distances: {
-        IdentityKey(lisa.token): 0,
-        IdentityKey(bob.token): 1,
-        IdentityKey(charlie.token): 2,
+        lisa.id: 0,
+        bob.id: 1,
+        charlie.id: 2,
       },
       edges: {
-        IdentityKey(lisa.token): [s1],
-        IdentityKey(bob.token): [s2],
-        IdentityKey(charlie.token): [s3],
+        lisa.id: [s1],
+        bob.id: [s2],
+        charlie.id: [s3],
       },
       paths: {
-        IdentityKey(charlie.token): [
-          [IdentityKey(lisa.token), IdentityKey(bob.token), IdentityKey(charlie.token)]
+        charlie.id: [
+          [lisa.id, bob.id, charlie.id]
         ],
       },
     );
 
-    final fn = FollowNetwork(fcontext: 'test', povIdentity: IdentityKey(lisa.token));
+    final fn = FollowNetwork(fcontext: 'test', povIdentity: lisa.id);
     final model = MockV2FeedModel(trustGraph: tg, followNetwork: fn);
 
     final controller = GraphController(model);
     controller.mode = GraphViewMode.identity;
-    controller.focusedIdentity = IdentityKey(charlie.token);
+    controller.focusedIdentity = charlie.id;
     signInState.pov = lisa.token;
     
     final data = controller.buildGraphData();
     
-    expect(data.root, equals(IdentityKey(lisa.token)));
-    expect(data.nodes.first, equals(IdentityKey(lisa.token)), reason: 'Root should be the first node');
-    expect(data.nodes, containsAll([IdentityKey(lisa.token), IdentityKey(bob.token), IdentityKey(charlie.token)]));
+    expect(data.root, equals(lisa.id));
+    expect(data.nodes.first, equals(lisa.id), reason: 'Root should be the first node');
+    expect(data.nodes, containsAll([lisa.id, bob.id, charlie.id]));
     // Path lisa -> bob -> charlie has 2 edges.
     // Plus the back-edge charlie -> lisa makes 3.
     expect(data.edges.length, equals(3));
-    expect(data.edges.any((e) => e.from == IdentityKey(charlie.token) && e.to == IdentityKey(lisa.token)), isTrue);
+    expect(data.edges.any((e) => e.from == charlie.id && e.to == lisa.id), isTrue);
   });
 
   test('GraphController: Node-Disjoint Path Selection', () async {
@@ -111,36 +111,36 @@ void main() {
     final s7 = await a1.trust(b2, moniker: 'b2');
 
     final tg = TrustGraph(
-      pov: IdentityKey(root.token),
+      pov: root.id,
       distances: {
-        IdentityKey(root.token): 0,
-        IdentityKey(a1.token): 1,
-        IdentityKey(b1.token): 1,
-        IdentityKey(a2.token): 2,
-        IdentityKey(b2.token): 2,
-        IdentityKey(target.token): 3,
+        root.id: 0,
+        a1.id: 1,
+        b1.id: 1,
+        a2.id: 2,
+        b2.id: 2,
+        target.id: 3,
       },
       edges: {
-        IdentityKey(root.token): [s1, s4],
-        IdentityKey(a1.token): [s2, s7],
-        IdentityKey(b1.token): [s5],
-        IdentityKey(a2.token): [s3],
-        IdentityKey(b2.token): [s6],
+        root.id: [s1, s4],
+        a1.id: [s2, s7],
+        b1.id: [s5],
+        a2.id: [s3],
+        b2.id: [s6],
       },
       paths: {
-        IdentityKey(target.token): [
-          [IdentityKey(root.token), IdentityKey(a1.token), IdentityKey(a2.token), IdentityKey(target.token)],
-          [IdentityKey(root.token), IdentityKey(b1.token), IdentityKey(b2.token), IdentityKey(target.token)],
+        target.id: [
+          [root.id, a1.id, a2.id, target.id],
+          [root.id, b1.id, b2.id, target.id],
         ],
       },
     );
 
-    final fn = FollowNetwork(fcontext: 'test', povIdentity: IdentityKey(root.token));
+    final fn = FollowNetwork(fcontext: 'test', povIdentity: root.id);
     final model = MockV2FeedModel(trustGraph: tg, followNetwork: fn);
 
     final controller = GraphController(model);
     controller.mode = GraphViewMode.identity;
-    controller.focusedIdentity = IdentityKey(target.token);
+    controller.focusedIdentity = target.id;
     signInState.pov = root.token;
     
     final data = controller.buildGraphData();
@@ -150,7 +150,7 @@ void main() {
     // If it finds Path 3 first, it might only find 1 path.
     // But BFS should find Path 1 or Path 2 or Path 3 (all length 3).
     
-    expect(data.nodes, contains(IdentityKey(target.token)));
+    expect(data.nodes, contains(target.id));
     expect(data.edges.length, greaterThanOrEqualTo(3));
   });
 

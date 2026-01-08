@@ -53,7 +53,7 @@ void main() {
     );
 
     final delegateContent = await contentPipeline.fetchDelegateContent(
-      {DelegateKey(lisaD!.token)},
+      {lisaD!.id},
       delegateResolver: delegateResolver,
       graph: graph,
     );
@@ -68,8 +68,8 @@ void main() {
         delegateResolver,
         contentResult,
         enableCensorship: true,
-        meIdentityKeys: [IdentityKey(lisa.token)],
-        meDelegateKeys: [DelegateKey(lisaD.token)],
+        meIdentityKeys: [lisa.id],
+        meDelegateKeys: [lisaD.id],
     );
 
     // 3. Verify Equivalence

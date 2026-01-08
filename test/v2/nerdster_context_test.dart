@@ -36,12 +36,12 @@ void main() async {
     await bob.trust(charlie, moniker: 'charlie');
 
     final allTrustStatements = {
-      IdentityKey(alice.token): alice.trustStatements,
-      IdentityKey(bob.token): bob.trustStatements,
+      alice.id: alice.trustStatements,
+      bob.id: bob.trustStatements,
     };
 
     final trustGraph = reduceTrustGraph(
-      TrustGraph(pov: IdentityKey(alice.token)),
+      TrustGraph(pov: alice.id),
       allTrustStatements,
     );
 
@@ -58,10 +58,10 @@ void main() async {
     );
 
     // Alice should follow Bob because of direct trust
-    expect(followNet.contains(IdentityKey(bob.token)), true, reason: 'Alice should follow Bob via direct trust');
+    expect(followNet.contains(bob.id), true, reason: 'Alice should follow Bob via direct trust');
     
     // Alice should follow Charlie because Bob (who Alice follows) trusts Charlie
-    expect(followNet.contains(IdentityKey(charlie.token)), true, reason: 'Alice should follow Charlie via Bob\'s trust');
+    expect(followNet.contains(charlie.id), true, reason: 'Alice should follow Charlie via Bob\'s trust');
   });
 
   test('<nerdster> context: block in WoT does NOT imply block in follow', () async {

@@ -157,12 +157,12 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
   // Verify
   final src = SourceFactory.get<TrustStatement>(kOneofusDomain);
   final pipeline = TrustPipeline(src);
-  final trustGraph = await pipeline.build(me.token);
+  final trustGraph = await pipeline.build(me.id);
 
   // Trigger delegate resolution to generate notifications
   final resolver = DelegateResolver(trustGraph);
-  resolver.resolveForIdentity(IdentityKey(alice.token));
-  resolver.resolveForIdentity(IdentityKey(bob.token));
+  resolver.resolveForIdentity(alice.id);
+  resolver.resolveForIdentity(bob.id);
 
   check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block your key")), "Missing: Attempt to block your key");
   check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block trusted key")), "Missing: Attempt to block trusted key");
@@ -177,7 +177,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
 
   // Verify Labels
   final labeler = V2Labeler(trustGraph, delegateResolver: resolver);
-  final bobDelegates = resolver.getDelegatesForIdentity(IdentityKey(bob.token));
+  final bobDelegates = resolver.getDelegatesForIdentity(bob.id);
   final nerdsterDelegates = bobDelegates.where((d) => resolver.getDomainForDelegate(d) == 'nerdster.org').toList();
   
   check(nerdsterDelegates.length >= 2, "Missing: Bob should have at least 2 delegates");

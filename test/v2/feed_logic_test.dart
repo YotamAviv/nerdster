@@ -148,7 +148,7 @@ void main() {
     await criticDelegate.doRate(subject: ratingToken, recommend: false, comment: 'Bad take');
 
     // 4. Refresh Viewer's feed
-    await controller.refresh(IdentityKey(viewer.token));
+    await controller.refresh(viewer.id);
 
     expect(controller.error, isNull);
     final model = controller.value!;
@@ -186,7 +186,7 @@ void main() {
 
     // Wait for controller to finish loading the requested PoV
     // (Because signIn triggered a refresh for 'Me', the explicit refresh call might have returned early)
-    while (controller.value?.povToken != IdentityKey(stranger.token) || controller.loading) {
+    while (controller.value?.povToken != stranger.id || controller.loading) {
       await Future.delayed(const Duration(milliseconds: 50));
     }
 

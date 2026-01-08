@@ -30,7 +30,7 @@ void main() {
     final milhouse = DemoIdentityKey.findByName('milhouse')!;
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
-    final graph = await pipeline.build(milhouse.token);
+    final graph = await pipeline.build(milhouse.id);
     
     final homer = DemoIdentityKey.findByName('homer')!;
     final homer2 = DemoIdentityKey.findByName('homer2')!;
@@ -55,7 +55,7 @@ void main() {
     final lisa = DemoIdentityKey.findByName('lisa')!;
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
-    final graph = await pipeline.build(lisa.token);
+    final graph = await pipeline.build(lisa.id);
     final labeler = V2Labeler(graph);
 
     // PoV should be "Lisa" because Marge (and others) name her "Lisa" in the graph.
@@ -71,7 +71,7 @@ void main() {
     final bart = DemoIdentityKey.findByName('bart')!;
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
-    final graph = await pipeline.build(bart.token);
+    final graph = await pipeline.build(bart.id);
     final labeler = V2Labeler(graph);
 
     expect(labeler.getLabel(bart.token), 'Bart');

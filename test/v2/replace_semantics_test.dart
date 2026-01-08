@@ -30,13 +30,13 @@ void main() {
     final s1 = await aliceNew.doTrust(TrustVerb.replace, alice);
 
     final tg = reduceTrustGraph(
-      TrustGraph(pov: IdentityKey(aliceNew.token)),
+      TrustGraph(pov: aliceNew.id),
       {
-        IdentityKey(aliceNew.token): [s1],
+        aliceNew.id: [s1],
       },
     );
 
-    expect(tg.replacementConstraints[IdentityKey(alice.token)], equals(kSinceAlways));
+    expect(tg.replacementConstraints[alice.id], equals(kSinceAlways));
   });
 
   test('Replace Semantics: Should be issuer-aware for revokeAt resolution', () async {
@@ -51,14 +51,14 @@ void main() {
     final sReplace = await aliceNew.doTrust(TrustVerb.replace, alice, revokeAt: sBob.token);
 
     final tg = reduceTrustGraph(
-      TrustGraph(pov: IdentityKey(aliceNew.token)),
+      TrustGraph(pov: aliceNew.id),
       {
-        IdentityKey(aliceNew.token): [sReplace],
-        IdentityKey(bob.token): [sBob],
+        aliceNew.id: [sReplace],
+        bob.id: [sBob],
       },
     );
 
-    expect(tg.replacementConstraints[IdentityKey(alice.token)], equals(sBob.token));
+    expect(tg.replacementConstraints[alice.id], equals(sBob.token));
     
     // Now check if it actually revokes since always because the issuer doesn't match
     // We can't easily check the internal resolveReplacementLimit result without more setup,
@@ -67,16 +67,16 @@ void main() {
     final sAlice = await alice.doTrust(TrustVerb.trust, bob, moniker: 'bob');
     
     final tg2 = reduceTrustGraph(
-      TrustGraph(pov: IdentityKey(aliceNew.token)),
+      TrustGraph(pov: aliceNew.id),
       {
-        IdentityKey(aliceNew.token): [sReplace],
-        IdentityKey(bob.token): [sBob],
-        IdentityKey(alice.token): [sAlice],
+        aliceNew.id: [sReplace],
+        bob.id: [sBob],
+        alice.id: [sAlice],
       },
     );
 
     // If it worked, sAlice should be filtered out because revokeAt was invalid (wrong issuer) -> <since always>
-    expect(tg2.distances.containsKey(IdentityKey(bob.token)), isFalse, 
+    expect(tg2.distances.containsKey(bob.id), isFalse, 
       reason: 'Bob should not be trusted via Alice because Alice is revoked since always');
   });
 }
