@@ -49,16 +49,9 @@ class GraphController {
 
   IdentityKey get povIdentity => feedModel.povToken;
 
-  IdentityKey _resolveAlias(IdentityKey token) {
-    if (feedModel.trustGraph.isTrusted(token)) {
-      return feedModel.trustGraph.resolveIdentity(token);
-    }
-    return token;
-  }
-
   GraphData buildGraphData() {
     final Set<String> nodes = {};
-    final String root = _resolveAlias(povIdentity).value;
+    final String root = feedModel.trustGraph.resolveIdentity(povIdentity).value;
 
     if (focusedIdentity == null) {
       return GraphData(
@@ -75,15 +68,7 @@ class GraphController {
       _addFollowEdges(nodes, allEdges);
     }
 
-    IdentityKey targetKey = focusedIdentity!;
-    // Handle potential delegate in focus
-    // TODO: The UI should probably resolve this before setting it on the controller
-    final IdentityKey? delegateMatch =
-        feedModel.delegateResolver.getIdentityForDelegate(DelegateKey(targetKey.value));
-    if (delegateMatch != null) {
-      targetKey = delegateMatch;
-    }
-    final String target = _resolveAlias(targetKey).value;
+    final String target = feedModel.labeler.getIdentityForToken(focusedIdentity!).value;
 
     // Reset nodes and edges to only what's needed for the paths
     nodes.clear();
@@ -131,8 +116,8 @@ class GraphController {
   void _addPathToGraph(List<IdentityKey> path, List<GraphEdgeData> allEdges, Set<String> nodes,
       Set<GraphEdgeData> edges) {
     for (int i = 0; i < path.length - 1; i++) {
-      final String fromId = _resolveAlias(path[i]).value;
-      final String toId = _resolveAlias(path[i + 1]).value;
+      final String fromId = feedModel.trustGraph.resolveIdentity(path[i]).value;
+      final String toId = feedModel.trustGraph.resolveIdentity(path[i + 1]).value;
 
       if (fromId == toId) continue;
 
@@ -153,13 +138,7 @@ class GraphController {
     final Set<String> keepNodes = {};
     final Set<GraphEdgeData> pathEdges = {};
 
-    IdentityKey targetKey = focusedIdentity!;
-    final IdentityKey? delegateMatch =
-        feedModel.delegateResolver.getIdentityForDelegate(DelegateKey(targetKey.value));
-    if (delegateMatch != null) {
-      targetKey = delegateMatch;
-    }
-    final String target = _resolveAlias(targetKey).value;
+    final String target = feedModel.labeler.getIdentityForToken(focusedIdentity!).value;
 
     if (mode == GraphViewMode.identity) {
       final List<List<IdentityKey>>? paths = feedModel.trustGraph.paths[IdentityKey(target)];
@@ -181,13 +160,13 @@ class GraphController {
     final tg = feedModel.trustGraph;
 
     for (final IdentityKey issuer in tg.edges.keys) {
-      final String issuerIdentity = _resolveAlias(issuer).value;
+      final String issuerIdentity = feedModel.trustGraph.resolveIdentity(issuer).value;
       for (final TrustStatement s in tg.edges[issuer]!) {
         if (s.verb == TrustVerb.trust ||
             s.verb == TrustVerb.block ||
             s.verb == TrustVerb.replace ||
             s.verb == TrustVerb.delegate) {
-          final String subjectIdentity = _resolveAlias(IdentityKey(s.subjectToken)).value;
+          final String subjectIdentity = feedModel.trustGraph.resolveIdentity(IdentityKey(s.subjectToken)).value;
           final bool isNonCanonical = tg.replacements.containsKey(IdentityKey(s.subjectToken));
 
           final bool isConflict =
@@ -212,7 +191,7 @@ class GraphController {
     final fn = feedModel.followNetwork;
 
     for (final IdentityKey issuerIdentity in fn.edges.keys) {
-      final String resolvedIssuer = _resolveAlias(issuerIdentity).value;
+      final String resolvedIssuer = feedModel.trustGraph.resolveIdentity(issuerIdentity).value;
       for (final ContentStatement s in fn.edges[issuerIdentity]!) {
         // Subjects in follow network can be delegates. Resolve them.
         IdentityKey subjectKey = IdentityKey(s.subjectToken);
@@ -221,7 +200,7 @@ class GraphController {
         if (delegateMatch != null) {
           subjectKey = delegateMatch;
         }
-        final String subjectIdentity = _resolveAlias(subjectKey).value;
+        final String subjectIdentity = feedModel.trustGraph.resolveIdentity(subjectKey).value;
 
         final bool isConflict =
             fn.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
@@ -241,16 +220,19 @@ class GraphController {
     if (fn.fcontext == '<nerdster>') {
       final tg = feedModel.trustGraph;
       for (final IdentityKey issuer in tg.edges.keys) {
-        if (!fn.contains(issuer)) continue;
+        final IdentityKey issuerIdentityKey = feedModel.trustGraph.resolveIdentity(issuer);
+        if (!fn.contains(issuerIdentityKey)) continue;
 
-        final String issuerIdentity = _resolveAlias(issuer).value;
+        final String issuerIdentity = issuerIdentityKey.value;
 
         for (final TrustStatement s in tg.edges[issuer]!) {
           if (s.verb != TrustVerb.trust) continue;
           final IdentityKey subjectKey = IdentityKey(s.subjectToken);
-          if (!fn.contains(subjectKey)) continue;
+          final IdentityKey subjectIdentityKey = feedModel.trustGraph.resolveIdentity(subjectKey);
+          
+          if (!fn.contains(subjectIdentityKey)) continue;
 
-          final String subjectIdentity = _resolveAlias(subjectKey).value;
+          final String subjectIdentity = subjectIdentityKey.value;
 
           _mergeOrAddEdge(
               edges,
@@ -295,9 +277,9 @@ class GraphController {
       final IdentityKey issuerKey = IdentityKey(getToken(conflict.rejectedStatement.i));
       final IdentityKey subjectKey = IdentityKey(conflict.rejectedStatement.subjectToken);
 
-      final String fromId = _resolveAlias(issuerKey).value;
+      final String fromId = feedModel.trustGraph.resolveIdentity(issuerKey).value;
 
-      final String toId = _resolveAlias(subjectKey).value;
+      final String toId = feedModel.trustGraph.resolveIdentity(subjectKey).value;
 
       if (nodes.contains(fromId) && nodes.contains(toId)) {
         GraphEdgeData? match;

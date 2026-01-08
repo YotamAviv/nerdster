@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:nerdster/content/content_statement.dart';
-/*
 import 'package:nerdster/demotest/cases/egos.dart';
 import 'package:nerdster/demotest/cases/loner.dart';
 import 'package:nerdster/demotest/cases/notifications_gallery.dart';
@@ -11,7 +10,6 @@ import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/v2_verification.dart';
-*/
 
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
@@ -37,7 +35,6 @@ abstract class DemoKey {
   static final Map<String, Json> _exports = {};
 
   static final dynamic demos = {
-    /*
     'notificationsGallery': notificationsGallery,
     'simpsonsDemo': simpsonsDemo,
     'simpsonsRelateDemo': simpsonsRelateDemo,
@@ -52,7 +49,6 @@ abstract class DemoKey {
     'egos': egos,
     'egosCircle': egosCircle,
     'stress': stress,
-    */
   };
 
 

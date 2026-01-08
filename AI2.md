@@ -12,10 +12,9 @@ read the testing docs
 run all tests, unti and integration tests included.
 
 
-read AI.md
-run git status
-run git diff on every change
-read those changes
-Let me know if you notice anything that might be problematic.
-If not, suggest a commit message based only on the GIT diffs, not based on your memory
-Output ONLY the commit message here in this file right here:
+Fix Graph V2 Visuals and Logic; Enable Demos
+
+- GraphView: Restore visual parity with v2clean (node styling, colors, shadows).
+- GraphController: Fix delegate focus resolution using Labeler; fix edge filtering in nerdster context.
+- V2Labeler: Add getIdentityForToken to support controller logic.
+- DemoKey: Uncomment demo cases and imports.

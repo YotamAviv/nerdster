@@ -271,9 +271,6 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   }
 
   Widget _buildNodeWidget(IdentityKey identity) {
-    // Handling ellipsis node? The old code had:
-    // if (identity.startsWith('...')) { ... }
-    // If IdentityKey wraps '...', we can check.
     if (identity.value.startsWith('...')) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -287,15 +284,20 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     }
 
     final model = widget.controller.value!;
-    // Using getLabel now which accepts string? Or I should overload/use label.
-    // labeler.label accepts string.
     final label = model.labeler.getLabel(identity.value);
     
     final IdentityKey resolvedRoot = model.trustGraph.resolveIdentity(_graphController!.povIdentity);
     
     IdentityKey? resolvedFocused; 
     if (_graphController!.focusedIdentity != null) {
-       final f = _graphController!.focusedIdentity!;
+       IdentityKey f = _graphController!.focusedIdentity!;
+       
+       // Handle delegate resolution for focus highlighting
+       final delegateMatch = model.delegateResolver.getIdentityForDelegate(DelegateKey(f.value));
+       if (delegateMatch != null) {
+         f = delegateMatch;
+       }
+
        if (model.trustGraph.isTrusted(f)) {
          resolvedFocused = model.trustGraph.resolveIdentity(f);
        } else {
@@ -317,23 +319,24 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
           color: isRoot ? Colors.blue[50] : (isFocused ? Colors.orange[50] : Colors.white),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isRoot ? Colors.blue : (isFocused ? Colors.orange : Colors.grey),
-            width: isRoot || isFocused ? 2 : 1,
+            color: isFocused ? Colors.orange : (isRoot ? Colors.blue : Colors.grey[300]!),
+            width: isFocused || isRoot ? 2 : 1,
           ),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 3,
-              offset: const Offset(0, 2),
-            ),
+            if (isFocused || isRoot)
+              BoxShadow(
+                color: (isFocused ? Colors.orange : Colors.blue).withOpacity(0.2),
+                blurRadius: 4,
+                spreadRadius: 1,
+              ),
           ],
         ),
         child: Text(
           label,
           style: TextStyle(
+            fontSize: isRoot ? 13 : 11,
             fontWeight: isRoot || isFocused ? FontWeight.bold : FontWeight.normal,
-            color: Colors.black87,
-            fontSize: 12,
+            color: isRoot ? Colors.blue[900] : (isFocused ? Colors.orange[900] : Colors.black87),
           ),
         ),
       ),

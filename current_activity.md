@@ -1,42 +1,16 @@
 # Current Activity:
 
-Tighten up DemoKey
 
-Too much of the code is lacking types.
-The AI has made too many mistakes getting confused among String tokens.. are the delegate keys, identity keys, subject tokens.. ???
-The fix:
-Start by changing ContentStatement and TrustStatement.
-These should return the correct types (DelegateKey, IdentityKey, ContentKey) for
-- iKey (formerly Statement.iToken in parent class, needs to move to subclasses and return DelegateKey / IdentityKey)
-- subjectKey (was subjectToken, needs to return the correct key depending on statement type and verb (ContentStatement ratings are about content, follows are about identities), TrustStatement follow,block are about identityies, delegate are about delegates, clear could be either)
-- otherSubjectToken (new to ContentStatement, returns ContentKey)
-DemoKey
-- This class is clearner than it used to be now that it no longer allows a single DemoKey to issue both types of statements, but it can be cleaner still if it was created as an IdentityKey wrapper or a DelegateKey wrapper.
-
-Types should be used thoughout to prevent these errors, see coding_style.md.
-
-Clean up the code and docs, especially regarding subject equivalence.
-Address several bugs and misunderstandings related to subject equivalence
-Some of the code is suspect or not clear even though no bug or failing test has been found.
-
-Current, known bugs:
-- A mistake, I think
-  - Can't see who's like (or dislike) that is on the ContentCard.
-    Address this by allowing the user to click on the counts.
-
-Plan:
-- update the spec regarding what we should see where (likes, related content, equivalent content, ..):
-- update the code docs regarding the model classes like SubjectAggregation.
-- upgrade the code
-  - leverage Dart typing: IdentityKey, DelegateKey.
-  - Add TODOs
-  - Address TODOs
-- add more tests
-  - if the fail, fix the code
 
 
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
+
+Next steps:
+- use GitLens to compare this to v2clean
+- merge
+- name changes.. variables (token/id/key me/my), filenames (v2_nerdy_content_view_spec.md)
+
 
 ## Not required for V2 switch to PROD
 

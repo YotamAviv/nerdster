@@ -200,6 +200,15 @@ class V2Labeler {
     return token.length > 8 ? token.substring(0, 8) : token;
   }
 
+  /// Returns the canonical identity for a given token (key or delegate).
+  IdentityKey getIdentityForToken(IdentityKey token) {
+    if (delegateResolver != null) {
+      final identity = delegateResolver!.getIdentityForDelegate(DelegateKey(token.value));
+      if (identity != null) return identity;
+    }
+    return graph.resolveIdentity(token);
+  }
+
   /// Returns all monikers associated with the identity of this token.
   List<String> getAllLabels(IdentityKey token) {
     final identity = graph.resolveIdentity(token);
