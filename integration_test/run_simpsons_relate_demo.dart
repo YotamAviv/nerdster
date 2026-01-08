@@ -55,8 +55,8 @@ void main() {
     final characters = ['lisa', 'bart', 'homer', 'marge'];
     
     for (var name in characters) {
-      final identityKey = DemoKey.findByName(name);
-      final delegateKey = DemoKey.findByName('$name-nerdster0');
+      final identityKey = DemoIdentityKey.findByName(name);
+      final delegateKey = DemoDelegateKey.findByName('$name-nerdster0');
       
       if (identityKey != null && delegateKey != null) {
         final json = {

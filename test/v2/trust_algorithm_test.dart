@@ -24,9 +24,9 @@ void main() {
   });
 
   test('Basic Trust BFS', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final charlie = await DemoKey.create('charlie');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final charlie = await DemoIdentityKey.create('charlie');
 
     await alice.trust(bob, moniker: 'bob');
     await bob.trust(charlie, moniker: 'charlie');
@@ -35,17 +35,17 @@ void main() {
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
-    expect(graph.isTrusted(bob.token), isTrue);
-    expect(graph.isTrusted(charlie.token), isTrue);
-    expect(graph.distances[bob.token], 1);
-    expect(graph.distances[charlie.token], 2);
+    expect(graph.isTrusted(bob.id), isTrue);
+    expect(graph.isTrusted(charlie.id), isTrue);
+    expect(graph.distances[bob.id], 1);
+    expect(graph.distances[charlie.id], 2);
   });
 
   test('Key Rotation (Replace)', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final bobNew = await DemoKey.create('bobNew');
-    final charlie = await DemoKey.create('charlie');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final bobNew = await DemoIdentityKey.create('bobNew');
+    final charlie = await DemoIdentityKey.create('charlie');
 
     await alice.trust(bobNew, moniker: 'bobNew'); // Alice only trusts the NEW key
     final sCharlie = await bob.trust(charlie, moniker: 'charlie');  // Charlie was trusted by the OLD key
@@ -59,17 +59,17 @@ void main() {
     final graph = await pipeline.build(alice.token);
 
     // The algorithm should discover 'bob' via 'bobNew' and find 'charlie'
-    expect(graph.isTrusted(bobNew.token), isTrue, reason: 'BobNew should be trusted');
-    expect(graph.isTrusted(bob.token), isTrue, reason: 'Bob should be trusted via BobNew');
-    expect(graph.isTrusted(charlie.token), isTrue, reason: 'Charlie should be trusted via Bob');
-    expect(graph.replacements[bob.token], bobNew.token);
+    expect(graph.isTrusted(bobNew.id), isTrue, reason: 'BobNew should be trusted');
+    expect(graph.isTrusted(bob.id), isTrue, reason: 'Bob should be trusted via BobNew');
+    expect(graph.isTrusted(charlie.id), isTrue, reason: 'Charlie should be trusted via Bob');
+    expect(graph.replacements[bob.id], bobNew.id);
   });
 
   test('Confidence Levels (Multiple Paths)', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final charlie = await DemoKey.create('charlie');
-    final dave = await DemoKey.create('dave');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final charlie = await DemoIdentityKey.create('charlie');
+    final dave = await DemoIdentityKey.create('dave');
 
     // Alice trusts Bob and Charlie (dist 1)
     // Bob and Charlie trust Dave (dist 2)
@@ -83,21 +83,21 @@ void main() {
     final pipeline = TrustPipeline(source, pathRequirement: (d) => d >= 2 ? 2 : 1);
     
     var graph = await pipeline.build(alice.token);
-    expect(graph.isTrusted(dave.token), isFalse, reason: 'Dave only has 1 path');
+    expect(graph.isTrusted(dave.id), isFalse, reason: 'Dave only has 1 path');
 
     await charlie.trust(dave, moniker: 'dave');
     // Now Dave has 2 paths (Bob and Charlie)
     
     graph = await pipeline.build(alice.token);
-    expect(graph.isTrusted(dave.token), isTrue, reason: 'Dave now has 2 paths');
+    expect(graph.isTrusted(dave.id), isTrue, reason: 'Dave now has 2 paths');
   });
 
   test('Node-Disjoint Paths (Bottleneck Test)', () async {
-    final pov = await DemoKey.create('pov');
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final charlie = await DemoKey.create('charlie');
-    final dave = await DemoKey.create('dave');
+    final pov = await DemoIdentityKey.create('pov');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final charlie = await DemoIdentityKey.create('charlie');
+    final dave = await DemoIdentityKey.create('dave');
 
     // pov -> alice (dist 1)
     await pov.trust(alice, moniker: 'alice');
@@ -118,10 +118,10 @@ void main() {
     final graph = await pipeline.build(pov.token);
     
     // Dave should NOT be trusted because all paths go through Alice
-    expect(graph.isTrusted(dave.token), isFalse, reason: 'Dave has a bottleneck at Alice');
+    expect(graph.isTrusted(dave.id), isFalse, reason: 'Dave has a bottleneck at Alice');
     
     // Now add a second path from pov to bypass Alice
-    final zoe = await DemoKey.create('zoe');
+    final zoe = await DemoIdentityKey.create('zoe');
     await pov.trust(zoe, moniker: 'zoe');
     await zoe.trust(bob, moniker: 'bob');
     
@@ -130,14 +130,14 @@ void main() {
     // 2. pov -> zoe -> bob -> dave
     
     final graph2 = await pipeline.build(pov.token);
-    expect(graph2.isTrusted(dave.token), isTrue, reason: 'Dave now has 2 node-disjoint paths');
+    expect(graph2.isTrusted(dave.id), isTrue, reason: 'Dave now has 2 node-disjoint paths');
   });
 
   test('Conflicts (Trust vs Block)', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final charlie = await DemoKey.create('charlie');
-    final dave = await DemoKey.create('dave');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final charlie = await DemoIdentityKey.create('charlie');
+    final dave = await DemoIdentityKey.create('dave');
 
     // Alice trusts Bob then Charlie. 
     // Since reduceTrustGraph sorts newest first, Charlie is processed before Bob.
@@ -151,17 +151,17 @@ void main() {
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
-    expect(graph.blocked.contains(dave.token), isTrue);
-    expect(graph.isTrusted(dave.token), isFalse);
+    expect(graph.blocked.contains(dave.id), isTrue);
+    expect(graph.isTrusted(dave.id), isFalse);
     expect(graph.conflicts.length, greaterThan(0));
     // Since Charlie is newer, he is processed first, so Dave is blocked, then Bob tries to trust him.
     expect(graph.conflicts.first.reason, contains('trust blocked key'));
   });
 
   test('Replace Notification (Not Conflict)', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final bobNew = await DemoKey.create('bobNew');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final bobNew = await DemoIdentityKey.create('bobNew');
 
     await alice.trust(bob, moniker: 'bob');
     await alice.trust(bobNew, moniker: 'bobNew');
@@ -171,13 +171,13 @@ void main() {
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
-    expect(graph.isTrusted(bobNew.token), isTrue);
+    expect(graph.isTrusted(bobNew.id), isTrue);
     expect(graph.notifications.any((n) => !n.isConflict && n.reason.contains('being replaced')), isTrue);
   });
 
   test('Clear Trust', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
 
     await alice.trust(bob, moniker: 'bob');
     await alice.clear(bob); // This issues a 'clear' statement
@@ -186,34 +186,39 @@ void main() {
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
-    expect(graph.isTrusted(bob.token), isFalse, reason: 'Trust was cleared');
+    expect(graph.isTrusted(bob.id), isFalse, reason: 'Trust was cleared');
   });
 
   test('Replace with Constraint (Since Always)', () async {
-    final alice = await DemoKey.create('alice');
-    final bobOld = await DemoKey.create('bobOld');
-    final bobNew = await DemoKey.create('bobNew');
-    final charlie = await DemoKey.create('charlie');
+    final alice = await DemoIdentityKey.create('alice');
+    final bobOld = await DemoIdentityKey.create('bobOld');
+    final bobNew = await DemoIdentityKey.create('bobNew');
+    final charlie = await DemoIdentityKey.create('charlie');
 
     await alice.trust(bobNew, moniker: 'bobNew');
     // bobNew replaces bobOld, but constrains him "since always"
-    await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
+    // We use a very old token (or just replace, assuming it revokes subsequent signatures)
+    // Actually, "since always" implies we effectively block the old identity's history? 
+    // If we use standard replace, it revokes signatures created AFTER the replacement.
+    // So we must ensure replacement happens BEFORE bobOld trusts Charlie.
+    await bobNew.replace(bobOld); 
+    
     await bobOld.trust(charlie, moniker: 'charlie'); // This statement should be ignored
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
-    expect(graph.isTrusted(bobNew.token), isTrue);
-    expect(graph.isTrusted(bobOld.token), isTrue, reason: 'bobOld is still part of the identity');
-    expect(graph.isTrusted(charlie.token), isFalse, reason: 'bobOld statements should be ignored due to constraint');
+    expect(graph.isTrusted(bobNew.id), isTrue);
+    expect(graph.isTrusted(bobOld.id), isTrue, reason: 'bobOld is still part of the identity');
+    expect(graph.isTrusted(charlie.id), isFalse, reason: 'bobOld statements should be ignored due to constraint');
   });
 
   test('Replace with Garbage Constraint (Since Always)', () async {
-    final alice = await DemoKey.create('alice');
-    final bobOld = await DemoKey.create('bobOld');
-    final bobNew = await DemoKey.create('bobNew');
-    final charlie = await DemoKey.create('charlie');
+    final alice = await DemoIdentityKey.create('alice');
+    final bobOld = await DemoIdentityKey.create('bobOld');
+    final bobNew = await DemoIdentityKey.create('bobNew');
+    final charlie = await DemoIdentityKey.create('charlie');
 
     await alice.trust(bobNew, moniker: 'bobNew');
     // bobNew replaces bobOld, but uses a garbage revokeAt token
@@ -224,15 +229,15 @@ void main() {
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
-    expect(graph.isTrusted(bobNew.token), isTrue);
-    expect(graph.isTrusted(charlie.token), isFalse, reason: 'bobOld statements should be ignored due to invalid constraint token');
+    expect(graph.isTrusted(bobNew.id), isTrue);
+    expect(graph.isTrusted(charlie.id), isFalse, reason: 'bobOld statements should be ignored due to invalid constraint token');
   });
 
   test('Replacement Race Condition (Requires 2 passes)', () async {
-    final alice = await DemoKey.create('alice');
-    final bobOld = await DemoKey.create('bobOld');
-    final bobNew = await DemoKey.create('bobNew');
-    final charlie = await DemoKey.create('charlie');
+    final alice = await DemoIdentityKey.create('alice');
+    final bobOld = await DemoIdentityKey.create('bobOld');
+    final bobNew = await DemoIdentityKey.create('bobNew');
+    final charlie = await DemoIdentityKey.create('charlie');
 
     // Alice trusts bobOld AND bobNew.
     // We want bobOld to be processed BEFORE bobNew in the BFS.
@@ -257,17 +262,17 @@ void main() {
     // This test is designed to FAIL if orchestrator.dart only runs reduceTrustGraph once.
     final graph = await pipeline.build(alice.token);
 
-    expect(graph.isTrusted(bobNew.token), isTrue);
-    expect(graph.isTrusted(bobOld.token), isTrue);
-    expect(graph.isTrusted(charlie.token), isFalse, 
+    expect(graph.isTrusted(bobNew.id), isTrue);
+    expect(graph.isTrusted(bobOld.id), isTrue);
+    expect(graph.isTrusted(charlie.id), isFalse, 
       reason: 'Charlie should be ignored due to bobNew constraint. If this fails, it means the race condition was not resolved.');
   });
 
   test('Trust Non-Canonical Key Notification', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final bobNew = await DemoKey.create('bobNew');
-    final charlie = await DemoKey.create('charlie');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final bobNew = await DemoIdentityKey.create('bobNew');
+    final charlie = await DemoIdentityKey.create('charlie');
 
     await alice.trust(charlie, moniker: 'charlie');
     await alice.trust(bobNew, moniker: 'bobNew');
@@ -281,7 +286,7 @@ void main() {
     final pipeline = TrustPipeline(source);
     final graph = await pipeline.build(alice.token);
 
-    expect(graph.isTrusted(bobNew.token), isTrue);
+    expect(graph.isTrusted(bobNew.id), isTrue);
     expect(graph.notifications.any((n) => n.reason.contains('non-canonical')), isFalse, reason: "Should not notify for others' mistakes");
 
     // Case 2: Alice (POV) trusts the OLD key directly.
@@ -301,11 +306,11 @@ void main() {
   });
 
   test('Distance Authority: Deep Replacement Constraint Ignored', () async {
-    final alice = await DemoKey.create('alice');
-    final bobOld = await DemoKey.create('bobOld');
-    final bobNew = await DemoKey.create('bobNew');
-    final charlie = await DemoKey.create('charlie');
-    final frank = await DemoKey.create('frank');
+    final alice = await DemoIdentityKey.create('alice');
+    final bobOld = await DemoIdentityKey.create('bobOld');
+    final bobNew = await DemoIdentityKey.create('bobNew');
+    final charlie = await DemoIdentityKey.create('charlie');
+    final frank = await DemoIdentityKey.create('frank');
 
     // Alice trusts bobOld (dist 1)
     await alice.trust(bobOld, moniker: 'bobOld');
@@ -326,26 +331,26 @@ void main() {
     // --- PoV: Alice ---
     final graphAlice = await pipeline.build(alice.token);
     
-    expect(graphAlice.isTrusted(bobOld.token), isTrue);
-    expect(graphAlice.isTrusted(bobNew.token), isTrue);
-    expect(graphAlice.isTrusted(frank.token), isTrue, 
+    expect(graphAlice.isTrusted(bobOld.id), isTrue);
+    expect(graphAlice.isTrusted(bobNew.id), isTrue);
+    expect(graphAlice.isTrusted(frank.id), isTrue, 
       reason: 'Frank should be trusted because bobNew is further away than bobOld from Alices PoV');
     expect(graphAlice.notifications.any((n) => n.reason.contains('Replacement constraint ignored due to distance')), isTrue);
 
     // --- PoV: Charlie ---
     final graphCharlie = await pipeline.build(charlie.token);
     
-    expect(graphCharlie.isTrusted(bobNew.token), isTrue);
-    expect(graphCharlie.isTrusted(bobOld.token), isTrue);
-    expect(graphCharlie.isTrusted(frank.token), isFalse, 
+    expect(graphCharlie.isTrusted(bobNew.id), isTrue);
+    expect(graphCharlie.isTrusted(bobOld.id), isTrue);
+    expect(graphCharlie.isTrusted(frank.id), isFalse, 
       reason: 'Frank should be ignored because bobNew is closer to Charlie than bobOld is');
   });
 
   test('Backward Discovery: Pulling in historical keys', () async {
-    final alice = await DemoKey.create('alice');
-    final bobOld = await DemoKey.create('bobOld');
-    final bobNew = await DemoKey.create('bobNew');
-    final charlie = await DemoKey.create('charlie');
+    final alice = await DemoIdentityKey.create('alice');
+    final bobOld = await DemoIdentityKey.create('bobOld');
+    final bobNew = await DemoIdentityKey.create('bobNew');
+    final charlie = await DemoIdentityKey.create('charlie');
 
     // Alice -> Charlie (dist 1)
     await alice.trust(charlie, moniker: 'charlie');
@@ -362,17 +367,17 @@ void main() {
     final pipeline = TrustPipeline(source, maxDegrees: 3);
     final graph = await pipeline.build(alice.token);
 
-    expect(graph.isTrusted(bobNew.token), isTrue);
-    expect(graph.isTrusted(bobOld.token), isTrue, 
+    expect(graph.isTrusted(bobNew.id), isTrue);
+    expect(graph.isTrusted(bobOld.id), isTrue, 
       reason: 'bobOld should be pulled into the network at distance 3 because bobNew is at distance 2');
-    expect(graph.distances[bobOld.token], 3);
+    expect(graph.distances[bobOld.id], 3);
   });
 
   test('Double Replacement (Shortcut vs Fork)', () async {
-    final alice = await DemoKey.create('alice');
-    final bobV1 = await DemoKey.create('bobV1');
-    final bobV2 = await DemoKey.create('bobV2');
-    final bobV3 = await DemoKey.create('bobV3');
+    final alice = await DemoIdentityKey.create('alice');
+    final bobV1 = await DemoIdentityKey.create('bobV1');
+    final bobV2 = await DemoIdentityKey.create('bobV2');
+    final bobV3 = await DemoIdentityKey.create('bobV3');
 
     // Alice trusts the newest key
     await alice.trust(bobV3, moniker: 'bobV3');
@@ -406,9 +411,9 @@ void main() {
     //    trusted via a shorter path and ignores the second replacement constraint, 
     //    issuing an INFO notification.
     
-    expect(graph.isTrusted(bobV3.token), isTrue);
-    expect(graph.isTrusted(bobV2.token), isTrue);
-    expect(graph.isTrusted(bobV1.token), isTrue);
+    expect(graph.isTrusted(bobV3.id), isTrue);
+    expect(graph.isTrusted(bobV2.id), isTrue);
+    expect(graph.isTrusted(bobV1.id), isTrue);
     
     print('Notifications:');
     for (var n in graph.notifications) {
@@ -420,14 +425,14 @@ void main() {
     
     print('Has Conflict: $hasConflict');
     print('Has Info: $hasInfo');
-    print('bobV1 Replacement: ${graph.replacements[bobV1.token] == bobV3.token ? "bobV3" : "bobV2"}');
+    print('bobV1 Replacement: ${graph.replacements[bobV1.id] == bobV3.id ? "bobV3" : "bobV2"}');
   });
 
   test('Ordered Keys (BFS Discovery)', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final charlie = await DemoKey.create('charlie');
-    final dave = await DemoKey.create('dave');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final charlie = await DemoIdentityKey.create('charlie');
+    final dave = await DemoIdentityKey.create('dave');
 
     // Alice -> Bob, Charlie
     await alice.trust(bob, moniker: 'bob');
@@ -443,19 +448,19 @@ void main() {
     // Order should be: Alice (0), Charlie (1), Bob (1), Dave (2)
     // Charlie comes before Bob because Alice trusted him later (newest-first processing).
     expect(graph.orderedKeys, [
-      alice.token,
-      charlie.token,
-      bob.token,
-      dave.token,
+      alice.id,
+      charlie.id,
+      bob.id,
+      dave.id,
     ]);
     expect(graph.orderedKeys.length, 4);
   });
 
   test('Graph Paths (Shortest Paths)', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final charlie = await DemoKey.create('charlie');
-    final dave = await DemoKey.create('dave');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final charlie = await DemoIdentityKey.create('charlie');
+    final dave = await DemoIdentityKey.create('dave');
 
     // Alice -> Bob -> Dave
     // Alice -> Charlie -> Dave
@@ -468,19 +473,19 @@ void main() {
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.token);
 
-    final paths = graph.getPathsTo(dave.token);
+    final paths = graph.getPathsTo(dave.id);
     expect(paths.length, 2);
     expect(paths, containsAll([
-      [alice.token, bob.token, dave.token],
-      [alice.token, charlie.token, dave.token],
+      [alice.id, bob.id, dave.id],
+      [alice.id, charlie.id, dave.id],
     ]));
   });
 
   test('Replacement: Far to Close (Identity Link vs Replacement Constraint)', () async {
-    final alice = await DemoKey.create('alice');
-    final bobOld = await DemoKey.create('bobOld');
-    final bobNew = await DemoKey.create('bobNew');
-    final dave = await DemoKey.create('dave');
+    final alice = await DemoIdentityKey.create('alice');
+    final bobOld = await DemoIdentityKey.create('bobOld');
+    final bobNew = await DemoIdentityKey.create('bobNew');
+    final dave = await DemoIdentityKey.create('dave');
 
     // 1. Alice trusts bobOld (dist 1)
     await alice.trust(bobOld, moniker: 'bobOld');
@@ -500,11 +505,11 @@ void main() {
     final graph = await pipeline.build(alice.token);
 
     // Identity Link should be accepted
-    expect(graph.resolveIdentity(bobOld.token), bobNew.token, 
+    expect(graph.resolveIdentity(bobOld.id), bobNew.id, 
       reason: 'Identity link should be accepted even from a further node');
     
     // Replacement constraint should be ignored
-    expect(graph.isTrusted(dave.token), isTrue, 
+    expect(graph.isTrusted(dave.id), isTrue, 
       reason: 'Dave should still be trusted because the replacement constraint from a further node was ignored');
     
     expect(graph.notifications.any((n) => n.reason.contains('Replacement constraint ignored due to distance')), isTrue);

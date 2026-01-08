@@ -1,3 +1,4 @@
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
@@ -38,26 +39,26 @@ import 'package:nerdster/v2/follow_logic.dart';
 Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   useClock(TestClock(Duration(days: 1)));
 
-  DemoKey lisa = await DemoKey.findOrCreate('lisa');
-  DemoKey bart = await DemoKey.findOrCreate('bart');
-  DemoKey homer = await DemoKey.findOrCreate('homer');
-  DemoKey homer2 = await DemoKey.findOrCreate('homer2');
-  DemoKey marge = await DemoKey.findOrCreate('marge');
-  DemoKey maggie = await DemoKey.findOrCreate('maggie');
+  DemoIdentityKey lisa = await DemoIdentityKey.findOrCreate('lisa');
+  DemoIdentityKey bart = await DemoIdentityKey.findOrCreate('bart');
+  DemoIdentityKey homer = await DemoIdentityKey.findOrCreate('homer');
+  DemoIdentityKey homer2 = await DemoIdentityKey.findOrCreate('homer2');
+  DemoIdentityKey marge = await DemoIdentityKey.findOrCreate('marge');
+  DemoIdentityKey maggie = await DemoIdentityKey.findOrCreate('maggie');
 
-  DemoKey milhouse = await DemoKey.findOrCreate('milhouse');
-  DemoKey luann = await DemoKey.findOrCreate('luann');
-  DemoKey ralph = await DemoKey.findOrCreate('ralph');
-  DemoKey nelson = await DemoKey.findOrCreate('nelson');
+  DemoIdentityKey milhouse = await DemoIdentityKey.findOrCreate('milhouse');
+  DemoIdentityKey luann = await DemoIdentityKey.findOrCreate('luann');
+  DemoIdentityKey ralph = await DemoIdentityKey.findOrCreate('ralph');
+  DemoIdentityKey nelson = await DemoIdentityKey.findOrCreate('nelson');
 
-  DemoKey lenny = await DemoKey.findOrCreate('lenny');
-  DemoKey carl = await DemoKey.findOrCreate('carl');
-  DemoKey burns = await DemoKey.findOrCreate('burns');
-  DemoKey smithers = await DemoKey.findOrCreate('smithers');
+  DemoIdentityKey lenny = await DemoIdentityKey.findOrCreate('lenny');
+  DemoIdentityKey carl = await DemoIdentityKey.findOrCreate('carl');
+  DemoIdentityKey burns = await DemoIdentityKey.findOrCreate('burns');
+  DemoIdentityKey smithers = await DemoIdentityKey.findOrCreate('smithers');
 
-  DemoKey krusty = await DemoKey.findOrCreate('krusty');
-  DemoKey sideshow = await DemoKey.findOrCreate('sideshow');
-  DemoKey mel = await DemoKey.findOrCreate('mel');
+  DemoIdentityKey krusty = await DemoIdentityKey.findOrCreate('krusty');
+  DemoIdentityKey sideshow = await DemoIdentityKey.findOrCreate('sideshow');
+  DemoIdentityKey mel = await DemoIdentityKey.findOrCreate('mel');
 
   // Most trusts lisa
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
@@ -106,8 +107,8 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await bart.doTrust(TrustVerb.trust, milhouse, moniker: 'Milhouse');
   await krusty.doTrust(TrustVerb.trust, mel, moniker: 'Mel');
   await mel.doTrust(TrustVerb.trust, sideshow, moniker: 'Sideshow');
-  DemoKey seymore = await DemoKey.findOrCreate('seymore');
-  DemoKey amanda = await DemoKey.findOrCreate('amanda');
+  DemoIdentityKey seymore = await DemoIdentityKey.findOrCreate('seymore');
+  DemoIdentityKey amanda = await DemoIdentityKey.findOrCreate('amanda');
   await sideshow.doTrust(TrustVerb.trust, mel, moniker: 'Mel');
   await sideshow.doTrust(TrustVerb.trust, milhouse, moniker: '4-Eyes');
   await sideshow.doTrust(TrustVerb.trust, amanda,
@@ -140,22 +141,22 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
       export: 'marge-block-sideshow');
   await milhouse.doTrust(TrustVerb.trust, krusty, moniker: 'Krusty');
 
-  DemoKey lisaN = await lisa.makeDelegate();
-  DemoKey bartN = await bart.makeDelegate();
-  DemoKey burnsN = await burns.makeDelegate();
-  DemoKey homer2N = await homer2.makeDelegate();
-  DemoKey milhouseN = await milhouse.makeDelegate();
-  DemoKey carlN = await carl.makeDelegate();
-  DemoKey smithersN = await smithers.makeDelegate();
-  DemoKey margeN = await marge.makeDelegate(export: 'marge-delegate');
+  DemoDelegateKey lisaN = await lisa.makeDelegate();
+  DemoDelegateKey bartN = await bart.makeDelegate();
+  DemoDelegateKey burnsN = await burns.makeDelegate();
+  DemoDelegateKey homer2N = await homer2.makeDelegate();
+  DemoDelegateKey milhouseN = await milhouse.makeDelegate();
+  DemoDelegateKey carlN = await carl.makeDelegate();
+  DemoDelegateKey smithersN = await smithers.makeDelegate();
+  DemoDelegateKey margeN = await marge.makeDelegate(export: 'marge-delegate');
 
-  DemoKey sideshowN = await sideshow.makeDelegate();
-  DemoKey melN = await mel.makeDelegate();
-  DemoKey amandaN = await amanda.makeDelegate();
-  DemoKey seymoreN = await seymore.makeDelegate();
+  DemoDelegateKey sideshowN = await sideshow.makeDelegate();
+  DemoDelegateKey melN = await mel.makeDelegate();
+  DemoDelegateKey amandaN = await amanda.makeDelegate();
+  DemoDelegateKey seymoreN = await seymore.makeDelegate();
 
-  await sideshow.doTrust(TrustVerb.delegate, margeN,
-      revokeAt: kSinceAlways, comment: 'Karen..', export: 'sideshow-revoke-marge-delegate');
+  await sideshow.delegate(margeN,
+      domain: kNerdsterDomain, revokeAt: kSinceAlways, comment: 'Karen..', export: 'sideshow-revoke-marge-delegate');
 
   // Submit something as each delegate
   const Json brokeback = {'contentType': 'movie', 'title': "Brokeback Mountain", 'year': '2005'};

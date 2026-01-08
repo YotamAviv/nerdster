@@ -2,6 +2,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
+import 'package:nerdster/oneofus/keys.dart';
 
 /// The Orchestrator manages the loop between Fetching (IO) and Reducing (Logic).
 class TrustPipeline {
@@ -27,10 +28,11 @@ class TrustPipeline {
   /// Builds the trust graph starting from [povToken].
   Future<TrustGraph> build(String povToken) async {
     // Initial State
-    TrustGraph graph = TrustGraph(pov: povToken);
-    Set<String> frontier = {povToken};
-    Set<String> visited = {};
-    Map<String, List<TrustStatement>> statementsByIssuer = {};
+    final povKey = IdentityKey(povToken);
+    TrustGraph graph = TrustGraph(pov: povKey);
+    Set<IdentityKey> frontier = {povKey};
+    Set<IdentityKey> visited = {};
+    Map<IdentityKey, List<TrustStatement>> statementsByIssuer = {};
 
     // The Loop
     for (int depth = 0; depth < maxDegrees; depth++) {
@@ -42,12 +44,15 @@ class TrustPipeline {
       if (keysToFetch.isEmpty) break;
 
       // Map keys to their replacement constraints if known.
-      final fetchMap = {for (var k in keysToFetch) k: graph.replacementConstraints[k]};
+      final fetchMap = {for (var k in keysToFetch) k.value: graph.replacementConstraints[k]};
 
       final newStatementsMap = await source.fetch(fetchMap);
       visited.addAll(keysToFetch);
       
-      statementsByIssuer.addAll(newStatementsMap);
+      // Convert String keys to IdentityKey
+      for (var entry in newStatementsMap.entries) {
+        statementsByIssuer[IdentityKey(entry.key)] = entry.value;
+      }
 
       // Collect notifications from source (e.g. corruption)
       // Note: Source errors are now handled by the FeedController/Model directly,

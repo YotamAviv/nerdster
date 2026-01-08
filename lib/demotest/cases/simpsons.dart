@@ -6,31 +6,31 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 
 // This was useful and remains in the tests. The "decentralized" demo Simpsons are in a different file.
-Future<(DemoKey, DemoKey?)> simpsons() async {
+Future<(DemoIdentityKey, DemoDelegateKey?)> simpsons() async {
   useClock(TestClock());
 
-  final DemoKey lisa = await DemoKey.findOrCreate('lisa');
-  final DemoKey bart = await DemoKey.findOrCreate('bart');
-  final DemoKey homer = await DemoKey.findOrCreate('homer');
-  final DemoKey marge = await DemoKey.findOrCreate('marge');
-  final DemoKey homer2 = await DemoKey.findOrCreate('homer2');
-  final DemoKey milhouse = await DemoKey.findOrCreate('milhouse');
-  final DemoKey sideshow = await DemoKey.findOrCreate('sideshow');
-  final DemoKey maggie = await DemoKey.findOrCreate('maggie');
-  final DemoKey lenny = await DemoKey.findOrCreate('lenny');
-  final DemoKey carl = await DemoKey.findOrCreate('carl');
-  final DemoKey burns = await DemoKey.findOrCreate('burns');
-  final DemoKey smithers = await DemoKey.findOrCreate('smithers');
-  final DemoKey luann = await DemoKey.findOrCreate('luann');
-  final DemoKey mel = await DemoKey.findOrCreate('mel');
+  final DemoIdentityKey lisa = await DemoIdentityKey.findOrCreate('lisa');
+  final DemoIdentityKey bart = await DemoIdentityKey.findOrCreate('bart');
+  final DemoIdentityKey homer = await DemoIdentityKey.findOrCreate('homer');
+  final DemoIdentityKey marge = await DemoIdentityKey.findOrCreate('marge');
+  final DemoIdentityKey homer2 = await DemoIdentityKey.findOrCreate('homer2');
+  final DemoIdentityKey milhouse = await DemoIdentityKey.findOrCreate('milhouse');
+  final DemoIdentityKey sideshow = await DemoIdentityKey.findOrCreate('sideshow');
+  final DemoIdentityKey maggie = await DemoIdentityKey.findOrCreate('maggie');
+  final DemoIdentityKey lenny = await DemoIdentityKey.findOrCreate('lenny');
+  final DemoIdentityKey carl = await DemoIdentityKey.findOrCreate('carl');
+  final DemoIdentityKey burns = await DemoIdentityKey.findOrCreate('burns');
+  final DemoIdentityKey smithers = await DemoIdentityKey.findOrCreate('smithers');
+  final DemoIdentityKey luann = await DemoIdentityKey.findOrCreate('luann');
+  final DemoIdentityKey mel = await DemoIdentityKey.findOrCreate('mel');
 
-  final DemoKey lisaN = await lisa.makeDelegate();
-  final DemoKey bartN = await bart.makeDelegate();
-  final DemoKey burnsN = await burns.makeDelegate();
-  final DemoKey homer2N = await homer2.makeDelegate();
-  final DemoKey milhouseN = await milhouse.makeDelegate();
-  final DemoKey carlN = await carl.makeDelegate();
-  final DemoKey margeN = await marge.makeDelegate();
+  final DemoDelegateKey lisaN = await lisa.makeDelegate();
+  final DemoDelegateKey bartN = await bart.makeDelegate();
+  final DemoDelegateKey burnsN = await burns.makeDelegate();
+  final DemoDelegateKey homer2N = await homer2.makeDelegate();
+  final DemoDelegateKey milhouseN = await milhouse.makeDelegate();
+  final DemoDelegateKey carlN = await carl.makeDelegate();
+  final DemoDelegateKey margeN = await marge.makeDelegate();
 
   // most simpsons state trust in each other.
   await homer.doTrust(TrustVerb.trust, marge, moniker: 'wife');
@@ -78,7 +78,7 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
   // milhouse->sideshow
   await milhouse.doTrust(TrustVerb.trust, sideshow, moniker: 'clown');
 
-  List<DemoKey> delegates = [
+  List<DemoDelegateKey> delegates = [
     bartN,
     lisaN,
     milhouseN,
@@ -88,7 +88,7 @@ Future<(DemoKey, DemoKey?)> simpsons() async {
     margeN,
   ];
   // Submit something as each delegate
-  for (DemoKey delegate in delegates) {
+  for (DemoDelegateKey delegate in delegates) {
     await delegate.doRate(title: delegate.name);
   }
 

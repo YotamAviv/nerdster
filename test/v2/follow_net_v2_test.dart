@@ -30,25 +30,25 @@ void main() async {
 
   test('Simpsons Follow Network (V2)', () async {
     await simpsons();
-    final DemoKey bart = DemoKey.findByName('bart')!;
+    final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
     
     // 1. Build TrustGraph (Identity Layer)
-    final Map<String, List<TrustStatement>> allTrustStatements = {};
-    for (final DemoKey dk in DemoKey.all.where((k) => k.isIdentity)) {
-      allTrustStatements[dk.token] = dk.trustStatements;
+    final Map<IdentityKey, List<TrustStatement>> allTrustStatements = {};
+    for (final DemoIdentityKey dk in DemoIdentityKey.all) {
+      allTrustStatements[dk.id] = dk.trustStatements;
     }
 
     final TrustGraph trustGraph = reduceTrustGraph(
-      TrustGraph(pov: bart.token),
+      TrustGraph(pov: IdentityKey(bart.token)),
       allTrustStatements,
     );
 
-    expect(trustGraph.isTrusted(bart.token), true);
+    expect(trustGraph.isTrusted(IdentityKey(bart.token)), true);
     
     final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
 
     // 2. Build FollowNetwork for <nerdster> context
-    final ContentResult allContentStatements = buildContentResult(DemoKey.all.where((k) => k.isDelegate));
+    final ContentResult allContentStatements = buildContentResult(DemoDelegateKey.all);
 
     final FollowNetwork followNet = reduceFollowNetwork(
       trustGraph,
@@ -58,89 +58,89 @@ void main() async {
     );
 
     // Bart should be in the network
-    expect(followNet.contains(bart.token), true);
+    expect(followNet.contains(IdentityKey(bart.token)), true);
     expect(followNet.povIdentity, bart.token);
     
     // Check some other Simpsons
-    final DemoKey homer = DemoKey.findByName('homer')!;
-    final DemoKey lisa = DemoKey.findByName('lisa')!;
+    final DemoIdentityKey homer = DemoIdentityKey.findByName('homer')!;
+    final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
     
-    expect(followNet.contains(trustGraph.resolveIdentity(homer.token)), true);
+    expect(followNet.contains(trustGraph.resolveIdentity(IdentityKey(homer.token))), true);
     // Lisa is blocked in <nerdster> context by Bart
-    expect(followNet.contains(trustGraph.resolveIdentity(lisa.token)), false);
+    expect(followNet.contains(trustGraph.resolveIdentity(IdentityKey(lisa.token))), false);
     
     // Check order (discovery order)
-    expect(followNet.identities.indexOf(bart.token), 0);
-    expect(followNet.identities.indexOf(trustGraph.resolveIdentity(homer.token)), greaterThan(0));
+    expect(followNet.identities.indexOf(IdentityKey(bart.token)), 0);
+    expect(followNet.identities.indexOf(trustGraph.resolveIdentity(IdentityKey(homer.token))), greaterThan(0));
   });
 
   test('Simpsons Demo: Multi-POV Content Verification', () async {
     await simpsons();
     
-    final DemoKey bart = DemoKey.findByName('bart')!;
-    final DemoKey lisa = DemoKey.findByName('lisa')!;
-    final DemoKey homer = DemoKey.findByName('homer')!;
-    final DemoKey homer2 = DemoKey.findByName('homer2')!;
-    final DemoKey marge = DemoKey.findByName('marge')!;
+    final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
+    final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
+    final DemoIdentityKey homer = DemoIdentityKey.findByName('homer')!;
+    final DemoIdentityKey homer2 = DemoIdentityKey.findByName('homer2')!;
+    final DemoIdentityKey marge = DemoIdentityKey.findByName('marge')!;
 
-    final Map<String, List<TrustStatement>> allTrustStatements = {};
-    for (final DemoKey dk in DemoKey.all.where((k) => k.isIdentity)) {
-      allTrustStatements[dk.token] = dk.trustStatements;
+    final Map<IdentityKey, List<TrustStatement>> allTrustStatements = {};
+    for (final DemoIdentityKey dk in DemoIdentityKey.all) {
+      allTrustStatements[dk.id] = dk.trustStatements;
     }
-    final ContentResult allContentStatements = buildContentResult(DemoKey.all.where((k) => k.isDelegate));
+    final ContentResult allContentStatements = buildContentResult(DemoDelegateKey.all);
 
-    final DemoKey margeN = DemoKey.findByName('marge-nerdster0')!;
+    final DemoDelegateKey margeN = DemoDelegateKey.findByName('marge-nerdster0')!;
     final ContentStatement margeRating = margeN.contentStatements.firstWhere((s) => s.verb == ContentVerb.rate);
 
     // --- LISA'S POV ---
-    final TrustGraph trustLisa = reduceTrustGraph(TrustGraph(pov: lisa.token), allTrustStatements);
+    final TrustGraph trustLisa = reduceTrustGraph(TrustGraph(pov: IdentityKey(lisa.token)), allTrustStatements);
     final DelegateResolver delegatesLisa = DelegateResolver(trustLisa);
     
     final FollowNetwork followLisa = reduceFollowNetwork(trustLisa, delegatesLisa, allContentStatements, kFollowContextNerdster);
     final ContentAggregation contentLisa = reduceContentAggregation(followLisa, trustLisa, delegatesLisa, allContentStatements);
 
     // Lisa should see content from Marge and Homer2
-    expect(followLisa.contains(trustLisa.resolveIdentity(marge.token)), true, reason: 'Lisa should follow Marge');
-    expect(followLisa.contains(trustLisa.resolveIdentity(homer.token)), true, reason: 'Lisa should follow Homer (Homer2)');
+    expect(followLisa.contains(trustLisa.resolveIdentity(IdentityKey(marge.token))), true, reason: 'Lisa should follow Marge');
+    expect(followLisa.contains(trustLisa.resolveIdentity(IdentityKey(homer.token))), true, reason: 'Lisa should follow Homer (Homer2)');
     
     // Check if Marge's content is there (MargeN signed it)
     expect(contentLisa.subjects.values.any((s) => s.canonicalToken == margeRating.subjectToken), true, reason: "Lisa should see Marge's content");
 
     // --- BART'S POV ---
-    final TrustGraph trustBart = reduceTrustGraph(TrustGraph(pov: bart.token), allTrustStatements);
+    final TrustGraph trustBart = reduceTrustGraph(TrustGraph(pov: IdentityKey(bart.token)), allTrustStatements);
     final DelegateResolver delegatesBart = DelegateResolver(trustBart);
     final FollowNetwork followBart = reduceFollowNetwork(trustBart, delegatesBart, allContentStatements, kFollowContextNerdster);
     reduceContentAggregation(followBart, trustBart, delegatesBart, allContentStatements);
 
     // Bart blocks Lisa in <nerdster> context in simpsons.dart
-    expect(followBart.contains(trustBart.resolveIdentity(lisa.token)), false, reason: 'Bart blocks Lisa');
+    expect(followBart.contains(trustBart.resolveIdentity(IdentityKey(lisa.token))), false, reason: 'Bart blocks Lisa');
 
     // --- HOMER'S POV (Homer2) ---
-    final TrustGraph trustHomer = reduceTrustGraph(TrustGraph(pov: homer2.token), allTrustStatements);
+    final TrustGraph trustHomer = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer2.token)), allTrustStatements);
     final DelegateResolver delegatesHomer = DelegateResolver(trustHomer);
     final FollowNetwork followHomer = reduceFollowNetwork(trustHomer, delegatesHomer, allContentStatements, kFollowContextNerdster);
     reduceContentAggregation(followHomer, trustHomer, delegatesHomer, allContentStatements);
 
-    expect(followHomer.contains(trustHomer.resolveIdentity(lisa.token)), true, reason: 'Homer2 should follow Lisa');
+    expect(followHomer.contains(trustHomer.resolveIdentity(IdentityKey(lisa.token))), true, reason: 'Homer2 should follow Lisa');
   });
 
   test('Custom Context Filtering (V2)', () async {
     await simpsons();
-    final DemoKey bart = DemoKey.findByName('bart')!;
+    final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
     
-    final Map<String, List<TrustStatement>> allTrustStatements = {};
-    for (final DemoKey dk in DemoKey.all.where((k) => k.isIdentity)) {
-      allTrustStatements[dk.token] = dk.trustStatements;
+    final Map<IdentityKey, List<TrustStatement>> allTrustStatements = {};
+    for (final DemoIdentityKey dk in DemoIdentityKey.all) {
+      allTrustStatements[dk.id] = dk.trustStatements;
     }
 
     final TrustGraph trustGraph = reduceTrustGraph(
-      TrustGraph(pov: bart.token),
+      TrustGraph(pov: IdentityKey(bart.token)),
       allTrustStatements,
     );
 
     final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
 
-    final ContentResult allContentStatements = buildContentResult(DemoKey.all.where((k) => k.isDelegate));
+    final ContentResult allContentStatements = buildContentResult(DemoDelegateKey.all);
 
     // 'family' is a custom follow context used in the Simpsons demo data
     final FollowNetwork familyNet = reduceFollowNetwork(
@@ -150,29 +150,29 @@ void main() async {
       'family',
     );
 
-    final DemoKey homer = DemoKey.findByName('homer')!;
-    final DemoKey marge = DemoKey.findByName('marge')!;
-    final DemoKey milhouse = DemoKey.findByName('milhouse')!;
-    final DemoKey lisa = DemoKey.findByName('lisa')!;
+    final DemoIdentityKey homer = DemoIdentityKey.findByName('homer')!;
+    final DemoIdentityKey marge = DemoIdentityKey.findByName('marge')!;
+    final DemoIdentityKey milhouse = DemoIdentityKey.findByName('milhouse')!;
+    final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
 
-    expect(familyNet.contains(bart.token), true);
+    expect(familyNet.contains(IdentityKey(bart.token)), true);
     expect(familyNet.povIdentity, bart.token);
     
-    expect(familyNet.contains(trustGraph.resolveIdentity(homer.token)), true);
-    expect(familyNet.contains(trustGraph.resolveIdentity(marge.token)), true);
-    expect(familyNet.contains(trustGraph.resolveIdentity(lisa.token)), true);
+    expect(familyNet.contains(trustGraph.resolveIdentity(IdentityKey(homer.token))), true);
+    expect(familyNet.contains(trustGraph.resolveIdentity(IdentityKey(marge.token))), true);
+    expect(familyNet.contains(trustGraph.resolveIdentity(IdentityKey(lisa.token))), true);
     // Milhouse is not family
-    expect(familyNet.contains(trustGraph.resolveIdentity(milhouse.token)), false);
+    expect(familyNet.contains(trustGraph.resolveIdentity(IdentityKey(milhouse.token))), false);
   });
 
   test('V2 Content Aggregation: Censorship and Equivalence', () async {
-    final DemoKey homer = await DemoKey.create('homer');
-    final DemoKey bart = await DemoKey.create('bart');
-    final DemoKey lisa = await DemoKey.create('lisa');
+    final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
+    final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
+    final DemoIdentityKey lisa = await DemoIdentityKey.create('lisa');
 
-    final DemoKey homerN = await homer.makeDelegate();
-    final DemoKey bartN = await bart.makeDelegate();
-    final DemoKey lisaN = await lisa.makeDelegate();
+    final DemoDelegateKey homerN = await homer.makeDelegate();
+    final DemoDelegateKey bartN = await bart.makeDelegate();
+    final DemoDelegateKey lisaN = await lisa.makeDelegate();
 
     final Json news1 = {'contentType': 'url', 'url': 'https://news.com/1'};
     final Json news2 = {'contentType': 'url', 'url': 'https://news.com/2'};
@@ -185,10 +185,10 @@ void main() async {
     await homer.trust(lisa, moniker: 'lisa');
     await homer.trust(bart, moniker: 'bart');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
-      homer.token: homer.trustStatements,
-      bart.token: bart.trustStatements,
-      lisa.token: lisa.trustStatements,
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
+      IdentityKey(homer.token): homer.trustStatements,
+      IdentityKey(bart.token): bart.trustStatements,
+      IdentityKey(lisa.token): lisa.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -231,22 +231,22 @@ void main() async {
   });
 
   test('V2 Content Aggregation: Censorship Overrides', () async {
-    final DemoKey homer = await DemoKey.create('homer');
-    final DemoKey bart = await DemoKey.create('bart');
-    final DemoKey lisa = await DemoKey.create('lisa');
+    final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
+    final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
+    final DemoIdentityKey lisa = await DemoIdentityKey.create('lisa');
 
-    final DemoKey homerN = await homer.makeDelegate();
-    final DemoKey bartN = await bart.makeDelegate();
-    final DemoKey lisaN = await lisa.makeDelegate();
+    final DemoDelegateKey homerN = await homer.makeDelegate();
+    final DemoDelegateKey bartN = await bart.makeDelegate();
+    final DemoDelegateKey lisaN = await lisa.makeDelegate();
 
     // Lisa is more trusted than Bart
     await homer.trust(bart, moniker: 'bart');
     await homer.trust(lisa, moniker: 'lisa');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
-      homer.token: homer.trustStatements,
-      bart.token: bart.trustStatements,
-      lisa.token: lisa.trustStatements,
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
+      IdentityKey(homer.token): homer.trustStatements,
+      IdentityKey(bart.token): bart.trustStatements,
+      IdentityKey(lisa.token): lisa.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -324,23 +324,23 @@ void main() async {
   });
 
   test('V2 Follow Network: Delegate Resolution', () async {
-    final DemoKey homer = await DemoKey.create('homer');
-    final DemoKey bart = await DemoKey.create('bart');
-    final DemoKey bartDelegate = await DemoKey.create('bart-delegate');
+    final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
+    final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
+    final DemoDelegateKey bartDelegate = await DemoDelegateKey.create('bart-delegate');
 
-    final DemoKey homerN = await homer.makeDelegate();
+    final DemoDelegateKey homerN = await homer.makeDelegate();
 
     // 1. Homer trusts Bart
     await homer.trust(bart, moniker: 'bart');
 
-    final Map<String, List<TrustStatement>> trustStatements = {
-      homer.token: homer.trustStatements,
-      bart.token: [await bart.delegate(bartDelegate, domain: kNerdsterDomain)],
+    final Map<IdentityKey, List<TrustStatement>> trustStatements = {
+      IdentityKey(homer.token): homer.trustStatements,
+      IdentityKey(bart.token): [await bart.delegate(bartDelegate, domain: kNerdsterDomain)],
     };
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), trustStatements);
-    expect(graph.isTrusted(bart.token), isTrue);
-    expect(graph.isTrusted(bartDelegate.token), isFalse); // Delegate is not in WoT
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), trustStatements);
+    expect(graph.isTrusted(IdentityKey(bart.token)), isTrue);
+    expect(graph.isTrusted(IdentityKey(bartDelegate.token)), isFalse); // Delegate is not in WoT
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
     // In the lazy resolver, we must resolve the identity to see its delegates
@@ -381,21 +381,21 @@ void main() async {
   });
 
   test('V2 Content Aggregation: Proximity-Based Censorship (Censor-the-Censor)', () async {
-    final DemoKey homer = await DemoKey.create('homer');
-    final DemoKey bart = await DemoKey.create('bart');
-    final DemoKey lisa = await DemoKey.create('lisa');
+    final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
+    final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
+    final DemoIdentityKey lisa = await DemoIdentityKey.create('lisa');
 
-    final DemoKey homerN = await homer.makeDelegate();
-    final DemoKey bartN = await bart.makeDelegate();
-    final DemoKey lisaN = await lisa.makeDelegate();
+    final DemoDelegateKey homerN = await homer.makeDelegate();
+    final DemoDelegateKey bartN = await bart.makeDelegate();
+    final DemoDelegateKey lisaN = await lisa.makeDelegate();
 
     await homer.trust(bart, moniker: 'bart');
     await homer.trust(lisa, moniker: 'lisa');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
-      homer.token: homer.trustStatements,
-      bart.token: bart.trustStatements,
-      lisa.token: lisa.trustStatements,
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
+      IdentityKey(homer.token): homer.trustStatements,
+      IdentityKey(bart.token): bart.trustStatements,
+      IdentityKey(lisa.token): lisa.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -474,21 +474,21 @@ void main() async {
   });
 
   test('Censoring Relate and Equate Statements (V2)', () async {
-    final DemoKey homer = await DemoKey.create('homer');
-    final DemoKey bart = await DemoKey.create('bart');
-    final DemoKey lisa = await DemoKey.create('lisa');
+    final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
+    final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
+    final DemoIdentityKey lisa = await DemoIdentityKey.create('lisa');
 
-    final DemoKey homerN = await homer.makeDelegate();
-    final DemoKey bartN = await bart.makeDelegate();
-    final DemoKey lisaN = await lisa.makeDelegate();
+    final DemoDelegateKey homerN = await homer.makeDelegate();
+    final DemoDelegateKey bartN = await bart.makeDelegate();
+    final DemoDelegateKey lisaN = await lisa.makeDelegate();
 
     await homer.trust(bart, moniker: 'bart');
     await homer.trust(lisa, moniker: 'lisa');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
-      homer.token: homer.trustStatements,
-      bart.token: bart.trustStatements,
-      lisa.token: lisa.trustStatements,
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
+      IdentityKey(homer.token): homer.trustStatements,
+      IdentityKey(bart.token): bart.trustStatements,
+      IdentityKey(lisa.token): lisa.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -550,18 +550,18 @@ void main() async {
   });
 
   test('V2 Subject Aggregation: Grouping and Stats', () async {
-    final DemoKey homer = await DemoKey.create('homer');
-    final DemoKey bart = await DemoKey.create('bart');
+    final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
+    final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
 
-    final DemoKey homerN = await homer.makeDelegate();
-    final DemoKey bartN = await bart.makeDelegate();
+    final DemoDelegateKey homerN = await homer.makeDelegate();
+    final DemoDelegateKey bartN = await bart.makeDelegate();
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: homer.token), {
-      homer.token: [
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(homer.token)), {
+      IdentityKey(homer.token): [
         await homer.trust(bart, moniker: 'bart'),
         ...homer.trustStatements,
       ],
-      bart.token: bart.trustStatements,
+      IdentityKey(bart.token): bart.trustStatements,
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -616,8 +616,8 @@ ContentResult buildContentResult(Iterable<DemoKey> keys) {
   final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
   
   for (final k in keys) {
-    if (k.isDelegate) {
-      delegateContent[DelegateKey(k.token)] = k.contentStatements;
+    if (k is DemoDelegateKey) {
+      delegateContent[k.id] = k.contentStatements;
     }
   }
   return ContentResult(delegateContent: delegateContent);

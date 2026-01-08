@@ -1,6 +1,7 @@
 import 'package:nerdster/demotest/cases/test_utils.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/source_factory.dart';
@@ -16,9 +17,9 @@ Future<void> testBasicScenario({
   // Clear any existing keys to ensure isolation
   DemoKey.reset();
 
-  var lisa = await DemoKey.create('lisa');
-  var marge = await DemoKey.create('marge');
-  var bart = await DemoKey.create('bart');
+  var lisa = await DemoIdentityKey.create('lisa');
+  var marge = await DemoIdentityKey.create('marge');
+  var bart = await DemoIdentityKey.create('bart');
 
   await lisa.trust(marge, moniker: 'marge');
   await marge.trust(lisa, moniker: 'lisa');
@@ -30,9 +31,9 @@ Future<void> testBasicScenario({
 
   final p = description != null ? '[$description] ' : '';
 
-  check(graph.isTrusted(lisa.token), '${p}Marge should trust Lisa');
-  check(graph.distances[lisa.token] == 1, '${p}Lisa should be distance 1');
+  check(graph.isTrusted(IdentityKey(lisa.token)), '${p}Marge should trust Lisa');
+  check(graph.distances[IdentityKey(lisa.token)] == 1, '${p}Lisa should be distance 1');
 
-  check(graph.isTrusted(bart.token), '${p}Marge should trust Bart');
-  check(graph.distances[bart.token] == 1, '${p}Bart should be distance 1');
+  check(graph.isTrusted(IdentityKey(bart.token)), '${p}Marge should trust Bart');
+  check(graph.distances[IdentityKey(bart.token)] == 1, '${p}Bart should be distance 1');
 }

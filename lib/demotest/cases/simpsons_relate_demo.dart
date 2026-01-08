@@ -2,7 +2,6 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
 /// Simpsons Relate/Equate Demo
@@ -23,14 +22,14 @@ import 'package:nerdster/oneofus/util.dart';
 /// 7. Bart relates "El Barto" to "Art".
 /// 8. Marge un-relates "El Barto" from "Art".
 ///
-Future<(DemoKey, DemoKey?)> simpsonsRelateDemo() async {
+Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsRelateDemo() async {
   useClock(TestClock(Duration(days: 1)));
 
   // 1. Create Identity Keys
-  DemoKey lisa = await DemoKey.findOrCreate('lisa');
-  DemoKey bart = await DemoKey.findOrCreate('bart');
-  DemoKey homer = await DemoKey.findOrCreate('homer');
-  DemoKey marge = await DemoKey.findOrCreate('marge');
+  DemoIdentityKey lisa = await DemoIdentityKey.findOrCreate('lisa');
+  DemoIdentityKey bart = await DemoIdentityKey.findOrCreate('bart');
+  DemoIdentityKey homer = await DemoIdentityKey.findOrCreate('homer');
+  DemoIdentityKey marge = await DemoIdentityKey.findOrCreate('marge');
 
   // 2. Establish Trust (Family trusts each other)
   await lisa.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
@@ -50,10 +49,10 @@ Future<(DemoKey, DemoKey?)> simpsonsRelateDemo() async {
   await marge.doTrust(TrustVerb.trust, homer, moniker: 'Homie');
 
   // 3. Create Delegate Keys
-  DemoKey lisaD = await lisa.makeDelegate(export: 'lisa-delegate');
-  DemoKey bartD = await bart.makeDelegate(export: 'bart-delegate');
-  DemoKey homerD = await homer.makeDelegate(export: 'homer-delegate');
-  DemoKey margeD = await marge.makeDelegate(export: 'marge-delegate');
+  DemoDelegateKey lisaD = await lisa.makeDelegate(export: 'lisa-delegate');
+  DemoDelegateKey bartD = await bart.makeDelegate(export: 'bart-delegate');
+  DemoDelegateKey homerD = await homer.makeDelegate(export: 'homer-delegate');
+  DemoDelegateKey margeD = await marge.makeDelegate(export: 'marge-delegate');
 
   // 4. Create Content & Relationships
 

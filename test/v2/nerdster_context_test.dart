@@ -26,9 +26,9 @@ void main() async {
   });
 
   test('<nerdster> context: direct trust implies follow', () async {
-    final alice = await DemoKey.create('alice');
-    final bob = await DemoKey.create('bob');
-    final charlie = await DemoKey.create('charlie');
+    final alice = await DemoIdentityKey.create('alice');
+    final bob = await DemoIdentityKey.create('bob');
+    final charlie = await DemoIdentityKey.create('charlie');
 
     // Alice trusts Bob in WoT
     await alice.trust(bob, moniker: 'bob');
@@ -36,12 +36,12 @@ void main() async {
     await bob.trust(charlie, moniker: 'charlie');
 
     final allTrustStatements = {
-      alice.token: alice.trustStatements,
-      bob.token: bob.trustStatements,
+      IdentityKey(alice.token): alice.trustStatements,
+      IdentityKey(bob.token): bob.trustStatements,
     };
 
     final trustGraph = reduceTrustGraph(
-      TrustGraph(pov: alice.token),
+      TrustGraph(pov: IdentityKey(alice.token)),
       allTrustStatements,
     );
 
@@ -58,10 +58,10 @@ void main() async {
     );
 
     // Alice should follow Bob because of direct trust
-    expect(followNet.contains(bob.token), true, reason: 'Alice should follow Bob via direct trust');
+    expect(followNet.contains(IdentityKey(bob.token)), true, reason: 'Alice should follow Bob via direct trust');
     
     // Alice should follow Charlie because Bob (who Alice follows) trusts Charlie
-    expect(followNet.contains(charlie.token), true, reason: 'Alice should follow Charlie via Bob\'s trust');
+    expect(followNet.contains(IdentityKey(charlie.token)), true, reason: 'Alice should follow Charlie via Bob\'s trust');
   });
 
   test('<nerdster> context: block in WoT does NOT imply block in follow', () async {

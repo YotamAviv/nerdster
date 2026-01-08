@@ -32,26 +32,28 @@ import 'package:nerdster/v2/labeler.dart';
 /// 10. Attempt to block you
 /// 11. Attempt to block followed identity
 /// 12. Attempt to follow blocked identity
-Future<(DemoKey, DemoKey?)> notificationsGallery() async {
+Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
   useClock(TestClock());
 
   // Actors
-  final DemoKey me = await DemoKey.findOrCreate('me');
-  final DemoKey alice = await DemoKey.findOrCreate('alice');
-  final DemoKey bob = await DemoKey.findOrCreate('bob');
-  final DemoKey charlie = await DemoKey.findOrCreate('charlie');
-  final DemoKey dave = await DemoKey.findOrCreate('dave');
-  final DemoKey eve = await DemoKey.findOrCreate('eve');
-  final DemoKey frank = await DemoKey.findOrCreate('frank');
-  final DemoKey mallory = await DemoKey.findOrCreate('mallory');
-  final DemoKey oldKey = await DemoKey.findOrCreate('oldKey');
-  final DemoKey newKey1 = await DemoKey.findOrCreate('newKey1');
-  final DemoKey badGuy = await DemoKey.findOrCreate('badGuy');
-  final DemoKey distantGuy = await DemoKey.findOrCreate('distantGuy');
-  final DemoKey distantBob = await DemoKey.findOrCreate('distantBob');
-  final DemoKey meContent = await DemoKey.findOrCreate('meContent');
-  final DemoKey aliceContent = await DemoKey.findOrCreate('aliceContent');
-  final DemoKey blocker = await DemoKey.findOrCreate('blocker');
+  final DemoIdentityKey me = await DemoIdentityKey.findOrCreate('me');
+  final DemoIdentityKey alice = await DemoIdentityKey.findOrCreate('alice');
+  final DemoIdentityKey bob = await DemoIdentityKey.findOrCreate('bob');
+  final DemoIdentityKey charlie = await DemoIdentityKey.findOrCreate('charlie');
+  final DemoIdentityKey dave = await DemoIdentityKey.findOrCreate('dave');
+  final DemoIdentityKey eve = await DemoIdentityKey.findOrCreate('eve');
+  final DemoIdentityKey frank = await DemoIdentityKey.findOrCreate('frank');
+  final DemoIdentityKey mallory = await DemoIdentityKey.findOrCreate('mallory');
+  final DemoIdentityKey oldKey = await DemoIdentityKey.findOrCreate('oldKey');
+  final DemoIdentityKey newKey1 = await DemoIdentityKey.findOrCreate('newKey1');
+  final DemoIdentityKey badGuy = await DemoIdentityKey.findOrCreate('badGuy');
+  final DemoIdentityKey distantGuy = await DemoIdentityKey.findOrCreate('distantGuy');
+  final DemoIdentityKey distantBob = await DemoIdentityKey.findOrCreate('distantBob');
+  
+  final DemoDelegateKey meContent = await DemoDelegateKey.findOrCreate('meContent');
+  final DemoDelegateKey aliceContent = await DemoDelegateKey.findOrCreate('aliceContent');
+  
+  final DemoIdentityKey blocker = await DemoIdentityKey.findOrCreate('blocker');
 
   // --- TRUST LOGIC SCENARIOS ---
 
@@ -109,7 +111,7 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
   await bob.delegate(aliceContent, domain: 'nerdster.org');
 
   // 11. Multiple Delegates: Bob creates a second delegate
-  final DemoKey bobContent2 = await bob.makeDelegate();
+  final DemoDelegateKey bobContent2 = await bob.makeDelegate();
   await bobContent2.doRate(subject: {
       'contentType': 'book',
       'title': 'Bob Book 2',
@@ -118,7 +120,7 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
   });
 
   // Add a delegate key for each player, and have them submit their name as a bogus book
-  final List<DemoKey> players = [
+  final List<DemoIdentityKey> players = [
     me,
     alice,
     bob,
@@ -134,8 +136,8 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
     distantBob
   ];
 
-  for (DemoKey player in players) {
-    DemoKey contentKey;
+  for (DemoIdentityKey player in players) {
+    DemoDelegateKey contentKey;
     if (player == me) {
       contentKey = meContent;
     } else if (player == alice) {
@@ -159,8 +161,8 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
 
   // Trigger delegate resolution to generate notifications
   final resolver = DelegateResolver(trustGraph);
-  resolver.resolveForIdentity(alice.token);
-  resolver.resolveForIdentity(bob.token);
+  resolver.resolveForIdentity(IdentityKey(alice.token));
+  resolver.resolveForIdentity(IdentityKey(bob.token));
 
   check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block your key")), "Missing: Attempt to block your key");
   check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block trusted key")), "Missing: Attempt to block trusted key");

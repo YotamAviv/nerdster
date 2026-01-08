@@ -20,13 +20,19 @@ class DelegateResolver {
   /// Ensures delegates are resolved for the given canonical identity.
   /// Note: In this lazy implementation, the first identity to request a delegate key wins it.
   /// This follows "follow proximity" if called during follow network construction.
-  void resolveForIdentity(String identityStr) {
-    final IdentityKey identity = IdentityKey(identityStr);
+  void resolveForIdentity(IdentityKey identity) {
     if (_resolvedIdentities.contains(identity)) return;
 
-    final List<String> keys = graph.getEquivalenceGroup(identity.value);
+    List<IdentityKey> keys = graph.getEquivalenceGroup(identity);
+    
+    // Fallback: If identity is not in the trust graph (no distance) but we have edges for it
+    // (e.g. "Me" identity injected for local user), use the identity itself if it's canonical.
+    if (keys.isEmpty && graph.edges.containsKey(identity) && graph.resolveIdentity(identity) == identity) {
+      keys = [identity];
+    }
+
     List<TrustStatement> allStatements = [];
-    for (final String key in keys) {
+    for (final IdentityKey key in keys) {
       final statements = graph.edges[key] ?? [];
       if (allStatements.isEmpty) {
         allStatements = statements;
@@ -48,11 +54,9 @@ class DelegateResolver {
         _delegateConstraints[delegateKey] = s.revokeAt!;
       }
       
-      // A key cannot be a delegate if it is already a trusted identity key
-      if (graph.isTrusted(delegateKey.value)) continue;
       
       // A key cannot be a delegate if it is blocked
-      if (graph.blocked.contains(delegateKey.value)) continue;
+      if (graph.blocked.contains(IdentityKey(delegateKey.value))) continue;
 
       // First one to claim it wins.
       if (!_delegateToIdentity.containsKey(delegateKey)) {
@@ -61,7 +65,7 @@ class DelegateResolver {
         _identityToDelegates.putIfAbsent(identity, () => []).add(delegateKey);
       } else if (_delegateToIdentity[delegateKey] != identity) {
         graph.notifications.add(TrustNotification(
-          reason: "Delegate key $delegateKey already claimed by ${_delegateToIdentity[delegateKey]}",
+          reason: "Delegate key ${delegateKey.value} already claimed by ${_delegateToIdentity[delegateKey]!.value}",
           rejectedStatement: s,
           isConflict: true,
         ));
@@ -92,27 +96,23 @@ class DelegateResolver {
   /// Returns the canonical identity for a given delegate key.
   /// Returns null if the token is not a recognized delegate.
   IdentityKey? getIdentityForDelegate(DelegateKey token) {
-    assert(!_identityToDelegates.containsKey(token));
     return _delegateToIdentity[token];
   }
 
   /// Returns the domain for a given delegate key.
   String? getDomainForDelegate(DelegateKey token) {
-    assert(!_identityToDelegates.containsKey(token));
     return _delegateToDomain[token];
   }
 
   /// Returns the revocation constraint (revokeAt token) for a given delegate key.
   String? getConstraintForDelegate(DelegateKey token) {
-    assert(!_identityToDelegates.containsKey(token));
     return _delegateConstraints[token];
   }
 
   /// Returns all delegate keys authorized by the given canonical identity.
   /// TODO: Cache the result or just make it earlier.
   List<DelegateKey> getDelegatesForIdentity(IdentityKey canonical) {
-    assert(!_delegateToIdentity.containsKey(canonical));
-    resolveForIdentity(canonical.value);
+    resolveForIdentity(canonical);
     return _identityToDelegates[canonical] ?? [];
   }
 }

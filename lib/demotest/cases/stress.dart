@@ -7,24 +7,24 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 
-Future<(DemoKey, DemoKey?)> stress() async {
+Future<(DemoIdentityKey, DemoDelegateKey?)> stress() async {
   useClock(TestClock());
 
   const int numKeys = 100;
   const int numTrusts = 400;
   const int numReplaces = 50;
 
-  List<DemoKey> keys = <DemoKey>[];
+  List<DemoIdentityKey> keys = <DemoIdentityKey>[];
   for (int i = 0; i < numKeys; i++) {
-    keys.add(await DemoKey.findOrCreate('key$i'));
+    keys.add(await DemoIdentityKey.findOrCreate('key$i'));
   }
 
   // make a delegate for each key 
   // (mostly so that we have at least one statement per key for choosing at random later)
   Map<int, List<String>> index2statementTokens = {};
   for (int i = 0; i < numKeys; i++) {
-    Statement s = await keys[i].doTrust(TrustVerb.delegate,
-        await DemoKey.findOrCreate('key$i-nerdster'),
+    var delegateKey = await DemoDelegateKey.findOrCreate('key$i-nerdster');
+    Statement s = await keys[i].delegate(delegateKey,
         comment: 'nerdster key', domain: kNerdsterDomain);
     index2statementTokens[i] = <String>[s.token];
   }
@@ -39,7 +39,7 @@ Future<(DemoKey, DemoKey?)> stress() async {
     index2statementTokens[keyIndex]!.add(s.token);
   }
 
-  for (int keyIndex = 0; keyIndex < numReplaces; keyIndex++) {
+  for (int x = 0; x < numReplaces; x++) {
     int keyIndex = Random().nextInt(numKeys);
     int keyIndex2 = Random().nextInt(numKeys);
     if (keyIndex == keyIndex2) {

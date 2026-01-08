@@ -60,10 +60,11 @@ class StatementTile extends StatelessWidget {
     // Determine current user's reaction to this statement
     final myReplies = uniqueStatements.where((r) {
       if (signInState.identity == null) return false;
-      if (model.trustGraph.isTrusted(r.iToken)) {
-        return model.trustGraph.resolveIdentity(r.iToken) == signInState.identity;
+      final myIdentityKey = IdentityKey(signInState.identity!);
+      if (model.trustGraph.isTrusted(IdentityKey(r.iKey.value))) {
+        return model.trustGraph.resolveIdentity(IdentityKey(r.iKey.value)) == myIdentityKey;
       }
-      return model.delegateResolver.getIdentityForDelegate(DelegateKey(r.iToken))?.value == signInState.identity;
+      return model.delegateResolver.getIdentityForDelegate(r.iKey) == myIdentityKey;
     }).toList();
 
     IconData icon = Icons.rate_review_outlined;

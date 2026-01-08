@@ -27,13 +27,13 @@ void main() async {
   });
 
   test('Trust Order Verification', () async {
-    final DemoKey alice = await DemoKey.create('alice');
-    final DemoKey bob = await DemoKey.create('bob');
-    final DemoKey charlie = await DemoKey.create('charlie');
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
+    final DemoIdentityKey charlie = await DemoIdentityKey.create('charlie');
 
-    final DemoKey aliceN = await alice.makeDelegate();
-    final DemoKey bobN = await bob.makeDelegate();
-    final DemoKey charlieN = await charlie.makeDelegate();
+    final DemoDelegateKey aliceN = await alice.makeDelegate();
+    final DemoDelegateKey bobN = await bob.makeDelegate();
+    final DemoDelegateKey charlieN = await charlie.makeDelegate();
 
     final t1 = await alice.trust(charlie, moniker: 'charlie');
     final t2 = await alice.trust(bob, moniker: 'bob');
@@ -43,10 +43,10 @@ void main() async {
     final t5 = await charlie.trust(bob, moniker: 'bob');
     final t6 = await charlie.trust(alice, moniker: 'alice');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.token), {
-      alice.token: [t2, t1],
-      bob.token: [t4, t3],
-      charlie.token: [t6, t5],
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(alice.token)), {
+      IdentityKey(alice.token): [t2, t1],
+      IdentityKey(bob.token): [t4, t3],
+      IdentityKey(charlie.token): [t6, t5],
     });
     
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -54,14 +54,14 @@ void main() async {
     // Collect statements
     final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
     for (final dk in [alice, aliceN, bob, bobN, charlie, charlieN]) {
-      if (dk.isDelegate) delegateContent[DelegateKey(dk.token)] = dk.contentStatements;
+      if (dk is DemoDelegateKey) delegateContent[DelegateKey(dk.token)] = dk.contentStatements;
     }
 
     final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver, ContentResult(delegateContent: delegateContent), kFollowContextNerdster);
     final V2Labeler labeler = V2Labeler(graph);
     
     final List<String> expected = [alice.token, bob.token, charlie.token];
-    final List<String> actual = netAlice.identities;
+    final List<String> actual = netAlice.identities.map((k) => k.value).toList();
 
     final List<String> expectedNames = expected.map((t) => labeler.getLabel(t)).toList();
     final List<String> actualNames = actual.map((t) => labeler.getLabel(t)).toList();

@@ -3,6 +3,7 @@ import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/keys.dart';
 
 void main() {
   setUpAll(() {
@@ -11,26 +12,31 @@ void main() {
 
   test('Path Requirement Logic: 2 paths for 3 and 4 degrees', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final pov = Jsonish(povKey).token;
+    final povToken = Jsonish(povKey).token;
+    final pov = IdentityKey(povToken);
     final a1Key = {'kty': 'mock', 'val': 'a1'};
-    final a1 = Jsonish(a1Key).token;
+    final a1Token = Jsonish(a1Key).token;
+    final a1 = IdentityKey(a1Token);
     final b1Key = {'kty': 'mock', 'val': 'b1'};
-    final b1 = Jsonish(b1Key).token;
+    final b1Token = Jsonish(b1Key).token;
+    final b1 = IdentityKey(b1Token);
     final a2Key = {'kty': 'mock', 'val': 'a2'};
-    final a2 = Jsonish(a2Key).token;
+    final a2Token = Jsonish(a2Key).token;
+    final a2 = IdentityKey(a2Token);
     final b2Key = {'kty': 'mock', 'val': 'b2'};
-    final b2 = Jsonish(b2Key).token;
+    final b2Token = Jsonish(b2Key).token;
+    final b2 = IdentityKey(b2Token);
 
     // PoV -> A1, B1
     final s1 = TrustStatement(Jsonish({
       'statement': 'net.one-of-us',
-      'trust': a1,
+      'trust': a1Token,
       'time': '2025-01-01T00:00:00Z',
       'I': povKey,
     }, 't1_s1'));
     final s2 = TrustStatement(Jsonish({
       'statement': 'net.one-of-us',
-      'trust': b1,
+      'trust': b1Token,
       'time': '2025-01-01T00:00:00Z',
       'I': povKey,
     }, 't1_s2'));
@@ -38,7 +44,7 @@ void main() {
     // A1 -> A2
     final s3 = TrustStatement(Jsonish({
       'statement': 'net.one-of-us',
-      'trust': a2,
+      'trust': a2Token,
       'time': '2025-01-01T00:00:00Z',
       'I': a1Key,
     }, 't1_s3'));
@@ -46,7 +52,7 @@ void main() {
     // B1 -> B2
     final s4 = TrustStatement(Jsonish({
       'statement': 'net.one-of-us',
-      'trust': b2,
+      'trust': b2Token,
       'time': '2025-01-01T00:00:00Z',
       'I': b1Key,
     }, 't1_s4'));
@@ -54,7 +60,7 @@ void main() {
     // A2 -> B2
     final s5 = TrustStatement(Jsonish({
       'statement': 'net.one-of-us',
-      'trust': b2,
+      'trust': b2Token,
       'time': '2025-01-01T00:00:00Z',
       'I': a2Key,
     }, 't1_s5'));
@@ -96,43 +102,49 @@ void main() {
 
   test('Path Requirement Logic: B2 is IN if A2 is also IN', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final pov = Jsonish(povKey).token;
+    final povToken = Jsonish(povKey).token;
+    final pov = IdentityKey(povToken);
     final a1Key = {'kty': 'mock', 'val': 'a1'};
-    final a1 = Jsonish(a1Key).token;
+    final a1Token = Jsonish(a1Key).token;
+    final a1 = IdentityKey(a1Token);
     final b1Key = {'kty': 'mock', 'val': 'b1'};
-    final b1 = Jsonish(b1Key).token;
+    final b1Token = Jsonish(b1Key).token;
+    final b1 = IdentityKey(b1Token);
     final c1Key = {'kty': 'mock', 'val': 'c1'};
-    final c1 = Jsonish(c1Key).token;
+    final c1Token = Jsonish(c1Key).token;
+    final c1 = IdentityKey(c1Token);
     final a2Key = {'kty': 'mock', 'val': 'a2'};
-    final a2 = Jsonish(a2Key).token;
+    final a2Token = Jsonish(a2Key).token;
+    final a2 = IdentityKey(a2Token);
     final b2Key = {'kty': 'mock', 'val': 'b2'};
-    final b2 = Jsonish(b2Key).token;
+    final b2Token = Jsonish(b2Key).token;
+    final b2 = IdentityKey(b2Token);
 
     // PoV -> A1, B1, C1
     final s1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a1, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': a1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't2_s1'));
     final s2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b1, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': b1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't2_s2'));
     final s3 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': c1, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': c1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't2_s3'));
 
     // A1 -> A2, C1 -> A2
     final s4 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a2, 'time': '2025-01-01T00:00:00Z', 'I': a1Key,
+      'statement': 'net.one-of-us', 'trust': a2Token, 'time': '2025-01-01T00:00:00Z', 'I': a1Key,
     }, 't2_s4'));
     final s5 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a2, 'time': '2025-01-01T00:00:00Z', 'I': c1Key,
+      'statement': 'net.one-of-us', 'trust': a2Token, 'time': '2025-01-01T00:00:00Z', 'I': c1Key,
     }, 't2_s5'));
 
     // B1 -> B2, A2 -> B2
     final s6 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b2, 'time': '2025-01-01T00:00:00Z', 'I': b1Key,
+      'statement': 'net.one-of-us', 'trust': b2Token, 'time': '2025-01-01T00:00:00Z', 'I': b1Key,
     }, 't2_s6'));
     final s7 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b2, 'time': '2025-01-01T00:00:00Z', 'I': a2Key,
+      'statement': 'net.one-of-us', 'trust': b2Token, 'time': '2025-01-01T00:00:00Z', 'I': a2Key,
     }, 't2_s7'));
 
     final byIssuer = {
@@ -168,38 +180,43 @@ void main() {
 
   test('Path Requirement Logic: Mutual Trust at Degree 2 (Insufficient Paths)', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final pov = Jsonish(povKey).token;
+    final povToken = Jsonish(povKey).token;
+    final pov = IdentityKey(povToken);
     final i1Key = {'kty': 'mock', 'val': 'I1'};
-    final i1 = Jsonish(i1Key).token;
+    final i1Token = Jsonish(i1Key).token;
+    final i1 = IdentityKey(i1Token);
     final i2Key = {'kty': 'mock', 'val': 'I2'};
-    final i2 = Jsonish(i2Key).token;
+    final i2Token = Jsonish(i2Key).token;
+    final i2 = IdentityKey(i2Token);
     final aKey = {'kty': 'mock', 'val': 'A'};
-    final a = Jsonish(aKey).token;
+    final aToken = Jsonish(aKey).token;
+    final a = IdentityKey(aToken);
     final bKey = {'kty': 'mock', 'val': 'B'};
-    final b = Jsonish(bKey).token;
+    final bToken = Jsonish(bKey).token;
+    final b = IdentityKey(bToken);
 
     // Me -> I1, Me -> I2
     final s1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't3_s1'));
     final s2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i2Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't3_s2'));
 
     // I1 -> A, I2 -> B
     final s3 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a, 'time': '2025-01-01T00:00:00Z', 'I': i1Key,
+      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i1Key,
     }, 't3_s3'));
     final s4 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b, 'time': '2025-01-01T00:00:00Z', 'I': i2Key,
+      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i2Key,
     }, 't3_s4'));
 
     // A -> B, B -> A
     final s5 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b, 'time': '2025-01-01T00:00:00Z', 'I': aKey,
+      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': aKey,
     }, 't3_s5'));
     final s6 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a, 'time': '2025-01-01T00:00:00Z', 'I': bKey,
+      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': bKey,
     }, 't3_s6'));
 
     final byIssuer = {
@@ -235,51 +252,57 @@ void main() {
 
   test('Path Requirement Logic: Mutual Trust at Degree 2 (Sufficient Paths)', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final pov = Jsonish(povKey).token;
+    final povToken = Jsonish(povKey).token;
+    final pov = IdentityKey(povToken);
     final i1Key = {'kty': 'mock', 'val': 'I1'};
-    final i1 = Jsonish(i1Key).token;
+    final i1Token = Jsonish(i1Key).token;
+    final i1 = IdentityKey(i1Token);
     final i2Key = {'kty': 'mock', 'val': 'I2'};
-    final i2 = Jsonish(i2Key).token;
+    final i2Token = Jsonish(i2Key).token;
+    final i2 = IdentityKey(i2Token);
     final i3Key = {'kty': 'mock', 'val': 'I3'};
-    final i3 = Jsonish(i3Key).token;
+    final i3Token = Jsonish(i3Key).token;
+    final i3 = IdentityKey(i3Token);
     final aKey = {'kty': 'mock', 'val': 'A'};
-    final a = Jsonish(aKey).token;
+    final aToken = Jsonish(aKey).token;
+    final a = IdentityKey(aToken);
     final bKey = {'kty': 'mock', 'val': 'B'};
-    final b = Jsonish(bKey).token;
+    final bToken = Jsonish(bKey).token;
+    final b = IdentityKey(bToken);
 
     // Me -> I1, Me -> I2, Me -> I3
     final s1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't4_s1'));
     final s2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i2Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't4_s2'));
     final s3 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i3, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i3Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't4_s3'));
 
     // I1 -> A, I3 -> A  (A has 2 paths)
     final s4 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a, 'time': '2025-01-01T00:00:00Z', 'I': i1Key,
+      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i1Key,
     }, 't4_s4'));
     final s5 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a, 'time': '2025-01-01T00:00:00Z', 'I': i3Key,
+      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i3Key,
     }, 't4_s5'));
 
     // I2 -> B, I3 -> B  (B has 2 paths)
     final s6 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b, 'time': '2025-01-01T00:00:00Z', 'I': i2Key,
+      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i2Key,
     }, 't4_s6'));
     final s7 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b, 'time': '2025-01-01T00:00:00Z', 'I': i3Key,
+      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i3Key,
     }, 't4_s7'));
 
     // A -> B, B -> A (Mutual trust)
     final s8 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b, 'time': '2025-01-01T00:00:00Z', 'I': aKey,
+      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': aKey,
     }, 't4_s8'));
     final s9 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a, 'time': '2025-01-01T00:00:00Z', 'I': bKey,
+      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': bKey,
     }, 't4_s9'));
 
     final byIssuer = {
@@ -320,60 +343,69 @@ void main() {
 
   test('Path Requirement Logic: Adding trust should not remove trust', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final pov = Jsonish(povKey).token;
+    final povToken = Jsonish(povKey).token;
+    final pov = IdentityKey(povToken);
     final i1Key = {'kty': 'mock', 'val': 'I1'};
-    final i1 = Jsonish(i1Key).token;
+    final i1Token = Jsonish(i1Key).token;
+    final i1 = IdentityKey(i1Token);
     final i2Key = {'kty': 'mock', 'val': 'I2'};
-    final i2 = Jsonish(i2Key).token;
+    final i2Token = Jsonish(i2Key).token;
+    final i2 = IdentityKey(i2Token);
     final i3Key = {'kty': 'mock', 'val': 'I3'};
-    final i3 = Jsonish(i3Key).token;
+    final i3Token = Jsonish(i3Key).token;
+    final i3 = IdentityKey(i3Token);
     final i4Key = {'kty': 'mock', 'val': 'I4'};
-    final i4 = Jsonish(i4Key).token;
+    final i4Token = Jsonish(i4Key).token;
+    final i4 = IdentityKey(i4Token);
     final i5Key = {'kty': 'mock', 'val': 'I5'};
-    final i5 = Jsonish(i5Key).token;
+    final i5Token = Jsonish(i5Key).token;
+    final i5 = IdentityKey(i5Token);
     final aKey = {'kty': 'mock', 'val': 'A'};
-    final a = Jsonish(aKey).token;
+    final aToken = Jsonish(aKey).token;
+    final a = IdentityKey(aToken);
     final bKey = {'kty': 'mock', 'val': 'B'};
-    final b = Jsonish(bKey).token;
+    final bToken = Jsonish(bKey).token;
+    final b = IdentityKey(bToken);
     final xKey = {'kty': 'mock', 'val': 'X'};
-    final x = Jsonish(xKey).token;
+    final xToken = Jsonish(xKey).token;
+    final x = IdentityKey(xToken);
 
     // Me -> I1, I2, I3, I4
     final s1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't5_s1'));
     final s2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i2Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't5_s2'));
     final s3 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i3, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i3Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't5_s3'));
     final s4 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i4, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i4Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't5_s4'));
 
     // I1 -> A, I2 -> A (A has 2 paths at dist 2)
     final sA1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a, 'time': '2025-01-01T00:00:00Z', 'I': i1Key,
+      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i1Key,
     }, 't5_sA1'));
     final sA2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a, 'time': '2025-01-01T00:00:00Z', 'I': i2Key,
+      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i2Key,
     }, 't5_sA2'));
 
     // I3 -> B, I4 -> B (B has 2 paths at dist 2)
     final sB1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b, 'time': '2025-01-01T00:00:00Z', 'I': i3Key,
+      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i3Key,
     }, 't5_sB1'));
     final sB2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b, 'time': '2025-01-01T00:00:00Z', 'I': i4Key,
+      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i4Key,
     }, 't5_sB2'));
 
     // A -> X, B -> X (X has 2 paths at dist 3)
     final sX1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': x, 'time': '2025-01-01T00:00:00Z', 'I': aKey,
+      'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': aKey,
     }, 't5_sX1'));
     final sX2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': x, 'time': '2025-01-01T00:00:00Z', 'I': bKey,
+      'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': bKey,
     }, 't5_sX2'));
 
     final byIssuer = {
@@ -401,10 +433,10 @@ void main() {
 
     // Now add Me -> I5 and I5 -> X (X is now at distance 2 via I5)
     final s5 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i5, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
+      'statement': 'net.one-of-us', 'trust': i5Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
     }, 't5_s5'));
     final s6 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': x, 'time': '2025-01-01T00:00:00Z', 'I': i5Key,
+      'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': i5Key,
     }, 't5_s6'));
 
     final byIssuer2 = {
@@ -433,32 +465,38 @@ void main() {
 
   test('Path Requirement Logic: X at 2 degrees (1 path) and 3 degrees (1 path)', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final pov = Jsonish(povKey).token;
+    final povToken = Jsonish(povKey).token;
+    final pov = IdentityKey(povToken);
     final i1Key = {'kty': 'mock', 'val': 'I1'};
-    final i1 = Jsonish(i1Key).token;
+    final i1Token = Jsonish(i1Key).token;
+    final i1 = IdentityKey(i1Token);
     final i2Key = {'kty': 'mock', 'val': 'I2'};
-    final i2 = Jsonish(i2Key).token;
+    final i2Token = Jsonish(i2Key).token;
+    final i2 = IdentityKey(i2Token);
     final i3Key = {'kty': 'mock', 'val': 'I3'};
-    final i3 = Jsonish(i3Key).token;
+    final i3Token = Jsonish(i3Key).token;
+    final i3 = IdentityKey(i3Token);
     final aKey = {'kty': 'mock', 'val': 'A'};
-    final a = Jsonish(aKey).token;
+    final aToken = Jsonish(aKey).token;
+    final a = IdentityKey(aToken);
     final xKey = {'kty': 'mock', 'val': 'X'};
-    final x = Jsonish(xKey).token;
+    final xToken = Jsonish(xKey).token;
+    final x = IdentityKey(xToken);
 
     // pov -> I1, I2, I3 (dist 1 / 2 degrees)
-    final s1 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': i1, 'time': '2025-01-01T00:00:00Z', 'I': povKey}, 't6_s1'));
-    final s2 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': i2, 'time': '2025-01-01T00:00:00Z', 'I': povKey}, 't6_s2'));
-    final s3 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': i3, 'time': '2025-01-01T00:00:00Z', 'I': povKey}, 't6_s3'));
+    final s1 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': i1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey}, 't6_s1'));
+    final s2 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': i2Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey}, 't6_s2'));
+    final s3 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': i3Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey}, 't6_s3'));
 
     // I1 -> X (X at dist 2 / 3 degrees)
-    final s4 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': x, 'time': '2025-01-01T00:00:00Z', 'I': i1Key}, 't6_s4'));
+    final s4 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': i1Key}, 't6_s4'));
 
     // I2 -> A, I3 -> A (A at dist 2 / 3 degrees, 2 paths)
-    final s5 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': a, 'time': '2025-01-01T00:00:00Z', 'I': i2Key}, 't6_s5'));
-    final s6 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': a, 'time': '2025-01-01T00:00:00Z', 'I': i3Key}, 't6_s6'));
+    final s5 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i2Key}, 't6_s5'));
+    final s6 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i3Key}, 't6_s6'));
 
     // A -> X (X at dist 3 / 4 degrees)
-    final s7 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': x, 'time': '2025-01-01T00:00:00Z', 'I': aKey}, 't6_s7'));
+    final s7 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': aKey}, 't6_s7'));
 
     final byIssuer = {
       pov: [s1, s2, s3],

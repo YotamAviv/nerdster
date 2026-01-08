@@ -12,7 +12,7 @@ import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/eg.dart';
 
 List<Iterable<ContentStatement>> _collectSources(
-  String identity,
+  IdentityKey identity,
   TrustGraph trustGraph,
   DelegateResolver delegateResolver,
   ContentResult contentResult,
@@ -20,7 +20,7 @@ List<Iterable<ContentStatement>> _collectSources(
   final List<Iterable<ContentStatement>> sources = [];
 
   // Delegate Keys
-  for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(IdentityKey(identity))) {
+  for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
     if (contentResult.delegateContent.containsKey(key)) {
       sources.add(contentResult.delegateContent[key]!);
     }
@@ -52,7 +52,7 @@ ContentAggregation reduceContentAggregation(
   // 1. Decentralized Censorship (Proximity Wins)
   if (enableCensorship) {
     // Process identities in trust order (discovery order in FollowNetwork)
-    for (final String identity in followNetwork.identities) {
+    for (final IdentityKey identity in followNetwork.identities) {
       final List<Iterable<ContentStatement>> sources = _collectSources(
         identity,
         trustGraph,
@@ -76,9 +76,9 @@ ContentAggregation reduceContentAggregation(
 
   // 2. Collect and Filter Statements
   final List<ContentStatement> filteredStatements = [];
-  final Map<String, List<ContentStatement>> filteredByIdentity = {};
+  final Map<IdentityKey, List<ContentStatement>> filteredByIdentity = {};
 
-  for (final String identity in followNetwork.identities) {
+  for (final IdentityKey identity in followNetwork.identities) {
     final List<Iterable<ContentStatement>> sources = _collectSources(
       identity,
       trustGraph,
@@ -88,7 +88,7 @@ ContentAggregation reduceContentAggregation(
 
     final Iterable<ContentStatement> statements = distinct(
       Merger.merge(sources),
-      transformer: (_) => identity,
+      transformer: (_) => identity.value,
     ).cast<ContentStatement>();
 
     for (final ContentStatement s in statements) {
@@ -279,7 +279,7 @@ ContentAggregation reduceContentAggregation(
   processPass1(myFilteredStatements);
 
   // Pass 2: Aggregate all statements into those subjects.
-  for (final String identity in followNetwork.identities) {
+  for (final IdentityKey identity in followNetwork.identities) {
     final List<ContentStatement> statements = filteredByIdentity[identity] ?? [];
     for (final ContentStatement s in statements) {
       final ContentKey canonical1 =
@@ -331,17 +331,17 @@ ContentAggregation reduceContentAggregation(
           }
         }
 
-        // TODO: Use IdentityKey
-        final String signerIdentity = delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!.value;
+        final IdentityKey signerIdentity = delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!;
         assert(trustGraph.isTrusted(signerIdentity));
 
         if (s.verb == ContentVerb.clear) {
           // Remove prior statements by this identity
           final toRemove = agg.statements.where((existing) {
-            assert(trustGraph.isTrusted(existing.iToken));
-            final existingIdentity = trustGraph.isTrusted(existing.iToken)
-                ? trustGraph.resolveIdentity(existing.iToken)
-                : delegateResolver.getIdentityForDelegate(DelegateKey(existing.iToken))?.value;
+            final identityKey = IdentityKey(existing.iToken);
+            assert(trustGraph.isTrusted(identityKey));
+            final existingIdentity = trustGraph.isTrusted(identityKey)
+                ? trustGraph.resolveIdentity(identityKey)
+                : delegateResolver.getIdentityForDelegate(DelegateKey(existing.iToken));
             return existingIdentity == signerIdentity;
           }).toList();
 
@@ -469,10 +469,9 @@ ContentAggregation reduceContentAggregation(
         subjects[canonical] = agg;
       }
 
-      print('agg.myDelegateStatements(${agg.myDelegateStatements.length}).contains(s)=${agg.myDelegateStatements.contains(s)}');
-      assert(!agg.myDelegateStatements.contains(s));
       // Update myDelegateStatements
       List<ContentStatement> myDelegateStatements = agg.myDelegateStatements;
+
       if (s.verb == ContentVerb.clear) {
         // Clear all my previous statements on this subject
         myDelegateStatements = [];
@@ -522,6 +521,7 @@ ContentAggregation reduceContentAggregation(
   }
 
   for (final agg in subjects.values.toList()) {
+
     final Set<String> recursiveTags = collectTagsRecursive(agg.canonicalToken, {});
     subjects[agg.canonicalToken] = SubjectAggregation(
       canonicalTokenIn: agg.canonicalToken,

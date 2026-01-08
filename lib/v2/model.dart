@@ -32,26 +32,26 @@ class TrustNotification {
     this.isConflict = false,
   });
 
-  String get subject => rejectedStatement.subjectToken;
+  IdentityKey get subject => IdentityKey(rejectedStatement.subjectToken);
 
-  String get issuer => getToken(rejectedStatement.i);
+  IdentityKey get issuer => IdentityKey(getToken(rejectedStatement.i));
 
   @override
-  String toString() => '${isConflict ? "Conflict" : "Notification"}($subject): $reason';
+  String toString() => '${isConflict ? "Conflict" : "Notification"}(${subject.value}): $reason';
 }
 
 /// The immutable result of the Trust Algorithm.
 class TrustGraph {
-  final String pov;
-  final Map<String, int> distances; // Token -> Distance
-  final List<String> orderedKeys; // Tokens in discovery order (BFS)
-  final Map<String, String> replacements; // OldToken -> NewToken
-  final Map<String, String> replacementConstraints; // Token -> RevokeAtToken (Time constraint)
-  final Set<String> blocked; // Tokens blocked by the graph
-  final Map<String, List<List<String>>> paths; // Target -> List of node-disjoint paths from pov
+  final IdentityKey pov;
+  final Map<IdentityKey, int> distances; // Token -> Distance
+  final List<IdentityKey> orderedKeys; // Tokens in discovery order (BFS)
+  final Map<IdentityKey, IdentityKey> replacements; // OldToken -> NewToken
+  final Map<IdentityKey, String> replacementConstraints; // Token -> RevokeAtToken (Time constraint works on Token string)
+  final Set<IdentityKey> blocked; // Tokens blocked by the graph
+  final Map<IdentityKey, List<List<IdentityKey>>> paths; // Target -> List of node-disjoint paths from pov
   /// Notifications: key rotation issues, attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
-  final Map<String, List<TrustStatement>>
+  final Map<IdentityKey, List<TrustStatement>>
       edges; // Adjacency list: Issuer -> List<TrustStatement> (Valid statements)
 
   TrustGraph({
@@ -66,20 +66,20 @@ class TrustGraph {
     this.edges = const {},
   });
 
-  bool isTrusted(String token) => distances.containsKey(token);
+  bool isTrusted(IdentityKey token) => distances.containsKey(token);
 
   List<TrustNotification> get conflicts => notifications.where((n) => n.isConflict).toList();
 
   TrustGraph copyWith({
-    String? pov,
-    Map<String, int>? distances,
-    List<String>? orderedKeys,
-    Map<String, String>? replacements,
-    Map<String, String>? replacementConstraints,
-    Set<String>? blocked,
-    Map<String, List<List<String>>>? paths,
+    IdentityKey? pov,
+    Map<IdentityKey, int>? distances,
+    List<IdentityKey>? orderedKeys,
+    Map<IdentityKey, IdentityKey>? replacements,
+    Map<IdentityKey, String>? replacementConstraints,
+    Set<IdentityKey>? blocked,
+    Map<IdentityKey, List<List<IdentityKey>>>? paths,
     List<TrustNotification>? notifications,
-    Map<String, List<TrustStatement>>? edges,
+    Map<IdentityKey, List<TrustStatement>>? edges,
   }) {
     return TrustGraph(
       pov: pov ?? this.pov,
@@ -96,16 +96,20 @@ class TrustGraph {
 
   /// Returns the active identity token for a given key.
   /// If the key is replaced, returns the replacement (recursively).
-  String resolveIdentity(String token) {
-    if (replacements.containsKey(token)) {
-      return resolveIdentity(replacements[token]!);
+  IdentityKey resolveIdentity(IdentityKey token) {
+    IdentityKey current = token;
+    final Set<IdentityKey> seen = {token};
+    while (replacements.containsKey(current)) {
+      current = replacements[current]!;
+      if (seen.contains(current)) break;
+      seen.add(current);
     }
-    return token;
+    return current;
   }
 
   /// Groups all trusted tokens by their canonical identity.
-  Map<String, List<String>> getEquivalenceGroups() {
-    final Map<String, List<String>> groups = {};
+  Map<IdentityKey, List<IdentityKey>> getEquivalenceGroups() {
+    final Map<IdentityKey, List<IdentityKey>> groups = {};
     for (final token in distances.keys) {
       final canonical = resolveIdentity(token);
       groups.putIfAbsent(canonical, () => []).add(token);
@@ -118,14 +122,13 @@ class TrustGraph {
   }
 
   /// Returns all trusted tokens that belong to the given canonical identity.
-  /// TODO: Use IdentityKey.
-  List<String> getEquivalenceGroup(String canonical) {
+  List<IdentityKey> getEquivalenceGroup(IdentityKey canonical) {
     return distances.keys.where((token) => resolveIdentity(token) == canonical).toList()
       ..sort((a, b) => distances[a]!.compareTo(distances[b]!));
   }
 
   /// Returns all shortest paths from pov to [target].
-  List<List<String>> getPathsTo(String target) {
+  List<List<IdentityKey>> getPathsTo(IdentityKey target) {
     if (target == pov)
       return [
         [pov]
@@ -133,18 +136,19 @@ class TrustGraph {
     if (!distances.containsKey(target)) return [];
 
     final targetDist = distances[target]!;
-    final List<List<String>> results = [];
+    final List<List<IdentityKey>> results = [];
 
     // Find all issuers that trust this target at distance targetDist - 1
     // We look at all edges in the graph.
     for (final issuer in edges.keys) {
-      if (distances[issuer] == targetDist - 1) {
+      if ((distances[issuer] ?? -1) == targetDist - 1) {
         for (final s in edges[issuer]!) {
-          if (s.subjectToken == target) {
-            final subPaths = getPathsTo(issuer);
-            for (final p in subPaths) {
-              results.add([...p, target]);
-            }
+          // Only trust/replace edges constitute a path in the identity graph.
+          if (s.verb == TrustVerb.trust && s.subjectAsIdentity == target) {
+             final subPaths = getPathsTo(issuer);
+             for (final p in subPaths) {
+               results.add([...p, target]);
+             }
           }
         }
       }
@@ -156,12 +160,12 @@ class TrustGraph {
 /// The result of building a Follow Network for a specific context.
 class FollowNetwork {
   final String fcontext;
-  final String povIdentity; // The identity from whose POV this network was built
-  final List<String> identities; // Canonical identity tokens in discovery order
-  final Map<String, List<String>> paths; // Identity -> Path from pov
+  final IdentityKey povIdentity; // The identity from whose POV this network was built
+  final List<IdentityKey> identities; // Canonical identity tokens in discovery order
+  final Map<IdentityKey, List<IdentityKey>> paths; // Identity -> Path from pov
   /// Notifications: attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
-  final Map<String, List<ContentStatement>>
+  final Map<IdentityKey, List<ContentStatement>>
       edges; // IssuerIdentity -> List of accepted follow/block statements
 
   FollowNetwork({
@@ -173,7 +177,7 @@ class FollowNetwork {
     this.edges = const {},
   });
 
-  bool contains(String identity) => identities.contains(identity);
+  bool contains(IdentityKey identity) => identities.contains(identity);
 }
 
 /// Aggregated data for a single subject (or equivalence group).
@@ -307,7 +311,7 @@ class V2FeedModel {
   final DelegateResolver delegateResolver;
   final V2Labeler labeler;
   final ContentAggregation aggregation;
-  final String povToken;
+  final IdentityKey povToken;
   final String fcontext;
   final V2SortMode sortMode;
   final V2FilterMode filterMode;
@@ -316,6 +320,7 @@ class V2FeedModel {
   final bool enableCensorship;
   final List<String> availableContexts;
   final Set<String> activeContexts;
+  final List<SubjectAggregation> effectiveSubjects; // Filtered and sorted
   final List<SourceError> sourceErrors;
 
   V2FeedModel({
@@ -333,6 +338,7 @@ class V2FeedModel {
     required this.enableCensorship,
     this.availableContexts = const [],
     this.activeContexts = const {},
+    this.effectiveSubjects = const [],
     this.sourceErrors = const [],
   });
 }

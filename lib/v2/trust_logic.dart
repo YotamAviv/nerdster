@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/model.dart';
 
@@ -12,16 +13,16 @@ final Map<String, String> pathsReq = {
 
 typedef PathRequirement = int Function(int distance);
 
-List<List<String>> _findNodeDisjointPaths(String root, String target, Map<String, Set<String>> graph, int limit) {
-  final List<List<String>> paths = [];
-  final Set<String> excludedNodes = {};
+List<List<IdentityKey>> _findNodeDisjointPaths(IdentityKey root, IdentityKey target, Map<IdentityKey, Set<IdentityKey>> graph, int limit) {
+  final List<List<IdentityKey>> paths = [];
+  final Set<IdentityKey> excludedNodes = {};
   final Set<String> usedPathStrings = {}; 
 
   while (paths.length < limit) {
     final path = _findShortestPath(root, target, graph, excludedNodes);
     if (path == null) break;
     
-    final pathString = path.join('->');
+    final pathString = path.map((k) => k.value).join('->');
     if (usedPathStrings.contains(pathString)) break;
     
     paths.add(path);
@@ -35,8 +36,8 @@ List<List<String>> _findNodeDisjointPaths(String root, String target, Map<String
   return paths;
 }
 
-List<String>? _findShortestPath(String start, String end, Map<String, Set<String>> graph, Set<String> excluded) {
-  final queue = Queue<List<String>>();
+List<IdentityKey>? _findShortestPath(IdentityKey start, IdentityKey end, Map<IdentityKey, Set<IdentityKey>> graph, Set<IdentityKey> excluded) {
+  final queue = Queue<List<IdentityKey>>();
   queue.add([start]);
   final visited = {start, ...excluded};
 
@@ -51,7 +52,7 @@ List<String>? _findShortestPath(String start, String end, Map<String, Set<String
       for (final neighbor in neighbors) {
         if (!visited.contains(neighbor)) {
           visited.add(neighbor);
-          final newPath = List<String>.from(path)..add(neighbor);
+          final newPath = List<IdentityKey>.from(path)..add(neighbor);
           queue.add(newPath);
         }
       }
@@ -73,7 +74,7 @@ List<String>? _findShortestPath(String start, String end, Map<String, Set<String
 /// - Notifications
 TrustGraph reduceTrustGraph(
   TrustGraph current, 
-  Map<String, List<TrustStatement>> byIssuer, {
+  Map<IdentityKey, List<TrustStatement>> byIssuer, {
   PathRequirement? pathRequirement,
   int maxDegrees = 6,
 }) {
@@ -84,27 +85,27 @@ TrustGraph reduceTrustGraph(
     return true;
   }());
 
-  final Map<String, int> distances = {current.pov: 0};
-  final List<String> orderedKeys = [current.pov];
-  final Map<String, String> replacements = {};
-  final Map<String, String> replacementConstraints = {};
-  final Set<String> blocked = {};
-  final Map<String, List<List<String>>> paths = {};
+  final Map<IdentityKey, int> distances = {current.pov: 0};
+  final List<IdentityKey> orderedKeys = [current.pov];
+  final Map<IdentityKey, IdentityKey> replacements = {};
+  final Map<IdentityKey, String> replacementConstraints = {};
+  final Set<IdentityKey> blocked = {};
+  final Map<IdentityKey, List<List<IdentityKey>>> paths = {};
   final List<TrustNotification> notifications = [];
-  final Map<String, List<TrustStatement>> edges = {};
-  final Map<String, Set<String>> trustedBy = {};
-  final Map<String, Set<String>> graphForPathfinding = {};
-  final Set<String> visited = {current.pov};
+  final Map<IdentityKey, List<TrustStatement>> edges = {};
+  final Map<IdentityKey, Set<IdentityKey>> trustedBy = {};
+  final Map<IdentityKey, Set<IdentityKey>> graphForPathfinding = {};
+  final Set<IdentityKey> visited = {current.pov};
 
-  String resolveCanonical(String token) {
-    String current = token;
-    final Set<String> seen = {token};
-    while (replacements.containsKey(current)) {
-      current = replacements[current]!;
-      if (seen.contains(current)) break; // Cycle detected
-      seen.add(current);
+  IdentityKey resolveCanonical(IdentityKey token) {
+    IdentityKey currentKey = token;
+    final Set<IdentityKey> seen = {token};
+    while (replacements.containsKey(currentKey)) {
+      currentKey = replacements[currentKey]!;
+      if (seen.contains(currentKey)) break; // Cycle detected
+      seen.add(currentKey);
     }
-    return current;
+    return currentKey;
   }
 
   // --- 1. Index by Token (for replacement limit resolution) ---
@@ -115,11 +116,11 @@ TrustGraph reduceTrustGraph(
     }
   }
 
-  DateTime? resolveReplacementLimit(String? limitToken, String expectedIssuer) {
+  DateTime? resolveReplacementLimit(String? limitToken, IdentityKey expectedIssuer) {
     if (limitToken == null) return null;
     if (limitToken == kSinceAlways) return DateTime.fromMicrosecondsSinceEpoch(0);
     final s = byToken[limitToken];
-    if (s != null && s.iToken == expectedIssuer) {
+    if (s != null && s.iKey == expectedIssuer) {
       return s.time;
     }
     return DateTime.fromMicrosecondsSinceEpoch(0);
@@ -130,17 +131,17 @@ TrustGraph reduceTrustGraph(
   var currentLayer = {current.pov};
 
   for (int dist = 0; dist < maxDegrees && currentLayer.isNotEmpty; dist++) {
-    final nextLayer = <String>{};
+    final nextLayer = <IdentityKey>{};
 
     // --- STAGE 1: BLOCKS ---
     // Blocks are processed first for the entire layer.
     for (final issuer in currentLayer) {
       var statements = byIssuer[issuer] ?? [];
-      final decided = <String>{};
+      final decided = <IdentityKey>{};
       
       // Process Blocks
       for (var s in statements.where((s) => s.verb == TrustVerb.block)) {
-        final subject = s.subjectToken;
+        final subject = s.subjectAsIdentity;
         if (decided.contains(subject)) continue;
         decided.add(subject);
 
@@ -155,7 +156,7 @@ TrustGraph reduceTrustGraph(
 
         if (distances.containsKey(subject) && distances[subject]! <= dist) {
           notifications.add(TrustNotification(
-            reason: "Attempt to block trusted key by $issuer",
+            reason: "Attempt to block trusted key by ${issuer.value}",
             rejectedStatement: s,
             isConflict: true,
           ));
@@ -190,9 +191,9 @@ TrustGraph reduceTrustGraph(
         return true;
       }).toList();
 
-      final decided = <String>{};
+      final decided = <IdentityKey>{};
       for (var s in statements.where((s) => s.verb == TrustVerb.replace)) {
-        final oldKey = s.subjectToken;
+        final oldKey = s.subjectAsIdentity;
         if (decided.contains(oldKey)) continue;
         decided.add(oldKey);
 
@@ -207,7 +208,7 @@ TrustGraph reduceTrustGraph(
 
         if (blocked.contains(oldKey)) {
           notifications.add(TrustNotification(
-            reason: "Blocked key $oldKey is being replaced by $issuer",
+            reason: "Blocked key ${oldKey.value} is being replaced by ${issuer.value}",
             rejectedStatement: s,
             isConflict: false,
           ));
@@ -220,7 +221,7 @@ TrustGraph reduceTrustGraph(
             replacements[oldKey] = issuer;
           }
           notifications.add(TrustNotification(
-            reason: "Trusted key $oldKey is being replaced by $issuer (Replacement constraint ignored due to distance)",
+            reason: "Trusted key ${oldKey.value} is being replaced by ${issuer.value} (Replacement constraint ignored due to distance)",
             rejectedStatement: s,
             isConflict: false,
           ));
@@ -231,7 +232,7 @@ TrustGraph reduceTrustGraph(
           final existingNewKey = replacements[oldKey];
           if (existingNewKey != issuer) {
             notifications.add(TrustNotification(
-              reason: "Key $oldKey replaced by both $existingNewKey and $issuer",
+              reason: "Key ${oldKey.value} replaced by both ${existingNewKey!.value} and ${issuer.value}",
               rejectedStatement: s,
               isConflict: true,
             ));
@@ -241,7 +242,7 @@ TrustGraph reduceTrustGraph(
 
         if (distances.containsKey(oldKey)) {
           notifications.add(TrustNotification(
-            reason: "Trusted key $oldKey is being replaced by $issuer",
+            reason: "Trusted key ${oldKey.value} is being replaced by ${issuer.value}",
             rejectedStatement: s,
             isConflict: false,
           ));
@@ -274,22 +275,22 @@ TrustGraph reduceTrustGraph(
         }
       }
 
-      final decided = <String>{};
+      final decided = <IdentityKey>{};
       for (var s in statements.where((s) => s.verb == TrustVerb.trust)) {
-        final subject = s.subjectToken;
+        final subject = s.subjectAsIdentity;
         if (decided.contains(subject)) continue;
         decided.add(subject);
 
         if (blocked.contains(subject)) {
           notifications.add(TrustNotification(
-            reason: "Attempt to trust blocked key by $issuer",
+            reason: "Attempt to trust blocked key by ${issuer.value}",
             rejectedStatement: s,
             isConflict: true,
           ));
           continue;
         }
 
-        String effectiveSubject = resolveCanonical(subject);
+        IdentityKey effectiveSubject = resolveCanonical(subject);
         // Non-canonical trusts by the POV are caught by the replacement logic as 'Trusted key ... is being replaced'.
         // Non-canonical trusts by others are ignored to reduce noise.
 
@@ -331,7 +332,8 @@ TrustGraph reduceTrustGraph(
   // Deduplicate notifications
   final Map<String, TrustNotification> uniqueNotifications = {};
   for (final n in notifications) {
-    final key = "${n.subject}:${n.reason}";
+    // IdentityKey interpolation works
+    final key = "${n.subject.value}:${n.reason}";
     if (!uniqueNotifications.containsKey(key)) {
       uniqueNotifications[key] = n;
     }

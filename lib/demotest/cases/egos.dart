@@ -8,10 +8,10 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 
 /// Can be useful for simple scenarios at: http://localhost:<port>/?fire=fake&demo=egosCircle
-Future<(DemoKey, DemoKey?)> egos() async {
-  DemoKey jock = await DemoKey.findOrCreate('jock');
-  DemoKey poser = await DemoKey.findOrCreate('poser');
-  DemoKey hipster = await DemoKey.findOrCreate('hipster');
+Future<(DemoIdentityKey, DemoDelegateKey?)> egos() async {
+  DemoIdentityKey jock = await DemoIdentityKey.findOrCreate('jock');
+  DemoIdentityKey poser = await DemoIdentityKey.findOrCreate('poser');
+  DemoIdentityKey hipster = await DemoIdentityKey.findOrCreate('hipster');
 
   await jock.doTrust(TrustVerb.trust, poser);
   await poser.doTrust(TrustVerb.trust, hipster);
@@ -19,9 +19,9 @@ Future<(DemoKey, DemoKey?)> egos() async {
   await hipster.doTrust(TrustVerb.trust, jock);
   await hipster.doTrust(TrustVerb.clear, jock);
 
-  DemoKey jockN = await jock.makeDelegate();
-  DemoKey poserN = await poser.makeDelegate();
-  DemoKey hipsterN = await hipster.makeDelegate();
+  DemoDelegateKey jockN = await jock.makeDelegate();
+  DemoDelegateKey poserN = await poser.makeDelegate();
+  DemoDelegateKey hipsterN = await hipster.makeDelegate();
 
   final Json russ = {
     "contentType": "video",
@@ -37,18 +37,18 @@ Future<(DemoKey, DemoKey?)> egos() async {
     "url":
         "https://thebeardclub.com/blogs/beard-culture/how-to-overcome-the-challenges-of-a-big-beard"
   }, comment: '#Rad!', recommend: true);
-  Statement h2 = await hipsterN.doRate(subject: {
+  await hipsterN.doRate(subject: {
     "contentType": "article",
     "title":
         "Amazon.com : Pro Volleyball Shorts Spandex Black - No Ride Up - No Roll Up - Ultra Comfortable : Clothing, Shoes & Jewelry",
     "url": "https://www.amazon.com/Pro-Volleyball-Shorts-Spandex-Black/dp/B07NF32YJM"
   }, recommend: true);
 
-  await hipster.doTrust(TrustVerb.delegate, hipsterN,
+  await hipster.delegate(hipsterN,
       domain: kNerdsterDomain, comment: 'bad', revokeAt: h1.token);
-  DemoKey hipsterN2 = await hipster.makeDelegate();
+  DemoDelegateKey hipsterN2 = await hipster.makeDelegate();
 
-  Statement h3 = await hipsterN2.doRate(subject: {
+  await hipsterN2.doRate(subject: {
     "contentType": "article",
     "title": "25+ Coolest Sleeve Tattoos for Men  | Man of Many",
     "url": "https://manofmany.com/entertainment/art/coolest-sleeve-tattoos"
@@ -56,7 +56,7 @@ Future<(DemoKey, DemoKey?)> egos() async {
 
   Statement h4 = await poserN.doRate(subject: h1.json, recommend: true, comment: 'Yeah, baby.');
   // Hipster likes and comments on poser's like of hipster's submission
-  Statement h5 = await hipsterN2.doRate(subject: h4.json, recommend: true, comment: 'Thanks!');
+  await hipsterN2.doRate(subject: h4.json, recommend: true, comment: 'Thanks!');
 
   await jockN.doFollow(poser, {'social': 1});
   await poserN.doFollow(hipster, {'social': 1});
@@ -67,8 +67,8 @@ Future<(DemoKey, DemoKey?)> egos() async {
 
 // This test only works in FakeFirebase where we can delete.
 // CONSIDER: TEST: Other corruption (bad signature, bad id, ...)
-Future<(DemoKey, DemoKey?)> egosCorrupt() async {
-  final (DemoKey identity, DemoKey? delegate) = await egos();
+Future<(DemoIdentityKey, DemoDelegateKey?)> egosCorrupt() async {
+  final (DemoIdentityKey identity, DemoDelegateKey? delegate) = await egos();
 
   await delegate!.doRate(title: 'a');
   Statement s = await delegate.doRate(title: 'b');
@@ -97,10 +97,10 @@ Future<(DemoKey, DemoKey?)> egosCorrupt() async {
   return (identity, delegate);
 }
 
-Future<(DemoKey, DemoKey?)> egosCircle() async {
-  final (DemoKey identity, DemoKey? delegate) = await egos();
-  DemoKey hipster = DemoKey.findByName('hipster')!;
-  DemoKey jock = DemoKey.findByName('jock')!;
+Future<(DemoIdentityKey, DemoDelegateKey?)> egosCircle() async {
+  final (DemoIdentityKey identity, DemoDelegateKey? delegate) = await egos();
+  DemoIdentityKey hipster = DemoIdentityKey.findByName('hipster')!;
+  DemoIdentityKey jock = DemoIdentityKey.findByName('jock')!;
   await hipster.doTrust(TrustVerb.trust, jock);
   return (identity, delegate);
 }

@@ -56,12 +56,16 @@ void main() {
       }, 'd2'));
 
       final trustGraph = TrustGraph(
-        pov: pov,
-        distances: {pov: 0, alice: 1, bob: 2},
-        orderedKeys: [pov, alice, bob],
+        pov: IdentityKey(pov),
+        distances: {
+          IdentityKey(pov): 0,
+          IdentityKey(alice): 1,
+          IdentityKey(bob): 2
+        },
+        orderedKeys: [IdentityKey(pov), IdentityKey(alice), IdentityKey(bob)],
         edges: {
-          pov: [t1, d1],
-          alice: [t2, d2],
+          IdentityKey(pov): [t1, d1],
+          IdentityKey(alice): [t2, d2],
         },
       );
 

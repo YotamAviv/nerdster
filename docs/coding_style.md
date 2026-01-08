@@ -9,10 +9,11 @@ We prioritize correctness and explicitness over brevity or "defensive programmin
 Avoid `var` and `final` (without type) whenever the type is not immediately obvious from the right-hand side.
 *   **Bad:** `var x = getSomething();`
 *   **Good:** `String x = getSomething();`
-*   **Acceptable:** `final List<String> names = [];`
+*   **Good:** `final List<String> names = [];`
 
 ### 2. Fail Fast (Assertions and Bang Operator)
-Do not write code that "handles" impossible situations unless it's at the system boundary (e.g., user input or network IO). Internal logic should assume preconditions are met and assert them.
+Do not write code that "handles" unexpected situations.
+Assume preconditions are met and assert them.
 *   **Bad:** `if (list.isEmpty) return; // when list should never be empty`
 *   **Good:** `assert(list.isNotEmpty, 'List must not be empty');`
 
@@ -25,12 +26,12 @@ Prefer using the bang operator (`!`) over explicit null checks and exceptions fo
     ```
 *   **Good:** `return map[key]!;`
 
+Do not implement "fallback".
+
 ### 3. Strict Data Integrity
 *   Data sources (like Firestore) must return valid data.
 *   Consumers of that data (like pipelines or logic functions) should **assert** validity, not fix it.
 
-### 4. Immutability
-Prefer immutable data structures for core models (`TrustGraph`, `TrustAtom`, etc.).
 
 ### 5. Comments
 Explain *why*, not *what*. Document assumptions about data integrity.

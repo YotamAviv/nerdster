@@ -13,6 +13,9 @@ import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/singletons.dart';
 
 import 'simpsons_data_helper.dart';
+import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/most_strings.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +25,11 @@ void main() {
   late V2FeedController controller;
 
   setUp(() async {
+    // Reset global state
+    signInState.signOut(clearIdentity: true);
+    
     fireChoice = FireChoice.fake;
+
     nerdsterFire = FakeFirebaseFirestore();
     oneofusFire = FakeFirebaseFirestore();
 
@@ -31,6 +38,8 @@ void main() {
     ContentStatement.init();
 
     await SimpsonsDataHelper.populate(nerdsterFire, oneofusFire);
+    
+    Setting.get<String>(SettingType.fcontext).value = 'family';
 
     controller = V2FeedController(
       trustSource: DirectFirestoreSource<TrustStatement>(oneofusFire),
@@ -39,8 +48,8 @@ void main() {
   });
 
   test('Lisa feed should have expected names and content', () async {
-    final lisaToken = DemoKey.findByName('lisa')!.token;
-    await controller.refresh(lisaToken);
+    final lisaToken = DemoIdentityKey.findByName('lisa')!.token;
+    await controller.refresh(IdentityKey(lisaToken));
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
@@ -61,9 +70,9 @@ void main() {
     }
 
     // Verify some specific labels from Lisa's perspective
-    final homerToken = DemoKey.findByName('homer')!.token;
-    final homer2Token = DemoKey.findByName('homer2')!.token;
-    final margeToken = DemoKey.findByName('marge')!.token;
+    final homerToken = DemoIdentityKey.findByName('homer')!.token;
+    final homer2Token = DemoIdentityKey.findByName('homer2')!.token;
+    final margeToken = DemoIdentityKey.findByName('marge')!.token;
     
     // Homer was replaced by Homer2, so Homer is "dad'" and Homer2 is "dad"
     expect(labeler.getLabel(homerToken), equals("dad'"));
@@ -73,9 +82,9 @@ void main() {
 
   test('My delegate statements should be available in myDelegateStatements but not in main aggregation if not in PoV network', () async {
     // 1. Create Stranger and Me
-    final stranger = await DemoKey.findOrCreate('stranger');
+    final stranger = await DemoIdentityKey.findOrCreate('stranger');
     final strangerDelegate = await stranger.makeDelegate();
-    final me = await DemoKey.findOrCreate('me');
+    final me = await DemoIdentityKey.findOrCreate('me');
     final meDelegate = await me.makeDelegate();
 
     // 2. Stranger (via delegate) rates "Secretariat" (so it appears in the feed)
@@ -91,7 +100,7 @@ void main() {
 
     // 5. Refresh with Stranger as PoV
     // Stranger does NOT trust Me, so Me is not in the trust graph.
-    await controller.refresh(stranger.token, meIdentityToken: me.token);
+    await controller.refresh(IdentityKey(stranger.token), meIdentity: IdentityKey(me.token));
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
@@ -115,15 +124,20 @@ void main() {
 
   test('Rating a rating should not result in the rating appearing as a top-level subject', () async {
     // 1. Setup Viewer, Rater, Critic
-    final viewer = await DemoKey.findOrCreate('viewer');
-    final rater = await DemoKey.findOrCreate('rater');
+    final viewer = await DemoIdentityKey.findOrCreate('viewer');
+    final viewerDelegate = await viewer.makeDelegate(); // Viewer needs delegate to follow
+    final rater = await DemoIdentityKey.findOrCreate('rater');
     final raterDelegate = await rater.makeDelegate();
-    final critic = await DemoKey.findOrCreate('critic');
+    final critic = await DemoIdentityKey.findOrCreate('critic');
     final criticDelegate = await critic.makeDelegate();
 
     // Viewer trusts Rater and Critic (Identities)
     await viewer.trust(rater, moniker: 'rater');
     await viewer.trust(critic, moniker: 'critic');
+    
+    // Viewer follows Rater and Critic (Content) so their content appears in 'family' feed
+    await viewerDelegate.doFollow(rater, {'family': 1});
+    await viewerDelegate.doFollow(critic, {'family': 1});
 
     // 2. Rater (via delegate) rates "Inception"
     final ratingStatement = await raterDelegate.doRate(title: 'Inception', recommend: true);
@@ -133,7 +147,7 @@ void main() {
     await criticDelegate.doRate(subject: ratingToken, recommend: false, comment: 'Bad take');
 
     // 4. Refresh Viewer's feed
-    await controller.refresh(viewer.token);
+    await controller.refresh(IdentityKey(viewer.token));
 
     expect(controller.error, isNull);
     final model = controller.value!;
@@ -155,8 +169,8 @@ void main() {
 
   test('My delegate statements should be fetched even if I am not in the PoV graph and not signed in with that delegate', () async {
     // 1. Create Stranger and Me
-    final stranger = await DemoKey.findOrCreate('stranger');
-    final me = await DemoKey.findOrCreate('me');
+    final stranger = await DemoIdentityKey.findOrCreate('stranger');
+    final me = await DemoIdentityKey.findOrCreate('me');
     final meDelegate = await me.makeDelegate();
 
     // 2. Me (via delegate) rates "Secretariat"
@@ -167,11 +181,11 @@ void main() {
 
     // 4. Refresh with Stranger as PoV
     // Stranger does NOT trust Me.
-    await controller.refresh(stranger.token, meIdentityToken: me.token);
+    await controller.refresh(IdentityKey(stranger.token), meIdentity: IdentityKey(me.token));
 
     // Wait for controller to finish loading the requested PoV
     // (Because signIn triggered a refresh for 'Me', the explicit refresh call might have returned early)
-    while (controller.value?.povToken != stranger.token || controller.loading) {
+    while (controller.value?.povToken != IdentityKey(stranger.token) || controller.loading) {
       await Future.delayed(const Duration(milliseconds: 50));
     }
 
