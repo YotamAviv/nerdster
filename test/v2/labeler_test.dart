@@ -46,9 +46,9 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
     
-    final labeler = V2Labeler(graph, meIdentityToken: IdentityKey(alice.token));
+    final labeler = V2Labeler(graph, meIdentityToken: alice.id);
 
     expect(labeler.getIdentityLabel(IdentityKey(alice.token)), 'Me');
     expect(labeler.getIdentityLabel(IdentityKey(bob.token)), 'Bobby');
@@ -67,12 +67,12 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
     
     final labeler = V2Labeler(graph);
 
     // Alice is the pov, but Bob (who she trusts) calls her "Lisa".
-    expect(labeler.getIdentityLabel(IdentityKey(alice.token)), 'Lisa');
+    expect(labeler.getIdentityLabel(alice.id), 'Lisa');
   });
 
   test('V2Labeler: Identity Resolution', () async {
@@ -100,7 +100,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
     
     final labeler = V2Labeler(graph);
 
@@ -122,7 +122,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
     
     final labeler = V2Labeler(graph);
 
@@ -155,7 +155,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
     
     final labeler = V2Labeler(graph);
 

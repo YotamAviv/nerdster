@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
@@ -100,7 +101,7 @@ void main() {
 
     // 5. Refresh with Stranger as PoV
     // Stranger does NOT trust Me, so Me is not in the trust graph.
-    await controller.refresh(IdentityKey(stranger.token), meIdentity: IdentityKey(me.token));
+    await controller.refresh(stranger.id, meIdentityToken: me.id);
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
@@ -181,7 +182,7 @@ void main() {
 
     // 4. Refresh with Stranger as PoV
     // Stranger does NOT trust Me.
-    await controller.refresh(IdentityKey(stranger.token), meIdentity: IdentityKey(me.token));
+    await controller.refresh(stranger.id, meIdentityToken: me.id);
 
     // Wait for controller to finish loading the requested PoV
     // (Because signIn triggered a refresh for 'Me', the explicit refresh call might have returned early)

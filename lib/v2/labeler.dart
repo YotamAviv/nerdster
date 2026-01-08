@@ -2,6 +2,7 @@ import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 
 /// A utility to resolve monikers for keys in a [TrustGraph] using a greedy,
 /// distance-authoritative approach.
@@ -25,10 +26,15 @@ import 'package:nerdster/v2/delegates.dart';
 ///      with prime notation (e.g., "Bob'", "Bob''") to indicate their status.
 class V2Labeler {
   final TrustGraph graph;
-  final DelegateResolver? delegateResolver; // TODO: Why allow null?
-  final String? meIdentityToken; // TODO: Why allow null? Use IdentityToken
-  final Map<String, String> _tokenToName = {};
-  final Map<String, Set<String>> _tokenToAllNames = {};
+  final DelegateResolver? delegateResolver;
+  final IdentityKey? meIdentityToken;
+
+  // Maps IdentityKeys (canonical or historical) to their display name
+  final Map<IdentityKey, String> _identityToName = {};
+  
+  // Maps Canonical IdentityKeys to all proposed names (for debugging/details)
+  final Map<IdentityKey, Set<String>> _identityToAllNames = {};
+  
   final Set<String> _usedNames = {};
 
   V2Labeler(this.graph, {this.delegateResolver, this.meIdentityToken}) {
@@ -38,16 +44,18 @@ class V2Labeler {
   void _computeLabels() {
     // 1. Pre-index incoming trust statements by the subject's identity.
     // This allows us to quickly find all monikers proposed for a person.
-    final Map<String, List<TrustStatement>> incomingByIdentity = {};
+    final Map<IdentityKey, List<TrustStatement>> incomingByIdentity = {};
     for (final issuer in graph.edges.keys) {
       for (final statement in graph.edges[issuer]!) {
-        final subjectIdentity = graph.resolveIdentity(statement.subjectToken);
+        // We need an IdentityKey for the subject.
+        // Assuming statement.subjectToken works here, resolve it.
+        final subjectIdentity = graph.resolveIdentity(IdentityKey(statement.subjectToken));
         incomingByIdentity
             .putIfAbsent(subjectIdentity, () => [])
             .add(statement);
 
         if (statement.moniker != null) {
-          _tokenToAllNames
+          _identityToAllNames
               .putIfAbsent(subjectIdentity, () => {})
               .add(statement.moniker!);
         }
@@ -57,23 +65,24 @@ class V2Labeler {
     // 2. Assign names to identities and tokens in discovery order (BFS).
     // This ensures that names are assigned based on the shortest path from the pov.
     for (final token in graph.orderedKeys) {
-      if (_tokenToName.containsKey(token)) continue;
+      if (_identityToName.containsKey(token)) continue;
 
       final identity = graph.resolveIdentity(token);
       
       String baseName;
       
-      if (_tokenToName.containsKey(identity)) {
+      if (_identityToName.containsKey(identity)) {
         // This identity already has a base name assigned (e.g., from a previous key).
-        baseName = _tokenToName[identity]!;
+        baseName = _identityToName[identity]!;
       } else {
         // Determine the best base name for this identity from the context of its issuers.
         final statements = incomingByIdentity[identity] ?? [];
         
         // Sort statements by issuer distance to prioritize monikers from closer (more trusted) peers.
         statements.sort((a, b) {
-          final distA = graph.distances[a.iToken] ?? 999;
-          final distB = graph.distances[b.iToken] ?? 999;
+          // distances key is IdentityKey
+          final distA = graph.distances[IdentityKey(a.iToken)] ?? 999;
+          final distB = graph.distances[IdentityKey(b.iToken)] ?? 999;
           return distA.compareTo(distB);
         });
 
@@ -94,9 +103,9 @@ class V2Labeler {
               bestMoniker = "Me";
             } else {
               // Use their moniker from Jsonish or the token itself
-              final jsonish = Jsonish.find(token);
+              final jsonish = Jsonish.find(token.value);
               bestMoniker = jsonish?['moniker'] ??
-                  (token.length > 8 ? token.substring(0, 8) : token);
+                  (token.value.length > 8 ? token.value.substring(0, 8) : token.value);
             }
           } else {
             // Skip tokens that have no moniker and aren't the pov.
@@ -105,7 +114,7 @@ class V2Labeler {
         }
 
         baseName = _makeUnique(bestMoniker!, isOld: false);
-        _tokenToName[identity] = baseName;
+        _identityToName[identity] = baseName;
         _usedNames.add(baseName);
       }
       
@@ -113,7 +122,7 @@ class V2Labeler {
       // If this is an old/replaced key, append prime notation (e.g., Bob').
       if (token != identity) {
         final label = _makeUnique(baseName, isOld: true);
-        _tokenToName[token] = label;
+        _identityToName[token] = label;
         _usedNames.add(label);
       }
     }
@@ -142,56 +151,74 @@ class V2Labeler {
     }
   }
 
-  /// Returns the best human-readable label for a token.
-  ///
-  /// If no moniker was discovered, returns a truncated version of the token.
-  String getLabel(String token) {
-    if (_tokenToName.containsKey(token)) {
-      return _tokenToName[token]!;
+  /// Returns the best human-readable label for an identity key.
+  String getIdentityLabel(IdentityKey key) {
+    if (_identityToName.containsKey(key)) {
+      return _identityToName[key]!;
     }
+    return key.value.length > 8 ? key.value.substring(0, 8) : key.value;
+  }
 
-    // Check if it's a delegate key
+  /// Returns the best human-readable label for a delegate key.
+  String getDelegateLabel(DelegateKey key) {
     if (delegateResolver != null) {
-      final identity = delegateResolver!.getIdentityForDelegate(DelegateKey(token));
+      final identity = delegateResolver!.getIdentityForDelegate(key);
       if (identity != null) {
-        final identityLabel = getLabel(identity.value);
-        final domain = delegateResolver!.getDomainForDelegate(DelegateKey(token));
+        final identityLabel = getIdentityLabel(identity);
+        final domain = delegateResolver!.getDomainForDelegate(key);
         
         // Handle multiple delegates for the same identity and domain
         final allDelegates = delegateResolver!.getDelegatesForIdentity(identity);
         final domainDelegates = allDelegates.where((d) => delegateResolver!.getDomainForDelegate(d) == domain).toList();
         
-        final index = domainDelegates.indexOf(DelegateKey(token));
+        final index = domainDelegates.indexOf(key);
         if (index > 0) {
           return "$identityLabel@$domain (${index + 1})";
         }
         return "$identityLabel@$domain";
       }
     }
+    return key.value.length > 8 ? key.value.substring(0, 8) : key.value;
+  }
+
+  /// Returns the best human-readable label for a token (deprecated untyped wrapper).
+  ///
+  /// If no moniker was discovered, returns a truncated version of the token.
+  String getLabel(String token) {
+    // Try as identity first
+    final identityKey = IdentityKey(token);
+    if (_identityToName.containsKey(identityKey)) {
+      return getIdentityLabel(identityKey);
+    }
+
+    // Try as delegate
+    final delegateKey = DelegateKey(token);
+    if (delegateResolver != null && delegateResolver!.getIdentityForDelegate(delegateKey) != null) {
+      return getDelegateLabel(delegateKey);
+    }
 
     return token.length > 8 ? token.substring(0, 8) : token;
   }
 
   /// Returns all monikers associated with the identity of this token.
-  List<String> getAllLabels(String token) {
+  List<String> getAllLabels(IdentityKey token) {
     final identity = graph.resolveIdentity(token);
-    return _tokenToAllNames[identity]?.toList() ?? [];
+    return _identityToAllNames[identity]?.toList() ?? [];
   }
 
   /// Returns true if the token has been assigned a human-readable label.
-  /// TODO: This is confusing. Clear it up.
   bool hasLabel(String token) {
-    if (_tokenToName.containsKey(token)) return true;
+    if (_identityToName.containsKey(IdentityKey(token))) return true;
     if (delegateResolver != null &&
         delegateResolver!.getIdentityForDelegate(DelegateKey(token)) != null) return true;
     return false;
   }
 
   /// Returns all shortest paths from the pov to [token] as human-readable strings.
-  List<String> getLabeledPaths(String token) {
+  List<String> getLabeledPaths(IdentityKey token) {
     final paths = graph.getPathsTo(token);
     return paths
-        .map((path) => path.map((t) => getLabel(t)).join(' -> '))
+        .map((path) => path.map((t) => getIdentityLabel(t)).join(' -> '))
         .toList();
   }
 }

@@ -33,7 +33,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     expect(graph.isTrusted(bob.id), isTrue);
     expect(graph.isTrusted(charlie.id), isTrue);
@@ -56,7 +56,7 @@ void main() {
     // So we need maxDegrees: 3 to reach Charlie.
     // We also need a pathRequirement that allows 1 path at distance 3.
     final pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     // The algorithm should discover 'bob' via 'bobNew' and find 'charlie'
     expect(graph.isTrusted(bobNew.id), isTrue, reason: 'BobNew should be trusted');
@@ -82,13 +82,13 @@ void main() {
     // Requirement: 2 paths for distance 2
     final pipeline = TrustPipeline(source, pathRequirement: (d) => d >= 2 ? 2 : 1);
     
-    var graph = await pipeline.build(alice.token);
+    var graph = await pipeline.build(alice.id);
     expect(graph.isTrusted(dave.id), isFalse, reason: 'Dave only has 1 path');
 
     await charlie.trust(dave, moniker: 'dave');
     // Now Dave has 2 paths (Bob and Charlie)
     
-    graph = await pipeline.build(alice.token);
+    graph = await pipeline.build(alice.id);
     expect(graph.isTrusted(dave.id), isTrue, reason: 'Dave now has 2 paths');
   });
 
@@ -115,7 +115,7 @@ void main() {
     // Requirement: 2 paths for distance 3
     final pipeline = TrustPipeline(source, pathRequirement: (d) => d >= 3 ? 2 : 1);
     
-    final graph = await pipeline.build(pov.token);
+    final graph = await pipeline.build(pov.id);
     
     // Dave should NOT be trusted because all paths go through Alice
     expect(graph.isTrusted(dave.id), isFalse, reason: 'Dave has a bottleneck at Alice');
@@ -129,7 +129,7 @@ void main() {
     // 1. pov -> alice -> charlie -> dave
     // 2. pov -> zoe -> bob -> dave
     
-    final graph2 = await pipeline.build(pov.token);
+    final graph2 = await pipeline.build(pov.id);
     expect(graph2.isTrusted(dave.id), isTrue, reason: 'Dave now has 2 node-disjoint paths');
   });
 
@@ -149,7 +149,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     expect(graph.blocked.contains(dave.id), isTrue);
     expect(graph.isTrusted(dave.id), isFalse);
@@ -169,7 +169,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     expect(graph.isTrusted(bobNew.id), isTrue);
     expect(graph.notifications.any((n) => !n.isConflict && n.reason.contains('being replaced')), isTrue);
@@ -184,7 +184,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     expect(graph.isTrusted(bob.id), isFalse, reason: 'Trust was cleared');
   });
@@ -207,7 +207,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     expect(graph.isTrusted(bobNew.id), isTrue);
     expect(graph.isTrusted(bobOld.id), isTrue, reason: 'bobOld is still part of the identity');
@@ -227,7 +227,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     expect(graph.isTrusted(bobNew.id), isTrue);
     expect(graph.isTrusted(charlie.id), isFalse, reason: 'bobOld statements should be ignored due to invalid constraint token');
@@ -260,7 +260,7 @@ void main() {
     final pipeline = TrustPipeline(source, maxDegrees: 3);
     
     // This test is designed to FAIL if orchestrator.dart only runs reduceTrustGraph once.
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     expect(graph.isTrusted(bobNew.id), isTrue);
     expect(graph.isTrusted(bobOld.id), isTrue);
@@ -284,7 +284,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     expect(graph.isTrusted(bobNew.id), isTrue);
     expect(graph.notifications.any((n) => n.reason.contains('non-canonical')), isFalse, reason: "Should not notify for others' mistakes");
@@ -299,7 +299,7 @@ void main() {
     await alice.trust(bob, moniker: 'bob');
     
     final pipeline2 = TrustPipeline(source);
-    final graph2 = await pipeline2.build(alice.token);
+    final graph2 = await pipeline2.build(alice.id);
     
     expect(graph2.notifications.any((n) => n.reason.contains('is being replaced by')), isTrue, 
       reason: "Should notify that a trusted key is being replaced");
@@ -329,7 +329,7 @@ void main() {
     final pipeline = TrustPipeline(source);
     
     // --- PoV: Alice ---
-    final graphAlice = await pipeline.build(alice.token);
+    final graphAlice = await pipeline.build(alice.id);
     
     expect(graphAlice.isTrusted(bobOld.id), isTrue);
     expect(graphAlice.isTrusted(bobNew.id), isTrue);
@@ -338,7 +338,7 @@ void main() {
     expect(graphAlice.notifications.any((n) => n.reason.contains('Replacement constraint ignored due to distance')), isTrue);
 
     // --- PoV: Charlie ---
-    final graphCharlie = await pipeline.build(charlie.token);
+    final graphCharlie = await pipeline.build(charlie.id);
     
     expect(graphCharlie.isTrusted(bobNew.id), isTrue);
     expect(graphCharlie.isTrusted(bobOld.id), isTrue);
@@ -365,7 +365,7 @@ void main() {
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     // We need maxDegrees: 3 so that bobNew (at dist 2) is processed as an issuer.
     final pipeline = TrustPipeline(source, maxDegrees: 3);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     expect(graph.isTrusted(bobNew.id), isTrue);
     expect(graph.isTrusted(bobOld.id), isTrue, 
@@ -391,7 +391,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     // --- THOUGHTS ON DOUBLE REPLACEMENT ---
     // Scenario: bobV3 replaces bobV2 AND bobV1. bobV2 replaces bobV1.
@@ -443,7 +443,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     // Order should be: Alice (0), Charlie (1), Bob (1), Dave (2)
     // Charlie comes before Bob because Alice trusted him later (newest-first processing).
@@ -471,7 +471,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     final paths = graph.getPathsTo(dave.id);
     expect(paths.length, 2);
@@ -502,7 +502,7 @@ void main() {
 
     final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.token);
+    final graph = await pipeline.build(alice.id);
 
     // Identity Link should be accepted
     expect(graph.resolveIdentity(bobOld.id), bobNew.id, 

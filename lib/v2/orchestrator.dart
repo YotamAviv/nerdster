@@ -26,9 +26,9 @@ class TrustPipeline {
   }
 
   /// Builds the trust graph starting from [povToken].
-  Future<TrustGraph> build(String povToken) async {
+  Future<TrustGraph> build(IdentityKey povToken) async {
     // Initial State
-    final povKey = IdentityKey(povToken);
+    final povKey = povToken;
     TrustGraph graph = TrustGraph(pov: povKey);
     Set<IdentityKey> frontier = {povKey};
     Set<IdentityKey> visited = {};

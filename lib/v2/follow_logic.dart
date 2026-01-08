@@ -32,15 +32,15 @@ FollowNetwork reduceFollowNetwork(
     return true;
   }());
 
-  final List<String> identities = [];
+  final List<IdentityKey> identities = [];
   final List<TrustNotification> notifications = [];
-  final Map<String, List<ContentStatement>> edges = {};
-  final Map<String, List<String>> paths = {trustGraph.pov: [trustGraph.pov]};
+  final Map<IdentityKey, List<ContentStatement>> edges = {};
+  final Map<IdentityKey, List<IdentityKey>> paths = {trustGraph.pov: [trustGraph.pov]};
 
   // 1. Handle <one-of-us> context (Identity Layer only)
   if (fcontext == kFollowContextIdentity) {
     for (final token in trustGraph.orderedKeys) {
-      final String canonical = trustGraph.resolveIdentity(token);
+      final IdentityKey canonical = trustGraph.resolveIdentity(token);
       if (identities.contains(canonical)) continue;
       identities.add(canonical);
       // For <identity> context, we can pull paths from the trustGraph
@@ -60,33 +60,33 @@ FollowNetwork reduceFollowNetwork(
   }
 
   // 2. Handle <nerdster> and custom contexts
-  final Map<String, int> followDistances = {trustGraph.pov: 0};
-  final List<String> orderedIdentities = [trustGraph.pov];
-  final Set<String> blocked = {};
-  final Set<String> initialLayer = {trustGraph.pov};
+  final Map<IdentityKey, int> followDistances = {trustGraph.pov: 0};
+  final List<IdentityKey> orderedIdentities = [trustGraph.pov];
+  final Set<IdentityKey> blocked = {};
+  final Set<IdentityKey> initialLayer = {trustGraph.pov};
 
   var layer = initialLayer;
   for (int dist = 0; dist < maxDegrees && layer.isNotEmpty; dist++) {
-    final nextLayer = <String>{};
+    final nextLayer = <IdentityKey>{};
 
-    for (final String issuerIdentity in layer) {
+    for (final IdentityKey issuerIdentity in layer) {
       // Get all follow/block statements from this identity's keys and its delegates
       final List<Iterable<ContentStatement>> sources = [];
       
       // Delegate Keys
-      for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(IdentityKey(issuerIdentity))) {
+      for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(issuerIdentity)) {
         final list = contentResult.delegateContent[key];
         if (list != null && list.isNotEmpty) sources.add(list);
       }
 
       final Iterable<ContentStatement> statements = Merger.merge<ContentStatement>(sources);
       
-      final Set<String> decided = {};
+      final Set<IdentityKey> decided = {};
       for (final ContentStatement s in statements) {
         if (s.verb != ContentVerb.follow) continue;
         
         // The subject of a follow statement is an identity.
-        final String subjectIdentity = trustGraph.resolveIdentity(s.subjectToken);// TODO: IdentityKey
+        final IdentityKey subjectIdentity = trustGraph.resolveIdentity(IdentityKey(s.subjectToken));
 
         final Map<String, dynamic> contexts = s.contexts ?? {};
         final dynamic weight = contexts[fcontext];
@@ -130,12 +130,13 @@ FollowNetwork reduceFollowNetwork(
       // Special case for <nerdster> context: also include WoT trusts
       if (fcontext == kFollowContextNerdster) {
         // Only identity keys can sign trust statements.
-        final List<String> identityKeys = trustGraph.getEquivalenceGroup(issuerIdentity);
-        for (final String key in identityKeys) {
+        final List<IdentityKey> identityKeys = trustGraph.getEquivalenceGroup(issuerIdentity);
+        for (final IdentityKey key in identityKeys) {
           final List<TrustStatement> wotTrusts = trustGraph.edges[key] ?? [];
           for (final TrustStatement ts in wotTrusts) {
             if (ts.verb != TrustVerb.trust) continue;
-            final String subjectIdentity = trustGraph.resolveIdentity(ts.subjectToken);
+            // Trusts point to identities
+            final IdentityKey subjectIdentity = trustGraph.resolveIdentity(ts.subjectAsIdentity);
             if (decided.contains(subjectIdentity)) continue;
             
             if (blocked.contains(subjectIdentity)) continue;
@@ -152,7 +153,7 @@ FollowNetwork reduceFollowNetwork(
     layer = nextLayer;
   }
 
-  final List<String> filteredIdentities = orderedIdentities.where((id) => !blocked.contains(id)).toList();
+  final List<IdentityKey> filteredIdentities = orderedIdentities.where((id) => !blocked.contains(id)).toList();
 
   return FollowNetwork(
     fcontext: fcontext,

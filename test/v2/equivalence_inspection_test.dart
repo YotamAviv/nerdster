@@ -43,7 +43,7 @@ void main() {
     // 2. Build the model
     final trustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final trustPipeline = TrustPipeline(trustSource);
-    final graph = await trustPipeline.build(lisa.token);
+    final graph = await trustPipeline.build(lisa.id);
     final delegateResolver = DelegateResolver(graph);
     final followNetwork = reduceFollowNetwork(graph, delegateResolver, ContentResult(), 'nerdster');
 

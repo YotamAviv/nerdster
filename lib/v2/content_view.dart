@@ -49,7 +49,7 @@ class _ContentViewState extends State<ContentView> {
         globalLabeler.value = _controller.value!.labeler;
       }
     });
-    _controller.refresh(_currentPov, meIdentityToken: signInState.identity);
+    _controller.refresh(_currentPov != null ? IdentityKey(_currentPov!) : null, meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     v2RefreshSignal.addListener(_onRefresh);
 
@@ -90,7 +90,7 @@ class _ContentViewState extends State<ContentView> {
     if (!mounted) return;
 
     // The controller handles overlapping refreshes internally.
-    await _controller.refresh(_currentPov, meIdentityToken: signInState.identity);
+    await _controller.refresh(_currentPov != null ? IdentityKey(_currentPov!) : null, meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
   }
 
   void _changePov(String? newToken) {
@@ -248,10 +248,10 @@ class _ContentViewState extends State<ContentView> {
           const SizedBox(width: 8),
           Expanded(
             child: TrustSettingsBar(
-              availableIdentities: model?.trustGraph.orderedKeys ?? [],
+              availableIdentities: model?.trustGraph.orderedKeys.toList() ?? [],
               availableContexts: model?.availableContexts ?? [],
               activeContexts: model?.activeContexts ?? {},
-              labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: '')),
+              labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
             ),
           ),
         ],
@@ -412,14 +412,7 @@ class _ContentViewState extends State<ContentView> {
     }
 
     final subjects = model.aggregation.subjects.values.where((s) {
-      return _controller.shouldShow(
-        s,
-        model.filterMode,
-        model.enableCensorship,
-        tagFilter: model.tagFilter,
-        tagEquivalence: model.aggregation.tagEquivalence,
-        typeFilter: model.typeFilter,
-      );
+      return _controller.shouldShow(s);
     }).toList();
 
     // Sort using the controller's logic

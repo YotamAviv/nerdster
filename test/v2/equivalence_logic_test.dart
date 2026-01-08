@@ -31,13 +31,13 @@ void main() async {
   });
 
   test('V2 Equivalence: Transitive and DontEquate', () async {
-    final DemoKey alice = await DemoKey.create('alice');
-    final DemoKey bob = await DemoKey.create('bob');
-    final DemoKey charlie = await DemoKey.create('charlie');
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
+    final DemoIdentityKey charlie = await DemoIdentityKey.create('charlie');
 
-    final DemoKey aliceN = await alice.makeDelegate();
-    final DemoKey bobN = await bob.makeDelegate();
-    final DemoKey charlieN = await charlie.makeDelegate();
+    final DemoDelegateKey aliceN = await alice.makeDelegate();
+    final DemoDelegateKey bobN = await bob.makeDelegate();
+    final DemoDelegateKey charlieN = await charlie.makeDelegate();
 
     // This works, too. See matching comment below.
     // Alice trusts Charlie and Bob
@@ -50,11 +50,11 @@ void main() async {
     final t2 = await alice.trust(bob, moniker: 'bob');
     final t1 = await alice.trust(charlie, moniker: 'charlie');
 
-    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.token), {
+    final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: IdentityKey(alice.token)), {
       // alice.token: alice.trustStatements.toList(),
-      alice.token: alice.trustStatements.toList(),
-      bob.token: bob.trustStatements.toList(),
-      charlie.token: charlie.trustStatements.toList(),
+      IdentityKey(alice.token): alice.trustStatements.toList(),
+      IdentityKey(bob.token): bob.trustStatements.toList(),
+      IdentityKey(charlie.token): charlie.trustStatements.toList(),
     });
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
@@ -100,7 +100,7 @@ void main() async {
     // Verify Network Order
     final V2Labeler labeler = V2Labeler(graph);
     final List<String> expected = [alice.token, charlie.token, bob.token];
-    final List<String> actual = netAlice.identities;
+    final List<String> actual = netAlice.identities.map((k) => k.value).toList();
     final List<String> expectedNames = expected.map((t) => labeler.getLabel(t)).toList();
     final List<String> actualNames = actual.map((t) => labeler.getLabel(t)).toList();
 

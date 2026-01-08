@@ -84,11 +84,11 @@ class _SignInMenuState extends State<SignInMenu> {
     } else {
       if (b(demo)) {
         List<Widget> demoSignIns = <Widget>[];
-        for (final DemoKey key in DemoKey.all) {
-          if (key.name.contains('-nerdster')) continue; // KLUGEY: Don't center as the delegate
+        for (final DemoIdentityKey key in DemoIdentityKey.all) {
+          // if (key.name.contains('-nerdster')) continue; // KLUGEY: Don't center as the delegate - Identity keys shouldn't have this.
           final String name = key.name;
-          final DemoKey? delegateKey =
-              DemoKey.findByName('$name-nerdster0'); // KLUGEY: and probably wrong
+          final DemoDelegateKey? delegateKey =
+              DemoDelegateKey.findByName('$name-nerdster0'); // KLUGEY: and probably wrong
           final OouKeyPair? nerdsterKeyPair = delegateKey?.keyPair;
           demoSignIns.add(MenuItemButton(
               onPressed: () async {

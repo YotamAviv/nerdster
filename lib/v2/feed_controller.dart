@@ -55,7 +55,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   void _onPovChanged() {
     final newPov = signInState.pov;
     if (newPov != null) {
-      refresh(newPov, meIdentityToken: _latestRequestedMeIdentityToken);
+      refresh(IdentityKey(newPov), meIdentityToken: _latestRequestedMeIdentityToken);
     }
   }
 
@@ -75,8 +75,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
   bool _loading = false;
   bool get loading => _loading;
-  String? _latestRequestedPovIdentityToken;
-  String? _latestRequestedMeIdentityToken;
+  IdentityKey? _latestRequestedPovIdentityToken;
+  IdentityKey? _latestRequestedMeIdentityToken;
 
   final ValueNotifier<double> progress = ValueNotifier(0);
   final ValueNotifier<String?> loadingMessage = ValueNotifier(null);
@@ -236,7 +236,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  Future<void> refresh(String? povIdentityToken, {String? meIdentityToken}) async {
+  Future<void> refresh(IdentityKey? povIdentityToken, {IdentityKey? meIdentityToken}) async {
     _latestRequestedPovIdentityToken = povIdentityToken;
     _latestRequestedMeIdentityToken = meIdentityToken;
 
@@ -257,8 +257,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         List<IdentityKey>? meIdentityKeys;
         List<DelegateKey>? meDelegateKeys;
 
-        if (currentMeIdentityToken != null && currentMeIdentityToken == signInState.identity) {
-          meIdentityKeys = [IdentityKey(currentMeIdentityToken)];
+        if (currentMeIdentityToken != null && currentMeIdentityToken.value == signInState.identity) {
+          meIdentityKeys = [currentMeIdentityToken];
         }
 
         if (currentPovIdentityToken == null) {
@@ -306,10 +306,10 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         // Fix for view-only mode where signInState.delegate is null but the identity has delegates in the graph
         if (currentMeIdentityToken != null && meIdentityKeys != null) {
           // TODO: Continue to convert string to typed keys
-          final Set<String> delegates = {};
+          final Set<DelegateKey> delegates = {};
 
           // 1. Try to find delegates in the current PoV graph
-          delegates.addAll(delegateResolver.getDelegatesForIdentity(IdentityKey(currentMeIdentityToken)).map((d) => d.value));
+          delegates.addAll(delegateResolver.getDelegatesForIdentity(currentMeIdentityToken));
 
           // 2. If Me is not in the graph, we need to fetch Me's trust statements to find delegates.
           if (!graph.distances.containsKey(currentMeIdentityToken)) {
@@ -318,16 +318,17 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
             final mePipeline = TrustPipeline(trustSource, pathRequirement: (_) => 0);
             final meGraph = await mePipeline.build(currentMeIdentityToken);
             final meResolver = DelegateResolver(meGraph);
-            final fetchedDelegates = meResolver.getDelegatesForIdentity(IdentityKey(currentMeIdentityToken));
-            delegates.addAll(fetchedDelegates.map((d) => d.value));
+            final fetchedDelegates = meResolver.getDelegatesForIdentity(currentMeIdentityToken);
+            delegates.addAll(fetchedDelegates);
           }
 
           // Ensure the currently signed-in delegate is included, even if not in the graph
-          if (currentMeIdentityToken == signInState.identity && signInState.delegate != null) {
-            delegates.add(signInState.delegate!);
+          // We convert the string delegate to a DelegateKey to check/add
+          if (currentMeIdentityToken.value == signInState.identity && signInState.delegate != null) {
+            delegates.add(DelegateKey(signInState.delegate!));
           }
 
-          meDelegateKeys = delegates.map((d) => DelegateKey(d)).toList();
+          meDelegateKeys = delegates.toList();
         }
 
         progress.value = 0.3;
@@ -342,7 +343,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         // Identify delegates for all trusted identities (to find follows and ratings)
         final Set<DelegateKey> delegateKeysToFetch = {};
         for (final identity in graph.orderedKeys) {
-          final delegates = delegateResolver.getDelegatesForIdentity(IdentityKey(identity));
+          final delegates = delegateResolver.getDelegatesForIdentity(identity);
           delegateKeysToFetch.addAll(delegates);
         }
 
@@ -407,7 +408,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         final activeContexts = <String>{};
         final povIdentity = graph.pov;
 
-        for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(IdentityKey(povIdentity))) {
+        for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(povIdentity)) {
           final statements = contentResult.delegateContent[key];
           if (statements != null) {
             for (final s in statements) {
@@ -459,17 +460,17 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       if (allErrors.isNotEmpty) {
            debugPrint('V2FeedController: Recovering from error to show ${allErrors.length} source errors');
            // Construct a minimal model to show errors
-           final dummyGraph = TrustGraph(pov: _latestRequestedPovIdentityToken ?? 'error');
+           final dummyGraph = TrustGraph(pov: _latestRequestedPovIdentityToken ?? IdentityKey('error'));
            value = V2FeedModel(
               trustGraph: dummyGraph,
               followNetwork: FollowNetwork(
                 fcontext: Setting.get(SettingType.fcontext).value,
-                povIdentity: _latestRequestedPovIdentityToken ?? 'error',
+                povIdentity: _latestRequestedPovIdentityToken ?? IdentityKey('error'),
               ),
               delegateResolver: DelegateResolver(dummyGraph),
               aggregation: ContentAggregation(),
               labeler: V2Labeler(dummyGraph),
-              povToken: _latestRequestedPovIdentityToken ?? 'error',
+              povToken: _latestRequestedPovIdentityToken ?? IdentityKey('error'),
               fcontext: Setting.get(SettingType.fcontext).value,
               sortMode: sortMode,
               filterMode: filterMode,

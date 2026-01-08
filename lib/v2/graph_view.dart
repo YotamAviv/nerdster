@@ -39,9 +39,11 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     super.initState();
     if (widget.controller.value != null) {
       _graphController = GraphController(widget.controller.value!);
-      _graphController!.focusedIdentity = widget.initialFocus;
+      if (widget.initialFocus != null) {
+        _graphController!.focusedIdentity = IdentityKey(widget.initialFocus!);
+      }
       
-      final fcontext = widget.controller.value!.fcontext;
+      final String fcontext = widget.controller.value!.fcontext;
       _graphController!.mode = (fcontext == kFollowContextIdentity) 
           ? GraphViewMode.identity 
           : GraphViewMode.follow;
@@ -66,11 +68,11 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   void _onModelChanged() {
     if (widget.controller.value != null) {
-      final oldFocus = _graphController?.focusedIdentity;
+      final IdentityKey? oldFocus = _graphController?.focusedIdentity;
       _graphController = GraphController(widget.controller.value!);
       _graphController!.focusedIdentity = oldFocus;
       
-      final fcontext = widget.controller.value!.fcontext;
+      final String fcontext = widget.controller.value!.fcontext;
       _graphController!.mode = (fcontext == kFollowContextIdentity) 
           ? GraphViewMode.identity 
           : GraphViewMode.follow;
@@ -84,8 +86,9 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   void _updateAlgorithm() {
     if (_graphController == null) return;
+    // FanAlgorithm expects the key of the root node. We use IdentityKey as key.
     _algorithm = FanAlgorithm(
-      rootId: _graphController!.povIdentity,
+      rootId: _graphController!.povIdentity.value,
       levelSeparation: 200,
     );
   }
@@ -109,8 +112,8 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       });
       return;
     }
-    final newData = _graphController!.buildGraphData();
-    final newPathEdges = _graphController!.getPathToFocused(newData);
+    final GraphData newData = _graphController!.buildGraphData();
+    final Set<GraphEdgeData> newPathEdges = _graphController!.getPathToFocused(newData);
     
     setState(() {
       _data = newData;
@@ -118,33 +121,31 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       _updateAlgorithm();
       _buildGraphView();
     });
-
-    // Reset view when root changes
-    // _transformationController.value = Matrix4.identity();
   }
 
   void _buildGraphView() {
-    final newGraph = Graph();
+    final Graph newGraph = Graph();
 
     if (_data == null || _data!.nodes.isEmpty) {
       _graph = newGraph;
       return;
     }
 
-    final Map<String, Node> nodes = {};
+    final Map<IdentityKey, Node> nodes = {};
     for (final identity in _data!.nodes) {
-      final node = Node.Id(identity);
+      // IdentityKey is the key for the node in the Graph
+      final Node node = Node.Id(identity);
       nodes[identity] = node;
       newGraph.addNode(node);
     }
 
     for (final e in _data!.edges) {
-      final fromNode = nodes[e.fromIdentity];
-      final toNode = nodes[e.toIdentity];
+      final Node? fromNode = nodes[e.from];
+      final Node? toNode = nodes[e.to];
       if (fromNode == null || toNode == null) continue;
 
-      final isPath = _pathEdges.contains(e);
-      final paint = _getEdgePaint(e, isPath);
+      final bool isPath = _pathEdges.contains(e);
+      final Paint paint = _getEdgePaint(e, isPath);
 
       newGraph.addEdge(fromNode, toNode, paint: paint);
     }
@@ -175,7 +176,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   @override
   Widget build(BuildContext context) {
-    final model = widget.controller.value;
+    final V2FeedModel? model = widget.controller.value;
     if (model == null || _data == null || _data!.nodes.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('Network Graph')),
@@ -197,14 +198,14 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
             _buildControls(model),
             Expanded(
               child: InteractiveViewer(
-                key: ValueKey(_graphController!.povIdentity),
+                key: ValueKey(_graphController!.povIdentity.value),
                 transformationController: _transformationController,
                 constrained: false,
                 boundaryMargin: const EdgeInsets.all(500),
                 minScale: 0.01,
                 maxScale: 5.6,
                 child: GraphView(
-                  key: ValueKey('${_graphController!.povIdentity}_${_data?.nodes.length}_${_data?.edges.length}'),
+                  key: ValueKey('${_graphController!.povIdentity.value}_${_data?.nodes.length}_${_data?.edges.length}'),
                   graph: _graph,
                   algorithm: _algorithm,
                   paint: Paint()
@@ -212,8 +213,12 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
                     ..strokeWidth = 1
                     ..style = PaintingStyle.stroke,
                   builder: (Node node) {
-                    final identity = node.key!.value as String;
-                    return _buildNodeWidget(identity);
+                    final key = node.key!.value;
+                    if (key is IdentityKey) {
+                       return _buildNodeWidget(key);
+                    }
+                    // Should not happen if we only add IdentityKeys
+                     return _buildNodeWidget(IdentityKey(key.toString()));
                   },
                 ),
               ),
@@ -250,7 +255,10 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
               availableIdentities: model?.trustGraph.orderedKeys ?? [],
               availableContexts: model?.availableContexts ?? [],
               activeContexts: model?.activeContexts ?? {},
-              labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: '')),
+              // labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))), 
+              // TrustSettingsBar might also need update if it takes old labeler or mismatch types
+              // Assuming TrustSettingsBar is somewhat compatible or we fix it next.
+              labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
             ),
           ),
         ],
@@ -258,8 +266,11 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     );
   }
 
-  Widget _buildNodeWidget(String identity) {
-    if (identity.startsWith('...')) {
+  Widget _buildNodeWidget(IdentityKey identity) {
+    // Handling ellipsis node? The old code had:
+    // if (identity.startsWith('...')) { ... }
+    // If IdentityKey wraps '...', we can check.
+    if (identity.value.startsWith('...')) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
@@ -272,16 +283,19 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     }
 
     final model = widget.controller.value!;
-    final label = model.labeler.getLabel(identity);
-    final String resolvedRoot = model.trustGraph.resolveIdentity(_graphController!.povIdentity);
-    // BAD: TODO: We should know what we're trying to resolve: IdentityKey or DelegateKey
-    String? resolvedFocused; 
+    // Using getLabel now which accepts string? Or I should overload/use label.
+    // labeler.label accepts string.
+    final label = model.labeler.getLabel(identity.value);
+    
+    final IdentityKey resolvedRoot = model.trustGraph.resolveIdentity(_graphController!.povIdentity);
+    
+    IdentityKey? resolvedFocused; 
     if (_graphController!.focusedIdentity != null) {
        final f = _graphController!.focusedIdentity!;
        if (model.trustGraph.isTrusted(f)) {
          resolvedFocused = model.trustGraph.resolveIdentity(f);
        } else {
-         resolvedFocused = model.delegateResolver.getIdentityForDelegate(DelegateKey(f))?.value;
+         resolvedFocused = f;
        }
     }
 
@@ -290,7 +304,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
     return GestureDetector(
       onTap: () {
-        if (identity.startsWith('...')) return;
+        if (identity.value.startsWith('...')) return;
         _showNodeDetails(identity);
       },
       child: Container(
@@ -299,31 +313,49 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
           color: isRoot ? Colors.blue[50] : (isFocused ? Colors.orange[50] : Colors.white),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isFocused ? Colors.orange : (isRoot ? Colors.blue : Colors.grey[300]!),
-            width: isFocused || isRoot ? 2 : 1,
+            color: isRoot ? Colors.blue : (isFocused ? Colors.orange : Colors.grey),
+            width: isRoot || isFocused ? 2 : 1,
           ),
           boxShadow: [
-            if (isFocused || isRoot)
-              BoxShadow(
-                color: (isFocused ? Colors.orange : Colors.blue).withOpacity(0.2),
-                blurRadius: 4,
-                spreadRadius: 1,
-              ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 3,
+              offset: const Offset(0, 2),
+            ),
           ],
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: isRoot ? 13 : 11,
             fontWeight: isRoot || isFocused ? FontWeight.bold : FontWeight.normal,
-            color: isRoot ? Colors.blue[900] : (isFocused ? Colors.orange[900] : Colors.black87),
+            color: Colors.black87,
+            fontSize: 12,
           ),
         ),
       ),
     );
   }
 
-  void _showNodeDetails(String identity) {
-    NodeDetails.show(context, identity, widget.controller);
+  void _showNodeDetails(IdentityKey identity) {
+    setState(() {
+      _graphController!.focusedIdentity = identity;
+      _refreshGraph();
+    });
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        builder: (_, scrollController) => NodeDetailsSheet(
+          identity: identity,
+          controller: widget.controller,
+          scrollController: scrollController,
+        ),
+      ),
+    );
   }
 }

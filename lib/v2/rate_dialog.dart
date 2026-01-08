@@ -97,13 +97,13 @@ class _V2RateDialogState extends State<V2RateDialog> {
       try {
         priorStatement = widget.aggregation.statements.firstWhere(
           (s) {
-            String? identity;
-            if (widget.model.trustGraph.isTrusted(s.iToken)) {
-              identity = widget.model.trustGraph.resolveIdentity(s.iToken);
+            IdentityKey? identity;
+            if (widget.model.trustGraph.isTrusted(IdentityKey(s.iKey.value))) {
+              identity = widget.model.trustGraph.resolveIdentity(IdentityKey(s.iKey.value));
             } else {
-              identity = widget.model.delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))?.value;
+              identity = widget.model.delegateResolver.getIdentityForDelegate(s.iKey);
             }
-            return identity == myIdentity && s.verb == ContentVerb.rate;
+            return identity?.value == myIdentity && s.verb == ContentVerb.rate;
           }
         );
       } catch (_) {

@@ -5,9 +5,10 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/follow_logic.dart' show kFollowContextIdentity, kFollowContextNerdster;
 import 'package:nerdster/v2/refresh_signal.dart';
+import 'package:nerdster/oneofus/keys.dart';
 
 class TrustSettingsBar extends StatelessWidget {
-  final List<String> availableIdentities;
+  final List<IdentityKey> availableIdentities;
   final List<String> availableContexts;
   final Set<String> activeContexts;
   final V2Labeler labeler;
@@ -35,7 +36,7 @@ class TrustSettingsBar extends StatelessWidget {
             builder: (context, currentPov, _) {
               return DropdownButton<String>(
                 isExpanded: true,
-                value: (availableIdentities.contains(currentPov) || currentPov == signInState.pov)
+                value: (availableIdentities.any((k) => k.value == currentPov) || currentPov == signInState.pov)
                     ? currentPov
                     : null,
                 hint: currentPov != null
@@ -47,10 +48,10 @@ class TrustSettingsBar extends StatelessWidget {
                       value: signInState.pov!,
                       child: Text('Me (${labeler.getLabel(signInState.pov!)})'),
                     ),
-                  ...availableIdentities.where((k) => k != signInState.pov).map((k) {
+                  ...availableIdentities.where((k) => k.value != signInState.pov).map((k) {
                     return DropdownMenuItem(
-                      value: k,
-                      child: Text(labeler.getLabel(k)),
+                      value: k.value,
+                      child: Text(labeler.getIdentityLabel(k)),
                     );
                   }),
                 ],
