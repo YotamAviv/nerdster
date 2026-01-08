@@ -16,7 +16,9 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/delegates.dart';
 import 'package:float_column/float_column.dart';
+import 'package:nerdster/oneofus/util.dart'; // For getToken
 import 'package:nerdster/v2/graph_view.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/cached_source.dart';
@@ -312,7 +314,7 @@ Tactics for addressing this:
                       spacing: 8.0,
                       children: [
                         ElevatedButton(
-                          onPressed: () => _showGraph(context, statement.iToken),
+                          onPressed: () => _showGraph(context, getToken(statement.i)),
                           child: const Text('Show paths to Issuer'),
                         ),
                         ElevatedButton(
@@ -340,6 +342,7 @@ Tactics for addressing this:
         fcontext: 'identity',
         povIdentity: trustGraph!.pov,
       ),
+      delegateResolver: labeler.delegateResolver ?? DelegateResolver(trustGraph!),
       labeler: labeler,
       aggregation: ContentAggregation(),
       povToken: trustGraph!.pov,

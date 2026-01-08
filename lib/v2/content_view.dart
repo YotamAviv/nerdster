@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';import 'package:nerdster/v2/keys.dart';import 'package:nerdster/v2/model.dart';
+import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -50,7 +52,7 @@ class _ContentViewState extends State<ContentView> {
     _controller.refresh(_currentPov, meIdentityToken: signInState.identity);
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     v2RefreshSignal.addListener(_onRefresh);
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       verifyInit(navigatorKey);
     });
@@ -79,7 +81,6 @@ class _ContentViewState extends State<ContentView> {
     _showFilters.dispose();
     super.dispose();
   }
-
 
   void _onSettingChanged() {
     if (mounted) setState(() {});
@@ -127,8 +128,7 @@ class _ContentViewState extends State<ContentView> {
       // Relate
       final model = _controller.value;
       if (model != null) {
-        final SubjectAggregation subject1 =
-            model.aggregation.subjects[_markedSubjectToken!]!;
+        final SubjectAggregation subject1 = model.aggregation.subjects[_markedSubjectToken!]!;
         final SubjectAggregation subject2 = model.aggregation.subjects[token]!;
 
         V2RelateDialog.show(
@@ -166,10 +166,10 @@ class _ContentViewState extends State<ContentView> {
                     final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
                     final hasTrust = model?.trustGraph.notifications.isNotEmpty ?? false;
                     final hasFollow = model?.followNetwork.notifications.isNotEmpty ?? false;
-                    
+
                     if (model != null && (hasTrust || hasFollow || hasErrors)) {
                       if (hasErrors) {
-                         debugPrint('ContentView: Displaying ${model.sourceErrors.length} errors');
+                        debugPrint('ContentView: Displaying ${model.sourceErrors.length} errors');
                       }
                       return V2NotificationsMenu(
                         trustGraph: model.trustGraph,
@@ -234,7 +234,8 @@ class _ContentViewState extends State<ContentView> {
           Tooltip(
             message: 'Submit new content',
             child: FloatingActionButton.small(
-              onPressed: model == null ? null : () => v2Submit(context, model, onRefresh: _onRefresh),
+              onPressed:
+                  model == null ? null : () => v2Submit(context, model, onRefresh: _onRefresh),
               child: const Icon(Icons.add),
             ),
           ),

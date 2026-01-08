@@ -6,7 +6,7 @@ import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/eg.dart';
@@ -20,8 +20,7 @@ List<Iterable<ContentStatement>> _collectSources(
   final List<Iterable<ContentStatement>> sources = [];
 
   // Delegate Keys
-  for (final String keyStr in delegateResolver.getDelegatesForIdentity(identity)) {
-    final key = DelegateKey(keyStr);
+  for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(IdentityKey(identity))) {
     if (contentResult.delegateContent.containsKey(key)) {
       sources.add(contentResult.delegateContent[key]!);
     }
@@ -48,7 +47,7 @@ ContentAggregation reduceContentAggregation(
   List<IdentityKey>? meIdentityKeys,
   List<DelegateKey>? meDelegateKeys,
 }) {
-  final Set<String> censored = {};
+  final Set<String> censored = {};// TODO: ContentKey
 
   // 1. Decentralized Censorship (Proximity Wins)
   if (enableCensorship) {
@@ -332,7 +331,8 @@ ContentAggregation reduceContentAggregation(
           }
         }
 
-        final String signerIdentity = delegateResolver.getIdentityForDelegate(s.iToken)!;
+        // TODO: Use IdentityKey
+        final String signerIdentity = delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!.value;
         assert(trustGraph.isTrusted(signerIdentity));
 
         if (s.verb == ContentVerb.clear) {
@@ -341,7 +341,7 @@ ContentAggregation reduceContentAggregation(
             assert(trustGraph.isTrusted(existing.iToken));
             final existingIdentity = trustGraph.isTrusted(existing.iToken)
                 ? trustGraph.resolveIdentity(existing.iToken)
-                : delegateResolver.getIdentityForDelegate(existing.iToken);
+                : delegateResolver.getIdentityForDelegate(DelegateKey(existing.iToken))?.value;
             return existingIdentity == signerIdentity;
           }).toList();
 

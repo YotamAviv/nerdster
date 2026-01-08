@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/key_info_view.dart';
@@ -35,6 +36,14 @@ class NodeDetails extends StatefulWidget {
 }
 
 class _NodeDetailsState extends State<NodeDetails> {
+  // BAD: TODO: We should know what we're trying to resolve: IdentityKey or DelegateKey
+  String _resolve(String token, V2FeedModel model) {
+    if (model.trustGraph.isTrusted(token)) {
+      return model.trustGraph.resolveIdentity(token);
+    }
+    return model.delegateResolver.getIdentityForDelegate(DelegateKey(token))?.value ?? token;
+  }
+
   bool _isUpdating = false;
   Map<String, int> _originalContexts = {};
   final Map<String, int> _pendingContexts = {};
@@ -93,7 +102,7 @@ class _NodeDetailsState extends State<NodeDetails> {
     final TrustGraph tg = model.trustGraph;
     final List<String> keys = tg.getEquivalenceGroup(widget.identity);
     final List<String> delegates =
-        labeler.delegateResolver?.getDelegatesForIdentity(widget.identity) ?? [];
+        labeler.delegateResolver?.getDelegatesForIdentity(IdentityKey(widget.identity)).map((d) => d.value).toList() ?? [];
     final String fcontext = model.fcontext;
 
     return AlertDialog(
@@ -416,7 +425,7 @@ class _NodeDetailsState extends State<NodeDetails> {
 
     final statements = tg.edges.values
         .expand((l) => l)
-        .where((s) => labeler.getIdentityForToken(s.subjectToken) == identity)
+        .where((s) => _resolve(s.subjectToken, model) == identity)
         .where((s) => s.iToken != myId) // Filter out me
         .toList();
 
@@ -425,7 +434,7 @@ class _NodeDetailsState extends State<NodeDetails> {
       children: [
         const Text('Incoming Trust Statements:', style: TextStyle(fontWeight: FontWeight.bold)),
         if (statements.isEmpty) const Text('None'),
-        ...statements.map((s) => _buildStatementTile(s, labeler)),
+        ...statements.map((s) => _buildStatementTile(s, model)),
       ],
     );
   }
@@ -437,7 +446,7 @@ class _NodeDetailsState extends State<NodeDetails> {
 
     final statements = fn.edges.values
         .expand((l) => l)
-        .where((s) => labeler.getIdentityForToken(s.subjectToken) == identity)
+        .where((s) => _resolve(s.subjectToken, model) == identity)
         .where((s) => s.contexts?.containsKey(context) == true)
         .where((s) => s.iToken != myId) // Filter out me
         .toList();
@@ -447,7 +456,7 @@ class _NodeDetailsState extends State<NodeDetails> {
       children: [
         Text('Incoming Follows ($context):', style: const TextStyle(fontWeight: FontWeight.bold)),
         if (statements.isEmpty) const Text('None'),
-        ...statements.map((s) => _buildStatementTile(s, labeler, fcontext: context)),
+        ...statements.map((s) => _buildStatementTile(s, model, fcontext: context)),
       ],
     );
   }
@@ -461,20 +470,20 @@ class _NodeDetailsState extends State<NodeDetails> {
     // 1. Explicit Follows
     final explicitStatements = fn.edges.values
         .expand((l) => l)
-        .where((s) => labeler.getIdentityForToken(s.subjectToken) == identity)
+        .where((s) => _resolve(s.subjectToken, model) == identity)
         .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
         .where((s) => s.iToken != myId) // Filter out me
         .toList();
 
     final explicitIssuers =
-        explicitStatements.map((s) => labeler.getIdentityForToken(s.iToken)).toSet();
+        explicitStatements.map((s) => _resolve(s.iToken, model)).toSet();
 
     // 2. Implicit Follows (Trust)
     final implicitStatements = tg.edges.values
         .expand((l) => l)
-        .where((s) => labeler.getIdentityForToken(s.subjectToken) == identity)
+        .where((s) => _resolve(s.subjectToken, model) == identity)
         .where((s) {
-      final issuer = labeler.getIdentityForToken(s.iToken);
+      final issuer = _resolve(s.iToken, model);
       return !explicitIssuers.contains(issuer) && issuer != myId; // Filter out me
     }).toList();
 
@@ -491,17 +500,18 @@ class _NodeDetailsState extends State<NodeDetails> {
         const Text('Explicit Follows:', style: TextStyle(fontWeight: FontWeight.bold)),
         if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
         ...explicitStatements
-            .map((s) => _buildStatementTile(s, labeler, fcontext: kFollowContextNerdster)),
+            .map((s) => _buildStatementTile(s, model, fcontext: kFollowContextNerdster)),
         const SizedBox(height: 10),
         const Text('Implicit Follows (Trust):', style: TextStyle(fontWeight: FontWeight.bold)),
         if (implicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
-        ...implicitStatements.map((s) => _buildStatementTile(s, labeler)),
+        ...implicitStatements.map((s) => _buildStatementTile(s, model)),
       ],
     );
   }
 
-  Widget _buildStatementTile(dynamic s, V2Labeler labeler, {String? fcontext}) {
-    final issuerLabel = labeler.getLabel(labeler.getIdentityForToken(s.iToken));
+  Widget _buildStatementTile(dynamic s, V2FeedModel model, {String? fcontext}) {
+    final labeler = model.labeler;
+    final issuerLabel = labeler.getLabel(_resolve(s.iToken, model));
     String verbLabel = s is TrustStatement ? s.verb.label : (s as ContentStatement).verb.label;
     bool isBlock = false;
 

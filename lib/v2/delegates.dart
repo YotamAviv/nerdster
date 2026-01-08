@@ -1,25 +1,30 @@
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
 /// Maps identities keys to delegate keys and vice versa.
 /// This resolver is lazy: it only resolves delegates for identities when requested.
 class DelegateResolver {
   final TrustGraph graph;
-  final Map<String, String> _delegateToIdentity = {}; // TODO: Use DelegateKey and IdentityKey types
-  final Map<String, String> _delegateToDomain = {}; // TODO: Use DelegateKey types
-  final Map<String, List<String>> _identityToDelegates = {};  // TODO: Use DelegateKey and IdentityKey types
-  final Map<String, String> _delegateConstraints = {}; // delegateKey -> revokeAtToken  // TODO: Use DelegateKey types
-  final Set<String> _resolvedIdentities = {}; // TODO: Document what this is
+  final Map<DelegateKey, IdentityKey> _delegateToIdentity = {};
+  final Map<DelegateKey, String> _delegateToDomain = {};
+  final Map<IdentityKey, List<DelegateKey>> _identityToDelegates = {};
+  final Map<DelegateKey, String> _delegateConstraints = {}; // delegateKey -> revokeAtToken
+  /// Tracks which identities have had their delegates resolved from the TrustGraph.
+  /// Note that _identityToDelegates contains only those identities that actually have delegates.
+  /// If an identity has no delegates, it will be in this set but not in _identityToDelegates.
+  final Set<IdentityKey> _resolvedIdentities = {};
 
   DelegateResolver(this.graph);
 
   /// Ensures delegates are resolved for the given canonical identity.
   /// Note: In this lazy implementation, the first identity to request a delegate key wins it.
   /// This follows "follow proximity" if called during follow network construction.
-  void resolveForIdentity(String identity) {
+  void resolveForIdentity(String identityStr) {
+    final IdentityKey identity = IdentityKey(identityStr);
     if (_resolvedIdentities.contains(identity)) return;
 
-    final List<String> keys = graph.getEquivalenceGroup(identity);
+    final List<String> keys = graph.getEquivalenceGroup(identity.value);
     List<TrustStatement> allStatements = [];
     for (final String key in keys) {
       final statements = graph.edges[key] ?? [];
@@ -30,10 +35,10 @@ class DelegateResolver {
       }
     }
 
-    final Set<String> decidedDelegates = {};
+    final Set<DelegateKey> decidedDelegates = {};
 
     for (final TrustStatement s in allStatements.where((s) => s.verb == TrustVerb.delegate)) {
-      final String delegateKey = s.subjectToken;
+      final DelegateKey delegateKey = DelegateKey(s.subjectToken);
 
       if (decidedDelegates.contains(delegateKey)) continue;
       decidedDelegates.add(delegateKey);
@@ -44,10 +49,10 @@ class DelegateResolver {
       }
       
       // A key cannot be a delegate if it is already a trusted identity key
-      if (graph.isTrusted(delegateKey)) continue;
+      if (graph.isTrusted(delegateKey.value)) continue;
       
       // A key cannot be a delegate if it is blocked
-      if (graph.blocked.contains(delegateKey)) continue;
+      if (graph.blocked.contains(delegateKey.value)) continue;
 
       // First one to claim it wins.
       if (!_delegateToIdentity.containsKey(delegateKey)) {
@@ -86,23 +91,28 @@ class DelegateResolver {
 
   /// Returns the canonical identity for a given delegate key.
   /// Returns null if the token is not a recognized delegate.
-  String? getIdentityForDelegate(String token) {
+  IdentityKey? getIdentityForDelegate(DelegateKey token) {
+    assert(!_identityToDelegates.containsKey(token));
     return _delegateToIdentity[token];
   }
 
   /// Returns the domain for a given delegate key.
-  String? getDomainForDelegate(String token) {
+  String? getDomainForDelegate(DelegateKey token) {
+    assert(!_identityToDelegates.containsKey(token));
     return _delegateToDomain[token];
   }
 
   /// Returns the revocation constraint (revokeAt token) for a given delegate key.
-  String? getConstraintForDelegate(String token) {
+  String? getConstraintForDelegate(DelegateKey token) {
+    assert(!_identityToDelegates.containsKey(token));
     return _delegateConstraints[token];
   }
 
   /// Returns all delegate keys authorized by the given canonical identity.
-  List<String> getDelegatesForIdentity(String canonical) {
-    resolveForIdentity(canonical);
+  /// TODO: Cache the result or just make it earlier.
+  List<DelegateKey> getDelegatesForIdentity(IdentityKey canonical) {
+    assert(!_delegateToIdentity.containsKey(canonical));
+    resolveForIdentity(canonical.value);
     return _identityToDelegates[canonical] ?? [];
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:nerdster/v2/keys.dart';import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/oneofus/keys.dart';import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -499,8 +499,10 @@ class _ContentCardState extends State<ContentCard> {
       );
     }
 
-    final myStatements = widget.aggregation.statements
-        .where((s) => widget.model.labeler.getIdentityForToken(s.iToken) == signInState.identity)
+    final List<ContentStatement> myStatements = widget.aggregation.statements
+        .where((s) {
+           return widget.model.delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))?.value == signInState.identity;
+        })
         .toList();
 
     // Sort by time descending to find the latest

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';import 'package:nerdster/v2/keys.dart';import 'package:nerdster/v2/model.dart';
+import 'package:flutter/material.dart';import 'package:nerdster/oneofus/keys.dart';import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
@@ -58,10 +58,13 @@ class StatementTile extends StatelessWidget {
     final List<ContentStatement> uniqueStatements = {for (var s in combinedStatements) s.token: s}.values.toList();
 
     // Determine current user's reaction to this statement
-    final myReplies = uniqueStatements.where((r) => 
-      signInState.identity != null && 
-      model.labeler.getIdentityForToken(r.iToken) == signInState.identity
-    ).toList();
+    final myReplies = uniqueStatements.where((r) {
+      if (signInState.identity == null) return false;
+      if (model.trustGraph.isTrusted(r.iToken)) {
+        return model.trustGraph.resolveIdentity(r.iToken) == signInState.identity;
+      }
+      return model.delegateResolver.getIdentityForDelegate(DelegateKey(r.iToken))?.value == signInState.identity;
+    }).toList();
 
     IconData icon = Icons.rate_review_outlined;
     Color? color;

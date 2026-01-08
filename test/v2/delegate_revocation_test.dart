@@ -3,7 +3,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/content_pipeline.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/fire_choice.dart';
@@ -69,14 +69,14 @@ void main() {
     
     // Resolve for sideshow (Distance 0)
     resolver.resolveForIdentity(sideshow.token);
-    expect(resolver.getIdentityForDelegate(margeN.token), equals(sideshow.token), 
+    expect(resolver.getIdentityForDelegate(DelegateKey(margeN.token)), equals(IdentityKey(sideshow.token)), 
       reason: 'Sideshow claims margeN because he is closer, even though his statement is later');
-    expect(resolver.getConstraintForDelegate(margeN.token), equals(kSinceAlways),
+    expect(resolver.getConstraintForDelegate(DelegateKey(margeN.token)), equals(kSinceAlways),
       reason: 'The delegate is claimed but revoked');
 
     // Resolve for marge (Distance 1)
     resolver.resolveForIdentity(marge.token);
-    expect(resolver.getIdentityForDelegate(margeN.token), equals(sideshow.token),
+    expect(resolver.getIdentityForDelegate(DelegateKey(margeN.token)), equals(IdentityKey(sideshow.token)),
       reason: 'Marge cannot claim margeN because Sideshow already claimed it');
   });
 
@@ -144,7 +144,7 @@ void main() {
     final resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(alice.token);
 
-    expect(resolver.getConstraintForDelegate(delegate.token), equals(s1.token));
+    expect(resolver.getConstraintForDelegate(DelegateKey(delegate.token)), equals(s1.token));
 
     // 4. Fetch content
     final pipeline = ContentPipeline(
@@ -184,7 +184,7 @@ void main() {
     final resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(bob.token);
 
-    expect(resolver.getConstraintForDelegate(delegate.token), equals(kSinceAlways));
+    expect(resolver.getConstraintForDelegate(DelegateKey(delegate.token)), equals(kSinceAlways));
 
     final pipeline = ContentPipeline(
       delegateSource: contentSource,
@@ -218,9 +218,9 @@ void main() {
     final resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(alice.token);
 
-    expect(resolver.getIdentityForDelegate(delegate.token), equals(alice.token),
+    expect(resolver.getIdentityForDelegate(DelegateKey(delegate.token)), equals(IdentityKey(alice.token)),
       reason: 'Delegate should be authorized even if revokeAt is present');
-    expect(resolver.getConstraintForDelegate(delegate.token), equals(kSinceAlways));
+    expect(resolver.getConstraintForDelegate(DelegateKey(delegate.token)), equals(kSinceAlways));
   });
 
   test('Delegate Revocation: Comprehensive test (Revoked but still a delegate)', () async {
@@ -254,8 +254,8 @@ void main() {
     resolver.resolveForIdentity(bob.token);
 
     // Verify it's still a delegate
-    expect(resolver.getIdentityForDelegate(delegate.token), equals(bob.token));
-    expect(resolver.getConstraintForDelegate(delegate.token), equals(s1.token));
+    expect(resolver.getIdentityForDelegate(DelegateKey(delegate.token)), equals(IdentityKey(bob.token)));
+    expect(resolver.getConstraintForDelegate(DelegateKey(delegate.token)), equals(s1.token));
 
     // Verify content filtering
     final pipeline = ContentPipeline(

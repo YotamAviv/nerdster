@@ -1,3 +1,4 @@
+import 'package:nerdster/v2/delegates.dart';
 import 'package:test/test.dart';
 import 'package:nerdster/v2/graph_controller.dart';
 import 'package:nerdster/v2/model.dart';
@@ -41,6 +42,7 @@ void main() {
       final feedModel = V2FeedModel(
         trustGraph: trustGraph,
         followNetwork: FollowNetwork(povIdentity: pov, fcontext: '<identity>'),
+        delegateResolver: DelegateResolver(trustGraph),
         labeler: V2Labeler(trustGraph),
         aggregation: ContentAggregation(),
         povToken: pov,
@@ -92,6 +94,7 @@ void main() {
       final feedModel = V2FeedModel(
         trustGraph: trustGraph,
         followNetwork: followNetwork,
+        delegateResolver: DelegateResolver(trustGraph),
         labeler: V2Labeler(trustGraph),
         aggregation: ContentAggregation(),
         povToken: pov,
@@ -146,6 +149,7 @@ void main() {
       final feedModel = V2FeedModel(
         trustGraph: trustGraph,
         followNetwork: followNetwork,
+        delegateResolver: DelegateResolver(trustGraph),
         labeler: V2Labeler(trustGraph),
         aggregation: ContentAggregation(),
         povToken: pov,

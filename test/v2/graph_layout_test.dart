@@ -22,6 +22,7 @@ class MockV2FeedModel extends V2FeedModel {
   }) : super(
     trustGraph: trustGraph,
     followNetwork: followNetwork,
+    delegateResolver: delegateResolver ?? DelegateResolver(trustGraph),
     aggregation: ContentAggregation(),
     labeler: V2Labeler(trustGraph, delegateResolver: delegateResolver),
     povToken: trustGraph.pov,

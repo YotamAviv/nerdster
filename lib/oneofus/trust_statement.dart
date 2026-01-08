@@ -2,6 +2,7 @@ import 'jsonish.dart';
 export 'jsonish.dart';
 import 'statement.dart';
 import 'util.dart';
+import 'keys.dart';
 
 const String kOneofusDomain = 'one-of-us.net';
 
@@ -19,6 +20,39 @@ class TrustStatement extends Statement {
   final String? moniker;
   final String? revokeAt;
   final String? domain;
+
+  IdentityKey get iKey => IdentityKey(getToken(this.i));
+  String get iToken => iKey.value;
+
+  IdentityKey get subjectAsIdentity {
+    if (verb == TrustVerb.trust || 
+        verb == TrustVerb.block || 
+        verb == TrustVerb.replace || 
+        verb == TrustVerb.clear) {
+      return IdentityKey(subjectToken);
+    }
+     throw 'Subject of $verb statement is not an IdentityKey';
+  }
+
+  DelegateKey get subjectAsDelegate {
+    if (verb == TrustVerb.delegate || verb == TrustVerb.clear) {
+      return DelegateKey(subjectToken);
+    }
+    throw 'Subject of $verb statement is not a DelegateKey';
+  }
+
+  bool clears(TrustStatement other) {
+    if (verb != TrustVerb.clear) return false;
+    // Clearing a trust/block/replace (Identity)
+    if (other.verb == TrustVerb.trust || other.verb == TrustVerb.block || other.verb == TrustVerb.replace) {
+       return other.subjectAsIdentity.value == subjectToken;
+    }
+    // Clearing a delegation (Delegate)
+    if (other.verb == TrustVerb.delegate) {
+      return other.subjectAsDelegate.value == subjectToken;
+    }
+    return false;
+  }
 
   factory TrustStatement(Jsonish jsonish) {
     if (_cache.containsKey(jsonish.token)) return _cache[jsonish.token]!;

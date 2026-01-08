@@ -5,7 +5,7 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 
 const String kFollowContextIdentity = '<identity>';
 const String kFollowContextNerdster = '<nerdster>';
@@ -74,8 +74,7 @@ FollowNetwork reduceFollowNetwork(
       final List<Iterable<ContentStatement>> sources = [];
       
       // Delegate Keys
-      for (final String keyStr in delegateResolver.getDelegatesForIdentity(issuerIdentity)) {
-        final key = DelegateKey(keyStr);
+      for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(IdentityKey(issuerIdentity))) {
         final list = contentResult.delegateContent[key];
         if (list != null && list.isNotEmpty) sources.add(list);
       }
@@ -87,7 +86,7 @@ FollowNetwork reduceFollowNetwork(
         if (s.verb != ContentVerb.follow) continue;
         
         // The subject of a follow statement is an identity.
-        final String subjectIdentity = trustGraph.resolveIdentity(s.subjectToken);
+        final String subjectIdentity = trustGraph.resolveIdentity(s.subjectToken);// TODO: IdentityKey
 
         final Map<String, dynamic> contexts = s.contexts ?? {};
         final dynamic weight = contexts[fcontext];

@@ -2,7 +2,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 
 class ContentPipeline {
   final StatementSource<ContentStatement> delegateSource;
@@ -23,7 +23,7 @@ class ContentPipeline {
     for (final DelegateKey key in keys) {
       // We need to find the constraint for this delegate.
       // The DelegateResolver stores constraints by key.
-      delegateFetchMap[key.value] = delegateResolver.getConstraintForDelegate(key.value);
+      delegateFetchMap[key.value] = delegateResolver.getConstraintForDelegate(key);
       knownDelegateKeys.add(key);
     }
 
@@ -39,7 +39,7 @@ class ContentPipeline {
         throw 'Pipeline Error: Delegate Source returned content from unauthorized key: $keyStr';
       }
 
-      final String? identity = delegateResolver.getIdentityForDelegate(keyStr);
+      final String? identity = delegateResolver.getIdentityForDelegate(DelegateKey(keyStr))?.value;
       if (identity != null && graph.blocked.contains(identity)) {
         throw 'Pipeline Error: Source returned content from blocked identity: $identity';
       }

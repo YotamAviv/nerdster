@@ -5,7 +5,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 
 void main() {
   setUpAll(() {

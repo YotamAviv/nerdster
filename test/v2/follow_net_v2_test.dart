@@ -13,7 +13,7 @@ import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() async {
@@ -344,8 +344,8 @@ void main() async {
 
     final DelegateResolver delegateResolver = DelegateResolver(graph);
     // In the lazy resolver, we must resolve the identity to see its delegates
-    expect(delegateResolver.getDelegatesForIdentity(bart.token), contains(bartDelegate.token));
-    expect(delegateResolver.getIdentityForDelegate(bartDelegate.token), bart.token);
+    expect(delegateResolver.getDelegatesForIdentity(IdentityKey(bart.token)), contains(DelegateKey(bartDelegate.token)));
+    expect(delegateResolver.getIdentityForDelegate(DelegateKey(bartDelegate.token)), IdentityKey(bart.token));
 
     // 2. Homer follows Bart in 'news-context'
     const String newsContext = 'news-context';

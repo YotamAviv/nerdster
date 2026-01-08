@@ -13,7 +13,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/model.dart';
 
 void main() {

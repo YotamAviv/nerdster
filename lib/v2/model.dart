@@ -2,9 +2,11 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/util.dart'; // For getToken
 import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/source_error.dart';
+import 'package:nerdster/v2/delegates.dart';
 
 enum V2SortMode {
   recentActivity,
@@ -21,7 +23,7 @@ enum V2FilterMode {
 /// Represents a notification or conflict discovered during graph construction.
 class TrustNotification {
   final String reason;
-  final Statement rejectedStatement;
+  final Statement rejectedStatement; // TODO: TrustStatement!
   final bool isConflict;
 
   TrustNotification({
@@ -32,7 +34,7 @@ class TrustNotification {
 
   String get subject => rejectedStatement.subjectToken;
 
-  String get issuer => rejectedStatement.iToken;
+  String get issuer => getToken(rejectedStatement.i);
 
   @override
   String toString() => '${isConflict ? "Conflict" : "Notification"}($subject): $reason';
@@ -116,6 +118,7 @@ class TrustGraph {
   }
 
   /// Returns all trusted tokens that belong to the given canonical identity.
+  /// TODO: Use IdentityKey.
   List<String> getEquivalenceGroup(String canonical) {
     return distances.keys.where((token) => resolveIdentity(token) == canonical).toList()
       ..sort((a, b) => distances[a]!.compareTo(distances[b]!));
@@ -301,6 +304,7 @@ class ContentAggregation {
 class V2FeedModel {
   final TrustGraph trustGraph;
   final FollowNetwork followNetwork;
+  final DelegateResolver delegateResolver;
   final V2Labeler labeler;
   final ContentAggregation aggregation;
   final String povToken;
@@ -317,6 +321,7 @@ class V2FeedModel {
   V2FeedModel({
     required this.trustGraph,
     required this.followNetwork,
+    required this.delegateResolver,
     required this.labeler,
     required this.aggregation,
     required this.povToken,

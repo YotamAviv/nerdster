@@ -1,6 +1,7 @@
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 
@@ -17,6 +18,56 @@ class ContentStatement extends Statement {
   final String? dismiss;
   final bool? censor;
   final Json? contexts; // (verb == follow)
+
+  DelegateKey get iKey => DelegateKey(getToken(this.i));
+  String get iToken => iKey.value;
+
+  ContentKey get subjectAsContent {
+     if (verb == ContentVerb.rate || 
+         verb == ContentVerb.equate || 
+         verb == ContentVerb.dontEquate ||
+         verb == ContentVerb.relate ||
+         verb == ContentVerb.dontRelate ||
+         verb == ContentVerb.clear) { // Clear maps string to ContentKey here if needed, but 'clears' logic handles most
+        return ContentKey(subjectToken);
+     }
+     throw 'Subject of $verb is not a ContentKey';
+  }
+
+  IdentityKey get subjectAsIdentity {
+     if (verb == ContentVerb.follow || verb == ContentVerb.clear) {
+         return IdentityKey(subjectToken);
+     }
+     throw 'Subject of $verb is not an IdentityKey';
+  }
+
+  ContentKey? get otherSubjectKey {
+    if (other != null) {
+      return ContentKey(getToken(other));
+    }
+    return null;
+  }
+
+  bool clears(ContentStatement other) {
+    if (verb != ContentVerb.clear) return false;
+
+    // 1. Basic Subject Match (Target Subject)
+    if (other.subjectToken != subjectToken) return false;
+
+    // 2. Binary Verbs (Relate/Equate) require matching 'other' subject too.
+    if (other.verb == ContentVerb.relate || other.verb == ContentVerb.dontRelate ||
+        other.verb == ContentVerb.equate || other.verb == ContentVerb.dontEquate) {
+       
+       // The clearing statement must also have an 'other' subject defined.
+       if (otherSubjectKey == null) return false;
+
+       // Compare the secondary keys.
+       return other.otherSubjectKey?.value == otherSubjectKey?.value;
+    }
+    
+    // 3. Unary Verbs (Rate, Follow) only require the primary subject match.
+    return true;
+  }
 
   static void init() {
     Statement.registerFactory(

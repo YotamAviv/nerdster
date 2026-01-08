@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'test_utils.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/content/content_statement.dart';

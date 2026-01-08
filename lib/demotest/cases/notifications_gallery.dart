@@ -1,4 +1,5 @@
 import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/demotest/cases/test_utils.dart';
@@ -7,6 +8,9 @@ import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/labeler.dart';
+
+
+// TODO: Use proper DemoKey
 
 /// A gallery of all possible Trust and Follow notifications.
 ///
@@ -171,19 +175,16 @@ Future<(DemoKey, DemoKey?)> notificationsGallery() async {
 
   // Verify Labels
   final labeler = V2Labeler(trustGraph, delegateResolver: resolver);
-  final bobDelegates = resolver.getDelegatesForIdentity(bob.token);
+  final bobDelegates = resolver.getDelegatesForIdentity(IdentityKey(bob.token));
   final nerdsterDelegates = bobDelegates.where((d) => resolver.getDomainForDelegate(d) == 'nerdster.org').toList();
   
   check(nerdsterDelegates.length >= 2, "Missing: Bob should have at least 2 delegates");
-  
-  final label1 = labeler.getLabel(nerdsterDelegates[0]);
-  final label2 = labeler.getLabel(nerdsterDelegates[1]);
   
   // Note: The order depends on the order in resolver.getDelegatesForIdentity which depends on statement order.
   // We expect them to be ordered by appearance or something deterministic.
   // If not, we might need to check if set of labels matches.
   
-  final labels = nerdsterDelegates.map((d) => labeler.getLabel(d)).toSet();
+  final labels = nerdsterDelegates.map((d) => labeler.getLabel(d.value)).toSet();
   check(labels.contains("bob@nerdster.org"), "Missing label: bob@nerdster.org");
   check(labels.contains("bob@nerdster.org (2)"), "Missing label: bob@nerdster.org (2)");
 

@@ -7,7 +7,6 @@ abstract class Statement {
   final Jsonish jsonish;
   final DateTime time;
   final Json i;
-  final String iToken; // TODO: IdentityToken
 
   final dynamic
       subject; // Object of verb, may be Json or a token (like, for censor) or a statement..
@@ -63,7 +62,6 @@ abstract class Statement {
   Statement(this.jsonish, this.subject)
       : time = parseIso(jsonish['time']),
         i = jsonish['I'],
-        iToken = getToken(jsonish['I']),
         comment = jsonish['comment'];
 
   // TODO: CONSIDER: IdentityKey, DelegateKey, or ContentKey depending on verb

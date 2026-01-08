@@ -11,7 +11,7 @@ import 'package:nerdster/v2/content_pipeline.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/io.dart';
-import 'package:nerdster/v2/keys.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/orchestrator.dart';
@@ -152,6 +152,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     value = V2FeedModel(
       trustGraph: value!.trustGraph,
       followNetwork: value!.followNetwork,
+      delegateResolver: value!.delegateResolver,
       labeler: value!.labeler,
       aggregation: value!.aggregation,
       povToken: value!.povToken,
@@ -304,10 +305,11 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
         // Fix for view-only mode where signInState.delegate is null but the identity has delegates in the graph
         if (currentMeIdentityToken != null && meIdentityKeys != null) {
+          // TODO: Continue to convert string to typed keys
           final Set<String> delegates = {};
 
           // 1. Try to find delegates in the current PoV graph
-          delegates.addAll(delegateResolver.getDelegatesForIdentity(currentMeIdentityToken));
+          delegates.addAll(delegateResolver.getDelegatesForIdentity(IdentityKey(currentMeIdentityToken)).map((d) => d.value));
 
           // 2. If Me is not in the graph, we need to fetch Me's trust statements to find delegates.
           if (!graph.distances.containsKey(currentMeIdentityToken)) {
@@ -316,8 +318,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
             final mePipeline = TrustPipeline(trustSource, pathRequirement: (_) => 0);
             final meGraph = await mePipeline.build(currentMeIdentityToken);
             final meResolver = DelegateResolver(meGraph);
-            final fetchedDelegates = meResolver.getDelegatesForIdentity(currentMeIdentityToken);
-            delegates.addAll(fetchedDelegates);
+            final fetchedDelegates = meResolver.getDelegatesForIdentity(IdentityKey(currentMeIdentityToken));
+            delegates.addAll(fetchedDelegates.map((d) => d.value));
           }
 
           // Ensure the currently signed-in delegate is included, even if not in the graph
@@ -340,8 +342,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         // Identify delegates for all trusted identities (to find follows and ratings)
         final Set<DelegateKey> delegateKeysToFetch = {};
         for (final identity in graph.orderedKeys) {
-          final delegates = delegateResolver.getDelegatesForIdentity(identity);
-          delegateKeysToFetch.addAll(delegates.map((d) => DelegateKey(d)));
+          final delegates = delegateResolver.getDelegatesForIdentity(IdentityKey(identity));
+          delegateKeysToFetch.addAll(delegates);
         }
 
         // Add my delegates
@@ -405,8 +407,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         final activeContexts = <String>{};
         final povIdentity = graph.pov;
 
-        for (final keyStr in delegateResolver.getDelegatesForIdentity(povIdentity)) {
-          final key = DelegateKey(keyStr);
+        for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(IdentityKey(povIdentity))) {
           final statements = contentResult.delegateContent[key];
           if (statements != null) {
             for (final s in statements) {
@@ -428,6 +429,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
           value = V2FeedModel(
             trustGraph: graph,
             followNetwork: followNetwork,
+            delegateResolver: delegateResolver,
             labeler: labeler,
             aggregation: aggregation,
             povToken: currentPovIdentityToken,
@@ -464,6 +466,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
                 fcontext: Setting.get(SettingType.fcontext).value,
                 povIdentity: _latestRequestedPovIdentityToken ?? 'error',
               ),
+              delegateResolver: DelegateResolver(dummyGraph),
               aggregation: ContentAggregation(),
               labeler: V2Labeler(dummyGraph),
               povToken: _latestRequestedPovIdentityToken ?? 'error',

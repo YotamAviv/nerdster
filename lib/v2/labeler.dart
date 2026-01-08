@@ -1,4 +1,5 @@
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/delegates.dart';
 
@@ -151,16 +152,16 @@ class V2Labeler {
 
     // Check if it's a delegate key
     if (delegateResolver != null) {
-      final identity = delegateResolver!.getIdentityForDelegate(token);
+      final identity = delegateResolver!.getIdentityForDelegate(DelegateKey(token));
       if (identity != null) {
-        final identityLabel = getLabel(identity);
-        final domain = delegateResolver!.getDomainForDelegate(token);
+        final identityLabel = getLabel(identity.value);
+        final domain = delegateResolver!.getDomainForDelegate(DelegateKey(token));
         
         // Handle multiple delegates for the same identity and domain
         final allDelegates = delegateResolver!.getDelegatesForIdentity(identity);
         final domainDelegates = allDelegates.where((d) => delegateResolver!.getDomainForDelegate(d) == domain).toList();
         
-        final index = domainDelegates.indexOf(token);
+        final index = domainDelegates.indexOf(DelegateKey(token));
         if (index > 0) {
           return "$identityLabel@$domain (${index + 1})";
         }
@@ -171,19 +172,6 @@ class V2Labeler {
     return token.length > 8 ? token.substring(0, 8) : token;
   }
 
-  /// TODO: I don't like this where token is identity key or delegate key.
-  /// TODO: I don't like that this is in Labeler. Get canonical identity of equivalent
-  /// CONSIDER: Leverage Dart typing: IdentityKey/DelegateKey
-  /// identities from Graph, of delegate keys frmo delegateResolver.
-  /// Returns the canonical identity for a given token (key or delegate).
-  String getIdentityForToken(String token) {
-    if (delegateResolver != null) {
-      final identity = delegateResolver!.getIdentityForDelegate(token);
-      if (identity != null) return identity;
-    }
-    return graph.resolveIdentity(token);
-  }
-
   /// Returns all monikers associated with the identity of this token.
   List<String> getAllLabels(String token) {
     final identity = graph.resolveIdentity(token);
@@ -191,10 +179,11 @@ class V2Labeler {
   }
 
   /// Returns true if the token has been assigned a human-readable label.
+  /// TODO: This is confusing. Clear it up.
   bool hasLabel(String token) {
     if (_tokenToName.containsKey(token)) return true;
     if (delegateResolver != null &&
-        delegateResolver!.getIdentityForDelegate(token) != null) return true;
+        delegateResolver!.getIdentityForDelegate(DelegateKey(token)) != null) return true;
     return false;
   }
 

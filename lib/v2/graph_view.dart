@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:graphview/GraphView.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/graph_controller.dart';
@@ -272,10 +273,17 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
     final model = widget.controller.value!;
     final label = model.labeler.getLabel(identity);
-    final resolvedRoot = model.labeler.getIdentityForToken(_graphController!.povIdentity);
-    final resolvedFocused = _graphController!.focusedIdentity != null 
-        ? model.labeler.getIdentityForToken(_graphController!.focusedIdentity!)
-        : null;
+    final String resolvedRoot = model.trustGraph.resolveIdentity(_graphController!.povIdentity);
+    // BAD: TODO: We should know what we're trying to resolve: IdentityKey or DelegateKey
+    String? resolvedFocused; 
+    if (_graphController!.focusedIdentity != null) {
+       final f = _graphController!.focusedIdentity!;
+       if (model.trustGraph.isTrusted(f)) {
+         resolvedFocused = model.trustGraph.resolveIdentity(f);
+       } else {
+         resolvedFocused = model.delegateResolver.getIdentityForDelegate(DelegateKey(f))?.value;
+       }
+    }
 
     final isRoot = identity == resolvedRoot;
     final isFocused = identity == resolvedFocused;

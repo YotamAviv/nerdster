@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import '../singletons.dart';
 import '../content/content_statement.dart';
 import '../oneofus/jsonish.dart';
@@ -14,6 +15,7 @@ import 'source_factory.dart';
 import 'dismiss_toggle.dart';
 
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
 
 enum RateIntent { like, dislike, dismiss, comment, censor, clear, none }
 
@@ -89,13 +91,20 @@ class _V2RateDialogState extends State<V2RateDialog> {
   void initState() {
     super.initState();
     
-    // Find prior statement by this user
+      // Find prior statement by this user
     final myIdentity = signInState.identity;
     if (myIdentity != null) {
       try {
         priorStatement = widget.aggregation.statements.firstWhere(
-          (s) => widget.model.labeler.getIdentityForToken(s.iToken) == myIdentity &&
-                 s.verb == ContentVerb.rate
+          (s) {
+            String? identity;
+            if (widget.model.trustGraph.isTrusted(s.iToken)) {
+              identity = widget.model.trustGraph.resolveIdentity(s.iToken);
+            } else {
+              identity = widget.model.delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))?.value;
+            }
+            return identity == myIdentity && s.verb == ContentVerb.rate;
+          }
         );
       } catch (_) {
         priorStatement = null;
@@ -242,10 +251,14 @@ class _V2RateDialogState extends State<V2RateDialog> {
 
     bool subjectIsMyStatement = false;
     if (isStatement) {
-      final String subjectDelegate = Statement.make(Jsonish(Map<String, dynamic>.from(rawSubject))).iToken;
+      final stmt = Statement.make(Jsonish(Map<String, dynamic>.from(rawSubject)));
       final String? myIdentity = signInState.identity;
       if (myIdentity != null) {
-        subjectIsMyStatement = (myIdentity == widget.model.labeler.getIdentityForToken(subjectDelegate));
+        if (stmt is TrustStatement) {
+           subjectIsMyStatement = (stmt.iKey.value == myIdentity);
+        } else if (stmt is ContentStatement) {
+           subjectIsMyStatement = (widget.model.delegateResolver.getIdentityForDelegate(stmt.iKey)?.value == myIdentity);
+        }
       }
     }
 
