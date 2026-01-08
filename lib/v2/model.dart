@@ -196,8 +196,8 @@ class SubjectAggregation {
   final List<ContentStatement> povStatements;
 
   final bool isCensored;
-  // TODO: Ensure that canonicalToken is accurate
-  final ContentKey canonicalToken;
+  // TODO: Ensure that canonicalToken is accurate and document why it's needed.
+  final ContentKey canonical;
 
   SubjectAggregation({
     required this.subject,
@@ -211,8 +211,8 @@ class SubjectAggregation {
     this.myDelegateStatements = const [],
     this.povStatements = const [],
     this.isCensored = false,
-  }) : canonicalToken = canonicalTokenIn ?? ContentKey(getToken(subject)) {
-    // FAILS: TODO: DOC and make sure: assert(canonicalToken == null || canonicalToken == getToken(subject));
+  }) : canonical = canonicalTokenIn ?? ContentKey(getToken(subject)) {
+    // FYI, this fails: assert(canonicalToken == null || canonicalToken == getToken(subject));
     assert(Statement.validateStatementTimesAndTypes(statements));
     assert(Statement.validateStatementTimesAndTypes(myDelegateStatements));
     assert(Statement.validateStatementTimesAndTypes(povStatements));
@@ -242,7 +242,7 @@ class SubjectAggregation {
       // identities or about different things.
       // We need to check if *any* statement at lastActivity is a "Qualified New Activity".
       
-      // TODO: This makes no sense to me.
+      // TODO: This makes no sense to me. BUG?
       final activityStatements = statements.where((s) => s.time.isAtSameMomentAs(lastActivity));
       for (final activityStatement in activityStatements) {
          // Qualified New Activity:

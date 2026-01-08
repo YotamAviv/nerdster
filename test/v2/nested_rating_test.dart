@@ -126,15 +126,13 @@ void main() {
         delegateResolver,
         contentResult,
         enableCensorship: true,
-        meIdentityKeys: [lisa.id],
         meDelegateKeys: [lisaD.id],
     );
 
     // Check if the nested rating is in the aggregation
     // It should be in subjects[artRating!.token]
     final SubjectAggregation? nestedAgg = aggregation.subjects[ContentKey(artRating!.token)];
-    // TODO: False! Remove: expect(nestedAgg, isNotNull, reason: "Aggregation should exist for the rating statement");
+    expect(nestedAgg, isNull, reason: "Aggregation should not exist for the rating statement");
     // expect(nestedAgg!.statements.any((s) => s.token == nestedRating!.token), isTrue);
-
   });
 }

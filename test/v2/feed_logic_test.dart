@@ -163,7 +163,7 @@ void main() {
 
     // 6. Verify the Rating Statement IS in the aggregation (for lookup)
     final ratingAsSubject = model.aggregation.subjects.values.where((agg) => 
-      agg.canonicalToken == ratingToken
+      agg.canonical == ratingToken
     );
     expect(ratingAsSubject, isEmpty, reason: "The rating statement should not be in the aggregation for lookup");
   });

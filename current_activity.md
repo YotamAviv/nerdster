@@ -9,6 +9,8 @@
 Next steps:
 - use GitLens to compare this to v2clean
 - merge
+- read the interesting code.
+- address my own TODO, SUSPECT, BUG ..
 - name changes.. variables (token/id/key me/my), filenames (v2_nerdy_content_view_spec.md)
 
 
@@ -21,7 +23,7 @@ Next steps:
   - Reach goal: while KeyInfoDetail dialog is up
 
 BUGS:
-- skipCredentialDisplay doesn't skip when switching Poser, Hipster, Jock
+- clicking link icon on popup card affeccts the one behind it (if visible) but not that one.
 - images
   - YouTube
   - NYT

@@ -33,7 +33,6 @@ class ContentPipeline {
 
     // 4. Verify
     final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
-
     for (final String keyStr in rawDelegateContent.keys) {
       if (!knownDelegateKeys.contains(DelegateKey(keyStr))) {
         throw 'Pipeline Error: Delegate Source returned content from unauthorized key: $keyStr';

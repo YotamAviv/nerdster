@@ -254,12 +254,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         final currentPovIdentityToken = _latestRequestedPovIdentityToken;
         final currentMeIdentityToken = _latestRequestedMeIdentityToken;
 
-        List<IdentityKey>? meIdentityKeys;
         List<DelegateKey>? meDelegateKeys;
-
-        if (currentMeIdentityToken != null && currentMeIdentityToken.value == signInState.identity) {
-          meIdentityKeys = [currentMeIdentityToken];
-        }
 
         if (currentPovIdentityToken == null) {
           value = null;
@@ -304,8 +299,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         final delegateResolver = DelegateResolver(graph);
 
         // Fix for view-only mode where signInState.delegate is null but the identity has delegates in the graph
-        if (currentMeIdentityToken != null && meIdentityKeys != null) {
-          // TODO: Continue to convert string to typed keys
+        if (currentMeIdentityToken != null && currentMeIdentityToken.value == signInState.identity) {
           final Set<DelegateKey> delegates = {};
 
           // 1. Try to find delegates in the current PoV graph
@@ -384,7 +378,6 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
           delegateResolver,
           contentResult,
           enableCensorship: enableCensorship,
-          meIdentityKeys: meIdentityKeys,
           meDelegateKeys: meDelegateKeys,
         );
         progress.value = 0.95;

@@ -68,7 +68,6 @@ void main() {
         delegateResolver,
         contentResult,
         enableCensorship: true,
-        meIdentityKeys: [lisa.id],
         meDelegateKeys: [lisaD.id],
     );
 
@@ -156,7 +155,7 @@ void main() {
     }
 
     expect(inspectAgg, isNotNull, reason: "Should be able to inspect non-canonical subject");
-    expect(inspectAgg!.canonicalToken, equals(nonCanonical));
+    expect(inspectAgg!.canonical, equals(nonCanonical));
     
     // Verify we found the actual object, not just the token (if possible)
     expect(inspectAgg.subject['title'], equals(nonCanonical.value == toyToken ? 'Toy' : 'Skateboard'));

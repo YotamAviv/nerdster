@@ -104,7 +104,7 @@ void main() async {
     expect(followLisa.contains(trustLisa.resolveIdentity(homer.id)), true, reason: 'Lisa should follow Homer (Homer2)');
     
     // Check if Marge's content is there (MargeN signed it)
-    expect(contentLisa.subjects.values.any((s) => s.canonicalToken == ContentKey(margeRating.subjectToken!)), true, reason: "Lisa should see Marge's content");
+    expect(contentLisa.subjects.values.any((s) => s.canonical == ContentKey(margeRating.subjectToken!)), true, reason: "Lisa should see Marge's content");
 
     // --- BART'S POV ---
     final TrustGraph trustBart = reduceTrustGraph(TrustGraph(pov: bart.id), allTrustStatements);

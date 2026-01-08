@@ -12,42 +12,26 @@ import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/eg.dart';
 
 List<Iterable<ContentStatement>> _collectSources(
-  IdentityKey identity,
-  TrustGraph trustGraph,
-  DelegateResolver delegateResolver,
-  ContentResult contentResult,
-) {
+    IdentityKey identity, DelegateResolver delegateResolver, ContentResult contentResult) {
   final List<Iterable<ContentStatement>> sources = [];
-
-  // Delegate Keys
   for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
-    if (contentResult.delegateContent.containsKey(key)) {
-      sources.add(contentResult.delegateContent[key]!);
-    }
+    assert(contentResult.delegateContent.containsKey(key));
+    sources.add(contentResult.delegateContent[key]!);
   }
-
   return sources;
 }
 
 /// The Pure Function Core of the Content Aggregation Algorithm.
-///
-/// Input:
-/// - A FollowNetwork
-/// - A TrustGraph
-/// - A DelegateResolver
-/// - A map of org.nerdster statements by token
-/// - Censorship toggle
-/// Output: A ContentAggregation
+/// - no awaits, all the content is already fetched and passed in.
 ContentAggregation reduceContentAggregation(
   FollowNetwork followNetwork,
   TrustGraph trustGraph,
   DelegateResolver delegateResolver,
   ContentResult contentResult, {
   bool enableCensorship = true,
-  List<IdentityKey>? meIdentityKeys,
   List<DelegateKey>? meDelegateKeys,
 }) {
-  final Set<String> censored = {};// TODO: ContentKey
+  final Set<String> censored = {}; // TODO: ContentKey
 
   // 1. Decentralized Censorship (Proximity Wins)
   if (enableCensorship) {
@@ -55,7 +39,6 @@ ContentAggregation reduceContentAggregation(
     for (final IdentityKey identity in followNetwork.identities) {
       final List<Iterable<ContentStatement>> sources = _collectSources(
         identity,
-        trustGraph,
         delegateResolver,
         contentResult,
       );
@@ -81,7 +64,6 @@ ContentAggregation reduceContentAggregation(
   for (final IdentityKey identity in followNetwork.identities) {
     final List<Iterable<ContentStatement>> sources = _collectSources(
       identity,
-      trustGraph,
       delegateResolver,
       contentResult,
     );
@@ -331,7 +313,8 @@ ContentAggregation reduceContentAggregation(
           }
         }
 
-        final IdentityKey signerIdentity = delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!;
+        final IdentityKey signerIdentity =
+            delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!;
         assert(trustGraph.isTrusted(signerIdentity));
 
         if (s.verb == ContentVerb.clear) {
@@ -476,7 +459,8 @@ ContentAggregation reduceContentAggregation(
         // Clear all my previous statements on this subject
         myDelegateStatements = [];
       } else {
-        myDelegateStatements = [...myDelegateStatements, s]..sort((a, b) => b.time.compareTo(a.time));
+        myDelegateStatements = [...myDelegateStatements, s]
+          ..sort((a, b) => b.time.compareTo(a.time));
       }
 
       subjects[canonical] = SubjectAggregation(
@@ -521,10 +505,9 @@ ContentAggregation reduceContentAggregation(
   }
 
   for (final agg in subjects.values.toList()) {
-
-    final Set<String> recursiveTags = collectTagsRecursive(agg.canonicalToken, {});
-    subjects[agg.canonicalToken] = SubjectAggregation(
-      canonicalTokenIn: agg.canonicalToken,
+    final Set<String> recursiveTags = collectTagsRecursive(agg.canonical, {});
+    subjects[agg.canonical] = SubjectAggregation(
+      canonicalTokenIn: agg.canonical,
       subject: agg.subject,
       statements: agg.statements,
       tags: recursiveTags,

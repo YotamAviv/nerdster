@@ -52,7 +52,7 @@ class _ContentCardState extends State<ContentCard> {
   @override
   void didUpdateWidget(ContentCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.aggregation.canonicalToken != widget.aggregation.canonicalToken) {
+    if (oldWidget.aggregation.canonical != widget.aggregation.canonical) {
       _metadata = null;
       _fetchMetadata();
     }
@@ -373,7 +373,7 @@ class _ContentCardState extends State<ContentCard> {
 
     // 1. Equivalents
     final equivalentTokens = widget.model.aggregation.equivalence.entries
-        .where((e) => e.value == widget.aggregation.canonicalToken && e.key != widget.aggregation.canonicalToken)
+        .where((e) => e.value == widget.aggregation.canonical && e.key != widget.aggregation.canonical)
         .map((e) => e.key)
         .toSet();
 
@@ -413,7 +413,7 @@ class _ContentCardState extends State<ContentCard> {
     // 2. Related
     final relatedTokens = widget.aggregation.related
         .where((token) =>
-            widget.model.aggregation.equivalence[token] != widget.aggregation.canonicalToken)
+            widget.model.aggregation.equivalence[token] != widget.aggregation.canonical)
         .toList();
 
     for (final token in relatedTokens) {
@@ -530,16 +530,16 @@ class _ContentCardState extends State<ContentCard> {
             visualDensity: VisualDensity.compact,
             icon: Icon(
               Icons.link,
-              color: widget.markedSubjectToken == widget.aggregation.canonicalToken
+              color: widget.markedSubjectToken == widget.aggregation.canonical
                   ? Colors.orange
                   : Colors.grey,
             ),
-            tooltip: widget.markedSubjectToken == widget.aggregation.canonicalToken
+            tooltip: widget.markedSubjectToken == widget.aggregation.canonical
                 ? 'Unmark'
                 : 'Mark to Relate/Equate',
             onPressed: () async {
               if (bb(await checkSignedIn(context, trustGraph: widget.model.trustGraph))) {
-                widget.onMark!(widget.aggregation.canonicalToken);
+                widget.onMark!(widget.aggregation.canonical);
               }
             },
           ),

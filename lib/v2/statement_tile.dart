@@ -105,14 +105,14 @@ class StatementTile extends StatelessWidget {
         // If the statement's other is THIS card, then the target is s.subject
         
         // TODO: Careful here. Should we use getToken(aggregation.subject) instead of token?
-        if (s.subjectToken == aggregation.canonicalToken.value) {
+        if (s.subjectToken == aggregation.canonical.value) {
            otherToken = ContentKey(sOtherToken);
            // Try to get title from s.other if it's a map
            if (s.other is Map && s.other['title'] != null) {
              displayText = s.other['title'];
            }
         // TODO: Careful here. Should we use getToken(aggregation.subject) instead of token?
-        } else if (sOtherToken == aggregation.canonicalToken.value) {
+        } else if (sOtherToken == aggregation.canonical.value) {
            otherToken = ContentKey(s.subjectToken);
            // Try to get title from s.subject if it's a map
            if (s.subject is Map && s.subject['title'] != null) {
