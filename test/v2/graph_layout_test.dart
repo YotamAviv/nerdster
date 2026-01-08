@@ -79,13 +79,13 @@ void main() {
     
     final data = controller.buildGraphData();
     
-    expect(data.root, equals(lisa.id));
-    expect(data.nodes.first, equals(lisa.id), reason: 'Root should be the first node');
-    expect(data.nodes, containsAll([lisa.id, bob.id, charlie.id]));
+    expect(data.root, equals(lisa.id.value));
+    expect(data.nodes.first, equals(lisa.id.value), reason: 'Root should be the first node');
+    expect(data.nodes, containsAll([lisa.id.value, bob.id.value, charlie.id.value]));
     // Path lisa -> bob -> charlie has 2 edges.
     // Plus the back-edge charlie -> lisa makes 3.
     expect(data.edges.length, equals(3));
-    expect(data.edges.any((e) => e.from == charlie.id && e.to == lisa.id), isTrue);
+    expect(data.edges.any((e) => e.from == charlie.id.value && e.to == lisa.id.value), isTrue);
   });
 
   test('GraphController: Node-Disjoint Path Selection', () async {

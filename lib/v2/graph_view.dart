@@ -86,9 +86,13 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   void _updateAlgorithm() {
     if (_graphController == null) return;
-    // FanAlgorithm expects the key of the root node. We use IdentityKey as key.
+    
+    // Use the canonical root from the data if available, otherwise the POV
+    final rootId = _data?.root ?? _graphController!.povIdentity.value;
+    
+    // FanAlgorithm expects the key of the root node.
     _algorithm = FanAlgorithm(
-      rootId: _graphController!.povIdentity.value,
+      rootId: rootId,
       levelSeparation: 200,
     );
   }
@@ -131,9 +135,9 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       return;
     }
 
-    final Map<IdentityKey, Node> nodes = {};
+    final Map<String, Node> nodes = {};
     for (final identity in _data!.nodes) {
-      // IdentityKey is the key for the node in the Graph
+      // Identity is now String
       final Node node = Node.Id(identity);
       nodes[identity] = node;
       newGraph.addNode(node);
@@ -149,7 +153,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
       newGraph.addEdge(fromNode, toNode, paint: paint);
     }
-
+    
     _graph = newGraph;
   }
 
@@ -337,25 +341,6 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   }
 
   void _showNodeDetails(IdentityKey identity) {
-    setState(() {
-      _graphController!.focusedIdentity = identity;
-      _refreshGraph();
-    });
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        builder: (_, scrollController) => NodeDetailsSheet(
-          identity: identity,
-          controller: widget.controller,
-          scrollController: scrollController,
-        ),
-      ),
-    );
+    NodeDetails.show(context, identity, widget.controller);
   }
 }

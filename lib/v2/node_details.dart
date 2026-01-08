@@ -5,7 +5,6 @@ import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/key_info_view.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/v2/json_display.dart';
@@ -28,17 +27,13 @@ class NodeDetails extends StatelessWidget {
   static Future<void> show(BuildContext context, IdentityKey identity, V2FeedController controller) {
     return showDialog(
       context: context,
-      builder: (context) => Dialog(
-        child: NodeDetailsSheet(identity: identity, controller: controller),
-      ),
+      builder: (context) => NodeDetailsSheet(identity: identity, controller: controller),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: NodeDetailsSheet(identity: identity, controller: controller),
-    );
+    return NodeDetailsSheet(identity: identity, controller: controller);
   }
 }
 
@@ -156,42 +151,79 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     final delegates = labeler.delegateResolver?.getDelegatesForIdentity(widget.identity).map((d) => d.value).toList() ?? [];
     final String fcontext = model.fcontext;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: ListView( // Changed from SingleChildScrollView + Column to ListView for ScrollController
-        controller: widget.scrollController,
-        shrinkWrap: true, // If in dialog
-        children: [
-          _buildHeader(labeler, identityStr),
-          const Divider(),
-          _buildFollowContextsSection(),
-          const Divider(),
-          // _buildAliasesSection(keys, labeler), 
-          // Skipping detailed alias list for now to save time/space,
-          // or just implementation complexity.
-          
-          if (delegates.isNotEmpty) ...[
-             const SizedBox(height: 10),
-             const Text('Delegate Keys:', style: TextStyle(fontWeight: FontWeight.bold)),
-             ...delegates.map((d) => Text('• $d', style: const TextStyle(fontSize: 10))),
-          ],
-          
-          const SizedBox(height: 10),
-          if (fcontext == kFollowContextIdentity)
-            _buildIdentityDetails(widget.identity, model)
-          else if (fcontext == kFollowContextNerdster)
-            _buildNerdsterDetails(widget.identity, model)
-          else
-            _buildContextDetails(widget.identity, model, fcontext),
+    return AlertDialog(
+      title: _buildHeader(labeler, identityStr),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFollowContextsSection(),
+            const Divider(),
+            const Text('All Monikers:', style: TextStyle(fontWeight: FontWeight.bold)),
+            if (labeler.getAllLabels(widget.identity).isEmpty) const Text('None'),
+            ...labeler.getAllLabels(widget.identity).map((l) => Text('• $l')),
+            const SizedBox(height: 10),
+            const Text('Equivalent Identity Keys:', style: TextStyle(fontWeight: FontWeight.bold)),
+            ...tg.getEquivalenceGroup(widget.identity).map((IdentityKey equivKey) {
+                final equivIdentityToken = equivKey.value;
+                final bool isCanonical = equivKey == widget.identity;
+                final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
+                return Builder(builder: (context) {
+                  TapDownDetails? tapDetails;
+                  return InkWell(
+                    onTapDown: (details) => tapDetails = details,
+                    onTap: () {
+                       KeyInfoView.show(context, equivIdentityToken, kOneofusDomain,
+                        details: tapDetails,
+                        source: widget.controller.trustSource,
+                        labeler: labeler,
+                        constraints: const BoxConstraints(maxWidth: 600));
+                    },
+                    child: Text('• $equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
+                        style: TextStyle(
+                            fontSize: 10,
+                            color: isCanonical ? Colors.black : Colors.grey,
+                            decoration: TextDecoration.underline)),
+                  );
+                });
+              }),
             
-          const SizedBox(height: 20),
-          _buildActions(context),
-        ],
+            if (delegates.isNotEmpty) ...[
+               const SizedBox(height: 10),
+               const Text('Delegate Keys:', style: TextStyle(fontWeight: FontWeight.bold)),
+               ...delegates.map((d) {
+                 final String delegateLabel = labeler.getLabel(d);
+                 return Builder(builder: (context) {
+                    TapDownDetails? tapDetails;
+                    return InkWell(
+                      onTapDown: (details) => tapDetails = details,
+                      onTap: () => KeyInfoView.show(context, d, kNerdsterDomain,
+                          details: tapDetails,
+                          source: widget.controller.contentSource,
+                          labeler: labeler,
+                          constraints: const BoxConstraints(maxWidth: 600)),
+                      child: Text('• $delegateLabel', 
+                          style: const TextStyle(
+                             fontSize: 10, 
+                             color: Colors.blue,
+                             decoration: TextDecoration.underline)),
+                    );
+                 });
+               }),
+            ],
+            
+            const SizedBox(height: 10),
+            if (fcontext == kFollowContextIdentity)
+              _buildIdentityDetails(widget.identity, model)
+            else if (fcontext == kFollowContextNerdster)
+              _buildNerdsterDetails(widget.identity, model)
+            else
+              _buildContextDetails(widget.identity, model, fcontext),
+          ],
+        ),
       ),
+      actions: _buildActions(context),
     );
   }
   
@@ -210,7 +242,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Flexible(child: Text(labeler.getLabel(identityStr), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
+              Flexible(child: Text(labeler.getLabel(identityStr))),
               const SizedBox(width: 8),
               const Icon(Icons.qr_code, size: 20, color: Colors.blue),
             ],
@@ -219,27 +251,50 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
       });
   }
 
-  Widget _buildActions(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
+  List<Widget> _buildActions(BuildContext context) {
+    return [
         if (widget.identity != model.trustGraph.pov)
            TextButton(
             onPressed: () {
               // Updating global POV
+              Navigator.pop(context); // Close sheet/dialog first
               signInState.pov = widget.identity.value;
               widget.controller.refresh(widget.identity, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
-              Navigator.pop(context); // Close sheet
             },
             child: const Text('Set as PoV'),
           ),
           
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              if (_hasChanges) {
+                final bool? shouldClose = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Unsaved Changes'),
+                    content: const Text(
+                        'You have unsaved follow/block changes. Are you sure you want to discard them?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('Discard'),
+                      ),
+                    ],
+                  ),
+                );
+                if (shouldClose == true) {
+                  if (context.mounted) Navigator.of(context).pop();
+                }
+              } else {
+                Navigator.of(context).pop();
+              }
+            },
             child: const Text('Close'),
           )
-      ],
-    );
+    ];
   }
 
   Widget _buildFollowContextsSection() {
@@ -415,7 +470,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           _pendingContexts.removeWhere((key, value) => value == 0);
           _originalContexts = Map.of(_pendingContexts);
         });
-        widget.controller.refresh(model.trustGraph.pov, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+        await widget.controller.refresh(model.trustGraph.pov, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
       }
     } catch (e) {
       if (mounted) {

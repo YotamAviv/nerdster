@@ -1,7 +1,7 @@
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/oneofus/util.dart';
 
 enum GraphViewMode {
   identity, // Pure Identity Network
@@ -9,8 +9,8 @@ enum GraphViewMode {
 }
 
 class GraphEdgeData {
-  final IdentityKey from;
-  final IdentityKey to;
+  final String from;
+  final String to;
   final List<dynamic> statements; // TrustStatement or ContentStatement or TrustNotification
   final bool isIdentity;
   final bool isFollow;
@@ -29,9 +29,9 @@ class GraphEdgeData {
 }
 
 class GraphData {
-  final List<IdentityKey> nodes;
+  final List<String> nodes;
   final List<GraphEdgeData> edges;
-  final IdentityKey root;
+  final String root;
 
   GraphData({
     required this.nodes,
@@ -50,17 +50,20 @@ class GraphController {
   IdentityKey get povIdentity => feedModel.povToken;
 
   /// Resolves any token to its canonical Identity Key.
-  /// This handles Identity Merge/Replacement (aliasing) via the TrustGraph.
+  /// This handles Delegate resolution and Identity Merge/Replacement (aliasing).
   IdentityKey _resolve(IdentityKey token) {
-    if (feedModel.trustGraph.isTrusted(token)) {
-      return feedModel.trustGraph.resolveIdentity(token);
+    final IdentityKey? delegateIdentity = feedModel.delegateResolver.getIdentityForDelegate(DelegateKey(token.value));
+    final IdentityKey candidate = delegateIdentity ?? token;
+
+    if (feedModel.trustGraph.isTrusted(candidate)) {
+      return feedModel.trustGraph.resolveIdentity(candidate);
     }
-    return token;
+    return candidate;
   }
   
   GraphData buildGraphData() {
-    final Set<IdentityKey> nodes = {};
-    final IdentityKey root = _resolve(povIdentity);
+    final Set<String> nodes = {};
+    final String root = _resolve(povIdentity).value;
 
     if (focusedIdentity == null) {
       return GraphData(
@@ -77,7 +80,7 @@ class GraphController {
       _addFollowEdges(nodes, allEdges);
     }
 
-    final IdentityKey target = _resolve(focusedIdentity!);
+    final String target = _resolve(focusedIdentity!).value;
 
     // Reset nodes and edges to only what's needed for the paths
     nodes.clear();
@@ -87,21 +90,21 @@ class GraphController {
     final Set<GraphEdgeData> edges = {};
 
     if (mode == GraphViewMode.identity) {
-      final paths = feedModel.trustGraph.paths[target];
+      final List<List<IdentityKey>>? paths = feedModel.trustGraph.paths[IdentityKey(target)];
       if (paths != null) {
-        for (final path in paths) {
+        for (final List<IdentityKey> path in paths) {
           _addPathToGraph(path, allEdges, nodes, edges);
         }
       }
     } else {
-      final path = feedModel.followNetwork.paths[target];
+      final List<IdentityKey>? path = feedModel.followNetwork.paths[IdentityKey(target)];
       if (path != null) {
          _addPathToGraph(path, allEdges, nodes, edges);
       }
     }
 
     // Phase 2: Add Cross-Path Edges and Conflicts
-    for (final edge in allEdges) {
+    for (final GraphEdgeData edge in allEdges) {
       if (nodes.contains(edge.from) && nodes.contains(edge.to)) {
         edges.add(edge);
       }
@@ -111,7 +114,7 @@ class GraphController {
     _addConflictEdges(nodes, edges);
 
     // Ensure root is first
-    final orderedNodes = [root, ...nodes.where((n) => n != root)];
+    final List<String> orderedNodes = [root, ...nodes.where((n) => n != root)];
 
     return GraphData(
       nodes: orderedNodes,
@@ -120,10 +123,10 @@ class GraphController {
     );
   }
 
-  void _addPathToGraph(List<IdentityKey> path, List<GraphEdgeData> allEdges, Set<IdentityKey> nodes, Set<GraphEdgeData> edges) {
+  void _addPathToGraph(List<IdentityKey> path, List<GraphEdgeData> allEdges, Set<String> nodes, Set<GraphEdgeData> edges) {
     for (int i = 0; i < path.length - 1; i++) {
-      final fromId = _resolve(path[i]);
-      final toId = _resolve(path[i + 1]);
+      final String fromId = _resolve(path[i]).value;
+      final String toId = _resolve(path[i + 1]).value;
       
       if (fromId == toId) continue;
 
@@ -131,7 +134,7 @@ class GraphController {
       nodes.add(toId);
       
       try {
-        final edge = allEdges.firstWhere((e) => e.from == fromId && e.to == toId);
+        final GraphEdgeData edge = allEdges.firstWhere((e) => e.from == fromId && e.to == toId);
         edges.add(edge);
       } catch (e) {
         // Edge missing
@@ -141,19 +144,19 @@ class GraphController {
 
   Set<GraphEdgeData> getPathToFocused(GraphData data) {
     if (focusedIdentity == null) return {};
-    final Set<IdentityKey> keepNodes = {};
+    final Set<String> keepNodes = {};
     final Set<GraphEdgeData> pathEdges = {};
-    final IdentityKey target = _resolve(focusedIdentity!);
+    final String target = _resolve(focusedIdentity!).value;
     
     if (mode == GraphViewMode.identity) {
-      final paths = feedModel.trustGraph.paths[target];
+      final List<List<IdentityKey>>? paths = feedModel.trustGraph.paths[IdentityKey(target)];
       if (paths != null) {
-        for (final path in paths) {
+        for (final List<IdentityKey> path in paths) {
           _addPathToGraph(path, data.edges, keepNodes, pathEdges);
         }
       }
     } else {
-      final path = feedModel.followNetwork.paths[target];
+      final List<IdentityKey>? path = feedModel.followNetwork.paths[IdentityKey(target)];
       if (path != null) {
          _addPathToGraph(path, data.edges, keepNodes, pathEdges);
       }
@@ -161,17 +164,17 @@ class GraphController {
     return pathEdges;
   }
 
-  void _addIdentityEdges(Set<IdentityKey> nodes, List<GraphEdgeData> edges) {
+  void _addIdentityEdges(Set<String> nodes, List<GraphEdgeData> edges) {
     final tg = feedModel.trustGraph;
 
     for (final IdentityKey issuer in tg.edges.keys) {
-      final issuerIdentity = _resolve(issuer);
-      for (final s in tg.edges[issuer]!) {
-        if (s.verb == TrustVerb.trust || s.verb == TrustVerb.block || s.verb == TrustVerb.replace) {
-          final subjectIdentity = _resolve(IdentityKey(s.subjectToken));
-          final isNonCanonical = tg.replacements.containsKey(IdentityKey(s.subjectToken));
+      final String issuerIdentity = _resolve(issuer).value;
+      for (final TrustStatement s in tg.edges[issuer]!) {
+        if (s.verb == TrustVerb.trust || s.verb == TrustVerb.block || s.verb == TrustVerb.replace || s.verb == TrustVerb.delegate) {
+          final String subjectIdentity = _resolve(IdentityKey(s.subjectToken)).value;
+          final bool isNonCanonical = tg.replacements.containsKey(IdentityKey(s.subjectToken));
           
-          final isConflict = tg.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
+          final bool isConflict = tg.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
 
           _mergeOrAddEdge(edges, GraphEdgeData(
             from: issuerIdentity,
@@ -186,15 +189,15 @@ class GraphController {
     }
   }
 
-  void _addFollowEdges(Set<IdentityKey> nodes, List<GraphEdgeData> edges) {
+  void _addFollowEdges(Set<String> nodes, List<GraphEdgeData> edges) {
     final fn = feedModel.followNetwork;
 
     for (final IdentityKey issuerIdentity in fn.edges.keys) {
-      final resolvedIssuer = _resolve(issuerIdentity);
-      for (final s in fn.edges[issuerIdentity]!) {
-        final subjectIdentity = _resolve(IdentityKey(s.subjectToken));
+      final String resolvedIssuer = _resolve(issuerIdentity).value;
+      for (final ContentStatement s in fn.edges[issuerIdentity]!) {
+        final String subjectIdentity = _resolve(IdentityKey(s.subjectToken)).value;
         
-        final isConflict = fn.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
+        final bool isConflict = fn.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
 
         _mergeOrAddEdge(edges, GraphEdgeData(
           from: resolvedIssuer,
@@ -211,14 +214,14 @@ class GraphController {
       for (final IdentityKey issuer in tg.edges.keys) {
         if (!fn.contains(issuer)) continue;
         
-        final issuerIdentity = _resolve(issuer);
+        final String issuerIdentity = _resolve(issuer).value;
         
-        for (final s in tg.edges[issuer]!) {
+        for (final TrustStatement s in tg.edges[issuer]!) {
           if (s.verb != TrustVerb.trust) continue;
-          final subjectKey = IdentityKey(s.subjectToken);
+          final IdentityKey subjectKey = IdentityKey(s.subjectToken);
           if (!fn.contains(subjectKey)) continue;
 
-          final subjectIdentity = _resolve(subjectKey);
+          final String subjectIdentity = _resolve(subjectKey).value;
 
           _mergeOrAddEdge(edges, GraphEdgeData(
             from: issuerIdentity,
@@ -233,7 +236,7 @@ class GraphController {
 
   void _mergeOrAddEdge(List<GraphEdgeData> edges, GraphEdgeData newEdge) {
     for (int i = 0; i < edges.length; i++) {
-      final e = edges[i];
+      final GraphEdgeData e = edges[i];
       if (e.from == newEdge.from && e.to == newEdge.to) {
         edges[i] = GraphEdgeData(
           from: e.from,
@@ -250,36 +253,24 @@ class GraphController {
     edges.add(newEdge);
   }
 
-  void _addConflictEdges(Set<IdentityKey> nodes, Set<GraphEdgeData> edges) {
+  void _addConflictEdges(Set<String> nodes, Set<GraphEdgeData> edges) {
     final List<TrustNotification> conflicts = [...feedModel.trustGraph.conflicts];
 
     if (mode == GraphViewMode.follow) {
-      // Need to cast or check notifications type from FollowNetwork.
-      // FollowNetwork.notifications is List<TrustNotification>.
       conflicts.addAll(feedModel.followNetwork.notifications.where((n) => n.isConflict));
     }
 
-    for (final conflict in conflicts) {
-      // Conflict issuer/subject might be IdentityKey or String?
-      // TrustStatement (which notifications reference) has subjectToken as String.
-      // But TrustNotification has issuer -> IdentityKey (since it's resolved usually?).
-      // Let's check TrustNotification in model.dart.
-      // `final IdentityKey issuer; final IdentityKey subject;`?
-      // No, TrustNotification fields in model.dart:
-      // final String reason; final TrustStatement rejectedStatement; final bool isConflict;
-      // It doesn't seem to have explicit issuer/subject fields on TrustNotification class itself, 
-      // but rejectedStatement has them.
-      
-      final issuerKey = IdentityKey(getToken(conflict.rejectedStatement.i)); 
-      final subjectKey = IdentityKey(conflict.rejectedStatement.subjectToken);
+    for (final TrustNotification conflict in conflicts) {
+      final IdentityKey issuerKey = IdentityKey(getToken(conflict.rejectedStatement.i)); 
+      final IdentityKey subjectKey = IdentityKey(conflict.rejectedStatement.subjectToken);
 
-      final fromId = _resolve(issuerKey); 
+      final String fromId = _resolve(issuerKey).value; 
 
-      final toId = _resolve(subjectKey);
+      final String toId = _resolve(subjectKey).value;
 
       if (nodes.contains(fromId) && nodes.contains(toId)) {
         GraphEdgeData? match;
-        for (final e in edges) {
+        for (final GraphEdgeData e in edges) {
           if (e.from == fromId && e.to == toId) {
             match = e;
             break;

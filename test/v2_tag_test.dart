@@ -82,7 +82,7 @@ void main() {
         ContentResult(delegateContent: byToken),
       );
 
-      final subjectAgg = aggregation.subjects[subject1Token];
+      final subjectAgg = aggregation.subjects[ContentKey(subject1Token)];
       expect(subjectAgg, isNotNull);
       expect(subjectAgg!.tags, contains('#world'));
       expect(subjectAgg.tags, contains('#tag2'));

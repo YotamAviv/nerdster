@@ -58,10 +58,10 @@ void main() {
       controller.mode = GraphViewMode.identity;
       final data = controller.buildGraphData();
 
-      expect(data.nodes, containsAll([pov, alice]));
+      expect(data.nodes, containsAll([pov.value, alice.value]));
       expect(data.edges.length, 1);
-      expect(data.edges.first.from, pov);
-      expect(data.edges.first.to, alice);
+      expect(data.edges.first.from, pov.value);
+      expect(data.edges.first.to, alice.value);
       expect(data.edges.first.isIdentity, isTrue);
     });
 
@@ -110,10 +110,10 @@ void main() {
       controller.mode = GraphViewMode.follow;
       final data = controller.buildGraphData();
 
-      expect(data.nodes, containsAll([pov, alice]));
+      expect(data.nodes, containsAll([pov.value, alice.value]));
       expect(data.edges.length, 1);
-      expect(data.edges.first.from, pov);
-      expect(data.edges.first.to, alice);
+      expect(data.edges.first.from, pov.value);
+      expect(data.edges.first.to, alice.value);
       expect(data.edges.first.isFollow, isTrue);
     });
 
@@ -166,6 +166,54 @@ void main() {
       final data = controller.buildGraphData();
 
       expect(data.edges.any((e) => e.isConflict), isTrue);
+    });
+
+    test('builds identity graph data with delegation', () {
+      final povKey = {'kty': 'mock', 'val': 'pov'};
+      final pov = IdentityKey(Jsonish(povKey).token);
+      final delegateKey = {'kty': 'mock', 'val': 'delegate'};
+      final delegate = IdentityKey(Jsonish(delegateKey).token);
+
+      final d1 = TrustStatement(Jsonish({
+        'statement': 'net.one-of-us',
+        'delegate': delegate.value,
+        'with': {'domain': 'nerdster.org'},
+        'time': DateTime.now().toIso8601String(),
+        'I': povKey,
+      }, 'd1'));
+
+      final trustGraph = TrustGraph(
+        pov: pov, 
+        distances: {pov: 0, delegate: 1},
+        edges: {pov: [d1]},
+        paths: {
+          delegate: [[pov, delegate]],
+        }
+      );
+      
+      final feedModel = V2FeedModel(
+        trustGraph: trustGraph,
+        followNetwork: FollowNetwork(fcontext: '<identity>', povIdentity: pov),
+        delegateResolver: DelegateResolver(trustGraph),
+        labeler: V2Labeler(trustGraph),
+        aggregation: ContentAggregation(),
+        povToken: pov,
+        fcontext: '<identity>',
+        sortMode: V2SortMode.recentActivity,
+        filterMode: V2FilterMode.ignoreDisses,
+        enableCensorship: false,
+      );
+
+      final controller = GraphController(feedModel);
+      controller.focusedIdentity = delegate;
+      controller.mode = GraphViewMode.identity;
+      final data = controller.buildGraphData();
+
+      expect(data.nodes, containsAll([pov.value, delegate.value]));
+      expect(data.edges.length, 1);
+      expect(data.edges.first.from, pov.value);
+      expect(data.edges.first.to, delegate.value);
+      expect(data.edges.first.isIdentity, isTrue);
     });
   });
 }

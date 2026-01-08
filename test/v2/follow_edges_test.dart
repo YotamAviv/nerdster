@@ -101,9 +101,9 @@ void main() {
         'news',
       );
 
-      expect(network.identities, containsAll([pov, alice, bob]));
-      expect(network.edges[pov], contains(f1));
-      expect(network.edges[alice], contains(f2));
+      expect(network.identities, containsAll([IdentityKey(pov), IdentityKey(alice), IdentityKey(bob)]));
+      expect(network.edges[IdentityKey(pov)], contains(f1));
+      expect(network.edges[IdentityKey(alice)], contains(f2));
     });
   });
 }
