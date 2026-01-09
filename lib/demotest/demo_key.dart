@@ -10,6 +10,7 @@ import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
+import 'package:nerdster/demotest/cases/rate_when_not_in_network.dart';
 import 'package:nerdster/demotest/cases/v2_verification.dart';
 
 import 'package:nerdster/oneofus/crypto/crypto.dart';
@@ -50,6 +51,7 @@ abstract class DemoKey {
     'egos': egos,
     'egosCircle': egosCircle,
     'equivalenceBug': equivalenceBug,
+    'rateWhenNotInNetwork': rateWhenNotInNetwork,
     'stress': stress,
   };
 

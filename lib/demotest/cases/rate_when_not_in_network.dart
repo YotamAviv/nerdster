@@ -1,0 +1,216 @@
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/demotest/cases/simpsons_demo.dart';
+import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/content_logic.dart';
+import 'package:nerdster/v2/content_pipeline.dart';
+import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/direct_firestore_source.dart';
+import 'package:nerdster/v2/follow_logic.dart';
+import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/orchestrator.dart';
+
+// Scenario:
+// - Run simpsonsDemo
+/*
+I'm signed in as lisa.
+I use the <identity> follow context
+I turn off censorship, and then I see Superbad (WORKING CORRECTLY)
+I rate it with comment, "lisa" 
+I see that I rated it (the rate icon on it is blue) (WORKING CORRECTLY)
+I see my rating listed as staetments made about it. (WORKING CORRECTLY)
+
+I switch to Bart's PoV
+(still using the <identity> follow context)
+I see Lisa's rating (WORKING CORRECTLY)
+I see that I (Lisa the signed in identity) rated it  (the rate icon on it is blue) (WORKING CORRECTLY)
+I switch to the <nerdster> context (where Bart has blocked Lisa) 
+I don't see Lisa's rating statement (WORKING CORRECTLY)
+I don't see that I (Lisa the signed in identity) rated it (icon not blue) (BUG!)
+I click on that icon to rate it and don't see my previous rating (BUG!)
+
+
+
+Censorship shouldn't matter, and when I run this in the  UI, I can toggle censorship off and on .
+When I'm viewing as Lisa, Superbad appears and disappears
+When I'm viewing as Bart,  Superbad is always there.
+
+BUG in how this test does it:
+Bart's PoV shouldn't by Marge when using the <nerdster> context.
+But this works fine in the UI.
+
+BUG in the UI:
+Lisa doesn't see her own delegate's rating when using Bart's PoV.
+*/
+Future<(DemoIdentityKey, DemoDelegateKey)>
+    rateWhenNotInNetwork() async {
+  // 1. Run Base Demo
+  await simpsonsDemo();
+
+  final lisa = await DemoIdentityKey.findOrCreate('lisa');
+  final bart = await DemoIdentityKey.findOrCreate('bart');
+
+  // simpsonsDemo creates delegates predictably: name + "-nerdster0"
+  // See `makeDelegate` in demo_key.dart
+  final lisaN = await DemoDelegateKey.findOrCreate('lisa-nerdster0');
+  final bartN = await DemoDelegateKey.findOrCreate('bart-nerdster0');
+
+  // Sign in as Lisa (This is important)
+  await signInState.signIn(lisa.token, lisaN.keyPair);
+
+  // 2. (Bart has blocked Lisa in <nerdster> Context Already)
+
+  // 3. Lisa Rates Superbad
+  // In `simpsonsDemo` Lisa does NOT rate Superbad.
+  // We need to do that here.
+  const Json superbad = {'contentType': 'movie', 'title': "Superbad", 'year': '2007'};
+
+  await lisaN.doRate(subject: superbad, recommend: true, comment: "lisa");
+
+  // --- REGRESSION VERIFICATION LOGIC ---
+  print('Starting Verification Check...');
+
+  Future<ContentAggregation> runPipeline({
+    required IdentityKey pov,
+    required DelegateKey meDelegate,
+    required String context,
+    required bool enableCensorship,
+  }) async {
+    final trustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final trustPipeline = TrustPipeline(trustSource);
+
+    // Build Trust Graph
+    final graph = await trustPipeline.build(pov);
+    final delegateResolver = DelegateResolver(graph);
+
+    // Build Follow Network
+    final followNetwork = reduceFollowNetwork(graph, delegateResolver, ContentResult(), context);
+
+    final appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
+    final contentPipeline = ContentPipeline(
+      delegateSource: appSource,
+    );
+
+    // Fetch Content
+    // Fetch delegates in graph + ME (Lisa)
+    final Set<DelegateKey> delegateKeysToFetch = {};
+    for (final identity in graph.orderedKeys) {
+      delegateKeysToFetch.addAll(delegateResolver.getDelegatesForIdentity(identity));
+    }
+    // We must manually add Me's delegate locally because checking "Me" visibility implies
+    // fetcher logic would fetch "Me" regardless of graph presence.
+    delegateKeysToFetch.add(meDelegate);
+
+    final delegateContent = await contentPipeline.fetchDelegateContent(
+      delegateKeysToFetch,
+      delegateResolver: delegateResolver,
+      graph: graph,
+    );
+    final contentResult = ContentResult(delegateContent: delegateContent);
+
+    // Reduce Aggregation
+    return reduceContentAggregation(
+      followNetwork,
+      graph,
+      delegateResolver,
+      contentResult,
+      enableCensorship: enableCensorship,
+      meDelegateKeys: [meDelegate],
+    );
+  }
+
+  // 1. Lisa PoV (Identity Context) - Censorship OFF
+  // "I turn off censorship, and then I see Superbad"
+  // "I see my rating listed as statements made about it."
+  print('\n--- Step 1: Lisa PoV (Identity Context) ---');
+  {
+    final agg = await runPipeline(
+      pov: lisa.id,
+      meDelegate: lisaN.id,
+      context: kFollowContextIdentity,
+      enableCensorship: false,
+    );
+
+    final subject = agg.subjects.values
+        .where((s) => s.subject['title'] == 'Superbad')
+        .firstOrNull;
+
+    if (subject != null) {
+      print('Superbad found: YES');
+      final myStatements = subject.statements.where((s) => s.iToken == lisaN.id.value);
+      print('Lisa\'s statements in feed: ${myStatements.length} (Expected: >0)');
+      final myOverlay = subject.myDelegateStatements.where((s) => s.iToken == lisaN.id.value);
+      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
+    } else {
+      print('Superbad found: NO (Critical Failure)');
+    }
+  }
+
+  // 2. Bart's PoV (Identity Context)
+  // "I see Lisa's rating"
+  // "I see that I (Lisa) rated it"
+  print('\n--- Step 2: Bart PoV (Identity Context) ---');
+  {
+    signInState.pov = bart.id.value; // Switch PoV to Bart
+
+    final agg = await runPipeline(
+      pov: bart.id,
+      meDelegate: lisaN.id, // Lisa is signed in
+      context: kFollowContextIdentity,
+      enableCensorship: false,
+    );
+
+    final subject = agg.subjects.values
+        .where((s) => s.subject['title'] == 'Superbad')
+        .firstOrNull;
+
+    if (subject != null) {
+      print('Superbad found: YES');
+      final lisaInFeed = subject.statements.where((s) => s.iToken == lisaN.id.value);
+      print('Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: >0)');
+      final myOverlay = subject.myDelegateStatements.where((s) => s.iToken == lisaN.id.value);
+      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
+    } else {
+      print('Superbad found: NO (Critical Failure)');
+    }
+  }
+
+  // 3. Use Bart's PoV, set follow context to <nerdster> (where Lisa is blocked)
+  // "I don't see Lisa's rating statement (correct)"
+  // "I don't see that I (Lisa) rated it (icon not blue, BUG)"
+  print('\n--- Step 3: Bart PoV (<nerdster> Context where Lisa is blocked) ---');
+  {
+    final agg = await runPipeline(
+      pov: bart.id,
+      meDelegate: lisaN.id, // Lisa is signed in
+      context: kFollowContextNerdster,
+      // AI: Testing with censorship OFF to ensure the card is visible so we can check the overlay bug.
+      enableCensorship: false,
+    );
+
+    final subject = agg.subjects.values
+        .where((s) => s.subject['title'] == 'Superbad')
+        .firstOrNull;
+
+    if (subject != null) {
+      print('Superbad found: YES');
+      final lisaInFeed = subject.statements.where((s) => s.iToken == lisaN.id.value);
+      print('Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: 0)');
+      
+      final myOverlay = subject.myDelegateStatements.where((s) => s.iToken == lisaN.id.value);
+      if (myOverlay.isEmpty) {
+        print('Lisa\'s overlay status (Blue Star): false (BUG! Expected: true)');
+      } else {
+        print('Lisa\'s overlay status (Blue Star): true (Fixed!)');
+      }
+    } else {
+      print('Superbad found: NO (Critical Failure)');
+    }
+  }
+
+  return (lisa, lisaN);
+}

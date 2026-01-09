@@ -19,6 +19,8 @@ AI NOTE: This is my (the human) file with my own notes.
 # Fake simpsonsRelateDemo
 ?fire=fake&demo=simpsonsRelateDemo&debugUseSubjectNotToken=true
 
+?fire=fake&demo=rateWhenNotInNetwork
+
 # Notifications gallery
 ?fire=fake&demo=notificationsGallery
 
