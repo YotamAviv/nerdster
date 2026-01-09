@@ -170,9 +170,9 @@ void main() {
 
   test('My delegate statements should be fetched even if I am not in the PoV graph and not signed in with that delegate', () async {
     // 1. Create Stranger and Me
-    final stranger = await DemoIdentityKey.findOrCreate('stranger');
-    final me = await DemoIdentityKey.findOrCreate('me');
-    final meDelegate = await me.makeDelegate();
+    final DemoIdentityKey stranger = await DemoIdentityKey.findOrCreate('stranger');
+    final DemoIdentityKey me = await DemoIdentityKey.findOrCreate('me');
+    final DemoDelegateKey meDelegate = await me.makeDelegate();
 
     // 2. Me (via delegate) rates "Secretariat"
     await meDelegate.doRate(title: 'Secretariat', recommend: true, comment: 'I like horses');
@@ -191,7 +191,7 @@ void main() {
     }
 
     expect(controller.error, isNull);
-    final model = controller.value!;
+    final V2FeedModel model = controller.value!;
     
 
     // 5. Find Secretariat aggregation

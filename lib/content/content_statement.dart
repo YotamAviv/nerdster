@@ -148,22 +148,14 @@ class ContentStatement extends Statement {
     final bool debugUseSubjectNotToken = Setting.get(SettingType.debugUseSubjectNotToken).value;
 
     if (verb == ContentVerb.rate || verb == ContentVerb.clear) {
-      final isStatement = (s is Map && s.containsKey('statement')) || s is Statement;
-      if (verb == ContentVerb.clear ||
-          (censor == true) ||
-          (verb == ContentVerb.rate && dismissVal != null) ||
-          isStatement) {
+      final isStatement = (s is Map && s.containsKey('statement'));
+      if (isStatement || verb == ContentVerb.clear || censor == true || dismissVal != null) {
         if (!debugUseSubjectNotToken) {
           s = getToken(s);
         }
       }
-    } else {
-      if (!debugUseSubjectNotToken) {
-        s = getToken(s);
-        if (b(o)) o = getToken(o);
-      }
     }
-
+      
     Json json = {
       'statement': Statement.type<ContentStatement>(),
       'time': clock.nowIso,

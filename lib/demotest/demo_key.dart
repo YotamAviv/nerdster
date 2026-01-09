@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/egos.dart';
+import 'package:nerdster/demotest/cases/equivalence_bug.dart';
 import 'package:nerdster/demotest/cases/loner.dart';
 import 'package:nerdster/demotest/cases/notifications_gallery.dart';
 
@@ -48,16 +49,16 @@ abstract class DemoKey {
     'loner': loner,
     'egos': egos,
     'egosCircle': egosCircle,
+    'equivalenceBug': equivalenceBug,
     'stress': stress,
   };
-
 
   static void reset() {
     DemoIdentityKey.reset();
     DemoDelegateKey.reset();
     _exports.clear();
   }
-  
+
   bool get isDelegate;
 
   static Json getExports() => _exports;
@@ -84,23 +85,24 @@ const demoData = ${encoder.convert(_exports)};''';
 }
 
 class DemoIdentityKey implements DemoKey {
-  static final LinkedHashMap<String, DemoIdentityKey> _name2key = LinkedHashMap<String, DemoIdentityKey>();
+  static final LinkedHashMap<String, DemoIdentityKey> _name2key =
+      LinkedHashMap<String, DemoIdentityKey>();
   static final Map<String, DemoIdentityKey> _token2key = <String, DemoIdentityKey>{};
 
   final String name;
   final OouKeyPair keyPair;
   final OouPublicKey publicKey;
   final String token;
-  
+
   bool get isDelegate => false;
-  
+
   IdentityKey get id => IdentityKey(token);
 
   static Iterable<DemoIdentityKey> get all => _name2key.values;
 
   static DemoIdentityKey? findByName(String name) => _name2key[name];
   static DemoIdentityKey? findByToken(String token) => _token2key[token];
-  
+
   static void reset() {
     _name2key.clear();
     _token2key.clear();
@@ -166,13 +168,14 @@ class DemoIdentityKey implements DemoKey {
     // Note: We are delegating TO a delegate key.
     // The TrustStatement expects a key as subject.
     // We pass the delegate's public key info.
-    
+
     // We reuse doTrust logic but need to handle DelegateKey type for 'other'.
     // doTrust below takes DemoIdentityKey. We need a version that takes DemoDelegateKey for delegation.
-    
-    return await _doDelegateTrust(other, domain: domain, comment: comment, revokeAt: revokeAt, export: export);
+
+    return await _doDelegateTrust(other,
+        domain: domain, comment: comment, revokeAt: revokeAt, export: export);
   }
-  
+
   Future<TrustStatement> clear(DemoIdentityKey other) async {
     return await doTrust(TrustVerb.clear, other);
   }
@@ -197,9 +200,9 @@ class DemoIdentityKey implements DemoKey {
         assert(!b(moniker));
         comment ??= 'replacing demo ${other.name}';
       case TrustVerb.clear:
-         break; // fine
+        break; // fine
       case TrustVerb.delegate:
-         throw "Use delegate() method for delegation";
+        throw "Use delegate() method for delegation";
     }
 
     final Json json = await makeTrust(verb, other,
@@ -207,14 +210,8 @@ class DemoIdentityKey implements DemoKey {
     return _signAndPush(json, export);
   }
 
-  Future<TrustStatement> _doDelegateTrust(
-      DemoDelegateKey other, {
-        required String domain,
-        String? comment,
-        String? revokeAt,
-        String? export
-      }) async {
-    
+  Future<TrustStatement> _doDelegateTrust(DemoDelegateKey other,
+      {required String domain, String? comment, String? revokeAt, String? export}) async {
     // Construct trust statement for delegate
     // TrustStatement.make expects 'other' json.
     final Json json = await TrustStatement.make(
@@ -254,23 +251,24 @@ class DemoIdentityKey implements DemoKey {
     await delegate(delegateKey, domain: kNerdsterDomain, export: export);
     return delegateKey;
   }
-  
+
   Future<Json> toJson() async {
     return {'token': token, 'keyPair': await keyPair.json};
   }
 }
 
 class DemoDelegateKey implements DemoKey {
-  static final LinkedHashMap<String, DemoDelegateKey> _name2key = LinkedHashMap<String, DemoDelegateKey>();
+  static final LinkedHashMap<String, DemoDelegateKey> _name2key =
+      LinkedHashMap<String, DemoDelegateKey>();
   static final Map<String, DemoDelegateKey> _token2key = <String, DemoDelegateKey>{};
 
   final String name;
   final OouKeyPair keyPair;
   final OouPublicKey publicKey;
   final String token;
-  
+
   bool get isDelegate => true;
-  
+
   DelegateKey get id => DelegateKey(token);
 
   static Iterable<DemoDelegateKey> get all => _name2key.values;
@@ -278,8 +276,8 @@ class DemoDelegateKey implements DemoKey {
   static DemoDelegateKey? findByToken(String token) => _token2key[token];
 
   static void reset() {
-     _name2key.clear();
-     _token2key.clear();
+    _name2key.clear();
+    _token2key.clear();
   }
 
   static Future<DemoDelegateKey> create(String name) async {
@@ -315,26 +313,22 @@ class DemoDelegateKey implements DemoKey {
       dynamic dismiss,
       bool? censor,
       dynamic other}) async {
-    return ContentStatement.make(await publicKey.json, verb, await _resolveSubject(subject),
-        comment: comment, recommend: recommend, dismiss: dismiss, censor: censor, other: await _resolveSubject(other));
+    return ContentStatement.make(await publicKey.json, verb, subject,
+        comment: comment, recommend: recommend, dismiss: dismiss, censor: censor, other: other);
   }
 
   Future<Json> makeFollow(dynamic subject, Json contexts,
       {ContentVerb verb = ContentVerb.follow}) async {
-    return ContentStatement.make(
-        await publicKey.json, verb, await _resolveSubject(subject),
+    return ContentStatement.make(await publicKey.json, verb, await _resolveSubject(subject),
         contexts: contexts);
   }
 
   Future<Json> makeRelate(ContentVerb verb, dynamic subject, dynamic other) async {
-    return ContentStatement.make(
-      await publicKey.json,
-      verb,
-      await _resolveSubject(subject),
-      other: await _resolveSubject(other),
-    );
+    return ContentStatement.make(await publicKey.json, verb, subject, other: other);
   }
 
+  // This is too fancy here in my (aviv, the human) opinion.
+  // It's used for follow
   static Future<dynamic> _resolveSubject(dynamic s) async {
     if (s is DemoIdentityKey) return await s.publicKey.json;
     if (s is DemoDelegateKey) return await s.publicKey.json;
@@ -391,6 +385,7 @@ class DemoDelegateKey implements DemoKey {
     }
 
     final Json json = await makeRelate(verb, subject!, other!);
+    print('doRelate json: ${json}');
     return _pushContent(json, export);
   }
 
@@ -403,7 +398,7 @@ class DemoDelegateKey implements DemoKey {
     if (export != null) DemoKey._exports[export] = content.json;
     return content;
   }
-  
+
   Future<Json> toJson() async {
     return {'token': token, 'keyPair': await keyPair.json};
   }

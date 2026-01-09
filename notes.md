@@ -13,6 +13,8 @@ AI NOTE: This is my (the human) file with my own notes.
 
 # Fake egosCircle
 ?fire=fake&demo=egosCircle&skipCredentialsDisplay
+# Fake equivalenceBug
+?fire=fake&demo=equivalenceBug&skipCredentials=true
 
 # Fake simpsonsRelateDemo
 ?fire=fake&demo=simpsonsRelateDemo&debugUseSubjectNotToken=true

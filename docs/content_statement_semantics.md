@@ -112,6 +112,10 @@ Expresses a disposition or opinion about a subject.
     }
     ```
 
+TODO: Get this right
+- what do we or don't we tokenize?
+- which is canonical or equivalent.. subject or otherSubject?
+
 ### `equate` / `dontEquate`
 *   **Meaning**: The `subject` is equivalent (or not) to the `otherSubject` (e.g., different URLs for the same content).
 *   **Subject**: Full JSON object preferred, but **token** is allowed (especially for the "duplicate" being merged).

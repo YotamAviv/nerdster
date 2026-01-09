@@ -45,7 +45,7 @@ void main() {
     final trustPipeline = TrustPipeline(trustSource);
     final graph = await trustPipeline.build(lisa.id);
     final delegateResolver = DelegateResolver(graph);
-    final followNetwork = reduceFollowNetwork(graph, delegateResolver, ContentResult(), 'nerdster');
+    final followNetwork = reduceFollowNetwork(graph, delegateResolver, ContentResult(), kFollowContextNerdster);
 
     final appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
     final contentPipeline = ContentPipeline(

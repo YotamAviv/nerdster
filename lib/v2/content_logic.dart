@@ -15,8 +15,9 @@ List<Iterable<ContentStatement>> _collectSources(
     IdentityKey identity, DelegateResolver delegateResolver, ContentResult contentResult) {
   final List<Iterable<ContentStatement>> sources = [];
   for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
-    assert(contentResult.delegateContent.containsKey(key));
-    sources.add(contentResult.delegateContent[key]!);
+    if (contentResult.delegateContent.containsKey(key)) {
+      sources.add(contentResult.delegateContent[key]!);
+    }
   }
   return sources;
 }
@@ -140,11 +141,12 @@ ContentAggregation reduceContentAggregation(
       final String s2 = getToken(s.other);
       assert(s1 != s2);
       eqLogic.process(EquateStatement(s1, s2, dont: s.verb == ContentVerb.dontEquate));
+      // TODO: Which way's which? eqLogic.process(EquateStatement(s2, s1, dont: s.verb == ContentVerb.dontEquate));
     }
   }
   final Set<EquivalenceGroup> groups = eqLogic.createGroups();
   for (final EquivalenceGroup group in groups) {
-    ContentKey canonical = ContentKey(group.canonical);
+    final ContentKey canonical = ContentKey(group.canonical);
     for (final String token in group.all) {
       subjectEquivalence[ContentKey(token)] = canonical;
     }
@@ -218,24 +220,16 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  // TODO(aviv): this looks like a BUG!
-  // consider a A => B, B => C. A, B, C are equivalent, C is canonical, we'll find B as canonical first.
-  // We should use equivalence to find the canonical subject.
-  // Helper to find the best subject definition from a list of statements
-  // TODO: Add a unit test that fails with this code as is.
-  Json? findSubject(ContentKey canonical, List<ContentStatement> stmts) {
-    return stmts
-        .where((s) => s.subject is Map)
-        .where((s) =>
-            (subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken)) ==
-            canonical)
-        .map((s) => s.subject as Json)
-        .firstOrNull;
+  Map<ContentKey, Json> subjectDefinitions = {};
+  for (final statement in filteredStatements) {
+    if (statement.subject is Map) {
+      subjectDefinitions[ContentKey(statement.subjectToken)] = statement.subject as Json;
+    }
   }
+  Json? findSubject(ContentKey subjectKey) => subjectDefinitions[subjectKey];
 
   // Pass 1: Identify all canonical tokens that should be top-level subjects.
   final Set<ContentKey> topLevelSubjects = {};
-
   void processPass1(Iterable<ContentStatement> stmts) {
     for (final ContentStatement s in stmts) {
       final ContentKey canonical1 =
@@ -281,7 +275,7 @@ ContentAggregation reduceContentAggregation(
 
         SubjectAggregation? agg = subjects[canonical];
         if (agg == null) {
-          Json? subject = findSubject(canonical, statementsBySubject[canonical] ?? []);
+          Json? subject = findSubject(canonical);
           // If we can't find a subject, skip it.
           // This can happen if the subject is only referenced in "other"
           // but we have no statements that define it.
@@ -435,13 +429,14 @@ ContentAggregation reduceContentAggregation(
         if (s.subject is Map && s.subjectToken == canonical.value) {
           subjectContent = s.subject as Json;
         } else {
-          if (findSubject(canonical, statementsBySubject[canonical] ?? []) == null) {
+          Json? tmp = findSubject(canonical);
+          if (tmp == null) {
             // If we can't find a definition for this subject, skip it.
             // This can happen if the subject is only referenced in "other"
             // but we have no statements that define it.
             continue;
           }
-          subjectContent = findSubject(canonical, statementsBySubject[canonical] ?? [])!;
+          subjectContent = tmp;
         }
         assert(getToken(subjectContent) == canonical.value, "was curious, seems to pass..");
         agg = SubjectAggregation(
