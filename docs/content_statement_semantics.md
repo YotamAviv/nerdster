@@ -115,6 +115,12 @@ Expresses a disposition or opinion about a subject.
 TODO: Get this right
 - what do we or don't we tokenize?
 - which is canonical or equivalent.. subject or otherSubject?
+Current thinking:
+- include full Json for both. You can absolutely do this to promote the equivalent even as you accept it's not canonical.
+
+How to show this on the interface is not related to Content Statement Semantics; it's just related to the Nerdster
+- I'm leaning towards show the stament as being about both.
+
 
 ### `equate` / `dontEquate`
 *   **Meaning**: The `subject` is equivalent (or not) to the `otherSubject` (e.g., different URLs for the same content).

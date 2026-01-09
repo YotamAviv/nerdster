@@ -140,8 +140,10 @@ ContentAggregation reduceContentAggregation(
       final String s1 = s.subjectToken;
       final String s2 = getToken(s.other);
       assert(s1 != s2);
+      // It's decided! 
+      // - s1 is canonical, s2 equivalent.
+      // - this statement is about both.
       eqLogic.process(EquateStatement(s1, s2, dont: s.verb == ContentVerb.dontEquate));
-      // TODO: Which way's which? eqLogic.process(EquateStatement(s2, s1, dont: s.verb == ContentVerb.dontEquate));
     }
   }
   final Set<EquivalenceGroup> groups = eqLogic.createGroups();
