@@ -107,8 +107,6 @@ class StatementTile extends StatelessWidget {
         final sOtherToken = getToken(s.other);
         // If the statement's subject is THIS card, then the target is s.other
         // If the statement's other is THIS card, then the target is s.subject
-        final ContentKey subjectCanonical =
-            model.aggregation.equivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
         final ContentKey otherCanonical =
             model.aggregation.equivalence[ContentKey(sOtherToken)] ?? ContentKey(sOtherToken);
         final ContentKey thisToken = aggregation.token;

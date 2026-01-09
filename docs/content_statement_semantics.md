@@ -22,15 +22,12 @@ People can:
 
 Statements about high-level subjects (books, movies, URLs) **must** include the full definition of the subject (the JSON map). This ensures that anyone reading the statement knows exactly what is being discussed without needing to perform a lookup in a separate database.
 
-Exceptions:
-1.  **Statements about Statements**: When a user comments on or rates another user's statement (e.g., liking a comment), the subject is the **token** (hash) of the target statement as statements are never "high-level results" in themselves.
-2.  **Suppression & Management**: When the intent is to suppress, hide, or manage content, the **token** is sufficient. This applies to:
-    *   **Censorship**: `rate` with `censor: true`.
-    *   **Dismissal**: `rate` with `dismiss: ...` (true or snooze).
-    *   **Equivalence**: `equate` (merging a subject into another).
+Exceptions where the **token** is sufficient:
+1.  **Rate**: If the subject is another user's statement, OR the `rate` uses `censor` or `dismiss`.
+2.  **Follow**: If the user is explicitly blocking in all specified contexts (all weights are `-1`).
+3.  **Clear**: All `clear` statements use the subject token.
 
-````
-
+*Note: All Relations (`relate`, `equate`, `dontRelate`, `dontEquate`) always use the full subject JSON to maintain the graph's discoverability.*
 
 ## Verbs
 
@@ -38,6 +35,8 @@ Exceptions:
 Defines the subscription relationship with another user.
 The `<nerdster>` context is a special context used to follow anyone whose identity you've vouched for in the identity layer.
 *   **Meaning**: Subscribe to or block content from an identity in specific contexts.
+*   **Subject**: Full identity JSON.
+    *   *Exception*: If the user is explicitly blocking in all specified contexts (all weights are `-1`), the identity **token** is sufficient.
 *   **`with` Clause**: Requires `contexts`, a map of context names to integer values.
     *   `1`: Follow.
     *   `-1`: Block.
@@ -81,7 +80,7 @@ Expresses a disposition or opinion about a subject.
     *   `true`: **Dismissed**. The subject is hidden indefinitely, regardless of future activity.
     *   `"snooze"`: **Snoozed**. The subject is hidden until *qualified new activity* occurs.
         *   **Qualified New Activity** (wakes up the subject):
-            *   A `rate` statement with a `comment` or `recommend` (true or false).
+            *   A `rate` statement with a `comment` or `recommend: true`.
             *   Any `relate` statement.
         *   **Disqualified Activity** (does not wake up the subject):
             *   A `rate` statement with `censor` or `dismiss`.
@@ -112,19 +111,9 @@ Expresses a disposition or opinion about a subject.
     }
     ```
 
-TODO: Get this right
-- what do we or don't we tokenize?
-- which is canonical or equivalent.. subject or otherSubject?
-Current thinking:
-- include full Json for both. You can absolutely do this to promote the equivalent even as you accept it's not canonical.
-
-How to show this on the interface is not related to Content Statement Semantics; it's just related to the Nerdster
-- I'm leaning towards show the stament as being about both.
-
-
 ### `equate` / `dontEquate`
 *   **Meaning**: The `subject` is equivalent (or not) to the `otherSubject` (e.g., different URLs for the same content).
-*   **Subject**: Full JSON object preferred, but **token** is allowed (especially for the "duplicate" being merged).
+*   **Subject**: Full JSON object.
 *   **`with` Clause**: Requires `otherSubject`.
 *   **Example**:
     ```json

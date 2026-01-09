@@ -147,15 +147,27 @@ class ContentStatement extends Statement {
 
     final bool debugUseSubjectNotToken = Setting.get(SettingType.debugUseSubjectNotToken).value;
 
-    if (verb == ContentVerb.rate || verb == ContentVerb.clear) {
-      final isStatement = (s is Map && s.containsKey('statement'));
-      if (isStatement || verb == ContentVerb.clear || censor == true || dismissVal != null) {
-        if (!debugUseSubjectNotToken) {
-          s = getToken(s);
-        }
+    final isStatement = (s is Map && s.containsKey('statement'));
+
+    bool shouldTokenize = false;
+    if (verb == ContentVerb.rate) {
+      if (isStatement || dismissVal != null || censor == true) {
+        shouldTokenize = true;
+      }
+    } else if (verb == ContentVerb.clear) {
+      shouldTokenize = true;
+    } else if (verb == ContentVerb.follow) {
+      if (contexts != null &&
+          contexts.isNotEmpty &&
+          contexts.values.every((v) => v == -1)) {
+        shouldTokenize = true;
       }
     }
-      
+
+    if (shouldTokenize && !debugUseSubjectNotToken) {
+      s = getToken(s);
+    }
+
     Json json = {
       'statement': Statement.type<ContentStatement>(),
       'time': clock.nowIso,
