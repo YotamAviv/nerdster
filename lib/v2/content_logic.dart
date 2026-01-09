@@ -91,11 +91,15 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  // QUESTIONABLE.. This is hard to do, and I'm not sure if it's better with or without this feature.
-  // If I'm viewing as PoV, and in that  PoV A=>B, and I've thumbed A, then should I or shouldn't 
-  // I see it thumbed by me? Shouldn't I see it thumbed by PoV?
-  // TODO: B. I should see it thumbed by PoV. I should only see the impact of my stament when I rate (or ralate) the same exact thing that I already have.
-  // All we'd need for that is to gather my own statements by key.
+  // QUESTIONABLE.. This is hard to implement, and I'm not sure if the app is more correct
+  // with or without this feature (of having my own delegates impact a view that I'm not a part of).
+  // If I'm viewing as PoV, and in that PoV A=>B is known, and I've thumbed A, then should I or shouldn't 
+  // I see it (or B) thumbed by me? Shouldn't I see it thumbed the same way PoV would?
+  // Decided!
+  // - I should see it thumbed the same way PoV would. 
+  // - I should only see the impact of my stament when I rate (or ralate) the same exact subject
+  //   that I already have regardless of equivalence.
+  // - All we'd need for that is to gather my own delegate statements (merged if have multiple) by key.
 
   // 2b. Collect My Statements (Separately)
   //
