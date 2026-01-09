@@ -38,3 +38,8 @@ Explain *why*, not *what*. Document assumptions about data integrity.
 Avoid long-winded explanations of protocol mechanics or implementation details that can be inferred from the code or the concise description of the data mapping.
 *   **Bad:** A paragraph explaining the history and purpose of a concept.
 *   **Good:** "Maps identities keys to delegate keys and vice versa."
+
+### 6. Merge, don't sort!
+All our **statements lists** are **sorted** and ensure **singular disposition**
+
+

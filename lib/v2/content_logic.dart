@@ -6,6 +6,7 @@ import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/distincter.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
@@ -31,6 +32,7 @@ ContentAggregation reduceContentAggregation(
   ContentResult contentResult, {
   bool enableCensorship = true,
   List<DelegateKey>? meDelegateKeys,
+  required V2Labeler labeler,
 }) {
   final Set<String> censored = {};
 
@@ -71,7 +73,7 @@ ContentAggregation reduceContentAggregation(
 
     final Iterable<ContentStatement> statements = distinct(
       Merger.merge(sources),
-      transformer: (_) => identity.value,
+      iTransformer: (_) => identity.value,
     ).cast<ContentStatement>();
 
     for (final ContentStatement s in statements) {
@@ -91,56 +93,6 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  // QUESTIONABLE.. This is hard to implement, and I'm not sure if the app is more correct
-  // with or without this feature (of having my own delegates impact a view that I'm not a part of).
-  // If I'm viewing as PoV, and in that PoV A=>B is known, and I've thumbed A, then should I or shouldn't 
-  // I see it (or B) thumbed by me? Shouldn't I see it thumbed the same way PoV would?
-  // Decided!
-  // - I should see it thumbed the same way PoV would. 
-  // - I should only see the impact of my stament when I rate (or ralate) the same exact subject
-  //   that I already have regardless of equivalence.
-  // - All we'd need for that is to gather my own delegate statements (merged if have multiple) by key.
-
-  // 2b. Collect My Statements (Separately)
-  //
-  // Rationale:
-  // When viewing the feed from another Point of View (PoV), the current user ("Me")
-  // might not be in the PoV's trust network. If "Me" is not trusted, my statements
-  // (ratings, comments) should NOT affect the feed's content, sort order, or aggregate scores
-  // (likes/dislikes). The user should see the feed exactly as the PoV sees it.
-  //
-  // However, the UI still needs to display the user's own state (e.g., "You rated this",
-  // "You commented"). Therefore, we fetch and aggregate "Me's" statements separately
-  // and overlay them into the `myDelegateStatements` field of the SubjectAggregation.
-  //
-  // This ensures:
-  // 1. Purity of the PoV's view (no pollution from untrusted "Me").
-  // 2. Availability of "Me's" data for UI widgets.
-  final List<ContentStatement> myFilteredStatements = [];
-  final List<Iterable<ContentStatement>> mySources = [];
-
-  if (meDelegateKeys != null) {
-    for (final DelegateKey key in meDelegateKeys) {
-      if (contentResult.delegateContent.containsKey(key)) {
-        mySources.add(contentResult.delegateContent[key]!);
-      } else {
-        print('reduceContentAggregation: meDelegateKey ${key.value} not found in byToken');
-      }
-    }
-  }
-
-  if (mySources.isNotEmpty) {
-    final Iterable<ContentStatement> statements = Merger.merge(mySources);
-    for (final ContentStatement s in statements) {
-      // Note: We DO include follow statements here so they appear in NodeDetails
-      if (enableCensorship) {
-        if (censored.contains(s.token)) continue;
-        if (censored.contains(s.subjectToken)) continue;
-        if (s.other != null && censored.contains(getToken(s.other))) continue;
-      }
-      myFilteredStatements.add(s);
-    }
-  }
 
   // 3. Equivalence Grouping
   final Map<ContentKey, ContentKey> subjectEquivalence = {};
@@ -149,11 +101,12 @@ ContentAggregation reduceContentAggregation(
     if (s.verb == ContentVerb.equate || s.verb == ContentVerb.dontEquate) {
       final String s1 = s.subjectToken;
       final String s2 = getToken(s.other);
-      assert(s1 != s2);
-      // It's decided! 
-      // - s1 is canonical, s2 equivalent.
-      // - this statement is about both.
-      eqLogic.process(EquateStatement(s1, s2, dont: s.verb == ContentVerb.dontEquate));
+      if (s1 != s2) {
+        // It's decided! 
+        // - s1 is canonical, s2 equivalent.
+        // - this statement is about both.
+        eqLogic.process(EquateStatement(s1, s2, dont: s.verb == ContentVerb.dontEquate));
+      }
     }
   }
   final Set<EquivalenceGroup> groups = eqLogic.createGroups();
@@ -212,14 +165,15 @@ ContentAggregation reduceContentAggregation(
           subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
       final ContentKey s2 =
           subjectEquivalence[ContentKey(getToken(s.other))] ?? ContentKey(getToken(s.other));
-      assert(s1 != s2);
-      related.putIfAbsent(s1, () => {}).add(s2);
-      related.putIfAbsent(s2, () => {}).add(s1);
+      if (s1 != s2) {
+        related.putIfAbsent(s1, () => {}).add(s2);
+        related.putIfAbsent(s2, () => {}).add(s1);
+      }
     }
   }
 
   // 5. Aggregation
-  final Map<ContentKey, SubjectAggregation> subjects = {};
+  final Map<ContentKey, SubjectGroup> subjectGroups = {};
   // TODO: Be clear: Is by canonical token or original token or all merged (it looks like all merged)?
   final Map<ContentKey, List<ContentStatement>> statementsBySubject = {};
   for (final s in filteredStatements) {
@@ -248,78 +202,63 @@ ContentAggregation reduceContentAggregation(
   final Set<ContentKey> topLevelSubjects = {};
   void processPass1(Iterable<ContentStatement> stmts) {
     for (final ContentStatement s in stmts) {
-      final ContentKey canonical1 =
-          subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
-      final ContentKey? canonical2 = s.other != null
-          ? (subjectEquivalence[ContentKey(getToken(s.other))] ?? ContentKey(getToken(s.other)))
-          : null;
-
       if ((s.verb == ContentVerb.clear && s.subject is Map) ||
-          s.verb == ContentVerb.rate ||
           s.verb == ContentVerb.relate ||
           s.verb == ContentVerb.dontRelate ||
           s.verb == ContentVerb.equate) {
-        topLevelSubjects.add(canonical1);
-        if (canonical2 != null) {
-          topLevelSubjects.add(canonical2);
+        for (final token in s.involvedTokens) {
+          topLevelSubjects.add(subjectEquivalence[ContentKey(token)] ?? ContentKey(token));
+        }
+      } else if (s.verb == ContentVerb.rate) {
+        // Only make it a top-level subject if we have a definition for it,
+        // otherwise it might be a rating-of-a-rating.
+        if (s.subject is Map || subjectDefinitions.containsKey(ContentKey(s.subjectToken))) {
+          topLevelSubjects.add(subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken));
         }
       }
     }
   }
 
   processPass1(filteredStatements);
-  processPass1(myFilteredStatements);
 
   // Pass 2: Aggregate all statements into those subjects.
   for (final IdentityKey identity in followNetwork.identities) {
     final List<ContentStatement> statements = filteredByIdentity[identity] ?? [];
     for (final ContentStatement s in statements) {
-      final ContentKey canonical1 =
-          subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
-      final ContentKey? canonical2 = s.other != null
-          ? (subjectEquivalence[ContentKey(getToken(s.other))] ?? ContentKey(getToken(s.other)))
-          : null;
+      final List<ContentKey> tokens = s.involvedTokens
+          .map((t) => subjectEquivalence[ContentKey(t)] ?? ContentKey(t))
+          .toList();
+      final ContentKey c1 = tokens[0];
+      final ContentKey? c2 = tokens.length > 1 ? tokens[1] : null;
 
-      final List<ContentKey> targets = [canonical1];
-      if (canonical2 != null && canonical2 != canonical1) {
-        targets.add(canonical2);
-      }
-
-      for (final ContentKey canonical in targets) {
+      for (final ContentKey canonical in tokens.toSet()) {
         // Only aggregate if this canonical token is a top-level subject.
         if (!topLevelSubjects.contains(canonical)) continue;
 
-        SubjectAggregation? agg = subjects[canonical];
-        if (agg == null) {
-          Json? subject = findSubject(canonical);
-          // If we can't find a subject, skip it.
-          // This can happen if the subject is only referenced in "other"
-          // but we have no statements that define it.
-          if (subject == null) continue;
-
-          agg = SubjectAggregation(
-            canonicalTokenIn: canonical,
-            subject: subject,
+        SubjectGroup? group = subjectGroups[canonical];
+        if (group == null) {
+          group = SubjectGroup(
+            canonical: canonical,
             lastActivity: s.time,
           );
-          subjects[canonical] = agg;
+          subjectGroups[canonical] = group;
         }
 
         // Update stats
-        int likes = agg.likes;
-        int dislikes = agg.dislikes;
+        int likes = group.likes;
+        int dislikes = group.dislikes;
         if (s.verb == ContentVerb.rate) {
           if (s.like == true) likes++;
           if (s.like == false) dislikes++;
         }
 
         // Update related
-        final Set<ContentKey> relatedSet = Set.from(agg.related);
+        final Set<ContentKey> relatedSet = Set.from(group.related);
         if (s.verb == ContentVerb.relate) {
-          if (canonical == canonical1 && canonical2 != null) {
-            relatedSet.add(canonical2);
-          } else if (canonical == canonical2) {
-            relatedSet.add(canonical1);
+          if (canonical == c1 && c2 != null) {
+            relatedSet.add(c2);
+          } else if (canonical == c2) {
+            relatedSet.add(c1);
           }
         }
 
@@ -327,103 +266,80 @@ ContentAggregation reduceContentAggregation(
             delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!;
         assert(trustGraph.isTrusted(signerIdentity));
 
-        List<ContentStatement> newPovStatements = agg.povStatements;
+        List<ContentStatement> newPovStatements = group.povStatements;
         if (signerIdentity == followNetwork.povIdentity) {
           newPovStatements = [...newPovStatements, s]..sort((a, b) => b.time.compareTo(a.time));
         }
 
-        final DateTime lastActivity = s.time.isAfter(agg.lastActivity) ? s.time : agg.lastActivity;
+        final DateTime lastActivity = s.time.isAfter(group.lastActivity) ? s.time : group.lastActivity;
 
         // Update the aggregation
-        subjects[canonical] = SubjectAggregation(
-          canonicalTokenIn: canonical,
-          subject: agg.subject,
+        subjectGroups[canonical] = SubjectGroup(
+          canonical: canonical,
           // TODO: We shouldn't sort.
-          statements: [...agg.statements, s]..sort((a, b) => b.time.compareTo(a.time)),
-          tags: agg.tags, // Will be updated in Pass 3
+          statements: [...group.statements, s]..sort((a, b) => b.time.compareTo(a.time)),
+          tags: group.tags, // Will be updated in Pass 3
           likes: likes,
           dislikes: dislikes,
           lastActivity: lastActivity,
           related: relatedSet,
-          myDelegateStatements: agg.myDelegateStatements,
+          myDelegateStatements: group.myDelegateStatements,
           povStatements: newPovStatements,
           isCensored: censored.contains(canonical.value) || censored.contains(s.subjectToken),
         );
       }
     }
   }
+  // QUESTIONABLE.. This is hard to implement, and I'm not sure if the app is more correct
+  // with or without this feature (of having my own delegates impact a view that I'm not a part of).
+  // If I'm viewing as PoV, and in that PoV A=>B is known, and I've thumbed A, then should I or shouldn't 
+  // I see it (or B) thumbed by me? Shouldn't I see it thumbed the same way PoV would?
+  // Decided!
+  // - I should see it thumbed the same way PoV would. 
+  // - I should only see the impact of my stament when I rate (or ralate) the same exact subject
+  //   that I already have regardless of equivalence.
+  // - All we'd need for that is to gather my own delegate statements (merged if have multiple) by key.
 
-  // Pass 2b: Aggregate My Statements
-  for (final ContentStatement s in myFilteredStatements) {
-    final ContentKey canonical1 =
-        subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
-    final ContentKey? canonical2 = s.other != null
-        ? (subjectEquivalence[ContentKey(getToken(s.other))] ?? ContentKey(getToken(s.other)))
-        : null;
+  // 2b. Collect My Statements (Separately)
+  //
+  // Rationale:
+  // When viewing the feed from another Point of View (PoV), the current user ("Me")
+  // might not be in the PoV's trust network. If "Me" is not trusted, my statements
+  // (ratings, comments) should NOT affect the feed's content, sort order, or aggregate scores
+  // (likes/dislikes). The user should see the feed exactly as the PoV sees it.
+  //
+  // However, the UI still needs to display the user's own state (e.g., "You rated this",
+  // "You commented"). Therefore, we fetch and aggregate "Me's" statements separately
+  // and overlay them into the `myStatements` map (and subsequent `SubjectAggregation` proxies).
+  //
+  // This ensures:
+  // 1. Purity of the PoV's view (no pollution from untrusted "Me").
+  // 2. Availability of "Me's" data for UI widgets.
+  //
+  // Pass 2b: Aggregate My Statements (For UI Overlays)
+  // - This isn't just for RateDialog, it should also support RelateDialog whatever we use to edit/issue Follow.
+  // - The outcome needs to remain: singular disposition and sorted (we merge, we don't sort).
+  // - We should not canonicalize the subject here. If we have A=>B, you still need to know what you said about each.
+  final List<Iterable<ContentStatement>> mySources = meDelegateKeys
+      ?.map((k) => contentResult.delegateContent[k]) // returns Iterable?
+      .whereType<Iterable<ContentStatement>>()      // skips nulls, returns Iterable (non-nullable)
+      .toList() ?? [];
 
-    final List<ContentKey> targets = [canonical1];
-    if (canonical2 != null && canonical2 != canonical1) {
-      targets.add(canonical2);
+  // Map/Reduce:
+  // 1. Merge sources into one sorted timeline.
+  // 2. Distinct them to collapse delegate-specific redundancy.
+  // 3. Fold and Map into a subject-keyed map of unmodifiable lists.
+  // - We key by canonical token to enforce "Singular Disposition" at the group level.
+  final Map<ContentKey, List<ContentStatement>> myStatements = distinct(
+    Merger.merge(mySources),
+    iTransformer: (_) => 'me', // like signInState.identity, but hard coded.
+  ).cast<ContentStatement>().fold<Map<ContentKey, List<ContentStatement>>>({}, (map, s) {
+    for (final token in s.involvedTokens) {
+      final canonical = subjectEquivalence[ContentKey(token)] ?? ContentKey(token);
+      map.putIfAbsent(canonical, () => [s]);
     }
-
-    for (final ContentKey canonical in targets) {
-      // Only aggregate if this canonical token is a top-level subject.
-      if (!topLevelSubjects.contains(canonical)) continue;
-
-      // If the subject doesn't exist in the aggregation (because PoV doesn't see it),
-      // we create it if we have statements about it (e.g. I follow it).
-      // But we initialize it with empty statements so it doesn't pollute the feed.
-      SubjectAggregation? agg = subjects[canonical];
-      if (agg == null) {
-        // Find best definition from me (if available) or fallback
-        Json subjectContent;
-        if (s.subject is Map && s.subjectToken == canonical.value) {
-          subjectContent = s.subject as Json;
-        } else {
-          Json? tmp = findSubject(canonical);
-          if (tmp == null) {
-            // If we can't find a definition for this subject, skip it.
-            // This can happen if the subject is only referenced in "other"
-            // but we have no statements that define it.
-            continue;
-          }
-          subjectContent = tmp;
-        }
-        assert(getToken(subjectContent) == canonical.value, "was curious, seems to pass..");
-        agg = SubjectAggregation(
-          canonicalTokenIn: canonical,
-          subject: subjectContent,
-          lastActivity: s.time,
-        );
-        subjects[canonical] = agg;
-      }
-
-      // Update myDelegateStatements
-      List<ContentStatement> myDelegateStatements = agg.myDelegateStatements;
-
-      if (s.verb == ContentVerb.clear) {
-        // Clear all my previous statements on this subject
-        myDelegateStatements = [];
-      } else {
-        myDelegateStatements = [...myDelegateStatements, s]
-          ..sort((a, b) => b.time.compareTo(a.time));
-      }
-
-      subjects[canonical] = SubjectAggregation(
-        canonicalTokenIn: canonical,
-        subject: agg.subject,
-        statements: agg.statements,
-        tags: agg.tags,
-        likes: agg.likes,
-        dislikes: agg.dislikes,
-        lastActivity: agg.lastActivity,
-        related: agg.related,
-        myDelegateStatements: myDelegateStatements,
-        povStatements: agg.povStatements,
-        isCensored: agg.isCensored,
-      );
-    }
-  }
+    return map;
+  }).map((k, v) => MapEntry(k, List.unmodifiable(v)));
 
   // Pass 3: Recursive Tag Collection and Most Frequent Tags
   final MostStrings mostStrings = MostStrings({});
@@ -435,7 +351,7 @@ ContentAggregation reduceContentAggregation(
     final Set<String> tags = {};
 
     // Tags from the subject itself if it has a comment
-    final subject = Jsonish.find(token.value);
+    final subject = findSubject(token);
     if (subject != null && subject['comment'] != null) {
       tags.addAll(extractTags(subject['comment']));
     }
@@ -450,23 +366,49 @@ ContentAggregation reduceContentAggregation(
     return tags;
   }
 
-  for (final agg in subjects.values.toList()) {
-    final Set<String> recursiveTags = collectTagsRecursive(agg.canonical, {});
-    subjects[agg.canonical] = SubjectAggregation(
-      canonicalTokenIn: agg.canonical,
-      subject: agg.subject,
-      statements: agg.statements,
+  for (final group in subjectGroups.values.toList()) {
+    final Set<String> recursiveTags = collectTagsRecursive(group.canonical, {});
+    subjectGroups[group.canonical] = SubjectGroup(
+      canonical: group.canonical,
+      statements: group.statements,
       tags: recursiveTags,
-      likes: agg.likes,
-      dislikes: agg.dislikes,
-      lastActivity: agg.lastActivity,
-      related: agg.related,
-      myDelegateStatements: agg.myDelegateStatements,
-      povStatements: agg.povStatements,
-      isCensored: agg.isCensored,
+      likes: group.likes,
+      dislikes: group.dislikes,
+      lastActivity: group.lastActivity,
+      related: group.related,
+      myDelegateStatements: group.myDelegateStatements,
+      povStatements: group.povStatements,
+      isCensored: group.isCensored,
     );
 
     mostStrings.process(recursiveTags);
+  }
+
+  // Pass 4: Final flavored aggregation Map.
+  // We create a SubjectAggregation for EVERY literal token we know about.
+  final Map<ContentKey, SubjectAggregation> subjects = {};
+  for (final entry in subjectDefinitions.entries) {
+    final token = entry.key;
+    final subjectJson = entry.value;
+    final canonical = subjectEquivalence[token] ?? token;
+    final group = subjectGroups[canonical];
+    if (group != null) {
+      subjects[token] = SubjectAggregation(
+        subject: subjectJson,
+        group: group,
+      );
+    }
+  }
+
+  // Ensure that even tokens without definitions but with group data are included
+  // (using their token value as title if needed).
+  for (final group in subjectGroups.values) {
+     if (!subjects.containsKey(group.canonical)) {
+        subjects[group.canonical] = SubjectAggregation(
+           subject: {'title': labeler.getLabel(group.canonical.value), 'contentType': 'unknown'},
+           group: group,
+        );
+     }
   }
 
   final List<String> mostTags = mostStrings.most().toList();
@@ -479,5 +421,6 @@ ContentAggregation reduceContentAggregation(
     tagEquivalence: tagEquivalence,
     mostTags: mostTags,
     subjects: subjects,
+    myStatements: myStatements,
   );
 }

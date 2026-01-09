@@ -16,8 +16,6 @@ import 'package:nerdster/fire_choice.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 
-import 'package:flutter_test/flutter_test.dart';
-
 void main() async {
   fireChoice = FireChoice.fake;
   FireFactory.register(kOneofusDomain, FakeFirebaseFirestore(), null);
@@ -108,7 +106,7 @@ void main() async {
         reason: 'Network order should be Alice, then Charlie, then Bob');
 
     final ContentAggregation aggAlice =
-        reduceContentAggregation(netAlice, graph, delegateResolver, contentResult);
+        reduceContentAggregation(netAlice, graph, delegateResolver, contentResult, labeler: labeler);
 
     final ContentKey? canonA = aggAlice.equivalence[ContentKey(sAToken)];
     final ContentKey? canonB = aggAlice.equivalence[ContentKey(sBToken)];

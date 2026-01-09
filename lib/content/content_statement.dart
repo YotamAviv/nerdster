@@ -179,36 +179,32 @@ class ContentStatement extends Statement {
     return json;
   }
 
-  // KLUDGEY, messy, possibly buggy..
-  // The transformer is applied on
-  // - I: always
-  // - subject: never
-  // The assumption is that transformer is delegate2oneofus, which I believe maps delegates to
-  // canonical oneofus.
-  // ContentVerb.follow statements use a Nerdster token for 'I' and a Oneofus token for 'subject'
-  // It would seem that for the Nerdster follow case this should transform
-  // - I using followNet.delegate2oneofus
-  // - subject using getCanonical.getCanonical
-  // This is tested in '!canon follow !canon, multiple delegates'
-  // It may be the case that followNet does this without leveraging distinct/merge.
-  // Smells like I could do something smart like map/reduce.
+  /// All subject tokens mentioned in this statement. Used for both indexing 
+  /// (making a "Relation" visible from either subject) and for signature generation.
+  Iterable<String> get involvedTokens sync* {
+    yield subjectToken;
+    if (b(other)) yield getToken(other);
+  }
+
+  /// Generates a unique signature for this statement's intent to identify redundancies 
+  /// during aggregation (Merge + Distinct).
+  /// 
+  /// - [iTransformer]: Maps the signer (usually a delegate) to their canonical identity.
+  /// - [sTransformer]: Maps subjects to their canonical tokens (via Equivalence).
+  /// 
+  /// Commutative operations (e.g., A relates to B) produce the same signature 
+  /// regardless of token order or which delegate issued them.
   @override
-  String getDistinctSignature({Transformer? transformer}) {
-    String tiToken = b(transformer) ? transformer!(iToken) : iToken;
-    String tSubjectToken = subjectToken; // (not transformed)
-    if (b(other)) {
-      // We want just one of 'subject relatedTo otherSubject' and 'otherSubject relatedTo subject',
-      // and so we sort the tokens.
-      String s1 = tSubjectToken;
-      String s2 = getToken(other);
-      if (s1.compareTo(s2) < 0) {
-        return [tiToken, s1, s2].join(':');
-      } else {
-        return [tiToken, s2, s1].join(':');
-      }
-    } else {
-      return [tiToken, subjectToken].join(':');
-    }
+  String getDistinctSignature({Transformer? iTransformer, Transformer? sTransformer}) {
+    final String tiToken = b(iTransformer) ? iTransformer!(iToken) : iToken;
+    final List<String> ts =
+        involvedTokens.map((t) => b(sTransformer) ? sTransformer!(t) : t).toList();
+
+    // We want just one of 'subject relatedTo otherSubject' and 'otherSubject relatedTo subject',
+    // and so we sort the tokens.
+    if (ts.length > 1) ts.sort();
+
+    return [tiToken, ...ts].join(':');
   }
 
   @override

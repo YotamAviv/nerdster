@@ -13,10 +13,13 @@ Future<void> v2Submit(BuildContext context, V2FeedModel model, {VoidCallback? on
   Jsonish? subject = await establishSubjectDialog(context);
   if (subject != null) {
     final canonicalToken = ContentKey(subject.token);
-    final aggregation = model.aggregation.subjects[canonicalToken] ?? 
+    final aggregation = model.aggregation.subjects[canonicalToken] ??
         SubjectAggregation(
           subject: subject.json,
-          lastActivity: DateTime.now(),
+          group: SubjectGroup(
+            canonical: canonicalToken,
+            lastActivity: DateTime.now(),
+          ),
         );
         
     if (context.mounted) {

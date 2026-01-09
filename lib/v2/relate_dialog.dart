@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
@@ -68,6 +69,28 @@ class V2RelateDialog extends StatefulWidget {
 class _V2RelateDialogState extends State<V2RelateDialog> {
   ContentVerb _verb = ContentVerb.relate;
   final TextEditingController _commentController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Use the latest statement about either subject group that involves both groups.
+    final c1 = widget.subject1.canonical;
+    final c2 = widget.subject2.canonical;
+    final eq = widget.model.aggregation.equivalence;
+
+    final s1 = widget.model.aggregation.myStatements[c1] ?? [];
+    final s2 = widget.model.aggregation.myStatements[c2] ?? [];
+
+    final prior = [...s1, ...s2].where((s) {
+      final groups = s.involvedTokens.map((t) => eq[ContentKey(t)] ?? ContentKey(t));
+      return groups.contains(c1) && groups.contains(c2);
+    }).firstOrNull;
+
+    if (prior != null) {
+      _verb = prior.verb;
+      _commentController.text = prior.comment ?? '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

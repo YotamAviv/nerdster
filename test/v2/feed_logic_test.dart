@@ -109,18 +109,30 @@ void main() {
     final model = controller.value!;
     
     // 6. Find Secretariat aggregation
-    final secretariatAgg = model.aggregation.subjects.values.firstWhere((agg) => 
+    final secretariatAgg = model.aggregation.subjects.values.where((agg) => 
       agg.subject['title'] == 'Secretariat'
-    );
-    
-    // Main statements should NOT contain Me's rating
-    final myRatingInMain = secretariatAgg.statements.where((s) => s.iToken == meDelegate.token);
-    expect(myRatingInMain, isEmpty, reason: "Me's rating should NOT be in main aggregation");
+    ).firstOrNull;
 
-    // myDelegateStatements should contain Me's rating
-    final myRatingInMy = secretariatAgg.myDelegateStatements.where((s) => s.iToken == meDelegate.token);
-    expect(myRatingInMy, isNotEmpty, reason: "Me's rating SHOULD be in myDelegateStatements");
-    expect(myRatingInMy.first.comment, equals('I like horses'));
+    if (secretariatAgg != null) {
+      // Main statements should NOT contain Me's rating
+      final myRatingInMain = secretariatAgg.statements.where((s) => s.iToken == meDelegate.token);
+      expect(myRatingInMain, isEmpty, reason: "Me's rating should NOT be in main aggregation");
+      
+      // Legacy Overlay check: myDelegateStatements should be empty (moved to global map)
+      expect(secretariatAgg.myDelegateStatements, isEmpty, reason: "myDelegateStatements should be empty in Pure PoV");
+    }
+
+    // Check Global myStatements
+    final myStatementsMap = model.aggregation.myStatements;
+    // We need to find the key for Secretariat. It might be in subjects or we might have to scan keys.
+    // For this test, valid keys are limited.
+    final myRatingEntry = myStatementsMap.entries.firstWhere((e) {
+       // Look for rating about Secretariat in the statements
+       return e.value.any((s) => (s.subject as Map)['title'] == 'Secretariat');
+    });
+    
+    expect(myRatingEntry.value, isNotEmpty, reason: "Me's rating SHOULD be in aggregation.myStatements");
+    expect(myRatingEntry.value.first.comment, equals('I like horses'));
   });
 
   test('Rating a rating should not result in the rating appearing as a top-level subject', () async {
@@ -195,18 +207,20 @@ void main() {
     
 
     // 5. Find Secretariat aggregation
-    // It should exist in the map because "Me" rated it, even if it's not "visible" in the feed view.
-    final secretariatAgg = model.aggregation.subjects.values.firstWhere((agg) => 
-      agg.subject['title'] == 'Secretariat',
-      orElse: () => throw Exception('Secretariat not found in aggregation'),
-    );
-    
-    // Main statements should be empty (Stranger doesn't know about this rating)
-    expect(secretariatAgg.statements, isEmpty, reason: "Main aggregation should be empty for Stranger PoV");
+    // It should NOT exist in the subjects map if Stranger doesn't know about it (Pure PoV)
+    final secretariatAgg = model.aggregation.subjects.values.where((agg) => 
+      agg.subject['title'] == 'Secretariat'
+    ).firstOrNull;
 
-    // myDelegateStatements should contain Me's rating
-    final myRatingInMy = secretariatAgg.myDelegateStatements.where((s) => s.iToken == meDelegate.token);
-    expect(myRatingInMy, isNotEmpty, reason: "Me's rating SHOULD be in myDelegateStatements");
-    expect(myRatingInMy.first.comment, equals('I like horses'));
+    expect(secretariatAgg, isNull, reason: "Secretariat should NOT be in the feed for Stranger PoV");
+
+    // Check myStatements directly
+    final myStatementsMap = model.aggregation.myStatements;
+    final myRatingEntry = myStatementsMap.entries.firstWhere((e) {
+       return e.value.any((s) => (s.subject as Map)['title'] == 'Secretariat');
+    }, orElse: () => throw Exception('Secretariat rating not found in myStatements'));
+    
+    expect(myRatingEntry.value, isNotEmpty, reason: "Me's rating SHOULD be in myStatements");
+    expect(myRatingEntry.value.first.comment, equals('I like horses'));
   });
 }

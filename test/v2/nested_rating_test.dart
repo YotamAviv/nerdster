@@ -15,6 +15,7 @@ import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/labeler.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;
@@ -121,17 +122,18 @@ void main() {
     );
 
     final aggregation = reduceContentAggregation(
-        followNetwork,
-        graph,
-        delegateResolver,
-        contentResult,
-        enableCensorship: true,
-        meDelegateKeys: [lisaD.id],
+      followNetwork,
+      graph,
+      delegateResolver,
+      contentResult,
+      enableCensorship: true,
+      meDelegateKeys: [lisaD.id],
+      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // Check if the nested rating is in the aggregation
     // It should be in subjects[artRating!.token]
-    final SubjectAggregation? nestedAgg = aggregation.subjects[ContentKey(artRating!.token)];
+    final SubjectAggregation? nestedAgg = aggregation.subjects[ContentKey(artRating.token)];
     expect(nestedAgg, isNull, reason: "Aggregation should not exist for the rating statement");
     // expect(nestedAgg!.statements.any((s) => s.token == nestedRating!.token), isTrue);
   });

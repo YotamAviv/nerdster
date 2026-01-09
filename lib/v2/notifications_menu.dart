@@ -149,11 +149,11 @@ class V2NotificationsMenu extends StatelessWidget {
           },
           child: const Text("⛔ Your delegate key is revoked", style: TextStyle(color: Colors.red)),
         ));
-      } else if (b(myIdentity) && trustGraph!.isTrusted(IdentityKey(myIdentity!))) {
+      } else if (myIdentity != null && trustGraph!.isTrusted(IdentityKey(myIdentity))) {
         // Check if the delegate key is associated with the identity
         // We can check if the identity has a 'delegate' statement for this key in the graph edges
         bool isAssociated = false;
-        final statements = trustGraph!.edges[IdentityKey(myIdentity!)];
+        final statements = trustGraph!.edges[IdentityKey(myIdentity)];
         if (statements != null) {
           for (final s in statements) {
             if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {

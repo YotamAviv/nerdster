@@ -33,7 +33,7 @@ class ContentView extends StatefulWidget {
 class _ContentViewState extends State<ContentView> {
   late final V2FeedController _controller;
   String? _currentPov; // TODO: IdentityKey
-  ContentKey? _markedSubjectToken;
+  final ValueNotifier<ContentKey?> _markedSubjectToken = ValueNotifier(null);
   final ValueNotifier<bool> _showFilters = ValueNotifier(false);
 
   @override
@@ -65,7 +65,7 @@ class _ContentViewState extends State<ContentView> {
       debugPrint('ContentView: povToken changed from ${oldWidget.povToken} to ${widget.povToken}');
       setState(() {
         _currentPov = widget.povToken;
-        _markedSubjectToken = null;
+        _markedSubjectToken.value = null;
       });
       // We use a small delay to ensure the previous refresh (if any) has a chance to see the loading state
       // or we can just call _controller.refresh directly which we will make smarter.
@@ -97,7 +97,7 @@ class _ContentViewState extends State<ContentView> {
     signInState.pov = newToken;
     setState(() {
       _currentPov = newToken;
-      _markedSubjectToken = null;
+      _markedSubjectToken.value = null;
     });
     _onRefresh();
   }
@@ -108,27 +108,23 @@ class _ContentViewState extends State<ContentView> {
 
   void _onMark(ContentKey? token) {
     if (token == null) {
-      setState(() {
-        _markedSubjectToken = null;
-      });
+      _markedSubjectToken.value = null;
       return;
     }
 
-    if (_markedSubjectToken == token) {
+    final currentMarked = _markedSubjectToken.value;
+
+    if (currentMarked == token) {
       // Unmark
-      setState(() {
-        _markedSubjectToken = null;
-      });
-    } else if (_markedSubjectToken == null) {
+      _markedSubjectToken.value = null;
+    } else if (currentMarked == null) {
       // Mark
-      setState(() {
-        _markedSubjectToken = token;
-      });
+      _markedSubjectToken.value = token;
     } else {
       // Relate
       final model = _controller.value;
       if (model != null) {
-        final SubjectAggregation subject1 = model.aggregation.subjects[_markedSubjectToken!]!;
+        final SubjectAggregation subject1 = model.aggregation.subjects[currentMarked]!;
         final SubjectAggregation subject2 = model.aggregation.subjects[token]!;
 
         V2RelateDialog.show(
@@ -138,9 +134,7 @@ class _ContentViewState extends State<ContentView> {
           model,
           onRefresh: () {
             _onRefresh();
-            setState(() {
-              _markedSubjectToken = null;
-            });
+            _markedSubjectToken.value = null;
           },
         );
       }
@@ -412,7 +406,11 @@ class _ContentViewState extends State<ContentView> {
     }
 
     final subjects = model.aggregation.subjects.values.where((s) {
-      return _controller.shouldShow(s, model.filterMode, model.enableCensorship, tagFilter: model.tagFilter, typeFilter: model.typeFilter);
+      // Only show canonical tokens in the main feed to avoid duplicates.
+      if (s.token != s.canonical) return false;
+
+      return _controller.shouldShow(s, model.filterMode, model.enableCensorship,
+          tagFilter: model.tagFilter, typeFilter: model.typeFilter);
     }).toList();
 
     // Sort using the controller's logic

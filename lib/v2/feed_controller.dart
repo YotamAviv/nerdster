@@ -372,6 +372,11 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         // 5. Content Aggregation
         loadingMessage.value = 'Aggregating content...';
         progress.value = 0.9;
+
+        // 6. Labeling
+        final labeler = V2Labeler(graph,
+            delegateResolver: delegateResolver, meIdentityToken: currentMeIdentityToken);
+
         final aggregation = reduceContentAggregation(
           followNetwork,
           graph,
@@ -379,13 +384,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
           contentResult,
           enableCensorship: enableCensorship,
           meDelegateKeys: meDelegateKeys,
+          labeler: labeler,
         );
         progress.value = 0.95;
 
-        // 6. Labeling
+        // 7. Finalizing
         loadingMessage.value = 'Finalizing...';
-        final labeler = V2Labeler(graph,
-            delegateResolver: delegateResolver, meIdentityToken: currentMeIdentityToken);
 
         // 6. Contexts
         final mostContexts = MostStrings({kFollowContextIdentity, kFollowContextNerdster});

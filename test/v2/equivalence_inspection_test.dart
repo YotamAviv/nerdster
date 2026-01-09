@@ -17,6 +17,7 @@ import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 
@@ -62,6 +63,8 @@ void main() {
       delegateContent: delegateContent,
     );
 
+    final labeler = V2Labeler(graph, delegateResolver: delegateResolver, meIdentityToken: lisa.id);
+
     final aggregation = reduceContentAggregation(
         followNetwork,
         graph,
@@ -69,6 +72,7 @@ void main() {
         contentResult,
         enableCensorship: true,
         meDelegateKeys: [lisaD.id],
+        labeler: labeler,
     );
 
     // 3. Verify Equivalence
@@ -103,61 +107,23 @@ void main() {
     final canonical = canonicalToy ?? toyKey;
     final nonCanonical = (canonical == toyKey) ? skateboardKey : toyKey;
 
-    // The non-canonical one should NOT be in subjects map
-    expect(aggregation.subjects.containsKey(nonCanonical), isFalse);
+    // The non-canonical one SHOULD be in subjects map now (dense map)
+    expect(aggregation.subjects.containsKey(nonCanonical), isTrue);
     expect(aggregation.subjects.containsKey(canonical), isTrue);
 
-    // 4. Simulate Inspection Logic (what we added to ContentCard)
-    SubjectAggregation? inspectAgg = aggregation.subjects[nonCanonical];
-    
-    if (inspectAgg == null) {
-      final canonicalToken = aggregation.equivalence[nonCanonical];
-      if (canonicalToken != null) {
-        final canonicalAgg = aggregation.subjects[canonicalToken];
-        if (canonicalAgg != null) {
-           dynamic subjectObj;
-           for (final s in canonicalAgg.statements) {
-             // print('Checking statement subject: ${s.subjectToken} vs $nonCanonical');
-             if (s.subjectToken == nonCanonical.value) {
-               subjectObj = s.subject;
-               break;
-             }
-             if (s.other != null) {
-                // print('Checking statement other: ${getToken(s.other)} vs $nonCanonical');
-                if (getToken(s.other) == nonCanonical.value) {
-                   subjectObj = s.other;
-                   break;
-                }
-             }
-           }
-           
-           if (subjectObj == null || subjectObj is! Map) {
-             // Should not happen in strict mode if data is adequately supplied
-             // Use a valid placeholder only if strictly necessary for the test to proceed
-             subjectObj = createTestSubject(type: ContentType.article, url: nonCanonical.value, title: 'Unknown');
-           }
+    // 4. Verify that the subjects map is dense and contains both tokens.
+    final canonicalAgg = aggregation.subjects[canonical]!;
+    final nonCanonicalAgg = aggregation.subjects[nonCanonical]!;
 
-           inspectAgg = SubjectAggregation(
-             canonicalTokenIn: nonCanonical,
-             subject: Map<String, dynamic>.from(subjectObj as Map),
-             statements: canonicalAgg.statements,
-             likes: canonicalAgg.likes,
-             dislikes: canonicalAgg.dislikes,
-             related: canonicalAgg.related,
-             tags: canonicalAgg.tags,
-             lastActivity: canonicalAgg.lastActivity,
-             isCensored: canonicalAgg.isCensored,
-             myDelegateStatements: canonicalAgg.myDelegateStatements,
-             povStatements: canonicalAgg.povStatements,
-           );
-        }
-      }
-    }
+    expect(canonicalAgg.token, equals(canonical));
+    expect(canonicalAgg.canonical, equals(canonical));
 
-    expect(inspectAgg, isNotNull, reason: "Should be able to inspect non-canonical subject");
-    expect(inspectAgg!.canonical, equals(nonCanonical));
-    
-    // Verify we found the actual object, not just the token (if possible)
-    expect(inspectAgg.subject['title'], equals(nonCanonical.value == toyToken ? 'Toy' : 'Skateboard'));
+    expect(nonCanonicalAgg.token, equals(nonCanonical));
+    expect(nonCanonicalAgg.canonical, equals(canonical));
+    expect(nonCanonicalAgg.subject['title'], equals(nonCanonical == skateboardKey ? 'Skateboard' : 'Toy'));
+
+    // Both should share the same group data
+    expect(nonCanonicalAgg.group, equals(canonicalAgg.group));
+    expect(nonCanonicalAgg.likes, equals(canonicalAgg.likes));
   });
 }

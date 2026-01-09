@@ -19,7 +19,7 @@ class ContentCard extends StatefulWidget {
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String?>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
-  final ContentKey? markedSubjectToken;
+  final ValueNotifier<ContentKey?>? markedSubjectToken;
   final ValueChanged<ContentKey?>? onMark;
 
   const ContentCard({
@@ -75,52 +75,10 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   void _showInspectionSheet(ContentKey token) {
-    // Lookup using ContentKey
-    var agg = widget.model.aggregation.subjects[token];
-
-    if (agg == null) {
-      // Check if it's an equivalent subject
-      final canonical = widget.model.aggregation.equivalence[token];
-      if (canonical != null) {
-        final canonicalAgg = widget.model.aggregation.subjects[canonical];
-        if (canonicalAgg != null) {
-          // Found the canonical parent.
-          // Try to find the subject object for 'token' in the statements.
-          dynamic subjectObj;
-          for (final s in canonicalAgg.statements) {
-            if (s.subjectToken == token.value) {
-              subjectObj = s.subject;
-              break;
-            }
-            if (s.other != null && getToken(s.other) == token.value) {
-              subjectObj = s.other;
-              break;
-            }
-          }
-
-          if (subjectObj == null) {
-            subjectObj = token.value;
-          }
-
-          agg = SubjectAggregation(
-            subject: subjectObj,
-            statements: canonicalAgg.statements,
-            likes: canonicalAgg.likes,
-            dislikes: canonicalAgg.dislikes,
-            related: canonicalAgg.related,
-            tags: canonicalAgg.tags,
-            lastActivity: canonicalAgg.lastActivity,
-            isCensored: canonicalAgg.isCensored,
-            myDelegateStatements: canonicalAgg.myDelegateStatements,
-            povStatements: canonicalAgg.povStatements,
-          );
-        }
-      }
-    }
-
+    // Lookup using ContentKey. This is now dense and literal-subject aware.
+    final agg = widget.model.aggregation.subjects[token];
     if (agg == null) return;
-    final safeAgg = agg;
-
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -140,7 +98,7 @@ class _ContentCardState extends State<ContentCard> {
               child: SingleChildScrollView(
                 controller: scrollController,
                 child: ContentCard(
-                  aggregation: safeAgg,
+                  aggregation: agg,
                   model: widget.model,
                   onRefresh: widget.onRefresh,
                   onPovChange: widget.onPovChange,
@@ -539,21 +497,23 @@ class _ContentCardState extends State<ContentCard> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (widget.onMark != null)
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: Icon(
-              Icons.link,
-              color: widget.markedSubjectToken == widget.aggregation.canonical
-                  ? Colors.orange
-                  : Colors.grey,
-            ),
-            tooltip: widget.markedSubjectToken == widget.aggregation.canonical
-                ? 'Unmark'
-                : 'Mark to Relate/Equate',
-            onPressed: () async {
-              if (bb(await checkSignedIn(context, trustGraph: widget.model.trustGraph))) {
-                widget.onMark!(widget.aggregation.canonical);
-              }
+          ValueListenableBuilder<ContentKey?>(
+            valueListenable: widget.markedSubjectToken ?? ValueNotifier(null),
+            builder: (context, marked, _) {
+              final isMarked = marked == widget.aggregation.token;
+              return IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: Icon(
+                  Icons.link,
+                  color: isMarked ? Colors.orange : Colors.grey,
+                ),
+                tooltip: isMarked ? 'Unmark' : 'Mark to Relate/Equate',
+                onPressed: () async {
+                  if (bb(await checkSignedIn(context, trustGraph: widget.model.trustGraph))) {
+                    widget.onMark!(widget.aggregation.token);
+                  }
+                },
+              );
             },
           ),
         IconButton(
@@ -586,8 +546,8 @@ class SubjectDetailsView extends StatelessWidget {
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
-  final ValueChanged<ContentKey>? onMark;
-  final ContentKey? markedSubjectToken;
+  final ValueChanged<ContentKey?>? onMark;
+  final ValueNotifier<ContentKey?>? markedSubjectToken;
   final ValueChanged<ContentKey>? onInspect;
 
   const SubjectDetailsView({

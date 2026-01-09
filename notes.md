@@ -17,9 +17,9 @@ AI NOTE: This is my (the human) file with my own notes.
 ?fire=fake&demo=equivalenceBug&skipCredentials=true
 
 # Fake simpsonsRelateDemo
-?fire=fake&demo=simpsonsRelateDemo&debugUseSubjectNotToken=true
+?fire=fake&demo=simpsonsRelateDemo&skipCredentials=true
 
-?fire=fake&demo=rateWhenNotInNetwork
+?fire=fake&demo=rateWhenNotInNetworkskipCredentials=true
 
 # Notifications gallery
 ?fire=fake&demo=notificationsGallery

@@ -142,13 +142,10 @@ class TrustStatement extends Statement {
   @override
   bool get isClear => verb == TrustVerb.clear;
 
-  // NOTE: We use transformer on {iToken, 'subjectToken'}. That could be cleaner or more flexible
-  // expressing which of the 2 or both we want, but works for us.
-  // - non-null transformer used by NetNode (to render canonical tree)
   @override
-  String getDistinctSignature({String Function(String)? transformer}) {
-    String canonI = b(transformer) ? transformer!(iToken) : iToken;
-    String canonS = b(transformer) ? transformer!(subjectToken) : subjectToken;
+  String getDistinctSignature({Transformer? iTransformer, Transformer? sTransformer}) {
+    String canonI = b(iTransformer) ? iTransformer!(iToken) : iToken;
+    String canonS = b(sTransformer) ? sTransformer!(subjectToken) : subjectToken;
     return [canonI, canonS].join(':');
   }
 }

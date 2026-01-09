@@ -7,7 +7,6 @@ import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -15,6 +14,7 @@ import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 
 import 'package:nerdster/v2/source_error.dart';
+import 'package:nerdster/v2/labeler.dart';
 
 class MockSource<T extends Statement> implements StatementSource<T> {
   @override
@@ -75,11 +75,13 @@ void main() {
         DelegateKey(delegateToken): [s1, s2],
       };
 
+      final labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
       final aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
         ContentResult(delegateContent: byToken),
+        labeler: labeler,
       );
 
       final subjectAgg = aggregation.subjects[ContentKey(subject1Token)];
@@ -132,11 +134,13 @@ void main() {
         DelegateKey(delegateToken): [s1, s2],
       };
 
+      final labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
       final aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
         ContentResult(delegateContent: byToken),
+        labeler: labeler,
       );
 
       final newsCanonical = aggregation.tagEquivalence['#news'];
@@ -192,11 +196,13 @@ void main() {
         DelegateKey(delegateToken): [s1, s2],
       };
 
+      final labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
       final aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
         ContentResult(delegateContent: byToken),
+        labeler: labeler,
       );
 
       expect(aggregation.mostTags.first, equals('#common'));
@@ -248,28 +254,29 @@ void main() {
         DelegateKey(delegateToken): [s1, s2],
       };
 
+      final labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
       final aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
         ContentResult(delegateContent: byToken),
+        labeler: labeler,
       );
 
-      final controller = V2FeedController(
-        trustSource: MockSource(),
-        contentSource: MockSource(),
-      );
+      // final controller = V2FeedController(
+      //   trustSource: MockSource(),
+      //   contentSource: MockSource(),
+      // );
 
-      final sub1 = aggregation.subjects.values.firstWhere((s) => (s.subject as Map)['id'] == 'sub1');
-      final sub2 = aggregation.subjects.values.firstWhere((s) => (s.subject as Map)['id'] == 'sub2');
+      // final sub1 = aggregation.subjects.values.firstWhere((s) => (s.subject as Map)['id'] == 'sub1');
+      // final sub2 = aggregation.subjects.values.firstWhere((s) => (s.subject as Map)['id'] == 'sub2');
 
-      // Filter by #politics, should show subject1 (because it has #news which is equivalent to #politics)
+      // Filter by #politics...
       Setting.get<String>(SettingType.tag).value = '#politics';
-      // expect(controller.shouldShow(sub1), isTrue); // shouldShow uses logic that might not support equivalence yet
+      expect(aggregation.tagEquivalence['#news'], equals(aggregation.tagEquivalence['#politics']));
       
-      // Filter by #politics, should NOT show subject2
+      // Filter by #politics
       Setting.get<String>(SettingType.tag).value = '#politics';
-      // expect(controller.shouldShow(sub2), isFalse);
     });
   });
 }

@@ -6,12 +6,13 @@ import 'statement.dart';
 
 Iterable<T> distinct<T extends Statement>(
   Iterable<T> source, {
-  Transformer? transformer,
+  Transformer? iTransformer,
+  Transformer? sTransformer,
 }) sync* {
   final seen = <String>{};
 
   for (final s in source) {
-    final key = s.getDistinctSignature(transformer: transformer);
+    final key = s.getDistinctSignature(iTransformer: iTransformer, sTransformer: sTransformer);
     if (seen.add(key)) {
       yield s;
     }

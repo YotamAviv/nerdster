@@ -12,6 +12,7 @@ import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 
 // Scenario:
@@ -69,7 +70,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
   // We need to do that here.
   const Json superbad = {'contentType': 'movie', 'title': "Superbad", 'year': '2007'};
 
-  await lisaN.doRate(subject: superbad, recommend: true, comment: "lisa");
+  await lisaN.doRate(subject: superbad, comment: "lisa");
 
   // --- REGRESSION VERIFICATION LOGIC ---
   print('Starting Verification Check...');
@@ -87,22 +88,19 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
     final graph = await trustPipeline.build(pov);
     final delegateResolver = DelegateResolver(graph);
 
-    // Build Follow Network
-    final followNetwork = reduceFollowNetwork(graph, delegateResolver, ContentResult(), context);
-
     final appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
     final contentPipeline = ContentPipeline(
       delegateSource: appSource,
     );
 
     // Fetch Content
+    // We must fetch content FIRST to determine the Follow Network (because blocks/follows are content)
     // Fetch delegates in graph + ME (Lisa)
     final Set<DelegateKey> delegateKeysToFetch = {};
     for (final identity in graph.orderedKeys) {
       delegateKeysToFetch.addAll(delegateResolver.getDelegatesForIdentity(identity));
     }
-    // We must manually add Me's delegate locally because checking "Me" visibility implies
-    // fetcher logic would fetch "Me" regardless of graph presence.
+    // We must manually add Me's delegate locally
     delegateKeysToFetch.add(meDelegate);
 
     final delegateContent = await contentPipeline.fetchDelegateContent(
@@ -111,8 +109,16 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       graph: graph,
     );
     final contentResult = ContentResult(delegateContent: delegateContent);
+    
+    // Build Follow Network (Using the fetched content to respect blocks)
+    final followNetwork = reduceFollowNetwork(graph, delegateResolver, contentResult, context);
 
     // Reduce Aggregation
+    final labeler = V2Labeler(
+      graph,
+      delegateResolver: delegateResolver,
+      meIdentityToken: delegateResolver.getIdentityForDelegate(meDelegate),
+    );
     return reduceContentAggregation(
       followNetwork,
       graph,
@@ -120,6 +126,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       contentResult,
       enableCensorship: enableCensorship,
       meDelegateKeys: [meDelegate],
+      labeler: labeler,
     );
   }
 
@@ -144,7 +151,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       final myStatements = subject.statements.where((s) => s.iToken == lisaN.id.value);
       print('Lisa\'s statements in feed: ${myStatements.length} (Expected: >0)');
       final myOverlay = subject.myDelegateStatements.where((s) => s.iToken == lisaN.id.value);
-      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
+      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: false - Pure PoV)');
     } else {
       print('Superbad found: NO (Critical Failure)');
     }
@@ -173,7 +180,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       final lisaInFeed = subject.statements.where((s) => s.iToken == lisaN.id.value);
       print('Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: >0)');
       final myOverlay = subject.myDelegateStatements.where((s) => s.iToken == lisaN.id.value);
-      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
+      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: false - Pure PoV)');
     } else {
       print('Superbad found: NO (Critical Failure)');
     }
@@ -188,8 +195,11 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       pov: bart.id,
       meDelegate: lisaN.id, // Lisa is signed in
       context: kFollowContextNerdster,
-      // AI: Testing with censorship OFF to ensure the card is visible so we can check the overlay bug.
-      enableCensorship: false,
+      // Bart has blocked Marge for <nerdster> (seen in simpsons_demo.dart).
+      // Since we correctly fetch content before building FollowNetwork, Marge is excluded.
+      // Therefore, her censorship of Superbad does not apply.
+      // Superbad should be visible even with censorship enabled.
+      enableCensorship: true,
     );
 
     final subject = agg.subjects.values
@@ -203,10 +213,16 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       
       final myOverlay = subject.myDelegateStatements.where((s) => s.iToken == lisaN.id.value);
       if (myOverlay.isEmpty) {
-        print('Lisa\'s overlay status (Blue Star): false (BUG! Expected: true)');
+        print('Lisa\'s overlay status (Blue Star): false (Correct - Pure PoV)');
       } else {
-        print('Lisa\'s overlay status (Blue Star): true (Fixed!)');
+        print('Lisa\'s overlay status (Blue Star): true (Fail - Impure PoV)');
       }
+
+      // Verify RateDialog data availability
+      // content_logic.dart should populate `myStatements` for this subject
+      final myStatements = agg.myStatements[subject.canonical] ?? [];
+      final hasMyRating = myStatements.any((s) => s.iToken == lisaN.id.value && s.verb == ContentVerb.rate);
+      print('RateDialog Data Available: $hasMyRating (Expected: true)');
     } else {
       print('Superbad found: NO (Critical Failure)');
     }

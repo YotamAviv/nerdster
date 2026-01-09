@@ -15,6 +15,7 @@ import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 
 void main() {
@@ -66,6 +67,8 @@ void main() {
       delegateContent: delegateContent,
     );
 
+    final labeler = V2Labeler(graph, delegateResolver: delegateResolver, meIdentityToken: poser.id);
+
     final aggregation = reduceContentAggregation(
       followNetwork,
       graph,
@@ -73,6 +76,7 @@ void main() {
       contentResult,
       enableCensorship: true,
       meDelegateKeys: [poserN!.id],
+      labeler: labeler,
     );
 
     // 3. Define the Subject Keys
@@ -186,6 +190,7 @@ void main() {
       newContentResult,
       enableCensorship: true,
       meDelegateKeys: [poserN.id],
+      labeler: labeler,
     );
 
     // 7. Inspect Related Subjects

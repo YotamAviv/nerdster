@@ -18,8 +18,8 @@ class StatementTile extends StatelessWidget {
   final int depth;
   final SubjectAggregation aggregation;
   final ValueChanged<String?>? onGraphFocus;
-  final ValueChanged<ContentKey>? onMark;
-  final ContentKey? markedSubjectToken;
+  final ValueChanged<ContentKey?>? onMark;
+  final ValueNotifier<ContentKey?>? markedSubjectToken;
   final ValueChanged<ContentKey>? onInspect;
   final VoidCallback? onRefresh;
   final ValueChanged<String>? onTagTap;
@@ -226,8 +226,11 @@ class StatementTile extends StatelessWidget {
                   context,
                   SubjectAggregation(
                     subject: s.json,
-                    lastActivity: s.time,
-                    statements: uniqueStatements,
+                    group: SubjectGroup(
+                      canonical: ContentKey(s.token),
+                      statements: uniqueStatements,
+                      lastActivity: s.time,
+                    ),
                   ),
                   model,
                   intent: RateIntent.none,

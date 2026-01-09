@@ -8,6 +8,7 @@ import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/demotest/test_util.dart';
 
 void main() {
@@ -109,6 +110,7 @@ void main() {
       resolver,
       contentResult,
       enableCensorship: false,
+      labeler: V2Labeler(graph, delegateResolver: resolver),
     );
 
     // 7. Assertions

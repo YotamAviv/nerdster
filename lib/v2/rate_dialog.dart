@@ -92,24 +92,13 @@ class _V2RateDialogState extends State<V2RateDialog> {
     super.initState();
     
       // Find prior statement by this user
-    final myIdentity = signInState.identity;
-    if (myIdentity != null) {
-      try {
-        priorStatement = widget.aggregation.statements.firstWhere(
-          (s) {
-            IdentityKey? identity;
-            if (widget.model.trustGraph.isTrusted(IdentityKey(s.iKey.value))) {
-              identity = widget.model.trustGraph.resolveIdentity(IdentityKey(s.iKey.value));
-            } else {
-              identity = widget.model.delegateResolver.getIdentityForDelegate(s.iKey);
-            }
-            return identity?.value == myIdentity && s.verb == ContentVerb.rate;
-          }
-        );
-      } catch (_) {
-        priorStatement = null;
-      }
-    }
+    // Look in the separate 'myStatements' map (populated from locally provided delegate keys)
+    final List<ContentStatement> myStatements = widget.model.aggregation.myStatements[widget.aggregation.canonical] ?? [];
+    
+    // myStatements is already sorted by time (descending) in content_logic.dart
+    assert(Statement.validateStatementTimesAndTypes(myStatements));
+    assert(myStatements.length <= 1, 'singular dispostion');
+    priorStatement = myStatements.isEmpty ? null : myStatements.first;
 
     like = ValueNotifier(priorStatement?.like);
     dis = ValueNotifier(priorStatement?.dismiss);

@@ -78,7 +78,7 @@ abstract class Statement {
   Iterable get keys => jsonish.keys;
   Iterable get values => jsonish.values;
 
-  String getDistinctSignature({Transformer? transformer});
+  String getDistinctSignature({Transformer? iTransformer, Transformer? sTransformer});
 
   bool get isClear;
 

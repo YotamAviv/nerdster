@@ -15,10 +15,10 @@ Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) asy
 
     if (trustGraph.replacements.containsKey(IdentityKey(myDelegate!))) {
       issue = 'Your delegate key is revoked';
-    } else if (b(myIdentity) && trustGraph.isTrusted(IdentityKey(myIdentity!))) {
+    } else if (myIdentity != null && trustGraph.isTrusted(IdentityKey(myIdentity))) {
       // Check association
       bool isAssociated = false;
-      final statements = trustGraph.edges[IdentityKey(myIdentity!)];
+      final statements = trustGraph.edges[IdentityKey(myIdentity)];
       if (statements != null) {
         for (final s in statements) {
           if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {

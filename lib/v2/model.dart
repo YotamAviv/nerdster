@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/statement.dart';
@@ -178,13 +179,9 @@ class FollowNetwork {
   bool contains(IdentityKey identity) => identities.contains(identity);
 }
 
-/// Aggregated data for a single subject (or equivalence group).
-class SubjectAggregation {
-  // A complete proper Json subject
-  // must have "contentType" which must be a ContentType name (see: enum ContentType)
-  // and all of those have a "title" field.
-  final Json subject;
-  final List<ContentStatement> statements; // Who needs all statements?
+/// Shared data for an entire equivalence group of subjects.
+class SubjectGroup {
+  final List<ContentStatement> statements;
   final Set<String> tags;
   final int likes;
   final int dislikes;
@@ -192,14 +189,11 @@ class SubjectAggregation {
   final Set<ContentKey> related; // Canonical tokens of related subjects
   final List<ContentStatement> myDelegateStatements;
   final List<ContentStatement> povStatements;
-
   final bool isCensored;
-  // TODO: Ensure that canonicalToken is accurate and document why it's needed.
   final ContentKey canonical;
 
-  SubjectAggregation({
-    required this.subject,
-    ContentKey? canonicalTokenIn,
+  SubjectGroup({
+    required this.canonical,
     this.statements = const [],
     this.tags = const {},
     this.likes = 0,
@@ -209,8 +203,7 @@ class SubjectAggregation {
     this.myDelegateStatements = const [],
     this.povStatements = const [],
     this.isCensored = false,
-  }) : canonical = canonicalTokenIn ?? ContentKey(getToken(subject)) {
-    // FYI, this fails: assert(canonicalToken == null || canonicalToken == getToken(subject));
+  }) {
     assert(Statement.validateStatementTimesAndTypes(statements));
     assert(Statement.validateStatementTimesAndTypes(myDelegateStatements));
     assert(Statement.validateStatementTimesAndTypes(povStatements));
@@ -239,28 +232,24 @@ class SubjectAggregation {
       // Note: There could be multiple statements with the same time, but they would be from different
       // identities or about different things.
       // We need to check if *any* statement at lastActivity is a "Qualified New Activity".
-      
-      // TODO: This makes no sense to me. BUG?
       final activityStatements = statements.where((s) => s.time.isAtSameMomentAs(lastActivity));
       for (final activityStatement in activityStatements) {
-         // Qualified New Activity:
-         // - Rate with comment or recommend (true/false)
-         // - Relate
-         if (activityStatement.verb == ContentVerb.relate) return false; // Wakes up
-         
-         if (activityStatement.verb == ContentVerb.rate) {
-           // Disqualified: censor or dismiss
-           if (activityStatement.censor == true || activityStatement.dismiss != null) continue; // Does not wake up
-           
-           // Qualified: comment or recommend
-           if (activityStatement.comment != null || activityStatement.like != null) return false; // Wakes up
-         }
-         // Equate/DontEquate/DontRelate are disqualified (they don't wake up)
+        // Qualified New Activity:
+        // - Rate with comment or recommend (true/false)
+        // - Relate
+        if (activityStatement.verb == ContentVerb.relate) return false; // Wakes up
+        if (activityStatement.verb == ContentVerb.rate) {
+          // Disqualified: censor or dismiss
+          if (activityStatement.censor == true || activityStatement.dismiss != null) continue; // Does not wake up
+
+          // Qualified: comment or recommend
+          if (activityStatement.comment != null || activityStatement.like != null) return false; // Wakes up
+        }
+        // Equate/DontEquate/DontRelate are disqualified (they don't wake up)
       }
       // If we found no qualified activity among the statements at lastActivity, it remains dismissed.
       return true;
     }
-
     return true;
   }
 
@@ -281,6 +270,47 @@ class SubjectAggregation {
   }
 }
 
+/// A specific view of a subject, bound to a literal identity but sharing group data.
+class SubjectAggregation {
+  final Json subject;
+  final SubjectGroup group;
+
+  SubjectAggregation({
+    required this.subject,
+    required this.group,
+  });
+
+  // Proxy getters for group data
+  ContentKey get token => ContentKey(getToken(subject));
+  ContentKey get canonical => group.canonical;
+  List<ContentStatement> get statements => group.statements;
+  Set<String> get tags => group.tags;
+  int get likes => group.likes;
+  int get dislikes => group.dislikes;
+  DateTime get lastActivity => group.lastActivity;
+  Set<ContentKey> get related => group.related;
+  List<ContentStatement> get myDelegateStatements => group.myDelegateStatements;
+  List<ContentStatement> get povStatements => group.povStatements;
+  bool get isCensored => group.isCensored;
+
+  // Proxy getters for disposition
+  bool get isRated => group.isRated;
+  bool get isDismissed => group.isDismissed;
+  bool get isUserDismissed => group.isUserDismissed;
+  DateTime? get userDismissalTimestamp => group.userDismissalTimestamp;
+  DateTime? get povDismissalTimestamp => group.povDismissalTimestamp;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SubjectAggregation &&
+          mapEquals(subject, other.subject) &&
+          group.canonical == other.group.canonical;
+
+  @override
+  int get hashCode => subject.hashCode ^ group.canonical.hashCode;
+}
+
 /// The result of aggregating content for a Follow Network.
 class ContentAggregation {
   final List<ContentStatement> statements;
@@ -289,7 +319,14 @@ class ContentAggregation {
   final Map<ContentKey, Set<ContentKey>> related; // SubjectToken -> Set of RelatedSubjectTokens
   final Map<String, String> tagEquivalence; // Tag -> Canonical Tag
   final List<String> mostTags; // Tags ordered by frequency
-  final Map<ContentKey, SubjectAggregation> subjects; // CanonicalToken -> Aggregation
+
+  /// Map of every known literal subject token to its flavored Aggregation.
+  final Map<ContentKey, SubjectAggregation> subjects;
+
+  // Map of canonical subject Key to the list of my statements about it.
+  // This is used to hydrate the UI (RateDialog, etc) with the user's own state,
+  // without polluting the PoV feed itself.
+  final Map<ContentKey, List<ContentStatement>> myStatements; 
 
   ContentAggregation({
     this.statements = const [],
@@ -299,6 +336,7 @@ class ContentAggregation {
     this.tagEquivalence = const {},
     this.mostTags = const [],
     this.subjects = const {},
+    this.myStatements = const {},
   });
 }
 
