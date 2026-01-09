@@ -133,7 +133,105 @@ void main() {
     final equateCount = agg.statements.where((s) => s.verb == ContentVerb.equate).length;
     expect(equateCount, 2, reason: " Should have 2 equates merged");
 
+    // Verify View Logic Compatibility
+    // Simulate the logic in StatementTile to ensure we can resolve titles for these equivalences
+    // even when the statement's direct subject/other is not the canonical ID itself.
+    for (final s in agg.statements.where((s) => s.verb == ContentVerb.equate)) {
+      final ContentKey subjectCanonical =
+          aggregation.equivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
+      final ContentKey otherCanonical =
+          aggregation.equivalence[ContentKey(getToken(s.other))] ?? ContentKey(getToken(s.other));
+      final ContentKey thisCanonical = agg.canonical;
+
+      String? displayText;
+      // The UI logic prioritizes matching subjectCanonical first
+      if (subjectCanonical == thisCanonical) {
+        if (s.other is Map) {
+          displayText = s.other['title'];
+        }
+      } else if (otherCanonical == thisCanonical) {
+        if (s.subject is Map) {
+          displayText = s.subject['title'];
+        }
+      }
+
+      expect(displayText, isNotNull,
+          reason: "UI should resolve display text for equivalence statement ${s.token}");
+      expect(displayText, startsWith("Subject "),
+          reason: "Should display the title of the equivalent subject");
+    }
+
     // "Make a unit test ... Add some expects for what should be the outcome shown."
     // These expects demonstrate the "Happy Path". If the bug exists, these will fail.
+
+    // 5. Clear Rating for A
+    final sA = statements[0];
+    print('Clearing A: ${sA.subjectToken}');
+    await poserN!.doRate(subject: sA.subject, verb: ContentVerb.clear);
+
+    // 6. Refresh Pipeline
+    // Fetch new content reflecting the clear operation
+    final newDelegateContent = await contentPipeline.fetchDelegateContent(
+      delegateKeysToFetch,
+      delegateResolver: delegateResolver,
+      graph: graph,
+    );
+
+    final newContentResult = ContentResult(delegateContent: newDelegateContent);
+
+    final newAggregation = reduceContentAggregation(
+      followNetwork,
+      graph,
+      delegateResolver,
+      newContentResult,
+      enableCensorship: true,
+      meDelegateKeys: [poserN.id],
+    );
+
+    // 7. Inspect Related Subjects
+    print('--- Post Clear Inspection ---');
+    final newCanonA = newAggregation.equivalence[keyA];
+    expect(newCanonA, isNotNull, reason: "A should still be equivalent even if cleared");
+
+    final newAgg = newAggregation.subjects[newCanonA]!;
+    print('New Canonical for A: $newCanonA');
+    print('Related Keys: ${newAgg.related}');
+
+    // Resolve references to titles
+    if (newAgg.related.isEmpty) {
+      print('No related subjects found.');
+    } else {
+      for (final relatedKey in newAgg.related) {
+        final relAgg = newAggregation.subjects[relatedKey];
+        if (relAgg != null) {
+          print('Related Title: ${relAgg.subject['title']}');
+        } else {
+          // Try to find definition in raw map if not top-level
+          // But wait, where would we find it?
+          print('Related Token (No Aggregation): ${relatedKey.value}');
+        }
+      }
+    }
+
+    // Also perform the UI Logic Check again for the persistence of A's title via Equivalence
+    // Since A is cleared, we rely on the Equate statement (B->A) to provide the title.
+    print('Checking Equivalence Titles persistence for A...');
+    for (final s in newAgg.statements.where((s) => s.verb == ContentVerb.equate)) {
+      final ContentKey subjectCanonical =
+          newAggregation.equivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
+      final ContentKey otherCanonical = newAggregation.equivalence[ContentKey(getToken(s.other))] ??
+          ContentKey(getToken(s.other));
+      final ContentKey thisCanonical = newAgg.canonical;
+
+      String? displayText;
+      if (subjectCanonical == thisCanonical) {
+        assert(s.other is Map);
+        displayText = s.other['title'];
+      } else if (otherCanonical == thisCanonical) {
+        assert(s.subject is Map);
+        displayText = s.subject['title'];
+      }
+      print('Found Equivalence Title: $displayText');
+    }
   });
 }

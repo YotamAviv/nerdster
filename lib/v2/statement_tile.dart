@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';import 'package:nerdster/oneofus/keys.dart';import 'package:nerdster/v2/model.dart';
+import 'package:flutter/material.dart';
+import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
@@ -47,15 +49,17 @@ class StatementTile extends StatelessWidget {
     final ContentKey canonicalToken =
         model.aggregation.equivalence[ContentKey(s.token)] ?? ContentKey(s.token);
     final statementAgg = model.aggregation.subjects[canonicalToken];
-    
+
     // Combine statements from the main aggregation (if any are threaded there) and the statement's own aggregation
-    final repliesInParent = aggregation.statements.where((ContentStatement r) => r.subjectToken == s.token).toList();
+    final repliesInParent =
+        aggregation.statements.where((ContentStatement r) => r.subjectToken == s.token).toList();
     final combinedStatements = [
-        ...repliesInParent,
-        ...(statementAgg?.statements ?? <ContentStatement>[]),
+      ...repliesInParent,
+      ...(statementAgg?.statements ?? <ContentStatement>[]),
     ];
     // Deduplicate based on token
-    final List<ContentStatement> uniqueStatements = {for (var s in combinedStatements) s.token: s}.values.toList();
+    final List<ContentStatement> uniqueStatements =
+        {for (var s in combinedStatements) s.token: s}.values.toList();
 
     // Determine current user's reaction to this statement
     final myReplies = uniqueStatements.where((r) {
@@ -70,7 +74,7 @@ class StatementTile extends StatelessWidget {
     IconData icon = Icons.rate_review_outlined;
     Color? color;
     String tooltip;
-    
+
     if (myReplies.isNotEmpty) {
       color = Colors.blue;
       tooltip = 'You replied to this';
@@ -103,45 +107,29 @@ class StatementTile extends StatelessWidget {
         final sOtherToken = getToken(s.other);
         // If the statement's subject is THIS card, then the target is s.other
         // If the statement's other is THIS card, then the target is s.subject
-        
-        // TODO: Careful here. Should we use getToken(aggregation.subject) instead of token?
-        if (s.subjectToken == aggregation.canonical.value) {
-           otherToken = ContentKey(sOtherToken);
-           // Try to get title from s.other if it's a map
-           if (s.other is Map && s.other['title'] != null) {
-             displayText = s.other['title'];
-           }
-        // TODO: Careful here. Should we use getToken(aggregation.subject) instead of token?
-        } else if (sOtherToken == aggregation.canonical.value) {
-           otherToken = ContentKey(s.subjectToken);
-           // Try to get title from s.subject if it's a map
-           if (s.subject is Map && s.subject['title'] != null) {
-             displayText = s.subject['title'];
-           }
-        } else {
-           // Fallback
-           otherToken = ContentKey(sOtherToken);
-        }
+        final ContentKey subjectCanonical =
+            model.aggregation.equivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
+        final ContentKey otherCanonical =
+            model.aggregation.equivalence[ContentKey(sOtherToken)] ?? ContentKey(sOtherToken);
+        final ContentKey thisCanonical = aggregation.canonical;
 
-        if (displayText == null) {
-           final otherAgg = model.aggregation.subjects[otherToken];
-           if (otherAgg != null) {
-             final subject = otherAgg.subject;
-             displayText = subject['title'] ?? 'Untitled';
-           } else {
-             displayText = model.labeler.getLabel(otherToken!.value);
-           }
+        if (subjectCanonical == thisCanonical) {
+          otherToken = ContentKey(sOtherToken);
+          // get title from s.other
+          displayText = s.other['title'];
+        } else if (otherCanonical == thisCanonical) {
+          otherToken = ContentKey(s.subjectToken);
+          displayText = s.subject['title'];
+        } else {
+          // Fallback
+          otherToken = ContentKey(sOtherToken);
+          displayText = s.other['title'];
         }
       }
     }
 
     return Container(
-      padding: EdgeInsets.only(
-        left: 16.0 + (depth * 16.0), 
-        right: 16.0, 
-        top: 4.0, 
-        bottom: 4.0
-      ),
+      padding: EdgeInsets.only(left: 16.0 + (depth * 16.0), right: 16.0, top: 4.0, bottom: 4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -176,13 +164,11 @@ class StatementTile extends StatelessWidget {
                 const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey),
                 const SizedBox(width: 2),
               ],
-              
               if (verbIcon != null) ...[
                 const SizedBox(width: 4),
                 verbIcon,
                 const SizedBox(width: 4),
               ],
-
               if (displayText != null)
                 Expanded(
                   child: InkWell(
@@ -265,7 +251,8 @@ class StatementTile extends StatelessWidget {
                           child: V2JsonDisplay(s.json, interpreter: V2Interpreter(model.labeler)),
                         ),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                          TextButton(
+                              onPressed: () => Navigator.pop(context), child: const Text('Close')),
                         ],
                       ),
                     ),
@@ -277,19 +264,17 @@ class StatementTile extends StatelessWidget {
           ),
           // BUG: We need to show who made ratings without comments.. who's like, dislike, etc.
           if (s.comment != null && s.comment!.isNotEmpty)
-             Padding(
-               padding: const EdgeInsets.only(left: 0.0, top: 2.0),
-               child: CommentWidget(
-                  text: s.comment!,
-                  onHashtagTap: (tag, _) => onTagTap?.call(tag),
-                  style: const TextStyle(fontSize: 13),
-                  maxLines: maxLines,
-               ),
-             ),
+            Padding(
+              padding: const EdgeInsets.only(left: 0.0, top: 2.0),
+              child: CommentWidget(
+                text: s.comment!,
+                onHashtagTap: (tag, _) => onTagTap?.call(tag),
+                style: const TextStyle(fontSize: 13),
+                maxLines: maxLines,
+              ),
+            ),
         ],
       ),
     );
   }
 }
-
-

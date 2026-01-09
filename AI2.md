@@ -19,3 +19,5 @@ read those changes
 Let me know if you notice anything that might be problematic.
 If not, suggest a commit message based only on the GIT diffs, not based on your memory
 Output ONLY the commit message here in this file right here:
+
+Fix equivalence display bugs: Collect definitions from 'other' field, update UI title resolution logic (Card & Tile), and add regression tests.

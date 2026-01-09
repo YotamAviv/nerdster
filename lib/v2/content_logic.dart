@@ -96,7 +96,7 @@ ContentAggregation reduceContentAggregation(
   // I see it thumbed by me? Shouldn't I see it thumbed by PoV?
   // TODO: B. I should see it thumbed by PoV. I should only see the impact of my stament when I rate (or ralate) the same exact thing that I already have.
   // All we'd need for that is to gather my own statements by key.
-  
+
   // 2b. Collect My Statements (Separately)
   //
   // Rationale:
@@ -232,6 +232,10 @@ ContentAggregation reduceContentAggregation(
   for (final statement in filteredStatements) {
     if (statement.subject is Map) {
       subjectDefinitions[ContentKey(statement.subjectToken)] = statement.subject as Json;
+    }
+    if (statement.other != null) {
+      assert(statement.other is Map);
+      subjectDefinitions[ContentKey(getToken(statement.other))] = statement.other as Json;
     }
   }
   Json? findSubject(ContentKey subjectKey) => subjectDefinitions[subjectKey];

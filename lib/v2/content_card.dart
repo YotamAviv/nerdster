@@ -382,12 +382,25 @@ class _ContentCardState extends State<ContentCard> {
 
       // Try to find titles in current statements
       for (final s in widget.aggregation.statements) {
-        if (equivalentTokens.contains(ContentKey(s.subjectToken))) {
+        // Check Subject
+        final subjectKey = ContentKey(s.subjectToken);
+        if (equivalentTokens.contains(subjectKey)) {
           final subject = s.subject;
           final title = (subject is Map)
               ? subject['title']!
               : widget.model.labeler.getLabel(subject.toString());
-          tokenToTitle[ContentKey(s.subjectToken)] = title;
+          tokenToTitle[subjectKey] = title;
+        }
+        
+        // Check Other
+        if (s.other != null) {
+           final otherKey = ContentKey(getToken(s.other));
+           if (equivalentTokens.contains(otherKey)) {
+             final other = s.other;
+             assert(other is Map);
+             final title = other['title'];
+             tokenToTitle[otherKey] = title;
+           }
         }
       }
 
