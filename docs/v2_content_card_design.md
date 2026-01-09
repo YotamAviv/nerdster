@@ -41,6 +41,29 @@ The `ContentCard` is the atomic unit of the Nerdster feed. It represents a **Sub
 The items in this section are **aggregated (computed) subjects**, not raw user statements.
 (So if Subject A is related to Subject B, and Subject B is related to Subject C, then the card for Subject A will display both B and C.)
 
+
+### Equivalence & Aggregation Strategy
+
+We aggregate equate ("equate") and don't equate ("dontEquate") statements to form equivalence groups with a single canonical subject.
+The Nerdster balances broad discovery with literal provenance through two distinct aggregation modes.
+
+#### 1. Canonical Aggregation (The Feed)
+In the main content view, we only show **Canonical Subjects**.
+- **Scope**: Aggregation is "wide." It includes all statements (likes, comments, relations) made about **any** subject within that subject's equivalence group. 
+- **Filtering**: Subjects that are marked as equivalent to another (non-canonical) are excluded from the top-level feed.
+- **Purpose**: To provide a unified consensus view of a concept, regardless of which specific metadata variant or URL was used to describe it.
+
+#### 2. Literal Aggregation (The Inspection Card)
+When a user clicks an equivalent or related subject, it opens a **Pop-up Card** representing that specific literal token.
+- **Scope**: Aggregation is "narrow." It includes **only** statements made exactly about that specific token. 
+- **Purpose**: To allow for granular auditing of provenance. This isolates comments or ratings that might apply to a specific URL or metadata variant but not to the canonical concept as a whole.
+- **Interaction**: Any new rating or comment issued within a pop-up card is applied to the **narrow literal token** being viewed.
+
+#### Example: "A (equivalent) => B (canonical)"
+- **In the Feed**: Subject **B** is displayed. Subject **A** is considered an equivalent and is therefore excluded from the top-level feed. B's score and history include counts and comments from both A and B. The relation is shown as `<= A` (indicating A was merged into B).
+- **Inspecting A**: Clicking the link to **A** opens a pop-up card for A. This card **only** shows statements authored against A. It includes a directional link `=> B` pointing to its canonical parent.
+- **Inspecting B**: Clicking a link to **B** from A's card (or from the feed's literal history) opens a pop-up card for B. Unlike the feed view, this pop-up card is narrow and only shows statements authored specifically against B, filtering out A's data.
+
 ### Icon Legend & Meanings
 
 | Icon | Name | Meaning / Action |
