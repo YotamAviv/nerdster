@@ -111,17 +111,20 @@ class StatementTile extends StatelessWidget {
             model.aggregation.equivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
         final ContentKey otherCanonical =
             model.aggregation.equivalence[ContentKey(sOtherToken)] ?? ContentKey(sOtherToken);
+        final ContentKey thisToken = aggregation.token;
         final ContentKey thisCanonical = aggregation.canonical;
 
-        if (subjectCanonical == thisCanonical) {
+        if (ContentKey(sOtherToken) == thisToken) {
+          otherToken = ContentKey(s.subjectToken);
+          displayText = s.subject['title'];
+        } else if (ContentKey(s.subjectToken) == thisToken) {
           otherToken = ContentKey(sOtherToken);
-          // get title from s.other
           displayText = s.other['title'];
         } else if (otherCanonical == thisCanonical) {
           otherToken = ContentKey(s.subjectToken);
           displayText = s.subject['title'];
         } else {
-          // Fallback
+          // Default to other if subject is us, or if neither/both are us.
           otherToken = ContentKey(sOtherToken);
           displayText = s.other['title'];
         }

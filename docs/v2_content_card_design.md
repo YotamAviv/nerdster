@@ -61,7 +61,19 @@ The items in this section are **aggregated (computed) subjects**, not raw user s
 
 ---
 
-## 3. Use Cases
+## 3. Symmetric Perspective (Symmetry)
+
+When a statement involves two subjects (Relate/Equate), the UI must shift its perspective to show the "Other" subject relative to the card being viewed. 
+
+- **Example**: A statement says `A = B`.
+- **On Card A**: Display text should be ` = B`.
+- **On Card B**: Display text should be ` = A`.
+
+This applies even if A and B are categorized in the same Equivalence Group. The card for one literal token must always treat the other token as the target.
+
+---
+
+## 4. Use Cases
 
 ### UC1: Inspecting Related/Equated Content
 **Goal**: Bart is looking at "Science" and sees it is related to "Math". He wants to see what "Math" is about.
@@ -150,7 +162,13 @@ The items in this section are **aggregated (computed) subjects**, not raw user s
 
 ## 6. Statement Display Logic (History)
 
-The text displayed in the history list depends on the statement's verb and content.
+The text displayed in the history list depends on the statement's verb and content. 
+
+### Dynamic Perspective (Symmetry)
+For binary statements (`relate`, `equate`, etc.), the UI must pivot the display relative to the **literal card** being viewed.
+- If Subject A is viewed and a statement says `A = B`, show **"= B"**.
+- If Subject B is viewed and the *same* statement is shown, show **"= A"**.
+- **Rule**: Use the literal subject token of the current card to determine which side of the statement is "Self" and which is "Other".
 
 | Verb | Condition | Icon(s) | Display Text |
 | :--- | :--- | :--- | :--- |

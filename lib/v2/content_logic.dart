@@ -101,12 +101,11 @@ ContentAggregation reduceContentAggregation(
     if (s.verb == ContentVerb.equate || s.verb == ContentVerb.dontEquate) {
       final String s1 = s.subjectToken;
       final String s2 = getToken(s.other);
-      if (s1 != s2) {
+      assert(s1 != s2) ;
         // It's decided! 
         // - s1 is canonical, s2 equivalent.
         // - this statement is about both.
-        eqLogic.process(EquateStatement(s1, s2, dont: s.verb == ContentVerb.dontEquate));
-      }
+      eqLogic.process(EquateStatement(s1, s2, dont: s.verb == ContentVerb.dontEquate));
     }
   }
   final Set<EquivalenceGroup> groups = eqLogic.createGroups();
@@ -173,16 +172,17 @@ ContentAggregation reduceContentAggregation(
   }
 
   // 5. Aggregation
-  final Map<ContentKey, SubjectGroup> subjectGroups = {};
-  // TODO: Be clear: Is by canonical token or original token or all merged (it looks like all merged)?
-  final Map<ContentKey, List<ContentStatement>> statementsBySubject = {};
+  final Map<ContentKey, SubjectGroup> canonicalSubject2group = {};
+  final Map<ContentKey, List<ContentStatement>> subject2statements = {};
   for (final s in filteredStatements) {
     final canonical = subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
-    statementsBySubject.putIfAbsent(canonical, () => []).add(s);
+    subject2statements.putIfAbsent(canonical, () => []).add(s);
     if (s.other != null) {
       final ContentKey canonicalOther =
           subjectEquivalence[ContentKey(getToken(s.other))] ?? ContentKey(getToken(s.other));
-      statementsBySubject.putIfAbsent(canonicalOther, () => []).add(s);
+      if (canonicalOther != canonical) {
+        subject2statements.putIfAbsent(canonicalOther, () => []).add(s);
+      }
     }
   }
 
@@ -235,13 +235,13 @@ ContentAggregation reduceContentAggregation(
         // Only aggregate if this canonical token is a top-level subject.
         if (!topLevelSubjects.contains(canonical)) continue;
 
-        SubjectGroup? group = subjectGroups[canonical];
+        SubjectGroup? group = canonicalSubject2group[canonical];
         if (group == null) {
           group = SubjectGroup(
             canonical: canonical,
             lastActivity: s.time,
           );
-          subjectGroups[canonical] = group;
+          canonicalSubject2group[canonical] = group;
         }
 
         // Update stats
@@ -274,7 +274,7 @@ ContentAggregation reduceContentAggregation(
         final DateTime lastActivity = s.time.isAfter(group.lastActivity) ? s.time : group.lastActivity;
 
         // Update the aggregation
-        subjectGroups[canonical] = SubjectGroup(
+        canonicalSubject2group[canonical] = SubjectGroup(
           canonical: canonical,
           // TODO: We shouldn't sort.
           statements: [...group.statements, s]..sort((a, b) => b.time.compareTo(a.time)),
@@ -357,7 +357,7 @@ ContentAggregation reduceContentAggregation(
     }
 
     // Tags from statements about this token
-    for (final s in statementsBySubject[token] ?? []) {
+    for (final s in subject2statements[token] ?? []) {
       if (s.comment != null) {
         tags.addAll(extractTags(s.comment!));
       }
@@ -366,9 +366,9 @@ ContentAggregation reduceContentAggregation(
     return tags;
   }
 
-  for (final group in subjectGroups.values.toList()) {
+  for (final group in canonicalSubject2group.values.toList()) {
     final Set<String> recursiveTags = collectTagsRecursive(group.canonical, {});
-    subjectGroups[group.canonical] = SubjectGroup(
+    canonicalSubject2group[group.canonical] = SubjectGroup(
       canonical: group.canonical,
       statements: group.statements,
       tags: recursiveTags,
@@ -391,7 +391,7 @@ ContentAggregation reduceContentAggregation(
     final token = entry.key;
     final subjectJson = entry.value;
     final canonical = subjectEquivalence[token] ?? token;
-    final group = subjectGroups[canonical];
+    final group = canonicalSubject2group[canonical];
     if (group != null) {
       subjects[token] = SubjectAggregation(
         subject: subjectJson,
@@ -402,7 +402,7 @@ ContentAggregation reduceContentAggregation(
 
   // Ensure that even tokens without definitions but with group data are included
   // (using their token value as title if needed).
-  for (final group in subjectGroups.values) {
+  for (final group in canonicalSubject2group.values) {
      if (!subjects.containsKey(group.canonical)) {
         subjects[group.canonical] = SubjectAggregation(
            subject: {'title': labeler.getLabel(group.canonical.value), 'contentType': 'unknown'},
