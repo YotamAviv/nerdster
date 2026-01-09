@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/model.dart';
@@ -43,7 +44,7 @@ class ContentPipeline {
         throw 'Pipeline Error: Source returned content from blocked identity: ${identityKey.value}';
       }
 
-      delegateContent[DelegateKey(keyStr)] = rawDelegateContent[keyStr]!;
+      delegateContent[DelegateKey(keyStr)] = UnmodifiableListView(rawDelegateContent[keyStr]!);
     }
     
     return delegateContent;

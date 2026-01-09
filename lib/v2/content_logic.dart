@@ -32,7 +32,7 @@ ContentAggregation reduceContentAggregation(
   bool enableCensorship = true,
   List<DelegateKey>? meDelegateKeys,
 }) {
-  final Set<String> censored = {}; // TODO: ContentKey
+  final Set<String> censored = {};
 
   // 1. Decentralized Censorship (Proximity Wins)
   if (enableCensorship) {
@@ -91,6 +91,12 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
+  // QUESTIONABLE.. This is hard to do, and I'm not sure if it's better with or without this feature.
+  // If I'm viewing as PoV, and in that  PoV A=>B, and I've thumbed A, then should I or shouldn't 
+  // I see it thumbed by me? Shouldn't I see it thumbed by PoV?
+  // TODO: B. I should see it thumbed by PoV. I should only see the impact of my stament when I rate (or ralate) the same exact thing that I already have.
+  // All we'd need for that is to gather my own statements by key.
+  
   // 2b. Collect My Statements (Separately)
   //
   // Rationale:
@@ -312,71 +318,6 @@ ContentAggregation reduceContentAggregation(
         final IdentityKey signerIdentity =
             delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!;
         assert(trustGraph.isTrusted(signerIdentity));
-
-        if (s.verb == ContentVerb.clear) {
-          // Remove prior statements by this identity
-          final toRemove = agg.statements.where((existing) {
-            final identityKey = IdentityKey(existing.iToken);
-            assert(trustGraph.isTrusted(identityKey));
-            final existingIdentity = trustGraph.isTrusted(identityKey)
-                ? trustGraph.resolveIdentity(identityKey)
-                : delegateResolver.getIdentityForDelegate(DelegateKey(existing.iToken));
-            return existingIdentity == signerIdentity;
-          }).toList();
-
-          int likesDelta = 0;
-          int dislikesDelta = 0;
-          for (final r in toRemove) {
-            if (r.verb == ContentVerb.rate) {
-              if (r.like == true) likesDelta--;
-              if (r.like == false) dislikesDelta--;
-            }
-          }
-
-          final newStatements =
-              agg.statements.where((existing) => !toRemove.contains(existing)).toList();
-
-          Set<ContentKey> newRelated = agg.related;
-          if (toRemove.any((r) => r.verb == ContentVerb.relate)) {
-            newRelated = {};
-            for (final stmt in newStatements) {
-              if (stmt.verb == ContentVerb.relate) {
-                final c1 = subjectEquivalence[ContentKey(stmt.subjectToken)] ??
-                    ContentKey(stmt.subjectToken);
-                final c2 = stmt.other != null
-                    ? (subjectEquivalence[ContentKey(getToken(stmt.other))] ??
-                        ContentKey(getToken(stmt.other)))
-                    : null;
-                if (canonical == c1 && c2 != null) {
-                  newRelated.add(c2);
-                } else if (canonical == c2) {
-                  newRelated.add(c1);
-                }
-              }
-            }
-          }
-
-          // Clear povStatements if signer is POV
-          List<ContentStatement> newPovStatements = agg.povStatements;
-          if (signerIdentity == followNetwork.povIdentity) {
-            newPovStatements = [];
-          }
-
-          subjects[canonical] = SubjectAggregation(
-            canonicalTokenIn: canonical,
-            subject: agg.subject,
-            statements: newStatements,
-            tags: agg.tags,
-            likes: agg.likes + likesDelta,
-            dislikes: agg.dislikes + dislikesDelta,
-            lastActivity: s.time.isAfter(agg.lastActivity) ? s.time : agg.lastActivity,
-            related: newRelated,
-            myDelegateStatements: agg.myDelegateStatements,
-            povStatements: newPovStatements,
-            isCensored: agg.isCensored,
-          );
-          continue;
-        }
 
         List<ContentStatement> newPovStatements = agg.povStatements;
         if (signerIdentity == followNetwork.povIdentity) {

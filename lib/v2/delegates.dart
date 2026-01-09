@@ -53,10 +53,6 @@ class DelegateResolver {
       if (s.revokeAt != null) {
         _delegateConstraints[delegateKey] = s.revokeAt!;
       }
-      
-      
-      // A key cannot be a delegate if it is blocked
-      if (graph.blocked.contains(IdentityKey(delegateKey.value))) continue;
 
       // First one to claim it wins.
       if (!_delegateToIdentity.containsKey(delegateKey)) {
