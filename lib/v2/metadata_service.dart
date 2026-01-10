@@ -116,7 +116,6 @@ Future<void> fetchImages({
   }
 
   // TODO: Improve image relevance.
-  // Currently, we rely on the cloud function to find images.
   // We should explore using more specific search queries (e.g., including author/year)
   // or using specialized APIs (Google Books, TMDB, etc.) based on contentType.
 

@@ -202,9 +202,6 @@ class GraphController {
         }
         final String subjectIdentity = feedModel.trustGraph.resolveIdentity(subjectKey).value;
 
-        final bool isConflict =
-            fn.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);
-
         _mergeOrAddEdge(
             edges,
             GraphEdgeData(
@@ -212,7 +209,6 @@ class GraphController {
               to: subjectIdentity,
               statements: [s],
               isFollow: true,
-              isConflict: isConflict,
             ));
       }
     }

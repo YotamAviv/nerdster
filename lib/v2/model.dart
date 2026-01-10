@@ -22,7 +22,7 @@ enum V2FilterMode {
 /// Represents a notification or conflict discovered during graph construction.
 class TrustNotification {
   final String reason;
-  final Statement rejectedStatement; // TODO: TrustStatement!
+  final TrustStatement rejectedStatement;
   final bool isConflict;
 
   TrustNotification({

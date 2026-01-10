@@ -117,57 +117,6 @@ void main() {
       expect(data.edges.first.isFollow, isTrue);
     });
 
-    test('identifies conflicts in graph data', () {
-      final povKey = {'kty': 'mock', 'val': 'pov'};
-      final pov = IdentityKey(Jsonish(povKey).token);
-      final aliceKey = {'kty': 'mock', 'val': 'alice'};
-      final alice = IdentityKey(Jsonish(aliceKey).token);
-
-      final f1 = ContentStatement(Jsonish({
-        'statement': 'org.nerdster',
-        'follow': alice.value,
-        'with': {'contexts': {'news': 1}},
-        'time': DateTime.now().toIso8601String(),
-        'I': povKey,
-      }, 'f1'));
-
-      final trustGraph = TrustGraph(pov: pov, distances: {pov: 0, alice: 1});
-      final followNetwork = FollowNetwork(
-        fcontext: 'news',
-        identities: [pov, alice],
-        povIdentity: pov,
-        edges: {
-          pov: [f1],
-        },
-        paths: {
-          alice: [pov, alice],
-        },
-        notifications: [
-          TrustNotification(reason: 'conflict', rejectedStatement: f1, isConflict: true),
-        ],
-      );
-
-      final feedModel = V2FeedModel(
-        trustGraph: trustGraph,
-        followNetwork: followNetwork,
-        delegateResolver: DelegateResolver(trustGraph),
-        labeler: V2Labeler(trustGraph),
-        aggregation: ContentAggregation(),
-        povToken: pov,
-        fcontext: 'news',
-        sortMode: V2SortMode.recentActivity,
-        filterMode: V2FilterMode.ignoreDisses,
-        enableCensorship: false,
-      );
-
-      final controller = GraphController(feedModel);
-      controller.focusedIdentity = alice;
-      controller.mode = GraphViewMode.follow;
-      final data = controller.buildGraphData();
-
-      expect(data.edges.any((e) => e.isConflict), isTrue);
-    });
-
     test('builds identity graph data with delegation', () {
       final povKey = {'kty': 'mock', 'val': 'pov'};
       final pov = IdentityKey(Jsonish(povKey).token);
