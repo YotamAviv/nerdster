@@ -201,36 +201,30 @@ ContentAggregation reduceContentAggregation(
       subjectDefinitions[ContentKey(getToken(statement.other))] = statement.other as Json;
     }
   }
-  Jsonish? findSubject(ContentKey subjectKey) =>
-      subjectDefinitions.containsKey(subjectKey) ? Jsonish(subjectDefinitions[subjectKey]!) : null;
 
   // Pass 1: Identify all canonical tokens that should be top-level subjects.
   final Set<ContentKey> topLevelSubjects = {};
   final Set<ContentKey> recognizedLiteralSubjects = {};
-  void processPass1(Iterable<ContentStatement> stmts) {
-    for (final ContentStatement s in stmts) {
-      for (final String token in s.involvedTokens) {
-        recognizedLiteralSubjects.add(ContentKey(token));
+  for (final ContentStatement s in filteredStatements) {
+    for (final String token in s.involvedTokens) {
+      recognizedLiteralSubjects.add(ContentKey(token));
+    }
+    if ((s.verb == ContentVerb.clear && s.subject is Map) ||
+        s.verb == ContentVerb.relate ||
+        s.verb == ContentVerb.dontRelate ||
+        s.verb == ContentVerb.equate) {
+      for (final token in s.involvedTokens) {
+        topLevelSubjects.add(subjectEquivalence[ContentKey(token)] ?? ContentKey(token));
       }
-      if ((s.verb == ContentVerb.clear && s.subject is Map) ||
-          s.verb == ContentVerb.relate ||
-          s.verb == ContentVerb.dontRelate ||
-          s.verb == ContentVerb.equate) {
-        for (final token in s.involvedTokens) {
-          topLevelSubjects.add(subjectEquivalence[ContentKey(token)] ?? ContentKey(token));
-        }
-      } else if (s.verb == ContentVerb.rate) {
-        // Only make it a top-level subject if we have a definition for it,
-        // otherwise it might be a rating-of-a-rating.
-        if (s.subject is Map || subjectDefinitions.containsKey(ContentKey(s.subjectToken))) {
-          topLevelSubjects
-              .add(subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken));
-        }
+    } else if (s.verb == ContentVerb.rate) {
+      // Only make it a top-level subject if we have a definition for it,
+      // otherwise it might be a rating-of-a-rating.
+      if (s.subject is Map || subjectDefinitions.containsKey(ContentKey(s.subjectToken))) {
+        topLevelSubjects
+            .add(subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken));
       }
     }
   }
-
-  processPass1(filteredStatements);
 
   // Pass 2: Aggregate all statements into those subjects.
   for (final IdentityKey identity in followNetwork.identities) {
