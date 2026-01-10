@@ -149,6 +149,14 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   void _updateValueWithSettings() {
     if (value == null) return;
 
+    final effectiveSubjects = _computeEffectiveSubjects(
+      value!.aggregation,
+      filterMode,
+      enableCensorship,
+      tagFilter: tagFilter,
+      typeFilter: typeFilter,
+    );
+
     value = V2FeedModel(
       trustGraph: value!.trustGraph,
       followNetwork: value!.followNetwork,
@@ -164,8 +172,30 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       enableCensorship: enableCensorship,
       availableContexts: value!.availableContexts,
       activeContexts: value!.activeContexts,
+      effectiveSubjects: effectiveSubjects,
       sourceErrors: value!.sourceErrors,
     );
+  }
+
+  List<SubjectAggregation> _computeEffectiveSubjects(
+    ContentAggregation aggregation,
+    V2FilterMode mode,
+    bool censorshipEnabled, {
+    String? tagFilter,
+    String? typeFilter,
+  }) {
+    final List<SubjectAggregation> results = aggregation.subjects.values.where((s) {
+      // Only show canonical tokens in the main feed to avoid duplicates.
+      if (s.token != s.canonical) return false;
+
+      return shouldShow(s, mode, censorshipEnabled,
+          tagFilter: tagFilter,
+          tagEquivalence: aggregation.tagEquivalence,
+          typeFilter: typeFilter);
+    }).toList();
+
+    sortSubjects(results);
+    return results;
   }
 
   void sortSubjects(List<SubjectAggregation> subjects) {
@@ -424,6 +454,14 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
             ...contentSource.errors,
           ];
 
+          final effectiveSubjects = _computeEffectiveSubjects(
+            aggregation,
+            filterMode,
+            enableCensorship,
+            tagFilter: tagFilter,
+            typeFilter: typeFilter,
+          );
+
           value = V2FeedModel(
             trustGraph: graph,
             followNetwork: followNetwork,
@@ -439,6 +477,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
             enableCensorship: enableCensorship,
             availableContexts: availableContexts,
             activeContexts: activeContexts,
+            effectiveSubjects: effectiveSubjects,
             sourceErrors: allErrors,
           );
           progress.value = 1.0;

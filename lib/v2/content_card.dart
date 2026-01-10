@@ -98,7 +98,7 @@ class _ContentCardState extends State<ContentCard> {
               child: SingleChildScrollView(
                 controller: scrollController,
                 child: ContentCard(
-                  aggregation: agg,
+                  aggregation: agg.toNarrow(),
                   model: widget.model,
                   onRefresh: widget.onRefresh,
                   onPovChange: widget.onPovChange,
@@ -331,9 +331,13 @@ class _ContentCardState extends State<ContentCard> {
 
     // 1. Equivalents
     final equivalentTokens = widget.model.aggregation.equivalence.entries
-        .where((e) => e.value == widget.aggregation.canonical && e.key != widget.aggregation.canonical)
+        .where((e) => e.value == widget.aggregation.canonical && e.key != widget.aggregation.token)
         .map((e) => e.key)
         .toSet();
+
+    if (widget.aggregation.token != widget.aggregation.canonical) {
+      equivalentTokens.add(widget.aggregation.canonical);
+    }
 
     if (equivalentTokens.isNotEmpty) {
       final Map<ContentKey, String> tokenToTitle = {};

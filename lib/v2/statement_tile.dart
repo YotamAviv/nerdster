@@ -223,20 +223,24 @@ class StatementTile extends StatelessWidget {
                 constraints: const BoxConstraints(),
                 icon: Icon(icon, size: 16, color: color),
                 tooltip: tooltip,
-                onPressed: () => V2RateDialog.show(
-                  context,
-                  SubjectAggregation(
-                    subject: s.json,
-                    group: SubjectGroup(
-                      canonical: ContentKey(s.token),
-                      statements: uniqueStatements,
-                      lastActivity: s.time,
+                onPressed: () {
+                  final group = SubjectGroup(
+                    canonical: ContentKey(s.token),
+                    statements: uniqueStatements,
+                    lastActivity: s.time,
+                  );
+                  V2RateDialog.show(
+                    context,
+                    SubjectAggregation(
+                      subject: s.json,
+                      group: group,
+                      narrowGroup: group,
                     ),
-                  ),
-                  model,
-                  intent: RateIntent.none,
-                  onRefresh: onRefresh,
-                ),
+                    model,
+                    intent: RateIntent.none,
+                    onRefresh: onRefresh,
+                  );
+                },
               ),
               ValueListenableBuilder<bool>(
                 valueListenable: Setting.get<bool>(SettingType.showCrypto),

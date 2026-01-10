@@ -401,20 +401,11 @@ class _ContentViewState extends State<ContentView> {
       );
     }
 
-    if (model == null || model.aggregation.subjects.isEmpty) {
+    if (model == null || model.effectiveSubjects.isEmpty) {
       return const Center(child: Text('No content found.'));
     }
 
-    final subjects = model.aggregation.subjects.values.where((s) {
-      // Only show canonical tokens in the main feed to avoid duplicates.
-      if (s.token != s.canonical) return false;
-
-      return _controller.shouldShow(s, model.filterMode, model.enableCensorship,
-          tagFilter: model.tagFilter, typeFilter: model.typeFilter);
-    }).toList();
-
-    // Sort using the controller's logic
-    _controller.sortSubjects(subjects);
+    final subjects = model.effectiveSubjects;
 
     return ListView.builder(
       itemCount: subjects.length,

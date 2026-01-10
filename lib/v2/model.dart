@@ -209,6 +209,32 @@ class SubjectGroup {
     assert(Statement.validateStatementTimesAndTypes(povStatements));
   }
 
+  SubjectGroup copyWith({
+    List<ContentStatement>? statements,
+    Set<String>? tags,
+    int? likes,
+    int? dislikes,
+    DateTime? lastActivity,
+    Set<ContentKey>? related,
+    List<ContentStatement>? myDelegateStatements,
+    List<ContentStatement>? povStatements,
+    bool? isCensored,
+    ContentKey? canonical,
+  }) {
+    return SubjectGroup(
+      canonical: canonical ?? this.canonical,
+      statements: statements ?? this.statements,
+      tags: tags ?? this.tags,
+      likes: likes ?? this.likes,
+      dislikes: dislikes ?? this.dislikes,
+      lastActivity: lastActivity ?? this.lastActivity,
+      related: related ?? this.related,
+      myDelegateStatements: myDelegateStatements ?? this.myDelegateStatements,
+      povStatements: povStatements ?? this.povStatements,
+      isCensored: isCensored ?? this.isCensored,
+    );
+  }
+
   DateTime? get userDismissalTimestamp => _getDismissalTimestamp(myDelegateStatements);
   DateTime? get povDismissalTimestamp => _getDismissalTimestamp(povStatements);
 
@@ -273,42 +299,63 @@ class SubjectGroup {
 /// A specific view of a subject, bound to a literal identity but sharing group data.
 class SubjectAggregation {
   final Json subject;
-  final SubjectGroup group;
+  final SubjectGroup group; // Canonical aggregation
+  final SubjectGroup narrowGroup; // Literal aggregation
+  final bool isNarrowMode;
 
   SubjectAggregation({
     required this.subject,
     required this.group,
+    required this.narrowGroup,
+    this.isNarrowMode = false,
   });
 
-  // Proxy getters for group data
+  SubjectAggregation toNarrow() => SubjectAggregation(
+        subject: subject,
+        group: group,
+        narrowGroup: narrowGroup,
+        isNarrowMode: true,
+      );
+
+  SubjectAggregation toWide() => SubjectAggregation(
+        subject: subject,
+        group: group,
+        narrowGroup: narrowGroup,
+        isNarrowMode: false,
+      );
+
+  SubjectGroup get activeGroup => isNarrowMode ? narrowGroup : group;
+
+  // Proxy getters for active group data
   ContentKey get token => ContentKey(getToken(subject));
   ContentKey get canonical => group.canonical;
-  List<ContentStatement> get statements => group.statements;
-  Set<String> get tags => group.tags;
-  int get likes => group.likes;
-  int get dislikes => group.dislikes;
-  DateTime get lastActivity => group.lastActivity;
-  Set<ContentKey> get related => group.related;
-  List<ContentStatement> get myDelegateStatements => group.myDelegateStatements;
-  List<ContentStatement> get povStatements => group.povStatements;
-  bool get isCensored => group.isCensored;
+  List<ContentStatement> get statements => activeGroup.statements;
+  Set<String> get tags => activeGroup.tags;
+  int get likes => activeGroup.likes;
+  int get dislikes => activeGroup.dislikes;
+  DateTime get lastActivity => activeGroup.lastActivity;
+  Set<ContentKey> get related => activeGroup.related;
+  List<ContentStatement> get myDelegateStatements => activeGroup.myDelegateStatements;
+  List<ContentStatement> get povStatements => activeGroup.povStatements;
+  bool get isCensored => activeGroup.isCensored;
 
   // Proxy getters for disposition
-  bool get isRated => group.isRated;
-  bool get isDismissed => group.isDismissed;
-  bool get isUserDismissed => group.isUserDismissed;
-  DateTime? get userDismissalTimestamp => group.userDismissalTimestamp;
-  DateTime? get povDismissalTimestamp => group.povDismissalTimestamp;
+  bool get isRated => activeGroup.isRated;
+  bool get isDismissed => activeGroup.isDismissed;
+  bool get isUserDismissed => activeGroup.isUserDismissed;
+  DateTime? get userDismissalTimestamp => activeGroup.userDismissalTimestamp;
+  DateTime? get povDismissalTimestamp => activeGroup.povDismissalTimestamp;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is SubjectAggregation &&
           mapEquals(subject, other.subject) &&
-          group.canonical == other.group.canonical;
+          group.canonical == other.group.canonical &&
+          isNarrowMode == other.isNarrowMode;
 
   @override
-  int get hashCode => subject.hashCode ^ group.canonical.hashCode;
+  int get hashCode => subject.hashCode ^ group.canonical.hashCode ^ isNarrowMode.hashCode;
 }
 
 /// The result of aggregating content for a Follow Network.

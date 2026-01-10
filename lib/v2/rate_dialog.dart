@@ -91,13 +91,13 @@ class _V2RateDialogState extends State<V2RateDialog> {
   void initState() {
     super.initState();
     
-      // Find prior statement by this user
-    // Look in the separate 'myStatements' map (populated from locally provided delegate keys)
-    final List<ContentStatement> myStatements = widget.model.aggregation.myStatements[widget.aggregation.canonical] ?? [];
+    // Find prior statement by this user
+    // In Wide Mode this is the canonical state, in Narrow Mode it's the literal state.
+    final List<ContentStatement> myStatements = widget.aggregation.myDelegateStatements;
     
     // myStatements is already sorted by time (descending) in content_logic.dart
     assert(Statement.validateStatementTimesAndTypes(myStatements));
-    assert(myStatements.length <= 1, 'singular dispostion');
+    
     priorStatement = myStatements.isEmpty ? null : myStatements.first;
 
     like = ValueNotifier(priorStatement?.like);
