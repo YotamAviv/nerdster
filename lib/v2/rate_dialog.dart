@@ -90,15 +90,17 @@ class _V2RateDialogState extends State<V2RateDialog> {
   @override
   void initState() {
     super.initState();
-    
-    // Find prior statement by this user
-    // In Wide Mode this is the canonical state, in Narrow Mode it's the literal state.
-    final List<ContentStatement> myStatements = widget.aggregation.myDelegateStatements;
-    
-    // myStatements is already sorted by time (descending) in content_logic.dart
-    assert(Statement.validateStatementTimesAndTypes(myStatements));
-    
-    priorStatement = myStatements.isEmpty ? null : myStatements.first;
+
+    // Find prior statement by this user for this literal token
+    final token = widget.aggregation.token;
+    final List<ContentStatement> myLiteralStatements =
+        List.from(widget.model.aggregation.myLiteralStatements[token] ?? []);
+
+    // Sort by time descending to find the latest
+    myLiteralStatements.sort((a, b) => b.time.compareTo(a.time));
+    assert(Statement.validateStatementTimesAndTypes(myLiteralStatements));
+
+    priorStatement = myLiteralStatements.isEmpty ? null : myLiteralStatements.first;
 
     like = ValueNotifier(priorStatement?.like);
     dis = ValueNotifier(priorStatement?.dismiss);

@@ -89,22 +89,11 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     if (myId == null) return;
 
     final canonical = model.trustGraph.resolveIdentity(widget.identity);
-    final subjectAgg = model.aggregation.subjects[ContentKey(canonical.value)];
-    // subjectAgg might be null if no statements found.
-    // Also conversion IdentityKey -> ContentKey just for lookup?
-    // Aggregation keys are ContentKeys (hashes/uris). IdentityKey is just a key.
-    // Assuming implicit conversion or value match.
-    // Wait, V2FeedModel.aggregation.subjects is Map<ContentKey, SubjectAggregation>.
-    // IdentityKey and ContentKey wrap String.
-    
-    // In content_logic.dart, we'll see how keys are used.
-    // For now, let's assume keys are compatible via their value.
-    if (subjectAgg == null) return;
 
-    final myStatements = subjectAgg.myDelegateStatements;
+    final myLiteralStatements = model.aggregation.myLiteralStatements[ContentKey(canonical.value)] ?? [];
 
     ContentStatement? priorStatement;
-    for (var s in myStatements) {
+    for (var s in myLiteralStatements) {
       if (s.verb == ContentVerb.follow) {
         priorStatement = s;
         break;

@@ -202,13 +202,15 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  // Pass 1: Identify all canonical tokens that should be top-level subjects.
+  // Pass 1: Identify all tokens that should be top-level subjects or recognized variants.
   final Set<ContentKey> topLevelSubjects = {};
   final Set<ContentKey> recognizedLiteralSubjects = {};
+
   for (final ContentStatement s in filteredStatements) {
     for (final String token in s.involvedTokens) {
       recognizedLiteralSubjects.add(ContentKey(token));
     }
+
     if ((s.verb == ContentVerb.clear && s.subject is Map) ||
         s.verb == ContentVerb.relate ||
         s.verb == ContentVerb.dontRelate ||
@@ -285,7 +287,8 @@ ContentAggregation reduceContentAggregation(
           newPovStatements = [...newPovStatements, s]..sort((a, b) => b.time.compareTo(a.time));
         }
 
-        final DateTime lastActivity = s.time.isAfter(group.lastActivity) ? s.time : group.lastActivity;
+        final DateTime lastActivity =
+            s.time.isAfter(group.lastActivity) ? s.time : group.lastActivity;
 
         map[key] = SubjectGroup(
           canonical: isCanonical ? key : canonicalSubject,
@@ -295,9 +298,10 @@ ContentAggregation reduceContentAggregation(
           dislikes: dislikes,
           lastActivity: lastActivity,
           related: relatedSet,
-          myDelegateStatements: group.myDelegateStatements,
           povStatements: newPovStatements,
-          isCensored: group.isCensored || censored.contains(key.value) || censored.contains(s.subjectToken),
+          isCensored: group.isCensored ||
+              censored.contains(key.value) ||
+              censored.contains(s.subjectToken),
         );
       }
 
@@ -312,15 +316,6 @@ ContentAggregation reduceContentAggregation(
       }
     }
   }
-  // QUESTIONABLE.. This is hard to implement, and I'm not sure if the app is more correct
-  // with or without this feature (of having my own delegates impact a view that I'm not a part of).
-  // If I'm viewing as PoV, and in that PoV A=>B is known, and I've thumbed A, then should I or shouldn't 
-  // I see it (or B) thumbed by me? Shouldn't I see it thumbed the same way PoV would?
-  // Decided!
-  // - I should see it thumbed the same way PoV would. 
-  // - I should only see the impact of my stament when I rate (or ralate) the same exact subject
-  //   that I already have regardless of equivalence.
-  // - All we'd need for that is to gather my own delegate statements (merged if have multiple) by key.
 
   // Pass 2b: Aggregate My Statements (For UI Overlays)
   final List<Iterable<ContentStatement>> mySources = meDelegateKeys
@@ -334,15 +329,18 @@ ContentAggregation reduceContentAggregation(
     iTransformer: (_) => 'me',
   ).cast<ContentStatement>().toList();
 
-  final Map<ContentKey, List<ContentStatement>> myCanonicalStatements = {};
   final Map<ContentKey, List<ContentStatement>> myLiteralStatements = {};
+  final Map<ContentKey, List<ContentStatement>> myCanonicalDisses = {};
 
   for (final s in mergedMyStatements) {
     for (final token in s.involvedTokens) {
       final literalKey = ContentKey(token);
-      final canonicalKey = subjectEquivalence[literalKey] ?? literalKey;
-      myCanonicalStatements.putIfAbsent(canonicalKey, () => []).add(s);
       myLiteralStatements.putIfAbsent(literalKey, () => []).add(s);
+
+      final canonicalKey = subjectEquivalence[literalKey] ?? literalKey;
+      if (s.verb == ContentVerb.rate) {
+        myCanonicalDisses.putIfAbsent(canonicalKey, () => []).add(s);
+      }
     }
   }
 
@@ -394,13 +392,10 @@ ContentAggregation reduceContentAggregation(
     SubjectGroup? narrowGroup = literalSubject2group[token];
 
     if (group != null) {
-      group = group.copyWith(myDelegateStatements: myCanonicalStatements[canonical] ?? []);
-      narrowGroup = (narrowGroup ??
-              SubjectGroup(
-                canonical: canonical,
-                lastActivity: group.lastActivity,
-              ))
-          .copyWith(myDelegateStatements: myLiteralStatements[token] ?? []);
+      narrowGroup ??= SubjectGroup(
+        canonical: canonical,
+        lastActivity: group.lastActivity,
+      );
 
       subjects[token] = SubjectAggregation(
         subject: subjectJson,
@@ -413,28 +408,18 @@ ContentAggregation reduceContentAggregation(
   for (final entry in subjectDefinitions.entries) {
     createAggregation(entry.key, entry.value);
   }
-
-  // Ensure that even tokens without definitions but with group data are included
-  for (final group in canonicalSubject2group.values.toList()) {
-    if (!subjects.containsKey(group.canonical)) {
-      createAggregation(group.canonical, {
-        'title': labeler.getLabel(group.canonical.value),
-        'contentType': 'unknown',
-      });
-    }
-  }
-
+  
   final List<String> mostTags = mostStrings.most().toList();
 
   return ContentAggregation(
     statements: filteredStatements,
     censored: censored,
     equivalence: subjectEquivalence,
-    related: related, // Still uses canonical related map? 
-    // Wait, let me check where 'related' comes from in this file.
+    related: related,
     tagEquivalence: tagEquivalence,
     mostTags: mostTags,
     subjects: subjects,
-    myStatements: myCanonicalStatements, // Feed usually expects canonical 'myStatements'
+    myCanonicalDisses: myCanonicalDisses,
+    myLiteralStatements: myLiteralStatements,
   );
 }

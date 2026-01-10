@@ -150,8 +150,8 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       print('Superbad found: YES');
       final myStatements = subject.statements.where((s) => s.iToken == lisaN.id.value);
       print('Lisa\'s statements in feed: ${myStatements.length} (Expected: >0)');
-      final myOverlay = subject.myDelegateStatements.where((s) => s.iToken == lisaN.id.value);
-      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: false - Pure PoV)');
+      final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
+      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
     } else {
       print('Superbad found: NO (Critical Failure)');
     }
@@ -179,8 +179,8 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       print('Superbad found: YES');
       final lisaInFeed = subject.statements.where((s) => s.iToken == lisaN.id.value);
       print('Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: >0)');
-      final myOverlay = subject.myDelegateStatements.where((s) => s.iToken == lisaN.id.value);
-      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: false - Pure PoV)');
+      final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
+      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
     } else {
       print('Superbad found: NO (Critical Failure)');
     }
@@ -211,17 +211,22 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       final lisaInFeed = subject.statements.where((s) => s.iToken == lisaN.id.value);
       print('Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: 0)');
       
-      final myOverlay = subject.myDelegateStatements.where((s) => s.iToken == lisaN.id.value);
-      if (myOverlay.isEmpty) {
-        print('Lisa\'s overlay status (Blue Star): false (Correct - Pure PoV)');
+      final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
+      if (myOverlay.isNotEmpty) {
+        print('Lisa\'s overlay status (Blue Star): true (Correct)');
       } else {
-        print('Lisa\'s overlay status (Blue Star): true (Fail - Impure PoV)');
+        print('Lisa\'s overlay status (Blue Star): false (Fail)');
       }
 
       // Verify RateDialog data availability
-      // content_logic.dart should populate `myStatements` for this subject
-      final myStatements = agg.myStatements[subject.canonical] ?? [];
-      final hasMyRating = myStatements.any((s) => s.iToken == lisaN.id.value && s.verb == ContentVerb.rate);
+      // Since Lisa is blocked, Secretariat might not be in agg.subjects,
+      // but it MUST be in agg.myLiteralStatements.
+      final secretariatEntry = agg.myLiteralStatements.entries.firstWhere(
+        (e) => e.value.any((s) => (s.subject as Map)['title'] == 'Secretariat'),
+      );
+      final secretariatKey = secretariatEntry.key;
+      final myLiteralStatements = secretariatEntry.value;
+      final hasMyRating = myLiteralStatements.any((s) => s.iToken == lisaN.id.value && s.verb == ContentVerb.rate);
       print('RateDialog Data Available: $hasMyRating (Expected: true)');
     } else {
       print('Superbad found: NO (Critical Failure)');

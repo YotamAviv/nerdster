@@ -187,11 +187,9 @@ class SubjectGroup {
   final int dislikes;
   final DateTime lastActivity;
   final Set<ContentKey> related; // Canonical tokens of related subjects
-  final List<ContentStatement> myDelegateStatements;
   final List<ContentStatement> povStatements;
   final bool isCensored;
   final ContentKey canonical;
-
   SubjectGroup({
     required this.canonical,
     this.statements = const [],
@@ -200,12 +198,10 @@ class SubjectGroup {
     this.dislikes = 0,
     required this.lastActivity,
     this.related = const {},
-    this.myDelegateStatements = const [],
     this.povStatements = const [],
     this.isCensored = false,
   }) {
     assert(Statement.validateStatementTimesAndTypes(statements));
-    assert(Statement.validateStatementTimesAndTypes(myDelegateStatements));
     assert(Statement.validateStatementTimesAndTypes(povStatements));
   }
 
@@ -216,7 +212,6 @@ class SubjectGroup {
     int? dislikes,
     DateTime? lastActivity,
     Set<ContentKey>? related,
-    List<ContentStatement>? myDelegateStatements,
     List<ContentStatement>? povStatements,
     bool? isCensored,
     ContentKey? canonical,
@@ -229,19 +224,16 @@ class SubjectGroup {
       dislikes: dislikes ?? this.dislikes,
       lastActivity: lastActivity ?? this.lastActivity,
       related: related ?? this.related,
-      myDelegateStatements: myDelegateStatements ?? this.myDelegateStatements,
       povStatements: povStatements ?? this.povStatements,
       isCensored: isCensored ?? this.isCensored,
     );
   }
 
-  DateTime? get userDismissalTimestamp => _getDismissalTimestamp(myDelegateStatements);
   DateTime? get povDismissalTimestamp => _getDismissalTimestamp(povStatements);
 
   bool get isRated => povStatements.any((s) => s.verb == ContentVerb.rate);
 
   bool get isDismissed => _checkIsDismissed(povStatements);
-  bool get isUserDismissed => _checkIsDismissed(myDelegateStatements);
 
   bool _checkIsDismissed(List<ContentStatement> dispositionStatements) {
     final dismissalTimestamp = _getDismissalTimestamp(dispositionStatements);
@@ -282,6 +274,40 @@ class SubjectGroup {
   DateTime? _getDismissalTimestamp(List<ContentStatement> stmts) {
     // The user's disposition is singular. The first rate statement encountered
     // is the effective one.
+    for (final s in stmts) {
+      if (s.verb == ContentVerb.rate) {
+        if (s.dismiss == 'forever') {
+          return DateTime(3000);
+        } else if (s.dismiss == 'snooze') {
+          return s.time;
+        }
+        return null; // A rate statement without dismissal ends the search and returns null
+      }
+    }
+    return null;
+  }
+
+  static bool checkIsDismissed(List<ContentStatement> myStmts, SubjectAggregation agg) {
+    final dismissalTimestamp = getDismissalTimestamp(myStmts);
+    if (dismissalTimestamp == null) return false;
+    if (dismissalTimestamp.year >= 3000) return true;
+
+    if (agg.lastActivity.isAfter(dismissalTimestamp)) {
+      final activityStatements =
+          agg.statements.where((s) => s.time.isAtSameMomentAs(agg.lastActivity));
+      for (final activityStatement in activityStatements) {
+        if (activityStatement.verb == ContentVerb.relate) return false;
+        if (activityStatement.verb == ContentVerb.rate) {
+          if (activityStatement.censor == true || activityStatement.dismiss != null) continue;
+          if (activityStatement.comment != null || activityStatement.like != null) return false;
+        }
+      }
+      return true;
+    }
+    return true;
+  }
+
+  static DateTime? getDismissalTimestamp(List<ContentStatement> stmts) {
     for (final s in stmts) {
       if (s.verb == ContentVerb.rate) {
         if (s.dismiss == 'forever') {
@@ -335,15 +361,12 @@ class SubjectAggregation {
   int get dislikes => activeGroup.dislikes;
   DateTime get lastActivity => activeGroup.lastActivity;
   Set<ContentKey> get related => activeGroup.related;
-  List<ContentStatement> get myDelegateStatements => activeGroup.myDelegateStatements;
   List<ContentStatement> get povStatements => activeGroup.povStatements;
   bool get isCensored => activeGroup.isCensored;
 
   // Proxy getters for disposition
   bool get isRated => activeGroup.isRated;
   bool get isDismissed => activeGroup.isDismissed;
-  bool get isUserDismissed => activeGroup.isUserDismissed;
-  DateTime? get userDismissalTimestamp => activeGroup.userDismissalTimestamp;
   DateTime? get povDismissalTimestamp => activeGroup.povDismissalTimestamp;
 
   @override
@@ -370,10 +393,14 @@ class ContentAggregation {
   /// Map of every known literal subject token to its flavored Aggregation.
   final Map<ContentKey, SubjectAggregation> subjects;
 
-  // Map of canonical subject Key to the list of my statements about it.
-  // This is used to hydrate the UI (RateDialog, etc) with the user's own state,
-  // without polluting the PoV feed itself.
-  final Map<ContentKey, List<ContentStatement>> myStatements; 
+  /// Map of canonical subject tokens to the list of my own merged rate statements.
+  /// Used for dismissal logic so that a dismissal of any token in an
+  /// equivalence group applies to the whole group.
+  final Map<ContentKey, List<ContentStatement>> myCanonicalDisses;
+
+  /// Map of literal subject tokens to the list of my own merged statements.
+  /// Used for UI hydration (RateDialog, etc) regardless of canonicalization.
+  final Map<ContentKey, List<ContentStatement>> myLiteralStatements;
 
   ContentAggregation({
     this.statements = const [],
@@ -383,7 +410,8 @@ class ContentAggregation {
     this.tagEquivalence = const {},
     this.mostTags = const [],
     this.subjects = const {},
-    this.myStatements = const {},
+    this.myCanonicalDisses = const {},
+    this.myLiteralStatements = const {},
   });
 }
 

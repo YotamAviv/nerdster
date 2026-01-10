@@ -19,6 +19,8 @@ AI NOTE: This is my (the human) file with my own notes.
 # Fake simpsonsRelateDemo
 ?fire=fake&demo=simpsonsRelateDemo&skipCredentials=true
 
+?fire=fake&demo=simpsonsDemo&skipCredentials=true
+
 ?fire=fake&demo=rateWhenNotInNetworkskipCredentials=true
 
 # Notifications gallery

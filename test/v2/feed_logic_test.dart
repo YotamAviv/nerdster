@@ -119,20 +119,17 @@ void main() {
       expect(myRatingInMain, isEmpty, reason: "Me's rating should NOT be in main aggregation");
       
       // main aggregation if not in PoV network
-      expect(secretariatAgg.myDelegateStatements, isNotEmpty, reason: "myDelegateStatements should be available for UI overlay even in Pure PoV");
+      final myLiteralStmts = model.aggregation.myLiteralStatements[secretariatAgg.token] ?? [];
+      expect(myLiteralStmts, isNotEmpty, reason: "myLiteralStatements should be available for UI overlay even in Pure PoV");
     }
 
-    // Check Global myStatements
-    final myStatementsMap = model.aggregation.myStatements;
-    // We need to find the key for Secretariat. It might be in subjects or we might have to scan keys.
-    // For this test, valid keys are limited.
-    final myRatingEntry = myStatementsMap.entries.firstWhere((e) {
-       // Look for rating about Secretariat in the statements
-       return e.value.any((s) => (s.subject as Map)['title'] == 'Secretariat');
-    });
-    
-    expect(myRatingEntry.value, isNotEmpty, reason: "Me's rating SHOULD be in aggregation.myStatements");
-    expect(myRatingEntry.value.first.comment, equals('I like horses'));
+    // Check for My Statements in Global map
+    final secretariatKey = model.aggregation.myLiteralStatements.keys.firstWhere(
+      (k) => model.aggregation.myLiteralStatements[k]!.any((s) => (s.subject as Map)['title'] == 'Secretariat'),
+    );
+    final myLiteralStatements = model.aggregation.myLiteralStatements[secretariatKey] ?? [];
+    expect(myLiteralStatements, isNotEmpty, reason: "Me's rating SHOULD be in aggregation.myLiteralStatements");
+    expect(myLiteralStatements.first.comment, equals('I like horses'));
   });
 
   test('Rating a rating should not result in the rating appearing as a top-level subject', () async {
@@ -206,21 +203,20 @@ void main() {
     final V2FeedModel model = controller.value!;
     
 
-    // 5. Find Secretariat aggregation
-    // It should NOT exist in the subjects map if Stranger doesn't know about it (Pure PoV)
-    final secretariatAgg = model.aggregation.subjects.values.where((agg) => 
+    // 5. Find Secretariat aggregation in the FEED result
+    final secretariatInFeed = model.effectiveSubjects.where((agg) => 
       agg.subject['title'] == 'Secretariat'
     ).firstOrNull;
 
-    expect(secretariatAgg, isNull, reason: "Secretariat should NOT be in the feed for Stranger PoV");
+    expect(secretariatInFeed, isNull, reason: "Secretariat should NOT be in the feed for Stranger PoV");
 
-    // Check myStatements directly
-    final myStatementsMap = model.aggregation.myStatements;
-    final myRatingEntry = myStatementsMap.entries.firstWhere((e) {
-       return e.value.any((s) => (s.subject as Map)['title'] == 'Secretariat');
-    }, orElse: () => throw Exception('Secretariat rating not found in myStatements'));
+    // Check for My Statements in Global map (might not be top-level in feed)
+    final secretariatKey = model.aggregation.myLiteralStatements.keys.firstWhere(
+      (k) => model.aggregation.myLiteralStatements[k]!.any((s) => (s.subject as Map)['title'] == 'Secretariat'),
+    );
+    final myLiteralStatements = model.aggregation.myLiteralStatements[secretariatKey] ?? [];
     
-    expect(myRatingEntry.value, isNotEmpty, reason: "Me's rating SHOULD be in myStatements");
-    expect(myRatingEntry.value.first.comment, equals('I like horses'));
+    expect(myLiteralStatements, isNotEmpty, reason: "Me's rating SHOULD be in aggregation.myLiteralStatements even if not in feed");
+    expect(myLiteralStatements.first.comment, equals('I like horses'));
   });
 }

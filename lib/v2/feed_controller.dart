@@ -258,7 +258,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
     switch (mode) {
       case V2FilterMode.myDisses:
-        return !subject.isUserDismissed;
+        final myStmts = value?.aggregation.myCanonicalDisses[subject.canonical] ?? [];
+        return !SubjectGroup.checkIsDismissed(myStmts, subject);
       case V2FilterMode.povDisses:
         return !subject.isDismissed;
       case V2FilterMode.ignoreDisses:

@@ -111,9 +111,7 @@ void main() {
         group: group4,
         narrowGroup: group4,
       );
-      // expect(agg.isDismissed, false); // Pending fix? 
-      // Actually, let's keep the user's logic if they didn't ask to change it.
-      // Wait, Case 4 and 5 were together.
+      expect(agg.isDismissed, false);
 
       // Case 5: Snoozed, Disqualified Activity (Censor)
       final group5 = SubjectGroup(
@@ -151,13 +149,13 @@ void main() {
       );
       expect(agg.isDismissed, false);
 
-      // Case 7: User Dismissal (myDelegateStatements)
+      // Case 7: User Dismissal (static method check)
+      final myDisses = [
+        makeStatement(verb: 'rate', dismiss: 'forever', time: t0),
+      ];
       final group7 = SubjectGroup(
         canonical: c1,
         lastActivity: t1,
-        myDelegateStatements: [
-          makeStatement(verb: 'rate', dismiss: 'forever', time: t0),
-        ],
         statements: [
           makeStatement(verb: 'rate', time: t1),
         ],
@@ -167,7 +165,7 @@ void main() {
         group: group7,
         narrowGroup: group7,
       );
-      expect(agg.isUserDismissed, true);
+      expect(SubjectGroup.checkIsDismissed(myDisses, agg), true);
       expect(agg.isDismissed, false); // POV not dismissed
     });
   });

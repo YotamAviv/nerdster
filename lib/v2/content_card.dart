@@ -480,16 +480,13 @@ class _ContentCardState extends State<ContentCard> {
       );
     }
 
-    final List<ContentStatement> myStatements = widget.aggregation.statements
-        .where((s) {
-           return widget.model.delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))?.value == signInState.identity;
-        })
-        .toList();
+    final List<ContentStatement> myLiteralStatements =
+        List.from(widget.model.aggregation.myLiteralStatements[widget.aggregation.token] ?? []);
 
     // Sort by time descending to find the latest
-    myStatements.sort((a, b) => b.time.compareTo(a.time));
+    myLiteralStatements.sort((a, b) => b.time.compareTo(a.time));
 
-    final hasPrior = myStatements.any((s) => s.verb == ContentVerb.rate);
+    final hasPrior = myLiteralStatements.any((s) => s.verb == ContentVerb.rate);
 
     IconData icon = Icons.rate_review_outlined;
     Color? color;
@@ -648,7 +645,8 @@ bool _shouldShowStatement(ContentStatement s, V2FeedModel model) {
 
   switch (model.filterMode) {
     case V2FilterMode.myDisses:
-      return !subjectAgg.isUserDismissed;
+      final myStmts = model.aggregation.myCanonicalDisses[subjectAgg.canonical] ?? [];
+      return !SubjectGroup.checkIsDismissed(myStmts, subjectAgg);
     case V2FilterMode.povDisses:
       return !subjectAgg.isDismissed;
     case V2FilterMode.ignoreDisses:

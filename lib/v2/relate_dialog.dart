@@ -73,17 +73,18 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
   @override
   void initState() {
     super.initState();
-    // Use the latest statement about either subject group that involves both groups.
-    final c1 = widget.subject1.canonical;
-    final c2 = widget.subject2.canonical;
-    final eq = widget.model.aggregation.equivalence;
+    // Use the latest statement about either subject literal token that involves both tokens.
+    final t1 = widget.subject1.token;
+    final t2 = widget.subject2.token;
 
-    final s1 = widget.model.aggregation.myStatements[c1] ?? [];
-    final s2 = widget.model.aggregation.myStatements[c2] ?? [];
+    final myLiteralStatements = widget.model.aggregation.myLiteralStatements;
+    final s1 = List<ContentStatement>.from(myLiteralStatements[t1] ?? []);
 
-    final prior = [...s1, ...s2].where((s) {
-      final groups = s.involvedTokens.map((t) => eq[ContentKey(t)] ?? ContentKey(t));
-      return groups.contains(c1) && groups.contains(c2);
+    // Sort by time (descending) to find the latest
+    s1.sort((a, b) => b.time.compareTo(a.time));
+
+    final prior = s1.where((s) {
+      return s.involvedTokens.contains(t2.value);
     }).firstOrNull;
 
     if (prior != null) {
