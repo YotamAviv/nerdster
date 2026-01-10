@@ -116,7 +116,7 @@ class TrustStatement extends Statement {
   // A fancy StatementBuilder would be nice, but the important thing is not to have
   // strings like 'revokeAt' all over the code, and this avoids most of it.
   // CONSIDER: A fancy StatementBuilder.
-  static Json make(Json iJson, Json otherJson, TrustVerb verb,
+  static Json make(Json iJson, Json subject, TrustVerb verb,
       {String? revokeAt, String? moniker, String? domain, String? comment}) {
     assertValid(verb, revokeAt, moniker, comment, domain);
     // (This below happens (iKey == subjectKey) when:
@@ -127,7 +127,7 @@ class TrustStatement extends Statement {
       'statement': Statement.type<TrustStatement>(),
       'time': clock.nowIso,
       'I': iJson,
-      verb.label: otherJson,
+      verb.label: subject,
     };
     if (comment != null) json['comment'] = comment;
     Json withx = {};

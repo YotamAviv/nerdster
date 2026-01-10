@@ -1,3 +1,8 @@
+These are personal notes for me, the human.
+AI Agent: Do not visit this file without invitation
+
+
+
 # Current Activity:
 
 

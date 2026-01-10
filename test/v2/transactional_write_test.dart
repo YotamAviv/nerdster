@@ -1,21 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/demotest/test_util.dart';
 
 void main() {
   group('DirectFirestoreWriter Transactional Tests', () {
     late FakeFirebaseFirestore firestore;
     late DirectFirestoreWriter writer;
     late OouSigner signer;
-    late Json publicKeyJson;
+    late Map<String, dynamic> publicKeyJson;
 
     setUp(() async {
-      ContentStatement.init();
+      setUpTestRegistry();
       firestore = FakeFirebaseFirestore();
       writer = DirectFirestoreWriter(firestore);
       
@@ -28,7 +25,7 @@ void main() {
       final issuerToken = getToken(publicKeyJson);
 
       // 1. First write (no previous)
-      final json1 = ContentStatement.make(
+      final Map<String, dynamic> json1 = ContentStatement.make(
         publicKeyJson,
         ContentVerb.rate,
         'subject1',
@@ -38,7 +35,7 @@ void main() {
       expect(s1.json['previous'], isNull);
 
       // 2. Second write (should automatically pick up s1 as previous)
-      final json2 = ContentStatement.make(
+      final Map<String, dynamic> json2 = ContentStatement.make(
         publicKeyJson,
         ContentVerb.rate,
         'subject2',
@@ -63,7 +60,7 @@ void main() {
 
     test('Writes with invalid timestamps should be rejected', () async {
       // 1. Write Statement A
-      final jsonA = ContentStatement.make(
+      final Map<String, dynamic> jsonA = ContentStatement.make(
         publicKeyJson,
         ContentVerb.rate,
         'subjectA',
@@ -72,23 +69,23 @@ void main() {
       await writer.push(jsonA, signer);
 
       // 2. Attempt to write Statement B with an OLD timestamp
-      final jsonB = ContentStatement.make(
+      final Map<String, dynamic> jsonB = ContentStatement.make(
         publicKeyJson,
         ContentVerb.rate,
         'subjectB',
         recommend: true,
       );
       // Set time to 1 hour ago
-      jsonB['time'] = formatIso(DateTime.now().subtract(const Duration(hours: 1)));
+      jsonB['time'] = formatIso(clock.now.subtract(const Duration(hours: 1)));
 
-      expect(
-        () => writer.push(jsonB, signer),
+      await expectLater(
+        writer.push(jsonB, signer),
         throwsA(predicate((e) => e.toString().contains('Timestamp must be after previous statement'))),
       );
     });
 
     test('Transactional protection against duplicate tokens', () async {
-      final json = ContentStatement.make(
+      final Map<String, dynamic> json = ContentStatement.make(
         publicKeyJson,
         ContentVerb.rate,
         'subject1',
@@ -113,8 +110,8 @@ void main() {
       // To FORCE the existence check, we can just mock the collection to return nothing for the query.
       // But for now, let's just acknowledge that the writer now throws instead of doing nothing.
       
-      expect(
-        () => writer.push(json, signer),
+      await expectLater(
+        writer.push(json, signer),
         throwsA(predicate((e) => e.toString().contains('Statement already exists') || e.toString().contains('Timestamp must be after'))),
       );
     });

@@ -17,6 +17,11 @@ import 'simpsons_data_helper.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/most_strings.dart';
+import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
+import 'package:nerdster/v2/labeler.dart';
+import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/app.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -29,14 +34,12 @@ void main() {
     // Reset global state
     signInState.signOut(clearIdentity: true);
     
-    fireChoice = FireChoice.fake;
-
-    nerdsterFire = FakeFirebaseFirestore();
     oneofusFire = FakeFirebaseFirestore();
-
-    // Initialize Statements BEFORE populating data
-    TrustStatement.init();
-    ContentStatement.init();
+    nerdsterFire = FakeFirebaseFirestore();
+    
+    setUpTestRegistry(firestore: oneofusFire); // This registers oneofusFire for both by default
+    // We override kNerdsterDomain to use nerdsterFire specifically for tests that care.
+    FireFactory.register(kNerdsterDomain, nerdsterFire, null);
 
     await SimpsonsDataHelper.populate(nerdsterFire, oneofusFire);
     
@@ -49,31 +52,30 @@ void main() {
   });
 
   test('Lisa feed should have expected names and content', () async {
-    final lisaToken = DemoIdentityKey.findByName('lisa')!.token;
+    final String lisaToken = DemoIdentityKey.findByName('lisa')!.token;
     await controller.refresh(IdentityKey(lisaToken));
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
 
-    final model = controller.value!;
-    final labeler = model.labeler;
+    final V2FeedModel model = controller.value!;
+    final V2Labeler labeler = model.labeler;
 
     // Verify some names from Simpsons data
     // We need to know what's in demoData.js to make specific assertions.
     // Based on previous logs, we saw "Secretariat", "Buck", etc.
     
     expect(model.aggregation.statements, isNotEmpty);
-    print('Found ${model.aggregation.statements.length} statements');
 
-    for (final s in model.aggregation.statements) {
-      final authorName = labeler.getLabel(s.iToken);
+    for (final ContentStatement s in model.aggregation.statements) {
+      final String authorName = labeler.getLabel(s.iToken);
       print('Statement by $authorName: ${s.comment ?? s.verb}');
     }
 
     // Verify some specific labels from Lisa's perspective
-    final homerToken = DemoIdentityKey.findByName('homer')!.token;
-    final homer2Token = DemoIdentityKey.findByName('homer2')!.token;
-    final margeToken = DemoIdentityKey.findByName('marge')!.token;
+    final String homerToken = DemoIdentityKey.findByName('homer')!.token;
+    final String homer2Token = DemoIdentityKey.findByName('homer2')!.token;
+    final String margeToken = DemoIdentityKey.findByName('marge')!.token;
     
     // Homer was replaced by Homer2, so Homer is "dad'" and Homer2 is "dad"
     expect(labeler.getLabel(homerToken), equals("dad'"));
@@ -83,20 +85,22 @@ void main() {
 
   test('My delegate statements should be available in myDelegateStatements but not in main aggregation if not in PoV network', () async {
     // 1. Create Stranger and Me
-    final stranger = await DemoIdentityKey.findOrCreate('stranger');
-    final strangerDelegate = await stranger.makeDelegate();
-    final me = await DemoIdentityKey.findOrCreate('me');
-    final meDelegate = await me.makeDelegate();
+    final DemoIdentityKey stranger = await DemoIdentityKey.create('stranger');
+    final DemoDelegateKey strangerDelegate = await stranger.makeDelegate();
+    final DemoIdentityKey me = await DemoIdentityKey.create('me');
+    final DemoDelegateKey meDelegate = await me.makeDelegate();
+
+    final Map<String, dynamic> secretariat = createTestSubject(title: 'Secretariat', url: 'https://sec.com');
 
     // 2. Stranger (via delegate) rates "Secretariat" (so it appears in the feed)
-    await strangerDelegate.doRate(title: 'Secretariat', recommend: true);
+    await strangerDelegate.doRate(subject: secretariat, recommend: true);
 
     // 3. Me (via delegate) rates "Secretariat"
-    await meDelegate.doRate(title: 'Secretariat', recommend: true, comment: 'I like horses');
+    await meDelegate.doRate(subject: secretariat, recommend: true, comment: 'I like horses');
 
     // 4. Sign in as Me
     await me.keyPair;
-    final meDelegateKeyPair = await meDelegate.keyPair;
+    final OouKeyPair meDelegateKeyPair = await meDelegate.keyPair;
     await signInState.signIn(me.token, meDelegateKeyPair);
 
     // 5. Refresh with Stranger as PoV
@@ -106,52 +110,52 @@ void main() {
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
 
-    final model = controller.value!;
+    final V2FeedModel model = controller.value!;
     
     // 6. Find Secretariat aggregation
-    final secretariatAgg = model.aggregation.subjects.values.where((agg) => 
+    final SubjectAggregation? secretariatAgg = model.aggregation.subjects.values.where((SubjectAggregation agg) => 
       agg.subject['title'] == 'Secretariat'
     ).firstOrNull;
 
     if (secretariatAgg != null) {
       // Main statements should NOT contain Me's rating
-      final myRatingInMain = secretariatAgg.statements.where((s) => s.iToken == meDelegate.token);
+      final Iterable<ContentStatement> myRatingInMain = secretariatAgg.statements.where((ContentStatement s) => s.iToken == meDelegate.token);
       expect(myRatingInMain, isEmpty, reason: "Me's rating should NOT be in main aggregation");
       
       // main aggregation if not in PoV network
-      final myLiteralStmts = model.aggregation.myLiteralStatements[secretariatAgg.token] ?? [];
+      final List<ContentStatement> myLiteralStmts = model.aggregation.myLiteralStatements[secretariatAgg.token] ?? [];
       expect(myLiteralStmts, isNotEmpty, reason: "myLiteralStatements should be available for UI overlay even in Pure PoV");
     }
 
     // Check for My Statements in Global map
-    final secretariatKey = model.aggregation.myLiteralStatements.keys.firstWhere(
-      (k) => model.aggregation.myLiteralStatements[k]!.any((s) => (s.subject as Map)['title'] == 'Secretariat'),
+    final ContentKey secretariatKey = model.aggregation.myLiteralStatements.keys.firstWhere(
+      (ContentKey k) => model.aggregation.myLiteralStatements[k]!.any((ContentStatement s) => (s.subject as Map)['title'] == 'Secretariat'),
     );
-    final myLiteralStatements = model.aggregation.myLiteralStatements[secretariatKey] ?? [];
+    final List<ContentStatement> myLiteralStatements = model.aggregation.myLiteralStatements[secretariatKey] ?? [];
     expect(myLiteralStatements, isNotEmpty, reason: "Me's rating SHOULD be in aggregation.myLiteralStatements");
     expect(myLiteralStatements.first.comment, equals('I like horses'));
   });
 
   test('Rating a rating should not result in the rating appearing as a top-level subject', () async {
     // 1. Setup Viewer, Rater, Critic
-    final viewer = await DemoIdentityKey.findOrCreate('viewer');
-    final viewerDelegate = await viewer.makeDelegate(); // Viewer needs delegate to follow
-    final rater = await DemoIdentityKey.findOrCreate('rater');
-    final raterDelegate = await rater.makeDelegate();
-    final critic = await DemoIdentityKey.findOrCreate('critic');
-    final criticDelegate = await critic.makeDelegate();
+    final DemoIdentityKey viewer = await DemoIdentityKey.findOrCreate('viewer');
+    final DemoDelegateKey viewerDelegate = await viewer.makeDelegate(); // Viewer needs delegate to follow
+    final DemoIdentityKey rater = await DemoIdentityKey.findOrCreate('rater');
+    final DemoDelegateKey raterDelegate = await rater.makeDelegate();
+    final DemoIdentityKey critic = await DemoIdentityKey.findOrCreate('critic');
+    final DemoDelegateKey criticDelegate = await critic.makeDelegate();
 
     // Viewer trusts Rater and Critic (Identities)
     await viewer.trust(rater, moniker: 'rater');
     await viewer.trust(critic, moniker: 'critic');
     
     // Viewer follows Rater and Critic (Content) so their content appears in 'family' feed
-    await viewerDelegate.doFollow(rater, {'family': 1});
-    await viewerDelegate.doFollow(critic, {'family': 1});
+    await viewerDelegate.doFollow(rater, <String, dynamic>{'family': 1});
+    await viewerDelegate.doFollow(critic, <String, dynamic>{'family': 1});
 
     // 2. Rater (via delegate) rates "Inception"
-    final ratingStatement = await raterDelegate.doRate(title: 'Inception', recommend: true);
-    final ratingToken = ratingStatement.token;
+    final ContentStatement ratingStatement = await raterDelegate.doRate(title: 'Inception', recommend: true);
+    final String ratingToken = ratingStatement.token;
 
     // 3. Critic (via delegate) rates Rater's rating (e.g. dislikes it)
     await criticDelegate.doRate(subject: ratingToken, recommend: false, comment: 'Bad take');
@@ -160,10 +164,10 @@ void main() {
     await controller.refresh(viewer.id);
 
     expect(controller.error, isNull);
-    final model = controller.value!;
+    final V2FeedModel model = controller.value!;
 
     // 5. Verify "Inception" is a subject
-    final inceptionAgg = model.aggregation.subjects.values.where((agg) => 
+    final Iterable<SubjectAggregation> inceptionAgg = model.aggregation.subjects.values.where((SubjectAggregation agg) => 
       agg.subject['title'] == 'Inception'
     );
     expect(inceptionAgg, isNotEmpty, reason: "Inception should be in the feed");
@@ -171,20 +175,22 @@ void main() {
 
 
     // 6. Verify the Rating Statement IS in the aggregation (for lookup)
-    final ratingAsSubject = model.aggregation.subjects.values.where((agg) => 
-      agg.canonical == ratingToken
+    final Iterable<SubjectAggregation> ratingAsSubject = model.aggregation.subjects.values.where((SubjectAggregation agg) => 
+      agg.canonical.value == ratingToken
     );
     expect(ratingAsSubject, isEmpty, reason: "The rating statement should not be in the aggregation for lookup");
   });
 
   test('My delegate statements should be fetched even if I am not in the PoV graph and not signed in with that delegate', () async {
     // 1. Create Stranger and Me
-    final DemoIdentityKey stranger = await DemoIdentityKey.findOrCreate('stranger');
-    final DemoIdentityKey me = await DemoIdentityKey.findOrCreate('me');
+    final DemoIdentityKey stranger = await DemoIdentityKey.create('stranger');
+    final DemoIdentityKey me = await DemoIdentityKey.create('me');
     final DemoDelegateKey meDelegate = await me.makeDelegate();
 
+    final Map<String, dynamic> secretariat = createTestSubject(title: 'Secretariat', url: 'https://sec.com');
+
     // 2. Me (via delegate) rates "Secretariat"
-    await meDelegate.doRate(title: 'Secretariat', recommend: true, comment: 'I like horses');
+    await meDelegate.doRate(subject: secretariat, recommend: true, comment: 'I like horses');
 
     // 3. Sign in as Me (Identity ONLY, no delegate credential active)
     await signInState.signIn(me.token, null);
@@ -204,17 +210,17 @@ void main() {
     
 
     // 5. Find Secretariat aggregation in the FEED result
-    final secretariatInFeed = model.effectiveSubjects.where((agg) => 
+    final SubjectAggregation? secretariatInFeed = model.effectiveSubjects.where((SubjectAggregation agg) => 
       agg.subject['title'] == 'Secretariat'
     ).firstOrNull;
 
     expect(secretariatInFeed, isNull, reason: "Secretariat should NOT be in the feed for Stranger PoV");
 
     // Check for My Statements in Global map (might not be top-level in feed)
-    final secretariatKey = model.aggregation.myLiteralStatements.keys.firstWhere(
-      (k) => model.aggregation.myLiteralStatements[k]!.any((s) => (s.subject as Map)['title'] == 'Secretariat'),
+    final ContentKey secretariatKey = model.aggregation.myLiteralStatements.keys.firstWhere(
+      (ContentKey k) => model.aggregation.myLiteralStatements[k]!.any((ContentStatement s) => (s.subject as Map)['title'] == 'Secretariat'),
     );
-    final myLiteralStatements = model.aggregation.myLiteralStatements[secretariatKey] ?? [];
+    final List<ContentStatement> myLiteralStatements = model.aggregation.myLiteralStatements[secretariatKey] ?? [];
     
     expect(myLiteralStatements, isNotEmpty, reason: "Me's rating SHOULD be in aggregation.myLiteralStatements even if not in feed");
     expect(myLiteralStatements.first.comment, equals('I like horses'));

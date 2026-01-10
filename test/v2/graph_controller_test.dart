@@ -7,40 +7,41 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/keys.dart';
+import '../test_utils.dart';
 
 void main() {
   setUpAll(() {
-    TrustStatement.init();
-    ContentStatement.init();
+    setUpTestRegistry();
   });
 
   group('GraphController', () {
     test('builds identity graph data', () {
-      final povKey = {'kty': 'mock', 'val': 'pov'};
-      final pov = IdentityKey(Jsonish(povKey).token);
-      final aliceKey = {'kty': 'mock', 'val': 'alice'};
-      final alice = IdentityKey(Jsonish(aliceKey).token);
+      final Map<String, dynamic> povKey = mockKey('pov');
+      final IdentityKey pov = IdentityKey(getToken(povKey));
+      final Map<String, dynamic> aliceKey = mockKey('alice');
+      final IdentityKey alice = IdentityKey(getToken(aliceKey));
 
-      final t1 = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'trust': alice.value,
-        'time': DateTime.now().toIso8601String(),
-        'I': povKey,
-      }, 't1'));
+      final TrustStatement t1 = makeTrustStatement(
+        verb: TrustVerb.trust,
+        iJson: povKey,
+        subject: aliceKey,
+      );
 
-      final trustGraph = TrustGraph(
+      final TrustGraph trustGraph = TrustGraph(
         pov: pov,
-        distances: {pov: 0, alice: 1},
-        orderedKeys: [pov, alice],
-        edges: {
-          pov: [t1],
+        distances: <IdentityKey, int>{pov: 0, alice: 1},
+        orderedKeys: <IdentityKey>[pov, alice],
+        edges: <IdentityKey, List<TrustStatement>>{
+          pov: <TrustStatement>[t1],
         },
-        paths: {
-          alice: [[pov, alice]],
+        paths: <IdentityKey, List<List<IdentityKey>>>{
+          alice: <List<IdentityKey>>[
+            <IdentityKey>[pov, alice]
+          ],
         },
       );
 
-      final feedModel = V2FeedModel(
+      final V2FeedModel feedModel = V2FeedModel(
         trustGraph: trustGraph,
         followNetwork: FollowNetwork(povIdentity: pov, fcontext: '<identity>'),
         delegateResolver: DelegateResolver(trustGraph),
@@ -53,10 +54,10 @@ void main() {
         enableCensorship: false,
       );
 
-      final controller = GraphController(feedModel);
+      final GraphController controller = GraphController(feedModel);
       controller.focusedIdentity = alice;
       controller.mode = GraphViewMode.identity;
-      final data = controller.buildGraphData();
+      final GraphData data = controller.buildGraphData();
 
       expect(data.nodes, containsAll([pov.value, alice.value]));
       expect(data.edges.length, 1);
@@ -66,33 +67,32 @@ void main() {
     });
 
     test('builds follow graph data', () {
-      final povKey = {'kty': 'mock', 'val': 'pov'};
-      final pov = IdentityKey(Jsonish(povKey).token);
-      final aliceKey = {'kty': 'mock', 'val': 'alice'};
-      final alice = IdentityKey(Jsonish(aliceKey).token);
+      final Map<String, dynamic> povKey = mockKey('pov');
+      final IdentityKey pov = IdentityKey(getToken(povKey));
+      final Map<String, dynamic> aliceKey = mockKey('alice');
+      final IdentityKey alice = IdentityKey(getToken(aliceKey));
 
-      final f1 = ContentStatement(Jsonish({
-        'statement': 'org.nerdster',
-        'follow': alice.value,
-        'with': {'contexts': {'news': 1}},
-        'time': DateTime.now().toIso8601String(),
-        'I': povKey,
-      }, 'f1'));
+      final ContentStatement f1 = makeContentStatement(
+        verb: ContentVerb.follow,
+        subject: alice.value,
+        contexts: <String, dynamic>{'news': 1},
+        iJson: povKey,
+      );
 
-      final trustGraph = TrustGraph(pov: pov, distances: {pov: 0, alice: 1});
-      final followNetwork = FollowNetwork(
+      final TrustGraph trustGraph = TrustGraph(pov: pov, distances: <IdentityKey, int>{pov: 0, alice: 1});
+      final FollowNetwork followNetwork = FollowNetwork(
         fcontext: 'news',
-        identities: [pov, alice],
+        identities: <IdentityKey>[pov, alice],
         povIdentity: pov,
-        edges: {
-          pov: [f1],
+        edges: <IdentityKey, List<ContentStatement>>{
+          pov: <ContentStatement>[f1],
         },
-        paths: {
-          alice: [pov, alice],
+        paths: <IdentityKey, List<IdentityKey>>{
+          alice: <IdentityKey>[pov, alice],
         },
       );
 
-      final feedModel = V2FeedModel(
+      final V2FeedModel feedModel = V2FeedModel(
         trustGraph: trustGraph,
         followNetwork: followNetwork,
         delegateResolver: DelegateResolver(trustGraph),
@@ -105,10 +105,10 @@ void main() {
         enableCensorship: false,
       );
 
-      final controller = GraphController(feedModel);
+      final GraphController controller = GraphController(feedModel);
       controller.focusedIdentity = alice;
       controller.mode = GraphViewMode.follow;
-      final data = controller.buildGraphData();
+      final GraphData data = controller.buildGraphData();
 
       expect(data.nodes, containsAll([pov.value, alice.value]));
       expect(data.edges.length, 1);
@@ -118,29 +118,30 @@ void main() {
     });
 
     test('builds identity graph data with delegation', () {
-      final povKey = {'kty': 'mock', 'val': 'pov'};
-      final pov = IdentityKey(Jsonish(povKey).token);
-      final delegateKey = {'kty': 'mock', 'val': 'delegate'};
-      final delegate = IdentityKey(Jsonish(delegateKey).token);
+      final Map<String, dynamic> povKey = mockKey('pov');
+      final IdentityKey pov = IdentityKey(getToken(povKey));
+      final Map<String, dynamic> delegateKey = mockKey('delegate');
+      final IdentityKey delegate = IdentityKey(getToken(delegateKey));
 
-      final d1 = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'delegate': delegate.value,
-        'with': {'domain': 'nerdster.org'},
-        'time': DateTime.now().toIso8601String(),
-        'I': povKey,
-      }, 'd1'));
-
-      final trustGraph = TrustGraph(
-        pov: pov, 
-        distances: {pov: 0, delegate: 1},
-        edges: {pov: [d1]},
-        paths: {
-          delegate: [[pov, delegate]],
-        }
+      final TrustStatement d1 = makeTrustStatement(
+        verb: TrustVerb.delegate,
+        iJson: povKey,
+        subject: delegateKey,
+        domain: 'nerdster.org',
       );
-      
-      final feedModel = V2FeedModel(
+
+      final TrustGraph trustGraph = TrustGraph(
+        pov: pov,
+        distances: <IdentityKey, int>{pov: 0, delegate: 1},
+        edges: <IdentityKey, List<TrustStatement>>{pov: <TrustStatement>[d1]},
+        paths: <IdentityKey, List<List<IdentityKey>>>{
+          delegate: <List<IdentityKey>>[
+            <IdentityKey>[pov, delegate]
+          ],
+        },
+      );
+
+      final V2FeedModel feedModel = V2FeedModel(
         trustGraph: trustGraph,
         followNetwork: FollowNetwork(fcontext: '<identity>', povIdentity: pov),
         delegateResolver: DelegateResolver(trustGraph),
@@ -153,10 +154,10 @@ void main() {
         enableCensorship: false,
       );
 
-      final controller = GraphController(feedModel);
+      final GraphController controller = GraphController(feedModel);
       controller.focusedIdentity = delegate;
       controller.mode = GraphViewMode.identity;
-      final data = controller.buildGraphData();
+      final GraphData data = controller.buildGraphData();
 
       expect(data.nodes, containsAll([pov.value, delegate.value]));
       expect(data.edges.length, 1);
@@ -166,3 +167,4 @@ void main() {
     });
   });
 }
+

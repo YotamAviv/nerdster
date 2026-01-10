@@ -1,72 +1,65 @@
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+import '../test_utils.dart';
 
 void main() {
-  setUpAll(() {
-    TrustStatement.init();
+  setUp(() {
+    setUpTestRegistry();
   });
 
+  IdentityKey id(Map<String, dynamic> key) => IdentityKey(Jsonish(key).token);
+
   test('Path Requirement Logic: 2 paths for 3 and 4 degrees', () {
-    final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povIdentity = Jsonish(povKey).token;
-    final pov = IdentityKey(povIdentity);
-    final a1Key = {'kty': 'mock', 'val': 'a1'};
-    final a1Token = Jsonish(a1Key).token;
-    final a1 = IdentityKey(a1Token);
-    final b1Key = {'kty': 'mock', 'val': 'b1'};
-    final b1Token = Jsonish(b1Key).token;
-    final b1 = IdentityKey(b1Token);
-    final a2Key = {'kty': 'mock', 'val': 'a2'};
-    final a2Token = Jsonish(a2Key).token;
-    final a2 = IdentityKey(a2Token);
-    final b2Key = {'kty': 'mock', 'val': 'b2'};
-    final b2Token = Jsonish(b2Key).token;
-    final b2 = IdentityKey(b2Token);
+    final Map<String, dynamic> povKey = mockKey('pov');
+    final IdentityKey pov = id(povKey);
+    final Map<String, dynamic> a1Key = mockKey('a1');
+    final IdentityKey a1 = id(a1Key);
+    final Map<String, dynamic> b1Key = mockKey('b1');
+    final IdentityKey b1 = id(b1Key);
+    final Map<String, dynamic> a2Key = mockKey('a2');
+    final IdentityKey a2 = id(a2Key);
+    final Map<String, dynamic> b2Key = mockKey('b2');
+    final IdentityKey b2 = id(b2Key);
 
     // PoV -> A1, B1
-    final s1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us',
-      'trust': a1Token,
-      'time': '2025-01-01T00:00:00Z',
-      'I': povKey,
-    }, 't1_s1'));
-    final s2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us',
-      'trust': b1Token,
-      'time': '2025-01-01T00:00:00Z',
-      'I': povKey,
-    }, 't1_s2'));
+    final TrustStatement s1 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: a1Key,
+      iJson: povKey,
+    );
+    final TrustStatement s2 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: b1Key,
+      iJson: povKey,
+    );
 
     // A1 -> A2
-    final s3 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us',
-      'trust': a2Token,
-      'time': '2025-01-01T00:00:00Z',
-      'I': a1Key,
-    }, 't1_s3'));
+    final TrustStatement s3 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: a2Key,
+      iJson: a1Key,
+    );
 
     // B1 -> B2
-    final s4 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us',
-      'trust': b2Token,
-      'time': '2025-01-01T00:00:00Z',
-      'I': b1Key,
-    }, 't1_s4'));
+    final TrustStatement s4 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: b2Key,
+      iJson: b1Key,
+    );
 
     // A2 -> B2
-    final s5 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us',
-      'trust': b2Token,
-      'time': '2025-01-01T00:00:00Z',
-      'I': a2Key,
-    }, 't1_s5'));
+    final TrustStatement s5 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: b2Key,
+      iJson: a2Key,
+    );
 
-    final byIssuer = {
-      pov: [s1, s2],
+    final Map<IdentityKey, List<TrustStatement>> byIssuer = {
+      pov: [s2, s1],
       a1: [s3],
       b1: [s4],
       a2: [s5],
@@ -78,7 +71,7 @@ void main() {
       return 1;
     }
 
-    final tg = reduceTrustGraph(
+    final TrustGraph tg = reduceTrustGraph(
       TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
@@ -101,54 +94,62 @@ void main() {
   });
 
   test('Path Requirement Logic: B2 is IN if A2 is also IN', () {
-    final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povIdentity = Jsonish(povKey).token;
-    final pov = IdentityKey(povIdentity);
-    final a1Key = {'kty': 'mock', 'val': 'a1'};
-    final a1Token = Jsonish(a1Key).token;
-    final a1 = IdentityKey(a1Token);
-    final b1Key = {'kty': 'mock', 'val': 'b1'};
-    final b1Token = Jsonish(b1Key).token;
-    final b1 = IdentityKey(b1Token);
-    final c1Key = {'kty': 'mock', 'val': 'c1'};
-    final c1Token = Jsonish(c1Key).token;
-    final c1 = IdentityKey(c1Token);
-    final a2Key = {'kty': 'mock', 'val': 'a2'};
-    final a2Token = Jsonish(a2Key).token;
-    final a2 = IdentityKey(a2Token);
-    final b2Key = {'kty': 'mock', 'val': 'b2'};
-    final b2Token = Jsonish(b2Key).token;
-    final b2 = IdentityKey(b2Token);
+    final Map<String, dynamic> povKey = mockKey('pov');
+    final IdentityKey pov = id(povKey);
+    final Map<String, dynamic> a1Key = mockKey('a1');
+    final IdentityKey a1 = id(a1Key);
+    final Map<String, dynamic> b1Key = mockKey('b1');
+    final IdentityKey b1 = id(b1Key);
+    final Map<String, dynamic> c1Key = mockKey('c1');
+    final IdentityKey c1 = id(c1Key);
+    final Map<String, dynamic> a2Key = mockKey('a2');
+    final IdentityKey a2 = id(a2Key);
+    final Map<String, dynamic> b2Key = mockKey('b2');
+    final IdentityKey b2 = id(b2Key);
 
     // PoV -> A1, B1, C1
-    final s1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't2_s1'));
-    final s2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't2_s2'));
-    final s3 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': c1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't2_s3'));
+    final TrustStatement s1 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: a1Key,
+      iJson: povKey,
+    );
+    final TrustStatement s2 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: b1Key,
+      iJson: povKey,
+    );
+    final TrustStatement s3 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: c1Key,
+      iJson: povKey,
+    );
 
     // A1 -> A2, C1 -> A2
-    final s4 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a2Token, 'time': '2025-01-01T00:00:00Z', 'I': a1Key,
-    }, 't2_s4'));
-    final s5 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': a2Token, 'time': '2025-01-01T00:00:00Z', 'I': c1Key,
-    }, 't2_s5'));
+    final TrustStatement s4 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: a2Key,
+      iJson: a1Key,
+    );
+    final TrustStatement s5 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: a2Key,
+      iJson: c1Key,
+    );
 
     // B1 -> B2, A2 -> B2
-    final s6 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b2Token, 'time': '2025-01-01T00:00:00Z', 'I': b1Key,
-    }, 't2_s6'));
-    final s7 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': b2Token, 'time': '2025-01-01T00:00:00Z', 'I': a2Key,
-    }, 't2_s7'));
+    final TrustStatement s6 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: b2Key,
+      iJson: b1Key,
+    );
+    final TrustStatement s7 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: b2Key,
+      iJson: a2Key,
+    );
 
-    final byIssuer = {
-      pov: [s1, s2, s3],
+    final Map<IdentityKey, List<TrustStatement>> byIssuer = {
+      pov: [s3, s2, s1],
       a1: [s4],
       c1: [s5],
       b1: [s6],
@@ -160,7 +161,7 @@ void main() {
       return 1;
     }
 
-    final tg = reduceTrustGraph(
+    final TrustGraph tg = reduceTrustGraph(
       TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
@@ -179,48 +180,55 @@ void main() {
   });
 
   test('Path Requirement Logic: Mutual Trust at Degree 2 (Insufficient Paths)', () {
-    final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povIdentity = Jsonish(povKey).token;
-    final pov = IdentityKey(povIdentity);
-    final i1Key = {'kty': 'mock', 'val': 'I1'};
-    final i1Token = Jsonish(i1Key).token;
-    final i1 = IdentityKey(i1Token);
-    final i2Key = {'kty': 'mock', 'val': 'I2'};
-    final i2Token = Jsonish(i2Key).token;
-    final i2 = IdentityKey(i2Token);
-    final aKey = {'kty': 'mock', 'val': 'A'};
-    final aToken = Jsonish(aKey).token;
-    final a = IdentityKey(aToken);
-    final bKey = {'kty': 'mock', 'val': 'B'};
-    final bToken = Jsonish(bKey).token;
-    final b = IdentityKey(bToken);
+    final Map<String, dynamic> povKey = mockKey('pov');
+    final IdentityKey pov = id(povKey);
+    final Map<String, dynamic> i1Key = mockKey('I1');
+    final IdentityKey i1 = id(i1Key);
+    final Map<String, dynamic> i2Key = mockKey('I2');
+    final IdentityKey i2 = id(i2Key);
+    final Map<String, dynamic> aKey = mockKey('A');
+    final IdentityKey a = id(aKey);
+    final Map<String, dynamic> bKey = mockKey('B');
+    final IdentityKey b = id(bKey);
 
     // Me -> I1, Me -> I2
-    final s1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't3_s1'));
-    final s2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i2Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't3_s2'));
+    final TrustStatement s1 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i1Key,
+      iJson: povKey,
+    );
+    final TrustStatement s2 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i2Key,
+      iJson: povKey,
+    );
 
     // I1 -> A, I2 -> B
-    final s3 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i1Key,
-    }, 't3_s3'));
-    final s4 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i2Key,
-    }, 't3_s4'));
+    final TrustStatement s3 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: aKey,
+      iJson: i1Key,
+    );
+    final TrustStatement s4 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: bKey,
+      iJson: i2Key,
+    );
 
     // A -> B, B -> A
-    final s5 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': aKey,
-    }, 't3_s5'));
-    final s6 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': bKey,
-    }, 't3_s6'));
+    final TrustStatement s5 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: bKey,
+      iJson: aKey,
+    );
+    final TrustStatement s6 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: aKey,
+      iJson: bKey,
+    );
 
-    final byIssuer = {
-      pov: [s1, s2],
+    final Map<IdentityKey, List<TrustStatement>> byIssuer = {
+      pov: [s2, s1],
       i1: [s3],
       i2: [s4],
       a: [s5],
@@ -230,7 +238,7 @@ void main() {
     // Requirement: 1 path for degree 1, 2 paths for degree 2+
     int pathRequirement(int dist) => (dist >= 2) ? 2 : 1;
 
-    final tg = reduceTrustGraph(
+    final TrustGraph tg = reduceTrustGraph(
       TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
@@ -251,64 +259,76 @@ void main() {
   });
 
   test('Path Requirement Logic: Mutual Trust at Degree 2 (Sufficient Paths)', () {
-    final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povIdentity = Jsonish(povKey).token;
-    final pov = IdentityKey(povIdentity);
-    final i1Key = {'kty': 'mock', 'val': 'I1'};
-    final i1Token = Jsonish(i1Key).token;
-    final i1 = IdentityKey(i1Token);
-    final i2Key = {'kty': 'mock', 'val': 'I2'};
-    final i2Token = Jsonish(i2Key).token;
-    final i2 = IdentityKey(i2Token);
-    final i3Key = {'kty': 'mock', 'val': 'I3'};
-    final i3Token = Jsonish(i3Key).token;
-    final i3 = IdentityKey(i3Token);
-    final aKey = {'kty': 'mock', 'val': 'A'};
-    final aToken = Jsonish(aKey).token;
-    final a = IdentityKey(aToken);
-    final bKey = {'kty': 'mock', 'val': 'B'};
-    final bToken = Jsonish(bKey).token;
-    final b = IdentityKey(bToken);
+    final Map<String, dynamic> povKey = mockKey('pov');
+    final IdentityKey pov = id(povKey);
+    final Map<String, dynamic> i1Key = mockKey('I1');
+    final IdentityKey i1 = id(i1Key);
+    final Map<String, dynamic> i2Key = mockKey('I2');
+    final IdentityKey i2 = id(i2Key);
+    final Map<String, dynamic> i3Key = mockKey('I3');
+    final IdentityKey i3 = id(i3Key);
+    final Map<String, dynamic> aKey = mockKey('A');
+    final IdentityKey a = id(aKey);
+    final Map<String, dynamic> bKey = mockKey('B');
+    final IdentityKey b = id(bKey);
 
     // Me -> I1, Me -> I2, Me -> I3
-    final s1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't4_s1'));
-    final s2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i2Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't4_s2'));
-    final s3 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i3Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't4_s3'));
+    final TrustStatement s1 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i1Key,
+      iJson: povKey,
+    );
+    final TrustStatement s2 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i2Key,
+      iJson: povKey,
+    );
+    final TrustStatement s3 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i3Key,
+      iJson: povKey,
+    );
 
     // I1 -> A, I3 -> A  (A has 2 paths)
-    final s4 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i1Key,
-    }, 't4_s4'));
-    final s5 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i3Key,
-    }, 't4_s5'));
+    final TrustStatement s4 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: aKey,
+      iJson: i1Key,
+    );
+    final TrustStatement s5 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: aKey,
+      iJson: i3Key,
+    );
 
     // I2 -> B, I3 -> B  (B has 2 paths)
-    final s6 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i2Key,
-    }, 't4_s6'));
-    final s7 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i3Key,
-    }, 't4_s7'));
+    final TrustStatement s6 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: bKey,
+      iJson: i2Key,
+    );
+    final TrustStatement s7 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: bKey,
+      iJson: i3Key,
+    );
 
     // A -> B, B -> A (Mutual trust)
-    final s8 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': aKey,
-    }, 't4_s8'));
-    final s9 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': bKey,
-    }, 't4_s9'));
+    final TrustStatement s8 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: bKey,
+      iJson: aKey,
+    );
+    final TrustStatement s9 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: aKey,
+      iJson: bKey,
+    );
 
-    final byIssuer = {
-      pov: [s1, s2, s3],
+    final Map<IdentityKey, List<TrustStatement>> byIssuer = {
+      pov: [s3, s2, s1],
       i1: [s4],
-      i3: [s5, s7],
+      i3: [s7, s5],
       i2: [s6],
       a: [s8],
       b: [s9],
@@ -317,7 +337,7 @@ void main() {
     // Requirement: 1 path for degree 1, 2 paths for degree 2+
     int pathRequirement(int dist) => (dist >= 2) ? 2 : 1;
 
-    final tg = reduceTrustGraph(
+    final TrustGraph tg = reduceTrustGraph(
       TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
@@ -342,74 +362,85 @@ void main() {
   });
 
   test('Path Requirement Logic: Adding trust should not remove trust', () {
-    final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povIdentity = Jsonish(povKey).token;
-    final pov = IdentityKey(povIdentity);
-    final i1Key = {'kty': 'mock', 'val': 'I1'};
-    final i1Token = Jsonish(i1Key).token;
-    final i1 = IdentityKey(i1Token);
-    final i2Key = {'kty': 'mock', 'val': 'I2'};
-    final i2Token = Jsonish(i2Key).token;
-    final i2 = IdentityKey(i2Token);
-    final i3Key = {'kty': 'mock', 'val': 'I3'};
-    final i3Token = Jsonish(i3Key).token;
-    final i3 = IdentityKey(i3Token);
-    final i4Key = {'kty': 'mock', 'val': 'I4'};
-    final i4Token = Jsonish(i4Key).token;
-    final i4 = IdentityKey(i4Token);
-    final i5Key = {'kty': 'mock', 'val': 'I5'};
-    final i5Token = Jsonish(i5Key).token;
-    final i5 = IdentityKey(i5Token);
-    final aKey = {'kty': 'mock', 'val': 'A'};
-    final aToken = Jsonish(aKey).token;
-    final a = IdentityKey(aToken);
-    final bKey = {'kty': 'mock', 'val': 'B'};
-    final bToken = Jsonish(bKey).token;
-    final b = IdentityKey(bToken);
-    final xKey = {'kty': 'mock', 'val': 'X'};
-    final xToken = Jsonish(xKey).token;
-    final x = IdentityKey(xToken);
+    final Map<String, dynamic> povKey = mockKey('pov');
+    final IdentityKey pov = id(povKey);
+    final Map<String, dynamic> i1Key = mockKey('I1');
+    final IdentityKey i1 = id(i1Key);
+    final Map<String, dynamic> i2Key = mockKey('I2');
+    final IdentityKey i2 = id(i2Key);
+    final Map<String, dynamic> i3Key = mockKey('I3');
+    final IdentityKey i3 = id(i3Key);
+    final Map<String, dynamic> i4Key = mockKey('I4');
+    final IdentityKey i4 = id(i4Key);
+    final Map<String, dynamic> i5Key = mockKey('I5');
+    final IdentityKey i5 = id(i5Key);
+    final Map<String, dynamic> aKey = mockKey('A');
+    final IdentityKey a = id(aKey);
+    final Map<String, dynamic> bKey = mockKey('B');
+    final IdentityKey b = id(bKey);
+    final Map<String, dynamic> xKey = mockKey('X');
+    final IdentityKey x = id(xKey);
 
     // Me -> I1, I2, I3, I4
-    final s1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't5_s1'));
-    final s2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i2Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't5_s2'));
-    final s3 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i3Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't5_s3'));
-    final s4 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i4Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't5_s4'));
+    final TrustStatement s1 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i1Key,
+      iJson: povKey,
+    );
+    final TrustStatement s2 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i2Key,
+      iJson: povKey,
+    );
+    final TrustStatement s3 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i3Key,
+      iJson: povKey,
+    );
+    final TrustStatement s4 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i4Key,
+      iJson: povKey,
+    );
 
     // I1 -> A, I2 -> A (A has 2 paths at dist 2)
-    final sA1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i1Key,
-    }, 't5_sA1'));
-    final sA2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i2Key,
-    }, 't5_sA2'));
+    final TrustStatement sA1 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: aKey,
+      iJson: i1Key,
+    );
+    final TrustStatement sA2 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: aKey,
+      iJson: i2Key,
+    );
 
     // I3 -> B, I4 -> B (B has 2 paths at dist 2)
-    final sB1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i3Key,
-    }, 't5_sB1'));
-    final sB2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': bToken, 'time': '2025-01-01T00:00:00Z', 'I': i4Key,
-    }, 't5_sB2'));
+    final TrustStatement sB1 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: bKey,
+      iJson: i3Key,
+    );
+    final TrustStatement sB2 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: bKey,
+      iJson: i4Key,
+    );
 
     // A -> X, B -> X (X has 2 paths at dist 3)
-    final sX1 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': aKey,
-    }, 't5_sX1'));
-    final sX2 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': bKey,
-    }, 't5_sX2'));
+    final TrustStatement sX1 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: xKey,
+      iJson: aKey,
+    );
+    final TrustStatement sX2 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: xKey,
+      iJson: bKey,
+    );
 
-    final byIssuer = {
-      pov: [s1, s2, s3, s4],
+    final Map<IdentityKey, List<TrustStatement>> byIssuer = {
+      pov: [s4, s3, s2, s1],
       i1: [sA1],
       i2: [sA2],
       i3: [sB1],
@@ -421,7 +452,7 @@ void main() {
     // Requirement: 2 paths for distance 2 (3 degrees) and beyond
     int pathRequirement(int dist) => (dist >= 2) ? 2 : 1;
 
-    final tg1 = reduceTrustGraph(
+    final TrustGraph tg1 = reduceTrustGraph(
       TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,
@@ -432,15 +463,19 @@ void main() {
     expect(tg1.distances[x], equals(3));
 
     // Now add Me -> I5 and I5 -> X (X is now at distance 2 via I5)
-    final s5 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': i5Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey,
-    }, 't5_s5'));
-    final s6 = TrustStatement(Jsonish({
-      'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': i5Key,
-    }, 't5_s6'));
+    final TrustStatement s5 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i5Key,
+      iJson: povKey,
+    );
+    final TrustStatement s6 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: xKey,
+      iJson: i5Key,
+    );
 
-    final byIssuer2 = {
-      pov: [s1, s2, s3, s4, s5],
+    final Map<IdentityKey, List<TrustStatement>> byIssuer2 = {
+      pov: [s5, s4, s3, s2, s1],
       i1: [sA1],
       i2: [sA2],
       i3: [sB1],
@@ -450,7 +485,7 @@ void main() {
       b: [sX2],
     };
 
-    final tg2 = reduceTrustGraph(
+    final TrustGraph tg2 = reduceTrustGraph(
       TrustGraph(pov: pov),
       byIssuer2,
       pathRequirement: pathRequirement,
@@ -464,42 +499,64 @@ void main() {
   });
 
   test('Path Requirement Logic: X at 2 degrees (1 path) and 3 degrees (1 path)', () {
-    final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povIdentity = Jsonish(povKey).token;
-    final pov = IdentityKey(povIdentity);
-    final i1Key = {'kty': 'mock', 'val': 'I1'};
-    final i1Token = Jsonish(i1Key).token;
-    final i1 = IdentityKey(i1Token);
-    final i2Key = {'kty': 'mock', 'val': 'I2'};
-    final i2Token = Jsonish(i2Key).token;
-    final i2 = IdentityKey(i2Token);
-    final i3Key = {'kty': 'mock', 'val': 'I3'};
-    final i3Token = Jsonish(i3Key).token;
-    final i3 = IdentityKey(i3Token);
-    final aKey = {'kty': 'mock', 'val': 'A'};
-    final aToken = Jsonish(aKey).token;
-    final a = IdentityKey(aToken);
-    final xKey = {'kty': 'mock', 'val': 'X'};
-    final xToken = Jsonish(xKey).token;
-    final x = IdentityKey(xToken);
+    final Map<String, dynamic> povKey = mockKey('pov');
+    final IdentityKey pov = id(povKey);
+    final Map<String, dynamic> i1Key = mockKey('I1');
+    final IdentityKey i1 = id(i1Key);
+    final Map<String, dynamic> i2Key = mockKey('I2');
+    final IdentityKey i2 = id(i2Key);
+    final Map<String, dynamic> i3Key = mockKey('I3');
+    final IdentityKey i3 = id(i3Key);
+    final Map<String, dynamic> aKey = mockKey('A');
+    final IdentityKey a = id(aKey);
+    final Map<String, dynamic> xKey = mockKey('X');
+    final IdentityKey x = id(xKey);
 
     // pov -> I1, I2, I3 (dist 1 / 2 degrees)
-    final s1 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': i1Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey}, 't6_s1'));
-    final s2 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': i2Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey}, 't6_s2'));
-    final s3 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': i3Token, 'time': '2025-01-01T00:00:00Z', 'I': povKey}, 't6_s3'));
+    final TrustStatement s1 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i1Key,
+      iJson: povKey,
+    );
+    final TrustStatement s2 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i2Key,
+      iJson: povKey,
+    );
+    final TrustStatement s3 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: i3Key,
+      iJson: povKey,
+    );
 
     // I1 -> X (X at dist 2 / 3 degrees)
-    final s4 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': i1Key}, 't6_s4'));
+    final TrustStatement s4 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: xKey,
+      iJson: i1Key,
+    );
 
     // I2 -> A, I3 -> A (A at dist 2 / 3 degrees, 2 paths)
-    final s5 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i2Key}, 't6_s5'));
-    final s6 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': aToken, 'time': '2025-01-01T00:00:00Z', 'I': i3Key}, 't6_s6'));
+    final TrustStatement s5 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: aKey,
+      iJson: i2Key,
+    );
+    final TrustStatement s6 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: aKey,
+      iJson: i3Key,
+    );
 
     // A -> X (X at dist 3 / 4 degrees)
-    final s7 = TrustStatement(Jsonish({'statement': 'net.one-of-us', 'trust': xToken, 'time': '2025-01-01T00:00:00Z', 'I': aKey}, 't6_s7'));
+    final TrustStatement s7 = makeTrustStatement(
+      verb: TrustVerb.trust,
+      subject: xKey,
+      iJson: aKey,
+    );
 
-    final byIssuer = {
-      pov: [s1, s2, s3],
+    final Map<IdentityKey, List<TrustStatement>> byIssuer = {
+      pov: [s3, s2, s1],
       i1: [s4],
       i2: [s5],
       i3: [s6],
@@ -509,7 +566,7 @@ void main() {
     // Requirement: 2 paths for distance 2 (3 degrees) and beyond
     int pathRequirement(int dist) => (dist >= 2) ? 2 : 1;
 
-    final tg = reduceTrustGraph(
+    final TrustGraph tg = reduceTrustGraph(
       TrustGraph(pov: pov),
       byIssuer,
       pathRequirement: pathRequirement,

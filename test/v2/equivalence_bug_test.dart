@@ -1,15 +1,6 @@
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nerdster/app.dart';
-import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/equivalence_bug.dart';
-import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
-import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/setting_type.dart';
-import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/v2/content_pipeline.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
@@ -17,85 +8,78 @@ import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/orchestrator.dart';
+import 'package:nerdster/v2/content_logic.dart';
+import 'package:nerdster/demotest/test_util.dart';
 
 void main() {
-  late FakeFirebaseFirestore firestore;
-
   setUp(() async {
-    fireChoice = FireChoice.fake;
+    setUpTestRegistry();
     Setting.get(SettingType.debugUseSubjectNotToken).value = true;
-
-    firestore = FakeFirebaseFirestore();
-    FireFactory.register(kOneofusDomain, firestore, null);
-    FireFactory.register(kNerdsterDomain, firestore, null);
-    TrustStatement.init();
-    ContentStatement.init();
-    DemoKey.reset();
   });
 
   test('Equivalence Bug: A=>B, B=>C should resolve to A=>B=>C', () async {
     // 1. Run the bug reproduction scenario
-    final (poser, poserN, statements) = await equivalenceBugWithStatements();
+    final (DemoIdentityKey poser, DemoDelegateKey? poserN, List<ContentStatement> statements) = await equivalenceBugWithStatements();
 
     // 2. Fetch Data & Build Aggregation
-    final trustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
-    final trustPipeline = TrustPipeline(trustSource);
-    final graph = await trustPipeline.build(poser.id);
-    final delegateResolver = DelegateResolver(graph);
-    final followNetwork =
+    final DirectFirestoreSource<TrustStatement> trustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final TrustPipeline trustPipeline = TrustPipeline(trustSource);
+    final TrustGraph graph = await trustPipeline.build(poser.id);
+    final DelegateResolver delegateResolver = DelegateResolver(graph);
+    final FollowNetwork followNetwork =
         reduceFollowNetwork(graph, delegateResolver, ContentResult(), kFollowContextNerdster);
 
-    final appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
-    final contentPipeline = ContentPipeline(
+    final DirectFirestoreSource<ContentStatement> appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
+    final ContentPipeline contentPipeline = ContentPipeline(
       delegateSource: appSource,
     );
 
     // We explicitly fetch content for all necessary delegates in the graph
     // to satisfy internal assertions in ContentLogic.
-    final Set<DelegateKey> delegateKeysToFetch = {};
-    for (final identity in graph.orderedKeys) {
+    final Set<DelegateKey> delegateKeysToFetch = <DelegateKey>{};
+    for (final IdentityKey identity in graph.orderedKeys) {
       delegateKeysToFetch.addAll(delegateResolver.getDelegatesForIdentity(identity));
     }
 
-    final delegateContent = await contentPipeline.fetchDelegateContent(
+    final Map<DelegateKey, List<ContentStatement>> delegateContent = await contentPipeline.fetchDelegateContent(
       delegateKeysToFetch,
       delegateResolver: delegateResolver,
       graph: graph,
     );
 
-    final contentResult = ContentResult(
+    final ContentResult contentResult = ContentResult(
       delegateContent: delegateContent,
     );
 
-    final labeler = V2Labeler(graph, delegateResolver: delegateResolver, meIdentity: poser.id);
+    final V2Labeler labeler = V2Labeler(graph, delegateResolver: delegateResolver, meIdentity: poser.id);
 
-    final aggregation = reduceContentAggregation(
+    final ContentAggregation aggregation = reduceContentAggregation(
       followNetwork,
       graph,
       delegateResolver,
       contentResult,
       enableCensorship: true,
-      meDelegateKeys: [poserN!.id],
+      meDelegateKeys: <DelegateKey>[poserN!.id],
       labeler: labeler,
     );
 
     // 3. Define the Subject Keys
-    final tokenA = statements[0].subjectToken;
-    final tokenB = statements[1].subjectToken;
-    final tokenC = statements[2].subjectToken;
+    final String tokenA = statements[0].subjectToken;
+    final String tokenB = statements[1].subjectToken;
+    final String tokenC = statements[2].subjectToken;
 
-    final keyA = ContentKey(tokenA);
-    final keyB = ContentKey(tokenB);
-    final keyC = ContentKey(tokenC);
+    final ContentKey keyA = ContentKey(tokenA);
+    final ContentKey keyB = ContentKey(tokenB);
+    final ContentKey keyC = ContentKey(tokenC);
 
     // 4. Inspect Results
     print('Token A: $tokenA');
     print('Token B: $tokenB');
     print('Token C: $tokenC');
 
-    final subA = aggregation.subjects[keyA];
-    final subB = aggregation.subjects[keyB];
-    final subC = aggregation.subjects[keyC];
+    final SubjectAggregation? subA = aggregation.subjects[keyA];
+    final SubjectAggregation? subB = aggregation.subjects[keyB];
+    final SubjectAggregation? subC = aggregation.subjects[keyC];
 
     // Expecting all to be merged into ONE subject
     // If they are separate entries in `subjects` map, it implies they failed to merge canonically

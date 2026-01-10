@@ -25,58 +25,59 @@ class MockSource<T extends Statement> implements StatementSource<T> {
 }
 
 void main() {
-  setUpAll(() {
-    ContentStatement.init();
-    TrustStatement.init();
+  setUp(() {
+    setUpTestRegistry();
   });
 
   group('V2 Tag Logic Tests', () {
     test('Recursive Tag Collection', () {
-      final now = DateTime.now().toIso8601String();
-      final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
-      final identityToken = identityJsonish.token;
+      final Json identityKey = mockKey('identity1');
+      final String identityToken = Jsonish(identityKey).token;
       
-      final delegateJsonish = Jsonish({'oneofusKey': 'delegate1'});
-      final delegateToken = delegateJsonish.token;
+      final Json delegateKey = mockKey('delegate1');
+      final String delegateToken = Jsonish(delegateKey).token;
 
-      final delegateStatement = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'time': now,
-        'I': identityJsonish.json,
-        'delegate': delegateJsonish.json,
-        'with': {'domain': 'nerdster.org'}
-      }));
+      final TrustStatement delegateStatement = makeTrustStatement(
+        verb: TrustVerb.delegate,
+        subject: delegateKey,
+        iJson: identityKey,
+        domain: 'nerdster.org',
+      );
 
-      final Json subject1 = {'url': 'subject1'};
+      final Map<String, dynamic> subject1 = createTestSubject(title: 'Subject 1');
       final String subject1Token = getToken(subject1);
 
-      final s1 = ContentStatement(Jsonish({
-        'rate': subject1,
-        'comment': 'Hello #world',
-        'I': delegateJsonish.json,
-        'time': now,
-      }));
-      final s2 = ContentStatement(Jsonish({
-        'rate': s1.jsonish.json, // Reply to s1
-        'comment': 'Reply with #tag2',
-        'I': delegateJsonish.json,
-        'time': now,
-      }));
+      final ContentStatement s1 = makeContentStatement(
+        verb: ContentVerb.rate,
+        subject: subject1,
+        comment: 'Hello #world',
+        iJson: delegateKey,
+      );
+      final ContentStatement s2 = makeContentStatement(
+        verb: ContentVerb.rate,
+        subject: s1.jsonish.json, // Reply to s1
+        comment: 'Reply with #tag2',
+        iJson: delegateKey,
+      );
 
-      final followNetwork = FollowNetwork(fcontext: 'test', povIdentity: IdentityKey(identityToken), identities: [IdentityKey(identityToken)]);
-      final trustGraph = TrustGraph(
+      final FollowNetwork followNetwork = FollowNetwork(
+        fcontext: 'test', 
+        povIdentity: IdentityKey(identityToken), 
+        identities: [IdentityKey(identityToken)]
+      );
+      final TrustGraph trustGraph = TrustGraph(
         pov: IdentityKey(identityToken), 
         distances: {IdentityKey(identityToken): 0},
         edges: {IdentityKey(identityToken): [delegateStatement]}
       );
-      final delegateResolver = DelegateResolver(trustGraph);
+      final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
       
-      final byToken = {
+      final Map<DelegateKey, List<ContentStatement>> byToken = {
         DelegateKey(delegateToken): [s1, s2],
       };
 
-      final labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
-      final aggregation = reduceContentAggregation(
+      final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
+      final ContentAggregation aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
@@ -84,58 +85,60 @@ void main() {
         labeler: labeler,
       );
 
-      final subjectAgg = aggregation.subjects[ContentKey(subject1Token)];
+      final SubjectAggregation? subjectAgg = aggregation.subjects[ContentKey(subject1Token)];
       expect(subjectAgg, isNotNull);
       expect(subjectAgg!.tags, contains('#world'));
       expect(subjectAgg.tags, contains('#tag2'));
     });
 
     test('Tag Equivalence (Transitive)', () {
-      final now = DateTime.now().toIso8601String();
-      final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
-      final identityToken = identityJsonish.token;
+      final Json identityKey = mockKey('identity1');
+      final String identityToken = Jsonish(identityKey).token;
 
-      final delegateJsonish = Jsonish({'oneofusKey': 'delegate1'});
-      final delegateToken = delegateJsonish.token;
+      final Json delegateKey = mockKey('delegate1');
+      final String delegateToken = Jsonish(delegateKey).token;
 
-      final delegateStatement = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'time': now,
-        'I': identityJsonish.json,
-        'delegate': delegateJsonish.json,
-        'with': {'domain': 'nerdster.org'}
-      }));
+      final TrustStatement delegateStatement = makeTrustStatement(
+        verb: TrustVerb.delegate,
+        subject: delegateKey,
+        iJson: identityKey,
+        domain: 'nerdster.org',
+      );
 
-      final Json subject1 = {'url': 'subject1'};
-      final Json subject2 = {'url': 'subject2'};
+      final Map<String, dynamic> subject1 = createTestSubject(title: 'Subject 1');
+      final Map<String, dynamic> subject2 = createTestSubject(title: 'Subject 2');
 
-      final s1 = ContentStatement(Jsonish({
-        'rate': subject1,
-        'comment': 'Co-occurrence #news #politics',
-        'I': delegateJsonish.json,
-        'time': now,
-      }));
-      final s2 = ContentStatement(Jsonish({
-        'rate': subject2,
-        'comment': 'Co-occurrence #politics #world',
-        'I': delegateJsonish.json,
-        'time': now,
-      }));
+      final ContentStatement s1 = makeContentStatement(
+        verb: ContentVerb.rate,
+        subject: subject1,
+        comment: 'Co-occurrence #news #politics',
+        iJson: delegateKey,
+      );
+      final ContentStatement s2 = makeContentStatement(
+        verb: ContentVerb.rate,
+        subject: subject2,
+        comment: 'Co-occurrence #politics #world',
+        iJson: delegateKey,
+      );
 
-      final followNetwork = FollowNetwork(fcontext: 'test', povIdentity: IdentityKey(identityToken), identities: [IdentityKey(identityToken)]);
-      final trustGraph = TrustGraph(
+      final FollowNetwork followNetwork = FollowNetwork(
+        fcontext: 'test', 
+        povIdentity: IdentityKey(identityToken), 
+        identities: [IdentityKey(identityToken)]
+      );
+      final TrustGraph trustGraph = TrustGraph(
         pov: IdentityKey(identityToken), 
         distances: {IdentityKey(identityToken): 0},
         edges: {IdentityKey(identityToken): [delegateStatement]}
       );
-      final delegateResolver = DelegateResolver(trustGraph);
+      final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
       
-      final byToken = {
+      final Map<DelegateKey, List<ContentStatement>> byToken = {
         DelegateKey(delegateToken): [s1, s2],
       };
 
-      final labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
-      final aggregation = reduceContentAggregation(
+      final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
+      final ContentAggregation aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
@@ -143,9 +146,9 @@ void main() {
         labeler: labeler,
       );
 
-      final newsCanonical = aggregation.tagEquivalence['#news'];
-      final politicsCanonical = aggregation.tagEquivalence['#politics'];
-      final worldCanonical = aggregation.tagEquivalence['#world'];
+      final String? newsCanonical = aggregation.tagEquivalence['#news'];
+      final String? politicsCanonical = aggregation.tagEquivalence['#politics'];
+      final String? worldCanonical = aggregation.tagEquivalence['#world'];
 
       expect(newsCanonical, isNotNull);
       expect(newsCanonical, equals(politicsCanonical));
@@ -153,51 +156,53 @@ void main() {
     });
 
     test('Tag Frequency Tracking', () {
-      final now = DateTime.now().toIso8601String();
-      final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
-      final identityToken = identityJsonish.token;
+      final Json identityKey = mockKey('identity1');
+      final String identityToken = Jsonish(identityKey).token;
 
-      final delegateJsonish = Jsonish({'oneofusKey': 'delegate1'});
-      final delegateToken = delegateJsonish.token;
+      final Json delegateKey = mockKey('delegate1');
+      final String delegateToken = Jsonish(delegateKey).token;
 
-      final delegateStatement = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'time': now,
-        'I': identityJsonish.json,
-        'delegate': delegateJsonish.json,
-        'with': {'domain': 'nerdster.org'}
-      }));
+      final TrustStatement delegateStatement = makeTrustStatement(
+        verb: TrustVerb.delegate,
+        subject: delegateKey,
+        iJson: identityKey,
+        domain: 'nerdster.org',
+      );
 
-      final Json subject1 = {'url': 'subject1'};
-      final Json subject2 = {'url': 'subject2'};
+      final Map<String, dynamic> subject1 = createTestSubject(title: 'Subject 1');
+      final Map<String, dynamic> subject2 = createTestSubject(title: 'Subject 2');
 
-      final s1 = ContentStatement(Jsonish({
-        'rate': subject1,
-        'comment': '#common #rare',
-        'I': delegateJsonish.json,
-        'time': now,
-      }));
-      final s2 = ContentStatement(Jsonish({
-        'rate': subject2,
-        'comment': '#common',
-        'I': delegateJsonish.json,
-        'time': now,
-      }));
+      final ContentStatement s1 = makeContentStatement(
+        verb: ContentVerb.rate,
+        subject: subject1,
+        comment: '#common #rare',
+        iJson: delegateKey,
+      );
+      final ContentStatement s2 = makeContentStatement(
+        verb: ContentVerb.rate,
+        subject: subject2,
+        comment: '#common',
+        iJson: delegateKey,
+      );
 
-      final followNetwork = FollowNetwork(fcontext: 'test', povIdentity: IdentityKey(identityToken), identities: [IdentityKey(identityToken)]);
-      final trustGraph = TrustGraph(
+      final FollowNetwork followNetwork = FollowNetwork(
+        fcontext: 'test', 
+        povIdentity: IdentityKey(identityToken), 
+        identities: [IdentityKey(identityToken)]
+      );
+      final TrustGraph trustGraph = TrustGraph(
         pov: IdentityKey(identityToken), 
         distances: {IdentityKey(identityToken): 0},
         edges: {IdentityKey(identityToken): [delegateStatement]}
       );
-      final delegateResolver = DelegateResolver(trustGraph);
+      final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
       
-      final byToken = {
+      final Map<DelegateKey, List<ContentStatement>> byToken = {
         DelegateKey(delegateToken): [s1, s2],
       };
 
-      final labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
-      final aggregation = reduceContentAggregation(
+      final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
+      final ContentAggregation aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
@@ -210,52 +215,54 @@ void main() {
     });
 
     test('Filtering by Tag (including equivalents)', () {
-      final now = DateTime.now().toIso8601String();
-      final identityJsonish = Jsonish({'oneofusKey': 'identity1'});
-      final identityToken = identityJsonish.token;
+      final Json identityKey = mockKey('identity1');
+      final String identityToken = Jsonish(identityKey).token;
 
-      final delegateJsonish = Jsonish({'oneofusKey': 'delegate1'});
-      final delegateToken = delegateJsonish.token;
+      final Json delegateKey = mockKey('delegate1');
+      final String delegateToken = Jsonish(delegateKey).token;
 
-      final delegateStatement = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'time': now,
-        'I': identityJsonish.json,
-        'delegate': delegateJsonish.json,
-        'with': {'domain': 'nerdster.org'}
-      }));
+      final TrustStatement delegateStatement = makeTrustStatement(
+        verb: TrustVerb.delegate,
+        subject: delegateKey,
+        iJson: identityKey,
+        domain: 'nerdster.org',
+      );
 
       // Use valid subjects that have a contentType so they pass the filter
-      final subject1 = createTestSubject(type: ContentType.article, url: 'https://sub1.com')..['id'] = 'sub1';
-      final subject2 = createTestSubject(type: ContentType.article, url: 'https://sub2.com')..['id'] = 'sub2';
+      final Map<String, dynamic> subject1 = createTestSubject(type: ContentType.article, url: 'https://sub1.com')..['id'] = 'sub1';
+      final Map<String, dynamic> subject2 = createTestSubject(type: ContentType.article, url: 'https://sub2.com')..['id'] = 'sub2';
 
-      final s1 = ContentStatement(Jsonish({
-        'rate': subject1,
-        'comment': '#news #politics',
-        'I': delegateJsonish.json,
-        'time': now,
-      }));
-      final s2 = ContentStatement(Jsonish({
-        'rate': subject2,
-        'comment': '#world',
-        'I': delegateJsonish.json,
-        'time': now,
-      }));
+      final ContentStatement s1 = makeContentStatement(
+        verb: ContentVerb.rate,
+        subject: subject1,
+        comment: '#news #politics',
+        iJson: delegateKey,
+      );
+      final ContentStatement s2 = makeContentStatement(
+        verb: ContentVerb.rate,
+        subject: subject2,
+        comment: '#world',
+        iJson: delegateKey,
+      );
 
-      final followNetwork = FollowNetwork(fcontext: 'test', povIdentity: IdentityKey(identityToken), identities: [IdentityKey(identityToken)]);
-      final trustGraph = TrustGraph(
+      final FollowNetwork followNetwork = FollowNetwork(
+        fcontext: 'test', 
+        povIdentity: IdentityKey(identityToken), 
+        identities: [IdentityKey(identityToken)]
+      );
+      final TrustGraph trustGraph = TrustGraph(
         pov: IdentityKey(identityToken), 
         distances: {IdentityKey(identityToken): 0},
         edges: {IdentityKey(identityToken): [delegateStatement]}
       );
-      final delegateResolver = DelegateResolver(trustGraph);
+      final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
       
-      final byToken = {
+      final Map<DelegateKey, List<ContentStatement>> byToken = {
         DelegateKey(delegateToken): [s1, s2],
       };
 
-      final labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
-      final aggregation = reduceContentAggregation(
+      final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
+      final ContentAggregation aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
         delegateResolver,
@@ -263,20 +270,9 @@ void main() {
         labeler: labeler,
       );
 
-      // final controller = V2FeedController(
-      //   trustSource: MockSource(),
-      //   contentSource: MockSource(),
-      // );
-
-      // final sub1 = aggregation.subjects.values.firstWhere((s) => (s.subject as Map)['id'] == 'sub1');
-      // final sub2 = aggregation.subjects.values.firstWhere((s) => (s.subject as Map)['id'] == 'sub2');
-
       // Filter by #politics...
       Setting.get<String>(SettingType.tag).value = '#politics';
       expect(aggregation.tagEquivalence['#news'], equals(aggregation.tagEquivalence['#politics']));
-      
-      // Filter by #politics
-      Setting.get<String>(SettingType.tag).value = '#politics';
     });
   });
 }

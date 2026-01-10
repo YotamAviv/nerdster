@@ -1,19 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/v2/graph_controller.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/fire_choice.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/keys.dart';
-
-
-
 import 'package:nerdster/singletons.dart';
-
-import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/demotest/test_util.dart';
 
 class MockV2FeedModel extends V2FeedModel {
   MockV2FeedModel({
@@ -35,10 +26,8 @@ class MockV2FeedModel extends V2FeedModel {
 }
 
 void main() {
-  setUpAll(() {
-    fireChoice = FireChoice.fake;
-    FireFactory.register(kOneofusDomain, FakeFirebaseFirestore(), null);
-    TrustStatement.init();
+  setUp(() {
+    setUpTestRegistry();
   });
 
   test('GraphController: Root Ordering and Pathfinding', () async {

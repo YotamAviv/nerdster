@@ -12,26 +12,24 @@ import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 
+import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/content/content_statement.dart';
+
+import 'package:nerdster/demotest/test_util.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;
 
   setUp(() async {
-    fireChoice = FireChoice.fake;
     firestore = FakeFirebaseFirestore();
-    FireFactory.register(kOneofusDomain, firestore, null);
-    FireFactory.register(kNerdsterDomain, firestore, null);
-    TrustStatement.init();
-    ContentStatement.init();
-    DemoKey.reset();
+    setUpTestRegistry(firestore: firestore);
   });
 
   test('V2Labeler: Greedy Moniker Assignment', () async {
-    final alice = await DemoIdentityKey.create('alice');
-    final bob = await DemoIdentityKey.create('bob');
-    final charlie = await DemoIdentityKey.create('charlie');
-    final dave = await DemoIdentityKey.create('dave');
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
+    final DemoIdentityKey charlie = await DemoIdentityKey.create('charlie');
+    final DemoIdentityKey dave = await DemoIdentityKey.create('dave');
 
     // Alice -> Bob ("Bobby")
     await alice.doTrust(TrustVerb.trust, bob, moniker: 'Bobby');
@@ -44,11 +42,11 @@ void main() {
     // Bob -> Dave ("David")
     await bob.doTrust(TrustVerb.trust, dave, moniker: 'David');
 
-    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
-    final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.id);
+    final DirectFirestoreSource<TrustStatement> source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
+    final TrustGraph graph = await pipeline.build(alice.id);
     
-    final labeler = V2Labeler(graph, meIdentity: alice.id);
+    final V2Labeler labeler = V2Labeler(graph, meIdentity: alice.id);
 
     expect(labeler.getIdentityLabel(alice.id), 'Me');
     expect(labeler.getIdentityLabel(bob.id), 'Bobby');
@@ -57,52 +55,52 @@ void main() {
   });
 
   test('V2Labeler: PoV Moniker Discovery', () async {
-    final alice = await DemoIdentityKey.create('alice');
-    final bob = await DemoIdentityKey.create('bob');
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
 
     // Alice trusts Bob
     await alice.doTrust(TrustVerb.trust, bob, moniker: 'Bobby');
     // Bob trusts Alice back as "Lisa"
     await bob.doTrust(TrustVerb.trust, alice, moniker: 'Lisa');
 
-    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
-    final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.id);
+    final DirectFirestoreSource<TrustStatement> source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
+    final TrustGraph graph = await pipeline.build(alice.id);
     
-    final labeler = V2Labeler(graph);
+    final V2Labeler labeler = V2Labeler(graph);
 
     // Alice is the pov, but Bob (who she trusts) calls her "Lisa".
     expect(labeler.getIdentityLabel(alice.id), 'Lisa');
   });
 
   test('V2Labeler: Identity Resolution', () async {
-    final alice = await DemoIdentityKey.create('alice');
-    final bob1 = await DemoIdentityKey.create('bob1');
-    final bob2 = await DemoIdentityKey.create('bob2');
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey bob1 = await DemoIdentityKey.create('bob1');
+    final DemoIdentityKey bob2 = await DemoIdentityKey.create('bob2');
 
     // Alice -> Bob1 ("Bob")
     await alice.doTrust(TrustVerb.trust, bob1, moniker: 'Bob');
     
     // Alice also trusts Bob2 so it's in the graph, but NO moniker
     // We do this manually to avoid DemoKey's default moniker
-    final json = TrustStatement.make(
+    final Map<String, dynamic> json = TrustStatement.make(
         await (await alice.keyPair.publicKey).json, 
         await (bob2.publicKey).json, 
         TrustVerb.trust,
         domain: null, 
         moniker: null);
     final StatementWriter writer = SourceFactory.getWriter(kOneofusDomain);
-    final signer = await OouSigner.make(alice.keyPair);
+    final OouSigner signer = await OouSigner.make(alice.keyPair);
     await writer.push(json, signer);
     
     // Bob2 replaces Bob1
     await bob2.replace(bob1);
 
-    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
-    final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.id);
+    final DirectFirestoreSource<TrustStatement> source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
+    final TrustGraph graph = await pipeline.build(alice.id);
     
-    final labeler = V2Labeler(graph);
+    final V2Labeler labeler = V2Labeler(graph);
 
     // Since Bob2 replaces Bob1, Bob2 is canonical and Bob1 is old.
     // Both should have unique labels.
@@ -111,20 +109,20 @@ void main() {
   });
 
   test('V2Labeler: Name Conflicts (Disambiguation)', () async {
-    final alice = await DemoIdentityKey.create('alice');
-    final bob1 = await DemoIdentityKey.create('bob1');
-    final bob2 = await DemoIdentityKey.create('bob2');
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey bob1 = await DemoIdentityKey.create('bob1');
+    final DemoIdentityKey bob2 = await DemoIdentityKey.create('bob2');
 
     // Alice -> Bob1 ("Bob")
     await alice.doTrust(TrustVerb.trust, bob1, moniker: 'Bob');
     // Alice -> Bob2 ("Bob") - Different identity
     await alice.doTrust(TrustVerb.trust, bob2, moniker: 'Bob');
 
-    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
-    final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.id);
+    final DirectFirestoreSource<TrustStatement> source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
+    final TrustGraph graph = await pipeline.build(alice.id);
     
-    final labeler = V2Labeler(graph);
+    final V2Labeler labeler = V2Labeler(graph);
 
     // Order in orderedKeys depends on newest-first. 
     // Bob2 was trusted last, so it comes first in the BFS layer.
@@ -133,11 +131,11 @@ void main() {
   });
 
   test('V2Labeler: Complex Conflict (Old + Collision)', () async {
-    final alice = await DemoIdentityKey.create('alice');
-    final bob1 = await DemoIdentityKey.create('bob1');
-    final bob2 = await DemoIdentityKey.create('bob2');
-    final charlie1 = await DemoIdentityKey.create('charlie1');
-    final charlie2 = await DemoIdentityKey.create('charlie2');
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey bob1 = await DemoIdentityKey.create('bob1');
+    final DemoIdentityKey bob2 = await DemoIdentityKey.create('bob2');
+    final DemoIdentityKey charlie1 = await DemoIdentityKey.create('charlie1');
+    final DemoIdentityKey charlie2 = await DemoIdentityKey.create('charlie2');
 
     // Alice -> Bob1 ("Bob")
     await alice.doTrust(TrustVerb.trust, bob1, moniker: 'Bob');
@@ -153,11 +151,11 @@ void main() {
     // Charlie2 replaces Charlie1
     await charlie2.replace(charlie1);
 
-    final source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
-    final pipeline = TrustPipeline(source, maxDegrees: 5);
-    final graph = await pipeline.build(alice.id);
+    final DirectFirestoreSource<TrustStatement> source = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
+    final TrustGraph graph = await pipeline.build(alice.id);
     
-    final labeler = V2Labeler(graph);
+    final V2Labeler labeler = V2Labeler(graph);
 
     // Charlie identity was trusted last by Alice, so it comes first in orderedKeys.
     // Charlie identity (also named "Bob"). Charlie2 is canonical.

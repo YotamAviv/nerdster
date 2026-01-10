@@ -36,6 +36,7 @@ abstract class Statement {
 
   /// Verifies that a collection of statements is ordered by time (descending)
   /// and contains only one type of statement (TrustStatement or ContentStatement).
+  /// TODO: Make this throw an Exception instead of returning a bool.
   static bool validateStatementTimesAndTypes(Iterable<Statement> statements) {
     if (statements.isEmpty) return true;
     final Type firstType = statements.first.runtimeType;
@@ -48,8 +49,8 @@ abstract class Statement {
       }
 
       if (previous != null) {
-        if (previous.time.isBefore(current.time)) {
-          throw 'Statements are not in descending time order.\n'
+        if (!previous.time.isAfter(current.time)) {
+          throw 'Statements are not in strictly descending time order.\n'
               'Index ${i - 1}: ${previous.time}\n'
               'Index $i: ${current.time}';
         }

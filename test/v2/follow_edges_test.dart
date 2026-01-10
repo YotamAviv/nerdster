@@ -1,109 +1,97 @@
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/demotest/test_util.dart';
 
 void main() {
-  setUpAll(() {
-    TrustStatement.init();
-    ContentStatement.init();
+  setUp(() {
+    setUpTestRegistry();
   });
+
+  IdentityKey id(Map<String, dynamic> key) => IdentityKey(Jsonish(key).token);
 
   group('FollowNetwork Edges', () {
     test('populates edges for follow statements', () {
-      final povKey = {'kty': 'mock', 'val': 'pov'};
-      final pov = Jsonish(povKey).token;
-      final aliceKey = {'kty': 'mock', 'val': 'alice'};
-      final alice = Jsonish(aliceKey).token;
-      final bobKey = {'kty': 'mock', 'val': 'bob'};
-      final bob = Jsonish(bobKey).token;
+      final Map<String, dynamic> povKey = mockKey('pov');
+      final IdentityKey pov = id(povKey);
+      final Map<String, dynamic> aliceKey = mockKey('alice');
+      final IdentityKey alice = id(aliceKey);
+      final Map<String, dynamic> bobKey = mockKey('bob');
+      final IdentityKey bob = id(bobKey);
 
-      final t1 = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'trust': alice,
-        'time': DateTime.now().toIso8601String(),
-        'I': povKey,
-      }, 't1'));
+      final TrustStatement t1 = makeTrustStatement(
+        verb: TrustVerb.trust,
+        subject: aliceKey,
+        iJson: povKey,
+      );
 
-      final t2 = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'trust': bob,
-        'time': DateTime.now().toIso8601String(),
-        'I': aliceKey,
-      }, 't2'));
+      final TrustStatement t2 = makeTrustStatement(
+        verb: TrustVerb.trust,
+        subject: bobKey,
+        iJson: aliceKey,
+      );
 
-      final povD = 'povD';
-      final aliceD = 'aliceD';
+      const String povDName = 'povD';
+      const String aliceDName = 'aliceD';
 
-      final d1 = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'delegate': povD,
-        'with': {'domain': 'nerdster.org'},
-        'time': DateTime.now().toIso8601String(),
-        'I': povKey,
-      }, 'd1'));
+      final TrustStatement d1 = makeTrustStatement(
+        verb: TrustVerb.delegate,
+        subject: povDName,
+        domain: 'nerdster.org',
+        iJson: povKey,
+      );
 
-      final d2 = TrustStatement(Jsonish({
-        'statement': 'net.one-of-us',
-        'delegate': aliceD,
-        'with': {'domain': 'nerdster.org'},
-        'time': DateTime.now().toIso8601String(),
-        'I': aliceKey,
-      }, 'd2'));
+      final TrustStatement d2 = makeTrustStatement(
+        verb: TrustVerb.delegate,
+        subject: aliceDName,
+        domain: 'nerdster.org',
+        iJson: aliceKey,
+      );
 
-      final trustGraph = TrustGraph(
-        pov: IdentityKey(pov),
+      final TrustGraph trustGraph = TrustGraph(
+        pov: pov,
         distances: {
-          IdentityKey(pov): 0,
-          IdentityKey(alice): 1,
-          IdentityKey(bob): 2
+          pov: 0,
+          alice: 1,
+          bob: 2
         },
-        orderedKeys: [IdentityKey(pov), IdentityKey(alice), IdentityKey(bob)],
+        orderedKeys: [pov, alice, bob],
         edges: {
-          IdentityKey(pov): [t1, d1],
-          IdentityKey(alice): [t2, d2],
+          pov: [t1, d1],
+          alice: [t2, d2],
         },
       );
 
-      final f1 = ContentStatement(Jsonish({
-        'statement': 'org.nerdster',
-        'follow': alice,
-        'with': {
-          'contexts': {'news': 1},
-        },
-        'time': DateTime.now().toIso8601String(),
-        'I': povKey,
-      }, 'f1'));
+      final ContentStatement f1 = makeContentStatement(
+        verb: ContentVerb.follow,
+        subject: alice.value,
+        contexts: {'news': 1},
+        iJson: povKey,
+      );
 
-      final f2 = ContentStatement(Jsonish({
-        'statement': 'org.nerdster',
-        'follow': bob,
-        'with': {
-          'contexts': {'news': 1},
-        },
-        'time': DateTime.now().toIso8601String(),
-        'I': aliceKey,
-      }, 'f2'));
+      final ContentStatement f2 = makeContentStatement(
+        verb: ContentVerb.follow,
+        subject: bob.value,
+        contexts: {'news': 1},
+        iJson: aliceKey,
+      );
 
       final Map<DelegateKey, List<ContentStatement>> delegateContent = {
-        DelegateKey(povD): [f1],
-        DelegateKey(aliceD): [f2],
+        d1.subjectAsDelegate: [f1],
+        d2.subjectAsDelegate: [f2],
       };
 
-      final network = reduceFollowNetwork(
+      final FollowNetwork network = reduceFollowNetwork(
         trustGraph,
         DelegateResolver(trustGraph),
         ContentResult(delegateContent: delegateContent),
         'news',
       );
 
-      expect(network.identities, containsAll([IdentityKey(pov), IdentityKey(alice), IdentityKey(bob)]));
-      expect(network.edges[IdentityKey(pov)], contains(f1));
-      expect(network.edges[IdentityKey(alice)], contains(f2));
+      expect(network.identities, containsAll([pov, alice, bob]));
+      expect(network.edges[pov], contains(f1));
+      expect(network.edges[alice], contains(f2));
     });
   });
 }

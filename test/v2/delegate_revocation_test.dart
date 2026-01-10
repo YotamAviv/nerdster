@@ -15,19 +15,15 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/v2/follow_logic.dart';
+import 'package:nerdster/demotest/test_util.dart';
 
 void main() {
   late FakeFirebaseFirestore fire;
   late DirectFirestoreSource<ContentStatement> contentSource;
 
-  setUpAll(() {
-    fireChoice = FireChoice.fake;
-    TrustStatement.init();
-    ContentStatement.init();
-  });
-
   setUp(() {
-    DemoKey.reset();
+    setUpTestRegistry();
+    fireChoice = FireChoice.fake;
     fire = FakeFirebaseFirestore();
     FireFactory.register(kOneofusDomain, fire, null);
     FireFactory.register(kNerdsterDomain, fire, null);
@@ -44,18 +40,18 @@ void main() {
   }
 
   test('DelegateResolver: Revoked delegate is still claimed by revoker (Proximity wins)', () async {
-    final sideshow = await DemoIdentityKey.create('sideshow');
-    final marge = await DemoIdentityKey.create('marge');
-    final margeN = await DemoDelegateKey.create('margeN');
+    final DemoIdentityKey sideshow = await DemoIdentityKey.create('sideshow');
+    final DemoIdentityKey marge = await DemoIdentityKey.create('marge');
+    final DemoDelegateKey margeN = await DemoDelegateKey.create('margeN');
 
     // Marge delegates to margeN (Time T1)
-    final s2 = await marge.delegate(margeN, domain: 'nerdster.org');
+    final TrustStatement s2 = await marge.delegate(margeN, domain: 'nerdster.org');
 
     // Sideshow revokes margeN as a delegate (Time T2)
     // Even though this is later in time, Sideshow is closer in the graph (Dist 0 vs Dist 1)
-    final s1 = await sideshow.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
+    final TrustStatement s1 = await sideshow.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
     
-    final tg = TrustGraph(
+    final TrustGraph tg = TrustGraph(
       pov: sideshow.id,
       distances: {sideshow.id: 0, marge.id: 1},
       edges: {
@@ -65,7 +61,7 @@ void main() {
       notifications: [],
     );
 
-    final resolver = DelegateResolver(tg);
+    final DelegateResolver resolver = DelegateResolver(tg);
     
     // Resolve for sideshow (Distance 0)
     resolver.resolveForIdentity(sideshow.id);
@@ -82,19 +78,19 @@ void main() {
 
   test('V2Labeler: Should label delegate correctly when revoked by owner', () async {
     final mel = await DemoIdentityKey.create('mel');
-    final marge = await DemoIdentityKey.create('marge');
-    final margeN = await DemoDelegateKey.create('margeN');
+    final DemoIdentityKey marge = await DemoIdentityKey.create('marge');
+    final DemoDelegateKey margeN = await DemoDelegateKey.create('margeN');
 
     // Mel trusts Marge
-    final sMelMarge = await mel.doTrust(TrustVerb.trust, marge, moniker: 'Marge');
+    final TrustStatement sMelMarge = await mel.doTrust(TrustVerb.trust, marge, moniker: 'Marge');
 
     // Marge delegates to margeN
-    final sMargeDelegate = await marge.delegate(margeN, domain: 'nerdster.org');
+    final TrustStatement sMargeDelegate = await marge.delegate(margeN, domain: 'nerdster.org');
     
     // Marge revokes margeN
-    final sMargeRevoke = await marge.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
+    final TrustStatement sMargeRevoke = await marge.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
-    final tg = TrustGraph(
+    final TrustGraph tg = TrustGraph(
       pov: mel.id,
       distances: {mel.id: 0, marge.id: 1},
       orderedKeys: [mel.id, marge.id],
@@ -105,7 +101,7 @@ void main() {
       notifications: [],
     );
 
-    final resolver = DelegateResolver(tg);
+    final DelegateResolver resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(mel.id);
     resolver.resolveForIdentity(marge.id);
 
@@ -116,24 +112,24 @@ void main() {
   });
 
   test('Delegate Revocation: Should filter statements after revokeAt', () async {
-    final alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final delegate = await DemoDelegateKey.create('delegate');
 
     // 1. Delegate signs two statements
-    final s1 = await delegate.doRate(title: 'Good');
-    final s2 = await delegate.doRate(title: 'Bad');
+    final ContentStatement s1 = await delegate.doRate(title: 'Good');
+    final ContentStatement s2 = await delegate.doRate(title: 'Bad');
 
     await upload(delegate.token, s1);
     await upload(delegate.token, s2);
 
     // 2. Alice delegates to delegate
-    final d1 = await alice.delegate(delegate, domain: 'nerdster.org');
+    final TrustStatement d1 = await alice.delegate(delegate, domain: 'nerdster.org');
     
     // 3. Alice revokes delegate at s1. 
     // passing s1.token directly as doTrust expects String?
-    final d2 = await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: s1.token);
+    final TrustStatement d2 = await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: s1.token);
 
-    final tg = TrustGraph(
+    final TrustGraph tg = TrustGraph(
       pov: alice.id,
       distances: {alice.id: 0},
       edges: {
@@ -142,7 +138,7 @@ void main() {
       notifications: [],
     );
 
-    final resolver = DelegateResolver(tg);
+    final DelegateResolver resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(alice.id);
 
     expect(resolver.getConstraintForDelegate(delegate.id), equals(ContentKey(s1.token)));
@@ -164,16 +160,16 @@ void main() {
   });
 
   test('Delegate Revocation: "<since always>" should revoke everything', () async {
-    final bob = await DemoIdentityKey.create('bob');
+    final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
     final delegate = await DemoDelegateKey.create('delegate2');
 
-    final s1 = await delegate.doRate(title: 'Something');
+    final ContentStatement s1 = await delegate.doRate(title: 'Something');
     await upload(delegate.token, s1);
 
-    final d1 = await bob.delegate(delegate, domain: 'nerdster.org');
-    final d2 = await bob.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
+    final TrustStatement d1 = await bob.delegate(delegate, domain: 'nerdster.org');
+    final TrustStatement d2 = await bob.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
-    final tg = TrustGraph(
+    final TrustGraph tg = TrustGraph(
       pov: bob.id,
       distances: {bob.id: 0},
       edges: {
@@ -182,7 +178,7 @@ void main() {
       notifications: [],
     );
 
-    final resolver = DelegateResolver(tg);
+    final DelegateResolver resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(bob.id);
 
     expect(resolver.getConstraintForDelegate(delegate.id), equals(kSinceAlways));
@@ -201,13 +197,13 @@ void main() {
   });
 
   test('Delegate Revocation: Should authorize even if revokeAt is present', () async {
-    final alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final delegate = await DemoDelegateKey.create('delegate');
 
     // Alice delegates to delegate with a revokeAt (maybe she's revoking an old session but authorizing the key)
-    final d1 = await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
+    final TrustStatement d1 = await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
-    final tg = TrustGraph(
+    final TrustGraph tg = TrustGraph(
       pov: alice.id,
       distances: {alice.id: 0},
       edges: {
@@ -216,7 +212,7 @@ void main() {
       notifications: [],
     );
 
-    final resolver = DelegateResolver(tg);
+    final DelegateResolver resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(alice.id);
 
     expect(resolver.getIdentityForDelegate(delegate.id), equals(alice.id),
@@ -225,24 +221,24 @@ void main() {
   });
 
   test('Delegate Revocation: Comprehensive test (Revoked but still a delegate)', () async {
-    final bob = await DemoIdentityKey.create('bob');
+    final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
     final delegate = await DemoDelegateKey.create('delegate3');
 
     // 1. Delegate signs a statement (S1)
-    final s1 = await delegate.doRate(title: 'Before Revocation');
+    final ContentStatement s1 = await delegate.doRate(title: 'Before Revocation');
     await upload(delegate.token, s1);
 
     // 2. Bob delegates to delegate
-    final d1 = await bob.delegate(delegate, domain: 'nerdster.org');
+    final TrustStatement d1 = await bob.delegate(delegate, domain: 'nerdster.org');
     
     // 3. Bob revokes delegate at S1
-    final d2 = await bob.delegate(delegate, domain: 'nerdster.org', revokeAt: s1.token);
+    final TrustStatement d2 = await bob.delegate(delegate, domain: 'nerdster.org', revokeAt: s1.token);
 
     // 4. Delegate signs another statement (S2) AFTER revocation
-    final s2 = await delegate.doRate(title: 'After Revocation');
+    final ContentStatement s2 = await delegate.doRate(title: 'After Revocation');
     await upload(delegate.token, s2);
 
-    final tg = TrustGraph(
+    final TrustGraph tg = TrustGraph(
       pov: bob.id,
       distances: {bob.id: 0},
       edges: {
@@ -251,7 +247,7 @@ void main() {
       notifications: [],
     );
 
-    final resolver = DelegateResolver(tg);
+    final DelegateResolver resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(bob.id);
 
     // Verify it's still a delegate
@@ -296,7 +292,7 @@ void main() {
     final sRevoke1 = await bo.delegate(boD1, domain: 'nerdster.org', revokeAt: sFollow.token);
 
     // Setup Graph
-    final tg = TrustGraph(
+    final TrustGraph tg = TrustGraph(
       pov: bo.id,
       distances: {bo.id: 0},
       orderedKeys: [bo.id],
@@ -326,19 +322,19 @@ void main() {
   });
 
   test('V2Labeler: Should number multiple delegates for same identity and domain', () async {
-    final bob = await DemoIdentityKey.create('bob');
-    final d1 = await DemoDelegateKey.create('d1');
-    final d2 = await DemoDelegateKey.create('d2');
+    final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
+    final DemoDelegateKey d1 = await DemoDelegateKey.create('d1');
+    final DemoDelegateKey d2 = await DemoDelegateKey.create('d2');
 
     // Bob delegates to d1 and d2
-    final s1 = await bob.delegate(d1, domain: 'nerdster.org');
-    final s2 = await bob.delegate(d2, domain: 'nerdster.org');
+    final TrustStatement s1 = await bob.delegate(d1, domain: 'nerdster.org');
+    final TrustStatement s2 = await bob.delegate(d2, domain: 'nerdster.org');
     
     // Bob is trusted by POV (me) so he gets a name
     final me = await DemoIdentityKey.create('me');
     final sTrust = await me.doTrust(TrustVerb.trust, bob, moniker: 'Bob');
 
-    final tg = TrustGraph(
+    final TrustGraph tg = TrustGraph(
       pov: me.id,
       distances: {me.id: 0, bob.id: 1},
       orderedKeys: [me.id, bob.id],
@@ -349,7 +345,7 @@ void main() {
       notifications: [],
     );
 
-    final resolver = DelegateResolver(tg);
+    final DelegateResolver resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(bob.id);
 
     final labeler = V2Labeler(tg, delegateResolver: resolver);

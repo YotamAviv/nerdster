@@ -15,17 +15,11 @@ import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/demotest/test_util.dart';
 
 void main() async {
-  fireChoice = FireChoice.fake;
-  FireFactory.register(kOneofusDomain, FakeFirebaseFirestore(), null);
-  FireFactory.register(kNerdsterDomain, FakeFirebaseFirestore(), null);
-  TrustStatement.init();
-  ContentStatement.init();
-
   setUp(() async {
-    useClock(TestClock());
-    DemoKey.reset();
+    setUpTestRegistry();
   });
 
   test('V2 Equivalence: Transitive and DontEquate', () async {
@@ -37,19 +31,13 @@ void main() async {
     final DemoDelegateKey bobN = await bob.makeDelegate();
     final DemoDelegateKey charlieN = await charlie.makeDelegate();
 
-    // This works, too. See matching comment below.
-    // Alice trusts Charlie and Bob
-    // await alice.trust(bob, moniker: 'bob');
-    // await alice.trust(charlie, moniker: 'charlie');
-
-    // Bob trusts Alice (just ot name her)
+    // Bob trusts Alice (just to name her)
     await bob.trust(alice, moniker: 'alice');
 
-    final t2 = await alice.trust(bob, moniker: 'bob');
-    final t1 = await alice.trust(charlie, moniker: 'charlie');
+    await alice.trust(bob, moniker: 'bob');
+    await alice.trust(charlie, moniker: 'charlie');
 
     final TrustGraph graph = reduceTrustGraph(TrustGraph(pov: alice.id), {
-      // alice.token: alice.trustStatements.toList(),
       alice.id: alice.trustStatements.toList(),
       bob.id: bob.trustStatements.toList(),
       charlie.id: charlie.trustStatements.toList(),
@@ -58,13 +46,13 @@ void main() async {
     final DelegateResolver delegateResolver = DelegateResolver(graph);
 
     // Subjects
-    final Json sA = {'contentType': 'article', 'title': 'A', 'url': 'https://example.com/A'};
-    final Json sB = {'contentType': 'article', 'title': 'B', 'url': 'https://example.com/B'};
-    final Json sC = {'contentType': 'article', 'title': 'C', 'url': 'https://example.com/C'};
+    final Map<String, dynamic> sA = <String, dynamic>{'contentType': 'article', 'title': 'A', 'url': 'https://example.com/A'};
+    final Map<String, dynamic> sB = <String, dynamic>{'contentType': 'article', 'title': 'B', 'url': 'https://example.com/B'};
+    final Map<String, dynamic> sC = <String, dynamic>{'contentType': 'article', 'title': 'C', 'url': 'https://example.com/C'};
 
-    final String sAToken = getToken(sA);
-    final String sBToken = getToken(sB);
-    final String sCToken = getToken(sC);
+    final ContentKey sAKey = ContentKey(getToken(sA));
+    final ContentKey sBKey = ContentKey(getToken(sB));
+    final ContentKey sCKey = ContentKey(getToken(sC));
 
     // Statements
 
@@ -85,11 +73,11 @@ void main() async {
     await aliceN.doRelate(ContentVerb.equate, subject: sA, other: sB);
 
     // Collect statements
-    final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
-    for (final dk in [aliceN, bobN, charlieN]) {
+    final Map<DelegateKey, List<ContentStatement>> delegateContent = <DelegateKey, List<ContentStatement>>{};
+    for (final DemoDelegateKey dk in [aliceN, bobN, charlieN]) {
       delegateContent[dk.id] = dk.contentStatements;
     }
-    final contentResult = ContentResult(delegateContent: delegateContent);
+    final ContentResult contentResult = ContentResult(delegateContent: delegateContent);
 
     // Use <nerdster> context
     final FollowNetwork netAlice =
@@ -97,10 +85,11 @@ void main() async {
 
     // Verify Network Order
     final V2Labeler labeler = V2Labeler(graph);
-    final List<String> expected = [alice.token, charlie.token, bob.token];
-    final List<String> actual = netAlice.identities.map((k) => k.value).toList();
-    final List<String> expectedNames = expected.map((t) => labeler.getLabel(t)).toList();
-    final List<String> actualNames = actual.map((t) => labeler.getLabel(t)).toList();
+    final List<IdentityKey> expected = <IdentityKey>[alice.id, charlie.id, bob.id];
+    final List<IdentityKey> actual = netAlice.identities.toList();
+
+    final List<String> expectedNames = expected.map((IdentityKey t) => labeler.getLabel(t.value)).toList();
+    final List<String> actualNames = actual.map((IdentityKey t) => labeler.getLabel(t.value)).toList();
 
     expect(actualNames, equals(expectedNames),
         reason: 'Network order should be Alice, then Charlie, then Bob');
@@ -108,9 +97,9 @@ void main() async {
     final ContentAggregation aggAlice =
         reduceContentAggregation(netAlice, graph, delegateResolver, contentResult, labeler: labeler);
 
-    final ContentKey? canonA = aggAlice.equivalence[ContentKey(sAToken)];
-    final ContentKey? canonB = aggAlice.equivalence[ContentKey(sBToken)];
-    final ContentKey? canonC = aggAlice.equivalence[ContentKey(sCToken)];
+    final ContentKey? canonA = aggAlice.equivalence[sAKey];
+    final ContentKey? canonB = aggAlice.equivalence[sBKey];
+    final ContentKey? canonC = aggAlice.equivalence[sCKey];
 
     // Expectation: A == B, but B != C (because Charlie says dontEquate B-C and Charlie > Bob)
     expect(canonA, isNotNull);

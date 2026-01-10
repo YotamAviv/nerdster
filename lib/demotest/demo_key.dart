@@ -1,3 +1,5 @@
+import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/content/content_types.dart';
 import 'dart:collection';
 
 import 'package:nerdster/content/content_statement.dart';
@@ -346,7 +348,7 @@ class DemoDelegateKey implements DemoKey {
       String? export}) async {
     assert(countNonNull(title) + countNonNull(subject) == 1);
     if (b(title)) {
-      subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
+      subject = createTestSubject(title: title);
     }
 
     final Json json = await makeRate(
@@ -378,10 +380,10 @@ class DemoDelegateKey implements DemoKey {
     assert(countNonNull(subject) + countNonNull(title) == 1);
     assert(countNonNull(other) + countNonNull(otherTitle) == 1);
     if (b(title)) {
-      subject = {'contentType': 'article', 'title': title, 'url': 'u1'};
+      subject = createTestSubject(title: title);
     }
     if (b(otherTitle)) {
-      other = {'contentType': 'article', 'title': otherTitle, 'url': 'u1'};
+      other = createTestSubject(title: otherTitle);
     }
 
     final Json json = await makeRelate(verb, subject!, other!);
