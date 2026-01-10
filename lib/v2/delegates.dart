@@ -1,3 +1,4 @@
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -31,6 +32,7 @@ class DelegateResolver {
       keys = [identity];
     }
 
+    // TODO(human): Use Merger.merge( map(..))
     List<TrustStatement> allStatements = [];
     for (final IdentityKey key in keys) {
       final statements = graph.edges[key] ?? [];
@@ -70,7 +72,10 @@ class DelegateResolver {
     _resolvedIdentities.add(identity);
   }
 
+  // TODO(human): I think merger does exactly this
   List<TrustStatement> _mergeSorted(List<TrustStatement> a, List<TrustStatement> b) {
+    Statement.validateOrderTypes(a);
+    Statement.validateOrderTypes(b);
     final List<TrustStatement> result = [];
     int i = 0, j = 0;
     while (i < a.length && j < b.length) {

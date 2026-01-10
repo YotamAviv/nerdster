@@ -24,5 +24,3 @@ Let me know if you notice anything that might be problematic.
 If not, suggest a commit message based only on the GIT diffs, not based on your memory
 Copy/paste from our conversation never works for me for this, and so:
 Append the commit message to the end of this file:
-
-Modernize v2 test suite and enforce strictly descending statement ordering

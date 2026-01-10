@@ -78,12 +78,7 @@ TrustGraph reduceTrustGraph(
   PathRequirement? pathRequirement,
   int maxDegrees = 6,
 }) {
-  assert(() {
-    for (final entry in byIssuer.entries) {
-      Statement.validateStatementTimesAndTypes(entry.value);
-    }
-    return true;
-  }());
+  Statement.validateOrderTypess(byIssuer.values);
 
   final Map<IdentityKey, int> distances = {current.pov: 0};
   final List<IdentityKey> orderedKeys = [current.pov];

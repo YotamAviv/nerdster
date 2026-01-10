@@ -36,29 +36,42 @@ abstract class Statement {
 
   /// Verifies that a collection of statements is ordered by time (descending)
   /// and contains only one type of statement (TrustStatement or ContentStatement).
-  /// TODO: Make this throw an Exception instead of returning a bool.
-  static bool validateStatementTimesAndTypes(Iterable<Statement> statements) {
-    if (statements.isEmpty) return true;
-    final Type firstType = statements.first.runtimeType;
+  /// Uses assert, only checks in debug mode
+  static void validateOrderTypes(Iterable<Statement> statements) {
+    assert(() {
+      if (statements.isEmpty) return true;
+      final Type firstType = statements.first.runtimeType;
 
-    Statement? previous;
-    int i = 0;
-    for (final Statement current in statements) {
-      if (current.runtimeType != firstType) {
-        throw 'Collection contains mixed statement types: $firstType and ${current.runtimeType}';
-      }
-
-      if (previous != null) {
-        if (!previous.time.isAfter(current.time)) {
-          throw 'Statements are not in strictly descending time order.\n'
-              'Index ${i - 1}: ${previous.time}\n'
-              'Index $i: ${current.time}';
+      Statement? previous;
+      int i = 0;
+      for (final Statement current in statements) {
+        if (current.runtimeType != firstType) {
+          throw 'Collection contains mixed statement types: $firstType and ${current.runtimeType}';
         }
+
+        if (previous != null) {
+          if (!previous.time.isAfter(current.time)) {
+            throw 'Statements are not in strictly descending time order.\n'
+                'Index ${i - 1}: ${previous.time}\n'
+                'Index $i: ${current.time}';
+          }
+        }
+        previous = current;
+        i++;
       }
-      previous = current;
-      i++;
-    }
-    return true;
+      return true;
+    }());
+  }
+
+  /// Helper to validate multiple collections of statements.
+  /// Uses assert, only checks in debug mode
+  static void validateOrderTypess(Iterable<Iterable<Statement>> collections) {
+    assert(() {
+      for (final collection in collections) {
+        validateOrderTypes(collection);
+      }
+      return true;
+    }());
   }
 
   Statement(this.jsonish, this.subject)

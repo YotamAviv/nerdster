@@ -25,12 +25,7 @@ FollowNetwork reduceFollowNetwork(
   String fcontext, {
   int maxDegrees = 6,
 }) {
-  assert(() {
-    for (final entry in contentResult.delegateContent.entries) {
-      Statement.validateStatementTimesAndTypes(entry.value);
-    }
-    return true;
-  }());
+  Statement.validateOrderTypess(contentResult.delegateContent.values);
 
   final List<IdentityKey> identities = [];
   final List<TrustNotification> notifications = [];

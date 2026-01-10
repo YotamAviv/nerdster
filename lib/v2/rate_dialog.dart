@@ -96,9 +96,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
     final List<ContentStatement> myLiteralStatements =
         List.from(widget.model.aggregation.myLiteralStatements[token] ?? []);
 
-    // Sort by time descending to find the latest
-    myLiteralStatements.sort((a, b) => b.time.compareTo(a.time));
-    assert(Statement.validateStatementTimesAndTypes(myLiteralStatements));
+    Statement.validateOrderTypes(myLiteralStatements);
 
     priorStatement = myLiteralStatements.isEmpty ? null : myLiteralStatements.first;
 

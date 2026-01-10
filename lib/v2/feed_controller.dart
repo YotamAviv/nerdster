@@ -201,6 +201,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   void sortSubjects(List<SubjectAggregation> subjects) {
     switch (sortMode) {
       case V2SortMode.recentActivity:
+        // CONSIDER: Might be already sorted by lastActivity descending via the aggregation subjects map.
         subjects.sort((a, b) => b.lastActivity.compareTo(a.lastActivity));
         break;
       case V2SortMode.netLikes:

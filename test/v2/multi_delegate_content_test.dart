@@ -80,8 +80,8 @@ void main() {
 
     // 5. Prepare Content Result
     final Map<DelegateKey, List<ContentStatement>> delegateContent = {
-      d1.id: [s1, s3, s5],
-      d2.id: [s2, s4, s6],
+      d1.id: [s5, s3, s1],
+      d2.id: [s6, s4, s2],
     };
     final ContentResult contentResult = ContentResult(delegateContent: delegateContent);
 

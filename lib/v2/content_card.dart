@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:nerdster/oneofus/keys.dart';import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/oneofus/statement.dart';import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -482,10 +483,7 @@ class _ContentCardState extends State<ContentCard> {
 
     final List<ContentStatement> myLiteralStatements =
         List.from(widget.model.aggregation.myLiteralStatements[widget.aggregation.token] ?? []);
-
-    // Sort by time descending to find the latest
-    myLiteralStatements.sort((a, b) => b.time.compareTo(a.time));
-
+    Statement.validateOrderTypes(myLiteralStatements);
     final hasPrior = myLiteralStatements.any((s) => s.verb == ContentVerb.rate);
 
     IconData icon = Icons.rate_review_outlined;

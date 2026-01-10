@@ -4,6 +4,7 @@ class Merger {
   /// Merge multiple sorted iterables of [T extends Statement],
   /// producing a single sorted iterable by descending time.
   static Iterable<T> merge<T extends Statement>(Iterable<Iterable<T>> sources) sync* {
+    Statement.validateOrderTypess(sources);
     final iters = sources
         .map((s) => s.iterator)
         .where((i) => i.moveNext()) // only keep non-empty

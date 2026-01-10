@@ -4,6 +4,7 @@ import 'package:nerdster/content/tag.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/distincter.dart';
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/labeler.dart';
@@ -60,10 +61,8 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  // 2. Collect and Filter Statements
-  final List<ContentStatement> filteredStatements = [];
-  final Map<IdentityKey, List<ContentStatement>> filteredByIdentity = {};
-
+  // 2. Collect and Filter Statements (Merge All Sources)
+  final List<Iterable<ContentStatement>> identityStreams = [];
   for (final IdentityKey identity in followNetwork.identities) {
     final List<Iterable<ContentStatement>> sources = _collectSources(
       identity,
@@ -71,28 +70,26 @@ ContentAggregation reduceContentAggregation(
       contentResult,
     );
 
-    final Iterable<ContentStatement> statements = distinct(
+    identityStreams.add(distinct(
       Merger.merge(sources),
       iTransformer: (_) => identity.value,
-    ).cast<ContentStatement>();
-
-    for (final ContentStatement s in statements) {
-      // Filter out follow statements (they are for network building)
-      if (s.verb == ContentVerb.follow) continue;
-      if (s.verb == ContentVerb.clear) continue;
-
-      // Filter censored
-      if (enableCensorship) {
-        if (censored.contains(s.token)) continue;
-        if (censored.contains(s.subjectToken)) continue;
-        if (s.other != null && censored.contains(getToken(s.other))) continue;
-      }
-
-      filteredStatements.add(s);
-      filteredByIdentity.putIfAbsent(identity, () => []).add(s);
-    }
+    ).cast<ContentStatement>());
   }
 
+  final List<ContentStatement> filteredStatements =
+      distinct(Merger.merge(identityStreams)).where((s) {
+    // Filter out follow statements (they are for network building)
+    if (s.verb == ContentVerb.follow) return false;
+    if (s.verb == ContentVerb.clear) return false;
+
+    // Filter censored
+    if (enableCensorship) {
+      if (censored.contains(s.token)) return false;
+      if (censored.contains(s.subjectToken)) return false;
+      if (s.other != null && censored.contains(getToken(s.other))) return false;
+    }
+    return true;
+  }).toList();
 
   // 3. Equivalence Grouping
   final Map<ContentKey, ContentKey> subjectEquivalence = {};
@@ -101,10 +98,10 @@ ContentAggregation reduceContentAggregation(
     if (s.verb == ContentVerb.equate || s.verb == ContentVerb.dontEquate) {
       final String s1 = s.subjectToken;
       final String s2 = getToken(s.other);
-      assert(s1 != s2) ;
-        // It's decided! 
-        // - s1 is canonical, s2 equivalent.
-        // - this statement is about both.
+      assert(s1 != s2);
+      // It's decided!
+      // - s1 is canonical, s2 equivalent.
+      // - this statement is about both.
       eqLogic.process(EquateStatement(s1, s2, dont: s.verb == ContentVerb.dontEquate));
     }
   }
@@ -116,12 +113,23 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
+  final Map<ContentKey, Json> subjectDefinitions = {};
+  for (final statement in filteredStatements) {
+    if (statement.subject is Map) {
+      subjectDefinitions[ContentKey(statement.subjectToken)] = statement.subject as Json;
+    }
+    if (statement.other != null && statement.other is Map) {
+      subjectDefinitions[ContentKey(getToken(statement.other))] = statement.other as Json;
+    }
+  }
+
+  // TODO: The AI invented its own notion of tag processing. Restore my (the human's) intentions.
   // Tag Equivalence Grouping
   final Map<String, String> tagEquivalence = {};
   final Map<String, Set<String>> tagEdges = {};
   for (final s in filteredStatements) {
     if (s.comment != null) {
-      final tags = tagRegExp.allMatches(s.comment!).map((m) => m.group(0)!.toLowerCase()).toList();
+      final tags = extractTags(s.comment!).map((t) => t.toLowerCase()).toList();
       if (tags.length > 1) {
         for (int i = 0; i < tags.length; i++) {
           for (int j = i + 1; j < tags.length; j++) {
@@ -149,6 +157,7 @@ ContentAggregation reduceContentAggregation(
         }
       }
     }
+    // TODO: Why are we sorting tags. I want them by most, there is no canonical tag.
     final List<String> sorted = component.toList()..sort();
     final String canonicalTag = sorted.first;
     for (final String t in component) {
@@ -191,17 +200,6 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  Map<ContentKey, Json> subjectDefinitions = {};
-  for (final statement in filteredStatements) {
-    if (statement.subject is Map) {
-      subjectDefinitions[ContentKey(statement.subjectToken)] = statement.subject as Json;
-    }
-    if (statement.other != null) {
-      assert(statement.other is Map);
-      subjectDefinitions[ContentKey(getToken(statement.other))] = statement.other as Json;
-    }
-  }
-
   // Pass 1: Identify all tokens that should be top-level subjects or recognized variants.
   final Set<ContentKey> topLevelSubjects = {};
   final Set<ContentKey> recognizedLiteralSubjects = {};
@@ -229,95 +227,90 @@ ContentAggregation reduceContentAggregation(
   }
 
   // Pass 2: Aggregate all statements into those subjects.
-  for (final IdentityKey identity in followNetwork.identities) {
-    final List<ContentStatement> statements = filteredByIdentity[identity] ?? [];
-    for (final ContentStatement s in statements) {
-      final literalSubject = ContentKey(s.subjectToken);
-      final canonicalSubject = subjectEquivalence[literalSubject] ?? literalSubject;
+  for (final ContentStatement s in filteredStatements) {
+    final literalSubject = ContentKey(s.subjectToken);
+    final canonicalSubject = subjectEquivalence[literalSubject] ?? literalSubject;
 
-      final List<ContentKey> canonicalTokens = s.involvedTokens
-          .map((t) => subjectEquivalence[ContentKey(t)] ?? ContentKey(t))
-          .toList();
-      final ContentKey c1 = canonicalTokens[0];
-      final ContentKey? c2 = canonicalTokens.length > 1 ? canonicalTokens[1] : null;
+    final List<ContentKey> canonicalTokens =
+        s.involvedTokens.map((t) => subjectEquivalence[ContentKey(t)] ?? ContentKey(t)).toList();
+    final ContentKey c1 = canonicalTokens[0];
+    final ContentKey? c2 = canonicalTokens.length > 1 ? canonicalTokens[1] : null;
 
-      final IdentityKey signerIdentity =
-          delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!;
+    final IdentityKey signerIdentity =
+        delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!;
 
-      void update(Map<ContentKey, SubjectGroup> map, ContentKey key, bool isCanonical) {
-        if (isCanonical && !topLevelSubjects.contains(key)) return;
-        if (!isCanonical && !recognizedLiteralSubjects.contains(key)) return;
+    void update(Map<ContentKey, SubjectGroup> map, ContentKey key, bool isCanonical) {
+      if (isCanonical && !topLevelSubjects.contains(key)) return;
+      if (!isCanonical && !recognizedLiteralSubjects.contains(key)) return;
 
-        SubjectGroup group = map[key] ??
-            SubjectGroup(
-              canonical: isCanonical ? key : canonicalSubject,
-              lastActivity: s.time,
-            );
+      SubjectGroup group = map[key] ??
+          SubjectGroup(
+            canonical: isCanonical ? key : canonicalSubject,
+            lastActivity: s.time,
+          );
 
-        // Update stats
-        int likes = group.likes;
-        int dislikes = group.dislikes;
-        if (s.verb == ContentVerb.rate) {
-          if (s.like == true) likes++;
-          if (s.like == false) dislikes++;
-        }
+      // Update stats
+      int likes = group.likes;
+      int dislikes = group.dislikes;
+      if (s.verb == ContentVerb.rate) {
+        if (s.like == true) likes++;
+        if (s.like == false) dislikes++;
+      }
 
-        // Update related
-        final Set<ContentKey> relatedSet = Set.from(group.related);
-        if (s.verb == ContentVerb.relate) {
-          if (isCanonical) {
-            if (key == c1 && c2 != null) {
-              relatedSet.add(c2);
-            } else if (key == c2) {
-              relatedSet.add(c1);
-            }
-          } else {
-            // For literal, we still add the CANONICAL related token
-            if (key == literalSubject && s.other != null) {
-              relatedSet.add(subjectEquivalence[ContentKey(getToken(s.other))] ??
-                  ContentKey(getToken(s.other)));
-            } else if (s.other != null && key == ContentKey(getToken(s.other))) {
-              relatedSet.add(canonicalSubject);
-            }
+      // Update related
+      final Set<ContentKey> relatedSet = Set.from(group.related);
+      if (s.verb == ContentVerb.relate) {
+        if (isCanonical) {
+          if (key == c1 && c2 != null) {
+            relatedSet.add(c2);
+          } else if (key == c2) {
+            relatedSet.add(c1);
+          }
+        } else {
+          // For literal, we still add the CANONICAL related token
+          if (key == literalSubject && s.other != null) {
+            relatedSet.add(
+                subjectEquivalence[ContentKey(getToken(s.other))] ?? ContentKey(getToken(s.other)));
+          } else if (s.other != null && key == ContentKey(getToken(s.other))) {
+            relatedSet.add(canonicalSubject);
           }
         }
-
-        List<ContentStatement> newPovStatements = group.povStatements;
-        if (signerIdentity == followNetwork.povIdentity) {
-          newPovStatements = [...newPovStatements, s]..sort((a, b) => b.time.compareTo(a.time));
-        }
-
-        final DateTime lastActivity =
-            s.time.isAfter(group.lastActivity) ? s.time : group.lastActivity;
-
-        map[key] = SubjectGroup(
-          canonical: isCanonical ? key : canonicalSubject,
-          statements: [...group.statements, s]..sort((a, b) => b.time.compareTo(a.time)),
-          tags: group.tags, // Will be updated in Pass 3
-          likes: likes,
-          dislikes: dislikes,
-          lastActivity: lastActivity,
-          related: relatedSet,
-          povStatements: newPovStatements,
-          isCensored: group.isCensored ||
-              censored.contains(key.value) ||
-              censored.contains(s.subjectToken),
-        );
       }
 
-      // Update Canonical map
-      for (final canonical in canonicalTokens.toSet()) {
-        update(canonicalSubject2group, canonical, true);
+      List<ContentStatement> newPovStatements = group.povStatements;
+      if (signerIdentity == followNetwork.povIdentity) {
+        newPovStatements = [...newPovStatements, s];
       }
 
-      // Update Literal map
-      for (final String t in s.involvedTokens) {
-        update(literalSubject2group, ContentKey(t), false);
-      }
+      final DateTime lastActivity =
+          s.time.isAfter(group.lastActivity) ? s.time : group.lastActivity;
+
+      map[key] = SubjectGroup(
+        canonical: isCanonical ? key : canonicalSubject,
+        statements: [...group.statements, s],
+        tags: group.tags, // Will be updated in Pass 3
+        likes: likes,
+        dislikes: dislikes,
+        lastActivity: lastActivity,
+        related: relatedSet,
+        povStatements: newPovStatements,
+        isCensored:
+            group.isCensored || censored.contains(key.value) || censored.contains(s.subjectToken),
+      );
+    }
+
+    // Update Canonical map
+    for (final canonical in canonicalTokens.toSet()) {
+      update(canonicalSubject2group, canonical, true);
+    }
+
+    // Update Literal map
+    for (final String t in s.involvedTokens) {
+      update(literalSubject2group, ContentKey(t), false);
     }
   }
 
-  // Pass 2b: Aggregate My Statements (For UI Overlays)
+  // Pass 2b: Aggregate My Statements (For [RateDialog, V2RelateDialog, NodeDetails] and "My Disses")
   final List<Iterable<ContentStatement>> mySources = meDelegateKeys
           ?.map((k) => contentResult.delegateContent[k])
           .whereType<Iterable<ContentStatement>>()
@@ -347,8 +340,9 @@ ContentAggregation reduceContentAggregation(
   // Pass 3: Recursive Tag Collection and Most Frequent Tags
   final MostStrings mostStrings = MostStrings({});
 
-  Set<String> collectTagsRecursive(
-      ContentKey token, Set<ContentKey> visited, Map<ContentKey, List<ContentStatement>> statementsMap) {
+  Set<String> collectTagsRecursive(ContentKey token, Set<ContentKey> visited,
+      Map<ContentKey, List<ContentStatement>> statementsMap) {
+    Statement.validateOrderTypess(statementsMap.values);
     if (visited.contains(token)) return {};
     visited.add(token);
 
@@ -369,8 +363,10 @@ ContentAggregation reduceContentAggregation(
     return tags;
   }
 
-  void updateTags(Map<ContentKey, SubjectGroup> targetMap, Map<ContentKey, List<ContentStatement>> statementsMap,
+  void updateTags(Map<ContentKey, SubjectGroup> targetMap,
+      Map<ContentKey, List<ContentStatement>> statementsMap,
       {bool updateMostStrings = false}) {
+    Statement.validateOrderTypess(statementsMap.values);
     for (final key in targetMap.keys.toList()) {
       final group = targetMap[key]!;
       final Set<String> recursiveTags = collectTagsRecursive(key, {}, statementsMap);
@@ -378,9 +374,7 @@ ContentAggregation reduceContentAggregation(
       if (updateMostStrings) mostStrings.process(recursiveTags);
     }
   }
-
   updateTags(canonicalSubject2group, canonicalSubject2statements, updateMostStrings: true);
-  updateTags(literalSubject2group, literalSubject2statements);
 
   // Pass 4: Final flavored aggregation Map.
   final Map<ContentKey, SubjectAggregation> subjects = {};
@@ -408,7 +402,7 @@ ContentAggregation reduceContentAggregation(
   for (final entry in subjectDefinitions.entries) {
     createAggregation(entry.key, entry.value);
   }
-  
+
   final List<String> mostTags = mostStrings.most().toList();
 
   return ContentAggregation(

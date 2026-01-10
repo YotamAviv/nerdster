@@ -201,8 +201,8 @@ class SubjectGroup {
     this.povStatements = const [],
     this.isCensored = false,
   }) {
-    assert(Statement.validateStatementTimesAndTypes(statements));
-    assert(Statement.validateStatementTimesAndTypes(povStatements));
+    Statement.validateOrderTypes(statements);
+    Statement.validateOrderTypes(povStatements);
   }
 
   SubjectGroup copyWith({
@@ -236,6 +236,7 @@ class SubjectGroup {
   bool get isDismissed => _checkIsDismissed(povStatements);
 
   bool _checkIsDismissed(List<ContentStatement> dispositionStatements) {
+    Statement.validateOrderTypes(dispositionStatements);
     final dismissalTimestamp = _getDismissalTimestamp(dispositionStatements);
     if (dismissalTimestamp == null) return false;
 
@@ -272,6 +273,7 @@ class SubjectGroup {
   }
 
   DateTime? _getDismissalTimestamp(List<ContentStatement> stmts) {
+    Statement.validateOrderTypes(stmts);
     // The user's disposition is singular. The first rate statement encountered
     // is the effective one.
     for (final s in stmts) {
@@ -288,6 +290,7 @@ class SubjectGroup {
   }
 
   static bool checkIsDismissed(List<ContentStatement> myStmts, SubjectAggregation agg) {
+    Statement.validateOrderTypes(myStmts);
     final dismissalTimestamp = getDismissalTimestamp(myStmts);
     if (dismissalTimestamp == null) return false;
     if (dismissalTimestamp.year >= 3000) return true;
@@ -308,6 +311,7 @@ class SubjectGroup {
   }
 
   static DateTime? getDismissalTimestamp(List<ContentStatement> stmts) {
+    Statement.validateOrderTypes(stmts);
     for (final s in stmts) {
       if (s.verb == ContentVerb.rate) {
         if (s.dismiss == 'forever') {

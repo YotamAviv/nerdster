@@ -73,7 +73,7 @@ void main() {
       final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
       
       final Map<DelegateKey, List<ContentStatement>> byToken = {
-        DelegateKey(delegateToken): [s1, s2],
+        DelegateKey(delegateToken): [s2, s1],
       };
 
       final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
@@ -134,7 +134,7 @@ void main() {
       final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
       
       final Map<DelegateKey, List<ContentStatement>> byToken = {
-        DelegateKey(delegateToken): [s1, s2],
+        DelegateKey(delegateToken): [s2, s1],
       };
 
       final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
@@ -198,7 +198,7 @@ void main() {
       final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
       
       final Map<DelegateKey, List<ContentStatement>> byToken = {
-        DelegateKey(delegateToken): [s1, s2],
+        DelegateKey(delegateToken): [s2, s1],
       };
 
       final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
@@ -258,7 +258,7 @@ void main() {
       final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
       
       final Map<DelegateKey, List<ContentStatement>> byToken = {
-        DelegateKey(delegateToken): [s1, s2],
+        DelegateKey(delegateToken): [s2, s1],
       };
 
       final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);

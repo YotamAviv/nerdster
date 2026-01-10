@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/oneofus/statement.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
-import 'package:nerdster/content/dialogs/check_signed_in.dart';
-import 'package:nerdster/oneofus/util.dart';
 
 class V2RelateDialog extends StatefulWidget {
   final SubjectAggregation subject1;
@@ -80,9 +80,7 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
     final myLiteralStatements = widget.model.aggregation.myLiteralStatements;
     final s1 = List<ContentStatement>.from(myLiteralStatements[t1] ?? []);
 
-    // Sort by time (descending) to find the latest
-    s1.sort((a, b) => b.time.compareTo(a.time));
-
+    Statement.validateOrderTypes(s1);
     final prior = s1.where((s) {
       return s.involvedTokens.contains(t2.value);
     }).firstOrNull;
