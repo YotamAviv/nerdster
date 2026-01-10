@@ -24,7 +24,7 @@ Statements about high-level subjects (books, movies, URLs) **must** include the 
 
 Exceptions where the **token** is sufficient:
 1.  **Rate**: If the subject is another user's statement, OR the `rate` uses `censor` or `dismiss`.
-2.  **Follow**: If the user is explicitly blocking in all specified contexts (all weights are `-1`).
+2.  **Follow**: All `follow` statements use the subject token (identity key).
 3.  **Clear**: All `clear` statements use the subject token.
 
 *Note: All Relations (`relate`, `equate`, `dontRelate`, `dontEquate`) always use the full subject JSON to maintain the graph's discoverability.*
@@ -35,15 +35,14 @@ Exceptions where the **token** is sufficient:
 Defines the subscription relationship with another user.
 The `<nerdster>` context is a special context used to follow anyone whose identity you've vouched for in the identity layer.
 *   **Meaning**: Subscribe to or block content from an identity in specific contexts.
-*   **Subject**: Full identity JSON.
-    *   *Exception*: If the user is explicitly blocking in all specified contexts (all weights are `-1`), the identity **token** is sufficient.
+*   **Subject**: Identity token (the public key string).
 *   **`with` Clause**: Requires `contexts`, a map of context names to integer values.
     *   `1`: Follow.
     *   `-1`: Block.
 *   **Example**:
     ```json
     {
-      "follow": <identity key JSON>,
+      "follow": <identity key>,
       "with": {
         "contexts": {
           "<nerdster>": 1,

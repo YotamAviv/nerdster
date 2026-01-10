@@ -10,7 +10,7 @@ import '../test_utils.dart';
 // The rules:
 // Rate: tokenize when statement, dismiss, censor (comment doesn't matter)
 // All relations [relate, equate, dontRelate, dontEquate]: don't tokenize
-// Follow: tokenize when strictly blocking (everything in the with.context maps to -1)
+// Follow: always tokenize (we have the key from the identity network)
 // Clear: tokenize
 
 void main() {
@@ -103,7 +103,7 @@ void main() {
       if (debugMode) {
         expect(simpleFollowJson['follow'], equals(subjectObj));
       } else {
-        expect(simpleFollowJson['follow'], equals(subjectObj));
+        expect(simpleFollowJson['follow'], equals(subjectToken));
       }
 
       // Test Rate on Statements (Rule 1)

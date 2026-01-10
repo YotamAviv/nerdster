@@ -157,11 +157,7 @@ class ContentStatement extends Statement {
     } else if (verb == ContentVerb.clear) {
       shouldTokenize = true;
     } else if (verb == ContentVerb.follow) {
-      if (contexts != null &&
-          contexts.isNotEmpty &&
-          contexts.values.every((v) => v == -1)) {
-        shouldTokenize = true;
-      }
+      shouldTokenize = true;
     }
 
     if (shouldTokenize && !debugUseSubjectNotToken) {

@@ -433,16 +433,13 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
       final signer = signInState.signer;
       if (myId == null || signer == null) return;
 
-      final subjectJsonish = Jsonish.find(widget.identity.value);
-      if (subjectJsonish == null) throw Exception("Subject not found");
-
       final contextsToSave = Map<String, int>.from(_pendingContexts)
         ..removeWhere((key, value) => value == 0);
 
       final json = ContentStatement.make(
         signInState.delegatePublicKeyJson!,
         ContentVerb.follow,
-        subjectJsonish.json,
+        widget.identity.value,
         contexts: contextsToSave,
       );
 

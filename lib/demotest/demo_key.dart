@@ -321,7 +321,7 @@ class DemoDelegateKey implements DemoKey {
 
   Future<Json> makeFollow(dynamic subject, Json contexts,
       {ContentVerb verb = ContentVerb.follow}) async {
-    return ContentStatement.make(await publicKey.json, verb, await _resolveSubject(subject),
+    return ContentStatement.make(await publicKey.json, verb, _resolveSubject(subject),
         contexts: contexts);
   }
 
@@ -329,11 +329,9 @@ class DemoDelegateKey implements DemoKey {
     return ContentStatement.make(await publicKey.json, verb, subject, other: other);
   }
 
-  // This is too fancy here in my (aviv, the human) opinion.
-  // It's used for follow
-  static Future<dynamic> _resolveSubject(dynamic s) async {
-    if (s is DemoIdentityKey) return await s.publicKey.json;
-    if (s is DemoDelegateKey) return await s.publicKey.json;
+  static dynamic _resolveSubject(dynamic s) {
+    if (s is DemoIdentityKey) return s.token;
+    if (s is DemoDelegateKey) return s.token;
     return s;
   }
 

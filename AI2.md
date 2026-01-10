@@ -19,13 +19,14 @@ read those changes
 Let me know if you notice anything that might be problematic.
 If not, suggest a commit message based only on the GIT diffs, not based on your memory
 Copy/paste from our conversation never works for me for this, and so:
-Output ONLY the commit message here in this file right here:
+Append the commit message to the end of this file:
 
-Refactor personal stance handling to use global overlay maps
+Enforce tokenization for all follow statements
 
-- Replaced SubjectGroup.myDelegateStatements with global maps in ContentAggregation: myLiteralStatements and myCanonicalDisses.
-- Implemented literal token lookups in RateDialog, RelateDialog, and NodeDetails to ensure accurate hydration of personal history.
-- Updated dismissal logic to use myCanonicalDisses for cross-alias filtering in feed_controller.dart and content_card.dart.
-- Removed UI guard in NodeDetails preventing visibility of personal follows for subjects excluded from the network aggregation.
-- Updated unit and integration tests to align with the new personal stance architecture.
-- Added regression test for follow visibility of out-of-network identities.
+- Update ContentStatement.make to always tokenize follow verbs.
+- Update documentation in content_statement_semantics.md to reflect that follow subjects are now identity tokens.
+- Refactor lib/v2/node_details.dart and demo_key.dart to pass identity tokens directly for follow statements.
+- Improve robustness of rate_when_not_in_network.dart test with type-safe lookups and explicit exception throwing for missing subjects.
+- Update debug_token_test.dart to reflect the new tokenization requirement for follow statements.
+
+

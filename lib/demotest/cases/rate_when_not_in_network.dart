@@ -153,7 +153,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
       print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
     } else {
-      print('Superbad found: NO (Critical Failure)');
+      throw Exception('Superbad found: NO (Critical Failure)');
     }
   }
 
@@ -182,7 +182,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
       print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
     } else {
-      print('Superbad found: NO (Critical Failure)');
+      throw Exception('Superbad found: NO (Critical Failure)');
     }
   }
 
@@ -221,15 +221,17 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       // Verify RateDialog data availability
       // Since Lisa is blocked, Secretariat might not be in agg.subjects,
       // but it MUST be in agg.myLiteralStatements.
-      final secretariatEntry = agg.myLiteralStatements.entries.firstWhere(
-        (e) => e.value.any((s) => (s.subject as Map)['title'] == 'Secretariat'),
+      MapEntry<ContentKey, List<ContentStatement>> secretariatEntry =
+          agg.myLiteralStatements.entries.firstWhere(
+        (e) => e.value.any((s) => s.subject is Map && s.subject['title'] == 'Secretariat'),
       );
-      final secretariatKey = secretariatEntry.key;
-      final myLiteralStatements = secretariatEntry.value;
-      final hasMyRating = myLiteralStatements.any((s) => s.iToken == lisaN.id.value && s.verb == ContentVerb.rate);
+      ContentKey secretariatKey = secretariatEntry.key;
+      List<ContentStatement> myLiteralStatements = secretariatEntry.value;
+      bool hasMyRating =
+          myLiteralStatements.any((s) => s.iToken == lisaN.id.value && s.verb == ContentVerb.rate);
       print('RateDialog Data Available: $hasMyRating (Expected: true)');
     } else {
-      print('Superbad found: NO (Critical Failure)');
+      throw Exception('Superbad found: NO (Critical Failure)');
     }
   }
 
