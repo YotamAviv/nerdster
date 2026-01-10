@@ -22,9 +22,9 @@ import 'refresh_signal.dart';
 import 'submit.dart';
 
 class ContentView extends StatefulWidget {
-  final String? povToken;
+  final IdentityKey? pov;
 
-  const ContentView({super.key, this.povToken});
+  const ContentView({super.key, this.pov});
 
   @override
   State<ContentView> createState() => _ContentViewState();
@@ -32,14 +32,14 @@ class ContentView extends StatefulWidget {
 
 class _ContentViewState extends State<ContentView> {
   late final V2FeedController _controller;
-  String? _currentPov; // TODO: IdentityKey
+  IdentityKey? _currentPov;
   final ValueNotifier<ContentKey?> _markedSubjectToken = ValueNotifier(null);
   final ValueNotifier<bool> _showFilters = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
-    _currentPov = widget.povToken;
+    _currentPov = widget.pov;
     _controller = V2FeedController(
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
@@ -49,7 +49,8 @@ class _ContentViewState extends State<ContentView> {
         globalLabeler.value = _controller.value!.labeler;
       }
     });
-    _controller.refresh(_currentPov != null ? IdentityKey(_currentPov!) : null, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+    _controller.refresh(_currentPov,
+        meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     v2RefreshSignal.addListener(_onRefresh);
 
@@ -61,10 +62,11 @@ class _ContentViewState extends State<ContentView> {
   @override
   void didUpdateWidget(ContentView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.povToken != widget.povToken) {
-      debugPrint('ContentView: povToken changed from ${oldWidget.povToken} to ${widget.povToken}');
+    if (oldWidget.pov != widget.pov) {
+      debugPrint(
+          'ContentView: povIdentity changed from ${oldWidget.pov} to ${widget.pov}');
       setState(() {
-        _currentPov = widget.povToken;
+        _currentPov = widget.pov;
         _markedSubjectToken.value = null;
       });
       // We use a small delay to ensure the previous refresh (if any) has a chance to see the loading state
@@ -90,13 +92,14 @@ class _ContentViewState extends State<ContentView> {
     if (!mounted) return;
 
     // The controller handles overlapping refreshes internally.
-    await _controller.refresh(_currentPov != null ? IdentityKey(_currentPov!) : null, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+    await _controller.refresh(_currentPov,
+        meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
   }
 
   void _changePov(String? newToken) {
     signInState.pov = newToken;
     setState(() {
-      _currentPov = newToken;
+      _currentPov = newToken != null ? IdentityKey(newToken) : null;
       _markedSubjectToken.value = null;
     });
     _onRefresh();

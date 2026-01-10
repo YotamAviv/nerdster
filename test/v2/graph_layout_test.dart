@@ -26,7 +26,7 @@ class MockV2FeedModel extends V2FeedModel {
     delegateResolver: delegateResolver ?? DelegateResolver(trustGraph),
     aggregation: ContentAggregation(),
     labeler: V2Labeler(trustGraph, delegateResolver: delegateResolver),
-    povToken: trustGraph.pov,
+    povIdentity: trustGraph.pov,
     fcontext: 'test',
     sortMode: V2SortMode.recentActivity,
     filterMode: V2FilterMode.ignoreDisses,

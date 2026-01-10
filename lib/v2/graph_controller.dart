@@ -47,7 +47,7 @@ class GraphController {
 
   GraphController(this.feedModel);
 
-  IdentityKey get povIdentity => feedModel.povToken;
+  IdentityKey get povIdentity => feedModel.povIdentity;
 
   GraphData buildGraphData() {
     final Set<String> nodes = {};

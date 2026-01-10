@@ -27,7 +27,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 class V2Labeler {
   final TrustGraph graph;
   final DelegateResolver? delegateResolver;
-  final IdentityKey? meIdentityToken;
+  final IdentityKey? meIdentity;
 
   // Maps IdentityKeys (canonical or historical) to their display name
   final Map<IdentityKey, String> _identityToName = {};
@@ -37,7 +37,7 @@ class V2Labeler {
   
   final Set<String> _usedNames = {};
 
-  V2Labeler(this.graph, {this.delegateResolver, this.meIdentityToken}) {
+  V2Labeler(this.graph, {this.delegateResolver, this.meIdentity}) {
     _computeLabels();
   }
 
@@ -97,9 +97,9 @@ class V2Labeler {
         // Fallback for the pov identity if no one has vouched for it yet.
         if (bestMoniker == null) {
           if (token == graph.pov) {
-            if (meIdentityToken != null &&
+            if (meIdentity != null &&
                 graph.resolveIdentity(token) ==
-                    graph.resolveIdentity(meIdentityToken!)) {
+                    graph.resolveIdentity(meIdentity!)) {
               bestMoniker = "Me";
             } else {
               // Use their moniker from Jsonish or the token itself

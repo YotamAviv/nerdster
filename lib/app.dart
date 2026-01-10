@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/credentials_display.dart';
 // import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
@@ -41,7 +42,7 @@ class NerdsterApp extends StatelessWidget {
           listenable: signInState,
           builder: (context, _) {
             final path = Uri.base.path;
-          final povToken = signInState.pov;
+          final pov = signInState.pov;
 
           final bool smallNow = MediaQuery.of(context).size.width < 600;
           if (smallNow != isSmall.value) {
@@ -51,13 +52,13 @@ class NerdsterApp extends StatelessWidget {
           }
 
           if (path == '/m' || path.startsWith('/m/') || path == '/m.html' || path == '/v2/phone') {
-            return PhoneView(povToken: povToken);
+            return PhoneView(povIdentity: pov != null ? IdentityKey(pov) : null);
           } else if (Uri.base.queryParameters.containsKey('verifyFullScreen') &&
               b(Setting.get(SettingType.verify).value)) {
             return const StandaloneVerify();
           } else {
             // Default to ContentView
-            return ContentView(povToken: povToken);
+            return ContentView(pov: pov != null ? IdentityKey(pov) : null);
           }
         },
       ),

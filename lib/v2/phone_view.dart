@@ -16,9 +16,9 @@ import 'refresh_signal.dart';
 import 'submit.dart';
 
 class PhoneView extends StatefulWidget {
-  final String? povToken;
+  final IdentityKey? povIdentity;
 
-  const PhoneView({super.key, this.povToken});
+  const PhoneView({super.key, this.povIdentity});
 
   @override
   State<PhoneView> createState() => _PhoneViewState();
@@ -37,7 +37,8 @@ class _PhoneViewState extends State<PhoneView> {
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
-    _controller.refresh(widget.povToken != null ? IdentityKey(widget.povToken!) : null, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+    _controller.refresh(widget.povIdentity,
+        meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
     v2RefreshSignal.addListener(_onRefresh);
     Setting.get<String>(SettingType.tag).addListener(_onSettingChanged);
   }
@@ -55,7 +56,8 @@ class _PhoneViewState extends State<PhoneView> {
   }
 
   void _onRefresh() {
-    _controller.refresh(widget.povToken != null ? IdentityKey(widget.povToken!) : null, meIdentityToken: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+    _controller.refresh(widget.povIdentity,
+        meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
   }
 
   @override

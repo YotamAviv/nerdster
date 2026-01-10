@@ -63,7 +63,7 @@ void main() {
       delegateContent: delegateContent,
     );
 
-    final labeler = V2Labeler(graph, delegateResolver: delegateResolver, meIdentityToken: lisa.id);
+    final labeler = V2Labeler(graph, delegateResolver: delegateResolver, meIdentity: lisa.id);
 
     final aggregation = reduceContentAggregation(
         followNetwork,

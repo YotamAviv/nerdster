@@ -48,7 +48,7 @@ void main() {
     final pipeline = TrustPipeline(source, maxDegrees: 5);
     final graph = await pipeline.build(alice.id);
     
-    final labeler = V2Labeler(graph, meIdentityToken: alice.id);
+    final labeler = V2Labeler(graph, meIdentity: alice.id);
 
     expect(labeler.getIdentityLabel(alice.id), 'Me');
     expect(labeler.getIdentityLabel(bob.id), 'Bobby');

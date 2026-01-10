@@ -345,7 +345,7 @@ Tactics for addressing this:
       delegateResolver: labeler.delegateResolver ?? DelegateResolver(trustGraph!),
       labeler: labeler,
       aggregation: ContentAggregation(),
-      povToken: trustGraph!.pov,
+      povIdentity: trustGraph!.pov,
       fcontext: 'identity',
       sortMode: V2SortMode.recentActivity,
       filterMode: V2FilterMode.ignoreDisses,
@@ -381,7 +381,7 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
   CachedSource<TrustStatement> get trustSource => CachedSource(DummySource<TrustStatement>());
 
   @override
-  Future<void> refresh(IdentityKey? povIdentityToken, {IdentityKey? meIdentityToken}) async {}
+  Future<void> refresh(IdentityKey? povIdentity, {IdentityKey? meIdentity}) async {}
 
   @override
   bool get loading => false;

@@ -39,7 +39,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   void _onSettingChanged() {
-    refresh(_latestRequestedPovIdentityToken, meIdentityToken: _latestRequestedMeIdentityToken);
+    refresh(_latestRequestedPov, meIdentity: _latestRequestedMeIdentity);
   }
 
   void _onDisplaySettingChanged() {
@@ -49,13 +49,13 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   void _onCensorChanged() {
-    refresh(_latestRequestedPovIdentityToken, meIdentityToken: _latestRequestedMeIdentityToken);
+    refresh(_latestRequestedPov, meIdentity: _latestRequestedMeIdentity);
   }
 
   void _onPovChanged() {
     final newPov = signInState.pov;
     if (newPov != null) {
-      refresh(IdentityKey(newPov), meIdentityToken: _latestRequestedMeIdentityToken);
+      refresh(IdentityKey(newPov), meIdentity: _latestRequestedMeIdentity);
     }
   }
 
@@ -75,8 +75,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
   bool _loading = false;
   bool get loading => _loading;
-  IdentityKey? _latestRequestedPovIdentityToken;
-  IdentityKey? _latestRequestedMeIdentityToken;
+  IdentityKey? _latestRequestedPov;
+  IdentityKey? _latestRequestedMeIdentity;
 
   final ValueNotifier<double> progress = ValueNotifier(0);
   final ValueNotifier<String?> loadingMessage = ValueNotifier(null);
@@ -163,7 +163,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       delegateResolver: value!.delegateResolver,
       labeler: value!.labeler,
       aggregation: value!.aggregation,
-      povToken: value!.povToken,
+      povIdentity: value!.povIdentity,
       fcontext: value!.fcontext,
       sortMode: sortMode,
       filterMode: filterMode,
@@ -267,9 +267,9 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  Future<void> refresh(IdentityKey? povIdentityToken, {IdentityKey? meIdentityToken}) async {
-    _latestRequestedPovIdentityToken = povIdentityToken;
-    _latestRequestedMeIdentityToken = meIdentityToken;
+  Future<void> refresh(IdentityKey? povIdentity, {IdentityKey? meIdentity}) async {
+    _latestRequestedPov = povIdentity;
+    _latestRequestedMeIdentity = meIdentity;
 
     if (_loading) {
       return;
@@ -282,12 +282,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
     try {
       while (true) {
-        final currentPovIdentityToken = _latestRequestedPovIdentityToken;
-        final currentMeIdentityToken = _latestRequestedMeIdentityToken;
+        final currentPovIdentity = _latestRequestedPov;
+        final currentMeIdentity = _latestRequestedMeIdentity;
 
         List<DelegateKey>? meDelegateKeys;
 
-        if (currentPovIdentityToken == null) {
+        if (currentPovIdentity == null) {
           value = null;
           break;
         }
@@ -326,30 +326,30 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         }
 
         final trustPipeline = TrustPipeline(trustSource, pathRequirement: pathReq);
-        final graph = await trustPipeline.build(currentPovIdentityToken);
+        final graph = await trustPipeline.build(currentPovIdentity);
         final delegateResolver = DelegateResolver(graph);
 
         // Fix for view-only mode where signInState.delegate is null but the identity has delegates in the graph
-        if (currentMeIdentityToken != null && currentMeIdentityToken.value == signInState.identity) {
+        if (currentMeIdentity != null && currentMeIdentity.value == signInState.identity) {
           final Set<DelegateKey> delegates = {};
 
           // 1. Try to find delegates in the current PoV graph
-          delegates.addAll(delegateResolver.getDelegatesForIdentity(currentMeIdentityToken));
+          delegates.addAll(delegateResolver.getDelegatesForIdentity(currentMeIdentity));
 
           // 2. If Me is not in the graph, we need to fetch Me's trust statements to find delegates.
-          if (!graph.distances.containsKey(currentMeIdentityToken)) {
+          if (!graph.distances.containsKey(currentMeIdentity)) {
             // Use a separate pipeline to fetch Me's graph (depth 0)
             // We reuse the same trustSource (which is cached)
             final mePipeline = TrustPipeline(trustSource, pathRequirement: (_) => 0);
-            final meGraph = await mePipeline.build(currentMeIdentityToken);
+            final meGraph = await mePipeline.build(currentMeIdentity);
             final meResolver = DelegateResolver(meGraph);
-            final fetchedDelegates = meResolver.getDelegatesForIdentity(currentMeIdentityToken);
+            final fetchedDelegates = meResolver.getDelegatesForIdentity(currentMeIdentity);
             delegates.addAll(fetchedDelegates);
           }
 
           // Ensure the currently signed-in delegate is included, even if not in the graph
           // We convert the string delegate to a DelegateKey to check/add
-          if (currentMeIdentityToken.value == signInState.identity && signInState.delegate != null) {
+          if (currentMeIdentity.value == signInState.identity && signInState.delegate != null) {
             delegates.add(DelegateKey(signInState.delegate!));
           }
 
@@ -406,7 +406,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
         // 6. Labeling
         final labeler = V2Labeler(graph,
-            delegateResolver: delegateResolver, meIdentityToken: currentMeIdentityToken);
+            delegateResolver: delegateResolver, meIdentity: currentMeIdentity);
 
         final aggregation = reduceContentAggregation(
           followNetwork,
@@ -448,8 +448,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
           }
         }
 
-        if (_latestRequestedPovIdentityToken == currentPovIdentityToken &&
-            _latestRequestedMeIdentityToken == currentMeIdentityToken) {
+        if (_latestRequestedPov == currentPovIdentity &&
+            _latestRequestedMeIdentity == currentMeIdentity) {
           final allErrors = [
             ...trustSource.errors,
             ...contentSource.errors,
@@ -469,7 +469,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
             delegateResolver: delegateResolver,
             labeler: labeler,
             aggregation: aggregation,
-            povToken: currentPovIdentityToken,
+            povIdentity: currentPovIdentity,
             fcontext: fcontext,
             sortMode: sortMode,
             filterMode: filterMode,
@@ -486,6 +486,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         }
       }
     } catch (e, stack) {
+      // TODO: Garbage!
       debugPrint('V2FeedController Error: $e\n$stack');
       _error = e.toString();
       
@@ -497,17 +498,17 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       if (allErrors.isNotEmpty) {
            debugPrint('V2FeedController: Recovering from error to show ${allErrors.length} source errors');
            // Construct a minimal model to show errors
-           final dummyGraph = TrustGraph(pov: _latestRequestedPovIdentityToken ?? IdentityKey('error'));
+           final dummyGraph = TrustGraph(pov: _latestRequestedPov ?? IdentityKey('error'));
            value = V2FeedModel(
               trustGraph: dummyGraph,
               followNetwork: FollowNetwork(
                 fcontext: Setting.get(SettingType.fcontext).value,
-                povIdentity: _latestRequestedPovIdentityToken ?? IdentityKey('error'),
+                povIdentity: _latestRequestedPov ?? IdentityKey('error'),
               ),
               delegateResolver: DelegateResolver(dummyGraph),
               aggregation: ContentAggregation(),
               labeler: V2Labeler(dummyGraph),
-              povToken: _latestRequestedPovIdentityToken ?? IdentityKey('error'),
+              povIdentity: _latestRequestedPov ?? IdentityKey('error'),
               fcontext: Setting.get(SettingType.fcontext).value,
               sortMode: sortMode,
               filterMode: filterMode,

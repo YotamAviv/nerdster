@@ -117,7 +117,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
     final labeler = V2Labeler(
       graph,
       delegateResolver: delegateResolver,
-      meIdentityToken: delegateResolver.getIdentityForDelegate(meDelegate),
+      meIdentity: delegateResolver.getIdentityForDelegate(meDelegate),
     );
     return reduceContentAggregation(
       followNetwork,

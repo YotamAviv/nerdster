@@ -422,7 +422,7 @@ class V2FeedModel {
   final DelegateResolver delegateResolver;
   final V2Labeler labeler;
   final ContentAggregation aggregation;
-  final IdentityKey povToken;
+  final IdentityKey povIdentity;
   final String fcontext;
   final V2SortMode sortMode;
   final V2FilterMode filterMode;
@@ -440,7 +440,7 @@ class V2FeedModel {
     required this.delegateResolver,
     required this.labeler,
     required this.aggregation,
-    required this.povToken,
+    required this.povIdentity,
     required this.fcontext,
     required this.sortMode,
     required this.filterMode,

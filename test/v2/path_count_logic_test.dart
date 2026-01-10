@@ -12,8 +12,8 @@ void main() {
 
   test('Path Requirement Logic: 2 paths for 3 and 4 degrees', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povToken = Jsonish(povKey).token;
-    final pov = IdentityKey(povToken);
+    final povIdentity = Jsonish(povKey).token;
+    final pov = IdentityKey(povIdentity);
     final a1Key = {'kty': 'mock', 'val': 'a1'};
     final a1Token = Jsonish(a1Key).token;
     final a1 = IdentityKey(a1Token);
@@ -102,8 +102,8 @@ void main() {
 
   test('Path Requirement Logic: B2 is IN if A2 is also IN', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povToken = Jsonish(povKey).token;
-    final pov = IdentityKey(povToken);
+    final povIdentity = Jsonish(povKey).token;
+    final pov = IdentityKey(povIdentity);
     final a1Key = {'kty': 'mock', 'val': 'a1'};
     final a1Token = Jsonish(a1Key).token;
     final a1 = IdentityKey(a1Token);
@@ -180,8 +180,8 @@ void main() {
 
   test('Path Requirement Logic: Mutual Trust at Degree 2 (Insufficient Paths)', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povToken = Jsonish(povKey).token;
-    final pov = IdentityKey(povToken);
+    final povIdentity = Jsonish(povKey).token;
+    final pov = IdentityKey(povIdentity);
     final i1Key = {'kty': 'mock', 'val': 'I1'};
     final i1Token = Jsonish(i1Key).token;
     final i1 = IdentityKey(i1Token);
@@ -252,8 +252,8 @@ void main() {
 
   test('Path Requirement Logic: Mutual Trust at Degree 2 (Sufficient Paths)', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povToken = Jsonish(povKey).token;
-    final pov = IdentityKey(povToken);
+    final povIdentity = Jsonish(povKey).token;
+    final pov = IdentityKey(povIdentity);
     final i1Key = {'kty': 'mock', 'val': 'I1'};
     final i1Token = Jsonish(i1Key).token;
     final i1 = IdentityKey(i1Token);
@@ -343,8 +343,8 @@ void main() {
 
   test('Path Requirement Logic: Adding trust should not remove trust', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povToken = Jsonish(povKey).token;
-    final pov = IdentityKey(povToken);
+    final povIdentity = Jsonish(povKey).token;
+    final pov = IdentityKey(povIdentity);
     final i1Key = {'kty': 'mock', 'val': 'I1'};
     final i1Token = Jsonish(i1Key).token;
     final i1 = IdentityKey(i1Token);
@@ -465,8 +465,8 @@ void main() {
 
   test('Path Requirement Logic: X at 2 degrees (1 path) and 3 degrees (1 path)', () {
     final povKey = {'kty': 'mock', 'val': 'pov'};
-    final povToken = Jsonish(povKey).token;
-    final pov = IdentityKey(povToken);
+    final povIdentity = Jsonish(povKey).token;
+    final pov = IdentityKey(povIdentity);
     final i1Key = {'kty': 'mock', 'val': 'I1'};
     final i1Token = Jsonish(i1Key).token;
     final i1 = IdentityKey(i1Token);

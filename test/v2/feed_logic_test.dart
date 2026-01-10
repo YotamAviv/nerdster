@@ -101,7 +101,7 @@ void main() {
 
     // 5. Refresh with Stranger as PoV
     // Stranger does NOT trust Me, so Me is not in the trust graph.
-    await controller.refresh(stranger.id, meIdentityToken: me.id);
+    await controller.refresh(stranger.id, meIdentity: me.id);
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
@@ -191,11 +191,11 @@ void main() {
 
     // 4. Refresh with Stranger as PoV
     // Stranger does NOT trust Me.
-    await controller.refresh(stranger.id, meIdentityToken: me.id);
+    await controller.refresh(stranger.id, meIdentity: me.id);
 
     // Wait for controller to finish loading the requested PoV
     // (Because signIn triggered a refresh for 'Me', the explicit refresh call might have returned early)
-    while (controller.value?.povToken != stranger.id || controller.loading) {
+    while (controller.value?.povIdentity != stranger.id || controller.loading) {
       await Future.delayed(const Duration(milliseconds: 50));
     }
 

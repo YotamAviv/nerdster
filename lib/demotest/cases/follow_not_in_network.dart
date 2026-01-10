@@ -75,7 +75,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
     final contentResult = ContentResult(delegateContent: delegateContent);
 
     // Labeler
-    final labeler = V2Labeler(graph, delegateResolver: delegateResolver, meIdentityToken: meIdentity);
+    final labeler = V2Labeler(graph, delegateResolver: delegateResolver, meIdentity: meIdentity);
 
     // Follow Network
     final followNetwork = reduceFollowNetwork(
