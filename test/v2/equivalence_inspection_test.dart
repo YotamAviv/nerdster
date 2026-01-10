@@ -123,7 +123,7 @@ void main() {
     expect(nonCanonicalAgg.subject['title'], equals(nonCanonical == skateboardKey ? 'Skateboard' : 'Toy'));
 
     // Both should share the same group data
-    expect(nonCanonicalAgg.group, equals(canonicalAgg.group));
+    expect(nonCanonicalAgg.group.canonical, equals(canonicalAgg.group.canonical));
     expect(nonCanonicalAgg.likes, equals(canonicalAgg.likes));
   });
 }

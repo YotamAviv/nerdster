@@ -88,44 +88,59 @@ class StatementTile extends StatelessWidget {
     String? displayText;
     ContentKey? otherToken;
 
+    final ContentKey thisToken = aggregation.token;
+    final ContentKey thisCanonical = aggregation.canonical;
+
     if (s.verb == ContentVerb.rate) {
       // Icons are handled in the row, text is handled in subtitle or here if comment
     } else {
-      // Relations
-      if (s.verb == ContentVerb.relate) {
-        verbIcon = const Text('≈', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
-      } else if (s.verb == ContentVerb.dontRelate) {
-        verbIcon = const Text('≉', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
-      } else if (s.verb == ContentVerb.equate) {
-        verbIcon = const Text('=', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
-      } else if (s.verb == ContentVerb.dontEquate) {
-        verbIcon = const Text('≠', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
-      }
-
-      // Determine target subject
+      // Determine target subject (needed for directional arrows too)
       if (s.other != null) {
-        final sOtherToken = getToken(s.other);
+        final sOtherTokenStr = getToken(s.other);
+        final ContentKey sOtherToken = ContentKey(sOtherTokenStr);
         // If the statement's subject is THIS card, then the target is s.other
         // If the statement's other is THIS card, then the target is s.subject
         final ContentKey otherCanonical =
-            model.aggregation.equivalence[ContentKey(sOtherToken)] ?? ContentKey(sOtherToken);
-        final ContentKey thisToken = aggregation.token;
-        final ContentKey thisCanonical = aggregation.canonical;
+            model.aggregation.equivalence[sOtherToken] ?? sOtherToken;
 
-        if (ContentKey(sOtherToken) == thisToken) {
+        if (sOtherToken == thisToken) {
           otherToken = ContentKey(s.subjectToken);
           displayText = s.subject['title'];
         } else if (ContentKey(s.subjectToken) == thisToken) {
-          otherToken = ContentKey(sOtherToken);
+          otherToken = sOtherToken;
           displayText = s.other['title'];
         } else if (otherCanonical == thisCanonical) {
           otherToken = ContentKey(s.subjectToken);
           displayText = s.subject['title'];
         } else {
           // Default to other if subject is us, or if neither/both are us.
-          otherToken = ContentKey(sOtherToken);
+          otherToken = sOtherToken;
           displayText = s.other['title'];
         }
+      }
+
+      // Relations
+      if (s.verb == ContentVerb.relate) {
+        verbIcon = const Text('≈', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      } else if (s.verb == ContentVerb.dontRelate) {
+        verbIcon = const Text('≉', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      } else if (s.verb == ContentVerb.equate) {
+        String arrow = '=';
+        if (otherToken != null) {
+          final ContentKey otherCanonical =
+              model.aggregation.equivalence[otherToken] ?? otherToken;
+          final bool isThisCanonical = (thisToken == thisCanonical);
+          final bool isOtherCanonical = (otherToken == otherCanonical);
+
+          if (isThisCanonical && !isOtherCanonical) {
+            arrow = '<=';
+          } else if (!isThisCanonical && isOtherCanonical) {
+            arrow = '=>';
+          }
+        }
+        verbIcon = Text(arrow, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+      } else if (s.verb == ContentVerb.dontEquate) {
+        verbIcon = const Text('≠', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
       }
     }
 

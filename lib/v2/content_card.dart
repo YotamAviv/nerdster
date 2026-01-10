@@ -381,7 +381,13 @@ class _ContentCardState extends State<ContentCard> {
       }
 
       for (final entry in tokenToTitle.entries) {
-        children.add(_buildRelationTile('=', entry.key, entry.value));
+        String icon = '=';
+        if (widget.aggregation.token == widget.aggregation.canonical) {
+          icon = '<=';
+        } else if (entry.key == widget.aggregation.canonical) {
+          icon = '=>';
+        }
+        children.add(_buildRelationTile(icon, entry.key, entry.value));
       }
     }
 

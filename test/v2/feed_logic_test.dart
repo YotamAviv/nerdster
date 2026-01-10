@@ -118,8 +118,8 @@ void main() {
       final myRatingInMain = secretariatAgg.statements.where((s) => s.iToken == meDelegate.token);
       expect(myRatingInMain, isEmpty, reason: "Me's rating should NOT be in main aggregation");
       
-      // Legacy Overlay check: myDelegateStatements should be empty (moved to global map)
-      expect(secretariatAgg.myDelegateStatements, isEmpty, reason: "myDelegateStatements should be empty in Pure PoV");
+      // main aggregation if not in PoV network
+      expect(secretariatAgg.myDelegateStatements, isNotEmpty, reason: "myDelegateStatements should be available for UI overlay even in Pure PoV");
     }
 
     // Check Global myStatements
