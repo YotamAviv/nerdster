@@ -486,36 +486,9 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         }
       }
     } catch (e, stack) {
-      // TODO: Garbage!
       debugPrint('V2FeedController Error: $e\n$stack');
       _error = e.toString();
-      
-      // Even on error, expose source errors
-      final allErrors = [
-        ...trustSource.errors,
-        ...contentSource.errors,
-      ];
-      if (allErrors.isNotEmpty) {
-           debugPrint('V2FeedController: Recovering from error to show ${allErrors.length} source errors');
-           // Construct a minimal model to show errors
-           final dummyGraph = TrustGraph(pov: _latestRequestedPov ?? IdentityKey('error'));
-           value = V2FeedModel(
-              trustGraph: dummyGraph,
-              followNetwork: FollowNetwork(
-                fcontext: Setting.get(SettingType.fcontext).value,
-                povIdentity: _latestRequestedPov ?? IdentityKey('error'),
-              ),
-              delegateResolver: DelegateResolver(dummyGraph),
-              aggregation: ContentAggregation(),
-              labeler: V2Labeler(dummyGraph),
-              povIdentity: _latestRequestedPov ?? IdentityKey('error'),
-              fcontext: Setting.get(SettingType.fcontext).value,
-              sortMode: sortMode,
-              filterMode: filterMode,
-              enableCensorship: enableCensorship,
-              sourceErrors: allErrors,
-           );
-      }
+      rethrow;
     } finally {
       _loading = false;
       loadingMessage.value = null;
