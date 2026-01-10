@@ -340,7 +340,7 @@ void main() {
       orderedKeys: [me.id, bob.id],
       edges: {
         me.id: [sTrust],
-        bob.id: [s1, s2], 
+        bob.id: [s2, s1], 
       },
       notifications: [],
     );
@@ -350,7 +350,7 @@ void main() {
 
     final labeler = V2Labeler(tg, delegateResolver: resolver);
 
-    expect(labeler.getLabel(d1.token), equals('Bob@nerdster.org'));
-    expect(labeler.getLabel(d2.token), equals('Bob@nerdster.org (2)'));
+    expect(labeler.getLabel(d2.token), equals('Bob@nerdster.org'));
+    expect(labeler.getLabel(d1.token), equals('Bob@nerdster.org (2)'));
   });
 }

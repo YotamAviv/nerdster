@@ -58,8 +58,8 @@ void main() {
         },
         orderedKeys: [pov, alice, bob],
         edges: {
-          pov: [t1, d1],
-          alice: [t2, d2],
+          pov: [d1, t1],
+          alice: [d2, t2],
         },
       );
 

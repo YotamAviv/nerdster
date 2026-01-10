@@ -44,7 +44,7 @@ void main() {
       orderedKeys: [alice.id, bob.id],
       edges: {
         alice.id: [trustStmt],
-        bob.id: [d1Stmt, d2Stmt],
+        bob.id: [d2Stmt, d1Stmt],
       },
       notifications: [],
     );

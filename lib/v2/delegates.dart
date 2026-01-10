@@ -1,3 +1,4 @@
+import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/keys.dart';
@@ -25,24 +26,18 @@ class DelegateResolver {
     if (_resolvedIdentities.contains(identity)) return;
 
     List<IdentityKey> keys = graph.getEquivalenceGroup(identity);
-    
+
     // Fallback: If identity is not in the trust graph (no distance) but we have edges for it
     // (e.g. "Me" identity injected for local user), use the identity itself if it's canonical.
-    if (keys.isEmpty && graph.edges.containsKey(identity) && graph.resolveIdentity(identity) == identity) {
+    if (keys.isEmpty &&
+        graph.edges.containsKey(identity) &&
+        graph.resolveIdentity(identity) == identity) {
       keys = [identity];
     }
 
-    // TODO(human): Use Merger.merge( map(..))
-    List<TrustStatement> allStatements = [];
-    for (final IdentityKey key in keys) {
-      final statements = graph.edges[key] ?? [];
-      if (allStatements.isEmpty) {
-        allStatements = statements;
-      } else {
-        allStatements = _mergeSorted(allStatements, statements);
-      }
-    }
-
+    final Iterable<TrustStatement> allStatements =
+        Merger.merge(keys.map((k) => graph.edges[k] ?? <TrustStatement>[]));
+    Statement.validateOrderTypes(allStatements);
     final Set<DelegateKey> decidedDelegates = {};
 
     for (final TrustStatement s in allStatements.where((s) => s.verb == TrustVerb.delegate)) {
@@ -63,35 +58,14 @@ class DelegateResolver {
         _identityToDelegates.putIfAbsent(identity, () => []).add(delegateKey);
       } else if (_delegateToIdentity[delegateKey] != identity) {
         graph.notifications.add(TrustNotification(
-          reason: "Delegate key ${delegateKey.value} already claimed by ${_delegateToIdentity[delegateKey]!.value}",
+          reason:
+              "Delegate key ${delegateKey.value} already claimed by ${_delegateToIdentity[delegateKey]!.value}",
           rejectedStatement: s,
           isConflict: true,
         ));
       }
     }
     _resolvedIdentities.add(identity);
-  }
-
-  // TODO(human): I think merger does exactly this
-  List<TrustStatement> _mergeSorted(List<TrustStatement> a, List<TrustStatement> b) {
-    Statement.validateOrderTypes(a);
-    Statement.validateOrderTypes(b);
-    final List<TrustStatement> result = [];
-    int i = 0, j = 0;
-    while (i < a.length && j < b.length) {
-      if (a[i].time.isAfter(b[j].time)) {
-        result.add(a[i++]);
-      } else {
-        result.add(b[j++]);
-      }
-    }
-    while (i < a.length) {
-      result.add(a[i++]);
-    }
-    while (j < b.length) {
-      result.add(b[j++]);
-    }
-    return result;
   }
 
   /// Returns the canonical identity for a given delegate key.
