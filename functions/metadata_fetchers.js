@@ -55,8 +55,8 @@ async function fetchFromOpenLibrary(title, author = "", url = "") {
 /**
  * Searches Wikipedia for a representative image.
  */
-async function fetchFromWikipedia(title, url = "") {
-  logger.info(`[Wikipedia] Searching: "${title}"`);
+async function fetchFromWikipedia(title, url = "", contentType = "", year = "") {
+  logger.info(`[Wikipedia] Searching: "${title}" | "${contentType}" | "${year}"`);
   try {
     let bestTitle = title;
     if (url && url.includes('wikipedia.org/wiki/')) {
@@ -64,51 +64,65 @@ async function fetchFromWikipedia(title, url = "") {
     }
 
     if (bestTitle) {
-      // Search for the best page title if we don't have a direct URL
-      if (!url) {
-        const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(bestTitle)}&format=json&origin=*`;
-        const response = await fetch(searchUrl, {
+      const searchTerms = [bestTitle];
+      if (contentType === 'movie') {
+        if (!bestTitle.toLowerCase().includes('film') && !bestTitle.toLowerCase().includes('movie')) {
+          searchTerms.unshift(`${bestTitle} (film)`);
+          if (year) {
+            searchTerms.unshift(`${bestTitle} (${year} film)`);
+          }
+          searchTerms.push(`${bestTitle} movie`);
+        }
+      }
+
+      for (const term of searchTerms) {
+        let currentTitle = term;
+        // Search for the best page title if we don't have a direct URL
+        if (!url || term !== bestTitle) {
+          const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&format=json&origin=*`;
+          const response = await fetch(searchUrl, {
+            headers: { 'User-Agent': 'NerdsterBot/1.0' },
+            timeout: 5000
+          });
+          const data = await response.json();
+          if (data.query?.search?.length > 0) {
+            currentTitle = data.query.search[0].title;
+          } else {
+            continue;
+          }
+        }
+        
+        // 1. Try PageImages API (High quality thumbnails)
+        const imageUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(currentTitle)}&prop=pageimages&format=json&pithumbsize=1000&origin=*`;
+        const response = await fetch(imageUrl, {
           headers: { 'User-Agent': 'NerdsterBot/1.0' },
           timeout: 5000
         });
         const data = await response.json();
-        if (data.query?.search?.length > 0) {
-          bestTitle = data.query.search[0].title;
-        } else {
-          return [];
+        const pages = data.query.pages;
+        const pageId = Object.keys(pages)[0];
+        if (pageId !== "-1" && pages[pageId].thumbnail) {
+          return [{ url: pages[pageId].thumbnail.source, source: 'wikipedia' }];
         }
-      }
-      
-      // 1. Try PageImages API (High quality thumbnails)
-      const imageUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(bestTitle)}&prop=pageimages&format=json&pithumbsize=1000&origin=*`;
-      const response = await fetch(imageUrl, {
-        headers: { 'User-Agent': 'NerdsterBot/1.0' },
-        timeout: 5000
-      });
-      const data = await response.json();
-      const pages = data.query.pages;
-      const pageId = Object.keys(pages)[0];
-      if (pageId !== "-1" && pages[pageId].thumbnail) {
-        return [{ url: pages[pageId].thumbnail.source, source: 'wikipedia' }];
-      }
 
-      // 2. Fallback: Scrape the infobox image
-      const pageUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(bestTitle.replace(/ /g, '_'))}`;
-      const pageResponse = await fetch(pageUrl, {
-        headers: { 'User-Agent': 'NerdsterBot/1.0' },
-        timeout: 5000
-      });
-      if (pageResponse.ok) {
-        const html = await pageResponse.text();
-        const $ = cheerio.load(html);
-        const infoboxImg = $('.infobox img').first().attr('src');
-        if (infoboxImg) {
-          let fullImgUrl = infoboxImg.startsWith('//') ? `https:${infoboxImg}` : infoboxImg;
-          if (fullImgUrl.includes('/thumb/')) {
-            const parts = fullImgUrl.split('/');
-            fullImgUrl = parts.slice(0, parts.length - 1).join('/').replace('/thumb/', '/');
+        // 2. Fallback: Scrape the infobox image
+        const pageUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(currentTitle.replace(/ /g, '_'))}`;
+        const pageResponse = await fetch(pageUrl, {
+          headers: { 'User-Agent': 'NerdsterBot/1.0' },
+          timeout: 5000
+        });
+        if (pageResponse.ok) {
+          const html = await pageResponse.text();
+          const $ = cheerio.load(html);
+          const infoboxImg = $('.infobox img').first().attr('src');
+          if (infoboxImg) {
+            let fullImgUrl = infoboxImg.startsWith('//') ? `https:${infoboxImg}` : infoboxImg;
+            if (fullImgUrl.includes('/thumb/')) {
+              const parts = fullImgUrl.split('/');
+              fullImgUrl = parts.slice(0, parts.length - 1).join('/').replace('/thumb/', '/');
+            }
+            return [{ url: fullImgUrl, source: 'wikipedia' }];
           }
-          return [{ url: fullImgUrl, source: 'wikipedia' }];
         }
       }
     }
@@ -214,10 +228,63 @@ async function fetchFromYouTube(url) {
   return [];
 }
 
+/**
+ * Searches OMDb for movie metadata and images.
+ * Requires an API key (OMDB_API_KEY).
+ */
+async function fetchFromOMDb(title, year = "") {
+  const apiKey = process.env.OMDB_API_KEY;
+  if (!apiKey || !title) return [];
+  
+  logger.info(`[OMDb] Searching: "${title}" (${year})`);
+  try {
+    let url = `http://www.omdbapi.com/?apikey=${apiKey}&t=${encodeURIComponent(title)}`;
+    if (year) url += `&y=${year}`;
+    
+    const response = await fetch(url, { timeout: 5000 });
+    const data = await response.json();
+    
+    if (data.Response === "True" && data.Poster && data.Poster !== "N/A") {
+      return [{ url: data.Poster, source: 'omdb' }];
+    }
+  } catch (e) {
+    logger.error(`[OMDb] Error: ${e.message}`);
+  }
+  return [];
+}
+
+/**
+ * Searches TMDB for movie posters.
+ * Requires an API key (TMDB_API_KEY).
+ */
+async function fetchFromTMDB(title, year = "") {
+  const apiKey = process.env.TMDB_API_KEY;
+  if (!apiKey || !title) return [];
+  
+  logger.info(`[TMDB] Searching: "${title}" (${year})`);
+  try {
+    let url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}`;
+    if (year) url += `&year=${year}`;
+    
+    const response = await fetch(url, { timeout: 5000 });
+    const data = await response.json();
+    
+    if (data.results && data.results.length > 0 && data.results[0].poster_path) {
+      const posterUrl = `https://image.tmdb.org/t/p/w1280${data.results[0].poster_path}`;
+      return [{ url: posterUrl, source: 'tmdb' }];
+    }
+  } catch (e) {
+    logger.error(`[TMDB] Error: ${e.message}`);
+  }
+  return [];
+}
+
 module.exports = {
   fetchFromOpenLibrary,
   fetchFromWikipedia,
   fetchFromYouTube,
+  fetchFromOMDb,
+  fetchFromTMDB,
   extractTitle,
   extractImages
 };

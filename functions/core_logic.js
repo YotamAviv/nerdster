@@ -4,6 +4,8 @@ const {
   fetchFromOpenLibrary, 
   fetchFromWikipedia, 
   fetchFromYouTube,
+  fetchFromOMDb,
+  fetchFromTMDB,
   extractTitle, 
   extractImages 
 } = require('./metadata_fetchers');
@@ -23,6 +25,7 @@ async function executeFetchImages(subject, logger = console, maxImages = null) {
   const contentType = subject.contentType || "";
   const url = subject.url || "";
   const author = subject.author || "";
+  const year = subject.year || "";
   const type = contentType.toLowerCase();
   
   let title = subject.title || "";
@@ -60,6 +63,7 @@ async function executeFetchImages(subject, logger = console, maxImages = null) {
         const $ = cheerio.load(html);
         const scrapedTitle = extractTitle($, html);
         if (!title) title = scrapedTitle;
+
         const scrapedImages = extractImages($, url);
         images = [...images, ...scrapedImages];
       }
@@ -76,7 +80,7 @@ async function executeFetchImages(subject, logger = console, maxImages = null) {
     };
   }
 
-  // 3. Smart Fetch (Wikipedia/OpenLibrary)
+  // 3. Smart Fetch (Wikipedia/OpenLibrary/MovieAPIs)
   // Skip hash-like titles (e.g. content-addressed IDs)
   if (!/^[0-9a-f]{32,40}$/i.test(title)) {
     let searchTitle = title.replace(/ - Amazon\.com:.*$/i, '').replace(/ - YouTube$/i, '').trim();
@@ -88,13 +92,17 @@ async function executeFetchImages(subject, logger = console, maxImages = null) {
         ol = await fetchFromOpenLibrary(searchTitle.split(':')[0].trim(), cleanAuthor);
       }
       images = [...images, ...ol];
+    } else if (type === 'movie') {
+      const omdb = await fetchFromOMDb(searchTitle, year);
+      const tmdb = await fetchFromTMDB(searchTitle, year);
+      images = [...images, ...omdb, ...tmdb];
     }
     
     // Fallback or supplement with Wikipedia
     if (images.length === 0 || type !== 'book') {
-      let wiki = await fetchFromWikipedia(searchTitle);
+      let wiki = await fetchFromWikipedia(searchTitle, "", type, year);
       if (wiki.length === 0 && searchTitle.includes(':')) {
-        wiki = await fetchFromWikipedia(searchTitle.split(':')[0].trim());
+        wiki = await fetchFromWikipedia(searchTitle.split(':')[0].trim(), "", type, year);
       }
       images = [...images, ...wiki];
     }

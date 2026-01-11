@@ -16,9 +16,6 @@ const cheerio = require('cheerio');
 
 // Local Utilities
 const { 
-  fetchFromOpenLibrary, 
-  fetchFromWikipedia, 
-  fetchFromYouTube,
   extractTitle, 
   extractImages 
 } = require('./metadata_fetchers');

@@ -20,9 +20,14 @@ String getFallbackImageUrl(String? url, String contentType, String? title, {List
     if (videoId != null) return 'https://img.youtube.com/vi/$videoId/0.jpg';
   }
 
-  // 2. NYT
-  if (url != null && (url.contains('nytimes.com'))) {
-    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/The_New_York_Times_logo.png/800px-The_New_York_Times_logo.png';
+  // 2. NYT & WSJ
+  if (url != null) {
+    if (url.contains('nytimes.com')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/The_New_York_Times_logo.png/800px-The_New_York_Times_logo.png';
+    }
+    if (url.contains('wsj.com')) {
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/WSJ_Logo.svg/512px-WSJ_Logo.svg.png';
+    }
   }
 
   // 3. Hard-coded Content Type Fallbacks

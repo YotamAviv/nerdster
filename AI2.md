@@ -24,12 +24,11 @@ Let me know if you notice anything that might be problematic.
 If not, suggest a commit message based only on the GIT diffs, not based on your memory
 Copy/paste from our conversation never works for me for this, and so:
 Append the commit message to the end of this file:
-commit: Refactor Relate/Rate dialogs with unified V2SubjectView and improved UX
 
-- Create reusable V2SubjectView for consistent subject formatting and truncation.
-- Overhaul V2RelateDialog: switch to vertical layout with dropdown, add flip capability, and dynamic labels.
-- Update V2RateDialog: integrate V2SubjectView, improve spacing, and refine layout centering.
-- Set dialogs to non-dismissible outside and center 'Publish' / 'Cancel' actions.
-- Rename action buttons to 'Publish' across Rate, Relate, and NodeDetails dialogs.
-- Use Material icons for equate verbs in StatementTile.
-- Add Rule #16 to AI.md regarding avoiding unrequested initiatives.
+feat(metadata): enhance movie image fetching and add article fallbacks
+
+- Added OMDb and TMDB fetchers to backend for high-quality movie posters.
+- Improved Wikipedia search logic to prioritize film disambiguation for movies.
+- Updated core fetching logic to use publication 'year' for movie metadata lookups.
+- Added explicit Wall Street Journal logo fallback in the mobile app.
+- Cleaned up unused imports in Cloud Functions entry point.
