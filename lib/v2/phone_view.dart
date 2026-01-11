@@ -151,7 +151,6 @@ class ContentBox extends StatelessWidget {
         subject['images'] != null ? List<String>.from(subject['images']) : [];
 
     return Dismissible(
-      // TODO: Careful here. Should we use getToken(aggregation.subject) instead?
       key: Key(aggregation.canonical.value),
       background: Container(
         color: Colors.green,
