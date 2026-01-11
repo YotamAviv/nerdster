@@ -106,6 +106,7 @@ class _ContentViewState extends State<ContentView> {
 
   void _onTagTap(String? tag) {
     _controller.tagFilter = tag;
+    _showFilters.value = true;
   }
 
   void _onMark(ContentKey? token) {
