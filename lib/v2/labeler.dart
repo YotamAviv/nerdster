@@ -49,7 +49,8 @@ class V2Labeler {
       for (final TrustStatement statement in graph.edges[issuer]!) {
         // We need an IdentityKey for the subject.
         // Assuming statement.subjectToken works here, resolve it.
-        final IdentityKey subjectIdentity = graph.resolveIdentity(IdentityKey(statement.subjectToken));
+        final IdentityKey subjectIdentity =
+            graph.resolveIdentity(IdentityKey(statement.subjectToken));
         incomingByIdentity.putIfAbsent(subjectIdentity, () => []).add(statement);
 
         if (statement.moniker != null) {
@@ -164,8 +165,9 @@ class V2Labeler {
 
         // Handle multiple delegates for the same identity and domain
         final List<DelegateKey> allDelegates = delegateResolver!.getDelegatesForIdentity(identity);
-        final List<DelegateKey> domainDelegates =
-            allDelegates.where((DelegateKey d) => delegateResolver!.getDomainForDelegate(d) == domain).toList();
+        final List<DelegateKey> domainDelegates = allDelegates
+            .where((DelegateKey d) => delegateResolver!.getDomainForDelegate(d) == domain)
+            .toList();
 
         final int index = domainDelegates.indexOf(key);
         if (index > 0) {

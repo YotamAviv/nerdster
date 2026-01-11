@@ -74,7 +74,8 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
       // 3. Update cache and results
       for (final String token in missing.keys) {
         // If delegate reported an error for this token, cache it
-        final SourceError? error = _delegate.errors.where((SourceError e) => e.token == token).firstOrNull;
+        final SourceError? error =
+            _delegate.errors.where((SourceError e) => e.token == token).firstOrNull;
         if (error != null) {
           _errorCache[token] = error;
           continue; // Do not process statements for this token

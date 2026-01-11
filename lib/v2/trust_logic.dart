@@ -137,7 +137,8 @@ TrustGraph reduceTrustGraph(
       final Set<IdentityKey> decided = <IdentityKey>{};
 
       // Process Blocks
-      for (final TrustStatement s in statements.where((TrustStatement s) => s.verb == TrustVerb.block)) {
+      for (final TrustStatement s
+          in statements.where((TrustStatement s) => s.verb == TrustVerb.block)) {
         final IdentityKey subject = s.subjectAsIdentity;
         if (decided.contains(subject)) continue;
         decided.add(subject);
@@ -190,7 +191,8 @@ TrustGraph reduceTrustGraph(
       }).toList();
 
       final Set<IdentityKey> decided = <IdentityKey>{};
-      for (final TrustStatement s in statements.where((TrustStatement s) => s.verb == TrustVerb.replace)) {
+      for (final TrustStatement s
+          in statements.where((TrustStatement s) => s.verb == TrustVerb.replace)) {
         final IdentityKey oldKey = s.subjectAsIdentity;
         if (decided.contains(oldKey)) continue;
         decided.add(oldKey);
@@ -276,7 +278,8 @@ TrustGraph reduceTrustGraph(
       }
 
       final Set<IdentityKey> decided = <IdentityKey>{};
-      for (final TrustStatement s in statements.where((TrustStatement s) => s.verb == TrustVerb.trust)) {
+      for (final TrustStatement s
+          in statements.where((TrustStatement s) => s.verb == TrustVerb.trust)) {
         final IdentityKey subject = s.subjectAsIdentity;
         if (decided.contains(subject)) continue;
         decided.add(subject);
