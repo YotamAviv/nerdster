@@ -14,6 +14,7 @@ import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/orchestrator.dart';
+import 'package:nerdster/demotest/test_util.dart';
 
 // Scenario:
 // - Run simpsonsDemo
@@ -73,7 +74,6 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
   await lisaN.doRate(subject: superbad, comment: "lisa");
 
   // --- REGRESSION VERIFICATION LOGIC ---
-  print('Starting Verification Check...');
 
   Future<ContentAggregation> runPipeline({
     required IdentityKey pov,
@@ -133,7 +133,6 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
   // 1. Lisa PoV (Identity Context) - Censorship OFF
   // "I turn off censorship, and then I see Superbad"
   // "I see my rating listed as statements made about it."
-  print('\n--- Step 1: Lisa PoV (Identity Context) ---');
   {
     final agg = await runPipeline(
       pov: lisa.id,
@@ -146,21 +145,18 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
         .where((s) => s.subject['title'] == 'Superbad')
         .firstOrNull;
 
-    if (subject != null) {
-      print('Superbad found: YES');
-      final myStatements = subject.statements.where((s) => s.iToken == lisaN.id.value);
-      print('Lisa\'s statements in feed: ${myStatements.length} (Expected: >0)');
-      final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
-      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
-    } else {
-      throw Exception('Superbad found: NO (Critical Failure)');
-    }
+    check(subject != null, 'Superbad found: NO (Critical Failure)');
+
+    final myStatements = subject!.statements.where((s) => s.iToken == lisaN.id.value);
+    check(myStatements.isNotEmpty, 'Lisa\'s statements in feed: ${myStatements.length} (Expected: >0)');
+
+    final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
+    check(myOverlay.isNotEmpty, 'Lisa\'s overlay status (Blue Star): false (Expected: true)');
   }
 
   // 2. Bart's PoV (Identity Context)
   // "I see Lisa's rating"
   // "I see that I (Lisa) rated it"
-  print('\n--- Step 2: Bart PoV (Identity Context) ---');
   {
     signInState.pov = bart.id.value; // Switch PoV to Bart
 
@@ -175,21 +171,18 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
         .where((s) => s.subject['title'] == 'Superbad')
         .firstOrNull;
 
-    if (subject != null) {
-      print('Superbad found: YES');
-      final lisaInFeed = subject.statements.where((s) => s.iToken == lisaN.id.value);
-      print('Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: >0)');
-      final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
-      print('Lisa\'s overlay status (Blue Star): ${myOverlay.isNotEmpty} (Expected: true)');
-    } else {
-      throw Exception('Superbad found: NO (Critical Failure)');
-    }
+    check(subject != null, 'Superbad found: NO (Critical Failure)');
+
+    final lisaInFeed = subject!.statements.where((s) => s.iToken == lisaN.id.value);
+    check(lisaInFeed.isNotEmpty, 'Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: >0)');
+
+    final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
+    check(myOverlay.isNotEmpty, 'Lisa\'s overlay status (Blue Star): false (Expected: true)');
   }
 
   // 3. Use Bart's PoV, set follow context to <nerdster> (where Lisa is blocked)
   // "I don't see Lisa's rating statement (correct)"
   // "I don't see that I (Lisa) rated it (icon not blue, BUG)"
-  print('\n--- Step 3: Bart PoV (<nerdster> Context where Lisa is blocked) ---');
   {
     final agg = await runPipeline(
       pov: bart.id,
@@ -206,33 +199,27 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
         .where((s) => s.subject['title'] == 'Superbad')
         .firstOrNull;
 
-    if (subject != null) {
-      print('Superbad found: YES');
-      final lisaInFeed = subject.statements.where((s) => s.iToken == lisaN.id.value);
-      print('Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: 0)');
-      
-      final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
-      if (myOverlay.isNotEmpty) {
-        print('Lisa\'s overlay status (Blue Star): true (Correct)');
-      } else {
-        print('Lisa\'s overlay status (Blue Star): false (Fail)');
-      }
+    check(subject != null, 'Superbad found: NO (Critical Failure)');
 
-      // Verify RateDialog data availability
-      // Since Lisa is blocked, Secretariat might not be in agg.subjects,
-      // but it MUST be in agg.myLiteralStatements.
-      MapEntry<ContentKey, List<ContentStatement>> secretariatEntry =
-          agg.myLiteralStatements.entries.firstWhere(
-        (e) => e.value.any((s) => s.subject is Map && s.subject['title'] == 'Secretariat'),
-      );
-      ContentKey secretariatKey = secretariatEntry.key;
-      List<ContentStatement> myLiteralStatements = secretariatEntry.value;
-      bool hasMyRating =
-          myLiteralStatements.any((s) => s.iToken == lisaN.id.value && s.verb == ContentVerb.rate);
-      print('RateDialog Data Available: $hasMyRating (Expected: true)');
-    } else {
-      throw Exception('Superbad found: NO (Critical Failure)');
-    }
+    final lisaInFeed = subject!.statements.where((s) => s.iToken == lisaN.id.value);
+    check(lisaInFeed.isEmpty, 'Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: 0)');
+
+    final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
+    check(myOverlay.isNotEmpty, 'Lisa\'s overlay status (Blue Star): false (Expected: true)');
+
+    // Verify RateDialog data availability
+    // Since Lisa is blocked, Secretariat might not be in agg.subjects,
+    // but it MUST be in agg.myLiteralStatements.
+    final matches = agg.myLiteralStatements.entries.where(
+      (e) => e.value.any((s) => s.subject is Map && s.subject['title'] == 'Secretariat'),
+    );
+    check(matches.isNotEmpty, 'Secretariat not found in myLiteralStatements');
+
+    MapEntry<ContentKey, List<ContentStatement>> secretariatEntry = matches.first;
+    List<ContentStatement> myLiteralStatements = secretariatEntry.value;
+    bool hasMyRating =
+        myLiteralStatements.any((s) => s.iToken == lisaN.id.value && s.verb == ContentVerb.rate);
+    check(hasMyRating, 'RateDialog Data Available: false (Expected: true)');
   }
 
   return (lisa, lisaN);

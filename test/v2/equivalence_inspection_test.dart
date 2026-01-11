@@ -72,11 +72,6 @@ void main() {
     final canonicalToy = aggregation.equivalence[toyKey];
     final canonicalSkateboard = aggregation.equivalence[skateboardKey];
 
-    print('Toy Token: $toyToken');
-    print('Skateboard Token: $skateboardToken');
-    print('Canonical Toy: $canonicalToy');
-    print('Canonical Skateboard: $canonicalSkateboard');
-
     // One should point to the other, or both to the same one.
     // In the demo, Lisa equates Skateboard (subject) to Toy (other).
     // Usually the subject becomes canonical if it's older or has more weight?

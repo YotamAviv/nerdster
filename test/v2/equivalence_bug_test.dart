@@ -72,11 +72,6 @@ void main() {
     final ContentKey keyB = ContentKey(tokenB);
     final ContentKey keyC = ContentKey(tokenC);
 
-    // 4. Inspect Results
-    print('Token A: $tokenA');
-    print('Token B: $tokenB');
-    print('Token C: $tokenC');
-
     final SubjectAggregation? subA = aggregation.subjects[keyA];
     final SubjectAggregation? subB = aggregation.subjects[keyB];
     final SubjectAggregation? subC = aggregation.subjects[keyC];
@@ -90,10 +85,6 @@ void main() {
     final canonA = aggregation.equivalence[keyA];
     final canonB = aggregation.equivalence[keyB];
     final canonC = aggregation.equivalence[keyC];
-
-    print('Canon A: $canonA');
-    print('Canon B: $canonB');
-    print('Canon C: $canonC');
 
     // Assertion 1: All should map to the same canonical key
     expect(canonA, isNotNull, reason: "A should be in equivalence map");
@@ -154,7 +145,6 @@ void main() {
 
     // 5. Clear Rating for A
     final sA = statements[0];
-    print('Clearing A: ${sA.subjectToken}');
     await poserN!.doRate(subject: sA.subject, verb: ContentVerb.clear);
 
     // 6. Refresh Pipeline
@@ -178,33 +168,20 @@ void main() {
     );
 
     // 7. Inspect Related Subjects
-    print('--- Post Clear Inspection ---');
     final newCanonA = newAggregation.equivalence[keyA];
     expect(newCanonA, isNotNull, reason: "A should still be equivalent even if cleared");
 
     final newAgg = newAggregation.subjects[newCanonA]!;
-    print('New Canonical for A: $newCanonA');
-    print('Related Keys: ${newAgg.related}');
 
     // Resolve references to titles
-    if (newAgg.related.isEmpty) {
-      print('No related subjects found.');
-    } else {
+    if (newAgg.related.isNotEmpty) {
       for (final relatedKey in newAgg.related) {
         final relAgg = newAggregation.subjects[relatedKey];
-        if (relAgg != null) {
-          print('Related Title: ${relAgg.subject['title']}');
-        } else {
-          // Try to find definition in raw map if not top-level
-          // But wait, where would we find it?
-          print('Related Token (No Aggregation): ${relatedKey.value}');
-        }
       }
     }
 
     // Also perform the UI Logic Check again for the persistence of A's title via Equivalence
     // Since A is cleared, we rely on the Equate statement (B->A) to provide the title.
-    print('Checking Equivalence Titles persistence for A...');
     for (final s in newAgg.statements.where((s) => s.verb == ContentVerb.equate)) {
       final ContentKey subjectCanonical =
           newAggregation.equivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
@@ -220,7 +197,6 @@ void main() {
         assert(s.subject is Map);
         displayText = s.subject['title'];
       }
-      print('Found Equivalence Title: $displayText');
     }
   });
 }

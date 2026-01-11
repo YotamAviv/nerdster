@@ -69,7 +69,6 @@ void main() {
 
     for (final ContentStatement s in model.aggregation.statements) {
       final String authorName = labeler.getLabel(s.iToken);
-      print('Statement by $authorName: ${s.comment ?? s.verb}');
     }
 
     // Verify some specific labels from Lisa's perspective

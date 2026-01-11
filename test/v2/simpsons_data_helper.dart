@@ -17,7 +17,5 @@ class SimpsonsDataHelper {
     // 3. Run the simpsons generator. 
     // This will call Fetcher.push which will write to the registered fake firestores.
     await simpsons();
-    
-    print('Populated fake firestores with Simpsons data');
   }
 }

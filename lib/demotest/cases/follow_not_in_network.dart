@@ -14,6 +14,7 @@ import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/orchestrator.dart';
+import 'package:nerdster/demotest/test_util.dart';
 
 // Scenario:
 // 1. Run simpsonsDemo
@@ -39,7 +40,6 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
   await lisaN.doFollow(bart.id, {'family': 1});
 
   // --- REGRESSION VERIFICATION LOGIC ---
-  print('Starting Verification Check for Follow Not In Network...');
 
   Future<ContentAggregation> runPipeline({
     required IdentityKey pov,
@@ -103,17 +103,15 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
     
     // Verify Bart is in myLiteralStatements
     final myStmts = agg.myLiteralStatements[bartKey];
-    if (myStmts == null || myStmts.isEmpty) {
-      print('FAILED: Bart NOT found in Lisa\'s myLiteralStatements');
-    } else {
-      final hasFollow = myStmts.any((s) => s.verb == ContentVerb.follow && s.contexts?.containsKey('family') == true);
-      print('Lisa\'s follow of Bart for family in myLiteralStatements: $hasFollow (Expected: true)');
-    }
+    check(myStmts != null && myStmts.isNotEmpty, 'Bart NOT found in Lisa\'s myLiteralStatements');
+
+    final hasFollow = myStmts!.any((s) => s.verb == ContentVerb.follow && s.contexts?.containsKey('family') == true);
+    check(hasFollow, 'Lisa\'s follow of Bart for family in myLiteralStatements: false (Expected: true)');
 
     // Verify if Bart is a "subject" in the aggregation
     // If he's not rated/related, he might NOT be a subject.
     final bartAsSubject = agg.subjects[bartKey];
-    print('Bart as subject in aggregation: ${bartAsSubject != null}');
+    check(bartAsSubject == null, 'Bart was found as subject in aggregation (Expected: null because he is blocked by Bart in nerdster context)');
   }
 
   return (lisa, lisaN);

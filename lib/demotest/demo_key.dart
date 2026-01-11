@@ -387,7 +387,6 @@ class DemoDelegateKey implements DemoKey {
     }
 
     final Json json = await makeRelate(verb, subject!, other!);
-    print('doRelate json: ${json}');
     return _pushContent(json, export);
   }
 

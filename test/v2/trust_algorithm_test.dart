@@ -409,17 +409,8 @@ void main() {
     expect(graph.isTrusted(bobV2.id), isTrue);
     expect(graph.isTrusted(bobV1.id), isTrue);
     
-    print('Notifications:');
-    for (TrustNotification n in graph.notifications) {
-      print('  - ${n.reason} (Conflict: ${n.isConflict})');
-    }
-
     final bool hasConflict = graph.notifications.any((TrustNotification n) => n.isConflict && n.reason.contains('replaced by both'));
     final bool hasInfo = graph.notifications.any((TrustNotification n) => !n.isConflict && n.reason.contains('Replacement constraint ignored due to distance'));
-    
-    print('Has Conflict: $hasConflict');
-    print('Has Info: $hasInfo');
-    print('bobV1 Replacement: ${graph.replacements[bobV1.id] == bobV3.id ? "bobV3" : "bobV2"}');
   });
 
   test('Ordered Keys (BFS Discovery)', () async {

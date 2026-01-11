@@ -111,12 +111,6 @@ void main() {
     // dogsAgg: expect 1 statements (Latest wins - Singular Disposition)
     final SubjectAggregation dogsAgg = aggregation.subjects.values.firstWhere((SubjectAggregation s) => s.subject['title'] == 'Dogs');
     
-    // DEBUG: Print what we actually got to understand current behavior
-    print('Dogs Statements: ${dogsAgg.statements.length}');
-    for(ContentStatement s in dogsAgg.statements) {
-       print(' - ${s.token} (${s.time}): recommend=${s.like}');
-    }
-
     // Expectation for Singular Disposition:
     expect(dogsAgg.likes, 0, reason: "Old 'like' should be superseded");
     expect(dogsAgg.dislikes, 1, reason: "New 'dislike' should be active");
