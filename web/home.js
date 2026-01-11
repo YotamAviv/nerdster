@@ -25,17 +25,17 @@
 
       document.getElementById('load-lisa').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identity: demoData.lisa }, '*');
+        iframe.contentWindow.postMessage({ identity: demoData.lisa, identityPathsReq: 'standard' }, '*');
       });
 
       document.getElementById('load-bart').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identity: demoData.bart }, '*');
+        iframe.contentWindow.postMessage({ identity: demoData.bart, identityPathsReq: 'standard' }, '*');
       });
 
       document.getElementById('load-milhouse').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identity: demoData.milhouse }, '*');
+        iframe.contentWindow.postMessage({ identity: demoData.milhouse, identityPathsReq: 'permissive' }, '*');
       });
       
       document.getElementById('censor-on').addEventListener('click', function (ev) {
@@ -58,24 +58,31 @@
         iframe.contentWindow.postMessage({ showCrypto: false }, '*');
       });
 
-      document.getElementById('paths-2').addEventListener('click', function (ev) {
+      document.getElementById('standard').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identityNetPaths: 2 }, '*');
+        iframe.contentWindow.postMessage({ identityPathsReq: 'standard' }, '*');
       });
 
-      document.getElementById('paths-1').addEventListener('click', function (ev) {
+      document.getElementById('permissive').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identityNetPaths: 1 }, '*');
+        iframe.contentWindow.postMessage({ identityPathsReq: 'permissive' }, '*');
       });
 
-      document.getElementById('social-identity-tree').addEventListener('click', function (ev) {
+      document.getElementById('social').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ fcontext: 'social', netView: true, netTreeOneofus: true }, '*');
+        iframe.contentWindow.postMessage({ fcontext: 'social' }, '*');
       });
-
-      document.getElementById('social-context-tree').addEventListener('click', function (ev) {
+      document.getElementById('nerdster').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ fcontext: 'social', netView: true, netTreeOneofus: false }, '*');
+        iframe.contentWindow.postMessage({ fcontext: '<nerdster>' }, '*');
+      });
+      document.getElementById('identity').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ fcontext: '<identity>' }, '*');
+      });
+      document.getElementById('family').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ fcontext: 'family' }, '*');
       });
 
       VerifyHelper.setupListeners([

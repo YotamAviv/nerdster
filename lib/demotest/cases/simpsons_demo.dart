@@ -167,9 +167,9 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   const Json dogtown = {'contentType': 'movie', 'title': 'Dogtown and Z-Boys', 'year': '2001'};
   const Json superbad = {'contentType': 'movie', 'title': "Superbad", 'year': '2007'};
   const Json banana = {
-    'contentType': 'recipe',
-    'title': "Banana Banana Bread Recipe (with Video)",
-    'url': 'https://www.allrecipes.com/recipe/20144/banana-banana-bread/'
+    "contentType": "recipe",
+    "title": "Banana Bread Recipe (VIDEO)",
+    "url": "https://natashaskitchen.com/banana-bread-recipe-video/"
   };
   const Json kingpin = {'contentType': 'movie', 'title': "Kingpin", 'year': '1996'};
   const Json secretariat = {'contentType': 'movie', 'title': "Secretariat", 'year': '2010'};
