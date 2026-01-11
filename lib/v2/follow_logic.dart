@@ -36,12 +36,12 @@ FollowNetwork reduceFollowNetwork(
 
   // 1. Handle <one-of-us> context (Identity Layer only)
   if (fcontext == kFollowContextIdentity) {
-    for (final token in trustGraph.orderedKeys) {
+    for (final IdentityKey token in trustGraph.orderedKeys) {
       final IdentityKey canonical = trustGraph.resolveIdentity(token);
       if (identities.contains(canonical)) continue;
       identities.add(canonical);
       // For <identity> context, we can pull paths from the trustGraph
-      final tgPaths = trustGraph.paths[canonical];
+      final List<List<IdentityKey>>? tgPaths = trustGraph.paths[canonical];
       if (tgPaths != null && tgPaths.isNotEmpty) {
         paths[canonical] = tgPaths.first;
       }
@@ -62,9 +62,9 @@ FollowNetwork reduceFollowNetwork(
   final Set<IdentityKey> blocked = {};
   final Set<IdentityKey> initialLayer = {trustGraph.pov};
 
-  var layer = initialLayer;
+  Set<IdentityKey> layer = initialLayer;
   for (int dist = 0; dist < maxDegrees && layer.isNotEmpty; dist++) {
-    final nextLayer = <IdentityKey>{};
+    final Set<IdentityKey> nextLayer = <IdentityKey>{};
 
     for (final IdentityKey issuerIdentity in layer) {
       // Get all follow/block statements from this identity's keys and its delegates
@@ -72,7 +72,7 @@ FollowNetwork reduceFollowNetwork(
 
       // Delegate Keys
       for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(issuerIdentity)) {
-        final list = contentResult.delegateContent[key];
+        final List<ContentStatement>? list = contentResult.delegateContent[key];
         if (list != null && list.isNotEmpty) sources.add(list);
       }
 
@@ -154,7 +154,7 @@ FollowNetwork reduceFollowNetwork(
   }
 
   final List<IdentityKey> filteredIdentities =
-      orderedIdentities.where((id) => !blocked.contains(id)).toList();
+      orderedIdentities.where((IdentityKey id) => !blocked.contains(id)).toList();
 
   return FollowNetwork(
     fcontext: fcontext,

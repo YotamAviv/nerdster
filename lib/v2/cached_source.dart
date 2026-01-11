@@ -44,9 +44,9 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
     final Map<String, String?> missing = {};
 
     // 1. Check cache
-    for (var entry in keys.entries) {
-      final token = entry.key;
-      final revokeAt = entry.value;
+    for (final MapEntry<String, String?> entry in keys.entries) {
+      final String token = entry.key;
+      final String? revokeAt = entry.value;
 
       if (_errorCache.containsKey(token)) {
         // If we have a cached error, do not return any statements or fetch again.
@@ -69,19 +69,19 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
 
     // 2. Fetch missing
     if (missing.isNotEmpty) {
-      final fetched = await _delegate.fetch(missing);
+      final Map<String, List<T>> fetched = await _delegate.fetch(missing);
 
       // 3. Update cache and results
-      for (var token in missing.keys) {
+      for (final String token in missing.keys) {
         // If delegate reported an error for this token, cache it
-        final error = _delegate.errors.where((e) => e.token == token).firstOrNull;
+        final SourceError? error = _delegate.errors.where((SourceError e) => e.token == token).firstOrNull;
         if (error != null) {
           _errorCache[token] = error;
           continue; // Do not process statements for this token
         }
 
-        final statements = fetched[token] ?? [];
-        final revokeAt = missing[token];
+        final List<T> statements = fetched[token] ?? [];
+        final String? revokeAt = missing[token];
 
         if (revokeAt == null) {
           _fullCache[token] = statements;

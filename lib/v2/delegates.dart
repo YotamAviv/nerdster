@@ -36,7 +36,7 @@ class DelegateResolver {
     }
 
     final Iterable<TrustStatement> allStatements =
-        Merger.merge(keys.map((k) => graph.edges[k] ?? <TrustStatement>[]));
+        Merger.merge(keys.map((IdentityKey k) => graph.edges[k] ?? <TrustStatement>[]));
     Statement.validateOrderTypes(allStatements);
     final Set<DelegateKey> decidedDelegates = {};
 

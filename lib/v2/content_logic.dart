@@ -185,9 +185,9 @@ ContentAggregation reduceContentAggregation(
   final Map<ContentKey, SubjectGroup> literalSubject2group = {};
   final Map<ContentKey, List<ContentStatement>> canonicalSubject2statements = {};
   final Map<ContentKey, List<ContentStatement>> literalSubject2statements = {};
-  for (final s in filteredStatements) {
-    final literalSubject = ContentKey(s.subjectToken);
-    final canonical = subjectEquivalence[literalSubject] ?? literalSubject;
+  for (final ContentStatement s in filteredStatements) {
+    final ContentKey literalSubject = ContentKey(s.subjectToken);
+    final ContentKey canonical = subjectEquivalence[literalSubject] ?? literalSubject;
     canonicalSubject2statements.putIfAbsent(canonical, () => []).add(s);
     literalSubject2statements.putIfAbsent(literalSubject, () => []).add(s);
     if (s.other != null) {
@@ -228,8 +228,8 @@ ContentAggregation reduceContentAggregation(
 
   // Pass 2: Aggregate all statements into those subjects.
   for (final ContentStatement s in filteredStatements) {
-    final literalSubject = ContentKey(s.subjectToken);
-    final canonicalSubject = subjectEquivalence[literalSubject] ?? literalSubject;
+    final ContentKey literalSubject = ContentKey(s.subjectToken);
+    final ContentKey canonicalSubject = subjectEquivalence[literalSubject] ?? literalSubject;
 
     final List<ContentKey> canonicalTokens =
         s.involvedTokens.map((t) => subjectEquivalence[ContentKey(t)] ?? ContentKey(t)).toList();
@@ -243,7 +243,7 @@ ContentAggregation reduceContentAggregation(
       if (isCanonical && !topLevelSubjects.contains(key)) return;
       if (!isCanonical && !recognizedLiteralSubjects.contains(key)) return;
 
-      SubjectGroup group = map[key] ??
+      final SubjectGroup group = map[key] ??
           SubjectGroup(
             canonical: isCanonical ? key : canonicalSubject,
             lastActivity: s.time,
@@ -325,12 +325,12 @@ ContentAggregation reduceContentAggregation(
   final Map<ContentKey, List<ContentStatement>> myLiteralStatements = {};
   final Map<ContentKey, List<ContentStatement>> myCanonicalDisses = {};
 
-  for (final s in mergedMyStatements) {
-    for (final token in s.involvedTokens) {
-      final literalKey = ContentKey(token);
+  for (final ContentStatement s in mergedMyStatements) {
+    for (final String token in s.involvedTokens) {
+      final ContentKey literalKey = ContentKey(token);
       myLiteralStatements.putIfAbsent(literalKey, () => []).add(s);
 
-      final canonicalKey = subjectEquivalence[literalKey] ?? literalKey;
+      final ContentKey canonicalKey = subjectEquivalence[literalKey] ?? literalKey;
       if (s.verb == ContentVerb.rate) {
         myCanonicalDisses.putIfAbsent(canonicalKey, () => []).add(s);
       }
@@ -367,8 +367,8 @@ ContentAggregation reduceContentAggregation(
       Map<ContentKey, List<ContentStatement>> statementsMap,
       {bool updateMostStrings = false}) {
     Statement.validateOrderTypess(statementsMap.values);
-    for (final key in targetMap.keys.toList()) {
-      final group = targetMap[key]!;
+    for (final ContentKey key in targetMap.keys.toList()) {
+      final SubjectGroup group = targetMap[key]!;
       final Set<String> recursiveTags = collectTagsRecursive(key, {}, statementsMap);
       targetMap[key] = group.copyWith(tags: recursiveTags);
       if (updateMostStrings) mostStrings.process(recursiveTags);
@@ -381,7 +381,7 @@ ContentAggregation reduceContentAggregation(
   final Map<ContentKey, SubjectAggregation> subjects = {};
 
   void createAggregation(ContentKey token, Json subjectJson) {
-    final canonical = subjectEquivalence[token] ?? token;
+    final ContentKey canonical = subjectEquivalence[token] ?? token;
 
     SubjectGroup? group = canonicalSubject2group[canonical];
     SubjectGroup? narrowGroup = literalSubject2group[token];
@@ -400,7 +400,7 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  for (final entry in subjectDefinitions.entries) {
+  for (final MapEntry<ContentKey, Json> entry in subjectDefinitions.entries) {
     createAggregation(entry.key, entry.value);
   }
 

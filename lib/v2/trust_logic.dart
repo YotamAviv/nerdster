@@ -39,22 +39,22 @@ List<List<IdentityKey>> _findNodeDisjointPaths(
 
 List<IdentityKey>? _findShortestPath(IdentityKey start, IdentityKey end,
     Map<IdentityKey, Set<IdentityKey>> graph, Set<IdentityKey> excluded) {
-  final queue = Queue<List<IdentityKey>>();
+  final Queue<List<IdentityKey>> queue = Queue<List<IdentityKey>>();
   queue.add([start]);
-  final visited = {start, ...excluded};
+  final Set<IdentityKey> visited = {start, ...excluded};
 
   while (queue.isNotEmpty) {
-    final path = queue.removeFirst();
-    final node = path.last;
+    final List<IdentityKey> path = queue.removeFirst();
+    final IdentityKey node = path.last;
 
     if (node == end) return path;
 
-    final neighbors = graph[node];
+    final Set<IdentityKey>? neighbors = graph[node];
     if (neighbors != null) {
-      for (final neighbor in neighbors) {
+      for (final IdentityKey neighbor in neighbors) {
         if (!visited.contains(neighbor)) {
           visited.add(neighbor);
-          final newPath = List<IdentityKey>.from(path)..add(neighbor);
+          final List<IdentityKey> newPath = List<IdentityKey>.from(path)..add(neighbor);
           queue.add(newPath);
         }
       }
@@ -107,8 +107,8 @@ TrustGraph reduceTrustGraph(
 
   // --- 1. Index by Token (for replacement limit resolution) ---
   final Map<String, TrustStatement> byToken = {};
-  for (var list in byIssuer.values) {
-    for (var s in list) {
+  for (final List<TrustStatement> list in byIssuer.values) {
+    for (final TrustStatement s in list) {
       byToken[s.token] = s;
     }
   }
@@ -116,29 +116,29 @@ TrustGraph reduceTrustGraph(
   DateTime? resolveReplacementLimit(String? limitToken, IdentityKey expectedIssuer) {
     if (limitToken == null) return null;
     if (limitToken == kSinceAlways) return DateTime.fromMicrosecondsSinceEpoch(0);
-    final s = byToken[limitToken];
+    final TrustStatement? s = byToken[limitToken];
     if (s != null && s.iKey == expectedIssuer) {
       return s.time;
     }
     return DateTime.fromMicrosecondsSinceEpoch(0);
   }
 
-  final req = pathRequirement ?? (d) => 1;
+  final PathRequirement req = pathRequirement ?? (d) => 1;
 
-  var currentLayer = {current.pov};
+  Set<IdentityKey> currentLayer = {current.pov};
 
   for (int dist = 0; dist < maxDegrees && currentLayer.isNotEmpty; dist++) {
-    final nextLayer = <IdentityKey>{};
+    final Set<IdentityKey> nextLayer = <IdentityKey>{};
 
     // --- STAGE 1: BLOCKS ---
     // Blocks are processed first for the entire layer.
-    for (final issuer in currentLayer) {
-      var statements = byIssuer[issuer] ?? [];
-      final decided = <IdentityKey>{};
+    for (final IdentityKey issuer in currentLayer) {
+      List<TrustStatement> statements = byIssuer[issuer] ?? [];
+      final Set<IdentityKey> decided = <IdentityKey>{};
 
       // Process Blocks
-      for (var s in statements.where((s) => s.verb == TrustVerb.block)) {
-        final subject = s.subjectAsIdentity;
+      for (final TrustStatement s in statements.where((TrustStatement s) => s.verb == TrustVerb.block)) {
+        final IdentityKey subject = s.subjectAsIdentity;
         if (decided.contains(subject)) continue;
         decided.add(subject);
 
@@ -167,21 +167,21 @@ TrustGraph reduceTrustGraph(
     // These discover nodes for the NEXT layer.
 
     // 1. First pass: Process all REPLACES in this layer to establish identity links and constraints.
-    for (final issuer in currentLayer) {
-      var statements = byIssuer[issuer] ?? [];
+    for (final IdentityKey issuer in currentLayer) {
+      List<TrustStatement> statements = byIssuer[issuer] ?? [];
 
       // Apply constraints discovered in previous layers
       if (replacementConstraints.containsKey(issuer)) {
-        final limitTime = resolveReplacementLimit(replacementConstraints[issuer], issuer);
+        final DateTime? limitTime = resolveReplacementLimit(replacementConstraints[issuer], issuer);
         if (limitTime != null) {
-          statements = statements.where((s) => !s.time.isAfter(limitTime)).toList();
+          statements = statements.where((TrustStatement s) => !s.time.isAfter(limitTime)).toList();
         }
       }
 
       // Filter out revocations and clear statements from the resulting edges.
       // These are used by the algorithm to "decide" a subject (preventing older statements from applying),
       // but they shouldn't be considered "edges" in the final graph.
-      edges[issuer] = statements.where((s) {
+      edges[issuer] = statements.where((TrustStatement s) {
         if (s.verb == TrustVerb.clear) return false;
         // We keep replace and delegate statements with revokeAt because they are revocations.
         if (s.verb != TrustVerb.replace && s.verb != TrustVerb.delegate && s.revokeAt != null)
@@ -189,9 +189,9 @@ TrustGraph reduceTrustGraph(
         return true;
       }).toList();
 
-      final decided = <IdentityKey>{};
-      for (var s in statements.where((s) => s.verb == TrustVerb.replace)) {
-        final oldKey = s.subjectAsIdentity;
+      final Set<IdentityKey> decided = <IdentityKey>{};
+      for (final TrustStatement s in statements.where((TrustStatement s) => s.verb == TrustVerb.replace)) {
+        final IdentityKey oldKey = s.subjectAsIdentity;
         if (decided.contains(oldKey)) continue;
         decided.add(oldKey);
 
@@ -228,7 +228,7 @@ TrustGraph reduceTrustGraph(
         }
 
         if (replacements.containsKey(oldKey)) {
-          final existingNewKey = replacements[oldKey];
+          final IdentityKey? existingNewKey = replacements[oldKey];
           if (existingNewKey != issuer) {
             notifications.add(TrustNotification(
               reason:
@@ -264,20 +264,20 @@ TrustGraph reduceTrustGraph(
     }
 
     // 2. Second pass: Process all TRUSTS in this layer, now that replacements are known.
-    for (final issuer in currentLayer) {
-      var statements = edges[issuer] ?? [];
+    for (final IdentityKey issuer in currentLayer) {
+      List<TrustStatement> statements = edges[issuer] ?? [];
 
       // Re-filter statements if a replacement was found in THIS layer
       if (replacementConstraints.containsKey(issuer)) {
-        final limitTime = resolveReplacementLimit(replacementConstraints[issuer], issuer);
+        final DateTime? limitTime = resolveReplacementLimit(replacementConstraints[issuer], issuer);
         if (limitTime != null) {
-          statements = statements.where((s) => !s.time.isAfter(limitTime)).toList();
+          statements = statements.where((TrustStatement s) => !s.time.isAfter(limitTime)).toList();
         }
       }
 
-      final decided = <IdentityKey>{};
-      for (var s in statements.where((s) => s.verb == TrustVerb.trust)) {
-        final subject = s.subjectAsIdentity;
+      final Set<IdentityKey> decided = <IdentityKey>{};
+      for (final TrustStatement s in statements.where((TrustStatement s) => s.verb == TrustVerb.trust)) {
+        final IdentityKey subject = s.subjectAsIdentity;
         if (decided.contains(subject)) continue;
         decided.add(subject);
 
@@ -298,14 +298,14 @@ TrustGraph reduceTrustGraph(
 
         trustedBy.putIfAbsent(effectiveSubject, () => {}).add(issuer);
 
-        final requiredPaths = req(dist + 1);
+        final int requiredPaths = req(dist + 1);
 
         // Temporarily add all potential edges for this subject to the pathfinding graph
-        for (final i in trustedBy[effectiveSubject]!) {
+        for (final IdentityKey i in trustedBy[effectiveSubject]!) {
           graphForPathfinding.putIfAbsent(i, () => {}).add(effectiveSubject);
         }
 
-        final foundPaths = _findNodeDisjointPaths(
+        final List<List<IdentityKey>> foundPaths = _findNodeDisjointPaths(
             current.pov, effectiveSubject, graphForPathfinding, requiredPaths);
         if (foundPaths.length >= requiredPaths) {
           paths[effectiveSubject] = foundPaths;
@@ -332,9 +332,9 @@ TrustGraph reduceTrustGraph(
 
   // Deduplicate notifications
   final Map<String, TrustNotification> uniqueNotifications = {};
-  for (final n in notifications) {
+  for (final TrustNotification n in notifications) {
     // IdentityKey interpolation works
-    final key = "${n.subject.value}:${n.reason}";
+    final String key = "${n.subject.value}:${n.reason}";
     if (!uniqueNotifications.containsKey(key)) {
       uniqueNotifications[key] = n;
     }

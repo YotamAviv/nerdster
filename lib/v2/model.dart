@@ -111,12 +111,12 @@ class TrustGraph {
   /// Groups all trusted tokens by their canonical identity.
   Map<IdentityKey, List<IdentityKey>> getEquivalenceGroups() {
     final Map<IdentityKey, List<IdentityKey>> groups = {};
-    for (final token in distances.keys) {
-      final canonical = resolveIdentity(token);
+    for (final IdentityKey token in distances.keys) {
+      final IdentityKey canonical = resolveIdentity(token);
       groups.putIfAbsent(canonical, () => []).add(token);
     }
     // Sort tokens within each group by distance (canonical first usually)
-    for (final group in groups.values) {
+    for (final List<IdentityKey> group in groups.values) {
       group.sort((a, b) => distances[a]!.compareTo(distances[b]!));
     }
     return groups;
@@ -141,13 +141,13 @@ class TrustGraph {
 
     // Find all issuers that trust this target at distance targetDist - 1
     // We look at all edges in the graph.
-    for (final issuer in edges.keys) {
+    for (final IdentityKey issuer in edges.keys) {
       if ((distances[issuer] ?? -1) == targetDist - 1) {
-        for (final s in edges[issuer]!) {
+        for (final TrustStatement s in edges[issuer]!) {
           // Only trust/replace edges constitute a path in the identity graph.
           if (s.verb == TrustVerb.trust && s.subjectAsIdentity == target) {
-            final subPaths = getPathsTo(issuer);
-            for (final p in subPaths) {
+            final List<List<IdentityKey>> subPaths = getPathsTo(issuer);
+            for (final List<IdentityKey> p in subPaths) {
               results.add([...p, target]);
             }
           }
@@ -239,7 +239,7 @@ class SubjectGroup {
 
   bool _checkIsDismissed(List<ContentStatement> dispositionStatements) {
     Statement.validateOrderTypes(dispositionStatements);
-    final dismissalTimestamp = _getDismissalTimestamp(dispositionStatements);
+    final DateTime? dismissalTimestamp = _getDismissalTimestamp(dispositionStatements);
     if (dismissalTimestamp == null) return false;
 
     // If dismissed forever (timestamp is far future), it's dismissed regardless of activity
@@ -253,8 +253,9 @@ class SubjectGroup {
       // Note: There could be multiple statements with the same time, but they would be from different
       // identities or about different things.
       // We need to check if *any* statement at lastActivity is a "Qualified New Activity".
-      final activityStatements = statements.where((s) => s.time.isAtSameMomentAs(lastActivity));
-      for (final activityStatement in activityStatements) {
+      final Iterable<ContentStatement> activityStatements =
+          statements.where((ContentStatement s) => s.time.isAtSameMomentAs(lastActivity));
+      for (final ContentStatement activityStatement in activityStatements) {
         // Qualified New Activity:
         // - Rate with comment or recommend (true/false)
         // - Relate
@@ -280,7 +281,7 @@ class SubjectGroup {
     Statement.validateOrderTypes(stmts);
     // The user's disposition is singular. The first rate statement encountered
     // is the effective one.
-    for (final s in stmts) {
+    for (final ContentStatement s in stmts) {
       if (s.verb == ContentVerb.rate) {
         if (s.dismiss == 'forever') {
           return DateTime(3000);
@@ -295,14 +296,14 @@ class SubjectGroup {
 
   static bool checkIsDismissed(List<ContentStatement> myStmts, SubjectAggregation agg) {
     Statement.validateOrderTypes(myStmts);
-    final dismissalTimestamp = getDismissalTimestamp(myStmts);
+    final DateTime? dismissalTimestamp = getDismissalTimestamp(myStmts);
     if (dismissalTimestamp == null) return false;
     if (dismissalTimestamp.year >= 3000) return true;
 
     if (agg.lastActivity.isAfter(dismissalTimestamp)) {
-      final activityStatements =
-          agg.statements.where((s) => s.time.isAtSameMomentAs(agg.lastActivity));
-      for (final activityStatement in activityStatements) {
+      final Iterable<ContentStatement> activityStatements =
+          agg.statements.where((ContentStatement s) => s.time.isAtSameMomentAs(agg.lastActivity));
+      for (final ContentStatement activityStatement in activityStatements) {
         if (activityStatement.verb == ContentVerb.relate) return false;
         if (activityStatement.verb == ContentVerb.rate) {
           if (activityStatement.censor == true || activityStatement.dismiss != null) continue;
@@ -316,7 +317,7 @@ class SubjectGroup {
 
   static DateTime? getDismissalTimestamp(List<ContentStatement> stmts) {
     Statement.validateOrderTypes(stmts);
-    for (final s in stmts) {
+    for (final ContentStatement s in stmts) {
       if (s.verb == ContentVerb.rate) {
         if (s.dismiss == 'forever') {
           return DateTime(3000);

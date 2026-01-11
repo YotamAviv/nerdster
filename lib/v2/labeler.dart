@@ -45,11 +45,11 @@ class V2Labeler {
     // 1. Pre-index incoming trust statements by the subject's identity.
     // This allows us to quickly find all monikers proposed for a person.
     final Map<IdentityKey, List<TrustStatement>> incomingByIdentity = {};
-    for (final issuer in graph.edges.keys) {
-      for (final statement in graph.edges[issuer]!) {
+    for (final IdentityKey issuer in graph.edges.keys) {
+      for (final TrustStatement statement in graph.edges[issuer]!) {
         // We need an IdentityKey for the subject.
         // Assuming statement.subjectToken works here, resolve it.
-        final subjectIdentity = graph.resolveIdentity(IdentityKey(statement.subjectToken));
+        final IdentityKey subjectIdentity = graph.resolveIdentity(IdentityKey(statement.subjectToken));
         incomingByIdentity.putIfAbsent(subjectIdentity, () => []).add(statement);
 
         if (statement.moniker != null) {
@@ -60,10 +60,10 @@ class V2Labeler {
 
     // 2. Assign names to identities and tokens in discovery order (BFS).
     // This ensures that names are assigned based on the shortest path from the pov.
-    for (final token in graph.orderedKeys) {
+    for (final IdentityKey token in graph.orderedKeys) {
       if (_identityToName.containsKey(token)) continue;
 
-      final identity = graph.resolveIdentity(token);
+      final IdentityKey identity = graph.resolveIdentity(token);
 
       String baseName;
 
@@ -72,18 +72,18 @@ class V2Labeler {
         baseName = _identityToName[identity]!;
       } else {
         // Determine the best base name for this identity from the context of its issuers.
-        final statements = incomingByIdentity[identity] ?? [];
+        final List<TrustStatement> statements = incomingByIdentity[identity] ?? [];
 
         // Sort statements by issuer distance to prioritize monikers from closer (more trusted) peers.
         statements.sort((a, b) {
           // distances key is IdentityKey
-          final distA = graph.distances[IdentityKey(a.iToken)] ?? 999;
-          final distB = graph.distances[IdentityKey(b.iToken)] ?? 999;
+          final int distA = graph.distances[IdentityKey(a.iToken)] ?? 999;
+          final int distB = graph.distances[IdentityKey(b.iToken)] ?? 999;
           return distA.compareTo(distB);
         });
 
         String? bestMoniker;
-        for (final s in statements) {
+        for (final TrustStatement s in statements) {
           if (s.moniker != null) {
             bestMoniker = s.moniker;
             break;
@@ -157,17 +157,17 @@ class V2Labeler {
   /// Returns the best human-readable label for a delegate key.
   String getDelegateLabel(DelegateKey key) {
     if (delegateResolver != null) {
-      final identity = delegateResolver!.getIdentityForDelegate(key);
+      final IdentityKey? identity = delegateResolver!.getIdentityForDelegate(key);
       if (identity != null) {
-        final identityLabel = getIdentityLabel(identity);
-        final domain = delegateResolver!.getDomainForDelegate(key);
+        final String identityLabel = getIdentityLabel(identity);
+        final String? domain = delegateResolver!.getDomainForDelegate(key);
 
         // Handle multiple delegates for the same identity and domain
-        final allDelegates = delegateResolver!.getDelegatesForIdentity(identity);
-        final domainDelegates =
-            allDelegates.where((d) => delegateResolver!.getDomainForDelegate(d) == domain).toList();
+        final List<DelegateKey> allDelegates = delegateResolver!.getDelegatesForIdentity(identity);
+        final List<DelegateKey> domainDelegates =
+            allDelegates.where((DelegateKey d) => delegateResolver!.getDomainForDelegate(d) == domain).toList();
 
-        final index = domainDelegates.indexOf(key);
+        final int index = domainDelegates.indexOf(key);
         if (index > 0) {
           return "$identityLabel@$domain (${index + 1})";
         }
