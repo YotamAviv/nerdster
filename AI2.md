@@ -22,13 +22,18 @@ run git diff on every change
 read those changes
 Let me know if you notice anything that might be problematic.
 If not, suggest a commit message based only on the GIT diffs, not based on your memory
-Copy/paste from our conversation never works for me for this, and so:
-Append the commit message to the end of this file:
+Copy/paste from our conversation never works for me for this, and so
+append the commit message to the end of this file:
+feat(v2/relate): pre-fill relationship history and add 'Clear' action
 
-feat(metadata): enhance movie image fetching and add article fallbacks
+- Initialize Relate Subjects dialog with historical subject ordering and prior verb/comment.
+- Add 'Clear Relationship' option to the verb dropdown, enabled only when a prior relationship exists.
+- Ensure 'Clear' action resets state correctly for subsequent interactions.
+- Update dialog titles for 'Clear' relationship intent.
 
-- Added OMDb and TMDB fetchers to backend for high-quality movie posters.
-- Improved Wikipedia search logic to prioritize film disambiguation for movies.
-- Updated core fetching logic to use publication 'year' for movie metadata lookups.
-- Added explicit Wall Street Journal logo fallback in the mobile app.
-- Cleaned up unused imports in Cloud Functions entry point.
+feat(v2/relate): pre-fill relationship history and add 'Clear' action
+
+- Initialize Relate Subjects dialog with historical subject ordering and prior verb/comment.
+- Add 'Clear Relationship' option to the verb dropdown, enabled only when a prior relationship exists.
+- Ensure 'Clear' action resets state correctly for subsequent interactions.
+- Update dialog titles for 'Clear' relationship intent.

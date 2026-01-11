@@ -74,32 +74,45 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
   final TextEditingController _commentController = TextEditingController();
   late SubjectAggregation _subject1;
   late SubjectAggregation _subject2;
+  bool _hasPrior = false;
 
   @override
   void initState() {
     super.initState();
     _subject1 = widget.subject1;
     _subject2 = widget.subject2;
-    _loadPrior();
+    _initFromHistory();
   }
 
-  void _loadPrior() {
+  void _initFromHistory() {
     // Use the latest statement about either subject literal token that involves both tokens.
     final t1 = _subject1.token;
     final t2 = _subject2.token;
 
     final myLiteralStatements = widget.model.aggregation.myLiteralStatements;
     final s1 = List<ContentStatement>.from(myLiteralStatements[t1] ?? []);
+    final s2 = List<ContentStatement>.from(myLiteralStatements[t2] ?? []);
 
-    Statement.validateOrderTypes(s1);
-    final prior = s1.where((s) {
-      return s.involvedTokens.contains(t2.value);
+    final all = [...s1, ...s2];
+    all.sort((a, b) => b.time.compareTo(a.time));
+
+    final prior = all.where((s) {
+      final tokens = s.involvedTokens.toSet();
+      return tokens.contains(t1.value) && tokens.contains(t2.value);
     }).firstOrNull;
 
     if (prior != null) {
-      _verb = prior.verb;
+      // Re-order to match history if needed
+      if (prior.subjectToken == t2.value) {
+        final tmp = _subject1;
+        _subject1 = _subject2;
+        _subject2 = tmp;
+      }
+      _hasPrior = prior.verb != ContentVerb.clear;
+      _verb = (prior.verb == ContentVerb.clear) ? ContentVerb.relate : prior.verb;
       _commentController.text = prior.comment ?? '';
     } else {
+      _hasPrior = false;
       _verb = ContentVerb.relate;
       _commentController.text = '';
     }
@@ -123,6 +136,7 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
       ContentVerb.dontRelate => 'Un-Relate Subjects',
       ContentVerb.equate => 'Equate Subjects',
       ContentVerb.dontEquate => 'Un-Equate Subjects',
+      ContentVerb.clear => 'Clear Relationship',
       _ => 'Relate Subjects',
     };
 
@@ -168,22 +182,27 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
                           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           border: OutlineInputBorder(),
                         ),
-                        items: const [
-                          DropdownMenuItem(
+                        items: [
+                          const DropdownMenuItem(
                             value: ContentVerb.relate,
                             child: Text('is related to', style: TextStyle(fontSize: 16)),
                           ),
-                          DropdownMenuItem(
+                          const DropdownMenuItem(
                             value: ContentVerb.dontRelate,
                             child: Text('is not related to', style: TextStyle(fontSize: 16)),
                           ),
-                          DropdownMenuItem(
+                          const DropdownMenuItem(
                             value: ContentVerb.equate,
                             child: Text('is the same as', style: TextStyle(fontSize: 16)),
                           ),
-                          DropdownMenuItem(
+                          const DropdownMenuItem(
                             value: ContentVerb.dontEquate,
                             child: Text('is not the same as', style: TextStyle(fontSize: 16)),
+                          ),
+                          DropdownMenuItem(
+                            value: ContentVerb.clear,
+                            enabled: _hasPrior,
+                            child: const Text('Clear', style: TextStyle(fontSize: 16)),
                           ),
                         ],
                         onChanged: (val) => setState(() => _verb = val!),
