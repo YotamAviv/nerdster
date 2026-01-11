@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/keys.dart';
 import '../singletons.dart';
 import '../content/content_statement.dart';
 import '../oneofus/jsonish.dart';
 import '../oneofus/util.dart';
-import 'json_display.dart';
-import 'interpreter.dart';
 import '../oneofus/statement.dart';
 import '../content/dialogs/on_off_icon.dart';
 import '../content/dialogs/on_off_icons.dart';
-import '../util_ui.dart';
 import 'model.dart';
 import 'source_factory.dart';
 import 'dismiss_toggle.dart';
+import 'subject_view.dart';
 
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
@@ -42,6 +39,7 @@ class V2RateDialog extends StatefulWidget {
 
     final result = await showDialog<Json>(
       context: context,
+      barrierDismissible: false,
       builder: (context) => V2RateDialog(
         aggregation: aggregation,
         model: model,
@@ -84,7 +82,6 @@ class _V2RateDialogState extends State<V2RateDialog> {
   late ValueNotifier<bool> censor;
   late ValueNotifier<bool> erase;
   late ValueNotifier<bool> okEnabled;
-  late ValueNotifier<bool> interpret;
   late TextEditingController commentController;
   ContentStatement? priorStatement;
 
@@ -106,7 +103,6 @@ class _V2RateDialogState extends State<V2RateDialog> {
     censor = ValueNotifier(priorStatement?.censor ?? false);
     erase = ValueNotifier(false);
     okEnabled = ValueNotifier(false);
-    interpret = ValueNotifier(true);
     commentController = TextEditingController(text: priorStatement?.comment ?? '');
 
     switch (widget.intent) {
@@ -152,7 +148,6 @@ class _V2RateDialogState extends State<V2RateDialog> {
     censor.dispose();
     erase.dispose();
     okEnabled.dispose();
-    interpret.dispose();
     super.dispose();
   }
 
@@ -297,19 +292,15 @@ class _V2RateDialogState extends State<V2RateDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const SizedBox(height: 12),
               InputDecorator(
-                  decoration: InputDecoration(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                      labelText: 'Subject',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
-                  child: SizedBox(
-                      height: 150,
-                      child: V2JsonDisplay(
-                        rawSubject,
-                        interpret: interpret,
-                        strikethrough: censor.value,
-                        interpreter: V2Interpreter(widget.model.labeler),
-                      ))),
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
+                  labelText: 'Subject',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+                ),
+                child: V2SubjectView(subject: rawSubject, strikethrough: censor.value),
+              ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -319,6 +310,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
               TextField(
                 enabled: !erase.value,
                 controller: commentController,
+                style: const TextStyle(fontSize: 16),
                 decoration: const InputDecoration(
                   hintText: 'Add a comment...\n#hashtag',
                   border: OutlineInputBorder(),
@@ -326,31 +318,33 @@ class _V2RateDialogState extends State<V2RateDialog> {
                 maxLines: 4,
                 autofocus: widget.intent == RateIntent.comment,
               ),
+              if (isStatement) ...[
+                const SizedBox(height: 12),
+                const Tooltip(
+                  message:
+                      'A user can have only one disposition on a subject, so any newer rating will overwrite his earlier one.',
+                  child: Text(
+                    'rating a rating?',
+                    style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline, fontSize: 12),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
       ),
+      actionsAlignment: MainAxisAlignment.center,
       actions: [
-        if (isStatement)
-          SizedBox(
-            width: 120.0,
-            child: Tooltip(
-                message:
-                    'A user can have only one disposition on a subject, so any newer rating will overwrite his earlier one.',
-                child: Text('rating a rating?', style: linkStyle)),
-          )
-        else
-          const SizedBox(width: 120.0),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
         ValueListenableBuilder<bool>(
           valueListenable: okEnabled,
           builder: (context, enabled, _) => ElevatedButton(
             onPressed: enabled ? _onOk : null,
-            child: const Text('Post'),
+            child: const Text('Publish'),
           ),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
         ),
       ],
     );

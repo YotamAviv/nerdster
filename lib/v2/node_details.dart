@@ -316,7 +316,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
                 child: _isUpdating
                     ? const SizedBox(
                         width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Save', style: TextStyle(fontSize: 12)),
+                    : const Text('Publish', style: TextStyle(fontSize: 12)),
               ),
           ],
         ),

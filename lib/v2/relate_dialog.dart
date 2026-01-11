@@ -7,6 +7,7 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
+import 'package:nerdster/v2/subject_view.dart';
 
 class V2RelateDialog extends StatefulWidget {
   final SubjectAggregation subject1;
@@ -31,6 +32,7 @@ class V2RelateDialog extends StatefulWidget {
 
     final result = await showDialog<Json>(
       context: context,
+      barrierDismissible: false,
       builder: (context) => V2RelateDialog(
         subject1: subject1,
         subject2: subject2,
@@ -70,13 +72,21 @@ class V2RelateDialog extends StatefulWidget {
 class _V2RelateDialogState extends State<V2RelateDialog> {
   ContentVerb _verb = ContentVerb.relate;
   final TextEditingController _commentController = TextEditingController();
+  late SubjectAggregation _subject1;
+  late SubjectAggregation _subject2;
 
   @override
   void initState() {
     super.initState();
+    _subject1 = widget.subject1;
+    _subject2 = widget.subject2;
+    _loadPrior();
+  }
+
+  void _loadPrior() {
     // Use the latest statement about either subject literal token that involves both tokens.
-    final t1 = widget.subject1.token;
-    final t2 = widget.subject2.token;
+    final t1 = _subject1.token;
+    final t2 = _subject2.token;
 
     final myLiteralStatements = widget.model.aggregation.myLiteralStatements;
     final s1 = List<ContentStatement>.from(myLiteralStatements[t1] ?? []);
@@ -89,86 +99,152 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
     if (prior != null) {
       _verb = prior.verb;
       _commentController.text = prior.comment ?? '';
+    } else {
+      _verb = ContentVerb.relate;
+      _commentController.text = '';
     }
+  }
+
+  void _flip() {
+    setState(() {
+      final tmp = _subject1;
+      _subject1 = _subject2;
+      _subject2 = tmp;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final title1 = _getTitle(widget.subject1);
-    final title2 = _getTitle(widget.subject2);
+    final bool isEquate = _verb == ContentVerb.equate;
+    final String label1 = isEquate ? 'Canonical' : 'Subject 1';
+    final String label2 = isEquate ? 'Equivalent' : 'Subject 2';
+    final String title = switch (_verb) {
+      ContentVerb.relate => 'Relate Subjects',
+      ContentVerb.dontRelate => 'Un-Relate Subjects',
+      ContentVerb.equate => 'Equate Subjects',
+      ContentVerb.dontEquate => 'Un-Equate Subjects',
+      _ => 'Relate Subjects',
+    };
 
     return AlertDialog(
-      title: const Text('Relate Subjects'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Subject 1: $title1', style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Subject 2: $title2', style: const TextStyle(fontWeight: FontWeight.bold)),
-            const Divider(),
-            const Text('Relationship:'),
-            RadioListTile<ContentVerb>(
-              title: const Text('Relate (Related to)'),
-              value: ContentVerb.relate,
-              groupValue: _verb,
-              onChanged: (val) => setState(() => _verb = val!),
-            ),
-            RadioListTile<ContentVerb>(
-              title: const Text('Un-Relate (Not related to)'),
-              value: ContentVerb.dontRelate,
-              groupValue: _verb,
-              onChanged: (val) => setState(() => _verb = val!),
-            ),
-            RadioListTile<ContentVerb>(
-              title: const Text('Equate (Same as)'),
-              value: ContentVerb.equate,
-              groupValue: _verb,
-              onChanged: (val) => setState(() => _verb = val!),
-            ),
-            RadioListTile<ContentVerb>(
-              title: const Text('Un-Equate (Not same as)'),
-              value: ContentVerb.dontEquate,
-              groupValue: _verb,
-              onChanged: (val) => setState(() => _verb = val!),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _commentController,
-              decoration: const InputDecoration(
-                labelText: 'Comment (Optional)',
-                border: OutlineInputBorder(),
+      title: Text(title),
+      content: SizedBox(
+        width: 500,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 12),
+              InputDecorator(
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
+                  labelText: label1,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+                ),
+                child: V2SubjectView(subject: _subject1.subject),
               ),
-              maxLines: 3,
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: [
+                    Opacity(
+                      opacity: isEquate ? 1.0 : 0.0,
+                      child: IgnorePointer(
+                        ignoring: !isEquate,
+                        child: IconButton(
+                          icon: const Icon(Icons.swap_vert),
+                          onPressed: _flip,
+                          tooltip: 'Swap subjects',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButtonFormField<ContentVerb>(
+                        value: _verb,
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          border: OutlineInputBorder(),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: ContentVerb.relate,
+                            child: Text('is related to', style: TextStyle(fontSize: 16)),
+                          ),
+                          DropdownMenuItem(
+                            value: ContentVerb.dontRelate,
+                            child: Text('is not related to', style: TextStyle(fontSize: 16)),
+                          ),
+                          DropdownMenuItem(
+                            value: ContentVerb.equate,
+                            child: Text('is the same as', style: TextStyle(fontSize: 16)),
+                          ),
+                          DropdownMenuItem(
+                            value: ContentVerb.dontEquate,
+                            child: Text('is not the same as', style: TextStyle(fontSize: 16)),
+                          ),
+                        ],
+                        onChanged: (val) => setState(() => _verb = val!),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Visibility(
+                      maintainSize: true,
+                      maintainAnimation: true,
+                      maintainState: true,
+                      visible: false,
+                      child: IconButton(
+                        icon: Icon(Icons.swap_vert),
+                        onPressed: null,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              InputDecorator(
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
+                  labelText: label2,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+                ),
+                child: V2SubjectView(subject: _subject2.subject),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _commentController,
+                style: const TextStyle(fontSize: 16),
+                decoration: const InputDecoration(
+                  labelText: 'Comment (Optional)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
         ),
       ),
+      actionsAlignment: MainAxisAlignment.center,
       actions: [
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text('Publish'),
+        ),
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Submit'),
-        ),
       ],
     );
-  }
-
-  String _getTitle(SubjectAggregation agg) {
-    final subject = agg.subject;
-    return subject['title'] ?? 'Untitled';
   }
 
   Future<void> _submit() async {
     final json = ContentStatement.make(
       signInState.delegatePublicKeyJson!,
       _verb,
-      widget.subject1.subject,
-      other: widget.subject2.subject,
+      _subject1.subject,
+      other: _subject2.subject,
       comment: _commentController.text.isNotEmpty ? _commentController.text : null,
     );
     if (mounted) {

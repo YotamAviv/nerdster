@@ -54,13 +54,18 @@ You (the AI) wrote this document to guide your future self so you could do a bet
     - Do not modify test setup, environment flags, or debug settings solely to make a test pass.
     - Test failures are valuable signal that the code is broken or the test expectation is wrong.
   
-12. **Document Reality.**
+13. **Document Reality.**
 
     - When the human asks you to document how something works, that's the task.
     - If you don't like how it currently works, you can't invent it to work differently and document that instead.
 
-13. **Check for Compile Errors Before Running Tests.**
+14. **Check for Compile Errors Before Running Tests.**
     - Before running tests, always check for compile-time errors using `get_errors`. Running tests on broken code is a waste of time and confuses the user.
 
-14. **Respect Running Processes.**
+15. **Respect Running Processes.**
     - Do not kill or restart long-running processes (like emulators, servers, or databases) without asking the user first.
+
+16. **Avoid Initiatives and Stylistic Choices.**
+    - Do not take any initiatives that weren't explicitly requested.
+    - Follow instructions literally and strictly.
+    - Avoid adding emphasis, extra styling, or "improvements" that weren't asked for.

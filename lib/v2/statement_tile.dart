@@ -124,19 +124,19 @@ class StatementTile extends StatelessWidget {
       } else if (s.verb == ContentVerb.dontRelate) {
         verbIcon = const Text('≉', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
       } else if (s.verb == ContentVerb.equate) {
-        String arrow = '=';
+        Widget icon = const Icon(Icons.compare_arrows, size: 18, color: Colors.blueGrey);
         if (otherToken != null) {
           final ContentKey otherCanonical = model.aggregation.equivalence[otherToken] ?? otherToken;
           final bool isThisCanonical = (thisToken == thisCanonical);
           final bool isOtherCanonical = (otherToken == otherCanonical);
 
           if (isThisCanonical && !isOtherCanonical) {
-            arrow = '<=';
+            icon = const Icon(Icons.arrow_back, size: 16);
           } else if (!isThisCanonical && isOtherCanonical) {
-            arrow = '=>';
+            icon = const Icon(Icons.arrow_forward, size: 16);
           }
         }
-        verbIcon = Text(arrow, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+        verbIcon = icon;
       } else if (s.verb == ContentVerb.dontEquate) {
         verbIcon = const Text('≠', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
       }
