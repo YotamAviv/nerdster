@@ -90,7 +90,8 @@ void main() {
     // Since A2 is NOT trusted, it cannot pass trust to B2.
     // So B2 only has 1 valid path (pov -> b1 -> b2).
     // Requirement for dist 2 is 2 paths. So B2 should NOT be in.
-    expect(tg.distances.containsKey(b2), isFalse, reason: 'B2 only has 1 valid path because A2 is not trusted');
+    expect(tg.distances.containsKey(b2), isFalse,
+        reason: 'B2 only has 1 valid path because A2 is not trusted');
   });
 
   test('Path Requirement Logic: B2 is IN if A2 is also IN', () {
@@ -254,8 +255,10 @@ void main() {
     // In a greedy BFS, at the moment we evaluate distance 2, neither A nor B are trusted yet.
     // So they both only see 1 path from the "already trusted" set (distance 0 and 1).
     // Thus, they both fail the 2-path requirement.
-    expect(tg.distances.containsKey(a), isFalse, reason: 'A needs 2 paths from trusted nodes, but only has 1 (via I1)');
-    expect(tg.distances.containsKey(b), isFalse, reason: 'B needs 2 paths from trusted nodes, but only has 1 (via I2)');
+    expect(tg.distances.containsKey(a), isFalse,
+        reason: 'A needs 2 paths from trusted nodes, but only has 1 (via I1)');
+    expect(tg.distances.containsKey(b), isFalse,
+        reason: 'B needs 2 paths from trusted nodes, but only has 1 (via I2)');
   });
 
   test('Path Requirement Logic: Mutual Trust at Degree 2 (Sufficient Paths)', () {
@@ -459,7 +462,8 @@ void main() {
     );
 
     // X is in (2 paths: Me->I1/I2->A->X and Me->I3/I4->B->X)
-    expect(tg1.distances.containsKey(x), isTrue, reason: 'X should be in with 2 paths at distance 3');
+    expect(tg1.distances.containsKey(x), isTrue,
+        reason: 'X should be in with 2 paths at distance 3');
     expect(tg1.distances[x], equals(3));
 
     // Now add Me -> I5 and I5 -> X (X is now at distance 2 via I5)
@@ -494,8 +498,11 @@ void main() {
     // X should still be in.
     // It fails the 2-path requirement at distance 2 (only has I5->X).
     // But it satisfies it at distance 3 (via A and B).
-    expect(tg2.distances.containsKey(x), isTrue, reason: 'X should still be in after adding a closer path');
-    expect(tg2.distances[x], equals(3), reason: 'X should still be at distance 3 because it fails the 2-path requirement at distance 2');
+    expect(tg2.distances.containsKey(x), isTrue,
+        reason: 'X should still be in after adding a closer path');
+    expect(tg2.distances[x], equals(3),
+        reason:
+            'X should still be at distance 3 because it fails the 2-path requirement at distance 2');
   });
 
   test('Path Requirement Logic: X at 2 degrees (1 path) and 3 degrees (1 path)', () {
@@ -574,10 +581,11 @@ void main() {
 
     // X at dist 2 (3 degrees): 1 path (I1). Req 2. Fail.
     // X at dist 3 (4 degrees): 2 paths (I1, A). Req 2. Success.
-    
+
     expect(tg.distances[i1], equals(1));
     expect(tg.distances[a], equals(2));
     expect(tg.distances.containsKey(x), isTrue, reason: 'X should be trusted at distance 3');
-    expect(tg.distances[x], equals(3), reason: 'X should be at distance 3 because it needs 2 paths');
+    expect(tg.distances[x], equals(3),
+        reason: 'X should be at distance 3 because it needs 2 paths');
   });
 }

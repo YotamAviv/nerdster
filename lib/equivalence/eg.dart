@@ -1,4 +1,3 @@
-
 class EquivalenceGroup {
   String canonical;
   Set<String> all = <String>{}; // both nominal and equivalents

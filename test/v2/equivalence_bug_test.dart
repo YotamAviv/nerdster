@@ -19,17 +19,20 @@ void main() {
 
   test('Equivalence Bug: A=>B, B=>C should resolve to A=>B=>C', () async {
     // 1. Run the bug reproduction scenario
-    final (DemoIdentityKey poser, DemoDelegateKey? poserN, List<ContentStatement> statements) = await equivalenceBugWithStatements();
+    final (DemoIdentityKey poser, DemoDelegateKey? poserN, List<ContentStatement> statements) =
+        await equivalenceBugWithStatements();
 
     // 2. Fetch Data & Build Aggregation
-    final DirectFirestoreSource<TrustStatement> trustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final DirectFirestoreSource<TrustStatement> trustSource =
+        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final TrustPipeline trustPipeline = TrustPipeline(trustSource);
     final TrustGraph graph = await trustPipeline.build(poser.id);
     final DelegateResolver delegateResolver = DelegateResolver(graph);
     final FollowNetwork followNetwork =
         reduceFollowNetwork(graph, delegateResolver, ContentResult(), kFollowContextNerdster);
 
-    final DirectFirestoreSource<ContentStatement> appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
+    final DirectFirestoreSource<ContentStatement> appSource =
+        DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
     final ContentPipeline contentPipeline = ContentPipeline(
       delegateSource: appSource,
     );
@@ -41,7 +44,8 @@ void main() {
       delegateKeysToFetch.addAll(delegateResolver.getDelegatesForIdentity(identity));
     }
 
-    final Map<DelegateKey, List<ContentStatement>> delegateContent = await contentPipeline.fetchDelegateContent(
+    final Map<DelegateKey, List<ContentStatement>> delegateContent =
+        await contentPipeline.fetchDelegateContent(
       delegateKeysToFetch,
       delegateResolver: delegateResolver,
       graph: graph,
@@ -51,7 +55,8 @@ void main() {
       delegateContent: delegateContent,
     );
 
-    final V2Labeler labeler = V2Labeler(graph, delegateResolver: delegateResolver, meIdentity: poser.id);
+    final V2Labeler labeler =
+        V2Labeler(graph, delegateResolver: delegateResolver, meIdentity: poser.id);
 
     final ContentAggregation aggregation = reduceContentAggregation(
       followNetwork,

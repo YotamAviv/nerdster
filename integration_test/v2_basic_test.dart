@@ -34,10 +34,10 @@ void main() {
     OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
 
     // Configure V2 for Emulator
-    const host = 'localhost'; 
+    const host = 'localhost';
     const oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
     const nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
-    
+
     V2Config.registerUrl(kOneofusDomain, oneofusUrl);
     V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
 
@@ -62,9 +62,24 @@ void main() {
       final List<({String name, Map<String, dynamic>? params})> permutations = [
         (name: 'Default', params: null),
         (name: 'No Optimization', params: {'omit': []}),
-        (name: 'Full Optimization', params: {'omit': ['statement', 'I']}),
-        (name: 'Omit Statement Only', params: {'omit': ['statement']}),
-        (name: 'Omit I Only', params: {'omit': ['I']}),
+        (
+          name: 'Full Optimization',
+          params: {
+            'omit': ['statement', 'I']
+          }
+        ),
+        (
+          name: 'Omit Statement Only',
+          params: {
+            'omit': ['statement']
+          }
+        ),
+        (
+          name: 'Omit I Only',
+          params: {
+            'omit': ['I']
+          }
+        ),
         (name: 'Check Previous True', params: {'checkPrevious': 'true'}),
         (name: 'Check Previous False', params: {'checkPrevious': 'false'}),
       ];
@@ -75,21 +90,22 @@ void main() {
 
         for (final p in permutations) {
           debugPrint('\n--- Testing Permutation: ${p.name} (skipVerify: $skipVerify) ---');
-          
+
           // Manually construct source to inject params
           final url = V2Config.getUrl(kOneofusDomain)!;
           final source = CloudFunctionsSource<TrustStatement>(
-            baseUrl: url, 
+            baseUrl: url,
             paramsOverride: p.params,
             verifier: OouVerifier(),
           );
-          
-          await testBasicScenario(source: source, description: '${p.name} (skipVerify: $skipVerify)');
-          
+
+          await testBasicScenario(
+              source: source, description: '${p.name} (skipVerify: $skipVerify)');
+
           debugPrint('Permutation ${p.name} Verified!');
         }
       }
-      
+
       debugPrint('All Permutations Verified!');
     } catch (e, stack) {
       debugPrint('TEST FAILED WITH ERROR: $e');

@@ -12,7 +12,7 @@ class OouSigner implements StatementSigner {
     Json publicKeyJson = await publicKey.json;
     return OouSigner._internal(keyPair, publicKeyJson);
   }
-  
+
   OouSigner._internal(this._keyPair, this._publicKeyJson);
 
   @override
@@ -22,4 +22,3 @@ class OouSigner implements StatementSigner {
     return out;
   }
 }
-

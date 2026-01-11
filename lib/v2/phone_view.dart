@@ -351,8 +351,7 @@ class ContentBox extends StatelessWidget {
                         if (aggregation.likes > 0) ...[
                           const Icon(Icons.thumb_up, color: Colors.green, size: 16),
                           const SizedBox(width: 4),
-                          Text('${aggregation.likes}',
-                              style: const TextStyle(color: Colors.white)),
+                          Text('${aggregation.likes}', style: const TextStyle(color: Colors.white)),
                           const SizedBox(width: 8),
                         ],
                         if (aggregation.dislikes > 0) ...[

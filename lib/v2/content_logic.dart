@@ -374,6 +374,7 @@ ContentAggregation reduceContentAggregation(
       if (updateMostStrings) mostStrings.process(recursiveTags);
     }
   }
+
   updateTags(canonicalSubject2group, canonicalSubject2statements, updateMostStrings: true);
 
   // Pass 4: Final flavored aggregation Map.

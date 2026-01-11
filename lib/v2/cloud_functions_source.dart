@@ -84,10 +84,10 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
         final dynamic value = entry.value;
 
         if (value is Map && value.containsKey('error')) {
-           final String msg = value['error'];
-           _errors[token] = SourceError(msg, token: token);
-           results.remove(token);
-           continue;
+          final String msg = value['error'];
+          _errors[token] = SourceError(msg, token: token);
+          results.remove(token);
+          continue;
         }
 
         final List<dynamic> statementsJson = value as List<dynamic>;

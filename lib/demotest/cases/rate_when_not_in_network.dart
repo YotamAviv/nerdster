@@ -48,8 +48,7 @@ But this works fine in the UI.
 BUG in the UI:
 Lisa doesn't see her own delegate's rating when using Bart's PoV.
 */
-Future<(DemoIdentityKey, DemoDelegateKey)>
-    rateWhenNotInNetwork() async {
+Future<(DemoIdentityKey, DemoDelegateKey)> rateWhenNotInNetwork() async {
   // 1. Run Base Demo
   await simpsonsDemo();
 
@@ -109,7 +108,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       graph: graph,
     );
     final contentResult = ContentResult(delegateContent: delegateContent);
-    
+
     // Build Follow Network (Using the fetched content to respect blocks)
     final followNetwork = reduceFollowNetwork(graph, delegateResolver, contentResult, context);
 
@@ -141,16 +140,16 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       enableCensorship: false,
     );
 
-    final subject = agg.subjects.values
-        .where((s) => s.subject['title'] == 'Superbad')
-        .firstOrNull;
+    final subject = agg.subjects.values.where((s) => s.subject['title'] == 'Superbad').firstOrNull;
 
     check(subject != null, 'Superbad found: NO (Critical Failure)');
 
     final myStatements = subject!.statements.where((s) => s.iToken == lisaN.id.value);
-    check(myStatements.isNotEmpty, 'Lisa\'s statements in feed: ${myStatements.length} (Expected: >0)');
+    check(myStatements.isNotEmpty,
+        'Lisa\'s statements in feed: ${myStatements.length} (Expected: >0)');
 
-    final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
+    final myOverlay =
+        agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
     check(myOverlay.isNotEmpty, 'Lisa\'s overlay status (Blue Star): false (Expected: true)');
   }
 
@@ -167,16 +166,15 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       enableCensorship: false,
     );
 
-    final subject = agg.subjects.values
-        .where((s) => s.subject['title'] == 'Superbad')
-        .firstOrNull;
+    final subject = agg.subjects.values.where((s) => s.subject['title'] == 'Superbad').firstOrNull;
 
     check(subject != null, 'Superbad found: NO (Critical Failure)');
 
     final lisaInFeed = subject!.statements.where((s) => s.iToken == lisaN.id.value);
     check(lisaInFeed.isNotEmpty, 'Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: >0)');
 
-    final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
+    final myOverlay =
+        agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
     check(myOverlay.isNotEmpty, 'Lisa\'s overlay status (Blue Star): false (Expected: true)');
   }
 
@@ -195,16 +193,15 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
       enableCensorship: true,
     );
 
-    final subject = agg.subjects.values
-        .where((s) => s.subject['title'] == 'Superbad')
-        .firstOrNull;
+    final subject = agg.subjects.values.where((s) => s.subject['title'] == 'Superbad').firstOrNull;
 
     check(subject != null, 'Superbad found: NO (Critical Failure)');
 
     final lisaInFeed = subject!.statements.where((s) => s.iToken == lisaN.id.value);
     check(lisaInFeed.isEmpty, 'Lisa\'s statements in feed: ${lisaInFeed.length} (Expected: 0)');
 
-    final myOverlay = agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
+    final myOverlay =
+        agg.myLiteralStatements[subject.token]?.where((s) => s.iToken == lisaN.id.value) ?? [];
     check(myOverlay.isNotEmpty, 'Lisa\'s overlay status (Blue Star): false (Expected: true)');
 
     // Verify RateDialog data availability

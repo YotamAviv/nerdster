@@ -40,7 +40,8 @@ class V2RelateDialog extends StatefulWidget {
 
     if (result != null) {
       try {
-        final writer = SourceFactory.getWriter(kNerdsterDomain, context: context, labeler: model.labeler);
+        final writer =
+            SourceFactory.getWriter(kNerdsterDomain, context: context, labeler: model.labeler);
         await writer.push(result, signInState.signer!);
         onRefresh?.call();
       } catch (e, stackTrace) {

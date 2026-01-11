@@ -156,7 +156,10 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   DemoDelegateKey seymoreN = await seymore.makeDelegate();
 
   await sideshow.delegate(margeN,
-      domain: kNerdsterDomain, revokeAt: kSinceAlways, comment: 'Karen..', export: 'sideshow-revoke-marge-delegate');
+      domain: kNerdsterDomain,
+      revokeAt: kSinceAlways,
+      comment: 'Karen..',
+      export: 'sideshow-revoke-marge-delegate');
 
   // Submit something as each delegate
   const Json brokeback = {'contentType': 'movie', 'title': "Brokeback Mountain", 'year': '2005'};

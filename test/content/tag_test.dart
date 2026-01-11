@@ -1,7 +1,7 @@
 import 'package:nerdster/content/tag.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-// From 
+// From
 // Letter after #: Use [a-zA-Z] to ensure the first character is a letter.
 // Allow hyphens/underscores: Use (?:[\-_][\w]+)* to allow optional groups of hyphen/underscore followed by word characters.
 // Standalone hashtags: Use \B (non-word boundary before #) and \b (word boundary after hashtag) to reject embedded hashtags.
@@ -25,7 +25,6 @@ void main() async {
     expect(extractTags('#tag123'), <String>{'#tag123'});
     expect(extractTags('#my-tag'), <String>{'#my-tag'});
     expect(extractTags('#my_new_tag'), <String>{'#my_new_tag'});
-    
 
     expect(extractTags('comment #@34'), <String>{});
     expect(extractTags('comment #word'), {'#word'});

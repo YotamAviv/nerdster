@@ -18,13 +18,11 @@ class KeyStore {
   static const _encoder = Jsonish.encoder;
   static const OouCryptoFactory _crypto = CryptoFactoryEd25519();
 
-  static Future<void> storeKeys(
-      OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair) async {
-    await _storage.write(key: kOneofusDomain,
-        value: _encoder.convert(await oneofusPublicKey.json));
+  static Future<void> storeKeys(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair) async {
+    await _storage.write(key: kOneofusDomain, value: _encoder.convert(await oneofusPublicKey.json));
     if (b(nerdsterKeyPair)) {
-        await _storage.write(key: kNerdsterDomain,
-            value: _encoder.convert(await nerdsterKeyPair!.json));
+      await _storage.write(
+          key: kNerdsterDomain, value: _encoder.convert(await nerdsterKeyPair!.json));
     }
   }
 

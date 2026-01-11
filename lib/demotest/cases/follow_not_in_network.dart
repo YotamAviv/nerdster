@@ -23,8 +23,7 @@ import 'package:nerdster/demotest/test_util.dart';
 // 4. Lisa follows Bart for 'family'.
 // 5. Verify that Lisa's follow of Bart is available in myLiteralStatements even if Bart is not a "subject" in the aggregation.
 
-Future<(DemoIdentityKey, DemoDelegateKey)>
-    followNotInNetwork() async {
+Future<(DemoIdentityKey, DemoDelegateKey)> followNotInNetwork() async {
   // 1. Run Base Demo
   await simpsonsDemo();
 
@@ -97,21 +96,25 @@ Future<(DemoIdentityKey, DemoDelegateKey)>
 
   {
     const String context = 'nerdster';
-    final agg = await runPipeline(pov: bart.id, meIdentity: lisa.id, meDelegate: lisaN.id, context: context);
-    
+    final agg = await runPipeline(
+        pov: bart.id, meIdentity: lisa.id, meDelegate: lisaN.id, context: context);
+
     final bartKey = ContentKey(bart.id.value);
-    
+
     // Verify Bart is in myLiteralStatements
     final myStmts = agg.myLiteralStatements[bartKey];
     check(myStmts != null && myStmts.isNotEmpty, 'Bart NOT found in Lisa\'s myLiteralStatements');
 
-    final hasFollow = myStmts!.any((s) => s.verb == ContentVerb.follow && s.contexts?.containsKey('family') == true);
-    check(hasFollow, 'Lisa\'s follow of Bart for family in myLiteralStatements: false (Expected: true)');
+    final hasFollow = myStmts!
+        .any((s) => s.verb == ContentVerb.follow && s.contexts?.containsKey('family') == true);
+    check(hasFollow,
+        'Lisa\'s follow of Bart for family in myLiteralStatements: false (Expected: true)');
 
     // Verify if Bart is a "subject" in the aggregation
     // If he's not rated/related, he might NOT be a subject.
     final bartAsSubject = agg.subjects[bartKey];
-    check(bartAsSubject == null, 'Bart was found as subject in aggregation (Expected: null because he is blocked by Bart in nerdster context)');
+    check(bartAsSubject == null,
+        'Bart was found as subject in aggregation (Expected: null because he is blocked by Bart in nerdster context)');
   }
 
   return (lisa, lisaN);

@@ -26,7 +26,7 @@ void main() {
   test('Simpsons Follow Network (V2)', () async {
     await simpsons();
     final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
-    
+
     // 1. Build TrustGraph (Identity Layer)
     final Map<IdentityKey, List<TrustStatement>> allTrustStatements = {};
     for (final DemoIdentityKey dk in DemoIdentityKey.all) {
@@ -39,7 +39,7 @@ void main() {
     );
 
     expect(trustGraph.isTrusted(bart.id), true);
-    
+
     final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
 
     // 2. Build FollowNetwork for <nerdster> context
@@ -55,15 +55,15 @@ void main() {
     // Bart should be in the network
     expect(followNet.contains(bart.id), true);
     expect(followNet.povIdentity, bart.id);
-    
+
     // Check some other Simpsons
     final DemoIdentityKey homer = DemoIdentityKey.findByName('homer')!;
     final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
-    
+
     expect(followNet.contains(trustGraph.resolveIdentity(homer.id)), true);
     // Lisa is blocked in <nerdster> context by Bart
     expect(followNet.contains(trustGraph.resolveIdentity(lisa.id)), false);
-    
+
     // Check order (discovery order)
     expect(followNet.identities.indexOf(bart.id), 0);
     expect(followNet.identities.indexOf(trustGraph.resolveIdentity(homer.id)), greaterThan(0));
@@ -71,7 +71,7 @@ void main() {
 
   test('Simpsons Demo: Multi-POV Content Verification', () async {
     await simpsons();
-    
+
     final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
     final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
     final DemoIdentityKey homer = DemoIdentityKey.findByName('homer')!;
@@ -85,29 +85,39 @@ void main() {
     final ContentResult allContentStatements = buildContentResult(DemoDelegateKey.all);
 
     final DemoDelegateKey margeN = DemoDelegateKey.findByName('marge-nerdster0')!;
-    final ContentStatement margeRating = margeN.contentStatements.firstWhere((ContentStatement s) => s.verb == ContentVerb.rate);
+    final ContentStatement margeRating =
+        margeN.contentStatements.firstWhere((ContentStatement s) => s.verb == ContentVerb.rate);
 
     // --- LISA'S POV ---
     final TrustGraph trustLisa = reduceTrustGraph(TrustGraph(pov: lisa.id), allTrustStatements);
     final DelegateResolver delegatesLisa = DelegateResolver(trustLisa);
-    
-    final FollowNetwork followLisa = reduceFollowNetwork(trustLisa, delegatesLisa, allContentStatements, kFollowContextNerdster);
+
+    final FollowNetwork followLisa =
+        reduceFollowNetwork(trustLisa, delegatesLisa, allContentStatements, kFollowContextNerdster);
     final ContentAggregation contentLisa = reduceContentAggregation(
         followLisa, trustLisa, delegatesLisa, allContentStatements,
         labeler: V2Labeler(trustLisa, delegateResolver: delegatesLisa));
 
     // Lisa should see content from Marge and Homer2
-    expect(followLisa.contains(trustLisa.resolveIdentity(marge.id)), true, reason: 'Lisa should follow Marge');
-    expect(followLisa.contains(trustLisa.resolveIdentity(homer.id)), true, reason: 'Lisa should follow Homer (Homer2)');
-    
+    expect(followLisa.contains(trustLisa.resolveIdentity(marge.id)), true,
+        reason: 'Lisa should follow Marge');
+    expect(followLisa.contains(trustLisa.resolveIdentity(homer.id)), true,
+        reason: 'Lisa should follow Homer (Homer2)');
+
     // Check if Marge's content is there (MargeN signed it)
-    expect(contentLisa.subjects.values.any((SubjectAggregation s) => s.canonical == ContentKey(margeRating.subjectToken!)), true, reason: "Lisa should see Marge's content");
+    expect(
+        contentLisa.subjects.values
+            .any((SubjectAggregation s) => s.canonical == ContentKey(margeRating.subjectToken!)),
+        true,
+        reason: "Lisa should see Marge's content");
 
     // --- BART'S POV ---
     final TrustGraph trustBart = reduceTrustGraph(TrustGraph(pov: bart.id), allTrustStatements);
     final DelegateResolver delegatesBart = DelegateResolver(trustBart);
-    final FollowNetwork followBart = reduceFollowNetwork(trustBart, delegatesBart, allContentStatements, kFollowContextNerdster);
-    final ContentAggregation contentBart = reduceContentAggregation(followBart, trustBart, delegatesBart, allContentStatements,
+    final FollowNetwork followBart =
+        reduceFollowNetwork(trustBart, delegatesBart, allContentStatements, kFollowContextNerdster);
+    final ContentAggregation contentBart = reduceContentAggregation(
+        followBart, trustBart, delegatesBart, allContentStatements,
         labeler: V2Labeler(trustBart, delegateResolver: delegatesBart));
 
     // Bart blocks Lisa in <nerdster> context in simpsons.dart
@@ -115,21 +125,22 @@ void main() {
         reason: 'Bart blocks Lisa');
 
     // --- HOMER'S POV (Homer2) ---
-    final TrustGraph trustHomer =
-        reduceTrustGraph(TrustGraph(pov: homer2.id), allTrustStatements);
+    final TrustGraph trustHomer = reduceTrustGraph(TrustGraph(pov: homer2.id), allTrustStatements);
     final DelegateResolver delegatesHomer = DelegateResolver(trustHomer);
     final FollowNetwork followHomer = reduceFollowNetwork(
         trustHomer, delegatesHomer, allContentStatements, kFollowContextNerdster);
-    final ContentAggregation contentHomer = reduceContentAggregation(followHomer, trustHomer, delegatesHomer, allContentStatements,
+    final ContentAggregation contentHomer = reduceContentAggregation(
+        followHomer, trustHomer, delegatesHomer, allContentStatements,
         labeler: V2Labeler(trustHomer, delegateResolver: delegatesHomer));
 
-    expect(followHomer.contains(trustHomer.resolveIdentity(lisa.id)), true, reason: 'Homer2 should follow Lisa');
+    expect(followHomer.contains(trustHomer.resolveIdentity(lisa.id)), true,
+        reason: 'Homer2 should follow Lisa');
   });
 
   test('Custom Context Filtering (V2)', () async {
     await simpsons();
     final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
-    
+
     final Map<IdentityKey, List<TrustStatement>> allTrustStatements = {};
     for (final DemoIdentityKey dk in DemoIdentityKey.all) {
       allTrustStatements[dk.id] = dk.trustStatements;
@@ -159,7 +170,7 @@ void main() {
 
     expect(familyNet.contains(bart.id), true);
     expect(familyNet.povIdentity, bart.id);
-    
+
     expect(familyNet.contains(trustGraph.resolveIdentity(homer.id)), true);
     expect(familyNet.contains(trustGraph.resolveIdentity(marge.id)), true);
     expect(familyNet.contains(trustGraph.resolveIdentity(lisa.id)), true);
@@ -202,7 +213,8 @@ void main() {
     // Lisa also censors spam
     await lisaN.doRate(subject: spam, censor: true);
 
-    final ContentResult allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    final ContentResult allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
     final FollowNetwork followNet = reduceFollowNetwork(
       graph,
@@ -257,16 +269,21 @@ void main() {
     // Homer follows Bart and Lisa
     await homerN.doFollow(bart.id, <String, dynamic>{'news': 1});
     await homerN.doFollow(lisa.id, <String, dynamic>{'news': 1});
-    
-    ContentResult allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
-    final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, 'news');
+    ContentResult allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+
+    final FollowNetwork network =
+        reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, 'news');
 
     // 1. Bart rates a spam URL
-    final Map<String, dynamic> spamMap = <String, dynamic>{'contentType': 'url', 'url': 'https://spam.com'};
+    final Map<String, dynamic> spamMap = <String, dynamic>{
+      'contentType': 'url',
+      'url': 'https://spam.com'
+    };
     final ContentKey spamKey = ContentKey(getToken(spamMap));
     final ContentStatement spamRate = await bartN.doRate(subject: spamMap, recommend: true);
-    
+
     // 2. Lisa censors Bart's rating statement
     await lisaN.doRate(subject: spamRate.token, censor: true);
 
@@ -274,7 +291,8 @@ void main() {
     final ContentStatement homerRate = await homerN.doRate(subject: spamMap, recommend: true);
 
     // Rebuild map to include new statements
-    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
@@ -288,16 +306,18 @@ void main() {
     // But the URL itself was NOT censored, so Homer's rating should remain.
     expect(aggregation.censored, contains(ContentKey(spamRate.token)));
     expect(aggregation.censored, isNot(contains(spamKey)));
-    
-    final Set<String> remainingTokens = aggregation.statements.map((ContentStatement s) => s.token).toSet();
+
+    final Set<String> remainingTokens =
+        aggregation.statements.map((ContentStatement s) => s.token).toSet();
     expect(remainingTokens, contains(homerRate.token));
     expect(remainingTokens, isNot(contains(spamRate.token)));
 
     // 4. Now Bart censors the URL itself
     final ContentStatement bartCensorship = await bartN.doRate(subject: spamMap, censor: true);
-    
+
     // Rebuild map again
-    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
     final ContentAggregation aggregation2 = reduceContentAggregation(
       network,
@@ -311,7 +331,8 @@ void main() {
     await lisaN.doRate(subject: bartCensorship.token, censor: true);
 
     // Rebuild map again
-    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
     final ContentAggregation aggregation3 = reduceContentAggregation(
       network,
@@ -358,11 +379,15 @@ void main() {
     await homerN.doFollow(bart.id, <String, dynamic>{newsContext: 1});
 
     // Bart's delegate signs a content statement
-    final Map<String, dynamic> newsMap = <String, dynamic>{'contentType': 'url', 'url': 'https://news.com/1'};
+    final Map<String, dynamic> newsMap = <String, dynamic>{
+      'contentType': 'url',
+      'url': 'https://news.com/1'
+    };
     final String newsToken = getToken(newsMap);
     await bartDelegate.doRate(subject: newsMap, recommend: true);
 
-    final ContentResult allStatementsByToken = buildContentResult([homer, homerN, bart, bartDelegate].where((DemoKey k) => k.isDelegate));
+    final ContentResult allStatementsByToken =
+        buildContentResult([homer, homerN, bart, bartDelegate].where((DemoKey k) => k.isDelegate));
 
     final FollowNetwork network = reduceFollowNetwork(
       graph,
@@ -374,7 +399,7 @@ void main() {
     // Homer should follow Bart
     expect(network.identities, contains(bart.id));
     expect(network.povIdentity, homer.id);
-    
+
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
       graph,
@@ -410,16 +435,21 @@ void main() {
     // Homer follows Bart and Lisa
     await homerN.doFollow(bart.id, <String, dynamic>{'news': 1});
     await homerN.doFollow(lisa.id, <String, dynamic>{'news': 1});
-    
-    ContentResult allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
-    final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, 'news');
+    ContentResult allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+
+    final FollowNetwork network =
+        reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, 'news');
 
     // 1. Bart rates a spam URL
-    final Map<String, dynamic> spamMap = <String, dynamic>{'contentType': 'url', 'url': 'https://spam.com'};
+    final Map<String, dynamic> spamMap = <String, dynamic>{
+      'contentType': 'url',
+      'url': 'https://spam.com'
+    };
     final ContentKey spamKey = ContentKey(getToken(spamMap));
     final ContentStatement spamRate = await bartN.doRate(subject: spamMap, recommend: true);
-    
+
     // 2. Lisa censors Bart's rating statement
     await lisaN.doRate(subject: spamRate.token, censor: true);
 
@@ -427,7 +457,8 @@ void main() {
     final ContentStatement homerRate = await homerN.doRate(subject: spamMap, recommend: true);
 
     // Rebuild map
-    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
@@ -440,16 +471,18 @@ void main() {
     // Lisa censored Bart's statement, so Bart's rating should be gone.
     expect(aggregation.censored, contains(ContentKey(spamRate.token)));
     expect(aggregation.censored, isNot(contains(spamKey)));
-    
-    final Set<String> remainingTokens = aggregation.statements.map((ContentStatement s) => s.token).toSet();
+
+    final Set<String> remainingTokens =
+        aggregation.statements.map((ContentStatement s) => s.token).toSet();
     expect(remainingTokens, contains(homerRate.token));
     expect(remainingTokens, isNot(contains(spamRate.token)));
 
     // 4. Now Bart censors the URL itself
     final ContentStatement bartCensorship = await bartN.doRate(subject: spamMap, censor: true);
-    
+
     // Rebuild map
-    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
     final ContentAggregation aggregation2 = reduceContentAggregation(
       network,
@@ -466,7 +499,8 @@ void main() {
     await lisaN.doRate(subject: bartCensorship.token, censor: true);
 
     // Rebuild map
-    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
     final ContentAggregation aggregation3 = reduceContentAggregation(
       network,
@@ -507,24 +541,38 @@ void main() {
     await homerN.doFollow(bart.id, <String, dynamic>{newsContext: 1});
     await homerN.doFollow(lisa.id, <String, dynamic>{newsContext: 1});
 
-    ContentResult allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    ContentResult allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
-    final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, newsContext);
+    final FollowNetwork network =
+        reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, newsContext);
 
-    final Map<String, dynamic> subject1 = <String, dynamic>{'contentType': 'url', 'url': 'https://news.com/1'};
-    final Map<String, dynamic> subject2 = <String, dynamic>{'contentType': 'url', 'url': 'https://news.com/2'};
-    final Map<String, dynamic> subject3 = <String, dynamic>{'contentType': 'url', 'url': 'https://news.com/3'};
+    final Map<String, dynamic> subject1 = <String, dynamic>{
+      'contentType': 'url',
+      'url': 'https://news.com/1'
+    };
+    final Map<String, dynamic> subject2 = <String, dynamic>{
+      'contentType': 'url',
+      'url': 'https://news.com/2'
+    };
+    final Map<String, dynamic> subject3 = <String, dynamic>{
+      'contentType': 'url',
+      'url': 'https://news.com/3'
+    };
 
     // 1. Bart equates 1 and 2
-    final ContentStatement equate12 = await bartN.doRelate(ContentVerb.equate, subject: subject1, other: subject2);
+    final ContentStatement equate12 =
+        await bartN.doRelate(ContentVerb.equate, subject: subject1, other: subject2);
     // 2. Bart relates 1 and 3
-    final ContentStatement relate13 = await bartN.doRelate(ContentVerb.relate, subject: subject1, other: subject3);
+    final ContentStatement relate13 =
+        await bartN.doRelate(ContentVerb.relate, subject: subject1, other: subject3);
 
     // 3. Lisa censors subject 2
     await lisaN.doRate(subject: subject2, censor: true);
 
     // Rebuild map
-    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
@@ -544,7 +592,8 @@ void main() {
     await lisaN.doRate(subject: relate13.token, censor: true);
 
     // Rebuild map
-    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
+    allStatementsByToken = buildContentResult(
+        [homer, homerN, bart, bartN, lisa, lisaN].where((DemoKey k) => k.isDelegate));
 
     final ContentAggregation aggregation2 = reduceContentAggregation(
       network,
@@ -576,17 +625,23 @@ void main() {
     const String newsContext = 'news-context';
     await homerN.doFollow(bart.id, <String, dynamic>{newsContext: 1});
 
-    ContentResult allStatementsByToken = buildContentResult([homer, homerN, bart, bartN].where((DemoKey k) => k.isDelegate));
+    ContentResult allStatementsByToken =
+        buildContentResult([homer, homerN, bart, bartN].where((DemoKey k) => k.isDelegate));
 
-    final FollowNetwork network = reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, newsContext);
+    final FollowNetwork network =
+        reduceFollowNetwork(graph, delegateResolver, allStatementsByToken, newsContext);
 
-    final Map<String, dynamic> subject1 = <String, dynamic>{'contentType': 'url', 'url': 'https://news.com/1', 'title': 'News 1'};
+    final Map<String, dynamic> subject1 = <String, dynamic>{
+      'contentType': 'url',
+      'url': 'https://news.com/1',
+      'title': 'News 1'
+    };
     final String sToken = getToken(subject1);
     final String subject2 = sToken; // Use the actual token
 
     // 1. Bart rates subject1 with a tag
     await bartN.doRate(subject: subject1, recommend: true, comment: 'Great! #news');
-    
+
     // 2. Homer rates subject2 (token only)
     await homerN.doRate(subject: subject2, recommend: true);
 
@@ -594,7 +649,8 @@ void main() {
     await homerN.doRate(subject: subject1, dismiss: true);
 
     // Rebuild map
-    allStatementsByToken = buildContentResult([homer, homerN, bart, bartN].where((DemoKey k) => k.isDelegate));
+    allStatementsByToken =
+        buildContentResult([homer, homerN, bart, bartN].where((DemoKey k) => k.isDelegate));
 
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
@@ -606,14 +662,14 @@ void main() {
 
     expect(aggregation.subjects.containsKey(ContentKey(sToken)), isTrue);
     expect(network.povIdentity, homer.id);
-    
+
     final SubjectAggregation agg = aggregation.subjects[ContentKey(sToken)]!;
     // Homer's dismissal overwrites his previous like because they are the same subject (token vs map)
-    expect(agg.likes, equals(1)); 
+    expect(agg.likes, equals(1));
     expect(agg.tags, contains('#news'));
     expect(agg.isDismissed, isTrue); // Dismissed by Homer (POV)
     expect(agg.statements.length, equals(2));
-    
+
     // Verify bestSubject (should be the JSON, not the token string)
     expect(agg.subject, isA<Map>());
     expect((agg.subject as Map)['title'], equals('News 1'));
@@ -621,8 +677,9 @@ void main() {
 }
 
 ContentResult buildContentResult(Iterable<DemoKey> keys) {
-  final Map<DelegateKey, List<ContentStatement>> delegateContent = <DelegateKey, List<ContentStatement>>{};
-  
+  final Map<DelegateKey, List<ContentStatement>> delegateContent =
+      <DelegateKey, List<ContentStatement>>{};
+
   for (final DemoKey k in keys) {
     if (k is DemoDelegateKey) {
       delegateContent[k.id] = k.contentStatements;

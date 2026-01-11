@@ -46,7 +46,7 @@ class ContentPipeline {
 
       delegateContent[DelegateKey(keyStr)] = UnmodifiableListView(rawDelegateContent[keyStr]!);
     }
-    
+
     return delegateContent;
   }
 }

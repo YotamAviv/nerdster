@@ -28,8 +28,8 @@ int _testSubjectCount = 0;
 int _mockKeyCounter = 0;
 
 /// Generates a mock key (Json map) for testing.
-/// 
-/// If [label] is provided, uses it as the value. 
+///
+/// If [label] is provided, uses it as the value.
 /// Otherwise, generates a unique value using a counter.
 Json mockKey([String? label]) {
   _mockKeyCounter++;
@@ -37,7 +37,7 @@ Json mockKey([String? label]) {
 }
 
 /// Creates a valid subject Map for testing.
-/// 
+///
 /// Ensures strict adherence to Subject Integrity rules:
 /// - Must have 'contentType'
 /// - Must have 'title'
@@ -54,7 +54,7 @@ Map<String, dynamic> createTestSubject({
   _testSubjectCount++;
   final String effectiveTitle = title ?? 'Test Title $_testSubjectCount';
   final String effectiveUrl = url ?? 'https://bogus.com/$_testSubjectCount';
-  
+
   final Map<String, dynamic> subject = {
     'contentType': type.name,
     'title': effectiveTitle,
@@ -84,7 +84,7 @@ Map<String, dynamic> createTestSubject({
       subject['time'] = '2022-01-01T12:00:00Z';
       break;
   }
-  
+
   return subject;
 }
 

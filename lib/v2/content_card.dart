@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/oneofus/statement.dart';import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/oneofus/statement.dart';
+import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/content/content_statement.dart';
@@ -79,7 +80,7 @@ class _ContentCardState extends State<ContentCard> {
     // Lookup using ContentKey. This is now dense and literal-subject aware.
     final agg = widget.model.aggregation.subjects[token];
     if (agg == null) return;
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -161,8 +162,7 @@ class _ContentCardState extends State<ContentCard> {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
                                     color: Colors.grey[300],
-                                    child: const Icon(Icons.image_not_supported,
-                                        size: 20),
+                                    child: const Icon(Icons.image_not_supported, size: 20),
                                   );
                                 },
                               );
@@ -174,8 +174,7 @@ class _ContentCardState extends State<ContentCard> {
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
                                 color: Colors.grey[300],
-                                child:
-                                    const Icon(Icons.image_not_supported, size: 20),
+                                child: const Icon(Icons.image_not_supported, size: 20),
                               );
                             },
                           ),
@@ -354,16 +353,16 @@ class _ContentCardState extends State<ContentCard> {
               : widget.model.labeler.getLabel(subject.toString());
           tokenToTitle[subjectKey] = title;
         }
-        
+
         // Check Other
         if (s.other != null) {
-           final otherKey = ContentKey(getToken(s.other));
-           if (equivalentTokens.contains(otherKey)) {
-             final other = s.other;
-             assert(other is Map);
-             final title = other['title'];
-             tokenToTitle[otherKey] = title;
-           }
+          final otherKey = ContentKey(getToken(s.other));
+          if (equivalentTokens.contains(otherKey)) {
+            final other = s.other;
+            assert(other is Map);
+            final title = other['title'];
+            tokenToTitle[otherKey] = title;
+          }
         }
       }
 
@@ -394,8 +393,8 @@ class _ContentCardState extends State<ContentCard> {
 
     // 2. Related
     final relatedTokens = widget.aggregation.related
-        .where((token) =>
-            widget.model.aggregation.equivalence[token] != widget.aggregation.canonical)
+        .where(
+            (token) => widget.model.aggregation.equivalence[token] != widget.aggregation.canonical)
         .toList();
 
     for (final token in relatedTokens) {
@@ -613,7 +612,8 @@ class SubjectDetailsView extends StatelessWidget {
       onTagTap: onTagTap,
     ));
 
-    final canonicalToken = model.aggregation.equivalence[ContentKey(s.token)] ?? ContentKey(s.token);
+    final canonicalToken =
+        model.aggregation.equivalence[ContentKey(s.token)] ?? ContentKey(s.token);
     final replies = [
       ...aggregation.statements.where((other) => other.subjectToken == s.token),
       ...(model.aggregation.subjects[canonicalToken]?.statements ?? []),

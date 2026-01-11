@@ -42,7 +42,10 @@ class Lgtm {
 - Sign the statemet below using its delegate key (which you signed using your identity key)
 - Publish it at: ${uri.toString()}'''),
                         SizedBox(
-                            height: 300, child: V2JsonDisplay(json, interpret: ValueNotifier(true), interpreter: V2Interpreter(labeler))),
+                            height: 300,
+                            child: V2JsonDisplay(json,
+                                interpret: ValueNotifier(true),
+                                interpreter: V2Interpreter(labeler))),
                         const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

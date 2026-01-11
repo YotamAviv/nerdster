@@ -10,7 +10,8 @@ class TrustPipeline {
   final int maxDegrees;
   final PathRequirement? pathRequirement;
 
-  TrustPipeline(this.source, {
+  TrustPipeline(
+    this.source, {
     this.maxDegrees = 6,
     this.pathRequirement,
   });
@@ -48,7 +49,7 @@ class TrustPipeline {
 
       final newStatementsMap = await source.fetch(fetchMap);
       visited.addAll(keysToFetch);
-      
+
       // Convert String keys to IdentityKey
       for (var entry in newStatementsMap.entries) {
         statementsByIssuer[IdentityKey(entry.key)] = entry.value;
@@ -64,12 +65,12 @@ class TrustPipeline {
       // We re-run the reducer on the accumulated history.
       // The reducer is "Strictly Greedy": it processes the graph layer-by-layer.
       // Within each layer, it processes Blocks and Replaces before Trusts.
-      // This ensures that same-distance replacements are handled, but "deep" 
+      // This ensures that same-distance replacements are handled, but "deep"
       // nodes cannot constrain "shallow" nodes.
       final pr = pathRequirement ?? defaultPathRequirement;
       graph = reduceTrustGraph(
-        graph, 
-        statementsByIssuer, 
+        graph,
+        statementsByIssuer,
         pathRequirement: pr,
         maxDegrees: maxDegrees,
       );

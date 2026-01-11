@@ -65,8 +65,7 @@ class CredentialsDisplay extends StatelessWidget {
                 ),
                 if (showDontShow)
                   Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                    MyCheckbox(
-                        Setting.get<bool>(SettingType.skipCredentials).notifier,
+                    MyCheckbox(Setting.get<bool>(SettingType.skipCredentials).notifier,
                         "Don't show again"),
                     const SizedBox(width: 8),
                     Container(
@@ -88,7 +87,6 @@ class CredentialsDisplay extends StatelessWidget {
         });
   }
 }
-
 
 class CredentialsWatcher extends StatefulWidget {
   final Widget child;
@@ -141,8 +139,7 @@ class _CredentialsWatcherState extends State<CredentialsWatcher> {
         closeIconColor: Colors.black,
         content: DefaultTextStyle(
             style: const TextStyle(color: Colors.black),
-            child: CredentialsDisplay(
-                signInState.identityJson, signInState.delegatePublicKeyJson)),
+            child: CredentialsDisplay(signInState.identityJson, signInState.delegatePublicKeyJson)),
         duration: const Duration(seconds: 5),
         showCloseIcon: false,
         behavior: SnackBarBehavior.floating,
@@ -157,4 +154,3 @@ class _CredentialsWatcherState extends State<CredentialsWatcher> {
     return widget.child;
   }
 }
-

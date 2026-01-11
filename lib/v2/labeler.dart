@@ -31,10 +31,10 @@ class V2Labeler {
 
   // Maps IdentityKeys (canonical or historical) to their display name
   final Map<IdentityKey, String> _identityToName = {};
-  
+
   // Maps Canonical IdentityKeys to all proposed names (for debugging/details)
   final Map<IdentityKey, Set<String>> _identityToAllNames = {};
-  
+
   final Set<String> _usedNames = {};
 
   V2Labeler(this.graph, {this.delegateResolver, this.meIdentity}) {
@@ -50,14 +50,10 @@ class V2Labeler {
         // We need an IdentityKey for the subject.
         // Assuming statement.subjectToken works here, resolve it.
         final subjectIdentity = graph.resolveIdentity(IdentityKey(statement.subjectToken));
-        incomingByIdentity
-            .putIfAbsent(subjectIdentity, () => [])
-            .add(statement);
+        incomingByIdentity.putIfAbsent(subjectIdentity, () => []).add(statement);
 
         if (statement.moniker != null) {
-          _identityToAllNames
-              .putIfAbsent(subjectIdentity, () => {})
-              .add(statement.moniker!);
+          _identityToAllNames.putIfAbsent(subjectIdentity, () => {}).add(statement.moniker!);
         }
       }
     }
@@ -68,16 +64,16 @@ class V2Labeler {
       if (_identityToName.containsKey(token)) continue;
 
       final identity = graph.resolveIdentity(token);
-      
+
       String baseName;
-      
+
       if (_identityToName.containsKey(identity)) {
         // This identity already has a base name assigned (e.g., from a previous key).
         baseName = _identityToName[identity]!;
       } else {
         // Determine the best base name for this identity from the context of its issuers.
         final statements = incomingByIdentity[identity] ?? [];
-        
+
         // Sort statements by issuer distance to prioritize monikers from closer (more trusted) peers.
         statements.sort((a, b) {
           // distances key is IdentityKey
@@ -93,13 +89,12 @@ class V2Labeler {
             break;
           }
         }
-        
+
         // Fallback for the pov identity if no one has vouched for it yet.
         if (bestMoniker == null) {
           if (token == graph.pov) {
             if (meIdentity != null &&
-                graph.resolveIdentity(token) ==
-                    graph.resolveIdentity(meIdentity!)) {
+                graph.resolveIdentity(token) == graph.resolveIdentity(meIdentity!)) {
               bestMoniker = "Me";
             } else {
               // Use their moniker from Jsonish or the token itself
@@ -117,7 +112,7 @@ class V2Labeler {
         _identityToName[identity] = baseName;
         _usedNames.add(baseName);
       }
-      
+
       // 3. Name the specific token.
       // If this is an old/replaced key, append prime notation (e.g., Bob').
       if (token != identity) {
@@ -166,11 +161,12 @@ class V2Labeler {
       if (identity != null) {
         final identityLabel = getIdentityLabel(identity);
         final domain = delegateResolver!.getDomainForDelegate(key);
-        
+
         // Handle multiple delegates for the same identity and domain
         final allDelegates = delegateResolver!.getDelegatesForIdentity(identity);
-        final domainDelegates = allDelegates.where((d) => delegateResolver!.getDomainForDelegate(d) == domain).toList();
-        
+        final domainDelegates =
+            allDelegates.where((d) => delegateResolver!.getDomainForDelegate(d) == domain).toList();
+
         final index = domainDelegates.indexOf(key);
         if (index > 0) {
           return "$identityLabel@$domain (${index + 1})";
@@ -226,8 +222,6 @@ class V2Labeler {
   /// Returns all shortest paths from the pov to [token] as human-readable strings.
   List<String> getLabeledPaths(IdentityKey token) {
     final paths = graph.getPathsTo(token);
-    return paths
-        .map((path) => path.map((t) => getIdentityLabel(t)).join(' -> '))
-        .toList();
+    return paths.map((path) => path.map((t) => getIdentityLabel(t)).join(' -> ')).toList();
   }
 }

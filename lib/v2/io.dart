@@ -22,5 +22,3 @@ abstract class StatementWriter {
   /// Returns the created Statement.
   Future<Statement> push(Json json, StatementSigner signer);
 }
-
-

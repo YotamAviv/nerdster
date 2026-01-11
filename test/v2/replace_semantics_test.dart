@@ -32,7 +32,7 @@ void main() {
 
     // Bob has a statement with token 'bob-token'
     final sBob = await bob.doTrust(TrustVerb.trust, alice, moniker: 'alice');
-    
+
     // aliceNew replaces alice, but mistakenly uses Bob's token as revokeAt
     final sReplace = await aliceNew.doTrust(TrustVerb.replace, alice, revokeAt: sBob.token);
 
@@ -45,13 +45,13 @@ void main() {
     );
 
     expect(tg.replacementConstraints[alice.id], equals(sBob.token));
-    
+
     // Now check if it actually revokes since always because the issuer doesn't match
     // We can't easily check the internal resolveReplacementLimit result without more setup,
     // but we can check if statements from 'alice' are filtered out.
-    
+
     final sAlice = await alice.doTrust(TrustVerb.trust, bob, moniker: 'bob');
-    
+
     final tg2 = reduceTrustGraph(
       TrustGraph(pov: aliceNew.id),
       {
@@ -62,7 +62,7 @@ void main() {
     );
 
     // If it worked, sAlice should be filtered out because revokeAt was invalid (wrong issuer) -> <since always>
-    expect(tg2.distances.containsKey(bob.id), isFalse, 
-      reason: 'Bob should not be trusted via Alice because Alice is revoked since always');
+    expect(tg2.distances.containsKey(bob.id), isFalse,
+        reason: 'Bob should not be trusted via Alice because Alice is revoked since always');
   });
 }

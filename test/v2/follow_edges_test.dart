@@ -51,11 +51,7 @@ void main() {
 
       final TrustGraph trustGraph = TrustGraph(
         pov: pov,
-        distances: {
-          pov: 0,
-          alice: 1,
-          bob: 2
-        },
+        distances: {pov: 0, alice: 1, bob: 2},
         orderedKeys: [pov, alice, bob],
         edges: {
           pov: [d1, t1],

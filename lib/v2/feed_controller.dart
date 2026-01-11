@@ -86,7 +86,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
   V2SortMode get sortMode {
     final val = Setting.get(SettingType.sort).value as String;
-    return V2SortMode.values.firstWhere((e) => e.name == val, orElse: () => V2SortMode.recentActivity);
+    return V2SortMode.values
+        .firstWhere((e) => e.name == val, orElse: () => V2SortMode.recentActivity);
   }
 
   set sortMode(V2SortMode mode) {
@@ -189,9 +190,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       if (s.token != s.canonical) return false;
 
       return shouldShow(s, mode, censorshipEnabled,
-          tagFilter: tagFilter,
-          tagEquivalence: aggregation.tagEquivalence,
-          typeFilter: typeFilter);
+          tagFilter: tagFilter, tagEquivalence: aggregation.tagEquivalence, typeFilter: typeFilter);
     }).toList();
 
     sortSubjects(results);
@@ -406,8 +405,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         progress.value = 0.9;
 
         // 6. Labeling
-        final labeler = V2Labeler(graph,
-            delegateResolver: delegateResolver, meIdentity: currentMeIdentity);
+        final labeler =
+            V2Labeler(graph, delegateResolver: delegateResolver, meIdentity: currentMeIdentity);
 
         final aggregation = reduceContentAggregation(
           followNetwork,

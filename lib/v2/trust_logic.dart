@@ -13,18 +13,19 @@ final Map<String, String> pathsReq = {
 
 typedef PathRequirement = int Function(int distance);
 
-List<List<IdentityKey>> _findNodeDisjointPaths(IdentityKey root, IdentityKey target, Map<IdentityKey, Set<IdentityKey>> graph, int limit) {
+List<List<IdentityKey>> _findNodeDisjointPaths(
+    IdentityKey root, IdentityKey target, Map<IdentityKey, Set<IdentityKey>> graph, int limit) {
   final List<List<IdentityKey>> paths = [];
   final Set<IdentityKey> excludedNodes = {};
-  final Set<String> usedPathStrings = {}; 
+  final Set<String> usedPathStrings = {};
 
   while (paths.length < limit) {
     final path = _findShortestPath(root, target, graph, excludedNodes);
     if (path == null) break;
-    
+
     final pathString = path.map((k) => k.value).join('->');
     if (usedPathStrings.contains(pathString)) break;
-    
+
     paths.add(path);
     usedPathStrings.add(pathString);
 
@@ -36,7 +37,8 @@ List<List<IdentityKey>> _findNodeDisjointPaths(IdentityKey root, IdentityKey tar
   return paths;
 }
 
-List<IdentityKey>? _findShortestPath(IdentityKey start, IdentityKey end, Map<IdentityKey, Set<IdentityKey>> graph, Set<IdentityKey> excluded) {
+List<IdentityKey>? _findShortestPath(IdentityKey start, IdentityKey end,
+    Map<IdentityKey, Set<IdentityKey>> graph, Set<IdentityKey> excluded) {
   final queue = Queue<List<IdentityKey>>();
   queue.add([start]);
   final visited = {start, ...excluded};
@@ -73,7 +75,7 @@ List<IdentityKey>? _findShortestPath(IdentityKey start, IdentityKey end, Map<Ide
 /// - Confidence Levels (Multiple paths for distant nodes)
 /// - Notifications
 TrustGraph reduceTrustGraph(
-  TrustGraph current, 
+  TrustGraph current,
   Map<IdentityKey, List<TrustStatement>> byIssuer, {
   PathRequirement? pathRequirement,
   int maxDegrees = 6,
@@ -133,7 +135,7 @@ TrustGraph reduceTrustGraph(
     for (final issuer in currentLayer) {
       var statements = byIssuer[issuer] ?? [];
       final decided = <IdentityKey>{};
-      
+
       // Process Blocks
       for (var s in statements.where((s) => s.verb == TrustVerb.block)) {
         final subject = s.subjectAsIdentity;
@@ -163,7 +165,7 @@ TrustGraph reduceTrustGraph(
 
     // --- STAGE 2: REPLACES & TRUSTS ---
     // These discover nodes for the NEXT layer.
-    
+
     // 1. First pass: Process all REPLACES in this layer to establish identity links and constraints.
     for (final issuer in currentLayer) {
       var statements = byIssuer[issuer] ?? [];
@@ -175,14 +177,15 @@ TrustGraph reduceTrustGraph(
           statements = statements.where((s) => !s.time.isAfter(limitTime)).toList();
         }
       }
-      
+
       // Filter out revocations and clear statements from the resulting edges.
       // These are used by the algorithm to "decide" a subject (preventing older statements from applying),
       // but they shouldn't be considered "edges" in the final graph.
       edges[issuer] = statements.where((s) {
         if (s.verb == TrustVerb.clear) return false;
         // We keep replace and delegate statements with revokeAt because they are revocations.
-        if (s.verb != TrustVerb.replace && s.verb != TrustVerb.delegate && s.revokeAt != null) return false;
+        if (s.verb != TrustVerb.replace && s.verb != TrustVerb.delegate && s.revokeAt != null)
+          return false;
         return true;
       }).toList();
 
@@ -216,7 +219,8 @@ TrustGraph reduceTrustGraph(
             replacements[oldKey] = issuer;
           }
           notifications.add(TrustNotification(
-            reason: "Trusted key ${oldKey.value} is being replaced by ${issuer.value} (Replacement constraint ignored due to distance)",
+            reason:
+                "Trusted key ${oldKey.value} is being replaced by ${issuer.value} (Replacement constraint ignored due to distance)",
             rejectedStatement: s,
             isConflict: false,
           ));
@@ -227,7 +231,8 @@ TrustGraph reduceTrustGraph(
           final existingNewKey = replacements[oldKey];
           if (existingNewKey != issuer) {
             notifications.add(TrustNotification(
-              reason: "Key ${oldKey.value} replaced by both ${existingNewKey!.value} and ${issuer.value}",
+              reason:
+                  "Key ${oldKey.value} replaced by both ${existingNewKey!.value} and ${issuer.value}",
               rejectedStatement: s,
               isConflict: true,
             ));
@@ -245,7 +250,7 @@ TrustGraph reduceTrustGraph(
 
         replacements[oldKey] = issuer;
         graphForPathfinding.putIfAbsent(issuer, () => {}).add(oldKey);
-        
+
         // Default to kSinceAlways if revokeAt is missing, as per docs.
         replacementConstraints[oldKey] = s.revokeAt ?? kSinceAlways;
 
@@ -261,7 +266,7 @@ TrustGraph reduceTrustGraph(
     // 2. Second pass: Process all TRUSTS in this layer, now that replacements are known.
     for (final issuer in currentLayer) {
       var statements = edges[issuer] ?? [];
-      
+
       // Re-filter statements if a replacement was found in THIS layer
       if (replacementConstraints.containsKey(issuer)) {
         final limitTime = resolveReplacementLimit(replacementConstraints[issuer], issuer);
@@ -294,13 +299,14 @@ TrustGraph reduceTrustGraph(
         trustedBy.putIfAbsent(effectiveSubject, () => {}).add(issuer);
 
         final requiredPaths = req(dist + 1);
-        
+
         // Temporarily add all potential edges for this subject to the pathfinding graph
         for (final i in trustedBy[effectiveSubject]!) {
           graphForPathfinding.putIfAbsent(i, () => {}).add(effectiveSubject);
         }
 
-        final foundPaths = _findNodeDisjointPaths(current.pov, effectiveSubject, graphForPathfinding, requiredPaths);
+        final foundPaths = _findNodeDisjointPaths(
+            current.pov, effectiveSubject, graphForPathfinding, requiredPaths);
         if (foundPaths.length >= requiredPaths) {
           paths[effectiveSubject] = foundPaths;
           if (!visited.contains(effectiveSubject)) {
@@ -320,7 +326,7 @@ TrustGraph reduceTrustGraph(
         }
       }
     }
-    
+
     currentLayer = nextLayer;
   }
 

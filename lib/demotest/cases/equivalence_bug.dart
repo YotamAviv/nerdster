@@ -9,7 +9,8 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> equivalenceBug() async {
   return (poser, poserN);
 }
 
-Future<(DemoIdentityKey, DemoDelegateKey?, List<ContentStatement>)> equivalenceBugWithStatements() async {
+Future<(DemoIdentityKey, DemoDelegateKey?, List<ContentStatement>)>
+    equivalenceBugWithStatements() async {
   final (DemoIdentityKey poser, DemoDelegateKey? poserN) = await egosCircle();
 
   // Rate A, B, C using createTestSubject helper

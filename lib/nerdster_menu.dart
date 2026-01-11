@@ -43,9 +43,7 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
         child: Stack(children: [
       Row(children: [
         Expanded(
-            child: MenuBar(
-                children: Menus.build(context,
-                    v2Notifications: widget.v2Notifications)))
+            child: MenuBar(children: Menus.build(context, v2Notifications: widget.v2Notifications)))
       ]),
       Align(
           alignment: Alignment.centerRight,

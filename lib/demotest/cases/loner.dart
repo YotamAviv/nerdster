@@ -29,8 +29,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> lonerEquate() async {
 Future<(DemoIdentityKey, DemoDelegateKey?)> lonerRevokeDelegate() async {
   final (DemoIdentityKey identity, DemoDelegateKey? delegate) = await loner();
 
-  await identity.delegate(delegate!,
-      domain: kNerdsterDomain, revokeAt: 'yes, please');
+  await identity.delegate(delegate!, domain: kNerdsterDomain, revokeAt: 'yes, please');
 
   // BUG: missing notification
 
@@ -57,13 +56,16 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> lonerBadDelegate() async {
 
   // BUG: missing notification
 
-  return (identity, delegate); // Returning other makes no sense based on fn name? Reverted to identity
+  return (
+    identity,
+    delegate
+  ); // Returning other makes no sense based on fn name? Reverted to identity
 }
 
 Future<(DemoIdentityKey, DemoDelegateKey?)> lonerCorrupt() async {
   final (DemoIdentityKey identity, DemoDelegateKey? delegate) = await loner();
 
-  // This is detected as corrupt without this top statement. 
+  // This is detected as corrupt without this top statement.
   // Corruption cases should unit tested in Fetcher, not in integration tests like this.
   await delegate!.doRate(title: 'a');
   Statement s = await delegate.doRate(title: 'b');
@@ -81,7 +83,6 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> lonerCorrupt() async {
   } catch (e) {
     print('Error deleting statement: $e');
   }
-
 
   return (identity, delegate);
 }

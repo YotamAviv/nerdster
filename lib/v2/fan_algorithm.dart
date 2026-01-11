@@ -5,7 +5,7 @@ import 'package:graphview/GraphView.dart';
 class FanAlgorithm extends Algorithm {
   final String rootId;
   final double levelSeparation;
-  
+
   FanAlgorithm({
     required this.rootId,
     this.levelSeparation = 200,
@@ -43,7 +43,7 @@ class FanAlgorithm extends Algorithm {
     final Map<Node, int> nodeDepths = {rootNode: 0};
     final List<Node> queue = [rootNode];
     final Set<Node> bfsVisited = {rootNode};
-    
+
     while (queue.isNotEmpty) {
       final current = queue.removeAt(0);
       final depth = nodeDepths[current]!;
@@ -76,7 +76,7 @@ class FanAlgorithm extends Algorithm {
         pos = Offset(shiftX - 150, shiftY + (unreachableCount + 1) * 100);
         unreachableCount++;
       }
-      
+
       node.x = pos.dx + margin;
       node.y = pos.dy + margin;
       minX = min(minX, node.x);
@@ -120,7 +120,8 @@ class FanAlgorithm extends Algorithm {
       // Recursively layout children with a narrower angle range to avoid overlap
       final childStartAngle = angle - angleStep / 2;
       final childEndAngle = angle + angleStep / 2;
-      _layoutFan(child, adjacency, positions, visited, nodeDepths, childStartAngle, childEndAngle, shiftX, shiftY);
+      _layoutFan(child, adjacency, positions, visited, nodeDepths, childStartAngle, childEndAngle,
+          shiftX, shiftY);
     }
   }
 
@@ -149,14 +150,14 @@ class CurvedEdgeRenderer extends EdgeRenderer {
       (source.dx + destination.dx) / 2,
       (source.dy + destination.dy) / 2,
     );
-    
+
     final vectorToMid = midPoint - center;
     // Push the control point outward to create a radial curve effect
     // The factor 1.2 makes it curve slightly outward.
     final cp = center + vectorToMid * 1.2;
 
     path.quadraticBezierTo(cp.dx, cp.dy, destination.dx, destination.dy);
-    
+
     final edgePaint = edge.paint ?? paint;
     canvas.drawPath(path, edgePaint);
 
@@ -189,4 +190,3 @@ class CurvedEdgeRenderer extends EdgeRenderer {
     canvas.drawPath(path, arrowPaint);
   }
 }
-

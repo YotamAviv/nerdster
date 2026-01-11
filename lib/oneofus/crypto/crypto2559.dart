@@ -15,7 +15,7 @@ final aesGcm256 = AesGcm.with256bits();
   from: https://pub.dev/documentation/cryptography/latest/cryptography/AesGcm-class.html
   In our implementation, the random part is 96 bits by default... 
   AES-GCM standard specifies a MAC algorithm ("GCM"). The output is a 128-bit Mac...
-*/ 
+*/
 const nonceLength = 12;
 const macLength = 16;
 
@@ -83,10 +83,10 @@ class _KeyPair implements OouKeyPair {
     // print('secretBox.cipherText.length: ${secretBox.cipherText.length}'); // Encrypted message
     // print('secretBox.mac.bytes.length: ${secretBox.mac.bytes.length}'); // Message authentication code
 
-    assert(secretBox.nonce.length == nonceLength, 
-      'Unexpected: secretBox.nonce.length = ${secretBox.nonce.length}.');
-    assert(secretBox.mac.bytes.length == macLength, 
-      'Unexpected: secretBox.mac.bytes.length = ${secretBox.mac.bytes.length}');
+    assert(secretBox.nonce.length == nonceLength,
+        'Unexpected: secretBox.nonce.length = ${secretBox.nonce.length}.');
+    assert(secretBox.mac.bytes.length == macLength,
+        'Unexpected: secretBox.mac.bytes.length = ${secretBox.mac.bytes.length}');
 
     // If you are sending the secretBox somewhere, you can concatenate all parts of it:
     final concatenatedBytes = secretBox.concatenation();
@@ -125,7 +125,7 @@ class _KeyPair implements OouKeyPair {
 
 class CryptoFactoryEd25519 implements OouCryptoFactory {
   const CryptoFactoryEd25519();
-  
+
   @override
   Future<OouKeyPair> createKeyPair() async {
     SimpleKeyPair keyPair = await ed25519.newKeyPair();
@@ -146,7 +146,7 @@ class CryptoFactoryEd25519 implements OouCryptoFactory {
     _PublicKey out = _PublicKey(publicKey!);
     return out;
   }
-  
+
   //------------ PKE Public Key Encryption --------------------//
 
   @override
@@ -154,12 +154,12 @@ class CryptoFactoryEd25519 implements OouCryptoFactory {
     final SimpleKeyPair keyPair = await x25519.newKeyPair();
     return _PkeKeyPair(keyPair);
   }
-  
+
   @override
   Future<PkeKeyPair> parsePkeKeyPair(Json json) async {
     throw UnimplementedError();
   }
-  
+
   @override
   Future<PkePublicKey> parsePkePublicKey(Json json) async {
     final Jwk jwk = Jwk.fromJson(json);
@@ -183,10 +183,10 @@ class _PkeKeyPair implements PkeKeyPair {
       cleartext,
       secretKey: sharedSecret1,
     );
-    assert(secretBox.nonce.length == nonceLength, 
-      'Unexpected: secretBox.nonce.length = ${secretBox.nonce.length}.');
-    assert(secretBox.mac.bytes.length == macLength, 
-      'Unexpected: secretBox.mac.bytes.length = ${secretBox.mac.bytes.length}');
+    assert(secretBox.nonce.length == nonceLength,
+        'Unexpected: secretBox.nonce.length = ${secretBox.nonce.length}.');
+    assert(secretBox.mac.bytes.length == macLength,
+        'Unexpected: secretBox.mac.bytes.length = ${secretBox.mac.bytes.length}');
     final concatenatedBytes = secretBox.concatenation();
 
     String ciphertext = hex.encode(concatenatedBytes);
@@ -234,5 +234,5 @@ class _PkePublicKey implements PkePublicKey {
   Future<Json> get json async {
     Jwk jwk = Jwk.fromPublicKey(publicKey);
     return jwk.toJson();
-  }  
+  }
 }

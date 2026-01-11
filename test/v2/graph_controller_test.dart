@@ -79,7 +79,8 @@ void main() {
         iJson: povKey,
       );
 
-      final TrustGraph trustGraph = TrustGraph(pov: pov, distances: <IdentityKey, int>{pov: 0, alice: 1});
+      final TrustGraph trustGraph =
+          TrustGraph(pov: pov, distances: <IdentityKey, int>{pov: 0, alice: 1});
       final FollowNetwork followNetwork = FollowNetwork(
         fcontext: 'news',
         identities: <IdentityKey>[pov, alice],
@@ -133,7 +134,9 @@ void main() {
       final TrustGraph trustGraph = TrustGraph(
         pov: pov,
         distances: <IdentityKey, int>{pov: 0, delegate: 1},
-        edges: <IdentityKey, List<TrustStatement>>{pov: <TrustStatement>[d1]},
+        edges: <IdentityKey, List<TrustStatement>>{
+          pov: <TrustStatement>[d1]
+        },
         paths: <IdentityKey, List<List<IdentityKey>>>{
           delegate: <List<IdentityKey>>[
             <IdentityKey>[pov, delegate]
@@ -167,4 +170,3 @@ void main() {
     });
   });
 }
-

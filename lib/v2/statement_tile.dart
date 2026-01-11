@@ -100,8 +100,7 @@ class StatementTile extends StatelessWidget {
         final ContentKey sOtherToken = ContentKey(sOtherTokenStr);
         // If the statement's subject is THIS card, then the target is s.other
         // If the statement's other is THIS card, then the target is s.subject
-        final ContentKey otherCanonical =
-            model.aggregation.equivalence[sOtherToken] ?? sOtherToken;
+        final ContentKey otherCanonical = model.aggregation.equivalence[sOtherToken] ?? sOtherToken;
 
         if (sOtherToken == thisToken) {
           otherToken = ContentKey(s.subjectToken);
@@ -127,8 +126,7 @@ class StatementTile extends StatelessWidget {
       } else if (s.verb == ContentVerb.equate) {
         String arrow = '=';
         if (otherToken != null) {
-          final ContentKey otherCanonical =
-              model.aggregation.equivalence[otherToken] ?? otherToken;
+          final ContentKey otherCanonical = model.aggregation.equivalence[otherToken] ?? otherToken;
           final bool isThisCanonical = (thisToken == thisCanonical);
           final bool isOtherCanonical = (otherToken == otherCanonical);
 

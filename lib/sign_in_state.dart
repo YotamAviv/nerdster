@@ -6,13 +6,12 @@ import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
-
 /// This class tracks the sign-in state of the user using 3 main variables:
 /// - identity (an identity key token)
 /// - pov (an identity key token)
 /// - delegate (a delegate key token)
 /// The PoV is expected to change during their session.
-/// 
+///
 /// identity: The identity key token that represents who you are. This is the key you signed in with.
 /// PoV: The point-of-view key token that represents whose perspective you are using to view the site.
 ///       This may be the same as identity, or it may be different (e.g., you are viewing as someone you trust).
@@ -41,28 +40,29 @@ import 'package:nerdster/singletons.dart';
 ///    - Identity is provided in the URL (e.g. deep link).
 ///    - User signs in (via phone app or copy/paste) but does not provide a delegate key.
 ///    In this state, the user can see their own content (Self-Reflection) but cannot perform write actions.
-/// 
+///
 
 /// Considerations:
-/// - Signing in is signing in. The user clicked "sign-in", and submitted an identity. We have 
+/// - Signing in is signing in. The user clicked "sign-in", and submitted an identity. We have
 ///   identity and PoV.
-/// - Loading a page that passes in the PoV is not signing in. We have a PoV for sure, but maybe 
+/// - Loading a page that passes in the PoV is not signing in. We have a PoV for sure, but maybe
 ///   we shouldn't assume that we have identity.
 /// - In case you get far from home or reach a dead end (PoV trusts no one), we want to help you
 ///   get back (currently, "<reset>")
 /// It seems that we only use identity for notifications, and some of those might be suspect. PoV
 /// rules.
-/// <reset> currently brings you back to identity, but I'm contemplating allowing that to be null, 
+/// <reset> currently brings you back to identity, but I'm contemplating allowing that to be null,
 /// in which case we might need a "firstPov" or "povReset"
-/// 
+///
 /// UI tech
-/// I'm considering making PoV and maybe even identity a Setting. This might add elegence or 
+/// I'm considering making PoV and maybe even identity a Setting. This might add elegence or
 /// klugeyness.
-/// I'd like to allow a page (nerdster.org/home.html, aviv.net) let you change settings, and it'd be 
-/// nice to have Progress. One way to achieve that would be to have the UI watch those notifiers in 
+/// I'd like to allow a page (nerdster.org/home.html, aviv.net) let you change settings, and it'd be
+/// nice to have Progress. One way to achieve that would be to have the UI watch those notifiers in
 /// StatefulWidgets.
 
-Future<void> signInUiHelper(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
+Future<void> signInUiHelper(
+    OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
   if (store) {
     await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
   } else {
@@ -91,7 +91,7 @@ class SignInState with ChangeNotifier {
     }
     povNotifier.value = oneofusToken;
     // CONSIDER: show [pov, identity, delegate] in credentials display
-    if (!b(_identity)) _identity = povNotifier.value; 
+    if (!b(_identity)) _identity = povNotifier.value;
     notifyListeners();
   }
 
@@ -107,7 +107,7 @@ class SignInState with ChangeNotifier {
       _delegatePublicKeyJson = null;
       _delegate = null;
       _signer = null;
-      }
+    }
 
     notifyListeners();
   }

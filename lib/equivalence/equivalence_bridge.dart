@@ -15,9 +15,9 @@ class EquivalenceBridge {
   final Map<String, Set<String>> canonical2equivalents = <String, Set<String>>{};
   final EquivalenceBridgeParser parser;
 
-  // CODE: Rename to chained and explain it. Is it this?: If I say A is related to B, but we also 
+  // CODE: Rename to chained and explain it. Is it this?: If I say A is related to B, but we also
   // have A is actually AA, then we should be saying AA is related B.
-  final EquivalenceBridge? _equivalence2; 
+  final EquivalenceBridge? _equivalence2;
 
   final Set<String> _rejected = <String>{};
 
@@ -43,8 +43,7 @@ class EquivalenceBridge {
       if (!accepted) {
         _rejected.add(statement.token);
       }
-    } else {
-    }
+    } else {}
   }
 
   // return value for debugging
@@ -60,9 +59,7 @@ class EquivalenceBridge {
     return egs;
   }
 
-  String getCanonical(String token) =>
-    equivalent2canonical[token]?? token;
+  String getCanonical(String token) => equivalent2canonical[token] ?? token;
 
-  Set<String> getEquivalents(String token) =>
-    canonical2equivalents[getCanonical(token)]?? {token};
+  Set<String> getEquivalents(String token) => canonical2equivalents[getCanonical(token)] ?? {token};
 }

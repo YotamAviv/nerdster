@@ -13,7 +13,13 @@ class OnOffIcons extends StatefulWidget {
   final bool? disabled;
   final VoidCallback? callback;
   const OnOffIcons(this.valueNotifier, this.key2icons,
-      {required this.tooltipText, super.key, this.text, this.color, this.key2colors, this.disabled, this.callback});
+      {required this.tooltipText,
+      super.key,
+      this.text,
+      this.color,
+      this.key2colors,
+      this.disabled,
+      this.callback});
 
   @override
   State<StatefulWidget> createState() {

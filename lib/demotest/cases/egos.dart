@@ -44,8 +44,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> egos() async {
     "url": "https://www.amazon.com/Pro-Volleyball-Shorts-Spandex-Black/dp/B07NF32YJM"
   }, recommend: true);
 
-  await hipster.delegate(hipsterN,
-      domain: kNerdsterDomain, comment: 'bad', revokeAt: h1.token);
+  await hipster.delegate(hipsterN, domain: kNerdsterDomain, comment: 'bad', revokeAt: h1.token);
   DemoDelegateKey hipsterN2 = await hipster.makeDelegate();
 
   await hipsterN2.doRate(subject: {
@@ -90,7 +89,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> egosCorrupt() async {
   // V2 Verification
   final source = DirectFirestoreSource<ContentStatement>(fire);
   await source.fetch({delegate.token: null});
-  
+
   // expect(source.notifications.length, 1);
   // expect(source.notifications.first.reason, contains('Notary Chain Violation'));
 

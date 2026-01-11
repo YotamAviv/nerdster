@@ -83,7 +83,7 @@ abstract class Statement {
   // TODO: CONSIDER: IdentityKey, DelegateKey, or ContentKey depending on verb
   // This would have to be done differently by ContentStatement and TrustStatement.
   // The same would be needed for other subject (content statement only, depends on follow or rate)
-  String get subjectToken => (subject is String) ? subject: getToken(subject);
+  String get subjectToken => (subject is String) ? subject : getToken(subject);
 
   String get token => jsonish.token;
 

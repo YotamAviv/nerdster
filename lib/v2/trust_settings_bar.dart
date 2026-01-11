@@ -36,7 +36,8 @@ class TrustSettingsBar extends StatelessWidget {
             builder: (context, currentPov, _) {
               return DropdownButton<String>(
                 isExpanded: true,
-                value: (availableIdentities.any((k) => k.value == currentPov) || currentPov == signInState.pov)
+                value: (availableIdentities.any((k) => k.value == currentPov) ||
+                        currentPov == signInState.pov)
                     ? currentPov
                     : null,
                 hint: currentPov != null
@@ -100,7 +101,8 @@ class TrustSettingsBar extends StatelessWidget {
                           const DropdownMenuItem(
                               value: kFollowContextNerdster, child: Text(kFollowContextNerdster)),
                           ...availableContexts
-                              .where((c) => c != kFollowContextIdentity && c != kFollowContextNerdster)
+                              .where(
+                                  (c) => c != kFollowContextIdentity && c != kFollowContextNerdster)
                               .map((c) {
                             final isContextActive = activeContexts.contains(c);
                             return DropdownMenuItem(

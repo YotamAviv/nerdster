@@ -45,8 +45,7 @@ void main() {
 
     expect(verified, true);
 
-    bool verified2 =
-        await publicKey.verifySignature("something else", signature);
+    bool verified2 = await publicKey.verifySignature("something else", signature);
     expect(verified2, false);
   });
 
@@ -75,7 +74,6 @@ void main() {
     final Jwk alicePublicKeyJwk2 = Jwk.fromJson(alicePublicKeyJson);
     final PublicKey? alicePublicKey2 = alicePublicKeyJwk2.toPublicKey();
 
-
     // Generate a key pair for Bob.
     final SimpleKeyPair bobKeyPair = await algorithm.newKeyPair();
     final SimplePublicKey bobPublicKey = await bobKeyPair.extractPublicKey();
@@ -85,9 +83,8 @@ void main() {
       keyPair: aliceKeyPair,
       remotePublicKey: bobPublicKey,
     );
-    final List<int>sharedSecretBytes1 = await sharedSecret1.extractBytes();
+    final List<int> sharedSecretBytes1 = await sharedSecret1.extractBytes();
     String sharedSecretHex1 = hex.encode(sharedSecretBytes1);
-
 
     // We can now calculate a shared secret.
     final SecretKey sharedSecret2 = await algorithm.sharedSecretKey(
@@ -104,10 +101,10 @@ void main() {
       cleartext,
       secretKey: sharedSecret1,
     );
-    assert(secretBox.nonce.length == nonceLength, 
-      'Unexpected: secretBox.nonce.length = ${secretBox.nonce.length}.');
-    assert(secretBox.mac.bytes.length == macLength, 
-      'Unexpected: secretBox.mac.bytes.length = ${secretBox.mac.bytes.length}');
+    assert(secretBox.nonce.length == nonceLength,
+        'Unexpected: secretBox.nonce.length = ${secretBox.nonce.length}.');
+    assert(secretBox.mac.bytes.length == macLength,
+        'Unexpected: secretBox.mac.bytes.length = ${secretBox.mac.bytes.length}');
 
     // If you are sending the secretBox somewhere, you can concatenate all parts of it:
     final concatenatedBytes = secretBox.concatenation();
@@ -117,8 +114,8 @@ void main() {
 
     // Decrypt
     List<int> concatenatedBytes2 = hex.decode(cyphertext);
-    SecretBox secretBox2 =
-        SecretBox.fromConcatenation(concatenatedBytes2, nonceLength: nonceLength, macLength: macLength);
+    SecretBox secretBox2 = SecretBox.fromConcatenation(concatenatedBytes2,
+        nonceLength: nonceLength, macLength: macLength);
 
     String cleartext2 = await aesGcm256.decryptString(
       secretBox2,
@@ -128,7 +125,7 @@ void main() {
     expect(cleartext == cleartext2, true);
   });
 
-test('encrypt/decrypt for other', () async {
+  test('encrypt/decrypt for other', () async {
     const String cleartext = "It's really me!";
 
     final PkeKeyPair aliceKeyPair = await factory.createPke();
@@ -140,11 +137,13 @@ test('encrypt/decrypt for other', () async {
     final Json bobPublicKeyJson = await bobPublicKey.json;
 
     // Bob encrypts for Alice using his own private key and her JSON decoded public key.
-    final String cyphertext = await bobKeyPair.encrypt(cleartext, await factory.parsePkePublicKey(alicePublicKeyJson));
+    final String cyphertext =
+        await bobKeyPair.encrypt(cleartext, await factory.parsePkePublicKey(alicePublicKeyJson));
     expect(cyphertext != cleartext, true); // (Yup, it's encrypted;)
 
     // Alice decrypts using her own key pair and Bob's JSON decoded public key.
-    final String cleartext2 = await aliceKeyPair.decrypt(cyphertext, await factory.parsePkePublicKey(bobPublicKeyJson));
+    final String cleartext2 =
+        await aliceKeyPair.decrypt(cyphertext, await factory.parsePkePublicKey(bobPublicKeyJson));
     expect(cleartext == cleartext2, true);
   });
 }

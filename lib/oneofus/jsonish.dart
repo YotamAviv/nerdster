@@ -21,7 +21,7 @@ import 'package:crypto/crypto.dart';
 /// - identical objects when reading the same JSON (Firebase likes to reorder the fields)
 /// - generate pretty-printed JSON in our preferred order of map keys
 ///
-/// CONSIDER: We use either Json or a token all over the place (subject, other, oneofusKey, ..). 
+/// CONSIDER: We use either Json or a token all over the place (subject, other, oneofusKey, ..).
 /// Make Jsonish be either Json or a string token.
 
 typedef Json = Map<String, dynamic>;

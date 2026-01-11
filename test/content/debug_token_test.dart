@@ -54,7 +54,8 @@ void main() {
         if (debugMode) {
           expect(testJson[verb.label], equals(subjectObj));
         } else {
-          expect(testJson[verb.label], equals(subjectObj), reason: 'Relations must use full subject');
+          expect(testJson[verb.label], equals(subjectObj),
+              reason: 'Relations must use full subject');
         }
 
         ContentStatement testStmt = ContentStatement(Jsonish(testJson));
@@ -114,7 +115,8 @@ void main() {
         'rate': subjectObj,
       };
       final String statementToken = getToken(statementSubject);
-      Json rateStmtJson = ContentStatement.make(i, ContentVerb.rate, statementSubject, recommend: true);
+      Json rateStmtJson =
+          ContentStatement.make(i, ContentVerb.rate, statementSubject, recommend: true);
       if (debugMode) {
         expect(rateStmtJson['rate'], equals(statementSubject));
       } else {

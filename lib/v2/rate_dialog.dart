@@ -51,7 +51,8 @@ class V2RateDialog extends StatefulWidget {
 
     if (result != null) {
       try {
-        final writer = SourceFactory.getWriter(kNerdsterDomain, context: context, labeler: model.labeler);
+        final writer =
+            SourceFactory.getWriter(kNerdsterDomain, context: context, labeler: model.labeler);
         await writer.push(result, signInState.signer!);
         onRefresh?.call();
       } catch (e, stackTrace) {
@@ -107,7 +108,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
     okEnabled = ValueNotifier(false);
     interpret = ValueNotifier(true);
     commentController = TextEditingController(text: priorStatement?.comment ?? '');
-    
+
     switch (widget.intent) {
       case RateIntent.like:
         like.value = (like.value == true ? null : true);
@@ -159,7 +160,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
     // Allow re-submit if it's a snooze (to re-snooze woken items)
     bool isReSnooze = dis.value == 'snooze' && priorStatement?.dismiss == 'snooze';
     okEnabled.value = !compareToPrior || censor.value || isReSnooze;
-    
+
     if (b(priorStatement)) {
       erase.value = bAllFieldsClear;
     }
@@ -219,7 +220,6 @@ class _V2RateDialogState extends State<V2RateDialog> {
       verb = ContentVerb.rate;
     }
 
-
     final json = ContentStatement.make(
       i,
       verb,
@@ -244,9 +244,11 @@ class _V2RateDialogState extends State<V2RateDialog> {
       final String? myIdentity = signInState.identity;
       if (myIdentity != null) {
         if (stmt is TrustStatement) {
-           subjectIsMyStatement = (stmt.iKey.value == myIdentity);
+          subjectIsMyStatement = (stmt.iKey.value == myIdentity);
         } else if (stmt is ContentStatement) {
-           subjectIsMyStatement = (widget.model.delegateResolver.getIdentityForDelegate(stmt.iKey)?.value == myIdentity);
+          subjectIsMyStatement =
+              (widget.model.delegateResolver.getIdentityForDelegate(stmt.iKey)?.value ==
+                  myIdentity);
         }
       }
     }
@@ -262,15 +264,16 @@ class _V2RateDialogState extends State<V2RateDialog> {
         color: Colors.green,
         key2colors: const {true: Colors.green, false: Colors.red},
         callback: listener);
-    
+
     Widget disButton = DismissToggle(
       notifier: dis,
       callback: listener,
     );
-    
+
     String censorTooltip;
     if (subjectIsMyStatement) {
-      censorTooltip = 'The subject here is your own statement. Clear your rating on its parent instead.';
+      censorTooltip =
+          'The subject here is your own statement. Clear your rating on its parent instead.';
     } else {
       censorTooltip = 'Censor this subject for everybody (who cares)';
     }
@@ -295,20 +298,18 @@ class _V2RateDialogState extends State<V2RateDialog> {
             mainAxisSize: MainAxisSize.min,
             children: [
               InputDecorator(
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  labelText: 'Subject',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
-                child: SizedBox(
-                  height: 150,
-                  child: V2JsonDisplay(
-                    rawSubject,
-                    interpret: interpret, 
-                    strikethrough: censor.value,
-                    interpreter: V2Interpreter(widget.model.labeler),
-                  )
-                )
-              ),
+                  decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      labelText: 'Subject',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0))),
+                  child: SizedBox(
+                      height: 150,
+                      child: V2JsonDisplay(
+                        rawSubject,
+                        interpret: interpret,
+                        strikethrough: censor.value,
+                        interpreter: V2Interpreter(widget.model.labeler),
+                      ))),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -334,7 +335,8 @@ class _V2RateDialogState extends State<V2RateDialog> {
           SizedBox(
             width: 120.0,
             child: Tooltip(
-                message: 'A user can have only one disposition on a subject, so any newer rating will overwrite his earlier one.',
+                message:
+                    'A user can have only one disposition on a subject, so any newer rating will overwrite his earlier one.',
                 child: Text('rating a rating?', style: linkStyle)),
           )
         else

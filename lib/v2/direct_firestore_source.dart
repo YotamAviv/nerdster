@@ -137,7 +137,8 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
             originalError: e,
           ));
         }
-        print('DirectFirestoreSource: Corruption detected for $token. Discarding all statements. Error: $e');
+        print(
+            'DirectFirestoreSource: Corruption detected for $token. Discarding all statements. Error: $e');
         results.remove(token);
       }
     }));

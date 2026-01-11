@@ -12,17 +12,17 @@ class MockV2FeedModel extends V2FeedModel {
     required FollowNetwork followNetwork,
     DelegateResolver? delegateResolver,
   }) : super(
-    trustGraph: trustGraph,
-    followNetwork: followNetwork,
-    delegateResolver: delegateResolver ?? DelegateResolver(trustGraph),
-    aggregation: ContentAggregation(),
-    labeler: V2Labeler(trustGraph, delegateResolver: delegateResolver),
-    povIdentity: trustGraph.pov,
-    fcontext: 'test',
-    sortMode: V2SortMode.recentActivity,
-    filterMode: V2FilterMode.ignoreDisses,
-    enableCensorship: false,
-  );
+          trustGraph: trustGraph,
+          followNetwork: followNetwork,
+          delegateResolver: delegateResolver ?? DelegateResolver(trustGraph),
+          aggregation: ContentAggregation(),
+          labeler: V2Labeler(trustGraph, delegateResolver: delegateResolver),
+          povIdentity: trustGraph.pov,
+          fcontext: 'test',
+          sortMode: V2SortMode.recentActivity,
+          filterMode: V2FilterMode.ignoreDisses,
+          enableCensorship: false,
+        );
 }
 
 void main() {
@@ -65,9 +65,9 @@ void main() {
     controller.mode = GraphViewMode.identity;
     controller.focusedIdentity = charlie.id;
     signInState.pov = lisa.token;
-    
+
     final data = controller.buildGraphData();
-    
+
     expect(data.root, equals(lisa.id.value));
     expect(data.nodes.first, equals(lisa.id.value), reason: 'Root should be the first node');
     expect(data.nodes, containsAll([lisa.id.value, bob.id.value, charlie.id.value]));
@@ -131,17 +131,15 @@ void main() {
     controller.mode = GraphViewMode.identity;
     controller.focusedIdentity = target.id;
     signInState.pov = root.token;
-    
+
     final data = controller.buildGraphData();
-    
+
     // Should find 2 node-disjoint paths.
     // If it finds Path 1 and Path 2, we get 6 nodes and 6 edges.
     // If it finds Path 3 first, it might only find 1 path.
     // But BFS should find Path 1 or Path 2 or Path 3 (all length 3).
-    
+
     expect(data.nodes, contains(target.id));
     expect(data.edges.length, greaterThanOrEqualTo(3));
   });
-
-
 }

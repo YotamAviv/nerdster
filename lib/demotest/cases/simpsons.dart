@@ -43,10 +43,10 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsons() async {
   await marge.doTrust(TrustVerb.trust, homer, moniker: 'hubby');
   await bart.doTrust(TrustVerb.trust, marge, moniker: 'moms');
   Statement s3 = await bart.doTrust(TrustVerb.trust, homer, moniker: 'homer');
-  
+
   // Sideshow tries to thieve bart's key
   await sideshow.doTrust(TrustVerb.replace, bart, revokeAt: s3.token);
-  
+
   await bart.doTrust(TrustVerb.trust, homer2, moniker: 'homer2'); // bart trusts homer2
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'sis');
   await homer2.doTrust(TrustVerb.trust, lisa, moniker: 'daughter');

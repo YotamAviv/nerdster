@@ -24,7 +24,8 @@ class NodeDetails extends StatelessWidget {
 
   const NodeDetails({super.key, required this.identity, required this.controller});
 
-  static Future<void> show(BuildContext context, IdentityKey identity, V2FeedController controller) {
+  static Future<void> show(
+      BuildContext context, IdentityKey identity, V2FeedController controller) {
     return showDialog(
       context: context,
       builder: (context) => NodeDetailsSheet(identity: identity, controller: controller),
@@ -90,7 +91,8 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
 
     final canonical = model.trustGraph.resolveIdentity(widget.identity);
 
-    final myLiteralStatements = model.aggregation.myLiteralStatements[ContentKey(canonical.value)] ?? [];
+    final myLiteralStatements =
+        model.aggregation.myLiteralStatements[ContentKey(canonical.value)] ?? [];
 
     ContentStatement? priorStatement;
     for (var s in myLiteralStatements) {
@@ -128,7 +130,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     // I didn't implement getAllLabels in new Labeler!
     // I should implement it or remove this feature.
     // Let's implement basic label for now.
-    
+
     final TrustGraph tg = model.trustGraph;
     // getEquivalenceGroup returns List<IdentityKey> ??
     // Let's check TrustGraph.
@@ -136,8 +138,12 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     // We can compute it:
     // This is expensive to scan all Replacements?
     // Maybe just show canonical.
-    
-    final delegates = labeler.delegateResolver?.getDelegatesForIdentity(widget.identity).map((d) => d.value).toList() ?? [];
+
+    final delegates = labeler.delegateResolver
+            ?.getDelegatesForIdentity(widget.identity)
+            .map((d) => d.value)
+            .toList() ??
+        [];
     final String fcontext = model.fcontext;
 
     return AlertDialog(
@@ -155,53 +161,51 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
             const SizedBox(height: 10),
             const Text('Equivalent Identity Keys:', style: TextStyle(fontWeight: FontWeight.bold)),
             ...tg.getEquivalenceGroup(widget.identity).map((IdentityKey equivKey) {
-                final equivIdentityToken = equivKey.value;
-                final bool isCanonical = equivKey == widget.identity;
-                final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
-                return Builder(builder: (context) {
-                  TapDownDetails? tapDetails;
-                  return InkWell(
-                    onTapDown: (details) => tapDetails = details,
-                    onTap: () {
-                       KeyInfoView.show(context, equivIdentityToken, kOneofusDomain,
+              final equivIdentityToken = equivKey.value;
+              final bool isCanonical = equivKey == widget.identity;
+              final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
+              return Builder(builder: (context) {
+                TapDownDetails? tapDetails;
+                return InkWell(
+                  onTapDown: (details) => tapDetails = details,
+                  onTap: () {
+                    KeyInfoView.show(context, equivIdentityToken, kOneofusDomain,
                         details: tapDetails,
                         source: widget.controller.trustSource,
                         labeler: labeler,
                         constraints: const BoxConstraints(maxWidth: 600));
-                    },
-                    child: Text('• $equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
-                        style: TextStyle(
+                  },
+                  child: Text('• $equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: isCanonical ? Colors.black : Colors.grey,
+                          decoration: TextDecoration.underline)),
+                );
+              });
+            }),
+            if (delegates.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              const Text('Delegate Keys:', style: TextStyle(fontWeight: FontWeight.bold)),
+              ...delegates.map((d) {
+                final String delegateLabel = labeler.getLabel(d);
+                return Builder(builder: (context) {
+                  TapDownDetails? tapDetails;
+                  return InkWell(
+                    onTapDown: (details) => tapDetails = details,
+                    onTap: () => KeyInfoView.show(context, d, kNerdsterDomain,
+                        details: tapDetails,
+                        source: widget.controller.contentSource,
+                        labeler: labeler,
+                        constraints: const BoxConstraints(maxWidth: 600)),
+                    child: Text('• $delegateLabel',
+                        style: const TextStyle(
                             fontSize: 10,
-                            color: isCanonical ? Colors.black : Colors.grey,
+                            color: Colors.blue,
                             decoration: TextDecoration.underline)),
                   );
                 });
               }),
-            
-            if (delegates.isNotEmpty) ...[
-               const SizedBox(height: 10),
-               const Text('Delegate Keys:', style: TextStyle(fontWeight: FontWeight.bold)),
-               ...delegates.map((d) {
-                 final String delegateLabel = labeler.getLabel(d);
-                 return Builder(builder: (context) {
-                    TapDownDetails? tapDetails;
-                    return InkWell(
-                      onTapDown: (details) => tapDetails = details,
-                      onTap: () => KeyInfoView.show(context, d, kNerdsterDomain,
-                          details: tapDetails,
-                          source: widget.controller.contentSource,
-                          labeler: labeler,
-                          constraints: const BoxConstraints(maxWidth: 600)),
-                      child: Text('• $delegateLabel', 
-                          style: const TextStyle(
-                             fontSize: 10, 
-                             color: Colors.blue,
-                             decoration: TextDecoration.underline)),
-                    );
-                 });
-               }),
             ],
-            
             const SizedBox(height: 10),
             if (fcontext == kFollowContextIdentity)
               _buildIdentityDetails(widget.identity, model)
@@ -215,81 +219,82 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
       actions: _buildActions(context),
     );
   }
-  
+
   Widget _buildHeader(V2Labeler labeler, String identityStr) {
-     return Builder(builder: (context) {
-        TapDownDetails? tapDetails;
-        return InkWell(
-          onTapDown: (details) => tapDetails = details,
-          onTap: () {
-            KeyInfoView.show(context, identityStr, kOneofusDomain,
-                details: tapDetails,
-                source: widget.controller.trustSource,
-                labeler: labeler,
-                constraints: const BoxConstraints(maxWidth: 600));
-          },
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(child: Text(labeler.getLabel(identityStr))),
-              const SizedBox(width: 8),
-              const Icon(Icons.qr_code, size: 20, color: Colors.blue),
-            ],
-          ),
-        );
-      });
+    return Builder(builder: (context) {
+      TapDownDetails? tapDetails;
+      return InkWell(
+        onTapDown: (details) => tapDetails = details,
+        onTap: () {
+          KeyInfoView.show(context, identityStr, kOneofusDomain,
+              details: tapDetails,
+              source: widget.controller.trustSource,
+              labeler: labeler,
+              constraints: const BoxConstraints(maxWidth: 600));
+        },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(child: Text(labeler.getLabel(identityStr))),
+            const SizedBox(width: 8),
+            const Icon(Icons.qr_code, size: 20, color: Colors.blue),
+          ],
+        ),
+      );
+    });
   }
 
   List<Widget> _buildActions(BuildContext context) {
     return [
-        if (widget.identity != model.trustGraph.pov)
-           TextButton(
-            onPressed: () {
-              // Updating global POV
-              Navigator.pop(context); // Close sheet/dialog first
-              signInState.pov = widget.identity.value;
-              widget.controller.refresh(widget.identity, meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
-            },
-            child: const Text('Set as PoV'),
-          ),
-          
-          TextButton(
-            onPressed: () async {
-              if (_hasChanges) {
-                final bool? shouldClose = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Unsaved Changes'),
-                    content: const Text(
-                        'You have unsaved follow/block changes. Are you sure you want to discard them?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text('Discard'),
-                      ),
-                    ],
+      if (widget.identity != model.trustGraph.pov)
+        TextButton(
+          onPressed: () {
+            // Updating global POV
+            Navigator.pop(context); // Close sheet/dialog first
+            signInState.pov = widget.identity.value;
+            widget.controller.refresh(widget.identity,
+                meIdentity:
+                    signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+          },
+          child: const Text('Set as PoV'),
+        ),
+      TextButton(
+        onPressed: () async {
+          if (_hasChanges) {
+            final bool? shouldClose = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Unsaved Changes'),
+                content: const Text(
+                    'You have unsaved follow/block changes. Are you sure you want to discard them?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
                   ),
-                );
-                if (shouldClose == true) {
-                  if (context.mounted) Navigator.of(context).pop();
-                }
-              } else {
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text('Close'),
-          )
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Discard'),
+                  ),
+                ],
+              ),
+            );
+            if (shouldClose == true) {
+              if (context.mounted) Navigator.of(context).pop();
+            }
+          } else {
+            Navigator.of(context).pop();
+          }
+        },
+        child: const Text('Close'),
+      )
     ];
   }
 
   Widget _buildFollowContextsSection() {
     final myId = signInState.identity;
     if (myId != null && myId == widget.identity.value) {
-       return const Text("This is you.", style: TextStyle(fontStyle: FontStyle.italic));
+      return const Text("This is you.", style: TextStyle(fontStyle: FontStyle.italic));
     }
 
     final label = model.labeler.getLabel(widget.identity.value);
@@ -456,7 +461,8 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           _pendingContexts.removeWhere((key, value) => value == 0);
           _originalContexts = Map.of(_pendingContexts);
         });
-        await widget.controller.refresh(model.trustGraph.pov, meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+        await widget.controller.refresh(model.trustGraph.pov,
+            meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
       }
     } catch (e) {
       if (mounted) {
@@ -474,7 +480,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     final statements = tg.edges.values
         .expand((l) => l)
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
-        .where((s) => s.iKey.value != myId) 
+        .where((s) => s.iKey.value != myId)
         .toList();
 
     return Column(
@@ -495,7 +501,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         .expand((l) => l)
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .where((s) => s.contexts?.containsKey(context) == true)
-        .where((s) => _resolveDelegate(DelegateKey(s.iKey.value), model).value != myId) 
+        .where((s) => _resolveDelegate(DelegateKey(s.iKey.value), model).value != myId)
         .toList();
 
     return Column(
@@ -518,7 +524,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         .expand((l) => l)
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
-        .where((s) => _resolveDelegate(DelegateKey(s.iKey.value), model).value != myId) 
+        .where((s) => _resolveDelegate(DelegateKey(s.iKey.value), model).value != myId)
         .toList();
 
     final explicitIssuers =
@@ -530,7 +536,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .where((s) {
       final issuer = _resolveDelegate(DelegateKey(s.iKey.value), model);
-      return !explicitIssuers.contains(issuer) && issuer.value != myId; 
+      return !explicitIssuers.contains(issuer) && issuer.value != myId;
     }).toList();
 
     return Column(
@@ -559,11 +565,11 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     final labeler = model.labeler;
     // s can be TrustStatement or ContentStatement.
     // Both have iKey/iToken (but IdentityKey in refactor).
-    // TrustStatement has iKey. ContentStatement has iKey? 
+    // TrustStatement has iKey. ContentStatement has iKey?
     // ContentStatement is from `nerdster/content/content_statement.dart`.
     // I need to check ContentStatement definition.
     // Assuming both have a way to get issuer IdentityKey.
-    
+
     IdentityKey issuerKey;
     if (s is TrustStatement) {
       issuerKey = s.iKey;

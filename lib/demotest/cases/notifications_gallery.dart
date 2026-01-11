@@ -9,7 +9,6 @@ import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/labeler.dart';
 
-
 // TODO: Use proper DemoKey
 
 /// A gallery of all possible Trust and Follow notifications.
@@ -49,10 +48,10 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
   final DemoIdentityKey badGuy = await DemoIdentityKey.findOrCreate('badGuy');
   final DemoIdentityKey distantGuy = await DemoIdentityKey.findOrCreate('distantGuy');
   final DemoIdentityKey distantBob = await DemoIdentityKey.findOrCreate('distantBob');
-  
+
   final DemoDelegateKey meContent = await DemoDelegateKey.findOrCreate('meContent');
   final DemoDelegateKey aliceContent = await DemoDelegateKey.findOrCreate('aliceContent');
-  
+
   final DemoIdentityKey blocker = await DemoIdentityKey.findOrCreate('blocker');
 
   // --- TRUST LOGIC SCENARIOS ---
@@ -112,12 +111,8 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
 
   // 11. Multiple Delegates: Bob creates a second delegate
   final DemoDelegateKey bobContent2 = await bob.makeDelegate();
-  await bobContent2.doRate(subject: {
-      'contentType': 'book',
-      'title': 'Bob Book 2',
-      'author': 'unknown',
-      'year': 2025
-  });
+  await bobContent2.doRate(
+      subject: {'contentType': 'book', 'title': 'Bob Book 2', 'author': 'unknown', 'year': 2025});
 
   // Add a delegate key for each player, and have them submit their name as a bogus book
   final List<DemoIdentityKey> players = [
@@ -146,12 +141,8 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
       contentKey = await player.makeDelegate();
     }
 
-    await contentKey.doRate(subject: {
-      'contentType': 'book',
-      'title': player.name,
-      'author': 'unknown',
-      'year': 2025
-    });
+    await contentKey.doRate(
+        subject: {'contentType': 'book', 'title': player.name, 'author': 'unknown', 'year': 2025});
   }
 
   // Verify
@@ -164,28 +155,43 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
   resolver.resolveForIdentity(alice.id);
   resolver.resolveForIdentity(bob.id);
 
-  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block your key")), "Missing: Attempt to block your key");
-  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block trusted key")), "Missing: Attempt to block trusted key");
-  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to replace your key")), "Missing: Attempt to replace your key");
-  check(trustGraph.notifications.any((n) => n.reason.contains("Blocked key")), "Missing: Blocked key");
-  check(trustGraph.notifications.any((n) => n.reason.contains("Replacement constraint ignored")), "Missing: Replacement constraint ignored");
-  check(trustGraph.notifications.any((n) => n.reason.contains("replaced by both")), "Missing: replaced by both");
-  check(trustGraph.notifications.any((n) => n.reason.contains("Trusted key") && n.reason.contains("is being replaced")), "Missing: Trusted key is being replaced");
-  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to trust blocked key")), "Missing: Attempt to trust blocked key");
-  check(!trustGraph.notifications.any((n) => n.reason.contains("trust a non-canonical key")), "Unexpected: trust a non-canonical key notification found");
-  check(trustGraph.notifications.any((n) => n.reason.contains("Delegate key ${aliceContent.token} already claimed by ${alice.token}")), "Missing: Delegate key already claimed");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block your key")),
+      "Missing: Attempt to block your key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to block trusted key")),
+      "Missing: Attempt to block trusted key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to replace your key")),
+      "Missing: Attempt to replace your key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Blocked key")),
+      "Missing: Blocked key");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Replacement constraint ignored")),
+      "Missing: Replacement constraint ignored");
+  check(trustGraph.notifications.any((n) => n.reason.contains("replaced by both")),
+      "Missing: replaced by both");
+  check(
+      trustGraph.notifications
+          .any((n) => n.reason.contains("Trusted key") && n.reason.contains("is being replaced")),
+      "Missing: Trusted key is being replaced");
+  check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to trust blocked key")),
+      "Missing: Attempt to trust blocked key");
+  check(!trustGraph.notifications.any((n) => n.reason.contains("trust a non-canonical key")),
+      "Unexpected: trust a non-canonical key notification found");
+  check(
+      trustGraph.notifications.any((n) => n.reason
+          .contains("Delegate key ${aliceContent.token} already claimed by ${alice.token}")),
+      "Missing: Delegate key already claimed");
 
   // Verify Labels
   final labeler = V2Labeler(trustGraph, delegateResolver: resolver);
   final bobDelegates = resolver.getDelegatesForIdentity(bob.id);
-  final nerdsterDelegates = bobDelegates.where((d) => resolver.getDomainForDelegate(d) == 'nerdster.org').toList();
-  
+  final nerdsterDelegates =
+      bobDelegates.where((d) => resolver.getDomainForDelegate(d) == 'nerdster.org').toList();
+
   check(nerdsterDelegates.length >= 2, "Missing: Bob should have at least 2 delegates");
-  
+
   // Note: The order depends on the order in resolver.getDelegatesForIdentity which depends on statement order.
   // We expect them to be ordered by appearance or something deterministic.
   // If not, we might need to check if set of labels matches.
-  
+
   final labels = nerdsterDelegates.map((d) => labeler.getLabel(d.value)).toSet();
   check(labels.contains("bob@nerdster.org"), "Missing label: bob@nerdster.org");
   check(labels.contains("bob@nerdster.org (2)"), "Missing label: bob@nerdster.org (2)");

@@ -11,7 +11,8 @@ class TrustStatement extends Statement {
   static final Map<String, TrustStatement> _cache = <String, TrustStatement>{};
 
   static void init() {
-    Statement.registerFactory('net.one-of-us', _TrustStatementFactory(), TrustStatement, kOneofusDomain);
+    Statement.registerFactory(
+        'net.one-of-us', _TrustStatementFactory(), TrustStatement, kOneofusDomain);
   }
 
   final TrustVerb verb;
@@ -25,13 +26,13 @@ class TrustStatement extends Statement {
   String get iToken => iKey.value;
 
   IdentityKey get subjectAsIdentity {
-    if (verb == TrustVerb.trust || 
-        verb == TrustVerb.block || 
-        verb == TrustVerb.replace || 
+    if (verb == TrustVerb.trust ||
+        verb == TrustVerb.block ||
+        verb == TrustVerb.replace ||
         verb == TrustVerb.clear) {
       return IdentityKey(subjectToken);
     }
-     throw 'Subject of $verb statement is not an IdentityKey';
+    throw 'Subject of $verb statement is not an IdentityKey';
   }
 
   DelegateKey get subjectAsDelegate {
@@ -44,8 +45,10 @@ class TrustStatement extends Statement {
   bool clears(TrustStatement other) {
     if (verb != TrustVerb.clear) return false;
     // Clearing a trust/block/replace (Identity)
-    if (other.verb == TrustVerb.trust || other.verb == TrustVerb.block || other.verb == TrustVerb.replace) {
-       return other.subjectAsIdentity.value == subjectToken;
+    if (other.verb == TrustVerb.trust ||
+        other.verb == TrustVerb.block ||
+        other.verb == TrustVerb.replace) {
+      return other.subjectAsIdentity.value == subjectToken;
     }
     // Clearing a delegation (Delegate)
     if (other.verb == TrustVerb.delegate) {
@@ -78,7 +81,6 @@ class TrustStatement extends Statement {
     _cache[s.token] = s;
     return s;
   }
-
 
   static TrustStatement? find(String token) => _cache[token];
 

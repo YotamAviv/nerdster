@@ -114,6 +114,7 @@ class Equivalence {
 class _EquivalenceCell {
   String token;
   _EquivalenceCell? parent;
+
   /// Only EG roots maintain DONTs.
   /// We want to facilitate:
   /// - checking if a DONT exists
@@ -136,7 +137,7 @@ class _EquivalenceCell {
   // CODE: add a check invariant
   // - only roots have DONTs.
   // - DONTs are symmetric.
-  // 
+  //
   // It looks like, and I'll go go under the assumption, that it returns false when the
   // set is rejected. Maybe verify.
   bool checkAndSetParent(_EquivalenceCell newParent) {

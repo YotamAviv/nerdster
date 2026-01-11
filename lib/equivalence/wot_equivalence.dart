@@ -5,19 +5,19 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
 /// Unlike the other equivalence where different folks collaborate to form equivalence group,
-/// this is supposed to form just one person's equivalence group of his own keys. 
+/// this is supposed to form just one person's equivalence group of his own keys.
 /// The keys are used to state:
 ///   I replace subject. (I am canonical, and subject is equivalent.)
 /// The algorithm processes these statements in order of trust and forms equivalence groups.
 ///
-/// Point from equiv to canon. Once such a pointer exists, it cannot be overriden by 
+/// Point from equiv to canon. Once such a pointer exists, it cannot be overriden by
 /// subsequent (less trusted) statements.
 /// Form EGs (sets) by sweeping through.
-/// 
+///
 /// NOTE:
 /// Correctness of the web-of-trust relys on our Trust algorithm to reject attempts
 /// for malicious actors to try and claim your key as an equivalent of their key.
-/// 
+///
 /// The demo/test blockOldKey demonstrated a case where [GreedyBfsTrust] does not
 /// reject a replace statement (and so it was passed on to [WotEquivalence]),
 /// but a later block statemet removed the equivalent from the network.
@@ -31,13 +31,13 @@ class WotEquivalence {
 
   String getCanonical(String equiv) => equiv2canon[equiv] ?? equiv;
 
-  Set<String> getEquivalents(String token) =>
-    canon2equivs[getCanonical(token)]?? {token};
+  Set<String> getEquivalents(String token) => canon2equivs[getCanonical(token)] ?? {token};
 
   void make() {
     for (String equiv in equiv2canon.keys) {
       final String canon = _climbFindCanon(equiv);
-      equiv2canon[equiv] = canon; // concurrent modification? no issues so far, could always make a copy right in the for statement.
+      equiv2canon[equiv] =
+          canon; // concurrent modification? no issues so far, could always make a copy right in the for statement.
       Set<String> equivs = canon2equivs.putIfAbsent(canon, () => <String>{canon});
       equivs.add(equiv);
     }
@@ -49,7 +49,7 @@ class WotEquivalence {
   //   The trust algorithm should have rejected this statement because it would revoke your key.
   // Case 2: It's one of your equivalent keys:
   //   You should have claimed it first.
-  // 
+  //
   // returns rejection reason in case of conflict.
   String? process(final EquateStatement es) {
     assert(!es.dont);
@@ -91,4 +91,3 @@ class NerdEquateParser implements EquivalenceBridgeParser {
 
   static String getToken(dynamic subject) => Jsonish(subject).token;
 }
-

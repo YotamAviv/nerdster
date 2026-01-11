@@ -23,7 +23,7 @@ Future<void> v2Submit(BuildContext context, V2FeedModel model, {VoidCallback? on
           group: group,
           narrowGroup: group,
         );
-        
+
     if (context.mounted) {
       await V2RateDialog.show(
         context,

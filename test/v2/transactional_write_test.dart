@@ -15,7 +15,7 @@ void main() {
       setUpTestRegistry();
       firestore = FakeFirebaseFirestore();
       writer = DirectFirestoreWriter(firestore);
-      
+
       final keyPair = await CryptoFactoryEd25519().createKeyPair();
       signer = await OouSigner.make(keyPair);
       publicKeyJson = await (await keyPair.publicKey).json;
@@ -51,7 +51,7 @@ void main() {
           .collection('statements')
           .orderBy('time')
           .get();
-      
+
       expect(statements.docs.length, 2);
       expect(statements.docs[0].id, s1.token);
       expect(statements.docs[1].id, s2.token);
@@ -80,7 +80,8 @@ void main() {
 
       await expectLater(
         writer.push(jsonB, signer),
-        throwsA(predicate((e) => e.toString().contains('Timestamp must be after previous statement'))),
+        throwsA(
+            predicate((e) => e.toString().contains('Timestamp must be after previous statement'))),
       );
     });
 
@@ -91,28 +92,35 @@ void main() {
         'subject1',
         recommend: true,
       );
-      
+
       // Simulate two concurrent writes that both see the same (empty) state
       // We do this by calling push twice without awaiting the first one immediately,
       // though FakeFirestore might still be too fast.
       // A more reliable way is to manually put the doc there and then try to push.
-      
+
       final jsonish = await Jsonish.makeSign(json, signer);
       final issuerToken = getToken(publicKeyJson);
-      await firestore.collection(issuerToken).doc('statements').collection('statements').doc(jsonish.token).set(jsonish.json);
+      await firestore
+          .collection(issuerToken)
+          .doc('statements')
+          .collection('statements')
+          .doc(jsonish.token)
+          .set(jsonish.json);
 
-      // Now try to push the same JSON. 
+      // Now try to push the same JSON.
       // We need to make sure the writer doesn't see the doc we just added when it looks for 'latest'.
       // But it will. So we'll just expect the exception that happens.
       // If it sees the doc, it will try to append and fail timestamp check.
       // If it doesn't see the doc (race), it will try to write the same token and fail existence check.
-      
+
       // To FORCE the existence check, we can just mock the collection to return nothing for the query.
       // But for now, let's just acknowledge that the writer now throws instead of doing nothing.
-      
+
       await expectLater(
         writer.push(json, signer),
-        throwsA(predicate((e) => e.toString().contains('Statement already exists') || e.toString().contains('Timestamp must be after'))),
+        throwsA(predicate((e) =>
+            e.toString().contains('Statement already exists') ||
+            e.toString().contains('Timestamp must be after'))),
       );
     });
   });

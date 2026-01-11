@@ -58,16 +58,56 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsRelateDemo() async {
 
   // Subjects
   // Using 'resource' as a valid generic content type.
-  final science = {'contentType': 'resource', 'title': 'Science', 'url': 'https://en.wikipedia.org/wiki/Science'};
-  final math = {'contentType': 'resource', 'title': 'Math', 'url': 'https://en.wikipedia.org/wiki/Mathematics'};
-  final donut = {'contentType': 'resource', 'title': 'Donut', 'url': 'https://en.wikipedia.org/wiki/Doughnut'};
-  final happiness = {'contentType': 'resource', 'title': 'Happiness', 'url': 'https://en.wikipedia.org/wiki/Happiness'};
-  final food = {'contentType': 'resource', 'title': 'Food', 'url': 'https://en.wikipedia.org/wiki/Food'};
-  final skateboard = {'contentType': 'resource', 'title': 'Skateboard', 'url': 'https://en.wikipedia.org/wiki/Skateboard'};
-  final transportation = {'contentType': 'resource', 'title': 'Transportation', 'url': 'https://en.wikipedia.org/wiki/Transport'};
-  final elBarto = {'contentType': 'resource', 'title': 'El Barto', 'url': 'https://simpsons.fandom.com/wiki/El_Barto'};
-  final art = {'contentType': 'resource', 'title': 'Art', 'url': 'https://en.wikipedia.org/wiki/Art'};
-  final toy = {'contentType': 'resource', 'title': 'Toy', 'url': 'https://en.wikipedia.org/wiki/Toy'};
+  final science = {
+    'contentType': 'resource',
+    'title': 'Science',
+    'url': 'https://en.wikipedia.org/wiki/Science'
+  };
+  final math = {
+    'contentType': 'resource',
+    'title': 'Math',
+    'url': 'https://en.wikipedia.org/wiki/Mathematics'
+  };
+  final donut = {
+    'contentType': 'resource',
+    'title': 'Donut',
+    'url': 'https://en.wikipedia.org/wiki/Doughnut'
+  };
+  final happiness = {
+    'contentType': 'resource',
+    'title': 'Happiness',
+    'url': 'https://en.wikipedia.org/wiki/Happiness'
+  };
+  final food = {
+    'contentType': 'resource',
+    'title': 'Food',
+    'url': 'https://en.wikipedia.org/wiki/Food'
+  };
+  final skateboard = {
+    'contentType': 'resource',
+    'title': 'Skateboard',
+    'url': 'https://en.wikipedia.org/wiki/Skateboard'
+  };
+  final transportation = {
+    'contentType': 'resource',
+    'title': 'Transportation',
+    'url': 'https://en.wikipedia.org/wiki/Transport'
+  };
+  final elBarto = {
+    'contentType': 'resource',
+    'title': 'El Barto',
+    'url': 'https://simpsons.fandom.com/wiki/El_Barto'
+  };
+  final art = {
+    'contentType': 'resource',
+    'title': 'Art',
+    'url': 'https://en.wikipedia.org/wiki/Art'
+  };
+  final toy = {
+    'contentType': 'resource',
+    'title': 'Toy',
+    'url': 'https://en.wikipedia.org/wiki/Toy'
+  };
 
   // Rate subjects so they are known (otherwise only tokens are used in relate/equate)
   await lisaD.doRate(subject: science, recommend: true);

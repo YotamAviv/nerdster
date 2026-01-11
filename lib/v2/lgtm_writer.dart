@@ -12,7 +12,8 @@ class LgtmStatementWriter implements StatementWriter {
   final BuildContext _context;
   final V2Labeler _labeler;
 
-  LgtmStatementWriter(this._delegate, this._context, {required V2Labeler labeler}) : _labeler = labeler;
+  LgtmStatementWriter(this._delegate, this._context, {required V2Labeler labeler})
+      : _labeler = labeler;
 
   @override
   Future<Statement> push(Json json, StatementSigner signer) async {

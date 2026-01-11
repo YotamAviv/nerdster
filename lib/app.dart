@@ -35,33 +35,36 @@ class NerdsterApp extends StatelessWidget {
     }
 
     return MaterialApp(
-      navigatorKey: navigatorKey,
-      debugShowCheckedModeBanner: false,
-      home: CredentialsWatcher(
-        child: ListenableBuilder(
-          listenable: signInState,
-          builder: (context, _) {
-            final path = Uri.base.path;
-          final pov = signInState.pov;
+        navigatorKey: navigatorKey,
+        debugShowCheckedModeBanner: false,
+        home: CredentialsWatcher(
+          child: ListenableBuilder(
+            listenable: signInState,
+            builder: (context, _) {
+              final path = Uri.base.path;
+              final pov = signInState.pov;
 
-          final bool smallNow = MediaQuery.of(context).size.width < 600;
-          if (smallNow != isSmall.value) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              isSmall.value = smallNow;
-            });
-          }
+              final bool smallNow = MediaQuery.of(context).size.width < 600;
+              if (smallNow != isSmall.value) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  isSmall.value = smallNow;
+                });
+              }
 
-          if (path == '/m' || path.startsWith('/m/') || path == '/m.html' || path == '/v2/phone') {
-            return PhoneView(povIdentity: pov != null ? IdentityKey(pov) : null);
-          } else if (Uri.base.queryParameters.containsKey('verifyFullScreen') &&
-              b(Setting.get(SettingType.verify).value)) {
-            return const StandaloneVerify();
-          } else {
-            // Default to ContentView
-            return ContentView(pov: pov != null ? IdentityKey(pov) : null);
-          }
-        },
-      ),
-    ));
+              if (path == '/m' ||
+                  path.startsWith('/m/') ||
+                  path == '/m.html' ||
+                  path == '/v2/phone') {
+                return PhoneView(povIdentity: pov != null ? IdentityKey(pov) : null);
+              } else if (Uri.base.queryParameters.containsKey('verifyFullScreen') &&
+                  b(Setting.get(SettingType.verify).value)) {
+                return const StandaloneVerify();
+              } else {
+                // Default to ContentView
+                return ContentView(pov: pov != null ? IdentityKey(pov) : null);
+              }
+            },
+          ),
+        ));
   }
 }

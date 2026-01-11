@@ -2,8 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const String jsonStatements = 
-'''
+const String jsonStatements = '''
 [
   {
     "user": "Yotam Aviv",

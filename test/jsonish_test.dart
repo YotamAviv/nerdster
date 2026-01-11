@@ -79,39 +79,24 @@ const String jsonStatements = '''
 
 const Json bartTrustsHomerUnsigned = {
   "statement": "net.one-of-us.trust",
-  "I": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "ZiM9U4jopOgkUHWpDdIuMcxahz1cEN5z1ZWQEqF1fng"
-  },
+  "I": {"crv": "Ed25519", "kty": "OKP", "x": "ZiM9U4jopOgkUHWpDdIuMcxahz1cEN5z1ZWQEqF1fng"},
   "comment": "dad",
   "date": "2024-05-01T07:01:00Z",
   "privateComment": "Homey",
-  "subject": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "qh97FymJdQResajTkoK7n5q8-8PK1KSnp2MEyVHCCx8"
-  },
+  "subject": {"crv": "Ed25519", "kty": "OKP", "x": "qh97FymJdQResajTkoK7n5q8-8PK1KSnp2MEyVHCCx8"},
   "verb": "trust",
 };
 
 const Json bartTrustsHomerSigned = {
   "statement": "net.one-of-us.trust",
-  "I": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "ZiM9U4jopOgkUHWpDdIuMcxahz1cEN5z1ZWQEqF1fng"
-  },
+  "I": {"crv": "Ed25519", "kty": "OKP", "x": "ZiM9U4jopOgkUHWpDdIuMcxahz1cEN5z1ZWQEqF1fng"},
   "comment": "dad",
   "date": "2024-05-01T07:01:00Z",
   "privateComment": "Homey",
-  "subject": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "qh97FymJdQResajTkoK7n5q8-8PK1KSnp2MEyVHCCx8"
-  },
+  "subject": {"crv": "Ed25519", "kty": "OKP", "x": "qh97FymJdQResajTkoK7n5q8-8PK1KSnp2MEyVHCCx8"},
   "verb": "trust",
-  "signature": "77778e9e13ec1025f4d641ad650b26884a1fd5101edee06897c6152bc66a33747f6c5fb4d6e115fb2c135f8e58f8d2fd05ebf892425365836b3236fa045b0e0e"
+  "signature":
+      "77778e9e13ec1025f4d641ad650b26884a1fd5101edee06897c6152bc66a33747f6c5fb4d6e115fb2c135f8e58f8d2fd05ebf892425365836b3236fa045b0e0e"
 };
 
 void main() {
@@ -212,25 +197,16 @@ void main() {
 
   test('unknown keys at bottom but above signature', () async {
     const Json statementBadOrder = {
-      "signature": "268613a844523fe8682ced911f724df04d9502056dd172ffa6b5b9dec5ee9d29ffc5748d71da3c8625511a928f97ae0639b8c4e1321135d964b36c588f718907",
+      "signature":
+          "268613a844523fe8682ced911f724df04d9502056dd172ffa6b5b9dec5ee9d29ffc5748d71da3c8625511a928f97ae0639b8c4e1321135d964b36c588f718907",
       "statement": "net.one-of-us",
       "time": "2025-02-17T14:22:24.842019Z",
-      "I": {
-        "crv": "Ed25519",
-        "kty": "OKP",
-        "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
-      },
-      "with": {
-        "moniker": "Eyal F"
-      },
+      "I": {"crv": "Ed25519", "kty": "OKP", "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"},
+      "with": {"moniker": "Eyal F"},
       "previous": "bf020f1641972aed5cbd4c6c040f78e5d936e105",
-      "trust": {
-        "kty": "OKP",
-        "crv": "Ed25519",
-        "x": "M7l7bQBumX2Z-Rhh8M2nvgupd65ZwNn8x0uHY7H5bRY"
-      }
+      "trust": {"kty": "OKP", "crv": "Ed25519", "x": "M7l7bQBumX2Z-Rhh8M2nvgupd65ZwNn8x0uHY7H5bRY"}
     };
-        
+
     Jsonish.wipeCache();
     Jsonish jsonish = Jsonish(statementBadOrder);
     expect(jsonish.ppJson, '''{

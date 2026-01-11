@@ -14,13 +14,13 @@ class V2Config {
     if (baseUrl == null) {
       return Uri.parse('about:blank');
     }
-    
+
     final uri = Uri.parse(baseUrl);
     final params = <String, String>{'spec': jsonEncode(spec)};
     if (revokeAt != null) {
       params['revokeAt'] = revokeAt;
     }
-    
+
     final newParams = Map<String, String>.from(uri.queryParameters)..addAll(params);
     return uri.replace(queryParameters: newParams);
   }

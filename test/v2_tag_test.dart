@@ -33,7 +33,7 @@ void main() {
     test('Recursive Tag Collection', () {
       final Json identityKey = mockKey('identity1');
       final String identityToken = Jsonish(identityKey).token;
-      
+
       final Json delegateKey = mockKey('delegate1');
       final String delegateToken = Jsonish(delegateKey).token;
 
@@ -61,17 +61,16 @@ void main() {
       );
 
       final FollowNetwork followNetwork = FollowNetwork(
-        fcontext: 'test', 
-        povIdentity: IdentityKey(identityToken), 
-        identities: [IdentityKey(identityToken)]
-      );
-      final TrustGraph trustGraph = TrustGraph(
-        pov: IdentityKey(identityToken), 
-        distances: {IdentityKey(identityToken): 0},
-        edges: {IdentityKey(identityToken): [delegateStatement]}
-      );
+          fcontext: 'test',
+          povIdentity: IdentityKey(identityToken),
+          identities: [IdentityKey(identityToken)]);
+      final TrustGraph trustGraph = TrustGraph(pov: IdentityKey(identityToken), distances: {
+        IdentityKey(identityToken): 0
+      }, edges: {
+        IdentityKey(identityToken): [delegateStatement]
+      });
       final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
-      
+
       final Map<DelegateKey, List<ContentStatement>> byToken = {
         DelegateKey(delegateToken): [s2, s1],
       };
@@ -122,17 +121,16 @@ void main() {
       );
 
       final FollowNetwork followNetwork = FollowNetwork(
-        fcontext: 'test', 
-        povIdentity: IdentityKey(identityToken), 
-        identities: [IdentityKey(identityToken)]
-      );
-      final TrustGraph trustGraph = TrustGraph(
-        pov: IdentityKey(identityToken), 
-        distances: {IdentityKey(identityToken): 0},
-        edges: {IdentityKey(identityToken): [delegateStatement]}
-      );
+          fcontext: 'test',
+          povIdentity: IdentityKey(identityToken),
+          identities: [IdentityKey(identityToken)]);
+      final TrustGraph trustGraph = TrustGraph(pov: IdentityKey(identityToken), distances: {
+        IdentityKey(identityToken): 0
+      }, edges: {
+        IdentityKey(identityToken): [delegateStatement]
+      });
       final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
-      
+
       final Map<DelegateKey, List<ContentStatement>> byToken = {
         DelegateKey(delegateToken): [s2, s1],
       };
@@ -186,17 +184,16 @@ void main() {
       );
 
       final FollowNetwork followNetwork = FollowNetwork(
-        fcontext: 'test', 
-        povIdentity: IdentityKey(identityToken), 
-        identities: [IdentityKey(identityToken)]
-      );
-      final TrustGraph trustGraph = TrustGraph(
-        pov: IdentityKey(identityToken), 
-        distances: {IdentityKey(identityToken): 0},
-        edges: {IdentityKey(identityToken): [delegateStatement]}
-      );
+          fcontext: 'test',
+          povIdentity: IdentityKey(identityToken),
+          identities: [IdentityKey(identityToken)]);
+      final TrustGraph trustGraph = TrustGraph(pov: IdentityKey(identityToken), distances: {
+        IdentityKey(identityToken): 0
+      }, edges: {
+        IdentityKey(identityToken): [delegateStatement]
+      });
       final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
-      
+
       final Map<DelegateKey, List<ContentStatement>> byToken = {
         DelegateKey(delegateToken): [s2, s1],
       };
@@ -229,8 +226,10 @@ void main() {
       );
 
       // Use valid subjects that have a contentType so they pass the filter
-      final Map<String, dynamic> subject1 = createTestSubject(type: ContentType.article, url: 'https://sub1.com')..['id'] = 'sub1';
-      final Map<String, dynamic> subject2 = createTestSubject(type: ContentType.article, url: 'https://sub2.com')..['id'] = 'sub2';
+      final Map<String, dynamic> subject1 =
+          createTestSubject(type: ContentType.article, url: 'https://sub1.com')..['id'] = 'sub1';
+      final Map<String, dynamic> subject2 =
+          createTestSubject(type: ContentType.article, url: 'https://sub2.com')..['id'] = 'sub2';
 
       final ContentStatement s1 = makeContentStatement(
         verb: ContentVerb.rate,
@@ -246,17 +245,16 @@ void main() {
       );
 
       final FollowNetwork followNetwork = FollowNetwork(
-        fcontext: 'test', 
-        povIdentity: IdentityKey(identityToken), 
-        identities: [IdentityKey(identityToken)]
-      );
-      final TrustGraph trustGraph = TrustGraph(
-        pov: IdentityKey(identityToken), 
-        distances: {IdentityKey(identityToken): 0},
-        edges: {IdentityKey(identityToken): [delegateStatement]}
-      );
+          fcontext: 'test',
+          povIdentity: IdentityKey(identityToken),
+          identities: [IdentityKey(identityToken)]);
+      final TrustGraph trustGraph = TrustGraph(pov: IdentityKey(identityToken), distances: {
+        IdentityKey(identityToken): 0
+      }, edges: {
+        IdentityKey(identityToken): [delegateStatement]
+      });
       final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
-      
+
       final Map<DelegateKey, List<ContentStatement>> byToken = {
         DelegateKey(delegateToken): [s2, s1],
       };

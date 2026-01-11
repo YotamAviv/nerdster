@@ -39,10 +39,10 @@ void main() {
     OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
 
     // Configure V2 for Emulator
-    const host = 'localhost'; 
+    const host = 'localhost';
     const oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
     const nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
-    
+
     V2Config.registerUrl(kOneofusDomain, oneofusUrl);
     V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
 
@@ -65,7 +65,7 @@ void main() {
     testWidgets('Verify ContentView loads and displays monikers', (WidgetTester tester) async {
       // 1. Setup environment for Emulator
       fireChoice = FireChoice.emulator;
-      
+
       // Lisa's Identity from demoData.js
       final lisaToken = getToken(lisaIdentity);
       print('Signing in as Lisa: $lisaToken');
@@ -75,24 +75,24 @@ void main() {
       print('Current POV: ${signInState.pov}');
 
       await tester.pumpWidget(const app.NerdsterApp());
-      
+
       // Wait for the pipeline to run and UI to settle
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // 3. Verify UI Components
       final contentCards = find.byType(ContentCard);
       expect(contentCards, findsWidgets, reason: 'Should display at least one ContentCard');
-      
+
       final int cardCount = tester.widgetList(contentCards).length;
       print('Found $cardCount ContentCards');
 
       for (int i = 0; i < cardCount; i++) {
         final card = tester.widget<ContentCard>(contentCards.at(i));
-        final title = (card.aggregation.subject is Map) 
+        final title = (card.aggregation.subject is Map)
             ? (card.aggregation.subject['title'] ?? 'Untitled')
             : card.model.labeler.getLabel(card.aggregation.subject.toString());
         print('Card $i: Title="$title"');
-        
+
         for (final s in card.aggregation.statements) {
           if (b(s.comment)) {
             final label = card.model.labeler.getLabel(s.iToken);
@@ -105,7 +105,8 @@ void main() {
       // Assuming the emulator has data where Lisa trusts someone named "Bart"
       // We can look for specific text that should be resolved by the Labeler.
       // If the labeler is working, we should see names, not tokens.
-      final monikerFinder = find.textContaining(RegExp(r'^[A-Z][a-z]+')); // Look for capitalized names
+      final monikerFinder =
+          find.textContaining(RegExp(r'^[A-Z][a-z]+')); // Look for capitalized names
       expect(monikerFinder, findsWidgets, reason: 'Should find human-readable names (monikers)');
 
       // 5. Verify "Hide Seen" Toggle
@@ -118,10 +119,11 @@ void main() {
 
       final switchFinder = find.byType(Switch);
       expect(switchFinder, findsOneWidget);
-      
+
       // 6. Verify History/Comments are visible
       // The new design shows comments by default (up to 2) without an expansion tile title "History"
-      expect(find.byType(StatementTile), findsWidgets, reason: 'Should see StatementTiles (comments/ratings) directly on the card');
+      expect(find.byType(StatementTile), findsWidgets,
+          reason: 'Should see StatementTiles (comments/ratings) directly on the card');
     });
   });
 }

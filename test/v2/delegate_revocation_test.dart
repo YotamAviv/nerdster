@@ -49,8 +49,9 @@ void main() {
 
     // Sideshow revokes margeN as a delegate (Time T2)
     // Even though this is later in time, Sideshow is closer in the graph (Dist 0 vs Dist 1)
-    final TrustStatement s1 = await sideshow.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
-    
+    final TrustStatement s1 =
+        await sideshow.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
+
     final TrustGraph tg = TrustGraph(
       pov: sideshow.id,
       distances: {sideshow.id: 0, marge.id: 1},
@@ -62,18 +63,18 @@ void main() {
     );
 
     final DelegateResolver resolver = DelegateResolver(tg);
-    
+
     // Resolve for sideshow (Distance 0)
     resolver.resolveForIdentity(sideshow.id);
-    expect(resolver.getIdentityForDelegate(margeN.id), equals(sideshow.id), 
-      reason: 'Sideshow claims margeN because he is closer, even though his statement is later');
+    expect(resolver.getIdentityForDelegate(margeN.id), equals(sideshow.id),
+        reason: 'Sideshow claims margeN because he is closer, even though his statement is later');
     expect(resolver.getConstraintForDelegate(margeN.id), equals(kSinceAlways),
-      reason: 'The delegate is claimed but revoked');
+        reason: 'The delegate is claimed but revoked');
 
     // Resolve for marge (Distance 1)
     resolver.resolveForIdentity(marge.id);
     expect(resolver.getIdentityForDelegate(margeN.id), equals(sideshow.id),
-      reason: 'Marge cannot claim margeN because Sideshow already claimed it');
+        reason: 'Marge cannot claim margeN because Sideshow already claimed it');
   });
 
   test('V2Labeler: Should label delegate correctly when revoked by owner', () async {
@@ -86,9 +87,10 @@ void main() {
 
     // Marge delegates to margeN
     final TrustStatement sMargeDelegate = await marge.delegate(margeN, domain: 'nerdster.org');
-    
+
     // Marge revokes margeN
-    final TrustStatement sMargeRevoke = await marge.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
+    final TrustStatement sMargeRevoke =
+        await marge.delegate(margeN, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
     final TrustGraph tg = TrustGraph(
       pov: mel.id,
@@ -124,10 +126,11 @@ void main() {
 
     // 2. Alice delegates to delegate
     final TrustStatement d1 = await alice.delegate(delegate, domain: 'nerdster.org');
-    
-    // 3. Alice revokes delegate at s1. 
+
+    // 3. Alice revokes delegate at s1.
     // passing s1.token directly as doTrust expects String?
-    final TrustStatement d2 = await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: s1.token);
+    final TrustStatement d2 =
+        await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: s1.token);
 
     final TrustGraph tg = TrustGraph(
       pov: alice.id,
@@ -167,7 +170,8 @@ void main() {
     await upload(delegate.token, s1);
 
     final TrustStatement d1 = await bob.delegate(delegate, domain: 'nerdster.org');
-    final TrustStatement d2 = await bob.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
+    final TrustStatement d2 =
+        await bob.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
     final TrustGraph tg = TrustGraph(
       pov: bob.id,
@@ -201,7 +205,8 @@ void main() {
     final delegate = await DemoDelegateKey.create('delegate');
 
     // Alice delegates to delegate with a revokeAt (maybe she's revoking an old session but authorizing the key)
-    final TrustStatement d1 = await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
+    final TrustStatement d1 =
+        await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: kSinceAlways);
 
     final TrustGraph tg = TrustGraph(
       pov: alice.id,
@@ -216,7 +221,7 @@ void main() {
     resolver.resolveForIdentity(alice.id);
 
     expect(resolver.getIdentityForDelegate(delegate.id), equals(alice.id),
-      reason: 'Delegate should be authorized even if revokeAt is present');
+        reason: 'Delegate should be authorized even if revokeAt is present');
     expect(resolver.getConstraintForDelegate(delegate.id), equals(kSinceAlways));
   });
 
@@ -230,9 +235,10 @@ void main() {
 
     // 2. Bob delegates to delegate
     final TrustStatement d1 = await bob.delegate(delegate, domain: 'nerdster.org');
-    
+
     // 3. Bob revokes delegate at S1
-    final TrustStatement d2 = await bob.delegate(delegate, domain: 'nerdster.org', revokeAt: s1.token);
+    final TrustStatement d2 =
+        await bob.delegate(delegate, domain: 'nerdster.org', revokeAt: s1.token);
 
     // 4. Delegate signs another statement (S2) AFTER revocation
     final ContentStatement s2 = await delegate.doRate(title: 'After Revocation');
@@ -266,10 +272,12 @@ void main() {
     );
 
     final delegateStatements = delegateContent[delegateKey] ?? [];
-    
+
     // Should only contain S1
-    expect(delegateStatements.any((s) => IdentityKey(s.token) == IdentityKey(s1.token)), isTrue, reason: 'S1 should be present');
-    expect(delegateStatements.any((s) => IdentityKey(s.token) == IdentityKey(s2.token)), isFalse, reason: 'S2 should be ignored');
+    expect(delegateStatements.any((s) => IdentityKey(s.token) == IdentityKey(s1.token)), isTrue,
+        reason: 'S1 should be present');
+    expect(delegateStatements.any((s) => IdentityKey(s.token) == IdentityKey(s2.token)), isFalse,
+        reason: 'S2 should be ignored');
     expect(delegateStatements.length, equals(1));
   });
 
@@ -311,14 +319,15 @@ void main() {
     );
 
     final delegateResolver = DelegateResolver(tg);
-    
+
     // Run Follow Logic
     final fn = reduceFollowNetwork(tg, delegateResolver, contentResult, 'social');
 
     // Assert
     expect(fn.edges[bo.id], isNotNull);
     expect(fn.edges[bo.id]!.any((s) => IdentityKey(s.subjectToken!) == luke.id), isTrue,
-        reason: 'Bo should still follow Luke because the delegate was revoked AT the follow statement');
+        reason:
+            'Bo should still follow Luke because the delegate was revoked AT the follow statement');
   });
 
   test('V2Labeler: Should number multiple delegates for same identity and domain', () async {
@@ -329,7 +338,7 @@ void main() {
     // Bob delegates to d1 and d2
     final TrustStatement s1 = await bob.delegate(d1, domain: 'nerdster.org');
     final TrustStatement s2 = await bob.delegate(d2, domain: 'nerdster.org');
-    
+
     // Bob is trusted by POV (me) so he gets a name
     final me = await DemoIdentityKey.create('me');
     final sTrust = await me.doTrust(TrustVerb.trust, bob, moniker: 'Bob');
@@ -340,7 +349,7 @@ void main() {
       orderedKeys: [me.id, bob.id],
       edges: {
         me.id: [sTrust],
-        bob.id: [s2, s1], 
+        bob.id: [s2, s1],
       },
       notifications: [],
     );

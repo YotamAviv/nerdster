@@ -13,7 +13,8 @@ class JsonQrDisplay extends StatelessWidget {
   final ValueNotifier<bool>? interpret;
   final Interpreter? interpreter;
 
-  const JsonQrDisplay(this.subject, {super.key, this.interpret, this.bogusSubject, this.interpreter});
+  const JsonQrDisplay(this.subject,
+      {super.key, this.interpret, this.bogusSubject, this.interpreter});
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,10 @@ class JsonQrDisplay extends StatelessWidget {
                 height: qrSize / 2,
                 child: Padding(
                     padding: kPadding,
-                    child: V2JsonDisplay(subject, bogusSubject: bogusSubject, interpret: interpret, interpreter: interpreter))),
+                    child: V2JsonDisplay(subject,
+                        bogusSubject: bogusSubject,
+                        interpret: interpret,
+                        interpreter: interpreter))),
           ],
         );
       } else {

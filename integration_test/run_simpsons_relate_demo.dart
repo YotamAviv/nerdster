@@ -31,10 +31,10 @@ void main() {
     OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
 
     // Configure V2 for Emulator
-    const host = 'localhost'; 
+    const host = 'localhost';
     const oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
     const nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
-    
+
     V2Config.registerUrl(kOneofusDomain, oneofusUrl);
     V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
 
@@ -47,23 +47,23 @@ void main() {
 
   testWidgets('Run Simpsons Relate Demo', (WidgetTester tester) async {
     print('Starting Simpsons Relate Demo...');
-    
+
     await simpsonsRelateDemo();
 
     print('\n--- Demo Keys (Copy JSON for Paste Sign-In) ---');
-    
+
     final characters = ['lisa', 'bart', 'homer', 'marge'];
-    
+
     for (var name in characters) {
       final identityKey = DemoIdentityKey.findByName(name);
       final delegateKey = DemoDelegateKey.findByName('$name-nerdster0');
-      
+
       if (identityKey != null && delegateKey != null) {
         final json = {
           'identity': await identityKey.publicKey.json,
           'nerdster.org': await delegateKey.keyPair.json,
         };
-        
+
         print('\nName: $name');
         print('Credentials JSON:');
         print(jsonEncode(json));

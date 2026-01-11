@@ -20,7 +20,7 @@ class MockSource implements StatementSource<TrustStatement> {
     for (final MapEntry<String, String?> entry in keys.entries) {
       final String token = entry.key;
       final String? revokeAt = entry.value;
-      
+
       List<TrustStatement> list = data[token] ?? [];
       if (revokeAt != null) {
         // Simulate server-side filtering
@@ -54,7 +54,7 @@ void main() {
       iJson: keyB,
       time: DateTime.parse('2023-01-02T00:00:00Z'),
     );
-    
+
     final MockSource mock = MockSource({
       'B': [s1, s2],
     });
@@ -89,7 +89,7 @@ void main() {
       iJson: keyB,
       time: DateTime.parse('2023-01-02T00:00:00Z'),
     );
-    
+
     final MockSource mock = MockSource({
       'B': [s1, s2],
     });
@@ -112,7 +112,7 @@ void main() {
       iJson: mockKey('B'),
       time: DateTime.parse('2023-01-01T00:00:00Z'),
     );
-    
+
     final MockSource mock = MockSource({
       'B': [s1],
       'A': [],

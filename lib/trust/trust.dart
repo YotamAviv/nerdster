@@ -73,6 +73,6 @@ class Replace extends Trust {
   Replace(super.node, super.statedAt, this.revokeAt, super.statementToken);
 }
 
-class Block  extends Trust {
+class Block extends Trust {
   Block(super.node, super.statedAt, super.statementToken);
 }

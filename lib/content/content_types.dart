@@ -56,4 +56,3 @@ enum ContentType {
   final (IconData, IconData) iconDatas;
   final Map<String, String> type2field2type;
 }
-

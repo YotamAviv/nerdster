@@ -3,7 +3,7 @@
 // 2. Add "Show Trust Graph" buttons/links to the notification dialog.
 //    - One for paths to the Issuer.
 //    - One for paths to the Subject.
-// 3. Implement a `StaticFeedController` to adapt the existing `TrustGraph` and `FollowNetwork` 
+// 3. Implement a `StaticFeedController` to adapt the existing `TrustGraph` and `FollowNetwork`
 //    into a `V2FeedController` required by `NerdyGraphView`.
 // 4. Launch `NerdyGraphView` in a dialog or new screen when the buttons are clicked.
 
@@ -111,7 +111,8 @@ class V2NotificationsMenu extends StatelessWidget {
     // Check for "Not in network" warning
     final myIdentity = signInState.identity;
     if (b(myIdentity) && followNetwork != null) {
-      final canonicalIdentity = trustGraph?.resolveIdentity(IdentityKey(myIdentity!)) ?? IdentityKey(myIdentity!);
+      final canonicalIdentity =
+          trustGraph?.resolveIdentity(IdentityKey(myIdentity!)) ?? IdentityKey(myIdentity!);
       if (!followNetwork!.identities.contains(canonicalIdentity)) {
         items.add(MenuItemButton(
           onPressed: () {
@@ -125,7 +126,8 @@ class V2NotificationsMenu extends StatelessWidget {
               ),
             );
           },
-          child: const Text("⚠️ You're not in this network", style: TextStyle(color: Colors.orange)),
+          child:
+              const Text("⚠️ You're not in this network", style: TextStyle(color: Colors.orange)),
         ));
       }
     }
@@ -135,7 +137,7 @@ class V2NotificationsMenu extends StatelessWidget {
     if (b(myDelegate) && trustGraph != null) {
       // Check if the delegate key is replaced
       if (trustGraph!.replacements.containsKey(IdentityKey(myDelegate!))) {
-         items.add(MenuItemButton(
+        items.add(MenuItemButton(
           onPressed: () {
             showDialog(
               context: context,
@@ -162,16 +164,15 @@ class V2NotificationsMenu extends StatelessWidget {
             }
           }
         }
-        
+
         if (!isAssociated) {
-           items.add(MenuItemButton(
+          items.add(MenuItemButton(
             onPressed: () {
               showDialog(
                 context: context,
                 builder: (context) => const AlertDialog(
                   title: Text("Delegate key not associated"),
-                  content: Text(
-                      "Your current delegate key is not associated with your identity."),
+                  content: Text("Your current delegate key is not associated with your identity."),
                 ),
               );
             },
@@ -217,7 +218,8 @@ class V2NotificationsMenu extends StatelessWidget {
               title: SelectableText(reason),
               content: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
-                child: _V2StatementNotification(notification, labeler: labeler, trustGraph: trustGraph, followNetwork: followNetwork),
+                child: _V2StatementNotification(notification,
+                    labeler: labeler, trustGraph: trustGraph, followNetwork: followNetwork),
               ),
               actions: <Widget>[
                 TextButton(
@@ -248,7 +250,8 @@ class _V2StatementNotification extends StatelessWidget {
   final TrustGraph? trustGraph;
   final FollowNetwork? followNetwork;
 
-  const _V2StatementNotification(this.notification, {required this.labeler, this.trustGraph, this.followNetwork});
+  const _V2StatementNotification(this.notification,
+      {required this.labeler, this.trustGraph, this.followNetwork});
 
   @override
   Widget build(BuildContext context) {
@@ -335,13 +338,14 @@ Tactics for addressing this:
 
   void _showGraph(BuildContext context, String focusIdentity) {
     if (trustGraph == null) return;
-    
+
     final model = V2FeedModel(
       trustGraph: trustGraph!,
-      followNetwork: followNetwork ?? FollowNetwork(
-        fcontext: 'identity',
-        povIdentity: trustGraph!.pov,
-      ),
+      followNetwork: followNetwork ??
+          FollowNetwork(
+            fcontext: 'identity',
+            povIdentity: trustGraph!.pov,
+          ),
       delegateResolver: labeler.delegateResolver ?? DelegateResolver(trustGraph!),
       labeler: labeler,
       aggregation: ContentAggregation(),
@@ -351,9 +355,9 @@ Tactics for addressing this:
       filterMode: V2FilterMode.ignoreDisses,
       enableCensorship: false,
     );
-    
+
     final controller = StaticFeedController(model);
-    
+
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => NerdyGraphView(
         controller: controller,
@@ -366,7 +370,7 @@ Tactics for addressing this:
 class DummySource<T extends Statement> implements StatementSource<T> {
   @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async => {};
-  
+
   @override
   List<SourceError> get errors => [];
 }
@@ -385,13 +389,13 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
 
   @override
   bool get loading => false;
-  
+
   @override
   ValueNotifier<double> get progress => ValueNotifier(0);
-  
+
   @override
   ValueNotifier<String?> get loadingMessage => ValueNotifier(null);
-  
+
   @override
   String? get error => null;
 
@@ -422,7 +426,8 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
 
   @override
   bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled,
-      {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) => true;
+          {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) =>
+      true;
 
   @override
   void sortSubjects(List<SubjectAggregation> subjects) {}

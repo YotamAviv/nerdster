@@ -4,7 +4,7 @@ class SourceError {
   final dynamic originalError; // The underlying exception
 
   SourceError(this.reason, {this.token, this.originalError});
-  
+
   @override
   String toString() => 'SourceError($token): $reason';
 }

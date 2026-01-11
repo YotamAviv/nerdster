@@ -1,4 +1,4 @@
-// For performance: https://pub.dev/packages/cryptography_flutter . 
+// For performance: https://pub.dev/packages/cryptography_flutter .
 // $ flutter pub add cryptography_flutter
 
 import '/oneofus/jsonish.dart';
@@ -27,7 +27,7 @@ abstract class OouCryptoFactory {
 
 abstract class OouKeyPair {
   Future<Json> get json;
-  
+
   Future<OouPublicKey> get publicKey;
 
   // Return value might Json instead.
@@ -58,4 +58,3 @@ abstract class PkeKeyPair {
 abstract class PkePublicKey {
   Future<Json> get json;
 }
-

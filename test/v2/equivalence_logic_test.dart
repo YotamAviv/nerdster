@@ -46,9 +46,21 @@ void main() async {
     final DelegateResolver delegateResolver = DelegateResolver(graph);
 
     // Subjects
-    final Map<String, dynamic> sA = <String, dynamic>{'contentType': 'article', 'title': 'A', 'url': 'https://example.com/A'};
-    final Map<String, dynamic> sB = <String, dynamic>{'contentType': 'article', 'title': 'B', 'url': 'https://example.com/B'};
-    final Map<String, dynamic> sC = <String, dynamic>{'contentType': 'article', 'title': 'C', 'url': 'https://example.com/C'};
+    final Map<String, dynamic> sA = <String, dynamic>{
+      'contentType': 'article',
+      'title': 'A',
+      'url': 'https://example.com/A'
+    };
+    final Map<String, dynamic> sB = <String, dynamic>{
+      'contentType': 'article',
+      'title': 'B',
+      'url': 'https://example.com/B'
+    };
+    final Map<String, dynamic> sC = <String, dynamic>{
+      'contentType': 'article',
+      'title': 'C',
+      'url': 'https://example.com/C'
+    };
 
     final ContentKey sAKey = ContentKey(getToken(sA));
     final ContentKey sBKey = ContentKey(getToken(sB));
@@ -73,7 +85,8 @@ void main() async {
     await aliceN.doRelate(ContentVerb.equate, subject: sA, other: sB);
 
     // Collect statements
-    final Map<DelegateKey, List<ContentStatement>> delegateContent = <DelegateKey, List<ContentStatement>>{};
+    final Map<DelegateKey, List<ContentStatement>> delegateContent =
+        <DelegateKey, List<ContentStatement>>{};
     for (final DemoDelegateKey dk in [aliceN, bobN, charlieN]) {
       delegateContent[dk.id] = dk.contentStatements;
     }
@@ -88,14 +101,17 @@ void main() async {
     final List<IdentityKey> expected = <IdentityKey>[alice.id, charlie.id, bob.id];
     final List<IdentityKey> actual = netAlice.identities.toList();
 
-    final List<String> expectedNames = expected.map((IdentityKey t) => labeler.getLabel(t.value)).toList();
-    final List<String> actualNames = actual.map((IdentityKey t) => labeler.getLabel(t.value)).toList();
+    final List<String> expectedNames =
+        expected.map((IdentityKey t) => labeler.getLabel(t.value)).toList();
+    final List<String> actualNames =
+        actual.map((IdentityKey t) => labeler.getLabel(t.value)).toList();
 
     expect(actualNames, equals(expectedNames),
         reason: 'Network order should be Alice, then Charlie, then Bob');
 
-    final ContentAggregation aggAlice =
-        reduceContentAggregation(netAlice, graph, delegateResolver, contentResult, labeler: labeler);
+    final ContentAggregation aggAlice = reduceContentAggregation(
+        netAlice, graph, delegateResolver, contentResult,
+        labeler: labeler);
 
     final ContentKey? canonA = aggAlice.equivalence[sAKey];
     final ContentKey? canonB = aggAlice.equivalence[sBKey];

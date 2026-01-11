@@ -23,22 +23,23 @@ class ContentStatement extends Statement {
   String get iToken => iKey.value;
 
   ContentKey get subjectAsContent {
-     if (verb == ContentVerb.rate || 
-         verb == ContentVerb.equate || 
-         verb == ContentVerb.dontEquate ||
-         verb == ContentVerb.relate ||
-         verb == ContentVerb.dontRelate ||
-         verb == ContentVerb.clear) { // Clear maps string to ContentKey here if needed, but 'clears' logic handles most
-        return ContentKey(subjectToken);
-     }
-     throw 'Subject of $verb is not a ContentKey';
+    if (verb == ContentVerb.rate ||
+        verb == ContentVerb.equate ||
+        verb == ContentVerb.dontEquate ||
+        verb == ContentVerb.relate ||
+        verb == ContentVerb.dontRelate ||
+        verb == ContentVerb.clear) {
+      // Clear maps string to ContentKey here if needed, but 'clears' logic handles most
+      return ContentKey(subjectToken);
+    }
+    throw 'Subject of $verb is not a ContentKey';
   }
 
   IdentityKey get subjectAsIdentity {
-     if (verb == ContentVerb.follow || verb == ContentVerb.clear) {
-         return IdentityKey(subjectToken);
-     }
-     throw 'Subject of $verb is not an IdentityKey';
+    if (verb == ContentVerb.follow || verb == ContentVerb.clear) {
+      return IdentityKey(subjectToken);
+    }
+    throw 'Subject of $verb is not an IdentityKey';
   }
 
   ContentKey? get otherSubjectKey {
@@ -55,16 +56,17 @@ class ContentStatement extends Statement {
     if (other.subjectToken != subjectToken) return false;
 
     // 2. Binary Verbs (Relate/Equate) require matching 'other' subject too.
-    if (other.verb == ContentVerb.relate || other.verb == ContentVerb.dontRelate ||
-        other.verb == ContentVerb.equate || other.verb == ContentVerb.dontEquate) {
-       
-       // The clearing statement must also have an 'other' subject defined.
-       if (otherSubjectKey == null) return false;
+    if (other.verb == ContentVerb.relate ||
+        other.verb == ContentVerb.dontRelate ||
+        other.verb == ContentVerb.equate ||
+        other.verb == ContentVerb.dontEquate) {
+      // The clearing statement must also have an 'other' subject defined.
+      if (otherSubjectKey == null) return false;
 
-       // Compare the secondary keys.
-       return other.otherSubjectKey?.value == otherSubjectKey?.value;
+      // Compare the secondary keys.
+      return other.otherSubjectKey?.value == otherSubjectKey?.value;
     }
-    
+
     // 3. Unary Verbs (Rate, Follow) only require the primary subject match.
     return true;
   }
@@ -88,7 +90,7 @@ class ContentStatement extends Statement {
     assert(b(subject));
 
     Json? withx = jsonish['with'];
-    
+
     dynamic rawDismiss = withx?['dismiss'];
     String? dismissVal;
     if (rawDismiss is bool && rawDismiss == true) {
@@ -187,20 +189,20 @@ class ContentStatement extends Statement {
     return json;
   }
 
-  /// All subject tokens mentioned in this statement. Used for both indexing 
+  /// All subject tokens mentioned in this statement. Used for both indexing
   /// (making a "Relation" visible from either subject) and for signature generation.
   Iterable<String> get involvedTokens sync* {
     yield subjectToken;
     if (b(other)) yield getToken(other);
   }
 
-  /// Generates a unique signature for this statement's intent to identify redundancies 
+  /// Generates a unique signature for this statement's intent to identify redundancies
   /// during aggregation (Merge + Distinct).
-  /// 
+  ///
   /// - [iTransformer]: Maps the signer (usually a delegate) to their canonical identity.
   /// - [sTransformer]: Maps subjects to their canonical tokens (via Equivalence).
-  /// 
-  /// Commutative operations (e.g., A relates to B) produce the same signature 
+  ///
+  /// Commutative operations (e.g., A relates to B) produce the same signature
   /// regardless of token order or which delegate issued them.
   @override
   String getDistinctSignature({Transformer? iTransformer, Transformer? sTransformer}) {

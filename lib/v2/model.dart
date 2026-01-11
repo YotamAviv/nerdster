@@ -45,9 +45,11 @@ class TrustGraph {
   final Map<IdentityKey, int> distances; // Token -> Distance
   final List<IdentityKey> orderedKeys; // Tokens in discovery order (BFS)
   final Map<IdentityKey, IdentityKey> replacements; // OldToken -> NewToken
-  final Map<IdentityKey, String> replacementConstraints; // Token -> RevokeAtToken (Time constraint works on Token string)
+  final Map<IdentityKey, String>
+      replacementConstraints; // Token -> RevokeAtToken (Time constraint works on Token string)
   final Set<IdentityKey> blocked; // Tokens blocked by the graph
-  final Map<IdentityKey, List<List<IdentityKey>>> paths; // Target -> List of node-disjoint paths from pov
+  final Map<IdentityKey, List<List<IdentityKey>>>
+      paths; // Target -> List of node-disjoint paths from pov
   /// Notifications: key rotation issues, attempt to claim a delegate that's already been claimed.
   final List<TrustNotification> notifications;
   final Map<IdentityKey, List<TrustStatement>>
@@ -144,10 +146,10 @@ class TrustGraph {
         for (final s in edges[issuer]!) {
           // Only trust/replace edges constitute a path in the identity graph.
           if (s.verb == TrustVerb.trust && s.subjectAsIdentity == target) {
-             final subPaths = getPathsTo(issuer);
-             for (final p in subPaths) {
-               results.add([...p, target]);
-             }
+            final subPaths = getPathsTo(issuer);
+            for (final p in subPaths) {
+              results.add([...p, target]);
+            }
           }
         }
       }
@@ -259,10 +261,12 @@ class SubjectGroup {
         if (activityStatement.verb == ContentVerb.relate) return false; // Wakes up
         if (activityStatement.verb == ContentVerb.rate) {
           // Disqualified: censor or dismiss
-          if (activityStatement.censor == true || activityStatement.dismiss != null) continue; // Does not wake up
+          if (activityStatement.censor == true || activityStatement.dismiss != null)
+            continue; // Does not wake up
 
           // Qualified: comment or recommend
-          if (activityStatement.comment != null || activityStatement.like != null) return false; // Wakes up
+          if (activityStatement.comment != null || activityStatement.like != null)
+            return false; // Wakes up
         }
         // Equate/DontEquate/DontRelate are disqualified (they don't wake up)
       }

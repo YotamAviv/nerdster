@@ -53,7 +53,7 @@ void main() {
       bob.id: [t4, t3],
       charlie.id: [t6, t5],
     });
-    
+
     final DelegateResolver delegateResolver = DelegateResolver(graph);
 
     // Collect statements
@@ -62,15 +62,17 @@ void main() {
       if (dk is DemoDelegateKey) delegateContent[dk.id] = dk.contentStatements;
     }
 
-    final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver, ContentResult(delegateContent: delegateContent), kFollowContextNerdster);
+    final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver,
+        ContentResult(delegateContent: delegateContent), kFollowContextNerdster);
     final V2Labeler labeler = V2Labeler(graph);
-    
+
     final List<String> expected = [alice.token, bob.token, charlie.token];
     final List<String> actual = netAlice.identities.map((IdentityKey k) => k.value).toList();
 
     final List<String> expectedNames = expected.map((String t) => labeler.getLabel(t)).toList();
     final List<String> actualNames = actual.map((String t) => labeler.getLabel(t)).toList();
 
-    expect(actualNames, equals(expectedNames), reason: 'Network order should be Alice, then Bob, then Charlie');
+    expect(actualNames, equals(expectedNames),
+        reason: 'Network order should be Alice, then Bob, then Charlie');
   });
 }

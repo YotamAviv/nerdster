@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 
-// A past, failed attempt at this was more ambitions and considered nesting cost of 
+// A past, failed attempt at this was more ambitions and considered nesting cost of
 // 'fire' or 'tokenize' inside the Comps.
 // The static stuff could be changed to support to MeasureGroup instances with Comps in one and
 // 'fire', 'tokenize' in the other.

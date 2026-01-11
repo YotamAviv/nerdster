@@ -15,7 +15,6 @@ const kPadding = EdgeInsets.all(4);
 const kTallPadding = EdgeInsets.fromLTRB(0, 8, 0, 4);
 final BorderRadius kBorderRadius = BorderRadius.circular(8);
 
-
 const OouCryptoFactory crypto = CryptoFactoryEd25519();
 const JsonEncoder encoder = JsonEncoder.withIndent('  ');
 

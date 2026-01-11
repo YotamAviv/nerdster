@@ -216,7 +216,8 @@ You can include a URL in a comment or relate or equate this book to an article w
   }
 }
 
-void tryFetchTitle(String url, Function(String url, {String? title, String? error}) callback) async {
+void tryFetchTitle(
+    String url, Function(String url, {String? title, String? error}) callback) async {
   if (!url.startsWith('http://') && !url.startsWith('https://')) return;
   try {
     final title = await fetchTitle(url);

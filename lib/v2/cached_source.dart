@@ -32,7 +32,7 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
     _errorCache.clear();
   }
 
-  /// Clears all cached partial histories. 
+  /// Clears all cached partial histories.
   /// Full histories remain valid across PoV changes.
   void resetRevokeAt() {
     _partialCache.clear();
@@ -76,8 +76,8 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
         // If delegate reported an error for this token, cache it
         final error = _delegate.errors.where((e) => e.token == token).firstOrNull;
         if (error != null) {
-            _errorCache[token] = error;
-            continue; // Do not process statements for this token
+          _errorCache[token] = error;
+          continue; // Do not process statements for this token
         }
 
         final statements = fetched[token] ?? [];

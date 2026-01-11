@@ -30,7 +30,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   Graph _graph = Graph();
   final TransformationController _transformationController = TransformationController();
   late Algorithm _algorithm;
-  
+
   GraphData? _data;
   Set<GraphEdgeData> _pathEdges = {};
 
@@ -42,11 +42,10 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       if (widget.initialFocus != null) {
         _graphController!.focusedIdentity = IdentityKey(widget.initialFocus!);
       }
-      
+
       final String fcontext = widget.controller.value!.fcontext;
-      _graphController!.mode = (fcontext == kFollowContextIdentity) 
-          ? GraphViewMode.identity 
-          : GraphViewMode.follow;
+      _graphController!.mode =
+          (fcontext == kFollowContextIdentity) ? GraphViewMode.identity : GraphViewMode.follow;
     }
 
     widget.controller.addListener(_onModelChanged);
@@ -71,12 +70,11 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       final IdentityKey? oldFocus = _graphController?.focusedIdentity;
       _graphController = GraphController(widget.controller.value!);
       _graphController!.focusedIdentity = oldFocus;
-      
+
       final String fcontext = widget.controller.value!.fcontext;
-      _graphController!.mode = (fcontext == kFollowContextIdentity) 
-          ? GraphViewMode.identity 
-          : GraphViewMode.follow;
-          
+      _graphController!.mode =
+          (fcontext == kFollowContextIdentity) ? GraphViewMode.identity : GraphViewMode.follow;
+
       _refreshGraph();
     } else {
       _graphController = null;
@@ -86,10 +84,10 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   void _updateAlgorithm() {
     if (_graphController == null) return;
-    
+
     // Use the canonical root from the data if available, otherwise the POV
     final rootId = _data?.root ?? _graphController!.povIdentity.value;
-    
+
     // FanAlgorithm expects the key of the root node.
     _algorithm = FanAlgorithm(
       rootId: rootId,
@@ -118,7 +116,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     }
     final GraphData newData = _graphController!.buildGraphData();
     final Set<GraphEdgeData> newPathEdges = _graphController!.getPathToFocused(newData);
-    
+
     setState(() {
       _data = newData;
       _pathEdges = newPathEdges;
@@ -153,7 +151,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
       newGraph.addEdge(fromNode, toNode, paint: paint);
     }
-    
+
     _graph = newGraph;
   }
 
@@ -209,7 +207,8 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
                 minScale: 0.01,
                 maxScale: 5.6,
                 child: GraphView(
-                  key: ValueKey('${_graphController!.povIdentity.value}_${_data?.nodes.length}_${_data?.edges.length}'),
+                  key: ValueKey(
+                      '${_graphController!.povIdentity.value}_${_data?.nodes.length}_${_data?.edges.length}'),
                   graph: _graph,
                   algorithm: _algorithm,
                   paint: Paint()
@@ -219,10 +218,10 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
                   builder: (Node node) {
                     final key = node.key!.value;
                     if (key is IdentityKey) {
-                       return _buildNodeWidget(key);
+                      return _buildNodeWidget(key);
                     }
                     // Should not happen if we only add IdentityKeys
-                     return _buildNodeWidget(IdentityKey(key.toString()));
+                    return _buildNodeWidget(IdentityKey(key.toString()));
                   },
                 ),
               ),
@@ -259,7 +258,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
               availableIdentities: model?.trustGraph.orderedKeys ?? [],
               availableContexts: model?.availableContexts ?? [],
               activeContexts: model?.activeContexts ?? {},
-              // labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))), 
+              // labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
               // TrustSettingsBar might also need update if it takes old labeler or mismatch types
               // Assuming TrustSettingsBar is somewhat compatible or we fix it next.
               labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
@@ -285,24 +284,25 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
     final model = widget.controller.value!;
     final label = model.labeler.getLabel(identity.value);
-    
-    final IdentityKey resolvedRoot = model.trustGraph.resolveIdentity(_graphController!.povIdentity);
-    
-    IdentityKey? resolvedFocused; 
-    if (_graphController!.focusedIdentity != null) {
-       IdentityKey f = _graphController!.focusedIdentity!;
-       
-       // Handle delegate resolution for focus highlighting
-       final delegateMatch = model.delegateResolver.getIdentityForDelegate(DelegateKey(f.value));
-       if (delegateMatch != null) {
-         f = delegateMatch;
-       }
 
-       if (model.trustGraph.isTrusted(f)) {
-         resolvedFocused = model.trustGraph.resolveIdentity(f);
-       } else {
-         resolvedFocused = f;
-       }
+    final IdentityKey resolvedRoot =
+        model.trustGraph.resolveIdentity(_graphController!.povIdentity);
+
+    IdentityKey? resolvedFocused;
+    if (_graphController!.focusedIdentity != null) {
+      IdentityKey f = _graphController!.focusedIdentity!;
+
+      // Handle delegate resolution for focus highlighting
+      final delegateMatch = model.delegateResolver.getIdentityForDelegate(DelegateKey(f.value));
+      if (delegateMatch != null) {
+        f = delegateMatch;
+      }
+
+      if (model.trustGraph.isTrusted(f)) {
+        resolvedFocused = model.trustGraph.resolveIdentity(f);
+      } else {
+        resolvedFocused = f;
+      }
     }
 
     final isRoot = identity == resolvedRoot;

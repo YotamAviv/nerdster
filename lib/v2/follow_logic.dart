@@ -12,7 +12,7 @@ const String kFollowContextNerdster = '<nerdster>';
 
 /// The Pure Function Core of the Follow Network Algorithm.
 ///
-/// Input: 
+/// Input:
 /// - A TrustGraph (Identity Layer)
 /// - A DelegateResolver
 /// - A map of org.nerdster statements by token
@@ -30,7 +30,9 @@ FollowNetwork reduceFollowNetwork(
   final List<IdentityKey> identities = [];
   final List<TrustNotification> notifications = [];
   final Map<IdentityKey, List<ContentStatement>> edges = {};
-  final Map<IdentityKey, List<IdentityKey>> paths = {trustGraph.pov: [trustGraph.pov]};
+  final Map<IdentityKey, List<IdentityKey>> paths = {
+    trustGraph.pov: [trustGraph.pov]
+  };
 
   // 1. Handle <one-of-us> context (Identity Layer only)
   if (fcontext == kFollowContextIdentity) {
@@ -67,7 +69,7 @@ FollowNetwork reduceFollowNetwork(
     for (final IdentityKey issuerIdentity in layer) {
       // Get all follow/block statements from this identity's keys and its delegates
       final List<Iterable<ContentStatement>> sources = [];
-      
+
       // Delegate Keys
       for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(issuerIdentity)) {
         final list = contentResult.delegateContent[key];
@@ -75,11 +77,11 @@ FollowNetwork reduceFollowNetwork(
       }
 
       final Iterable<ContentStatement> statements = Merger.merge<ContentStatement>(sources);
-      
+
       final Set<IdentityKey> decided = {};
       for (final ContentStatement s in statements) {
         if (s.verb != ContentVerb.follow) continue;
-        
+
         // The subject of a follow statement is an identity.
         final IdentityKey subjectIdentity = trustGraph.resolveIdentity(IdentityKey(s.subjectToken));
 
@@ -87,14 +89,16 @@ FollowNetwork reduceFollowNetwork(
         final dynamic weight = contexts[fcontext];
 
         if (weight == null) continue;
-        
+
         // Record the edge for the graph view
         edges.putIfAbsent(issuerIdentity, () => []).add(s);
 
         if (decided.contains(subjectIdentity)) continue;
         decided.add(subjectIdentity);
 
-        final int w = weight is int ? weight : (weight is num ? weight.toInt() : num.parse(weight.toString()).toInt());
+        final int w = weight is int
+            ? weight
+            : (weight is num ? weight.toInt() : num.parse(weight.toString()).toInt());
 
         if (w < 0) {
           // Block
@@ -102,7 +106,8 @@ FollowNetwork reduceFollowNetwork(
             // Attempt to block you in context
             continue;
           }
-          if (!followDistances.containsKey(subjectIdentity) || followDistances[subjectIdentity]! > dist) {
+          if (!followDistances.containsKey(subjectIdentity) ||
+              followDistances[subjectIdentity]! > dist) {
             blocked.add(subjectIdentity);
           } else {
             // Attempt to block followed identity
@@ -133,7 +138,7 @@ FollowNetwork reduceFollowNetwork(
             // Trusts point to identities
             final IdentityKey subjectIdentity = trustGraph.resolveIdentity(ts.subjectAsIdentity);
             if (decided.contains(subjectIdentity)) continue;
-            
+
             if (blocked.contains(subjectIdentity)) continue;
             if (!followDistances.containsKey(subjectIdentity)) {
               followDistances[subjectIdentity] = dist + 1;
@@ -148,7 +153,8 @@ FollowNetwork reduceFollowNetwork(
     layer = nextLayer;
   }
 
-  final List<IdentityKey> filteredIdentities = orderedIdentities.where((id) => !blocked.contains(id)).toList();
+  final List<IdentityKey> filteredIdentities =
+      orderedIdentities.where((id) => !blocked.contains(id)).toList();
 
   return FollowNetwork(
     fcontext: fcontext,

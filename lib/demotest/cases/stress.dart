@@ -19,13 +19,13 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> stress() async {
     keys.add(await DemoIdentityKey.findOrCreate('key$i'));
   }
 
-  // make a delegate for each key 
+  // make a delegate for each key
   // (mostly so that we have at least one statement per key for choosing at random later)
   Map<int, List<String>> index2statementTokens = {};
   for (int i = 0; i < numKeys; i++) {
     var delegateKey = await DemoDelegateKey.findOrCreate('key$i-nerdster');
-    Statement s = await keys[i].delegate(delegateKey,
-        comment: 'nerdster key', domain: kNerdsterDomain);
+    Statement s =
+        await keys[i].delegate(delegateKey, comment: 'nerdster key', domain: kNerdsterDomain);
     index2statementTokens[i] = <String>[s.token];
   }
 
@@ -51,6 +51,6 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> stress() async {
   }
 
   useClock(LiveClock()); // DEFER: Get use of clock less error prone.
-  
+
   return (keys[0], null);
 }

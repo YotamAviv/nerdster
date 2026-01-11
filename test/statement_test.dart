@@ -6,19 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 var statementJson = {
   "statement": "net.one-of-us",
   "time": "2024-05-01T07:10:00.000Z",
-  "I": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "UYB3b66cl4JFkKy3REWI2TvBNc6q2z9-ghrFoneM9eg"
-  },
-  "trust": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "aPRsLNIDmJeXOjpo30dFTsz3FiJAsLVxnqF6G1V9LQw"
-  },
-  "with": {
-    "moniker": "key2"
-  }
+  "I": {"crv": "Ed25519", "kty": "OKP", "x": "UYB3b66cl4JFkKy3REWI2TvBNc6q2z9-ghrFoneM9eg"},
+  "trust": {"crv": "Ed25519", "kty": "OKP", "x": "aPRsLNIDmJeXOjpo30dFTsz3FiJAsLVxnqF6G1V9LQw"},
+  "with": {"moniker": "key2"}
 };
 
 void main() {
@@ -35,7 +25,7 @@ void main() {
     expect(stat1.token == jsonish.token, true);
 
     // Statement instances can be constructed from a Jsonish, which helps with identity==.
-    // Or they can use the static make method, which returns Json, not a Statement 
+    // Or they can use the static make method, which returns Json, not a Statement
     // instance, and so we still have ==.
     Json i = Jsonish.find(stat1.iToken)!.json;
     Json him = Jsonish.find(stat1.subjectToken)!.json;
@@ -45,6 +35,4 @@ void main() {
     TrustStatement stat3 = TrustStatement(jsonish3);
     expect(stat1 == stat3, true);
   });
-
 }
-

@@ -5,7 +5,7 @@ enum SettingType {
   skipCredentials(bool, false, persist: true),
   identityPathsReq(String, 'permissive'),
   fcontext(String, kFollowContextNerdster, aliases: ['follow']),
-  
+
   censor(bool, true),
   hideDisliked(bool, false),
   hideSeen(bool, false, persist: true),
@@ -23,7 +23,7 @@ enum SettingType {
 
   verifyImmediately(bool, false, param: true),
   verify(String, null, param: true),
-  
+
   debugUseSubjectNotToken(bool, false);
 
   final Type type;

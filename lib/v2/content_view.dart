@@ -63,8 +63,7 @@ class _ContentViewState extends State<ContentView> {
   void didUpdateWidget(ContentView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pov != widget.pov) {
-      debugPrint(
-          'ContentView: povIdentity changed from ${oldWidget.pov} to ${widget.pov}');
+      debugPrint('ContentView: povIdentity changed from ${oldWidget.pov} to ${widget.pov}');
       setState(() {
         _currentPov = widget.pov;
         _markedSubjectToken.value = null;

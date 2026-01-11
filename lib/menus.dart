@@ -23,7 +23,8 @@ import 'package:nerdster/verify.dart';
 const iconSpacer = SizedBox(width: 3);
 
 class Menus {
-  static List<Widget> build(BuildContext context, {
+  static List<Widget> build(
+    BuildContext context, {
     required Widget v2Notifications,
   }) {
     List<Widget> demos = <Widget>[];
@@ -67,11 +68,10 @@ class Menus {
       // Sign in
       SignInMenu(),
 
-
-
       // Settings
       SubmenuButton(menuChildren: [
-        MyCheckbox(Setting.get<bool>(SettingType.censor).notifier, '''Hide content censored by my network'''),
+        MyCheckbox(Setting.get<bool>(SettingType.censor).notifier,
+            '''Hide content censored by my network'''),
         SubmenuButton(menuChildren: [
           MyCheckbox(Setting.get<bool>(SettingType.skipCredentials).notifier,
               'Sign-in credentials received',
@@ -189,4 +189,3 @@ $link''',
 
   Menus._();
 }
-

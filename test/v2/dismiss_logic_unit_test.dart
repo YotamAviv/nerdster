@@ -62,11 +62,7 @@ void main() {
         canonical: c1,
         lastActivity: t1,
         povStatements: <ContentStatement>[
-          makeStatement(
-              verb: ContentVerb.rate,
-              subject: c1.value,
-              dismiss: 'forever',
-              time: t0),
+          makeStatement(verb: ContentVerb.rate, subject: c1.value, dismiss: 'forever', time: t0),
         ],
         statements: <ContentStatement>[
           makeStatement(verb: ContentVerb.rate, subject: c1.value, time: t1), // New activity
@@ -84,18 +80,10 @@ void main() {
         canonical: c1,
         lastActivity: t0,
         povStatements: <ContentStatement>[
-          makeStatement(
-              verb: ContentVerb.rate,
-              subject: c1.value,
-              dismiss: 'snooze',
-              time: t0),
+          makeStatement(verb: ContentVerb.rate, subject: c1.value, dismiss: 'snooze', time: t0),
         ],
         statements: <ContentStatement>[
-          makeStatement(
-              verb: ContentVerb.rate,
-              subject: c1.value,
-              dismiss: 'snooze',
-              time: t0),
+          makeStatement(verb: ContentVerb.rate, subject: c1.value, dismiss: 'snooze', time: t0),
         ],
       );
       agg = SubjectAggregation(
@@ -110,18 +98,10 @@ void main() {
         canonical: c1,
         lastActivity: t1,
         povStatements: <ContentStatement>[
-          makeStatement(
-              verb: ContentVerb.rate,
-              subject: c1.value,
-              dismiss: 'snooze',
-              time: t0),
+          makeStatement(verb: ContentVerb.rate, subject: c1.value, dismiss: 'snooze', time: t0),
         ],
         statements: <ContentStatement>[
-          makeStatement(
-              verb: ContentVerb.rate,
-              subject: c1.value,
-              comment: 'Hello',
-              time: t1),
+          makeStatement(verb: ContentVerb.rate, subject: c1.value, comment: 'Hello', time: t1),
         ],
       );
       agg = SubjectAggregation(
@@ -136,18 +116,10 @@ void main() {
         canonical: c1,
         lastActivity: t1,
         povStatements: <ContentStatement>[
-          makeStatement(
-              verb: ContentVerb.rate,
-              subject: c1.value,
-              dismiss: 'snooze',
-              time: t0),
+          makeStatement(verb: ContentVerb.rate, subject: c1.value, dismiss: 'snooze', time: t0),
         ],
         statements: <ContentStatement>[
-          makeStatement(
-              verb: ContentVerb.rate,
-              subject: c1.value,
-              censor: true,
-              time: t1),
+          makeStatement(verb: ContentVerb.rate, subject: c1.value, censor: true, time: t1),
         ],
       );
       agg = SubjectAggregation(
@@ -162,11 +134,7 @@ void main() {
         canonical: c1,
         lastActivity: t1,
         povStatements: <ContentStatement>[
-          makeStatement(
-              verb: ContentVerb.rate,
-              subject: c1.value,
-              dismiss: 'snooze',
-              time: t0),
+          makeStatement(verb: ContentVerb.rate, subject: c1.value, dismiss: 'snooze', time: t0),
         ],
         statements: <ContentStatement>[
           makeStatement(verb: ContentVerb.relate, subject: c1.value, time: t1),
@@ -181,11 +149,7 @@ void main() {
 
       // Case 7: User Dismissal (static method check)
       final List<ContentStatement> myDisses = <ContentStatement>[
-        makeStatement(
-            verb: ContentVerb.rate,
-            subject: c1.value,
-            dismiss: 'forever',
-            time: t0),
+        makeStatement(verb: ContentVerb.rate, subject: c1.value, dismiss: 'forever', time: t0),
       ];
       final SubjectGroup group7 = SubjectGroup(
         canonical: c1,

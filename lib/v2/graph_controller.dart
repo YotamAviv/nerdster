@@ -166,7 +166,8 @@ class GraphController {
             s.verb == TrustVerb.block ||
             s.verb == TrustVerb.replace ||
             s.verb == TrustVerb.delegate) {
-          final String subjectIdentity = feedModel.trustGraph.resolveIdentity(IdentityKey(s.subjectToken)).value;
+          final String subjectIdentity =
+              feedModel.trustGraph.resolveIdentity(IdentityKey(s.subjectToken)).value;
           final bool isNonCanonical = tg.replacements.containsKey(IdentityKey(s.subjectToken));
 
           final bool isConflict =
@@ -225,7 +226,7 @@ class GraphController {
           if (s.verb != TrustVerb.trust) continue;
           final IdentityKey subjectKey = IdentityKey(s.subjectToken);
           final IdentityKey subjectIdentityKey = feedModel.trustGraph.resolveIdentity(subjectKey);
-          
+
           if (!fn.contains(subjectIdentityKey)) continue;
 
           final String subjectIdentity = subjectIdentityKey.value;

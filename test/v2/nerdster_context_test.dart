@@ -44,9 +44,10 @@ void main() {
 
     // Alice should follow Bob because of direct trust
     expect(followNet.contains(bob.id), true, reason: 'Alice should follow Bob via direct trust');
-    
+
     // Alice should follow Charlie because Bob (who Alice follows) trusts Charlie
-    expect(followNet.contains(charlie.id), true, reason: 'Alice should follow Charlie via Bob\'s trust');
+    expect(followNet.contains(charlie.id), true,
+        reason: 'Alice should follow Charlie via Bob\'s trust');
   });
 
   test('<nerdster> context: block in WoT does NOT imply block in follow', () async {
