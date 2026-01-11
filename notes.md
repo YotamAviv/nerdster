@@ -67,6 +67,7 @@ export PATH="$PATH":"$HOME/.pub-cache/bin"
 ```
 
 ### Export PROD Firebase for use by local emulators
+functions$ npm install
 firebase projects:list
 gcloud projects list
 gcloud auth login

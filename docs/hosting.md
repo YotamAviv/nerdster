@@ -51,3 +51,9 @@ Not great, but functional
 
 Notes:
 - Run `flutter build web` first to generate `build/web`
+
+###
+flutter build web --release; firebase --project=nerdster deploy
+firebase --project=one-of-us-net deploy --only functions
+./bin/stage_nerdster.sh deploy
+./bin/stage_oneofus.sh deploy
