@@ -85,7 +85,8 @@ class DelegateResolver {
   }
 
   /// Returns all delegate keys authorized by the given canonical identity.
-  /// TODO: Cache the result or just make it earlier.
+  /// This implementation is lazy: the first call for a specific identity triggers
+  /// resolution from the [TrustGraph], and the result is cached for subsequent calls.
   List<DelegateKey> getDelegatesForIdentity(IdentityKey canonical) {
     resolveForIdentity(canonical);
     return _identityToDelegates[canonical] ?? [];
