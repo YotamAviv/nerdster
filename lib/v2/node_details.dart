@@ -299,28 +299,34 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
 
     final label = model.labeler.getLabel(widget.identity.value);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      title: Text('How I follow/block $label',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      subtitle: _hasChanges
+          ? const Text('Unsaved changes pending...',
+              style: TextStyle(color: Colors.orange, fontSize: 11, fontStyle: FontStyle.italic))
+          : null,
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('How I follow/block $label:', style: const TextStyle(fontWeight: FontWeight.bold)),
-            if (_hasChanges)
-              ElevatedButton(
-                onPressed: _isUpdating ? null : _saveChanges,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  minimumSize: const Size(0, 30),
-                ),
-                child: _isUpdating
-                    ? const SizedBox(
-                        width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Publish', style: TextStyle(fontSize: 12)),
+        if (_hasChanges)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: ElevatedButton.icon(
+              onPressed: _isUpdating ? null : _saveChanges,
+              icon: _isUpdating
+                  ? const SizedBox(
+                      width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.publish, size: 16),
+              label: const Text('Publish Changes', style: TextStyle(fontSize: 12)),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(0, 32),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
-          ],
-        ),
-        const SizedBox(height: 5),
+            ),
+          ),
         if (_pendingContexts.isEmpty)
           const Padding(
             padding: EdgeInsets.only(bottom: 8.0),
@@ -328,8 +334,9 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
                 style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey, fontSize: 12)),
           ),
         ..._pendingContexts.entries.map((e) => _buildContextRow(e.key, e.value)),
-        const SizedBox(height: 5),
+        const SizedBox(height: 8),
         _buildAddContextRow(),
+        const SizedBox(height: 8),
       ],
     );
   }
