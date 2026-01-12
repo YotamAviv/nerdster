@@ -147,7 +147,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     final String fcontext = model.fcontext;
 
     return AlertDialog(
-      title: _buildHeader(labeler, identityStr),
+      title: _buildHeader(labeler, widget.identity),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -155,10 +155,6 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           children: [
             _buildFollowContextsSection(),
             const Divider(),
-            const Text('All Monikers:', style: TextStyle(fontWeight: FontWeight.bold)),
-            if (labeler.getAllLabels(widget.identity).isEmpty) const Text('None'),
-            ...labeler.getAllLabels(widget.identity).map((l) => Text('• $l')),
-            const SizedBox(height: 10),
             const Text('Equivalent Identity Keys:', style: TextStyle(fontWeight: FontWeight.bold)),
             ...tg.getEquivalenceGroup(widget.identity).map((IdentityKey equivKey) {
               final equivIdentityToken = equivKey.value;
@@ -220,7 +216,12 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     );
   }
 
-  Widget _buildHeader(V2Labeler labeler, String identityStr) {
+  Widget _buildHeader(V2Labeler labeler, IdentityKey identity) {
+    final identityStr = identity.value;
+    final primaryLabel = labeler.getLabel(identityStr);
+    final allLabels = labeler.getAllLabels(identity);
+    final otherLabels = allLabels.where((l) => l != primaryLabel).toList();
+
     return Builder(builder: (context) {
       TapDownDetails? tapDetails;
       return InkWell(
@@ -234,10 +235,23 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         },
         child: Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Flexible(child: Text(labeler.getLabel(identityStr))),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(primaryLabel),
+                  if (otherLabels.isNotEmpty)
+                    Text('(${otherLabels.join(', ')})',
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.normal, color: Colors.grey)),
+                ],
+              ),
+            ),
             const SizedBox(width: 8),
-            const Icon(Icons.qr_code, size: 20, color: Colors.blue),
+            const Icon(Icons.qr_code, size: 24, color: Colors.blue),
           ],
         ),
       );
