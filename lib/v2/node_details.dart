@@ -72,8 +72,10 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
 
   bool _isUpdating = false;
   Map<String, int> _originalContexts = {};
+  String _originalComment = '';
   final Map<String, int> _pendingContexts = {};
   TextEditingController? _autocompleteController;
+  final TextEditingController _commentController = TextEditingController();
 
   V2FeedModel get model => widget.controller.value!;
 
@@ -81,6 +83,15 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
   void initState() {
     super.initState();
     _initData();
+    _commentController.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 
   Future<void> _initData() async {
@@ -102,23 +113,29 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
       }
     }
 
-    if (priorStatement != null && priorStatement.contexts != null) {
+    if (priorStatement != null) {
       setState(() {
-        _originalContexts.clear();
-        _pendingContexts.clear();
-        priorStatement!.contexts!.forEach((k, v) {
-          if (v is int) {
-            _originalContexts[k] = v;
-            _pendingContexts[k] = v;
-          }
-        });
+        _originalComment = priorStatement!.comment ?? '';
+        _commentController.text = _originalComment;
+        if (priorStatement!.contexts != null) {
+          _originalContexts.clear();
+          _pendingContexts.clear();
+          priorStatement!.contexts!.forEach((k, v) {
+            if (v is int) {
+              _originalContexts[k] = v;
+              _pendingContexts[k] = v;
+            }
+          });
+        }
       });
     }
   }
 
   bool get _hasChanges {
     final effectivePending = Map<String, int>.from(_pendingContexts)..removeWhere((k, v) => v == 0);
-    return !const MapEquality().equals(_originalContexts, effectivePending);
+    final contextsChanged = !const MapEquality().equals(_originalContexts, effectivePending);
+    final commentChanged = _commentController.text.trim() != _originalComment.trim();
+    return contextsChanged || commentChanged;
   }
 
   @override
@@ -376,8 +393,22 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
                 style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey, fontSize: 12)),
           ),
         ..._pendingContexts.entries.map((e) => _buildContextRow(e.key, e.value)),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         _buildAddContextRow(),
+        const SizedBox(height: 12),
+        const Text('Comment (Optional):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        TextField(
+          controller: _commentController,
+          maxLines: 2,
+          style: const TextStyle(fontSize: 13),
+          decoration: const InputDecoration(
+            hintText: 'Add a reason for following/blocking...',
+            border: OutlineInputBorder(),
+            isDense: true,
+            contentPadding: EdgeInsets.all(8),
+          ),
+        ),
         const SizedBox(height: 8),
       ],
     );
@@ -495,6 +526,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         ContentVerb.follow,
         widget.identity.value,
         contexts: contextsToSave,
+        comment: _commentController.text.trim(),
       );
 
       final writer = SourceFactory.getWriter(kNerdsterDomain,
@@ -509,6 +541,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         setState(() {
           _pendingContexts.removeWhere((key, value) => value == 0);
           _originalContexts = Map.of(_pendingContexts);
+          _originalComment = _commentController.text.trim();
         });
         await widget.controller.refresh(model.trustGraph.pov,
             meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
