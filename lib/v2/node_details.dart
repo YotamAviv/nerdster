@@ -155,54 +155,8 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           children: [
             _buildFollowContextsSection(),
             const Divider(),
-            const Text('Equivalent Identity Keys:', style: TextStyle(fontWeight: FontWeight.bold)),
-            ...tg.getEquivalenceGroup(widget.identity).map((IdentityKey equivKey) {
-              final equivIdentityToken = equivKey.value;
-              final bool isCanonical = equivKey == widget.identity;
-              final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
-              return Builder(builder: (context) {
-                TapDownDetails? tapDetails;
-                return InkWell(
-                  onTapDown: (details) => tapDetails = details,
-                  onTap: () {
-                    KeyInfoView.show(context, equivIdentityToken, kOneofusDomain,
-                        details: tapDetails,
-                        source: widget.controller.trustSource,
-                        labeler: labeler,
-                        constraints: const BoxConstraints(maxWidth: 600));
-                  },
-                  child: Text('• $equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
-                      style: TextStyle(
-                          fontSize: 10,
-                          color: isCanonical ? Colors.black : Colors.grey,
-                          decoration: TextDecoration.underline)),
-                );
-              });
-            }),
-            if (delegates.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              const Text('Delegate Keys:', style: TextStyle(fontWeight: FontWeight.bold)),
-              ...delegates.map((d) {
-                final String delegateLabel = labeler.getLabel(d);
-                return Builder(builder: (context) {
-                  TapDownDetails? tapDetails;
-                  return InkWell(
-                    onTapDown: (details) => tapDetails = details,
-                    onTap: () => KeyInfoView.show(context, d, kNerdsterDomain,
-                        details: tapDetails,
-                        source: widget.controller.contentSource,
-                        labeler: labeler,
-                        constraints: const BoxConstraints(maxWidth: 600)),
-                    child: Text('• $delegateLabel',
-                        style: const TextStyle(
-                            fontSize: 10,
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline)),
-                  );
-                });
-              }),
-            ],
-            const SizedBox(height: 10),
+            _buildKeysSection(tg, labeler, delegates),
+            const Divider(),
             if (fcontext == kFollowContextIdentity)
               _buildIdentityDetails(widget.identity, model)
             else if (fcontext == kFollowContextNerdster)
@@ -303,6 +257,80 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         child: const Text('Close'),
       )
     ];
+  }
+
+  Widget _buildKeysSection(TrustGraph tg, V2Labeler labeler, List<String> delegates) {
+    return ExpansionTile(
+      title: const Text('Keys', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
+      children: [
+        const Align(
+          alignment: Alignment.centerLeft,
+          child:
+              Text('Identity Keys:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+        ),
+        ...tg.getEquivalenceGroup(widget.identity).map((IdentityKey equivKey) {
+          final equivIdentityToken = equivKey.value;
+          final bool isCanonical = equivKey == widget.identity;
+          final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
+          return Builder(builder: (context) {
+            TapDownDetails? tapDetails;
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: InkWell(
+                onTapDown: (details) => tapDetails = details,
+                onTap: () {
+                  KeyInfoView.show(context, equivIdentityToken, kOneofusDomain,
+                      details: tapDetails,
+                      source: widget.controller.trustSource,
+                      labeler: labeler,
+                      constraints: const BoxConstraints(maxWidth: 600));
+                },
+                child: Text('• $equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: isCanonical ? Colors.black : Colors.grey,
+                        decoration: TextDecoration.underline)),
+              ),
+            );
+          });
+        }),
+        if (delegates.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child:
+                Text('Delegate Keys:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+          ...delegates.map((d) {
+            final String delegateLabel = labeler.getLabel(d);
+            return Builder(builder: (context) {
+              TapDownDetails? tapDetails;
+              return Align(
+                alignment: Alignment.centerLeft,
+                child: InkWell(
+                  onTapDown: (details) => tapDetails = details,
+                  onTap: () => KeyInfoView.show(context, d, kNerdsterDomain,
+                      details: tapDetails,
+                      source: widget.controller.contentSource,
+                      labeler: labeler,
+                      constraints: const BoxConstraints(maxWidth: 600)),
+                  child: Text('• $delegateLabel',
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline)),
+                ),
+              );
+            });
+          }),
+        ],
+        const SizedBox(height: 10),
+      ],
+    );
   }
 
   Widget _buildFollowContextsSection() {
