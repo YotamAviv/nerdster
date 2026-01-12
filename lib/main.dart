@@ -56,7 +56,7 @@ Future<void> main() async {
   });
 
   // ------------ Fire ------------
-  Map<String, String> params = Uri.base.queryParameters;
+  Map<String, String> params = collectQueryParameters();
   String? fireParam = params['fire'];
   if (b(fireParam)) {
     try {

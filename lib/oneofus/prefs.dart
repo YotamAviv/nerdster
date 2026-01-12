@@ -148,7 +148,7 @@ class Prefs {
           .map((setting) => setting.loadFromStorage(_storage)),
     );
 
-    Map<String, String> params = Uri.base.queryParameters;
+    Map<String, String> params = collectQueryParameters();
     for (final setting in Setting.all) {
       setting.updateFromQueryParam(params);
     }

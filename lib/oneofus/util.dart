@@ -10,6 +10,19 @@ import 'jsonish.dart';
 final DateTime date0 = DateTime.fromMicrosecondsSinceEpoch(0);
 const String kSinceAlways = '<since always>';
 
+Map<String, String> collectQueryParameters() {
+  // Merge parameters from both query string and fragment (common in Flutter Web)
+  Map<String, String> params = Map.from(Uri.base.queryParameters);
+  if (Uri.base.fragment.contains('?')) {
+    final fragmentParts = Uri.base.fragment.split('?');
+    if (fragmentParts.length > 1) {
+      final fragmentParams = Uri.splitQueryString(fragmentParts[1]);
+      params.addAll(fragmentParams);
+    }
+  }
+  return params;
+}
+
 // TODO: Try to use in more places, have more dialogs look the same.
 const kPadding = EdgeInsets.all(4);
 const kTallPadding = EdgeInsets.fromLTRB(0, 8, 0, 4);

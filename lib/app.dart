@@ -23,9 +23,11 @@ class NerdsterApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Merge parameters from both query string and fragment (common in Flutter Web)
+    Map<String, String> params = collectQueryParameters();
+
     // Check for qrSignIn query parameter on startup
-    if (Uri.base.queryParameters.containsKey('qrSignIn') &&
-        Uri.base.queryParameters['qrSignIn'] == 'true') {
+    if (params.containsKey('qrSignIn') && params['qrSignIn'] == 'true') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final context = navigatorKey.currentContext;
         if (context != null) {
@@ -56,7 +58,7 @@ class NerdsterApp extends StatelessWidget {
                   path == '/m.html' ||
                   path == '/v2/phone') {
                 return PhoneView(povIdentity: pov != null ? IdentityKey(pov) : null);
-              } else if (Uri.base.queryParameters.containsKey('verifyFullScreen') &&
+              } else if (params.containsKey('verifyFullScreen') &&
                   b(Setting.get(SettingType.verify).value)) {
                 return const StandaloneVerify();
               } else {
