@@ -475,12 +475,10 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
 
   Widget _buildIdentityDetails(IdentityKey identity, V2FeedModel model) {
     final tg = model.trustGraph;
-    final myId = signInState.identity;
 
     final statements = tg.edges.values
         .expand((l) => l)
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
-        .where((s) => s.iKey.value != myId)
         .toList();
 
     return Column(
@@ -495,13 +493,11 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
 
   Widget _buildContextDetails(IdentityKey identity, V2FeedModel model, String context) {
     final fn = model.followNetwork;
-    final myId = signInState.identity;
 
     final statements = fn.edges.values
         .expand((l) => l)
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .where((s) => s.contexts?.containsKey(context) == true)
-        .where((s) => _resolveDelegate(DelegateKey(s.iKey.value), model).value != myId)
         .toList();
 
     return Column(
@@ -517,14 +513,12 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
   Widget _buildNerdsterDetails(IdentityKey identity, V2FeedModel model) {
     final fn = model.followNetwork;
     final tg = model.trustGraph;
-    final myId = signInState.identity;
 
     // 1. Explicit Follows
     final explicitStatements = fn.edges.values
         .expand((l) => l)
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
-        .where((s) => _resolveDelegate(DelegateKey(s.iKey.value), model).value != myId)
         .toList();
 
     final explicitIssuers =
@@ -536,7 +530,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .where((s) {
       final issuer = _resolveDelegate(DelegateKey(s.iKey.value), model);
-      return !explicitIssuers.contains(issuer) && issuer.value != myId;
+      return !explicitIssuers.contains(issuer);
     }).toList();
 
     return Column(
