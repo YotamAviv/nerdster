@@ -585,19 +585,19 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Nerdster Context:',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
+        const Text('Incoming Follows (<nerdster>):',
+            style: TextStyle(fontWeight: FontWeight.bold)),
         const Text(
           'Includes explicit follows AND implicit follows derived from Trust (unless overridden).',
           style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
         ),
         const SizedBox(height: 10),
-        const Text('Explicit Follows:', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('Explicit:', style: TextStyle(fontWeight: FontWeight.bold)),
         if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
         ...explicitStatements
             .map((s) => _buildStatementTile(s, model, fcontext: kFollowContextNerdster)),
         const SizedBox(height: 10),
-        const Text('Implicit Follows (Trust):', style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('Implicit (Trust):', style: TextStyle(fontWeight: FontWeight.bold)),
         if (implicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
         ...implicitStatements.map((s) => _buildStatementTile(s, model)),
       ],
