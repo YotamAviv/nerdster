@@ -18,7 +18,8 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/split_menu_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-const uriSchemesName = 'oneofus'; // TODO: regonize? keyidme?
+// const uriSchemesName = 'oneofus'; // TODO: regonize? keyidme?
+const uriSchemesName = 'keymeid';
 
 class SignInMenu extends StatefulWidget {
   static const SignInMenu _singleton = SignInMenu._internal();
