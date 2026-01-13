@@ -131,7 +131,6 @@ $link''',
       // Dev
       if (Setting.get<bool>(SettingType.dev).value)
         SubmenuButton(menuChildren: [
-          MyCheckbox(Setting.get<bool>(SettingType.bogus).notifier, 'bogus'),
           SubmenuButton(menuChildren: [
             MyCheckbox(Setting.get<bool>(SettingType.skipVerify).notifier,
                 'skip actually verifying (goes quicker)'),

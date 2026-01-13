@@ -149,6 +149,8 @@ class Prefs {
     );
 
     Map<String, String> params = collectQueryParameters();
+    print('Query parameters: $params');
+    print('params[dev].runtimeType=${params['dev'].runtimeType}');
     for (final setting in Setting.all) {
       setting.updateFromQueryParam(params);
     }

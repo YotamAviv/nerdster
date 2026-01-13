@@ -17,7 +17,6 @@ enum SettingType {
 
   showCrypto(bool, false),
   dev(bool, false),
-  bogus(bool, true),
 
   skipVerify(bool, true),
 

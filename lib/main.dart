@@ -16,14 +16,13 @@ import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/fire_util.dart';
-import 'package:nerdster/v2/json_display.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus_fire.dart';
-import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/config.dart';
+import 'package:nerdster/v2/json_display.dart';
 import 'package:nerdster/verify.dart';
 
 import 'firebase_options.dart';
@@ -59,12 +58,7 @@ Future<void> main() async {
   Map<String, String> params = collectQueryParameters();
   String? fireParam = params['fire'];
   if (b(fireParam)) {
-    try {
-      fireChoice = FireChoice.values.byName(fireParam!);
-      print('fire=$fireChoice');
-    } catch (e) {
-      print(e);
-    }
+    fireChoice = FireChoice.values.byName(fireParam!);
   }
   if (fireChoice != FireChoice.fake) {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -118,7 +112,6 @@ Future<void> main() async {
   TrustStatement.init();
   ContentStatement.init();
   await defaultSignIn();
-  await initPrefs2();
   await About.init();
 
   // ----
@@ -168,10 +161,4 @@ Future<void> defaultSignIn({BuildContext? context}) async {
     await signInState.signIn(pov, null);
     return;
   }
-}
-
-Future<void> initPrefs2() async {
-  final bool devDefault = fireChoice != FireChoice.prod;
-  Setting.get<bool>(SettingType.showCrypto).value = devDefault;
-  Setting.get<bool>(SettingType.dev).value = devDefault;
 }
