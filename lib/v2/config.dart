@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-class V2Config {
+class FirebaseConfig {
   static final Map<String, String> _urls = {};
 
   static void registerUrl(String domain, String url) {

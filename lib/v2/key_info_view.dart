@@ -45,7 +45,7 @@ class KeyInfoView extends StatelessWidget {
       final token = jsonish.token;
       revokeAt = labeler.graph.replacementConstraints[IdentityKey(token)];
 
-      final Uri uri = V2Config.makeSimpleUri(domain, jsonish.token, revokeAt: revokeAt);
+      final Uri uri = FirebaseConfig.makeSimpleUri(domain, jsonish.token, revokeAt: revokeAt);
       return InkWell(
         onTap: () => launchUrl(uri),
         child: Padding(

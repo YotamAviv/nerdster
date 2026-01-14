@@ -21,7 +21,7 @@ class Lgtm {
     assert(b(signInState.delegate));
 
     var spec = signInState.delegate!;
-    Uri uri = V2Config.makeSimpleUri(kNerdsterDomain, spec);
+    Uri uri = FirebaseConfig.makeSimpleUri(kNerdsterDomain, spec);
 
     return showDialog<bool?>(
         context: context,

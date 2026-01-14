@@ -16,7 +16,7 @@ class SourceFactory {
       (fireChoice == FireChoice.fake)
           ? DirectFirestoreSource<T>(FireFactory.find(domain))
           : CloudFunctionsSource<T>(
-              baseUrl: V2Config.getUrl(domain)!,
+              baseUrl: FirebaseConfig.getUrl(domain)!,
               verifier: OouVerifier(),
             );
 

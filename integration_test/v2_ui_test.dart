@@ -43,8 +43,8 @@ void main() {
     const oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
     const nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
 
-    V2Config.registerUrl(kOneofusDomain, oneofusUrl);
-    V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
+    FirebaseConfig.registerUrl(kOneofusDomain, oneofusUrl);
+    FirebaseConfig.registerUrl(kNerdsterDomain, nerdsterUrl);
 
     // Configure Fetcher Endpoints
     // Fetcher.initEndpoint(kOneofusDomain,

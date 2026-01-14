@@ -38,8 +38,8 @@ void main() {
     const oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
     const nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
 
-    V2Config.registerUrl(kOneofusDomain, oneofusUrl);
-    V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
+    FirebaseConfig.registerUrl(kOneofusDomain, oneofusUrl);
+    FirebaseConfig.registerUrl(kNerdsterDomain, nerdsterUrl);
 
     // Configure Fetcher Endpoints (Legacy/V1 support needed for DemoKey)
     // Fetcher.initEndpoint(kOneofusDomain,
@@ -92,7 +92,7 @@ void main() {
           debugPrint('\n--- Testing Permutation: ${p.name} (skipVerify: $skipVerify) ---');
 
           // Manually construct source to inject params
-          final url = V2Config.getUrl(kOneofusDomain)!;
+          final url = FirebaseConfig.getUrl(kOneofusDomain)!;
           final source = CloudFunctionsSource<TrustStatement>(
             baseUrl: url,
             paramsOverride: p.params,

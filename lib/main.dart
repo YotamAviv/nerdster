@@ -94,8 +94,8 @@ Future<void> main() async {
     case FireChoice.emulator:
       const oneofusUrl = 'http://127.0.0.1:5002/one-of-us-net/us-central1/export';
       const nerdsterUrl = 'http://127.0.0.1:5001/nerdster/us-central1/export';
-      V2Config.registerUrl(kOneofusDomain, oneofusUrl);
-      V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
+      FirebaseConfig.registerUrl(kOneofusDomain, oneofusUrl);
+      FirebaseConfig.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;
     case FireChoice.prod:
 
@@ -104,8 +104,8 @@ Future<void> main() async {
       /// there is no other identity... but there could be)
       const oneofusUrl = 'https://export.one-of-us.net';
       const nerdsterUrl = 'https://export.nerdster.org';
-      V2Config.registerUrl(kOneofusDomain, oneofusUrl);
-      V2Config.registerUrl(kNerdsterDomain, nerdsterUrl);
+      FirebaseConfig.registerUrl(kOneofusDomain, oneofusUrl);
+      FirebaseConfig.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;
   }
 

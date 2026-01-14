@@ -24,4 +24,3 @@ Let me know if you notice anything that might be problematic.
 If not, suggest a commit message based only on the GIT diffs, not based on your memory
 Copy/paste from our conversation never works for me for this, and so
 append the commit message to the end of this file:
-
