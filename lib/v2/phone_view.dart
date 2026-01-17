@@ -101,18 +101,7 @@ class _PhoneViewState extends State<PhoneView> {
   }
 
   Widget _buildFeed(V2FeedModel model) {
-    final subjects = model.aggregation.subjects.values.where((s) {
-      return _controller.shouldShow(
-        s,
-        model.filterMode,
-        model.enableCensorship,
-        tagFilter: model.tagFilter,
-        tagEquivalence: model.aggregation.tagEquivalence,
-        typeFilter: model.typeFilter,
-      );
-    }).toList();
-
-    _controller.sortSubjects(subjects);
+    final subjects = model.effectiveSubjects;
 
     return ListView.builder(
       itemCount: subjects.length,

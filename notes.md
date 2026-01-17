@@ -17,7 +17,7 @@ AI NOTE: This is my (the human) file with my own notes.
 ?fire=fake&demo=equivalenceBug&skipCredentials=true
 
 # Fake simpsonsRelateDemo
-?fire=fake&demo=simpsonsRelateDemo&skipCredentials=true
+?fire=fake&demo=simpsonsRelateDemo&skipCredentials=truex 
 
 ?fire=fake&demo=simpsonsDemo&skipCredentials=true
 
