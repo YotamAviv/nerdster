@@ -24,7 +24,7 @@ It performs the following core functions:
 - **Advanced Scanning:** Allows scanning QR codes for other keys, statement tokens, or entire statements needed for operations like `revokeAt`, `replace`, or `claim delegate`.
 - **Clipboard Support:** Copy/paste can be used in place of QR code scanning.
 
-The project codebase is available at: https://github.com/YotamAviv/oneofus
+The project codebase is available at: https://github.com/YotamAviv/oneofusv2
 
 ### Key Concepts:
 
