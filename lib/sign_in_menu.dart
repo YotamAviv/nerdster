@@ -33,6 +33,7 @@ class SignInMenu extends StatefulWidget {
 class _SignInMenuState extends State<SignInMenu> {
   _SignInMenuState() {
     signInState.addListener(listen);
+    Setting.get(SettingType.dev).addListener(listen);
     // keyLabels.addListener(listen);
     listen();
   }
@@ -45,6 +46,7 @@ class _SignInMenuState extends State<SignInMenu> {
   @override
   void dispose() {
     signInState.removeListener(listen);
+    Setting.get(SettingType.dev).removeListener(listen);
     // keyLabels.removeListener(listen);
     super.dispose();
   }
