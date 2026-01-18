@@ -265,26 +265,31 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   Widget _buildHistorySection() {
-    final comments =
+    final allStatements =
         widget.aggregation.statements.where((s) => _shouldShowStatement(s, widget.model)).toList();
 
+    if (allStatements.isEmpty) return const SizedBox.shrink();
+
     // Sort by trust distance of the author (closest first)
-    comments.sort((a, b) {
+    allStatements.sort((a, b) {
       final distA = widget.model.labeler.graph.distances[IdentityKey(a.iToken)] ?? 999;
       final distB = widget.model.labeler.graph.distances[IdentityKey(b.iToken)] ?? 999;
       return distA.compareTo(distB);
     });
 
-    if (comments.isEmpty) return const SizedBox.shrink();
+    final roots = allStatements.where((s) {
+      final isReplyToOtherInAgg = allStatements.any((other) => other.token == s.subjectToken);
+      return !isReplyToOtherInAgg;
+    }).toList();
 
-    final topComments = comments.take(2).toList();
-    final hasMore = comments.length > 2;
+    final topRoots = roots.take(2).toList();
+    final hasMore = allStatements.length > topRoots.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (!_isHistoryExpanded)
-          ...topComments.map((s) => StatementTile(
+          ...topRoots.map((s) => StatementTile(
                 statement: s,
                 model: widget.model,
                 depth: 0,
@@ -313,8 +318,9 @@ class _ContentCardState extends State<ContentCard> {
           Center(
             child: TextButton.icon(
               icon: Icon(_isHistoryExpanded ? Icons.expand_less : Icons.expand_more, size: 16),
-              label:
-                  Text(_isHistoryExpanded ? 'Show less' : 'Show all history (${comments.length})'),
+              label: Text(_isHistoryExpanded
+                  ? 'Show less'
+                  : 'Show full history (${allStatements.length} total)'),
               onPressed: () {
                 setState(() {
                   _isHistoryExpanded = !_isHistoryExpanded;
