@@ -53,16 +53,11 @@ class NerdsterApp extends StatelessWidget {
                 });
               }
 
-              if (path == '/m' ||
-                  path.startsWith('/m/') ||
-                  path == '/m.html' ||
-                  path == '/v2/phone') {
-                return PhoneView(povIdentity: pov != null ? IdentityKey(pov) : null);
-              } else if (params.containsKey('verifyFullScreen') &&
+              if (params.containsKey('verifyFullScreen') &&
                   b(Setting.get(SettingType.verify).value)) {
                 return const StandaloneVerify();
               } else {
-                // Default to ContentView
+                // Default to ContentView (now responsive)
                 return ContentView(pov: pov != null ? IdentityKey(pov) : null);
               }
             },
