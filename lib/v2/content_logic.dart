@@ -115,6 +115,9 @@ ContentAggregation reduceContentAggregation(
 
   final Map<ContentKey, Json> subjectDefinitions = {};
   for (final statement in filteredStatements) {
+    // Every statement is its own definition (if someone replies to it)
+    subjectDefinitions[ContentKey(statement.token)] = statement.json;
+
     if (statement.subject is Map) {
       subjectDefinitions[ContentKey(statement.subjectToken)] = statement.subject as Json;
     }
