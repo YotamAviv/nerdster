@@ -11,8 +11,6 @@ import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/split_menu_button.dart';
@@ -33,21 +31,16 @@ class SignInMenu extends StatefulWidget {
 class _SignInMenuState extends State<SignInMenu> {
   _SignInMenuState() {
     signInState.addListener(listen);
-    Setting.get(SettingType.dev).addListener(listen);
-    // keyLabels.addListener(listen);
     listen();
   }
 
   Future<void> listen() async {
-    // await keyLabels.waitUntilReady();
     if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
     signInState.removeListener(listen);
-    Setting.get(SettingType.dev).removeListener(listen);
-    // keyLabels.removeListener(listen);
     super.dispose();
   }
 
@@ -119,26 +112,26 @@ class _SignInMenuState extends State<SignInMenu> {
               onPressed: () => pasteSignIn(context),
               child: const Text('Paste sign-in'),
             ),
-            if (Setting.get(SettingType.dev).value)
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.auto_fix_high),
-                onPressed: () async {
-                  final session = await SignInSession.create();
-                  // ignore: unawaited_futures
-                  session.listen(
-                    timeout: const Duration(minutes: 10),
-                    onDone: () {
-                      print('Magic sign-in session ended');
-                    },
-                  );
-                  print('jsonEncode(session.forPhone)=${jsonEncode(session.forPhone)}');
-                  final String magicLinkData = base64Url.encode(utf8.encode(jsonEncode(session.forPhone)));
-                  print('magicLinkData=$magicLinkData');
-                  final magicUrl = '$uriSchemesName://signin?parameters=$magicLinkData';
-                  launchUrl(Uri.parse(magicUrl));
-                },
-                child: const Text('Magic Sign-in'),
-              ),
+            MenuItemButton(
+              leadingIcon: const Icon(Icons.auto_fix_high),
+              onPressed: () async {
+                final session = await SignInSession.create();
+                // ignore: unawaited_futures
+                session.listen(
+                  timeout: const Duration(minutes: 10),
+                  onDone: () {
+                    print('Magic sign-in session ended');
+                  },
+                );
+                print('jsonEncode(session.forPhone)=${jsonEncode(session.forPhone)}');
+                final String magicLinkData =
+                    base64Url.encode(utf8.encode(jsonEncode(session.forPhone)));
+                print('magicLinkData=$magicLinkData');
+                final magicUrl = '$uriSchemesName://signin?parameters=$magicLinkData';
+                launchUrl(Uri.parse(magicUrl));
+              },
+              child: const Text('Magic Sign-in'),
+            ),
             if (signInState.identity != null) showCredentials(context),
           ],
         );
