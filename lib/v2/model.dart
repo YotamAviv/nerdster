@@ -58,14 +58,22 @@ class TrustGraph {
   TrustGraph({
     required this.pov,
     this.distances = const {},
-    this.orderedKeys = const [],
+    List<IdentityKey> orderedKeys = const [],
     this.replacements = const {},
     this.replacementConstraints = const {},
     this.blocked = const {},
-    this.paths = const {},
-    this.notifications = const [],
-    this.edges = const {},
-  });
+    Map<IdentityKey, List<List<IdentityKey>>> paths = const {},
+    List<TrustNotification> notifications = const [],
+    Map<IdentityKey, List<TrustStatement>> edges = const {},
+  })  : orderedKeys = List.unmodifiable(orderedKeys),
+        paths = Map<IdentityKey, List<List<IdentityKey>>>.unmodifiable(paths.map(
+            (k, v) => MapEntry(
+                k,
+                List<List<IdentityKey>>.unmodifiable(
+                    v.map((p) => List<IdentityKey>.unmodifiable(p)))))),
+        notifications = List<TrustNotification>.unmodifiable(notifications),
+        edges = Map<IdentityKey, List<TrustStatement>>.unmodifiable(
+            edges.map((k, v) => MapEntry(k, List<TrustStatement>.unmodifiable(v))));
 
   bool isTrusted(IdentityKey token) => distances.containsKey(token);
 
@@ -172,11 +180,17 @@ class FollowNetwork {
   FollowNetwork({
     required this.fcontext,
     required this.povIdentity,
-    this.identities = const [],
-    this.paths = const {},
-    this.notifications = const [],
-    this.edges = const {},
-  });
+    List<IdentityKey> identities = const [],
+    Map<IdentityKey, List<IdentityKey>> paths = const {},
+    List<TrustNotification> notifications = const [],
+    Map<IdentityKey, List<ContentStatement>> edges = const {},
+  })  : identities = List<IdentityKey>.unmodifiable(identities),
+        paths = Map<IdentityKey, List<IdentityKey>>.unmodifiable(
+            paths.map((k, v) => MapEntry(k, List<IdentityKey>.unmodifiable(v)))),
+        notifications = List<TrustNotification>.unmodifiable(notifications),
+        edges = Map<IdentityKey, List<ContentStatement>>.unmodifiable(
+            edges.map(
+                (k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v))));
 
   bool contains(IdentityKey identity) => identities.contains(identity);
 }
@@ -194,17 +208,18 @@ class SubjectGroup {
   final ContentKey canonical;
   SubjectGroup({
     required this.canonical,
-    this.statements = const [],
+    List<ContentStatement> statements = const [],
     this.tags = const {},
     this.likes = 0,
     this.dislikes = 0,
     required this.lastActivity,
     this.related = const {},
-    this.povStatements = const [],
+    List<ContentStatement> povStatements = const [],
     this.isCensored = false,
-  }) {
-    Statement.validateOrderTypes(statements);
-    Statement.validateOrderTypes(povStatements);
+  })  : statements = List.unmodifiable(statements),
+        povStatements = List.unmodifiable(povStatements) {
+    Statement.validateOrderTypes(this.statements);
+    Statement.validateOrderTypes(this.povStatements);
   }
 
   SubjectGroup copyWith({
@@ -412,16 +427,24 @@ class ContentAggregation {
   final Map<ContentKey, List<ContentStatement>> myLiteralStatements;
 
   ContentAggregation({
-    this.statements = const [],
+    List<ContentStatement> statements = const [],
     this.censored = const {},
     this.equivalence = const {},
     this.related = const {},
     this.tagEquivalence = const {},
-    this.mostTags = const [],
+    List<String> mostTags = const [],
     this.subjects = const {},
-    this.myCanonicalDisses = const {},
-    this.myLiteralStatements = const {},
-  });
+    Map<ContentKey, List<ContentStatement>> myCanonicalDisses = const {},
+    Map<ContentKey, List<ContentStatement>> myLiteralStatements = const {},
+  })  : statements = List<ContentStatement>.unmodifiable(statements),
+        mostTags = List<String>.unmodifiable(mostTags),
+        myCanonicalDisses = Map<ContentKey, List<ContentStatement>>.unmodifiable(
+            myCanonicalDisses
+                .map((k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v)))),
+        myLiteralStatements =
+            Map<ContentKey, List<ContentStatement>>.unmodifiable(
+                myLiteralStatements.map(
+                    (k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v))));
 }
 
 /// A complete snapshot of the feed data, ready for display.
@@ -468,6 +491,8 @@ class ContentResult {
   final Map<DelegateKey, List<ContentStatement>> delegateContent;
 
   ContentResult({
-    this.delegateContent = const {},
-  });
+    Map<DelegateKey, List<ContentStatement>> delegateContent = const {},
+  }) : delegateContent = Map<DelegateKey, List<ContentStatement>>.unmodifiable(
+            delegateContent.map((k, v) =>
+                MapEntry(k, List<ContentStatement>.unmodifiable(v))));
 }

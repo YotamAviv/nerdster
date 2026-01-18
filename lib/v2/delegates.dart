@@ -16,6 +16,7 @@ class DelegateResolver {
   /// Note that _identityToDelegates contains only those identities that actually have delegates.
   /// If an identity has no delegates, it will be in this set but not in _identityToDelegates.
   final Set<IdentityKey> _resolvedIdentities = {};
+  final List<TrustNotification> notifications = [];
 
   DelegateResolver(this.graph);
 
@@ -57,7 +58,7 @@ class DelegateResolver {
         _delegateToDomain[delegateKey] = s.domain ?? 'unknown';
         _identityToDelegates.putIfAbsent(identity, () => []).add(delegateKey);
       } else if (_delegateToIdentity[delegateKey] != identity) {
-        graph.notifications.add(TrustNotification(
+        notifications.add(TrustNotification(
           reason:
               "Delegate key ${delegateKey.value} already claimed by ${_delegateToIdentity[delegateKey]!.value}",
           rejectedStatement: s,

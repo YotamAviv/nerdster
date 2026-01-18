@@ -10,6 +10,8 @@ const String kNerdsterDomain = 'nerdster.org';
 class ContentStatement extends Statement {
   static final Map<String, ContentStatement> _cache = <String, ContentStatement>{};
 
+  static void clearCache() => _cache.clear();
+
   final ContentVerb verb;
 
   // with

@@ -299,7 +299,11 @@ class _V2RateDialogState extends State<V2RateDialog> {
                   labelText: 'Subject',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
                 ),
-                child: V2SubjectView(subject: rawSubject, strikethrough: censor.value),
+                child: V2SubjectView(
+                  subject: rawSubject,
+                  strikethrough: censor.value,
+                  labeler: widget.model.labeler,
+                ),
               ),
               const SizedBox(height: 16),
               Row(

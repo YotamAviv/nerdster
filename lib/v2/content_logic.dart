@@ -76,8 +76,9 @@ ContentAggregation reduceContentAggregation(
     ).cast<ContentStatement>());
   }
 
-  final List<ContentStatement> filteredStatements =
-      distinct(Merger.merge(identityStreams)).where((s) {
+  final List<ContentStatement> filteredStatements = distinct(
+    Merger.merge(identityStreams),
+  ).where((s) {
     // Filter out follow statements (they are for network building)
     if (s.verb == ContentVerb.follow) return false;
     if (s.verb == ContentVerb.clear) return false;
@@ -115,6 +116,9 @@ ContentAggregation reduceContentAggregation(
 
   final Map<ContentKey, Json> subjectDefinitions = {};
   for (final statement in filteredStatements) {
+    // Every statement is its own definition (if someone replies to it)
+    subjectDefinitions[ContentKey(statement.token)] = statement.json;
+
     if (statement.subject is Map) {
       subjectDefinitions[ContentKey(statement.subjectToken)] = statement.subject as Json;
     }
@@ -181,22 +185,44 @@ ContentAggregation reduceContentAggregation(
   }
 
   // 5. Aggregation
+  // Calculate transitive involvement for nested ratings
+  final Map<String, Set<String>> transitiveInvolvement = {};
+
+  // Sorting is CRITICAL: Parents MUST be processed before children for transitive closure to work in one pass.
+  // In Nerdster, a child statement (reply) always has a later timestamp than its parent.
+  final sortedForTransitive = List<ContentStatement>.from(filteredStatements)
+    ..sort((a, b) => a.time.compareTo(b.time));
+
+  for (final s in sortedForTransitive) {
+    final Set<String> inv = {};
+    for (final t in s.involvedTokens) {
+      inv.add(t);
+      if (transitiveInvolvement.containsKey(t)) {
+        inv.addAll(transitiveInvolvement[t]!);
+      }
+    }
+    transitiveInvolvement[s.token] = inv;
+  }
+
   final Map<ContentKey, SubjectGroup> canonicalSubject2group = {};
   final Map<ContentKey, SubjectGroup> literalSubject2group = {};
   final Map<ContentKey, List<ContentStatement>> canonicalSubject2statements = {};
   final Map<ContentKey, List<ContentStatement>> literalSubject2statements = {};
+
   for (final ContentStatement s in filteredStatements) {
-    final ContentKey literalSubject = ContentKey(s.subjectToken);
-    final ContentKey canonical = subjectEquivalence[literalSubject] ?? literalSubject;
-    canonicalSubject2statements.putIfAbsent(canonical, () => []).add(s);
-    literalSubject2statements.putIfAbsent(literalSubject, () => []).add(s);
-    if (s.other != null) {
-      final ContentKey literalOther = ContentKey(getToken(s.other));
-      final ContentKey canonicalOther = subjectEquivalence[literalOther] ?? literalOther;
-      if (canonicalOther != canonical) {
-        canonicalSubject2statements.putIfAbsent(canonicalOther, () => []).add(s);
-      }
-      literalSubject2statements.putIfAbsent(literalOther, () => []).add(s);
+    final Set<String> allInvolved = transitiveInvolvement[s.token] ?? s.involvedTokens.toSet();
+
+    final Set<ContentKey> canonicals = {};
+    for (final String t in allInvolved) {
+      final ContentKey literal = ContentKey(t);
+      final ContentKey canonical = subjectEquivalence[literal] ?? literal;
+      canonicals.add(canonical);
+
+      literalSubject2statements.putIfAbsent(literal, () => []).add(s);
+    }
+
+    for (final canonical in canonicals) {
+      canonicalSubject2statements.putIfAbsent(canonical, () => []).add(s);
     }
   }
 
@@ -205,6 +231,7 @@ ContentAggregation reduceContentAggregation(
   final Set<ContentKey> recognizedLiteralSubjects = {};
 
   for (final ContentStatement s in filteredStatements) {
+    recognizedLiteralSubjects.add(ContentKey(s.token));
     for (final String token in s.involvedTokens) {
       recognizedLiteralSubjects.add(ContentKey(token));
     }
@@ -218,10 +245,16 @@ ContentAggregation reduceContentAggregation(
       }
     } else if (s.verb == ContentVerb.rate) {
       // Only make it a top-level subject if we have a definition for it,
-      // otherwise it might be a rating-of-a-rating.
-      if (s.subject is Map || subjectDefinitions.containsKey(ContentKey(s.subjectToken))) {
-        topLevelSubjects
-            .add(subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken));
+      // AND that definition is not itself a statement (rating-of-a-rating).
+      final subjectKey = ContentKey(s.subjectToken);
+      final subjectDef = subjectDefinitions[subjectKey];
+      if (s.subject is Map || subjectDef != null) {
+        final isStatement = (s.subject is Map && (s.subject as Map).containsKey('statement')) ||
+            (subjectDef != null && subjectDef.containsKey('statement'));
+
+        if (!isStatement) {
+          topLevelSubjects.add(subjectEquivalence[subjectKey] ?? subjectKey);
+        }
       }
     }
   }
@@ -231,10 +264,16 @@ ContentAggregation reduceContentAggregation(
     final ContentKey literalSubject = ContentKey(s.subjectToken);
     final ContentKey canonicalSubject = subjectEquivalence[literalSubject] ?? literalSubject;
 
-    final List<ContentKey> canonicalTokens =
-        s.involvedTokens.map((t) => subjectEquivalence[ContentKey(t)] ?? ContentKey(t)).toList();
-    final ContentKey c1 = canonicalTokens[0];
-    final ContentKey? c2 = canonicalTokens.length > 1 ? canonicalTokens[1] : null;
+    final List<ContentKey> primaryLiteralTokens = s.involvedTokens.map((t) => ContentKey(t)).toList();
+    final ContentKey l1 = primaryLiteralTokens[0];
+    final ContentKey? l2 = primaryLiteralTokens.length > 1 ? primaryLiteralTokens[1] : null;
+
+    final List<ContentKey> primaryCanonicalTokens =
+        primaryLiteralTokens.map((t) => subjectEquivalence[t] ?? t).toList();
+    final ContentKey c1 = primaryCanonicalTokens[0];
+    final ContentKey? c2 = primaryCanonicalTokens.length > 1 ? primaryCanonicalTokens[1] : null;
+
+    final Set<String> allInvolved = transitiveInvolvement[s.token] ?? s.involvedTokens.toSet();
 
     final IdentityKey signerIdentity =
         delegateResolver.getIdentityForDelegate(DelegateKey(s.iToken))!;
@@ -249,17 +288,20 @@ ContentAggregation reduceContentAggregation(
             lastActivity: s.time,
           );
 
-      // Update stats
+      // Update stats: ONLY if this subject is a primary target of the rating
       int likes = group.likes;
       int dislikes = group.dislikes;
-      if (s.verb == ContentVerb.rate) {
+      final bool isPrimary =
+          isCanonical ? (key == c1 || key == c2) : (key == l1 || key == l2);
+
+      if (isPrimary && s.verb == ContentVerb.rate) {
         if (s.like == true) likes++;
         if (s.like == false) dislikes++;
       }
 
-      // Update related
+      // Update related: ONLY if this is a primary target
       final Set<ContentKey> relatedSet = Set.from(group.related);
-      if (s.verb == ContentVerb.relate) {
+      if (isPrimary && s.verb == ContentVerb.relate) {
         if (isCanonical) {
           if (key == c1 && c2 != null) {
             relatedSet.add(c2);
@@ -294,18 +336,24 @@ ContentAggregation reduceContentAggregation(
         lastActivity: lastActivity,
         related: relatedSet,
         povStatements: newPovStatements,
-        isCensored:
-            group.isCensored || censored.contains(key.value) || censored.contains(s.subjectToken),
+        isCensored: group.isCensored ||
+            censored.contains(key.value) ||
+            (isPrimary && censored.contains(s.subjectToken)),
       );
     }
 
     // Update Canonical map
-    for (final canonical in canonicalTokens.toSet()) {
+    final Set<ContentKey> canonicalTargets =
+        allInvolved.map((t) => subjectEquivalence[ContentKey(t)] ?? ContentKey(t)).toSet();
+    canonicalTargets.add(subjectEquivalence[ContentKey(s.token)] ?? ContentKey(s.token));
+
+    for (final canonical in canonicalTargets) {
       update(canonicalSubject2group, canonical, true);
     }
 
     // Update Literal map
-    for (final String t in s.involvedTokens) {
+    final Set<String> allLiteralTargets = Set.from(allInvolved)..add(s.token);
+    for (final String t in allLiteralTargets) {
       update(literalSubject2group, ContentKey(t), false);
     }
   }
@@ -342,7 +390,6 @@ ContentAggregation reduceContentAggregation(
 
   Set<String> collectTagsRecursive(ContentKey token, Set<ContentKey> visited,
       Map<ContentKey, List<ContentStatement>> statementsMap) {
-    Statement.validateOrderTypess(statementsMap.values);
     if (visited.contains(token)) return {};
     visited.add(token);
 
@@ -354,7 +401,8 @@ ContentAggregation reduceContentAggregation(
     }
 
     // Tags from statements about this token
-    for (final s in statementsMap[token] ?? []) {
+    final List<ContentStatement> stmts = statementsMap[token] ?? [];
+    for (final s in stmts) {
       if (s.comment != null) {
         tags.addAll(extractTags(s.comment!));
       }
@@ -366,7 +414,6 @@ ContentAggregation reduceContentAggregation(
   void updateTags(Map<ContentKey, SubjectGroup> targetMap,
       Map<ContentKey, List<ContentStatement>> statementsMap,
       {bool updateMostStrings = false}) {
-    Statement.validateOrderTypess(statementsMap.values);
     for (final ContentKey key in targetMap.keys.toList()) {
       final SubjectGroup group = targetMap[key]!;
       final Set<String> recursiveTags = collectTagsRecursive(key, {}, statementsMap);

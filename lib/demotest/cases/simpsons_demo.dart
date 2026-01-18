@@ -232,7 +232,5 @@ Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
   await burnsN.doFollow(marge, {kFollowContextNerdster: -1});
   await burnsN.doFollow(homer2, {kFollowContextNerdster: -1});
 
-  useClock(LiveClock());
-
   return (lisa, lisaN);
 }

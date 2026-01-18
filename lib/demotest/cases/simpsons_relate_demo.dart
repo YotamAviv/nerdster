@@ -147,7 +147,5 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsRelateDemo() async {
   // Marge un-relates El Barto from Art (it's vandalism!)
   await margeD.doRelate(ContentVerb.dontRelate, subject: elBarto, other: art);
 
-  useClock(LiveClock());
-
   return (lisa, lisaD);
 }

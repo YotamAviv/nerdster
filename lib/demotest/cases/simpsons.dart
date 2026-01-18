@@ -111,8 +111,6 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsons() async {
   await margeN.doFollow(lisa, {'family': 1});
   await margeN.doFollow(maggie, {'family': 1});
 
-  useClock(LiveClock());
-
   return (bart, bartN);
   // return (homer2, homer2N);
 }

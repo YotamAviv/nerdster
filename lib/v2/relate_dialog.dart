@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/model.dart';
@@ -156,7 +155,10 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
                   labelText: label1,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
                 ),
-                child: V2SubjectView(subject: _subject1.subject),
+                child: V2SubjectView(
+                  subject: _subject1.subject,
+                  labeler: widget.model.labeler,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -228,7 +230,10 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
                   labelText: label2,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
                 ),
-                child: V2SubjectView(subject: _subject2.subject),
+                child: V2SubjectView(
+                  subject: _subject2.subject,
+                  labeler: widget.model.labeler,
+                ),
               ),
               const SizedBox(height: 16),
               TextField(

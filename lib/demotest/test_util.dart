@@ -163,6 +163,9 @@ void setUpTestRegistry({FakeFirebaseFirestore? firestore}) {
   FireFactory.register(kNerdsterDomain, fs, null);
   ContentStatement.init();
   TrustStatement.init();
+  ContentStatement.clearCache();
+  TrustStatement.clearCache();
+  Jsonish.wipeCache();
   useClock(TestClock());
   _mockKeyCounter = 0;
   _testSubjectCount = 0;
