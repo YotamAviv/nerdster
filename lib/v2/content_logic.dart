@@ -76,8 +76,9 @@ ContentAggregation reduceContentAggregation(
     ).cast<ContentStatement>());
   }
 
-  final List<ContentStatement> filteredStatements =
-      distinct(Merger.merge(identityStreams)).where((s) {
+  final List<ContentStatement> filteredStatements = distinct(
+    Merger.merge(identityStreams),
+  ).where((s) {
     // Filter out follow statements (they are for network building)
     if (s.verb == ContentVerb.follow) return false;
     if (s.verb == ContentVerb.clear) return false;
@@ -211,12 +212,17 @@ ContentAggregation reduceContentAggregation(
   for (final ContentStatement s in filteredStatements) {
     final Set<String> allInvolved = transitiveInvolvement[s.token] ?? s.involvedTokens.toSet();
 
+    final Set<ContentKey> canonicals = {};
     for (final String t in allInvolved) {
       final ContentKey literal = ContentKey(t);
       final ContentKey canonical = subjectEquivalence[literal] ?? literal;
+      canonicals.add(canonical);
 
-      canonicalSubject2statements.putIfAbsent(canonical, () => []).add(s);
       literalSubject2statements.putIfAbsent(literal, () => []).add(s);
+    }
+
+    for (final canonical in canonicals) {
+      canonicalSubject2statements.putIfAbsent(canonical, () => []).add(s);
     }
   }
 
@@ -321,25 +327,9 @@ ContentAggregation reduceContentAggregation(
       final DateTime lastActivity =
           s.time.isAfter(group.lastActivity) ? s.time : group.lastActivity;
 
-      final List<ContentStatement> newStatements = [...group.statements, s];
-      // Sorting is required by Statement.validateOrderTypes (called in SubjectGroup constructor)
-      // Note: We use a non-strict stable sort. Since duplicates in timestamps are possible in unit tests,
-      // and validateOrderTypes expects STRICTly descending, we might still hit issues if we have exact collisions.
-      // However, reduceContentAggregation now deduplicates before reaching here (via Merger.merge and distinct).
-      // If we still have collisions, we need to ensure they are ordered deterministically.
-      newStatements.sort((a, b) {
-        final cmp = b.time.compareTo(a.time);
-        if (cmp != 0) return cmp;
-        return b.token.compareTo(a.token); // Deterministic tie-breaker
-      });
-
-      // Pass a flag or just use a custom constructor if the strict validator is too aggressive for test data.
-      // For now, let's see if we can just make the validator happy by ensuring they are never equal in the first place?
-      // No, let's just use the SubjectGroup constructor which calls the validator.
-
       map[key] = SubjectGroup(
         canonical: isCanonical ? key : canonicalSubject,
-        statements: newStatements,
+        statements: [...group.statements, s],
         tags: group.tags, // Will be updated in Pass 3
         likes: likes,
         dislikes: dislikes,
@@ -412,35 +402,7 @@ ContentAggregation reduceContentAggregation(
 
     // Tags from statements about this token
     final List<ContentStatement> stmts = statementsMap[token] ?? [];
-    // Sorting is required by Statement.validateOrderTypes (called in SubjectGroup constructor)
-    final List<ContentStatement> sortedStmts = List.from(stmts);
-    sortedStmts.sort((a, b) {
-      final cmp = b.time.compareTo(a.time);
-      if (cmp != 0) return cmp;
-      // Deterministic tie-breaker for identical timestamps (common in tests)
-      return b.token.compareTo(a.token);
-    });
-
-    // We must ensure strictly descending order for validateOrderTypes.
-    // If we have identical timestamps after sorting by token, we have to offset them slightly for validation if strictness is required.
-    // But deduplication should have prevented identical tokens.
-    // Let's see if the validator still fails with strictly descending tokens but identical times.
-    // Re-reading Statement.validateOrderTypes: it checks !previous.time.isAfter(current.time).
-    // so if times are EQUAL, it THROWS.
-    // We must ensure strictly descending times for the validator.
-
-    for (int i = 0; i < sortedStmts.length; i++) {
-      if (i > 0 && !sortedStmts[i - 1].time.isAfter(sortedStmts[i].time)) {
-        // If they are equal (or somehow out of order), we can't easily fix the time here as it's a final field.
-        // However, we can bypass the validation if we are confident in our deterministic internal order,
-        // OR we can adjust the test data to not have collisions.
-        // Since I cannot change the model easily, I will just ensure we don't call the strict validator on these specific lists if they have collisions.
-      }
-    }
-
-    // Statement.validateOrderTypes(sortedStmts); // Bypass strict validator because it forbids equal timestamps
-
-    for (final s in sortedStmts) {
+    for (final s in stmts) {
       if (s.comment != null) {
         tags.addAll(extractTags(s.comment!));
       }

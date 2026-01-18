@@ -50,8 +50,8 @@ abstract class Statement {
         }
 
         if (previous != null) {
-          if (previous.time.isBefore(current.time)) {
-            throw 'Statements are not in descending time order.\n'
+          if (!previous.time.isAfter(current.time)) {
+            throw 'Statements are not in strictly descending time order.\n'
                 'Index ${i - 1}: ${previous.time}\n'
                 'Index $i: ${current.time}';
           }

@@ -10,6 +10,8 @@ class TrustStatement extends Statement {
   // CONSIDER: wipeCaches? ever?
   static final Map<String, TrustStatement> _cache = <String, TrustStatement>{};
 
+  static void clearCache() => _cache.clear();
+
   static void init() {
     Statement.registerFactory(
         'net.one-of-us', _TrustStatementFactory(), TrustStatement, kOneofusDomain);

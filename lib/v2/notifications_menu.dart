@@ -32,6 +32,7 @@ import 'package:nerdster/v2/source_error.dart';
 class V2NotificationsMenu extends StatelessWidget {
   final TrustGraph? trustGraph;
   final FollowNetwork? followNetwork;
+  final DelegateResolver? delegateResolver;
   final V2Labeler labeler;
   final List<SourceError> sourceErrors;
 
@@ -39,6 +40,7 @@ class V2NotificationsMenu extends StatelessWidget {
     super.key,
     this.trustGraph,
     this.followNetwork,
+    this.delegateResolver,
     required this.labeler,
     this.sourceErrors = const [],
   });
@@ -51,6 +53,9 @@ class V2NotificationsMenu extends StatelessWidget {
     }
     if (followNetwork != null) {
       allNotifications.addAll(followNetwork!.notifications);
+    }
+    if (delegateResolver != null) {
+      allNotifications.addAll(delegateResolver!.notifications);
     }
 
     List<MenuItemButton> items = [];

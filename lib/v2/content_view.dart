@@ -171,6 +171,7 @@ class _ContentViewState extends State<ContentView> {
                       return V2NotificationsMenu(
                         trustGraph: model.trustGraph,
                         followNetwork: model.followNetwork,
+                        delegateResolver: model.delegateResolver,
                         labeler: model.labeler,
                         sourceErrors: model.sourceErrors,
                       );
