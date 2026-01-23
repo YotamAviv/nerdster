@@ -346,8 +346,6 @@ class MagicLinkDialog extends StatefulWidget {
 
 class _MagicLinkDialogState extends State<MagicLinkDialog> {
   SignInSession? _session;
-  String? _link;
-  bool _launched = false;
 
   @override
   void initState() {
@@ -359,31 +357,14 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
     try {
       final session = await widget.sessionFuture;
       if (!mounted) return;
+      _session = session;
 
-      setState(() {
-        _session = session;
-        final paramsJson = jsonEncode(session.forPhone);
-        final base64Params = base64Url.encode(utf8.encode(paramsJson));
-        // We do *not* Uri.encodeComponent because base64Url is url safe already
-        // (but some libs might prefer it being encoded anyway if it has == padding.
-        // base64Url usually avoids that or uses safe chars).
-        // Actually flutter's Uri.queryParameters decoding handles standard encodings.
-        // Let's stick clearly to the receiving logic:
-        // 1. Get query param "parameters"
-        // 2. base64Url.decode
-        _link = 'keymeid://signin?parameters=$base64Params';
-      });
+      final paramsJson = jsonEncode(session.forPhone);
+      final base64Params = base64Url.encode(utf8.encode(paramsJson));
+      final link = 'keymeid://signin?parameters=$base64Params';
 
       // Launch immediately
-      if (_link != null) {
-        // ignore: unused_local_variable
-        final launched = await launchUrl(Uri.parse(_link!));
-        if (mounted) {
-          setState(() {
-            _launched = true;
-          });
-        }
-      }
+      await launchUrl(Uri.parse(link));
 
       // Listen
       session.listen(
@@ -414,31 +395,6 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text(_launched ? "Magic Link Launched..." : "Preparing Magic Link...",
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            if (_link != null) ...[
-              Container(
-                padding: const EdgeInsets.all(8),
-                color: Colors.grey.shade100,
-                child: Text(
-                  _link!,
-                  style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.grey),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                  onPressed: () {
-                    // Retry launch
-                    launchUrl(Uri.parse(_link!));
-                  },
-                  child: const Text("Launch again")),
-            ],
-            const SizedBox(height: 8),
-            // Store keys checkbox removed from here as it is now in the main dialog
-            const SizedBox(height: 8),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
