@@ -4,7 +4,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/setting_type.dart';
-import 'package:nerdster/singletons.dart';
+// import 'package:nerdster/singletons.dart'; // Unused
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/metadata_service.dart';
@@ -16,9 +16,9 @@ import 'refresh_signal.dart';
 import 'submit.dart';
 
 class PhoneView extends StatefulWidget {
-  final IdentityKey? povIdentity;
+  final IdentityKey meIdentity;
 
-  const PhoneView({super.key, this.povIdentity});
+  const PhoneView({super.key, required this.meIdentity});
 
   @override
   State<PhoneView> createState() => _PhoneViewState();
@@ -37,8 +37,8 @@ class _PhoneViewState extends State<PhoneView> {
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
-    _controller.refresh(widget.povIdentity,
-        meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+    _controller.refresh(widget.meIdentity,
+        meIdentity: widget.meIdentity);
     v2RefreshSignal.addListener(_onRefresh);
     Setting.get<String>(SettingType.tag).addListener(_onSettingChanged);
   }
@@ -56,8 +56,8 @@ class _PhoneViewState extends State<PhoneView> {
   }
 
   void _onRefresh() {
-    _controller.refresh(widget.povIdentity,
-        meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+    _controller.refresh(widget.meIdentity,
+        meIdentity: widget.meIdentity);
   }
 
   @override

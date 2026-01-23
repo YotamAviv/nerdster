@@ -8,6 +8,7 @@ import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/content_view.dart';
 import 'package:nerdster/v2/phone_view.dart';
+import 'package:nerdster/v2/sign_in_screen.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/qr_sign_in.dart';
 
@@ -39,29 +40,46 @@ class NerdsterApp extends StatelessWidget {
     return MaterialApp(
         navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
-        home: CredentialsWatcher(
-          child: ListenableBuilder(
-            listenable: signInState,
-            builder: (context, _) {
-              final path = Uri.base.path;
-              final pov = signInState.pov;
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          useMaterial3: true,
+        ),
+        home: ListenableBuilder(
+          listenable: signInState,
+          builder: (context, _) {
+            if (!signInState.isSignedIn) {
+              return const SignInScreen();
+            }
 
-              final bool smallNow = MediaQuery.of(context).size.width < 600;
-              if (smallNow != isSmall.value) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  isSmall.value = smallNow;
-                });
-              }
+            return CredentialsWatcher(
+              child: Builder(builder: (context) {
+                // final path = Uri.base.path; 
+                final String pov = signInState.pov;
 
-              if (params.containsKey('verifyFullScreen') &&
-                  b(Setting.get(SettingType.verify).value)) {
-                return const StandaloneVerify();
-              } else {
-                // Default to ContentView (now responsive)
-                return ContentView(pov: pov != null ? IdentityKey(pov) : null);
-              }
-            },
-          ),
+                final bool smallNow = MediaQuery.of(context).size.width < 600;
+                if (smallNow != isSmall.value) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    isSmall.value = smallNow;
+                  });
+                }
+
+                if (params.containsKey('verifyFullScreen') &&
+                    b(Setting.get(SettingType.verify).value)) {
+                  return const StandaloneVerify();
+                } else {
+                  // Default to ContentView (now responsive)
+                  if (smallNow) {
+                     return PhoneView(meIdentity: IdentityKey(signInState.identity));
+                  } else {
+                    return ContentView(
+                      pov: IdentityKey(pov),
+                      meIdentity: IdentityKey(signInState.identity),
+                    );
+                  }
+                }
+              }),
+            );
+          },
         ));
   }
 }

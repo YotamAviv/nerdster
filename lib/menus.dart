@@ -137,7 +137,7 @@ $link''',
           ], child: const Text('cloud fetching')),
           MenuItemButton(
               onPressed: () {
-                Json povJson = Jsonish.find(signInState.pov!)!.json;
+                Json povJson = Jsonish.find(signInState.pov)!.json;
                 Jsonish.wipeCache();
                 Jsonish(povJson);
               },
@@ -159,9 +159,9 @@ $link''',
           MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           MenuItemButton(
               onPressed: () {
-                CorruptionCheck.check(signInState.pov!, kOneofusDomain);
+                CorruptionCheck.check(signInState.pov, kOneofusDomain);
                 if (signInState.delegate != null) {
-                  CorruptionCheck.check(signInState.pov!, kNerdsterDomain);
+                  CorruptionCheck.check(signInState.pov, kNerdsterDomain);
                 }
               },
               child: const Text('CorruptionCheck')),

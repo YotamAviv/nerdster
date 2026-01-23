@@ -13,7 +13,7 @@ String generateLink() {
 
   if (b(signInState.pov)) {
     // TODO: pov instead
-    params['identity'] = JsonEncoder().convert(Jsonish.find(signInState.pov!)!.json);
+    params['identity'] = JsonEncoder().convert(Jsonish.find(signInState.pov)!.json);
   }
 
   Prefs.setParams(params);

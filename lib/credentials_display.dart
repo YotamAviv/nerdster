@@ -118,6 +118,12 @@ class _CredentialsWatcherState extends State<CredentialsWatcher> {
   }
 
   void _checkState() {
+    if (!signInState.isSignedIn) {
+      _lastIdentity = null;
+      _lastDelegate = null;
+      return;
+    }
+
     final newIdentity = signInState.identity;
     final newDelegate = signInState.delegate;
 
@@ -127,7 +133,7 @@ class _CredentialsWatcherState extends State<CredentialsWatcher> {
     _lastDelegate = newDelegate;
 
     if (Setting.get<bool>(SettingType.skipCredentials).value) return;
-    if (newIdentity == null) return;
+    // if (newIdentity == null) return; // redundant with isSignedIn check
 
     if (!mounted) return;
 

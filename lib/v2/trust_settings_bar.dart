@@ -48,20 +48,19 @@ class TrustSettingsBar extends StatelessWidget {
                   );
                 }),
                 if (currentPov != null &&
-                    signInState.identity != null &&
-                    !availableIdentities.contains(IdentityKey(signInState.identity!)))
+                    !availableIdentities.contains(IdentityKey(signInState.identity)))
                   DropdownMenuItem<String>(
-                    value: signInState.identity!.toString(),
+                    value: signInState.identity,
                     child: Text('<identity>', style: const TextStyle(color: Colors.green)),
                   ),
               ];
               return DropdownButton<String>(
                 isExpanded: true,
-                value: currentPov,
+                value: currentPov ?? signInState.pov,
                 hint: const Text('Select PoV'),
                 items: items,
                 onChanged: (val) {
-                  signInState.pov = val;
+                  if (val != null) signInState.pov = val;
                 },
               );
             },

@@ -19,7 +19,7 @@ Future<Json> dumpDump(BuildContext? context) async {
   // await Comp.waitOnComps([contentBase]);
 
   Json out = {
-    'center': Jsonish.find(signInState.pov!)!.json,
+    'center': Jsonish.find(signInState.pov)!.json,
     // 'domain2token2statements': await dumpStatements(),
     // Above is required for importing.
     // Below is for strictly for testing / viewing.

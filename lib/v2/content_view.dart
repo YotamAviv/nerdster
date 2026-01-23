@@ -22,9 +22,10 @@ import 'refresh_signal.dart';
 import 'submit.dart';
 
 class ContentView extends StatefulWidget {
-  final IdentityKey? pov;
+  final IdentityKey pov;
+  final IdentityKey meIdentity;
 
-  const ContentView({super.key, this.pov});
+  const ContentView({super.key, required this.pov, required this.meIdentity});
 
   @override
   State<ContentView> createState() => _ContentViewState();
@@ -50,7 +51,7 @@ class _ContentViewState extends State<ContentView> {
       }
     });
     _controller.refresh(_currentPov,
-        meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+        meIdentity: IdentityKey(signInState.identity));
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     v2RefreshSignal.addListener(_onRefresh);
 
@@ -92,11 +93,11 @@ class _ContentViewState extends State<ContentView> {
 
     // The controller handles overlapping refreshes internally.
     await _controller.refresh(_currentPov,
-        meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+        meIdentity: IdentityKey(signInState.identity));
   }
 
   void _changePov(String? newToken) {
-    signInState.pov = newToken;
+    if (newToken != null) signInState.pov = newToken;
     setState(() {
       _currentPov = newToken != null ? IdentityKey(newToken) : null;
       _markedSubjectToken.value = null;

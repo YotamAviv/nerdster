@@ -97,8 +97,8 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
   Future<void> _initData() async {
     if (!mounted) return;
 
+    if (!signInState.isSignedIn) return;
     final myId = signInState.identity;
-    if (myId == null) return;
 
     final canonical = model.trustGraph.resolveIdentity(widget.identity);
 
@@ -238,8 +238,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
             Navigator.pop(context); // Close sheet/dialog first
             signInState.pov = widget.identity.value;
             widget.controller.refresh(widget.identity,
-                meIdentity:
-                    signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+                meIdentity: IdentityKey(signInState.identity));
           },
           child: const Text('Set as PoV'),
         ),
@@ -351,8 +350,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
   }
 
   Widget _buildFollowContextsSection() {
-    final myId = signInState.identity;
-    if (myId != null && myId == widget.identity.value) {
+    if (signInState.isSignedIn && signInState.identity == widget.identity.value) {
       return const Text("This is you.", style: TextStyle(fontStyle: FontStyle.italic));
     }
 
@@ -516,7 +514,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     try {
       final myId = signInState.identity;
       final signer = signInState.signer;
-      if (myId == null || signer == null) return;
+      if (signer == null) return;
 
       final contextsToSave = Map<String, int>.from(_pendingContexts)
         ..removeWhere((key, value) => value == 0);
@@ -544,7 +542,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           _originalComment = _commentController.text.trim();
         });
         await widget.controller.refresh(model.trustGraph.pov,
-            meIdentity: signInState.identity != null ? IdentityKey(signInState.identity!) : null);
+            meIdentity: IdentityKey(signInState.identity));
       }
     } catch (e) {
       if (mounted) {

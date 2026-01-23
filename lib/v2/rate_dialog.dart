@@ -236,15 +236,13 @@ class _V2RateDialogState extends State<V2RateDialog> {
     bool subjectIsMyStatement = false;
     if (isStatement) {
       final stmt = Statement.make(Jsonish(Map<String, dynamic>.from(rawSubject)));
-      final String? myIdentity = signInState.identity;
-      if (myIdentity != null) {
-        if (stmt is TrustStatement) {
-          subjectIsMyStatement = (stmt.iKey.value == myIdentity);
-        } else if (stmt is ContentStatement) {
-          subjectIsMyStatement =
-              (widget.model.delegateResolver.getIdentityForDelegate(stmt.iKey)?.value ==
-                  myIdentity);
-        }
+      final String myIdentity = signInState.identity;
+      if (stmt is TrustStatement) {
+        subjectIsMyStatement = (stmt.iKey.value == myIdentity);
+      } else if (stmt is ContentStatement) {
+        subjectIsMyStatement =
+            (widget.model.delegateResolver.getIdentityForDelegate(stmt.iKey)?.value ==
+                myIdentity);
       }
     }
 

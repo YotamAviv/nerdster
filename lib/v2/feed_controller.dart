@@ -54,9 +54,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
   void _onPovChanged() {
     final newPov = signInState.pov;
-    if (newPov != null) {
-      refresh(IdentityKey(newPov), meIdentity: _latestRequestedMeIdentity);
-    }
+    refresh(IdentityKey(newPov), meIdentity: _latestRequestedMeIdentity);
   }
 
   @override

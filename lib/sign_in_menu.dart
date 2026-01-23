@@ -132,7 +132,7 @@ class _SignInMenuState extends State<SignInMenu> {
               },
               child: const Text('Magic Sign-in'),
             ),
-            if (signInState.identity != null) showCredentials(context),
+            if (signInState.isSignedIn) showCredentials(context),
           ],
         );
       }

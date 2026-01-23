@@ -85,10 +85,8 @@ class SignInState with ChangeNotifier {
   SignInState._internal();
   factory SignInState() => _singleton;
 
-  set pov(String? oneofusToken) {
-    if (oneofusToken != null) {
-      assert(b(Jsonish.find(oneofusToken)));
-    }
+  set pov(String oneofusToken) {
+    assert(b(Jsonish.find(oneofusToken)));
     povNotifier.value = oneofusToken;
     // CONSIDER: show [pov, identity, delegate] in credentials display
     if (!b(_identity)) _identity = povNotifier.value;
@@ -122,11 +120,18 @@ class SignInState with ChangeNotifier {
   }
 
   // inputs
-  String? get pov => povNotifier.value;
-  Json? get identityJson => b(identity) ? Jsonish.find(identity!)!.json : null;
+  String get pov {
+    if (_identity == null) throw StateError("Accessed pov before sign in");
+    return povNotifier.value ?? _identity!;
+  }
+  Json get identityJson => Jsonish.find(identity)!.json;
 
   // derived
-  String? get identity => _identity;
+  bool get isSignedIn => _identity != null;
+  String get identity {
+     if (_identity == null) throw StateError("Accessed identity before sign in");
+     return _identity!;
+  }
   Json? get delegatePublicKeyJson => _delegatePublicKeyJson;
   String? get delegate => _delegate;
   StatementSigner? get signer => _signer;

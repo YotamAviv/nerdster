@@ -590,17 +590,8 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   Widget _buildActionBar() {
-    if (signInState.identity == null) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.0),
-        child: Center(
-          child: Text(
-            'Sign in to rate or comment',
-            style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-          ),
-        ),
-      );
-    }
+    // if (signInState.identity == null) { ... } // Unreachable now
+
 
     final List<ContentStatement> myLiteralStatements =
         List.from(widget.model.aggregation.myLiteralStatements[widget.aggregation.token] ?? []);

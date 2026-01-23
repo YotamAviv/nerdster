@@ -41,7 +41,7 @@ class _SignInWidgetState extends State<SignInWidget> {
 
   @override
   Widget build(BuildContext context) {
-    bool hasIdentity = signInState.identity != null;
+    bool hasIdentity = signInState.isSignedIn;
     bool hasDelegate = signInState.delegate != null;
 
     IconData icon;
@@ -106,7 +106,7 @@ class _SignInDialogState extends State<SignInDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final bool hasIdentity = signInState.identity != null;
+    final bool hasIdentity = signInState.isSignedIn;
     final bool hasDelegate = signInState.delegate != null;
 
     return Dialog(
@@ -187,7 +187,7 @@ class _SignInDialogState extends State<SignInDialog> {
   }
 
   void _onKeyAnimationComplete() {
-    if (mounted && signInState.identity != null) {
+    if (mounted && signInState.isSignedIn) {
       Future.delayed(const Duration(seconds: 5), () {
         if (mounted) Navigator.of(context).maybePop();
       });
@@ -203,7 +203,7 @@ class _SignInDialogState extends State<SignInDialog> {
             hasIdentity,
             Colors.green,
             hasIdentity ? Icons.vpn_key : Icons.vpn_key_outlined,
-            signInState.identityJson,
+            hasIdentity ? signInState.identityJson : null,
           ),
         ),
         Expanded(
