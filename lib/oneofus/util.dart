@@ -34,6 +34,7 @@ const OouCryptoFactory crypto = CryptoFactoryEd25519();
 const JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
 int countNonNull(dynamic d) => d == null ? 0 : 1;
+@Deprecated('Use != null check instead')
 bool b(dynamic d) => d == null ? false : true;
 bool bb(bool? bb) => bb != null && bb;
 bool bs(String? s) => (s == null) ? false : s == true.toString();

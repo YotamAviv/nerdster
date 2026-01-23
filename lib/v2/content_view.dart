@@ -246,7 +246,7 @@ class _ContentViewState extends State<ContentView> {
           const SizedBox(width: 8),
           Expanded(
             child: TrustSettingsBar(
-              availableIdentities: model?.trustGraph.orderedKeys.toList() ?? [],
+              availableIdentities: model?.trustGraph.orderedKeys ?? [],
               availableContexts: model?.availableContexts ?? [],
               activeContexts: model?.activeContexts ?? {},
               labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),

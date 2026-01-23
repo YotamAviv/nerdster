@@ -24,7 +24,8 @@ class SignInSession {
 
     forPhoneV2['url'] = 'https://signin.nerdster.org/signin';
     if (fireChoice == FireChoice.emulator) {
-      forPhoneV2['url'] = 'http://127.0.0.1:5001/nerdster/us-central1/signin';
+      // Use 10.0.2.2 (not 127.0.0.1) for Android Emulator to access host machine localhost
+      forPhoneV2['url'] = 'http://10.0.2.2:5001/nerdster/us-central1/signin';
     }
 
     final PkeKeyPair pkeKeyPair = await crypto.createPke();

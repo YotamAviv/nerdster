@@ -6,6 +6,7 @@ import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/follow_logic.dart' show kFollowContextIdentity, kFollowContextNerdster;
 import 'package:nerdster/v2/refresh_signal.dart';
 import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/v2/sign_in_widget.dart';
 
 class TrustSettingsBar extends StatelessWidget {
   final List<IdentityKey> availableIdentities;
@@ -174,6 +175,8 @@ class TrustSettingsBar extends StatelessWidget {
             onPressed: () => v2RefreshSignal.signal(),
           ),
         ),
+        const SizedBox(width: 8),
+        const SignInWidget(),
       ],
     );
   }

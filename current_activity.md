@@ -5,7 +5,12 @@ AI Agent: Do not visit this file without invitation
 
 # Current Activity:
 
-
+Repair Clacker damage:
+- reset
+"<reset>" Lost: Jan 4, 2026 (3274a6b)
+"Me (...)" Added: Dec 27, 2025 (9d5dc6b)
+- think about identity and sign out. if we sign out, it's confusing to still have identity,
+  might as well sign out nothing, or better yet, be clear about it and offer sign out delegate, sign out identity.
 
 
 
