@@ -6,7 +6,6 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/content_view.dart';
-import 'package:nerdster/v2/phone_view.dart';
 import 'package:nerdster/v2/sign_in_screen.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/qr_sign_in.dart';
@@ -51,9 +50,6 @@ class NerdsterApp extends StatelessWidget {
             }
 
             return Builder(builder: (context) {
-                // final path = Uri.base.path; 
-                final String pov = signInState.pov;
-
                 final bool smallNow = MediaQuery.of(context).size.width < 600;
                 if (smallNow != isSmall.value) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -65,15 +61,10 @@ class NerdsterApp extends StatelessWidget {
                     b(Setting.get(SettingType.verify).value)) {
                   return const StandaloneVerify();
                 } else {
-                  // Default to ContentView (now responsive)
-                  if (smallNow) {
-                     return PhoneView(meIdentity: IdentityKey(signInState.identity));
-                  } else {
-                    return ContentView(
-                      pov: IdentityKey(pov),
-                      meIdentity: IdentityKey(signInState.identity),
-                    );
-                  }
+                  return ContentView(
+                    pov: IdentityKey(signInState.pov),
+                    meIdentity: IdentityKey(signInState.identity),
+                  );
                 }
               });
           },
