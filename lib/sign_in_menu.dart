@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/credentials_display.dart';
 import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/fire_choice.dart';
@@ -44,30 +43,7 @@ class _SignInMenuState extends State<SignInMenu> {
     super.dispose();
   }
 
-  MenuItemButton showCredentials(BuildContext context) {
-    return MenuItemButton(
-      leadingIcon: const Icon(Icons.account_circle),
-      onPressed: () {
-        final size = MediaQuery.of(context).size;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.white,
-            closeIconColor: Colors.black,
-            content: DefaultTextStyle(
-                style: const TextStyle(color: Colors.black),
-                child: CredentialsDisplay(
-                    signInState.identityJson, signInState.delegatePublicKeyJson)),
-            duration: const Duration(seconds: 10),
-            showCloseIcon: false,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            margin: EdgeInsets.only(left: size.width / 2, bottom: 20, right: 20),
-          ),
-        );
-      },
-      child: const Text('Show current sign-in credentials'),
-    );
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +58,6 @@ class _SignInMenuState extends State<SignInMenu> {
           signInState.signOut();
         },
         menuChildren: [
-          showCredentials(context),
         ],
       );
     } else {
@@ -133,7 +108,6 @@ class _SignInMenuState extends State<SignInMenu> {
               },
               child: const Text('Magic Sign-in'),
             ),
-            if (signInState.isSignedIn) showCredentials(context),
           ],
         );
       }

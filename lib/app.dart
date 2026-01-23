@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/credentials_display.dart';
 // import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/keys.dart';
@@ -51,8 +50,7 @@ class NerdsterApp extends StatelessWidget {
               return const SignInScreen();
             }
 
-            return CredentialsWatcher(
-              child: Builder(builder: (context) {
+            return Builder(builder: (context) {
                 // final path = Uri.base.path; 
                 final String pov = signInState.pov;
 
@@ -77,8 +75,7 @@ class NerdsterApp extends StatelessWidget {
                     );
                   }
                 }
-              }),
-            );
+              });
           },
         ));
   }
