@@ -35,32 +35,33 @@ class TrustSettingsBar extends StatelessWidget {
           child: ValueListenableBuilder<String?>(
             valueListenable: signInState.povNotifier,
             builder: (context, currentPov, _) {
+              var items = [
+                ...availableIdentities.map((k) {
+                  return DropdownMenuItem<String>(
+                    value: k.value,
+                    child: Text(
+                      labeler.getIdentityLabel(k),
+                      style: signInState.identity == k.value
+                          ? const TextStyle(color: Colors.green)
+                          : null,
+                    ),
+                  );
+                }),
+                if (currentPov != null &&
+                    signInState.identity != null &&
+                    !availableIdentities.contains(IdentityKey(signInState.identity!)))
+                  DropdownMenuItem<String>(
+                    value: signInState.identity!.toString(),
+                    child: Text('<identity>', style: const TextStyle(color: Colors.green)),
+                  ),
+              ];
               return DropdownButton<String>(
                 isExpanded: true,
-                value: (availableIdentities.any((k) => k.value == currentPov) ||
-                        currentPov == signInState.pov)
-                    ? currentPov
-                    : null,
-                hint: currentPov != null
-                    ? Text(labeler.getLabel(currentPov))
-                    : const Text('Select PoV'),
-                items: [
-                  if (signInState.pov != null)
-                    DropdownMenuItem(
-                      value: signInState.pov!,
-                      child: Text('Me (${labeler.getLabel(signInState.pov!)})'),
-                    ),
-                  ...availableIdentities.where((k) => k.value != signInState.pov).map((k) {
-                    return DropdownMenuItem(
-                      value: k.value,
-                      child: Text(labeler.getIdentityLabel(k)),
-                    );
-                  }),
-                ],
+                value: currentPov,
+                hint: const Text('Select PoV'),
+                items: items,
                 onChanged: (val) {
-                  if (val != null) {
-                    signInState.pov = val;
-                  }
+                  signInState.pov = val;
                 },
               );
             },
