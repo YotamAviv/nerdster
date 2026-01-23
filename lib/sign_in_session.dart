@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
@@ -44,7 +45,7 @@ class SignInSession {
   Future<void> listen({
     required Function() onDone,
     Duration? timeout,
-    bool storeKeys = true,
+    required ValueNotifier<bool> storeKeys,
   }) async {
     final firestore = FirebaseFirestore.instance;
 
@@ -66,6 +67,12 @@ class SignInSession {
       // Found data, stop listening and timeout
       _timeoutTimer?.cancel();
       await cancel();
+
+      // Notify UI to close dialogs first, so animation is visible on the underlying screen
+      onDone();
+
+      // Wait for dialog close animation
+      await Future.delayed(const Duration(milliseconds: 300));
 
       Json? data = docSnapshots.docs.first.data();
 
@@ -91,8 +98,7 @@ class SignInSession {
         nerdsterKeyPair = await crypto.parseKeyPair(delegateJson!);
       }
 
-      await signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys);
-      onDone();
+      await signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
     });
   }
 

@@ -109,10 +109,11 @@ class _SignInDialogState extends State<SignInDialog> {
     final bool hasIdentity = signInState.isSignedIn;
     final bool hasDelegate = signInState.delegate != null;
 
+    final spacer = const SizedBox(width: 8);
     return Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: const BoxConstraints(maxWidth: 400),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: SingleChildScrollView(
@@ -121,11 +122,9 @@ class _SignInDialogState extends State<SignInDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text("Sign In Status", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
-                  const SizedBox(height: 16),
                   _buildStatusTable(hasIdentity, hasDelegate),
-                  const SizedBox(height: 32),
-                  
+                  const SizedBox(height: 2),
+
                   // Actions - Horizontal Layout
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -138,21 +137,21 @@ class _SignInDialogState extends State<SignInDialog> {
                           onPressed: () => qrSignIn(context),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      spacer,
                       Expanded(
                         child: _buildSquareButton(
                           context,
-                          icon: Icons.link,
-                          label: 'Magic Link',
+                          icon: Icons.auto_fix_high,
+                          label: 'keymeid://signin',
                           onPressed: () => _magicLinkSignIn(context),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      spacer,
                       Expanded(
                         child: _buildSquareButton(
                           context,
                           icon: Icons.content_paste,
-                          label: 'Paste',
+                          label: 'Paste keys',
                           onPressed: () => pasteSignIn(context),
                         ),
                       ),
@@ -161,24 +160,23 @@ class _SignInDialogState extends State<SignInDialog> {
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
-                    children: [MyCheckbox(_storeKeys, 'Store keys')],
-                  ),
-
-                  if (hasIdentity) ...[
-                    const Divider(height: 32),
-                     TextButton.icon(
-                        icon: const Icon(Icons.logout),
-                        label: const Text('Sign Out'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.red,
+                    children: [
+                      if (hasDelegate)
+                        TextButton.icon(
+                          icon: const Icon(Icons.logout),
+                          label: const Text('Sign Out'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red,
+                          ),
+                          onPressed: () async {
+                            await KeyStore.wipeKeys();
+                            signInState.signOut();
+                            if (context.mounted) Navigator.pop(context);
+                          },
                         ),
-                        onPressed: () async {
-                          await KeyStore.wipeKeys();
-                          signInState.signOut();
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                      ),
-                  ]
+                      MyCheckbox(_storeKeys, 'Store keys')
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -219,18 +217,15 @@ class _SignInDialogState extends State<SignInDialog> {
     );
   }
 
-  Widget _buildStatusColumn(
-      String label, bool hasKey, Color color, IconData icon, Json? json) {
+  Widget _buildStatusColumn(String label, bool hasKey, Color color, IconData icon, Json? json) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(label,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 8),
+            Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(width: 2),
             Icon(
               hasKey ? Icons.check : Icons.not_interested,
               color: hasKey ? Colors.green : Colors.grey,
@@ -238,7 +233,7 @@ class _SignInDialogState extends State<SignInDialog> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 2),
         IconButton(
           icon: ThrowingKeyIcon(
             visible: hasKey,
@@ -254,9 +249,7 @@ class _SignInDialogState extends State<SignInDialog> {
   }
 
   Widget _buildSquareButton(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required VoidCallback onPressed}) {
+      {required IconData icon, required String label, required VoidCallback onPressed}) {
     return AspectRatio(
       aspectRatio: 1.0,
       child: ElevatedButton(
@@ -284,49 +277,52 @@ class _SignInDialogState extends State<SignInDialog> {
       ),
     );
   }
-  
+
   void _showKeyDetail(String title, Json? json) {
-    showDialog(context: context, builder: (context) {
-      double width = MediaQuery.of(context).size.width;
-      return AlertDialog(
-        title: Text(title),
-        content: SingleChildScrollView(
-          child: SizedBox(
-            width: min(width * 0.8, 300.0),
-            child: JsonQrDisplay(json, interpret: ValueNotifier(true), interpreter: V2Interpreter(globalLabeler.value)),
-          )
-        ),
-        actions: [TextButton(onPressed: ()=>Navigator.pop(context), child: const Text("Close"))],
-      );
-    });
+    showDialog(
+        context: context,
+        builder: (context) {
+          double width = MediaQuery.of(context).size.width;
+          return AlertDialog(
+            title: Text(title),
+            content: SingleChildScrollView(
+                child: SizedBox(
+              width: min(width * 0.8, 300.0),
+              child: JsonQrDisplay(json,
+                  interpret: ValueNotifier(true), interpreter: V2Interpreter(globalLabeler.value)),
+            )),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close"))
+            ],
+          );
+        });
   }
 
   Future<void> _magicLinkSignIn(BuildContext context) async {
     final completer = Completer<void>();
-    
+
     // Start session creation immediately
     final sessionFuture = SignInSession.create();
 
     await showDialog(
-      context: context,
-      barrierDismissible: false, // Force them to use cancel button
-      builder: (dialogContext) {
-        return MagicLinkDialog(
-          sessionFuture: sessionFuture,
-          storeKeys: _storeKeys,
-          onCancel: () {
-            // Logic handled in widget
-          },
-          onSuccess: () {
-             Navigator.of(dialogContext).pop();
-             completer.complete();
-             // We do NOT pop the main context here, because we want the main dialog
-             // to show the "throw" animation when it detects the keys are present.
-             // The main dialog will then close itself after the animation.
-          },
-        );
-      }
-    );
+        context: context,
+        barrierDismissible: false, // Force them to use cancel button
+        builder: (dialogContext) {
+          return MagicLinkDialog(
+            sessionFuture: sessionFuture,
+            storeKeys: _storeKeys,
+            onCancel: () {
+              // Logic handled in widget
+            },
+            onSuccess: () {
+              Navigator.of(dialogContext).pop();
+              completer.complete();
+              // We do NOT pop the main context here, because we want the main dialog
+              // to show the "throw" animation when it detects the keys are present.
+              // The main dialog will then close itself after the animation.
+            },
+          );
+        });
   }
 }
 
@@ -363,17 +359,17 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
     try {
       final session = await widget.sessionFuture;
       if (!mounted) return;
-      
+
       setState(() {
         _session = session;
         final paramsJson = jsonEncode(session.forPhone);
         final base64Params = base64Url.encode(utf8.encode(paramsJson));
-        // We do *not* Uri.encodeComponent because base64Url is url safe already 
-        // (but some libs might prefer it being encoded anyway if it has == padding. 
-        // base64Url usually avoids that or uses safe chars). 
+        // We do *not* Uri.encodeComponent because base64Url is url safe already
+        // (but some libs might prefer it being encoded anyway if it has == padding.
+        // base64Url usually avoids that or uses safe chars).
         // Actually flutter's Uri.queryParameters decoding handles standard encodings.
-        // Let's stick clearly to the receiving logic: 
-        // 1. Get query param "parameters" 
+        // Let's stick clearly to the receiving logic:
+        // 1. Get query param "parameters"
         // 2. base64Url.decode
         _link = 'keymeid://signin?parameters=$base64Params';
       });
@@ -383,15 +379,15 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
         // ignore: unused_local_variable
         final launched = await launchUrl(Uri.parse(_link!));
         if (mounted) {
-             setState(() {
-               _launched = true;
-             });
+          setState(() {
+            _launched = true;
+          });
         }
       }
 
       // Listen
       session.listen(
-        storeKeys: widget.storeKeys.value,
+        storeKeys: widget.storeKeys,
         onDone: () {
           widget.onSuccess();
         },
@@ -410,49 +406,48 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-       child: Padding(
-         padding: const EdgeInsets.all(24.0),
-         child: Column(
-           mainAxisSize: MainAxisSize.min,
-           children: [
-             const CircularProgressIndicator(),
-             const SizedBox(height: 16),
-             Text(_launched ? "Magic Link Launched..." : "Preparing Magic Link...",
-                style: const TextStyle(fontWeight: FontWeight.bold)
-             ),
-             const SizedBox(height: 16),
-             if (_link != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  color: Colors.grey.shade100,
-                  child: Text(_link!, 
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.grey),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(_launched ? "Magic Link Launched..." : "Preparing Magic Link...",
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            if (_link != null) ...[
+              Container(
+                padding: const EdgeInsets.all(8),
+                color: Colors.grey.shade100,
+                child: Text(
+                  _link!,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.grey),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () { 
-                     // Retry launch
-                     launchUrl(Uri.parse(_link!));
-                  }, 
-                  child: const Text("Launch again")
-                ),
-             ],
-             const SizedBox(height: 8),
-             // Store keys checkbox removed from here as it is now in the main dialog
-             const SizedBox(height: 8),
-             TextButton(
-               onPressed: () {
-                 Navigator.of(context).pop();
-               },
-               child: const Text("Cancel"),
-             )
-           ],
-         ),
-       ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                  onPressed: () {
+                    // Retry launch
+                    launchUrl(Uri.parse(_link!));
+                  },
+                  child: const Text("Launch again")),
+            ],
+            const SizedBox(height: 8),
+            // Store keys checkbox removed from here as it is now in the main dialog
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Cancel"),
+            )
+          ],
+        ),
+      ),
     );
   }
 }
@@ -484,7 +479,7 @@ class _ThrowingKeyIconState extends State<ThrowingKeyIcon> with SingleTickerProv
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 520));
-    
+
     // Jerky "throw" animation sequence
     _offset = TweenSequence<Offset>([
       TweenSequenceItem(tween: Tween(begin: Offset.zero, end: const Offset(-8, 0)), weight: 12),
@@ -514,6 +509,7 @@ class _ThrowingKeyIconState extends State<ThrowingKeyIcon> with SingleTickerProv
   void didUpdateWidget(ThrowingKeyIcon oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!oldWidget.visible && widget.visible) {
+      debugPrint("ThrowingKeyIcon: Starting animation!");
       _ctrl.forward(from: 0);
     }
   }

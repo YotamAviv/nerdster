@@ -27,7 +27,7 @@ Future<void> qrSignIn(BuildContext context) async {
   // Start listening BEFORE showing dialog
   // ignore: unawaited_futures
   session.listen(
-    storeKeys: storeKeys.value,
+    storeKeys: storeKeys,
     onDone: () {
       if (!completer.isCompleted) {
         if (context.mounted) Navigator.of(context).pop();

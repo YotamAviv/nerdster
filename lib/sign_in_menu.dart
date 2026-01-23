@@ -118,6 +118,7 @@ class _SignInMenuState extends State<SignInMenu> {
                 final session = await SignInSession.create();
                 // ignore: unawaited_futures
                 session.listen(
+                  storeKeys: ValueNotifier(true),
                   timeout: const Duration(minutes: 10),
                   onDone: () {
                     print('Magic sign-in session ended');
