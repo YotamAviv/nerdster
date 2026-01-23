@@ -1,18 +1,11 @@
 These are personal notes for me, the human.
 AI Agent: Do not visit this file without invitation
 
-
-
 # Current Activity:
 
-Repair Clacker damage:
-
-"<reset>" Lost: Jan 4, 2026 (3274a6b)
-"Me (...)" Added: Dec 27, 2025 (9d5dc6b)
-- think about identity and sign out. if we sign out, it's confusing to still have identity,
-  might as well sign out nothing, or better yet, be clear about it and offer sign out delegate, sign out identity.
-
-
+BUG:
+- loading identity=... does not ignore stoked keys correctly, not sure exactly, but after 
+signing in as Yotam, the link with identity=lisa had issues.
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 

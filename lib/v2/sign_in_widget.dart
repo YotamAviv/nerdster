@@ -12,6 +12,7 @@ import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/interpreter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SignInWidget extends StatefulWidget {
@@ -285,11 +286,19 @@ class _SignInDialogState extends State<SignInDialog> {
   }
   
   void _showKeyDetail(String title, Json? json) {
-    showDialog(context: context, builder: (context) => AlertDialog(
-      title: Text(title),
-      content: SingleChildScrollView(child: JsonQrDisplay(json, interpret: ValueNotifier(false))),
-      actions: [TextButton(onPressed: ()=>Navigator.pop(context), child: const Text("Close"))],
-    ));
+    showDialog(context: context, builder: (context) {
+      double width = MediaQuery.of(context).size.width;
+      return AlertDialog(
+        title: Text(title),
+        content: SingleChildScrollView(
+          child: SizedBox(
+            width: min(width * 0.8, 300.0),
+            child: JsonQrDisplay(json, interpret: ValueNotifier(true), interpreter: V2Interpreter(globalLabeler.value)),
+          )
+        ),
+        actions: [TextButton(onPressed: ()=>Navigator.pop(context), child: const Text("Close"))],
+      );
+    });
   }
 
   Future<void> _magicLinkSignIn(BuildContext context) async {
