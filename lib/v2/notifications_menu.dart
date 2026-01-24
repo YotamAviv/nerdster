@@ -197,8 +197,6 @@ class V2NotificationsMenu extends StatelessWidget {
         child: Row(
           children: [
             Icon(Icons.notifications, color: color),
-            iconSpacer,
-            Text('Notifications (V2)', style: TextStyle(color: color)),
           ],
         ));
   }

@@ -11,6 +11,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/notifications_menu.dart';
 import 'package:nerdster/v2/content_bar.dart';
 import 'package:nerdster/v2/trust_settings_bar.dart';
+import 'package:nerdster/v2/etc_bar.dart';
 import 'package:nerdster/v2/content_card.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/nerdster_menu.dart';
@@ -37,6 +38,7 @@ class _ContentViewState extends State<ContentView> {
   IdentityKey? _currentPov;
   final ValueNotifier<ContentKey?> _markedSubjectToken = ValueNotifier(null);
   final ValueNotifier<bool> _showFilters = ValueNotifier(false);
+  final ValueNotifier<bool> _showEtc = ValueNotifier(false);
 
   @override
   void initState() {
@@ -82,6 +84,7 @@ class _ContentViewState extends State<ContentView> {
     v2RefreshSignal.removeListener(_onRefresh);
     _controller.dispose();
     _showFilters.dispose();
+    _showEtc.dispose();
     super.dispose();
   }
 
@@ -108,7 +111,7 @@ class _ContentViewState extends State<ContentView> {
 
   void _onTagTap(String? tag) {
     _controller.tagFilter = tag;
-    _showFilters.value = true;
+    if (!_showFilters.value) _showFilters.value = true;
   }
 
   void _onMark(ContentKey? token) {
@@ -160,27 +163,35 @@ class _ContentViewState extends State<ContentView> {
           body: SafeArea(
             child: Column(
               children: [
-                NerdsterMenu(
-                  v2Notifications: Builder(builder: (context) {
-                    final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
-                    final hasTrust = model?.trustGraph.notifications.isNotEmpty ?? false;
-                    final hasFollow = model?.followNetwork.notifications.isNotEmpty ?? false;
+                ValueListenableBuilder<bool>(
+                    valueListenable: Setting.get<bool>(SettingType.dev).notifier,
+                    builder: (context, dev, child) {
+                      if (!dev) return const SizedBox.shrink();
+                      return NerdsterMenu(
+                        v2Notifications: Builder(builder: (context) {
+                          final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
+                          final hasTrust =
+                              model?.trustGraph.notifications.isNotEmpty ?? false;
+                          final hasFollow =
+                              model?.followNetwork.notifications.isNotEmpty ?? false;
 
-                    if (model != null && (hasTrust || hasFollow || hasErrors)) {
-                      if (hasErrors) {
-                        debugPrint('ContentView: Displaying ${model.sourceErrors.length} errors');
-                      }
-                      return V2NotificationsMenu(
-                        trustGraph: model.trustGraph,
-                        followNetwork: model.followNetwork,
-                        delegateResolver: model.delegateResolver,
-                        labeler: model.labeler,
-                        sourceErrors: model.sourceErrors,
+                          if (model != null && (hasTrust || hasFollow || hasErrors)) {
+                            if (hasErrors) {
+                              debugPrint(
+                                  'ContentView: Displaying ${model.sourceErrors.length} errors');
+                            }
+                            return V2NotificationsMenu(
+                              trustGraph: model.trustGraph,
+                              followNetwork: model.followNetwork,
+                              delegateResolver: model.delegateResolver,
+                              labeler: model.labeler,
+                              sourceErrors: model.sourceErrors,
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        }),
                       );
-                    }
-                    return const SizedBox.shrink();
-                  }),
-                ),
+                    }),
                 if (_controller.loading)
                   Column(
                     children: [
@@ -204,6 +215,7 @@ class _ContentViewState extends State<ContentView> {
                 else
                   const SizedBox(height: 18), // Match height of progress + text
                 _buildControls(model),
+                // Filters Dropdown
                 ValueListenableBuilder<bool>(
                   valueListenable: _showFilters,
                   builder: (context, show, _) {
@@ -212,6 +224,41 @@ class _ContentViewState extends State<ContentView> {
                       child: show
                           ? ContentBar(
                               controller: _controller, tags: model?.aggregation.mostTags ?? [])
+                          : const SizedBox.shrink(),
+                    );
+                  },
+                ),
+                // Etc Dropdown
+                ValueListenableBuilder<bool>(
+                  valueListenable: _showEtc,
+                  builder: (context, show, _) {
+                    return AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      child: show
+                          ? EtcBar(
+                              notifications: Builder(builder: (context) {
+                                final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
+                                final hasTrust =
+                                    model?.trustGraph.notifications.isNotEmpty ?? false;
+                                final hasFollow =
+                                    model?.followNetwork.notifications.isNotEmpty ?? false;
+
+                                if (model != null && (hasTrust || hasFollow || hasErrors)) {
+                                  if (hasErrors) {
+                                    debugPrint(
+                                        'ContentView: Displaying ${model.sourceErrors.length} errors');
+                                  }
+                                  return V2NotificationsMenu(
+                                    trustGraph: model.trustGraph,
+                                    followNetwork: model.followNetwork,
+                                    delegateResolver: model.delegateResolver,
+                                    labeler: model.labeler,
+                                    sourceErrors: model.sourceErrors,
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              }),
+                            )
                           : const SizedBox.shrink(),
                     );
                   },
@@ -245,8 +292,22 @@ class _ContentViewState extends State<ContentView> {
           const SizedBox(width: 8),
           IconButton(
             icon: const Icon(Icons.tune, color: Colors.blue),
-            onPressed: () => _showFilters.value = !_showFilters.value,
+            onPressed: () {
+              // Exclusive toggle
+              if (!_showFilters.value) _showEtc.value = false;
+              _showFilters.value = !_showFilters.value;
+            },
             tooltip: 'Show/Hide Filters',
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              // Exclusive toggle
+              if (!_showEtc.value) _showFilters.value = false;
+              _showEtc.value = !_showEtc.value;
+            },
+            tooltip: 'Show/Hide Menu',
           ),
           const SizedBox(width: 8),
           Expanded(

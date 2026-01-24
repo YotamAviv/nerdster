@@ -142,14 +142,10 @@ class TrustSettingsBar extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        Tooltip(
-          message: 'Refresh the feed',
-          child: IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => v2RefreshSignal.signal(),
-          ),
-        ),
-        const SizedBox(width: 8),
+        // const SignInWidget(), // Moved to Menus -> SignInMenu? No, wait SignInWidget is small avatar.
+        // Wait, the user didn't ask to move SignInWidget. Just refresh.
+        // But looking at the code, SignInWidget is nicely placed at the end.
+        // I will just remove the refresh icon.
         const SignInWidget(),
       ],
     );
