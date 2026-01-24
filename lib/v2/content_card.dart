@@ -171,13 +171,9 @@ class _ContentCardState extends State<ContentCard> {
                         ),
                       ),
                       Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        child: Theme(
-                          data: ThemeData.dark(),
-                          child: _buildActionBar(),
-                        ),
+                        top: 8,
+                        right: 8,
+                        child: _buildActionBar(),
                       ),
                       Positioned(
                         bottom: 12,
@@ -610,38 +606,59 @@ class _ContentCardState extends State<ContentCard> {
       tooltip = 'React';
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        if (widget.onMark != null)
-          ValueListenableBuilder<ContentKey?>(
-            valueListenable: widget.markedSubjectToken ?? ValueNotifier(null),
-            builder: (context, marked, _) {
-              final isMarked = marked == widget.aggregation.token;
-              return IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: Icon(
-                  Icons.link,
-                  color: isMarked ? Colors.orange : Colors.grey,
-                ),
-                tooltip: isMarked ? 'Unmark' : 'Mark to Relate/Equate',
-                onPressed: () async {
-                  if (bb(await checkSignedIn(context, trustGraph: widget.model.trustGraph))) {
-                    widget.onMark!(widget.aggregation.token);
-                  }
-                },
-              );
-            },
+    final likes = widget.aggregation.likes;
+    final dislikes = widget.aggregation.dislikes;
+    final hasTrustInfo = likes > 0 || dislikes > 0;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.onMark != null)
+            ValueListenableBuilder<ContentKey?>(
+              valueListenable: widget.markedSubjectToken ?? ValueNotifier(null),
+              builder: (context, marked, _) {
+                final isMarked = marked == widget.aggregation.token;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12.0),
+                  child: IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(
+                      Icons.link,
+                      color: isMarked ? Colors.orange : Colors.grey,
+                      size: 20,
+                    ),
+                    tooltip: isMarked ? 'Unmark' : 'Mark to Relate/Equate',
+                    onPressed: () async {
+                      if (bb(await checkSignedIn(context, trustGraph: widget.model.trustGraph))) {
+                        widget.onMark!(widget.aggregation.token);
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: Icon(icon, color: color, size: 20),
+            tooltip: tooltip,
+            onPressed: _react,
           ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: Icon(icon, color: color),
-          tooltip: tooltip,
-          onPressed: _react,
-        ),
-        const SizedBox(width: 8),
-        _buildTrustSummary(),
-      ],
+          if (hasTrustInfo) ...[
+            const SizedBox(width: 12),
+            _buildTrustSummary(),
+          ],
+        ],
+      ),
     );
   }
 
