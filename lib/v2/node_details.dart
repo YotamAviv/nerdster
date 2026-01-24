@@ -26,8 +26,11 @@ class NodeDetails extends StatelessWidget {
 
   static Future<void> show(
       BuildContext context, IdentityKey identity, V2FeedController controller) {
-    return showDialog(
+    return showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => NodeDetailsSheet(identity: identity, controller: controller),
     );
   }
@@ -163,27 +166,45 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         [];
     final String fcontext = model.fcontext;
 
-    return AlertDialog(
-      title: _buildHeader(labeler, widget.identity),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildFollowContextsSection(),
-            const Divider(),
-            _buildKeysSection(tg, labeler, delegates),
-            const Divider(),
-            if (fcontext == kFollowContextIdentity)
-              _buildIdentityDetails(widget.identity, model)
-            else if (fcontext == kFollowContextNerdster)
-              _buildNerdsterDetails(widget.identity, model)
-            else
-              _buildContextDetails(widget.identity, model, fcontext),
-          ],
-        ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      actions: _buildActions(context),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildHeader(labeler, widget.identity),
+          const SizedBox(height: 12),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildFollowContextsSection(),
+                  const Divider(),
+                  _buildKeysSection(tg, labeler, delegates),
+                  const Divider(),
+                  if (fcontext == kFollowContextIdentity)
+                    _buildIdentityDetails(widget.identity, model)
+                  else if (fcontext == kFollowContextNerdster)
+                    _buildNerdsterDetails(widget.identity, model)
+                  else
+                    _buildContextDetails(widget.identity, model, fcontext),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: _buildActions(context),
+          ),
+        ],
+      ),
     );
   }
 

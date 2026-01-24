@@ -37,9 +37,11 @@ class V2RateDialog extends StatefulWidget {
   }) async {
     if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
 
-    final result = await showDialog<Json>(
+    final result = await showModalBottomSheet<Json>(
       context: context,
-      barrierDismissible: false,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => V2RateDialog(
         aggregation: aggregation,
         model: model,
@@ -282,73 +284,92 @@ class _V2RateDialogState extends State<V2RateDialog> {
         disabled: !b(priorStatement),
         callback: eraseListener);
 
-    return AlertDialog(
-      title: const Text('Rate & Comment'),
-      content: SizedBox(
-        width: 600,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              InputDecorator(
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
-                  labelText: 'Subject',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
-                ),
-                child: V2SubjectView(
-                  subject: rawSubject,
-                  strikethrough: censor.value,
-                  labeler: widget.model.labeler,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [likeButton, disButton, censorButton, eraseButton],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                enabled: !erase.value,
-                controller: commentController,
-                style: const TextStyle(fontSize: 16),
-                decoration: const InputDecoration(
-                  hintText: 'Add a comment...\n#hashtag',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 4,
-                autofocus: widget.intent == RateIntent.comment,
-              ),
-              if (isStatement) ...[
-                const SizedBox(height: 12),
-                const Tooltip(
-                  message:
-                      'A user can have only one disposition on a subject, so any newer rating will overwrite his earlier one.',
-                  child: Text(
-                    'rating a rating?',
-                    style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline, fontSize: 12),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        ValueListenableBuilder<bool>(
-          valueListenable: okEnabled,
-          builder: (context, enabled, _) => ElevatedButton(
-            onPressed: enabled ? _onOk : null,
-            child: const Text('Publish'),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Rate & Comment',
+              style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+          const SizedBox(height: 12),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 12),
+                  InputDecorator(
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
+                      labelText: 'Subject',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+                    ),
+                    child: V2SubjectView(
+                      subject: rawSubject,
+                      strikethrough: censor.value,
+                      labeler: widget.model.labeler,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [likeButton, disButton, censorButton, eraseButton],
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    enabled: !erase.value,
+                    controller: commentController,
+                    style: const TextStyle(fontSize: 16),
+                    decoration: const InputDecoration(
+                      hintText: 'Add a comment...\n#hashtag',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 4,
+                    autofocus: widget.intent == RateIntent.comment,
+                  ),
+                  if (isStatement) ...[
+                    const SizedBox(height: 12),
+                    const Tooltip(
+                      message:
+                          'A user can have only one disposition on a subject, so any newer rating will overwrite his earlier one.',
+                      child: Text(
+                        'rating a rating?',
+                        style: TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                            fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-      ],
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end, // or center/spaceAround
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              const SizedBox(width: 8),
+              ValueListenableBuilder<bool>(
+                valueListenable: okEnabled,
+                builder: (context, enabled, _) => ElevatedButton(
+                  onPressed: enabled ? _onOk : null,
+                  child: const Text('Publish'),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
     );
   }
 }

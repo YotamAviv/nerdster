@@ -67,8 +67,11 @@ class _SignInWidgetState extends State<SignInWidget> {
       child: IconButton(
         icon: Icon(icon, color: color),
         onPressed: () {
-          showDialog(
+          showModalBottomSheet(
             context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            backgroundColor: Colors.transparent,
             builder: (context) => const SignInDialog(),
           );
         },
@@ -110,44 +113,46 @@ class _SignInDialogState extends State<SignInDialog> {
     final bool hasDelegate = signInState.delegate != null;
 
     final spacer = const SizedBox(width: 8);
-    return Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: SingleChildScrollView(
-              clipBehavior: Clip.none,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildStatusTable(hasIdentity, hasDelegate),
-                  const SizedBox(height: 2),
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.fromLTRB(16, 24, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: SingleChildScrollView(
+          clipBehavior: Clip.none,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildStatusTable(hasIdentity, hasDelegate),
+              const SizedBox(height: 12),
 
-                  // Actions - Horizontal Layout
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Expanded(
-                        child: _buildSquareButton(
-                          context,
-                          icon: Icons.qr_code,
-                          label: 'QR Sign-in',
-                          onPressed: () => qrSignIn(context),
-                        ),
-                      ),
-                      spacer,
-                      Expanded(
-                        child: _buildSquareButton(
-                          context,
-                          icon: Icons.auto_fix_high,
-                          label: 'keymeid://signin',
-                          onPressed: () => _magicLinkSignIn(context),
-                        ),
-                      ),
-                      spacer,
-                      Expanded(
+              // Actions - Horizontal Layout
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: _buildSquareButton(
+                      context,
+                      icon: Icons.qr_code,
+                      label: 'QR Sign-in',
+                      onPressed: () => qrSignIn(context),
+                    ),
+                  ),
+                  spacer,
+                  Expanded(
+                    child: _buildSquareButton(
+                      context,
+                      icon: Icons.auto_fix_high,
+                      label: 'keymeid://signin',
+                      onPressed: () => _magicLinkSignIn(context),
+                    ),
+                  ),
+                  spacer,
+                  Expanded(
                         child: _buildSquareButton(
                           context,
                           icon: Icons.content_paste,
@@ -181,7 +186,7 @@ class _SignInDialogState extends State<SignInDialog> {
               ),
             ),
           ),
-        ));
+        );
   }
 
   void _onKeyAnimationComplete() {

@@ -29,9 +29,11 @@ class V2RelateDialog extends StatefulWidget {
   }) async {
     if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
 
-    final result = await showDialog<Json>(
+    final result = await showModalBottomSheet<Json>(
       context: context,
-      barrierDismissible: false,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => V2RelateDialog(
         subject1: subject1,
         subject2: subject2,
@@ -139,127 +141,144 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
       _ => 'Relate Subjects',
     };
 
-    return AlertDialog(
-      title: Text(title),
-      content: SizedBox(
-        width: 500,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
+          const SizedBox(height: 12),
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 12),
+                  InputDecorator(
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
+                      labelText: label1,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+                    ),
+                    child: V2SubjectView(
+                      subject: _subject1.subject,
+                      labeler: widget.model.labeler,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Opacity(
+                          opacity: isEquate ? 1.0 : 0.0,
+                          child: IgnorePointer(
+                            ignoring: !isEquate,
+                            child: IconButton(
+                              icon: const Icon(Icons.swap_vert),
+                              onPressed: _flip,
+                              tooltip: 'Swap subjects',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: DropdownButtonFormField<ContentVerb>(
+                            value: _verb,
+                            style: const TextStyle(fontSize: 16, color: Colors.black),
+                            decoration: const InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              border: OutlineInputBorder(),
+                            ),
+                            items: [
+                              const DropdownMenuItem(
+                                value: ContentVerb.relate,
+                                child: Text('is related to', style: TextStyle(fontSize: 16)),
+                              ),
+                              const DropdownMenuItem(
+                                value: ContentVerb.dontRelate,
+                                child:
+                                    Text('is not related to', style: TextStyle(fontSize: 16)),
+                              ),
+                              const DropdownMenuItem(
+                                value: ContentVerb.equate,
+                                child: Text('is the same as', style: TextStyle(fontSize: 16)),
+                              ),
+                              const DropdownMenuItem(
+                                value: ContentVerb.dontEquate,
+                                child:
+                                    Text('is not the same as', style: TextStyle(fontSize: 16)),
+                              ),
+                              DropdownMenuItem(
+                                value: ContentVerb.clear,
+                                enabled: _hasPrior,
+                                child: const Text('Clear', style: TextStyle(fontSize: 16)),
+                              ),
+                            ],
+                            onChanged: (val) => setState(() => _verb = val!),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Visibility(
+                          maintainSize: true,
+                          maintainAnimation: true,
+                          maintainState: true,
+                          visible: false,
+                          child: IconButton(
+                            icon: Icon(Icons.swap_vert),
+                            onPressed: null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  InputDecorator(
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
+                      labelText: label2,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
+                    ),
+                    child: V2SubjectView(
+                      subject: _subject2.subject,
+                      labeler: widget.model.labeler,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _commentController,
+                    style: const TextStyle(fontSize: 16),
+                    decoration: const InputDecoration(
+                      labelText: 'Comment (Optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              const SizedBox(height: 12),
-              InputDecorator(
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
-                  labelText: label1,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
-                ),
-                child: V2SubjectView(
-                  subject: _subject1.subject,
-                  labeler: widget.model.labeler,
-                ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  children: [
-                    Opacity(
-                      opacity: isEquate ? 1.0 : 0.0,
-                      child: IgnorePointer(
-                        ignoring: !isEquate,
-                        child: IconButton(
-                          icon: const Icon(Icons.swap_vert),
-                          onPressed: _flip,
-                          tooltip: 'Swap subjects',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: DropdownButtonFormField<ContentVerb>(
-                        value: _verb,
-                        style: const TextStyle(fontSize: 16, color: Colors.black),
-                        decoration: const InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          border: OutlineInputBorder(),
-                        ),
-                        items: [
-                          const DropdownMenuItem(
-                            value: ContentVerb.relate,
-                            child: Text('is related to', style: TextStyle(fontSize: 16)),
-                          ),
-                          const DropdownMenuItem(
-                            value: ContentVerb.dontRelate,
-                            child: Text('is not related to', style: TextStyle(fontSize: 16)),
-                          ),
-                          const DropdownMenuItem(
-                            value: ContentVerb.equate,
-                            child: Text('is the same as', style: TextStyle(fontSize: 16)),
-                          ),
-                          const DropdownMenuItem(
-                            value: ContentVerb.dontEquate,
-                            child: Text('is not the same as', style: TextStyle(fontSize: 16)),
-                          ),
-                          DropdownMenuItem(
-                            value: ContentVerb.clear,
-                            enabled: _hasPrior,
-                            child: const Text('Clear', style: TextStyle(fontSize: 16)),
-                          ),
-                        ],
-                        onChanged: (val) => setState(() => _verb = val!),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Visibility(
-                      maintainSize: true,
-                      maintainAnimation: true,
-                      maintainState: true,
-                      visible: false,
-                      child: IconButton(
-                        icon: Icon(Icons.swap_vert),
-                        onPressed: null,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              InputDecorator(
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.fromLTRB(12, 24, 12, 12),
-                  labelText: label2,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
-                ),
-                child: V2SubjectView(
-                  subject: _subject2.subject,
-                  labeler: widget.model.labeler,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _commentController,
-                style: const TextStyle(fontSize: 16),
-                decoration: const InputDecoration(
-                  labelText: 'Comment (Optional)',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: _submit,
+                child: const Text('Publish'),
               ),
             ],
-          ),
-        ),
+          )
+        ],
       ),
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Publish'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-      ],
     );
   }
 
