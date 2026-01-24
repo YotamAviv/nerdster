@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/app.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/follow_logic.dart' show kFollowContextIdentity, kFollowContextNerdster;
-import 'package:nerdster/v2/refresh_signal.dart';
-import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/v2/sign_in_widget.dart';
-import 'package:nerdster/app.dart';
+import 'package:nerdster/v2/labeler.dart';
 
 class TrustSettingsBar extends StatelessWidget {
   final List<IdentityKey> availableIdentities;
@@ -36,7 +34,7 @@ class TrustSettingsBar extends StatelessWidget {
                   child: Text('PoV: ', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               Flexible(
-                flex: 3,
+                flex: 5,
                 child: Tooltip(
                   message: "Point of View",
                   child: ValueListenableBuilder<String?>(
@@ -74,14 +72,14 @@ class TrustSettingsBar extends StatelessWidget {
                   ),
                 ),
               ),
-              if (!isSmall) const SizedBox(width: 16),
+              if (!isSmall) const SizedBox(width: 8),
               if (!isSmall)
                 const Tooltip(
                   message: 'Follow Context: Which follow network to use',
                   child: Text('Context: ', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               Flexible(
-                flex: 2,
+                flex: 4,
                 child: Tooltip(
                   message: '''- <identity>: anyone who is someone
 - <nerdster>: same as above with exceptions: follow/block to improve this network
@@ -146,8 +144,6 @@ class TrustSettingsBar extends StatelessWidget {
                   ),
                 ),
               ),
-              if (!isSmall) const Spacer(),
-              const SignInWidget(),
             ],
           );
         });

@@ -44,6 +44,8 @@ Refactor UI for responsiveness and simplified navigation
     - `ContentBar`: Hides labels for filters on small screens, uses tooltips.
     - `MyCheckbox`: Adapts to show tooltip instead of label on small screens.
     - `LGTM`: Skips dialog on small screens for faster flow.
+    - **Floating Controls**: Moved primary actions (Submit, Filter, Menu) and Sign-In status to floating circular buttons below the header.
+    - **Responsive Graph**: Updated `NerdyGraphView` to use consistent floating back button and top settings bar.
 - **Menu Restructuring**:
     - `NerdsterMenu`: drastically simplified. Now only shows Sign In and Dev options.
     - Moved Notification, Share, and "Etc" actions to the new `EtcBar`.

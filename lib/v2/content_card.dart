@@ -1,19 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'package:nerdster/app.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/metadata_service.dart';
-import 'package:nerdster/singletons.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
 import 'package:nerdster/v2/statement_tile.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/content/dialogs/check_signed_in.dart';
-import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/app.dart';
 
 class ContentCard extends StatefulWidget {
   final SubjectAggregation aggregation;

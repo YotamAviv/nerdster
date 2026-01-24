@@ -181,48 +181,91 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     final V2FeedModel? model = widget.controller.value;
     if (model == null || _data == null || _data!.nodes.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Network Graph')),
-        body: Column(
-          children: [
-            _buildControls(model),
-            const Expanded(
-              child: Center(child: Text('No nodes to display in this context.')),
-            ),
-          ],
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  _buildTrustSettingsBar(model),
+                  const Expanded(
+                    child: Center(child: Text('No nodes to display in this context.')),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 54,
+                left: 4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).canvasColor.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.arrow_back, color: Colors.blue),
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: 'Back',
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildControls(model),
-            Expanded(
-              child: InteractiveViewer(
-                key: ValueKey(_graphController!.povIdentity.value),
-                transformationController: _transformationController,
-                constrained: false,
-                boundaryMargin: const EdgeInsets.all(500),
-                minScale: 0.01,
-                maxScale: 5.6,
-                child: GraphView(
-                  key: ValueKey(
-                      '${_graphController!.povIdentity.value}_${_data?.nodes.length}_${_data?.edges.length}'),
-                  graph: _graph,
-                  algorithm: _algorithm,
-                  paint: Paint()
-                    ..color = Colors.black
-                    ..strokeWidth = 1
-                    ..style = PaintingStyle.stroke,
-                  builder: (Node node) {
-                    final key = node.key!.value;
-                    if (key is IdentityKey) {
-                      return _buildNodeWidget(key);
-                    }
-                    // Should not happen if we only add IdentityKeys
-                    return _buildNodeWidget(IdentityKey(key.toString()));
-                  },
+            Column(
+              children: [
+                _buildTrustSettingsBar(model),
+                Expanded(
+                  child: InteractiveViewer(
+                    key: ValueKey(_graphController!.povIdentity.value),
+                    transformationController: _transformationController,
+                    constrained: false,
+                    boundaryMargin: const EdgeInsets.all(500),
+                    minScale: 0.01,
+                    maxScale: 5.6,
+                    child: GraphView(
+                      key: ValueKey(
+                          '${_graphController!.povIdentity.value}_${_data?.nodes.length}_${_data?.edges.length}'),
+                      graph: _graph,
+                      algorithm: _algorithm,
+                      paint: Paint()
+                        ..color = Colors.black
+                        ..strokeWidth = 1
+                        ..style = PaintingStyle.stroke,
+                      builder: (Node node) {
+                        final key = node.key!.value;
+                        if (key is IdentityKey) {
+                          return _buildNodeWidget(key);
+                        }
+                        // Should not happen if we only add IdentityKeys
+                        return _buildNodeWidget(IdentityKey(key.toString()));
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              top: 54,
+              left: 4,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).canvasColor.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.arrow_back, color: Colors.blue),
+                  onPressed: () => Navigator.of(context).pop(),
+                  tooltip: 'Back',
                 ),
               ),
             ),
@@ -241,30 +284,14 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     );
   }
 
-  Widget _buildControls(V2FeedModel? model) {
+  Widget _buildTrustSettingsBar(V2FeedModel? model) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          FloatingActionButton.small(
-            heroTag: 'graph_back',
-            onPressed: () => Navigator.of(context).pop(),
-            tooltip: 'Back',
-            child: const Icon(Icons.arrow_back),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TrustSettingsBar(
-              availableIdentities: model?.trustGraph.orderedKeys ?? [],
-              availableContexts: model?.availableContexts ?? [],
-              activeContexts: model?.activeContexts ?? {},
-              // labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
-              // TrustSettingsBar might also need update if it takes old labeler or mismatch types
-              // Assuming TrustSettingsBar is somewhat compatible or we fix it next.
-              labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
+      child: TrustSettingsBar(
+        availableIdentities: model?.trustGraph.orderedKeys ?? [],
+        availableContexts: model?.availableContexts ?? [],
+        activeContexts: model?.activeContexts ?? {},
+        labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
       ),
     );
   }

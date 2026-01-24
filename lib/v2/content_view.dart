@@ -19,6 +19,7 @@ import 'package:nerdster/verify.dart';
 import 'package:nerdster/v2/graph_view.dart';
 import 'package:nerdster/v2/relate_dialog.dart';
 import 'package:nerdster/app.dart';
+import 'package:nerdster/v2/sign_in_widget.dart';
 
 import 'refresh_signal.dart';
 import 'submit.dart';
@@ -53,8 +54,7 @@ class _ContentViewState extends State<ContentView> {
         globalLabeler.value = _controller.value!.labeler;
       }
     });
-    _controller.refresh(_currentPov,
-        meIdentity: IdentityKey(signInState.identity));
+    _controller.refresh(_currentPov, meIdentity: IdentityKey(signInState.identity));
     Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     v2RefreshSignal.addListener(_onRefresh);
 
@@ -96,8 +96,7 @@ class _ContentViewState extends State<ContentView> {
     if (!mounted) return;
 
     // The controller handles overlapping refreshes internally.
-    await _controller.refresh(_currentPov,
-        meIdentity: IdentityKey(signInState.identity));
+    await _controller.refresh(_currentPov, meIdentity: IdentityKey(signInState.identity));
   }
 
   void _changePov(String? newToken) {
@@ -161,189 +160,211 @@ class _ContentViewState extends State<ContentView> {
             toolbarHeight: 0, // Hide the default AppBar
           ),
           body: SafeArea(
-            child: Column(
+            child: Stack(
               children: [
-                ValueListenableBuilder<bool>(
-                    valueListenable: Setting.get<bool>(SettingType.dev).notifier,
-                    builder: (context, dev, child) {
-                      if (!dev) return const SizedBox.shrink();
-                      return NerdsterMenu(
-                        v2Notifications: Builder(builder: (context) {
-                          final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
-                          final hasTrust =
-                              model?.trustGraph.notifications.isNotEmpty ?? false;
-                          final hasFollow =
-                              model?.followNetwork.notifications.isNotEmpty ?? false;
+                Column(
+                  children: [
+                    ValueListenableBuilder<bool>(
+                        valueListenable: Setting.get<bool>(SettingType.dev).notifier,
+                        builder: (context, dev, child) {
+                          if (!dev) return const SizedBox.shrink();
+                          return NerdsterMenu(
+                            v2Notifications: Builder(builder: (context) {
+                              final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
+                              final hasTrust = model?.trustGraph.notifications.isNotEmpty ?? false;
+                              final hasFollow =
+                                  model?.followNetwork.notifications.isNotEmpty ?? false;
 
-                          if (model != null && (hasTrust || hasFollow || hasErrors)) {
-                            if (hasErrors) {
-                              debugPrint(
-                                  'ContentView: Displaying ${model.sourceErrors.length} errors');
-                            }
-                            return V2NotificationsMenu(
-                              trustGraph: model.trustGraph,
-                              followNetwork: model.followNetwork,
-                              delegateResolver: model.delegateResolver,
-                              labeler: model.labeler,
-                              sourceErrors: model.sourceErrors,
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        }),
-                      );
-                    }),
-                if (_controller.loading)
-                  Column(
-                    children: [
-                      ValueListenableBuilder<double>(
-                        valueListenable: _controller.progress,
-                        builder: (context, p, _) => LinearProgressIndicator(value: p),
-                      ),
-                      ValueListenableBuilder<String?>(
-                        valueListenable: _controller.loadingMessage,
-                        builder: (context, msg, _) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2.0),
-                          child: Text(
-                            msg ?? '',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  const SizedBox(height: 18), // Match height of progress + text
-                ValueListenableBuilder<bool>(
-                    valueListenable: isSmall,
-                    builder: (context, small, _) {
-                      return _buildControls(model, small);
-                    }),
-                // Filters Dropdown
-                ValueListenableBuilder<bool>(
-                  valueListenable: _showFilters,
-                  builder: (context, show, _) {
-                    return AnimatedSize(
-                      duration: const Duration(milliseconds: 200),
-                      child: show
-                          ? ContentBar(
-                              controller: _controller, tags: model?.aggregation.mostTags ?? [])
-                          : const SizedBox.shrink(),
-                    );
-                  },
-                ),
-                // Etc Dropdown
-                ValueListenableBuilder<bool>(
-                  valueListenable: _showEtc,
-                  builder: (context, show, _) {
-                    return AnimatedSize(
-                      duration: const Duration(milliseconds: 200),
-                      child: show
-                          ? EtcBar(
-                              notifications: Builder(builder: (context) {
-                                final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
-                                final hasTrust =
-                                    model?.trustGraph.notifications.isNotEmpty ?? false;
-                                final hasFollow =
-                                    model?.followNetwork.notifications.isNotEmpty ?? false;
-
-                                if (model != null && (hasTrust || hasFollow || hasErrors)) {
-                                  if (hasErrors) {
-                                    debugPrint(
-                                        'ContentView: Displaying ${model.sourceErrors.length} errors');
-                                  }
-                                  return V2NotificationsMenu(
-                                    trustGraph: model.trustGraph,
-                                    followNetwork: model.followNetwork,
-                                    delegateResolver: model.delegateResolver,
-                                    labeler: model.labeler,
-                                    sourceErrors: model.sourceErrors,
-                                  );
+                              if (model != null && (hasTrust || hasFollow || hasErrors)) {
+                                if (hasErrors) {
+                                  debugPrint(
+                                      'ContentView: Displaying ${model.sourceErrors.length} errors');
                                 }
-                                return const SizedBox.shrink();
-                              }),
-                            )
-                          : const SizedBox.shrink(),
-                    );
-                  },
-                ),
-                Expanded(
-                  child: _buildContent(model, hideSeen),
+                                return V2NotificationsMenu(
+                                  trustGraph: model.trustGraph,
+                                  followNetwork: model.followNetwork,
+                                  delegateResolver: model.delegateResolver,
+                                  labeler: model.labeler,
+                                  sourceErrors: model.sourceErrors,
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            }),
+                          );
+                        }),
+                    if (_controller.loading)
+                      Column(
+                        children: [
+                          ValueListenableBuilder<double>(
+                            valueListenable: _controller.progress,
+                            builder: (context, p, _) => LinearProgressIndicator(value: p),
+                          ),
+                          ValueListenableBuilder<String?>(
+                            valueListenable: _controller.loadingMessage,
+                            builder: (context, msg, _) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2.0),
+                              child: Text(
+                                msg ?? '',
+                                style:
+                                    Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      const SizedBox(height: 18), // Match height of progress + text
+                    _buildTrustSettingsBar(model),
+                    // Filters Dropdown
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _showFilters,
+                      builder: (context, show, _) {
+                        return AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          child: show
+                              ? ContentBar(
+                                  controller: _controller, tags: model?.aggregation.mostTags ?? [])
+                              : const SizedBox.shrink(),
+                        );
+                      },
+                    ),
+                    // Etc Dropdown
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _showEtc,
+                      builder: (context, show, _) {
+                        return AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          child: show
+                              ? EtcBar(
+                                  notifications: Builder(builder: (context) {
+                                    final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
+                                    final hasTrust =
+                                        model?.trustGraph.notifications.isNotEmpty ?? false;
+                                    final hasFollow =
+                                        model?.followNetwork.notifications.isNotEmpty ?? false;
+
+                                    if (model != null && (hasTrust || hasFollow || hasErrors)) {
+                                      if (hasErrors) {
+                                        debugPrint(
+                                            'ContentView: Displaying ${model.sourceErrors.length} errors');
+                                      }
+                                      return V2NotificationsMenu(
+                                        trustGraph: model.trustGraph,
+                                        followNetwork: model.followNetwork,
+                                        delegateResolver: model.delegateResolver,
+                                        labeler: model.labeler,
+                                        sourceErrors: model.sourceErrors,
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  }),
+                                )
+                              : const SizedBox.shrink(),
+                        );
+                      },
+                    ),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: _buildContent(model, hideSeen),
+                          ),
+                          // Floating Controls (Left)
+                          Positioned(
+                            top: 4,
+                            left: 4,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (model != null)
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).canvasColor.withOpacity(0.8),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: IconButton(
+                                      padding: EdgeInsets.zero,
+                                      visualDensity: VisualDensity.compact,
+                                      icon: const Icon(Icons.add),
+                                      onPressed: () =>
+                                          v2Submit(context, model, onRefresh: _onRefresh),
+                                      tooltip: 'Submit new content',
+                                    ),
+                                  ),
+                                if (model != null) const SizedBox(width: 4),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).canvasColor.withOpacity(0.8),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    visualDensity: VisualDensity.compact,
+                                    icon: const Icon(Icons.tune, color: Colors.blue),
+                                    onPressed: () {
+                                      if (!_showFilters.value) _showEtc.value = false;
+                                      _showFilters.value = !_showFilters.value;
+                                    },
+                                    tooltip: 'Show/Hide Filters',
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).canvasColor.withOpacity(0.8),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    visualDensity: VisualDensity.compact,
+                                    icon: const Icon(Icons.menu),
+                                    onPressed: () {
+                                      if (!_showEtc.value) _showFilters.value = false;
+                                      _showEtc.value = !_showEtc.value;
+                                    },
+                                    tooltip: 'Show/Hide Menu',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Floating SignInWidget (Right)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).canvasColor.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const SignInWidget(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          floatingActionButton: ValueListenableBuilder<bool>(
-              valueListenable: isSmall,
-              builder: (context, small, _) {
-                if (model == null || !small) return const SizedBox.shrink();
-                return FloatingActionButton(
-                  onPressed: () => v2Submit(context, model, onRefresh: _onRefresh),
-                  tooltip: 'Submit new content',
-                  child: const Icon(Icons.add),
-                );
-              }),
         );
       },
     );
   }
 
-  Widget _buildControls(V2FeedModel? model, bool small) {
-    final spacer = SizedBox(width: small ? 0 : 6);
+  Widget _buildTrustSettingsBar(V2FeedModel? model) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
-      child: Row(
-        children: [
-          if (!small)
-            Tooltip(
-              message: 'Submit new content',
-              child: FloatingActionButton.small(
-                heroTag: 'content_view_submit_small',
-                onPressed: model == null
-                    ? null
-                    : () => v2Submit(context, model, onRefresh: _onRefresh),
-                child: const Icon(Icons.add),
-              ),
-            ),
-          spacer,
-          IconButton(
-            padding: EdgeInsets.zero,
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.tune, color: Colors.blue),
-            onPressed: () {
-              // Exclusive toggle
-              if (!_showFilters.value) _showEtc.value = false;
-              _showFilters.value = !_showFilters.value;
-            },
-            tooltip: 'Show/Hide Filters',
-          ),
-          spacer,
-          IconButton(
-            padding: EdgeInsets.zero,
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              // Exclusive toggle
-              if (!_showEtc.value) _showFilters.value = false;
-              _showEtc.value = !_showEtc.value;
-            },
-            tooltip: 'Show/Hide Menu',
-          ),
-          spacer,
-          Expanded(
-            child: TrustSettingsBar(
-              availableIdentities: model?.trustGraph.orderedKeys ?? [],
-              availableContexts: model?.availableContexts ?? [],
-              activeContexts: model?.activeContexts ?? {},
-              labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
+      child: TrustSettingsBar(
+        availableIdentities: model?.trustGraph.orderedKeys ?? [],
+        availableContexts: model?.availableContexts ?? [],
+        activeContexts: model?.activeContexts ?? {},
+        labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
       ),
     );
   }
-
-
 
   Widget _buildContent(V2FeedModel? model, bool hideSeen) {
     if (_controller.loading && model == null) {
