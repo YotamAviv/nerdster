@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/app.dart';
 
 class ContentCard extends StatefulWidget {
   final SubjectAggregation aggregation;
@@ -119,158 +120,174 @@ class _ContentCardState extends State<ContentCard> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final subject = widget.aggregation.subject;
-      final String title = subject['title']!;
-      final String type = subject['contentType']!;
+    return ValueListenableBuilder<bool>(
+        valueListenable: isSmall,
+        builder: (context, isSmall, _) {
+          final subject = widget.aggregation.subject;
+          final String title = subject['title']!;
+          final String type = subject['contentType']!;
 
-      String? metaImage = _metadata?.image;
-      if (metaImage != null && metaImage.isEmpty) metaImage = null;
+          String? metaImage = _metadata?.image;
+          if (metaImage != null && metaImage.isEmpty) metaImage = null;
 
-      final imageUrl = metaImage ??
-          getFallbackImageUrl(
-            subject['url'],
-            type,
-            title,
-            tags: widget.aggregation.tags.toList(),
-          );
+          final imageUrl = metaImage ??
+              getFallbackImageUrl(
+                subject['url'],
+                type,
+                title,
+                tags: widget.aggregation.tags.toList(),
+              );
 
-      final bool isNarrow = constraints.maxWidth < 600;
-
-      if (isNarrow) {
-        return Card(
-          margin: const EdgeInsets.all(8.0),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
+          if (isSmall) {
+            return Card(
+              margin: const EdgeInsets.all(8.0),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: kIsWeb
-                        ? Image.network(
-                            'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=800&fit=cover',
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Image.network(imageUrl, fit: BoxFit.cover),
-                          )
-                        : Image.network(imageUrl, fit: BoxFit.cover),
-                  ),
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.4),
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.7),
+                  Stack(
+                    children: [
+                      AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: kIsWeb
+                            ? Image.network(
+                                'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=800&fit=cover',
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Image.network(imageUrl, fit: BoxFit.cover),
+                              )
+                            : Image.network(imageUrl, fit: BoxFit.cover),
+                      ),
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.4),
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.7),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Theme(
+                          data: ThemeData.dark(),
+                          child: _buildActionBar(),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 12,
+                        left: 12,
+                        right: 12,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                final subject = widget.aggregation.subject;
+                                String? url = subject['url'];
+                                if (url == null) {
+                                  final values = subject.values.where((v) => v != null).join(' ');
+                                  url =
+                                      'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
+                                }
+                                launchUrl(Uri.parse(url));
+                              },
+                              child: Text(
+                                title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                              ),
+                            ),
+                            Text(
+                              type.toUpperCase(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(color: Colors.white70),
+                            ),
                           ],
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Theme(
-                      data: ThemeData.dark(),
-                      child: _buildActionBar(),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    right: 12,
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        InkWell(
-                          onTap: () {
-                            final subject = widget.aggregation.subject;
-                            String? url = subject['url'];
-                            if (url == null) {
-                              final values = subject.values.where((v) => v != null).join(' ');
-                              url = 'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
-                            }
-                            launchUrl(Uri.parse(url));
-                          },
-                          child: Text(
-                            title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
-                                ),
+                        if (widget.aggregation.tags.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Wrap(
+                              spacing: 8.0,
+                              children: widget.aggregation.tags.map((tag) {
+                                final displayTag = tag.startsWith('#') ? tag : '#$tag';
+                                return InkWell(
+                                  onTap: () => widget.onTagTap?.call(tag),
+                                  child:
+                                      Text(displayTag, style: const TextStyle(color: Colors.blue)),
+                                );
+                              }).toList(),
+                            ),
                           ),
-                        ),
-                        Text(
-                          type.toUpperCase(),
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white70),
-                        ),
+                        _buildHistorySection(),
+                        _buildRelationshipsSection(),
                       ],
                     ),
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (widget.aggregation.tags.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Wrap(
-                          spacing: 8.0,
-                          children: widget.aggregation.tags.map((tag) {
-                            final displayTag = tag.startsWith('#') ? tag : '#$tag';
-                            return InkWell(
-                              onTap: () => widget.onTagTap?.call(tag),
-                              child: Text(displayTag, style: const TextStyle(color: Colors.blue)),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    _buildHistorySection(),
-                    _buildRelationshipsSection(),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      }
+            );
+          }
 
-      return Card(
-        margin: const EdgeInsets.all(8.0),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildActionBar(),
-              Row(
+          return Card(
+            margin: const EdgeInsets.all(8.0),
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: kIsWeb
-                          ? Image.network(
-                              'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=200&h=200&fit=cover',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                // Fallback: Try loading directly if proxy fails
-                                return Image.network(
+                  _buildActionBar(),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: kIsWeb
+                              ? Image.network(
+                                  'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=200&h=200&fit=cover',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    // Fallback: Try loading directly if proxy fails
+                                    return Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey[300],
+                                          child: const Icon(Icons.image_not_supported, size: 20),
+                                        );
+                                      },
+                                    );
+                                  },
+                                )
+                              : Image.network(
                                   imageUrl,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
@@ -279,84 +296,73 @@ class _ContentCardState extends State<ContentCard> {
                                       child: const Icon(Icons.image_not_supported, size: 20),
                                     );
                                   },
-                                );
-                              },
-                            )
-                          : Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey[300],
-                                  child: const Icon(Icons.image_not_supported, size: 20),
-                                );
-                              },
-                            ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Container(
-                      constraints: const BoxConstraints(minHeight: 80),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  final subject = widget.aggregation.subject;
-                                  String? url = subject['url'];
-                                  if (url == null) {
-                                    final values = subject.values.where((v) => v != null).join(' ');
-                                    url =
-                                        'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
-                                  }
-                                  launchUrl(Uri.parse(url));
-                                },
-                                child: Text(
-                                  title,
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                        color: Theme.of(context).colorScheme.primary,
-                                        decoration: TextDecoration.underline,
-                                      ),
                                 ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          constraints: const BoxConstraints(minHeight: 80),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      final subject = widget.aggregation.subject;
+                                      String? url = subject['url'];
+                                      if (url == null) {
+                                        final values =
+                                            subject.values.where((v) => v != null).join(' ');
+                                        url =
+                                            'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
+                                      }
+                                      launchUrl(Uri.parse(url));
+                                    },
+                                    child: Text(
+                                      title,
+                                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                            color: Theme.of(context).colorScheme.primary,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                    ),
+                                  ),
+                                  Text(type.toUpperCase(),
+                                      style: Theme.of(context).textTheme.labelSmall),
+                                ],
                               ),
-                              Text(type.toUpperCase(),
-                                  style: Theme.of(context).textTheme.labelSmall),
+                              if (widget.aggregation.tags.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Wrap(
+                                    spacing: 8.0,
+                                    children: widget.aggregation.tags.map((tag) {
+                                      final displayTag = tag.startsWith('#') ? tag : '#$tag';
+                                      return InkWell(
+                                        onTap: () => widget.onTagTap?.call(tag),
+                                        child: Text(displayTag,
+                                            style: const TextStyle(color: Colors.blue)),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
                             ],
                           ),
-                          if (widget.aggregation.tags.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Wrap(
-                                spacing: 8.0,
-                                children: widget.aggregation.tags.map((tag) {
-                                  final displayTag = tag.startsWith('#') ? tag : '#$tag';
-                                  return InkWell(
-                                    onTap: () => widget.onTagTap?.call(tag),
-                                    child: Text(displayTag,
-                                        style: const TextStyle(color: Colors.blue)),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
+                  const Divider(),
+                  _buildHistorySection(),
+                  _buildRelationshipsSection(),
                 ],
               ),
-              const Divider(),
-              _buildHistorySection(),
-              _buildRelationshipsSection(),
-            ],
-          ),
-        ),
-      );
-    });
+            ),
+          );
+        });
   }
 
   Widget _buildTrustSummary() {
@@ -590,9 +596,6 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   Widget _buildActionBar() {
-    // if (signInState.identity == null) { ... } // Unreachable now
-
-
     final List<ContentStatement> myLiteralStatements =
         List.from(widget.model.aggregation.myLiteralStatements[widget.aggregation.token] ?? []);
     Statement.validateOrderTypes(myLiteralStatements);

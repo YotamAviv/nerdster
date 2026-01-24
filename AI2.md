@@ -36,3 +36,23 @@ feat: implement transitive history, aggregate hardening, and test isolation
 - Relocated lazy delegate notifications to `DelegateResolver` to avoid mutating the immutable `TrustGraph`.
 - Removed redundant global clock side-effects in demo scripts to ensure test reliability.
 - Properly formatted `V2NotificationsMenu` and `ContentView` integration.
+Refactor UI for responsiveness and simplified navigation
+
+- **New EtcBar**: Introduced `EtcBar` to house secondary actions (Notifications, Share, Refresh, Verify, Sign, Settings).
+- **Responsive Layout**:
+    - `TrustSettingsBar`: Hides labels (PoV, Context) on small screens.
+    - `ContentBar`: Hides labels for filters on small screens, uses tooltips.
+    - `MyCheckbox`: Adapts to show tooltip instead of label on small screens.
+    - `LGTM`: Skips dialog on small screens for faster flow.
+- **Menu Restructuring**:
+    - `NerdsterMenu`: drastically simplified. Now only shows Sign In and Dev options.
+    - Moved Notification, Share, and "Etc" actions to the new `EtcBar`.
+    - Moved "Identity Network Confidence" and "Show Crypto" to the `/etc` submenu.
+- **ContentView**:
+    - Implemented exclusive toggle between "Filters" (ContentBar) and "Menu" (EtcBar).
+    - Integrated `EtcBar` with "Nerdster Logo" branding.
+- **SignInWidget**: Added new compact sign-in status widget.
+- **Cleanup**:
+    - Deleted `CredentialsDisplay`.
+    - Removed unused items from `Menus`.
+- **Assets**: Added `nerd.png` for branding in `EtcBar`.

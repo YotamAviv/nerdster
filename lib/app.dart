@@ -15,7 +15,7 @@ export 'package:nerdster/oneofus/jsonish.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-ValueNotifier<bool> isSmall = ValueNotifier<bool>(false);
+final ValueNotifier<bool> isSmall = ValueNotifier<bool>(false);
 
 class NerdsterApp extends StatelessWidget {
   const NerdsterApp({super.key});

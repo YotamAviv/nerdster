@@ -214,7 +214,11 @@ class _ContentViewState extends State<ContentView> {
                   )
                 else
                   const SizedBox(height: 18), // Match height of progress + text
-                _buildControls(model),
+                ValueListenableBuilder<bool>(
+                    valueListenable: isSmall,
+                    builder: (context, small, _) {
+                      return _buildControls(model, small);
+                    }),
                 // Filters Dropdown
                 ValueListenableBuilder<bool>(
                   valueListenable: _showFilters,
@@ -269,28 +273,42 @@ class _ContentViewState extends State<ContentView> {
               ],
             ),
           ),
-          floatingActionButton: null,
+          floatingActionButton: ValueListenableBuilder<bool>(
+              valueListenable: isSmall,
+              builder: (context, small, _) {
+                if (model == null || !small) return const SizedBox.shrink();
+                return FloatingActionButton(
+                  onPressed: () => v2Submit(context, model, onRefresh: _onRefresh),
+                  tooltip: 'Submit new content',
+                  child: const Icon(Icons.add),
+                );
+              }),
         );
       },
     );
   }
 
-  Widget _buildControls(V2FeedModel? model) {
+  Widget _buildControls(V2FeedModel? model, bool small) {
+    final spacer = SizedBox(width: small ? 0 : 6);
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
       child: Row(
         children: [
-          // Submit Button (Prominent)
-          Tooltip(
-            message: 'Submit new content',
-            child: FloatingActionButton.small(
-              onPressed:
-                  model == null ? null : () => v2Submit(context, model, onRefresh: _onRefresh),
-              child: const Icon(Icons.add),
+          if (!small)
+            Tooltip(
+              message: 'Submit new content',
+              child: FloatingActionButton.small(
+                heroTag: 'content_view_submit_small',
+                onPressed: model == null
+                    ? null
+                    : () => v2Submit(context, model, onRefresh: _onRefresh),
+                child: const Icon(Icons.add),
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
+          spacer,
           IconButton(
+            padding: EdgeInsets.zero,
+            visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.tune, color: Colors.blue),
             onPressed: () {
               // Exclusive toggle
@@ -299,8 +317,10 @@ class _ContentViewState extends State<ContentView> {
             },
             tooltip: 'Show/Hide Filters',
           ),
-          const SizedBox(width: 8),
+          spacer,
           IconButton(
+            padding: EdgeInsets.zero,
+            visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.menu),
             onPressed: () {
               // Exclusive toggle
@@ -309,7 +329,7 @@ class _ContentViewState extends State<ContentView> {
             },
             tooltip: 'Show/Hide Menu',
           ),
-          const SizedBox(width: 8),
+          spacer,
           Expanded(
             child: TrustSettingsBar(
               availableIdentities: model?.trustGraph.orderedKeys ?? [],
