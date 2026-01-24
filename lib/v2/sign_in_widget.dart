@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nerdster/key_store.dart';
@@ -112,7 +113,69 @@ class _SignInDialogState extends State<SignInDialog> {
     final bool hasIdentity = signInState.isSignedIn;
     final bool hasDelegate = signInState.delegate != null;
 
+    final bool isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+    final bool isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+    Widget buildUniversalBtn(bool recommended) => _buildSquareButton(
+          context,
+          icon: Icons.link,
+          label: 'Universal Links (iOS) & App Links (Android)\n- Coming soon..',
+          onPressed: () {}, // TODO: Implement universal links
+          recommended: recommended,
+        );
+
+    Widget buildCustomBtn(bool recommended) => _buildSquareButton(
+          context,
+          icon: Icons.auto_fix_high,
+          label: 'Custom URL Schemes (The "Magic" Link)\nkeymeid://signin',
+          onPressed: () => _magicLinkSignIn(context),
+          recommended: recommended,
+        );
+
+    Widget buildQrBtn(bool recommended) => _buildSquareButton(
+          context,
+          icon: Icons.qr_code,
+          label: 'QR Sign-in',
+          onPressed: () => qrSignIn(context),
+          recommended: recommended,
+        );
+
+    Widget buildPasteBtn() => _buildSquareButton(
+          context,
+          icon: Icons.content_paste,
+          label: 'Paste keys',
+          onPressed: () => pasteSignIn(context),
+          recommended: false,
+        );
+
+    List<Widget> buttons;
+    if (isIOS) {
+      buttons = [
+        buildUniversalBtn(true),
+        buildCustomBtn(false),
+        buildQrBtn(false),
+        buildPasteBtn(),
+      ];
+    } else if (isAndroid) {
+      buttons = [
+        buildCustomBtn(true),
+        buildUniversalBtn(false),
+        buildQrBtn(false),
+        buildPasteBtn(),
+      ];
+    } else {
+      // Desktop/Web
+      buttons = [
+        buildQrBtn(true),
+        buildCustomBtn(false),
+        buildUniversalBtn(false),
+        buildPasteBtn(),
+      ];
+    }
+
     final spacer = const SizedBox(width: 8);
+    final vSpacer = const SizedBox(height: 8);
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -130,63 +193,47 @@ class _SignInDialogState extends State<SignInDialog> {
               _buildStatusTable(hasIdentity, hasDelegate),
               const SizedBox(height: 12),
 
-              // Actions - Horizontal Layout
+              // Actions - Grid Layout
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Expanded(
-                    child: _buildSquareButton(
-                      context,
-                      icon: Icons.qr_code,
-                      label: 'QR Sign-in',
-                      onPressed: () => qrSignIn(context),
-                    ),
-                  ),
+                  Expanded(child: buttons[0]),
                   spacer,
-                  Expanded(
-                    child: _buildSquareButton(
-                      context,
-                      icon: Icons.auto_fix_high,
-                      label: 'keymeid://signin',
-                      onPressed: () => _magicLinkSignIn(context),
-                    ),
-                  ),
-                  spacer,
-                  Expanded(
-                        child: _buildSquareButton(
-                          context,
-                          icon: Icons.content_paste,
-                          label: 'Paste keys',
-                          onPressed: () => pasteSignIn(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      if (hasDelegate)
-                        TextButton.icon(
-                          icon: const Icon(Icons.logout),
-                          label: const Text('Sign Out'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red,
-                          ),
-                          onPressed: () async {
-                            await KeyStore.wipeKeys();
-                            signInState.signOut();
-                            if (context.mounted) Navigator.pop(context);
-                          },
-                        ),
-                      MyCheckbox(_storeKeys, 'Store keys')
-                    ],
-                  ),
+                  Expanded(child: buttons[1]),
                 ],
               ),
-            ),
+              vSpacer,
+              Row(
+                children: [
+                  Expanded(child: buttons[2]),
+                  spacer,
+                  Expanded(child: buttons[3]),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (hasDelegate)
+                    TextButton.icon(
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Sign Out'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red,
+                      ),
+                      onPressed: () async {
+                        await KeyStore.wipeKeys();
+                        signInState.signOut();
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                    ),
+                  MyCheckbox(_storeKeys, 'Store keys')
+                ],
+              ),
+            ],
           ),
-        );
+        ),
+      ),
+    );
   }
 
   void _onKeyAnimationComplete() {
@@ -238,8 +285,9 @@ class _SignInDialogState extends State<SignInDialog> {
             ),
           ],
         ),
-        const SizedBox(height: 2),
         IconButton(
+          constraints: const BoxConstraints(),
+          padding: EdgeInsets.zero,
           icon: ThrowingKeyIcon(
             visible: hasKey,
             icon: icon,
@@ -254,14 +302,18 @@ class _SignInDialogState extends State<SignInDialog> {
   }
 
   Widget _buildSquareButton(BuildContext context,
-      {required IconData icon, required String label, required VoidCallback onPressed}) {
+      {required IconData icon,
+      required String label,
+      required VoidCallback onPressed,
+      required bool recommended}) {
     return AspectRatio(
       aspectRatio: 1.0,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
+            side: recommended ? const BorderSide(color: Colors.blue, width: 2.0) : BorderSide.none,
           ),
         ),
         onPressed: onPressed,
@@ -269,13 +321,17 @@ class _SignInDialogState extends State<SignInDialog> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 4),
+            Expanded(
+              child: Center(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 10),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
           ],
         ),
