@@ -2,7 +2,6 @@ import 'package:nerdster/v2/follow_logic.dart';
 
 enum SettingType {
   skipLgtm(bool, false, persist: true),
-  skipCredentials(bool, false, persist: true),
   identityPathsReq(String, 'permissive'),
   fcontext(String, kFollowContextNerdster, aliases: ['follow']),
 

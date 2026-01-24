@@ -16,7 +16,7 @@ import 'package:nerdster/v2/config.dart';
 
 class Lgtm {
   static Future<bool?> check(Json json, BuildContext context, {required V2Labeler labeler}) async {
-    if (Setting.get<bool>(SettingType.skipLgtm).value) return true;
+    if (isSmall.value || Setting.get<bool>(SettingType.skipLgtm).value) return true;
 
     assert(b(signInState.delegate));
 
@@ -48,16 +48,18 @@ class Lgtm {
                                 interpreter: V2Interpreter(labeler))),
                         const SizedBox(height: 10),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            SizedBox(width: 200.0),
+                            const Spacer(),
                             OkCancel(() {
                               Navigator.pop(context, true);
                             }, 'Looks Good To Me'),
-                            SizedBox(
-                                width: 200.0,
-                                child: MyCheckbox(Setting.get<bool>(SettingType.skipLgtm).notifier,
-                                    '''Don't show again''')),
+                            Expanded(
+                                child: Align(
+                                    alignment: Alignment.centerRight,
+                                    child: MyCheckbox(
+                                        Setting.get<bool>(SettingType.skipLgtm)
+                                            .notifier,
+                                        '''Don't show again'''))),
                           ],
                         ),
                       ],

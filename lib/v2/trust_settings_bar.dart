@@ -24,53 +24,59 @@ class TrustSettingsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isSmall = MediaQuery.of(context).size.width < 600;
     return Row(
       children: [
-        const Tooltip(
-          message: "Point of View",
-          child: Text('PoV: ', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
+        if (!isSmall)
+          const Tooltip(
+            message: "Point of View",
+            child: Text('PoV: ', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
         Flexible(
           flex: 3,
-          child: ValueListenableBuilder<String?>(
-            valueListenable: signInState.povNotifier,
-            builder: (context, currentPov, _) {
-              var items = [
-                ...availableIdentities.map((k) {
-                  return DropdownMenuItem<String>(
-                    value: k.value,
-                    child: Text(
-                      labeler.getIdentityLabel(k),
-                      style: signInState.identity == k.value
-                          ? const TextStyle(color: Colors.green)
-                          : null,
+          child: Tooltip(
+            message: "Point of View",
+            child: ValueListenableBuilder<String?>(
+              valueListenable: signInState.povNotifier,
+              builder: (context, currentPov, _) {
+                var items = [
+                  ...availableIdentities.map((k) {
+                    return DropdownMenuItem<String>(
+                      value: k.value,
+                      child: Text(
+                        labeler.getIdentityLabel(k),
+                        style: signInState.identity == k.value
+                            ? const TextStyle(color: Colors.green)
+                            : null,
+                      ),
+                    );
+                  }),
+                  if (currentPov != null &&
+                      !availableIdentities.contains(IdentityKey(signInState.identity)))
+                    DropdownMenuItem<String>(
+                      value: signInState.identity,
+                      child: Text('<identity>', style: const TextStyle(color: Colors.green)),
                     ),
-                  );
-                }),
-                if (currentPov != null &&
-                    !availableIdentities.contains(IdentityKey(signInState.identity)))
-                  DropdownMenuItem<String>(
-                    value: signInState.identity,
-                    child: Text('<identity>', style: const TextStyle(color: Colors.green)),
-                  ),
-              ];
-              return DropdownButton<String>(
-                isExpanded: true,
-                value: currentPov ?? signInState.pov,
-                hint: const Text('Select PoV'),
-                items: items,
-                onChanged: (val) {
-                  if (val != null) signInState.pov = val;
-                },
-              );
-            },
+                ];
+                return DropdownButton<String>(
+                  isExpanded: true,
+                  value: currentPov ?? signInState.pov,
+                  hint: const Text('Select PoV'),
+                  items: items,
+                  onChanged: (val) {
+                    if (val != null) signInState.pov = val;
+                  },
+                );
+              },
+            ),
           ),
         ),
         const SizedBox(width: 16),
-        const Tooltip(
-          message: 'Follow Context: Which follow network to use',
-          child: Text('Context: ', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
+        if (!isSmall)
+          const Tooltip(
+            message: 'Follow Context: Which follow network to use',
+            child: Text('Context: ', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
         Flexible(
           flex: 2,
           child: Tooltip(
@@ -135,39 +141,7 @@ class TrustSettingsBar extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 16),
-        const Tooltip(
-          message: 'Require more redundant paths to detect and prevent fraud',
-          child: Text('Confidence: ', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
-        Expanded(
-          flex: 2,
-          child: Tooltip(
-            message: 'Slide to adjust trust strictness (Permissive, Standard, Strict)',
-            child: ValueListenableBuilder<String>(
-              valueListenable: Setting.get<String>(SettingType.identityPathsReq).notifier,
-              builder: (context, req, _) {
-                double sliderValue = 1.0;
-                if (req == 'permissive') sliderValue = 0.0;
-                if (req == 'strict') sliderValue = 2.0;
-
-                return Slider(
-                  value: sliderValue,
-                  min: 0,
-                  max: 2,
-                  divisions: 2,
-                  label: req,
-                  onChanged: (val) {
-                    String newReq = 'standard';
-                    if (val == 0.0) newReq = 'permissive';
-                    if (val == 2.0) newReq = 'strict';
-                    Setting.get<String>(SettingType.identityPathsReq).value = newReq;
-                  },
-                );
-              },
-            ),
-          ),
-        ),
+        const Spacer(),
         Tooltip(
           message: 'Refresh the feed',
           child: IconButton(

@@ -141,6 +141,9 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
   bool get enableCensorship => Setting.get(SettingType.censor).value as bool;
 
+  ValueNotifier<bool> get enableCensorshipNotifier =>
+      Setting.get<bool>(SettingType.censor).notifier;
+
   set enableCensorship(bool enabled) {
     Setting.get(SettingType.censor).value = enabled;
   }

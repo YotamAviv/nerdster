@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:nerdster/app.dart';
 import '../../oneofus/util.dart';
 
 class MyCheckbox extends StatefulWidget {
@@ -18,14 +19,35 @@ class _MyCheckboxState extends State<MyCheckbox> {
   _MyCheckboxState();
 
   @override
+  void initState() {
+    super.initState();
+    isSmall.addListener(_onSmallChanged);
+  }
+
+  @override
+  void dispose() {
+    isSmall.removeListener(_onSmallChanged);
+    super.dispose();
+  }
+
+  void _onSmallChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final Widget checkbox = Checkbox(
+    Widget checkbox = Checkbox(
       value: widget.opposite ? !widget.valueNotifier.value : widget.valueNotifier.value,
       onChanged: (bool? value) =>
           setState(() => widget.valueNotifier.value = widget.opposite ? !value! : value!),
     );
+
     if (b(widget.title)) {
-      return Row(children: [checkbox, Text(widget.title!)]);
+      if (isSmall.value) {
+        return Tooltip(message: widget.title!, child: checkbox);
+      } else {
+        return Row(children: [checkbox, Text(widget.title!)]);
+      }
     } else {
       return checkbox;
     }

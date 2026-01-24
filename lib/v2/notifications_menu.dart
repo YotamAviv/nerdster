@@ -430,6 +430,9 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
   set enableCensorship(bool enable) {}
 
   @override
+  ValueNotifier<bool> get enableCensorshipNotifier => ValueNotifier(false);
+
+  @override
   bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled,
           {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) =>
       true;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nerdster/about.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demo_setup.dart';
@@ -72,13 +73,30 @@ class Menus {
       SubmenuButton(menuChildren: [
         MyCheckbox(Setting.get<bool>(SettingType.censor).notifier,
             '''Hide content censored by my network'''),
+        SubmenuButton(
+          menuChildren: ['permissive', 'standard', 'strict'].map((val) {
+            return ValueListenableBuilder<String>(
+              valueListenable: Setting.get<String>(SettingType.identityPathsReq).notifier,
+              builder: (context, current, _) {
+                return MenuItemButton(
+                  onPressed: () => Setting.get<String>(SettingType.identityPathsReq).value = val,
+                  trailingIcon: current == val ? const Icon(Icons.check) : null,
+                  child: Text(val),
+                );
+              },
+            );
+          }).toList(),
+          child: const Text('Identity Network Confidence'),
+        ),
         SubmenuButton(menuChildren: [
-          MyCheckbox(Setting.get<bool>(SettingType.skipCredentials).notifier,
-              'Sign-in credentials received',
-              opposite: true),
-          MyCheckbox(
-              Setting.get<bool>(SettingType.skipLgtm).notifier, 'Statements review/confirmation',
-              opposite: true),
+          ValueListenableBuilder<bool>(
+              valueListenable: isSmall,
+              builder: (context, small, _) {
+                if (small) return const SizedBox.shrink();
+                return MyCheckbox(Setting.get<bool>(SettingType.skipLgtm).notifier,
+                    'Statements review/confirmation',
+                    opposite: true);
+              }),
           MyCheckbox(Setting.get<bool>(SettingType.showCrypto).notifier,
               'Crypto (JSON, keys, and statements)'),
         ], child: const Text("Show/don't show")),

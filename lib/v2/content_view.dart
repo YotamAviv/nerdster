@@ -9,6 +9,7 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/notifications_menu.dart';
+import 'package:nerdster/v2/content_bar.dart';
 import 'package:nerdster/v2/trust_settings_bar.dart';
 import 'package:nerdster/v2/content_card.dart';
 import 'package:nerdster/v2/labeler.dart';
@@ -17,7 +18,7 @@ import 'package:nerdster/verify.dart';
 import 'package:nerdster/v2/graph_view.dart';
 import 'package:nerdster/v2/relate_dialog.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/content/content_types.dart';
+
 import 'refresh_signal.dart';
 import 'submit.dart';
 
@@ -208,7 +209,10 @@ class _ContentViewState extends State<ContentView> {
                   builder: (context, show, _) {
                     return AnimatedSize(
                       duration: const Duration(milliseconds: 200),
-                      child: show ? _buildFilterDrawer(model) : const SizedBox.shrink(),
+                      child: show
+                          ? ContentBar(
+                              controller: _controller, tags: model?.aggregation.mostTags ?? [])
+                          : const SizedBox.shrink(),
                     );
                   },
                 ),
@@ -258,109 +262,7 @@ class _ContentViewState extends State<ContentView> {
     );
   }
 
-  Widget _buildFilterDrawer(V2FeedModel? model) {
-    return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            // Sort
-            Row(
-              children: [
-                const Text('Sort: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                DropdownButton<V2SortMode>(
-                  value: _controller.sortMode,
-                  items: const [
-                    DropdownMenuItem(value: V2SortMode.recentActivity, child: Text('Recent')),
-                    DropdownMenuItem(value: V2SortMode.netLikes, child: Text('Net Likes')),
-                    DropdownMenuItem(value: V2SortMode.mostComments, child: Text('Comments')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) _controller.sortMode = val;
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(width: 16),
 
-            // Type Filter
-            Row(
-              children: [
-                const Text('Type: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                DropdownButton<String>(
-                  value: _controller.typeFilter ?? 'all',
-                  items: [
-                    const DropdownMenuItem(value: 'all', child: Text('All')),
-                    ...ContentType.values
-                        .map((t) => DropdownMenuItem(value: t.name, child: Text(t.name))),
-                  ],
-                  onChanged: (val) {
-                    _controller.typeFilter = (val == 'all' ? null : val);
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(width: 16),
-
-            // Tag Filter
-            Tooltip(
-              message: 'Filter by tag',
-              child: Row(
-                children: [
-                  const Text('Tag: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                  DropdownButton<String>(
-                    value: _controller.tagFilter ?? '-',
-                    items: [
-                      const DropdownMenuItem(value: '-', child: Text('All')),
-                      ...(model?.aggregation.mostTags ?? [])
-                          .map((t) => DropdownMenuItem(value: t, child: Text(t))),
-                    ],
-                    onChanged: (val) {
-                      _controller.tagFilter = (val == '-' ? null : val);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-
-            // Dismissal Filter (formerly "Filter")
-            Tooltip(
-              message: 'Filter dismissed content',
-              child: DropdownButton<V2FilterMode>(
-                value: _controller.filterMode,
-                items: const [
-                  DropdownMenuItem(value: V2FilterMode.myDisses, child: Text('My Disses')),
-                  DropdownMenuItem(value: V2FilterMode.povDisses, child: Text("PoV's Disses")),
-                  DropdownMenuItem(value: V2FilterMode.ignoreDisses, child: Text('Ignore Disses')),
-                ],
-                onChanged: (val) {
-                  if (val != null) _controller.filterMode = val;
-                },
-              ),
-            ),
-            const SizedBox(width: 8),
-
-            // Censor Switch
-            Tooltip(
-              message: 'Rely on my network to censor content I should not see',
-              child: Row(
-                children: [
-                  const Text('Censor'),
-                  Switch(
-                    value: _controller.enableCensorship,
-                    onChanged: (val) => _controller.enableCensorship = val,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildContent(V2FeedModel? model, bool hideSeen) {
     if (_controller.loading && model == null) {
