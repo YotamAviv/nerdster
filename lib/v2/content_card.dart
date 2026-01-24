@@ -253,7 +253,7 @@ class _ContentCardState extends State<ContentCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildActionBar(),
+                  Align(alignment: Alignment.topRight, child: _buildActionBar()),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
