@@ -74,7 +74,7 @@ void main() {
       if (debugMode) {
         expect(dismissRateJson['rate'], equals(subjectObj));
       } else {
-        expect(dismissRateJson['rate'], equals(subjectToken));
+        expect(dismissRateJson['rate'], equals(subjectObj));
       }
 
       Json censorRateJson = ContentStatement.make(i, ContentVerb.rate, subjectObj, censor: true);

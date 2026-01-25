@@ -170,7 +170,9 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       if (s.token != s.canonical) return false;
 
       return shouldShow(s, mode, censorshipEnabled,
-          tagFilter: tagFilter, tagEquivalence: aggregation.tagEquivalence, typeFilter: typeFilter);
+          tagFilter: tagFilter,
+          typeFilter: typeFilter,
+          aggregation: aggregation);
     }).toList();
 
     sortSubjects(results);
@@ -205,7 +207,9 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   bool shouldShow(SubjectAggregation subject, DisFilterMode mode, bool censorshipEnabled,
-      {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) {
+      {String? tagFilter,
+      String? typeFilter,
+      required ContentAggregation aggregation}) {
     // Only show subjects that exist in the PoV's feed (have statements from the PoV's network)
     if (subject.statements.isEmpty) return false;
 
@@ -230,15 +234,15 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
 
     if (tagFilter != null && tagFilter != '-') {
-      final canonicalFilter = tagEquivalence?[tagFilter] ?? tagFilter;
-      if (!subject.tags.any((t) => (tagEquivalence?[t] ?? t) == canonicalFilter)) {
+      final canonicalFilter = aggregation.tagEquivalence[tagFilter] ?? tagFilter;
+      if (!subject.tags.any((t) => (aggregation.tagEquivalence[t] ?? t) == canonicalFilter)) {
         return false;
       }
     }
 
     switch (mode) {
       case DisFilterMode.my:
-        final myStmts = value?.aggregation.myCanonicalDisses[subject.canonical] ?? [];
+        final myStmts = aggregation.myCanonicalDisses[subject.canonical] ?? [];
         return !SubjectGroup.checkIsDismissed(myStmts, subject);
       case DisFilterMode.pov:
         return !subject.isDismissed;

@@ -155,7 +155,7 @@ class ContentStatement extends Statement {
 
     bool shouldTokenize = false;
     if (verb == ContentVerb.rate) {
-      if (isStatement || dismissVal != null || censor == true) {
+      if (isStatement || censor == true) {
         shouldTokenize = true;
       }
     } else if (verb == ContentVerb.clear) {

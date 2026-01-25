@@ -17,6 +17,7 @@ import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/endpoint.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus_fire.dart';
+import 'package:nerdster/v2/model.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -109,16 +110,17 @@ void main() {
           find.textContaining(RegExp(r'^[A-Z][a-z]+')); // Look for capitalized names
       expect(monikerFinder, findsWidgets, reason: 'Should find human-readable names (monikers)');
 
-      // 5. Verify "Hide Seen" Toggle
-      // The switch is now inside the filter drawer, which is hidden by default.
+      // 5. Verify Filter Controls
+      // The filters are now inside the filter drawer, which is hidden by default.
       // We need to open the drawer first.
       final filterButton = find.byIcon(Icons.tune);
       expect(filterButton, findsOneWidget);
       await tester.tap(filterButton);
       await tester.pumpAndSettle();
 
-      final switchFinder = find.byType(Switch);
-      expect(switchFinder, findsOneWidget);
+      // Verify DisFilterMode dropdown exists (replaces simple "Hide Seen" switch)
+      final filterDropdownFinder = find.byType(DropdownButton<DisFilterMode>);
+      expect(filterDropdownFinder, findsOneWidget);
 
       // 6. Verify History/Comments are visible
       // The new design shows comments by default (up to 2) without an expansion tile title "History"

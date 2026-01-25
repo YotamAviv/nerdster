@@ -370,6 +370,7 @@ Tactics for addressing this:
   }
 }
 
+// TODO: Justify or remove
 class DummySource<T extends Statement> implements StatementSource<T> {
   @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async => {};
@@ -378,6 +379,7 @@ class DummySource<T extends Statement> implements StatementSource<T> {
   List<SourceError> get errors => [];
 }
 
+// TODO: Justify or remove
 class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2FeedController {
   StaticFeedController(V2FeedModel value) : super(value);
 
@@ -432,7 +434,9 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
 
   @override
   bool shouldShow(SubjectAggregation subject, DisFilterMode mode, bool censorshipEnabled,
-          {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) =>
+          {String? tagFilter,
+          String? typeFilter,
+          required ContentAggregation aggregation}) =>
       true;
 
   @override
