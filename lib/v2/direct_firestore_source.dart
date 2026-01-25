@@ -126,7 +126,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
 
         // Apply distinct
         final List<T> distinctChain = d.distinct(chain).toList();
-        results[token] = distinctChain;
+        results[token] = List.unmodifiable(distinctChain);
       } catch (e) {
         if (e is SourceError) {
           _errors.add(e);

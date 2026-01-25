@@ -21,6 +21,10 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   final CachedSource<TrustStatement> trustSource;
   final CachedSource<ContentStatement> contentSource;
 
+  void push(ContentStatement statement) {
+    contentSource.push(statement);
+  }
+
   V2FeedController({
     required StatementSource<TrustStatement> trustSource,
     required StatementSource<ContentStatement> contentSource,
@@ -251,7 +255,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  Future<void> refresh(IdentityKey? povIdentity, {IdentityKey? meIdentity}) async {
+  Future<void> refresh(IdentityKey? povIdentity,
+      {IdentityKey? meIdentity, bool clearCache = true}) async {
     _latestRequestedPov = povIdentity;
     _latestRequestedMeIdentity = meIdentity;
 
@@ -283,8 +288,10 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         final fcontext = Setting.get<String>(SettingType.fcontext).value;
 
         // Clear caches to ensure we get the latest statements (e.g. after a new like/comment)
-        trustSource.clear();
-        contentSource.clear();
+        if (clearCache) {
+          trustSource.clear();
+          contentSource.clear();
+        }
 
         // 1. Trust Pipeline
         loadingMessage.value = 'Loading signed content from one-of-us.net (Trust)';

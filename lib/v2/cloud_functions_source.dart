@@ -145,6 +145,10 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
       }
     }
 
+    for (final token in results.keys) {
+      results[token] = List.unmodifiable(results[token]!);
+    }
+
     return results;
   }
 }

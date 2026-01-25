@@ -28,14 +28,14 @@ class V2RateDialog extends StatefulWidget {
     this.intent = RateIntent.none,
   });
 
-  static Future<void> show(
+  static Future<ContentStatement?> show(
     BuildContext context,
     SubjectAggregation aggregation,
     V2FeedModel model, {
     RateIntent intent = RateIntent.none,
     VoidCallback? onRefresh,
   }) async {
-    if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
+    if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return null;
 
     final result = await showModalBottomSheet<Json>(
       context: context,
@@ -53,10 +53,11 @@ class V2RateDialog extends StatefulWidget {
       try {
         final writer =
             SourceFactory.getWriter(kNerdsterDomain, context: context, labeler: model.labeler);
-        await writer.push(result, signInState.signer!);
+        final ContentStatement statement = await writer.push(result, signInState.signer!) as ContentStatement;
         onRefresh?.call();
+        return statement;
       } catch (e, stackTrace) {
-        if (e.toString().contains('LGTM check failed')) return;
+        if (e.toString().contains('LGTM check failed')) return null;
         debugPrint('V2RateDialog Error: $e\n$stackTrace');
         if (context.mounted) {
           showDialog(
@@ -72,6 +73,7 @@ class V2RateDialog extends StatefulWidget {
         }
       }
     }
+    return null;
   }
 
   @override

@@ -20,14 +20,14 @@ class V2RelateDialog extends StatefulWidget {
     required this.model,
   });
 
-  static Future<void> show(
+  static Future<ContentStatement?> show(
     BuildContext context,
     SubjectAggregation subject1,
     SubjectAggregation subject2,
     V2FeedModel model, {
     VoidCallback? onRefresh,
   }) async {
-    if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
+    if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return null;
 
     final result = await showModalBottomSheet<Json>(
       context: context,
@@ -45,10 +45,11 @@ class V2RelateDialog extends StatefulWidget {
       try {
         final writer =
             SourceFactory.getWriter(kNerdsterDomain, context: context, labeler: model.labeler);
-        await writer.push(result, signInState.signer!);
+        final ContentStatement statement = await writer.push(result, signInState.signer!) as ContentStatement;
         onRefresh?.call();
+        return statement;
       } catch (e, stackTrace) {
-        if (e.toString().contains('LGTM check failed')) return;
+        if (e.toString().contains('LGTM check failed')) return null;
         debugPrint('V2RelateDialog Error: $e\n$stackTrace');
         if (context.mounted) {
           showDialog(
@@ -64,6 +65,7 @@ class V2RelateDialog extends StatefulWidget {
         }
       }
     }
+    return null;
   }
 
   @override

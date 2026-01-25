@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/rate_dialog.dart';
 import 'package:nerdster/comment_widget.dart';
-import 'package:nerdster/v2/json_display.dart';
-import 'package:nerdster/v2/interpreter.dart';
-import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/interpreter.dart';
+import 'package:nerdster/v2/json_display.dart';
+import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/rate_dialog.dart';
 
 // Question: Do ... canonical/equivalent..?
 class StatementTile extends StatelessWidget {
@@ -21,7 +21,7 @@ class StatementTile extends StatelessWidget {
   final ValueChanged<ContentKey?>? onMark;
   final ValueNotifier<ContentKey?>? markedSubjectToken;
   final ValueChanged<ContentKey>? onInspect;
-  final VoidCallback? onRefresh;
+  final ValueChanged<ContentStatement> onStatementPublished;
   final ValueChanged<String>? onTagTap;
   final int? maxLines;
 
@@ -35,7 +35,7 @@ class StatementTile extends StatelessWidget {
     this.onMark,
     this.markedSubjectToken,
     this.onInspect,
-    this.onRefresh,
+    required this.onStatementPublished,
     this.onTagTap,
     this.maxLines,
   });
@@ -236,13 +236,13 @@ class StatementTile extends StatelessWidget {
                 constraints: const BoxConstraints(),
                 icon: Icon(icon, size: 16, color: color),
                 tooltip: tooltip,
-                onPressed: () {
+                onPressed: () async {
                   final group = SubjectGroup(
                     canonical: ContentKey(s.token),
                     statements: uniqueStatements,
                     lastActivity: s.time,
                   );
-                  V2RateDialog.show(
+                  final statement = await V2RateDialog.show(
                     context,
                     SubjectAggregation(
                       subject: s.json,
@@ -251,8 +251,10 @@ class StatementTile extends StatelessWidget {
                     ),
                     model,
                     intent: RateIntent.none,
-                    onRefresh: onRefresh,
                   );
+                  if (statement != null) {
+                    onStatementPublished(statement);
+                  }
                 },
               ),
               ValueListenableBuilder<bool>(

@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/v2/source_factory.dart';
-import 'package:nerdster/v2/feed_controller.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/nerdster_menu.dart';
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/notifications_menu.dart';
 import 'package:nerdster/v2/content_bar.dart';
-import 'package:nerdster/v2/trust_settings_bar.dart';
-import 'package:nerdster/v2/etc_bar.dart';
 import 'package:nerdster/v2/content_card.dart';
-import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/nerdster_menu.dart';
-import 'package:nerdster/verify.dart';
+import 'package:nerdster/v2/etc_bar.dart';
+import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/graph_view.dart';
+import 'package:nerdster/v2/labeler.dart';
+import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/notifications_menu.dart';
 import 'package:nerdster/v2/relate_dialog.dart';
-import 'package:nerdster/app.dart';
 import 'package:nerdster/v2/sign_in_widget.dart';
+import 'package:nerdster/v2/source_factory.dart';
+import 'package:nerdster/v2/trust_settings_bar.dart';
+import 'package:nerdster/verify.dart';
 
 import 'refresh_signal.dart';
 import 'submit.dart';
@@ -86,15 +86,17 @@ class _ContentViewState extends State<ContentView> {
     super.dispose();
   }
 
-  void _onSettingChanged() {
-    if (mounted) setState(() {});
+  void _onStatementPublished(ContentStatement s) {
+    _controller.push(s);
+    _onRefresh(clearCache: false);
   }
 
-  Future<void> _onRefresh() async {
+  Future<void> _onRefresh({bool clearCache = true}) async {
     if (!mounted) return;
 
     // The controller handles overlapping refreshes internally.
-    await _controller.refresh(_currentPov, meIdentity: IdentityKey(signInState.identity));
+    await _controller.refresh(_currentPov,
+        meIdentity: IdentityKey(signInState.identity), clearCache: clearCache);
   }
 
   void _changePov(String? newToken) {
@@ -111,7 +113,7 @@ class _ContentViewState extends State<ContentView> {
     if (!_showFilters.value) _showFilters.value = true;
   }
 
-  void _onMark(ContentKey? token) {
+  Future<void> _onMark(ContentKey? token) async {
     if (token == null) {
       _markedSubjectToken.value = null;
       return;
@@ -132,16 +134,21 @@ class _ContentViewState extends State<ContentView> {
         final SubjectAggregation subject1 = model.aggregation.subjects[currentMarked]!;
         final SubjectAggregation subject2 = model.aggregation.subjects[token]!;
 
-        V2RelateDialog.show(
+        final statement = await V2RelateDialog.show(
           context,
           subject1,
           subject2,
           model,
-          onRefresh: () {
-            _onRefresh();
-            _markedSubjectToken.value = null;
-          },
+          onRefresh: null,
         );
+
+        if (statement != null) {
+          _onStatementPublished(statement);
+          _markedSubjectToken.value = null;
+        } else {
+          // If the dialog was just closed or failed without statement, usually we do nothing.
+          // Unless we want to clear selection? Probably not.
+        }
       }
     }
   }
@@ -283,8 +290,9 @@ class _ContentViewState extends State<ContentView> {
                                       padding: EdgeInsets.zero,
                                       visualDensity: VisualDensity.compact,
                                       icon: const Icon(Icons.add),
-                                      onPressed: () =>
-                                          v2Submit(context, model, onRefresh: _onRefresh),
+                                      onPressed: () => v2Submit(context, model,
+                                          onRefresh: _onRefresh,
+                                          onStatementPublished: _onStatementPublished),
                                       tooltip: 'Submit new content',
                                     ),
                                   ),
@@ -418,11 +426,11 @@ class _ContentViewState extends State<ContentView> {
         return ContentCard(
           aggregation: subjects[index],
           model: model,
-          onRefresh: _onRefresh,
           onPovChange: _changePov,
           onTagTap: _onTagTap,
           onMark: _onMark,
           markedSubjectToken: _markedSubjectToken,
+          onStatementPublished: _onStatementPublished,
           onGraphFocus: (identity) {
             Navigator.push(
               context,

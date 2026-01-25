@@ -38,6 +38,44 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
     _partialCache.clear();
   }
 
+  /// Manually pushes a newly created statement into the full history cache.
+  /// Used for partial refresh to avoid network round-trip.
+  ///
+  /// The statement is prepended to the cached history (assuming descending time order).
+  /// Verifies that `statement.previous` matches the current head of the history (if any).
+  /// 
+  /// DEFER: Trigger a read in the background and do something (crash okay) in case of optimistic 
+  /// concurrency error.
+  void push(T statement) {
+    if (statement.iToken.isEmpty) return;
+    final String token = statement.iToken;
+
+    // Safety: If we don't have the full history cached, we cannot safely prepend.
+    if (!_fullCache.containsKey(token)) {
+      return;
+    }
+
+    // Get current history or create new list
+    // Make a mutable copy because the cache (or default empty) might be unmodifiable
+    final List<T> history = List.of(_fullCache[token]!);
+
+    if (history.isNotEmpty) {
+      final T head = history.first;
+      // 'previous' is not a property on Statement but accessible via loose access
+      final String? previous = statement['previous'];
+      if (previous != head.token) {
+        throw ArgumentError(
+            'Statement previous ($previous) does not match head token (${head.token}) for $token');
+      }
+    } else {
+      // If history is empty, we can't verify notary chain against cache.
+      // We assume the caller knows what they are doing (e.g. first statement or cache miss).
+    }
+
+    history.insert(0, statement);
+    _fullCache[token] = history;
+  }
+
   @override
   Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
     final Map<String, List<T>> results = {};
@@ -56,12 +94,12 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
 
       if (_fullCache.containsKey(token)) {
         // Full history is always safe to use; logic layer will filter if needed.
-        results[token] = _fullCache[token]!;
+        results[token] = List.unmodifiable(_fullCache[token]!);
       } else if (revokeAt != null &&
           _partialCache.containsKey(token) &&
           _partialCache[token]!.$1 == revokeAt) {
         // Partial history is safe if the revokeAt matches exactly.
-        results[token] = _partialCache[token]!.$2;
+        results[token] = List.unmodifiable(_partialCache[token]!.$2);
       } else {
         missing[token] = revokeAt;
       }
@@ -89,7 +127,7 @@ class CachedSource<T extends Statement> implements StatementSource<T> {
         } else {
           _partialCache[token] = (revokeAt, statements);
         }
-        results[token] = statements;
+        results[token] = List.unmodifiable(statements);
       }
     }
 

@@ -15,23 +15,23 @@ import 'package:url_launcher/url_launcher.dart';
 class ContentCard extends StatefulWidget {
   final SubjectAggregation aggregation;
   final V2FeedModel model;
-  final VoidCallback? onRefresh;
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String?>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
   final ValueNotifier<ContentKey?>? markedSubjectToken;
   final ValueChanged<ContentKey?>? onMark;
+  final ValueChanged<ContentStatement> onStatementPublished;
 
   const ContentCard({
     super.key,
     required this.aggregation,
     required this.model,
-    this.onRefresh,
     this.onPovChange,
     this.onTagTap,
     this.onGraphFocus,
     this.markedSubjectToken,
     this.onMark,
+    required this.onStatementPublished,
   });
 
   @override
@@ -100,12 +100,12 @@ class _ContentCardState extends State<ContentCard> {
                 child: ContentCard(
                   aggregation: agg.toNarrow(),
                   model: widget.model,
-                  onRefresh: widget.onRefresh,
                   onPovChange: widget.onPovChange,
                   onTagTap: widget.onTagTap,
                   onGraphFocus: widget.onGraphFocus,
                   markedSubjectToken: widget.markedSubjectToken,
                   onMark: widget.onMark,
+                  onStatementPublished: widget.onStatementPublished,
                 ),
               ),
             );
@@ -423,7 +423,8 @@ class _ContentCardState extends State<ContentCard> {
                 onMark: (token) => widget.onMark?.call(token),
                 markedSubjectToken: widget.markedSubjectToken,
                 onInspect: _showInspectionSheet,
-                onRefresh: widget.onRefresh,
+
+                onStatementPublished: widget.onStatementPublished,
                 onTagTap: widget.onTagTap,
                 maxLines: 1,
               )),
@@ -431,13 +432,13 @@ class _ContentCardState extends State<ContentCard> {
           SubjectDetailsView(
             aggregation: widget.aggregation,
             model: widget.model,
-            onRefresh: widget.onRefresh,
             onPovChange: widget.onPovChange,
             onTagTap: widget.onTagTap,
             onGraphFocus: widget.onGraphFocus,
             onMark: widget.onMark,
             markedSubjectToken: widget.markedSubjectToken,
             onInspect: _showInspectionSheet,
+            onStatementPublished: widget.onStatementPublished,
           ),
         if (hasMore || _isHistoryExpanded)
           Center(
@@ -673,38 +674,40 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   Future<void> _react() async {
-    await V2RateDialog.show(
+    final ContentStatement? statement = await V2RateDialog.show(
       context,
       widget.aggregation,
       widget.model,
       intent: RateIntent.none,
-      onRefresh: widget.onRefresh,
     );
+    if (statement != null) {
+      widget.onStatementPublished(statement);
+    }
   }
 }
 
 class SubjectDetailsView extends StatelessWidget {
   final SubjectAggregation aggregation;
   final V2FeedModel model;
-  final VoidCallback? onRefresh;
   final ValueChanged<String?>? onPovChange;
   final ValueChanged<String>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
   final ValueChanged<ContentKey?>? onMark;
   final ValueNotifier<ContentKey?>? markedSubjectToken;
   final ValueChanged<ContentKey>? onInspect;
+  final ValueChanged<ContentStatement> onStatementPublished;
 
   const SubjectDetailsView({
     super.key,
     required this.aggregation,
     required this.model,
-    this.onRefresh,
     this.onPovChange,
     this.onTagTap,
     this.onGraphFocus,
     this.onMark,
     this.markedSubjectToken,
     this.onInspect,
+    required this.onStatementPublished,
   });
 
   @override
@@ -748,7 +751,7 @@ class SubjectDetailsView extends StatelessWidget {
       onMark: onMark,
       markedSubjectToken: markedSubjectToken,
       onInspect: onInspect,
-      onRefresh: onRefresh,
+      onStatementPublished: onStatementPublished,
       onTagTap: onTagTap,
     ));
 
