@@ -253,7 +253,6 @@ class _ContentCardState extends State<ContentCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Align(alignment: Alignment.topRight, child: _buildActionBar()),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -327,21 +326,32 @@ class _ContentCardState extends State<ContentCard> {
                                       style: Theme.of(context).textTheme.labelSmall),
                                 ],
                               ),
-                              if (widget.aggregation.tags.isNotEmpty)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4.0),
-                                  child: Wrap(
-                                    spacing: 8.0,
-                                    children: widget.aggregation.tags.map((tag) {
-                                      final displayTag = tag.startsWith('#') ? tag : '#$tag';
-                                      return InkWell(
-                                        onTap: () => widget.onTagTap?.call(tag),
-                                        child: Text(displayTag,
-                                            style: const TextStyle(color: Colors.blue)),
-                                      );
-                                    }).toList(),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Expanded(
+                                    child: widget.aggregation.tags.isNotEmpty
+                                        ? Padding(
+                                            padding: const EdgeInsets.only(top: 4.0),
+                                            child: Wrap(
+                                              spacing: 8.0,
+                                              children: widget.aggregation.tags.map((tag) {
+                                                final displayTag =
+                                                    tag.startsWith('#') ? tag : '#$tag';
+                                                return InkWell(
+                                                  onTap: () => widget.onTagTap?.call(tag),
+                                                  child: Text(displayTag,
+                                                      style: const TextStyle(color: Colors.blue)),
+                                                );
+                                              }).toList(),
+                                            ),
+                                          )
+                                        : const SizedBox.shrink(),
                                   ),
-                                ),
+                                  const SizedBox(width: 8),
+                                  _buildActionBar(),
+                                ],
+                              ),
                             ],
                           ),
                         ),

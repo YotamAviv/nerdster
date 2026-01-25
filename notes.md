@@ -7,33 +7,33 @@ AI NOTE: This is my (the human) file with my own notes.
 
 # Misc...
 ?fire=emulator&skipCredentialsDisplay
-?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}&skipCredentials=true
+?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}
 
 ?identity={"crv": "Ed25519","kty": "OKP","x": "Sf-EQHCY94WB_4QFzEQWkO2SYFNTBgtfsc-Ic25oL84"}&skipVerify=false&dev=true
 
 # Fake egosCircle
 ?fire=fake&demo=egosCircle&skipCredentialsDisplay
 # Fake equivalenceBug
-?fire=fake&demo=equivalenceBug&skipCredentials=true
+?fire=fake&demo=equivalenceBug
 
 # Fake simpsonsRelateDemo
-?fire=fake&demo=simpsonsRelateDemo&skipCredentials=truex 
+?fire=fake&demo=simpsonsRelateDemox 
 
-?fire=fake&demo=simpsonsDemo&skipCredentials=true
+?fire=fake&demo=simpsonsDemo
 
-?fire=fake&demo=rateWhenNotInNetworkskipCredentials=true
+?fire=fake&demo=rateWhenNotInNetwork
 
 # Notifications gallery
 ?fire=fake&demo=notificationsGallery
 
 # Emulator simpsonsDemo from PROD
 # Lisa
-?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}&skipCredentials=true
+?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}
 # Bart
-?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22DLKWtnSsw7P9ePCizuMP1Yxg5knCvT3Y7a7X7oMnxwc%22%20}&skipCredentials=true
+?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22DLKWtnSsw7P9ePCizuMP1Yxg5knCvT3Y7a7X7oMnxwc%22%20}
 
 # Emulator yotam
-?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}&skipCredentials=true
+?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}
 
 &skipCredentialsDisplay=true&showCrypto=true
 
