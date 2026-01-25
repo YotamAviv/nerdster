@@ -24,13 +24,3 @@ Let me know if you notice anything that might be problematic.
 I've upgraded the build number, but I want a commit message that will be appropriate for add the diffs between this and the main branch.
 Copy/paste from our conversation never works for me for this, and so
 append the commit message to the end of this file:
-
-# Commit Message Recommendation
-
-Fix ghosting of dismissed content and align with Delegate architecture
-
-- **Bug Fix**: `ContentStatement` now preserves subject data for dismissals (rates), ensuring proper filtering.
-- **Testing**: Added `test/v2/dismiss_bug_test.dart` to verify delegate-based signing and dismissal logic.
-- **Refactor**: Simplified `V2FeedController.shouldShow` to use `ContentAggregation` directly.
-- **Integration**: Updated `v2_ui_test.dart` to reflect the new Filter UI (dropdown).
-- **Versioning**: Bumped version to 1.1.3+144.

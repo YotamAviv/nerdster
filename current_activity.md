@@ -3,6 +3,11 @@ AI Agent: Do not visit this file without invitation
 
 # Current Activity:
 
+
+
+
+
+
 BUG:
 - loading identity=... does not ignore stored keys correctly, not sure exactly, but after 
 signing in as Yotam, the link with identity=lisa had issues.
