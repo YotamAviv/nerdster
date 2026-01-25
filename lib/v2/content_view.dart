@@ -55,7 +55,6 @@ class _ContentViewState extends State<ContentView> {
       }
     });
     _controller.refresh(_currentPov, meIdentity: IdentityKey(signInState.identity));
-    Setting.get<bool>(SettingType.hideSeen).addListener(_onSettingChanged);
     v2RefreshSignal.addListener(_onRefresh);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -80,7 +79,6 @@ class _ContentViewState extends State<ContentView> {
 
   @override
   void dispose() {
-    Setting.get<bool>(SettingType.hideSeen).removeListener(_onSettingChanged);
     v2RefreshSignal.removeListener(_onRefresh);
     _controller.dispose();
     _showFilters.dispose();
@@ -153,8 +151,6 @@ class _ContentViewState extends State<ContentView> {
     return ValueListenableBuilder<V2FeedModel?>(
       valueListenable: _controller,
       builder: (context, model, _) {
-        final hideSeen = Setting.get<bool>(SettingType.hideSeen).value;
-
         return Scaffold(
           appBar: AppBar(
             toolbarHeight: 0, // Hide the default AppBar
@@ -268,7 +264,7 @@ class _ContentViewState extends State<ContentView> {
                       child: Stack(
                         children: [
                           Positioned.fill(
-                            child: _buildContent(model, hideSeen),
+                            child: _buildContent(model),
                           ),
                           // Floating Controls (Left)
                           Positioned(
@@ -366,7 +362,7 @@ class _ContentViewState extends State<ContentView> {
     );
   }
 
-  Widget _buildContent(V2FeedModel? model, bool hideSeen) {
+  Widget _buildContent(V2FeedModel? model) {
     if (_controller.loading && model == null) {
       return Center(
         child: Column(

@@ -355,7 +355,7 @@ Tactics for addressing this:
       povIdentity: trustGraph!.pov,
       fcontext: 'identity',
       sortMode: V2SortMode.recentActivity,
-      filterMode: V2FilterMode.ignoreDisses,
+      filterMode: DisFilterMode.ignore,
       enableCensorship: false,
     );
 
@@ -408,9 +408,9 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
   set sortMode(V2SortMode mode) {}
 
   @override
-  V2FilterMode get filterMode => V2FilterMode.ignoreDisses;
+  DisFilterMode get filterMode => DisFilterMode.ignore;
   @override
-  set filterMode(V2FilterMode mode) {}
+  set filterMode(DisFilterMode mode) {}
 
   @override
   String? get tagFilter => null;
@@ -431,7 +431,7 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
   ValueNotifier<bool> get enableCensorshipNotifier => ValueNotifier(false);
 
   @override
-  bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled,
+  bool shouldShow(SubjectAggregation subject, DisFilterMode mode, bool censorshipEnabled,
           {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) =>
       true;
 

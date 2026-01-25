@@ -6,9 +6,7 @@ enum SettingType {
   fcontext(String, kFollowContextNerdster, aliases: ['follow']),
 
   censor(bool, true),
-  hideDisliked(bool, false),
-  hideSeen(bool, false, persist: true),
-  dis(String, 'pov'),
+  dis(String, 'my'),
   sort(String, 'recentActivity'),
   contentType(String, 'all', aliases: ['type']),
   timeframe(String, 'all'),

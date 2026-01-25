@@ -782,12 +782,12 @@ bool _shouldShowStatement(ContentStatement s, V2FeedModel model) {
   if (model.enableCensorship && subjectAgg.isCensored) return false;
 
   switch (model.filterMode) {
-    case V2FilterMode.myDisses:
+    case DisFilterMode.my:
       final myStmts = model.aggregation.myCanonicalDisses[subjectAgg.canonical] ?? [];
       return !SubjectGroup.checkIsDismissed(myStmts, subjectAgg);
-    case V2FilterMode.povDisses:
+    case DisFilterMode.pov:
       return !subjectAgg.isDismissed;
-    case V2FilterMode.ignoreDisses:
+    case DisFilterMode.ignore:
       return true;
   }
 }

@@ -20,7 +20,7 @@ class MockV2FeedModel extends V2FeedModel {
           povIdentity: trustGraph.pov,
           fcontext: 'test',
           sortMode: V2SortMode.recentActivity,
-          filterMode: V2FilterMode.ignoreDisses,
+          filterMode: DisFilterMode.ignore,
           enableCensorship: false,
         );
 }

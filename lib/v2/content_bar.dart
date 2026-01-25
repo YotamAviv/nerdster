@@ -94,13 +94,13 @@ class ContentBar extends StatelessWidget {
                 // Dismissal Filter (formerly "Filter")
                 Tooltip(
                   message: 'Filter dismissed content',
-                  child: DropdownButton<V2FilterMode>(
+                  child: DropdownButton<DisFilterMode>(
                     value: controller.filterMode,
                     items: const [
-                      DropdownMenuItem(value: V2FilterMode.myDisses, child: Text('My Disses')),
-                      DropdownMenuItem(value: V2FilterMode.povDisses, child: Text("PoV's Disses")),
+                      DropdownMenuItem(value: DisFilterMode.my, child: Text('My Disses')),
+                      DropdownMenuItem(value: DisFilterMode.pov, child: Text("PoV's Disses")),
                       DropdownMenuItem(
-                          value: V2FilterMode.ignoreDisses, child: Text('Ignore Disses')),
+                          value: DisFilterMode.ignore, child: Text('Ignore Disses')),
                     ],
                     onChanged: (val) {
                       if (val != null) controller.filterMode = val;

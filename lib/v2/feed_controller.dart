@@ -92,33 +92,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     Setting.get(SettingType.sort).value = mode.name;
   }
 
-  V2FilterMode get filterMode {
-    final val = Setting.get(SettingType.dis).value as String;
-    switch (val) {
-      case 'me':
-        return V2FilterMode.myDisses;
-      case 'ignore':
-        return V2FilterMode.ignoreDisses;
-      case 'pov':
-      default:
-        return V2FilterMode.povDisses;
-    }
+  DisFilterMode get filterMode {
+    return DisFilterMode.fromString(Setting.get(SettingType.dis).value as String);
   }
 
-  set filterMode(V2FilterMode mode) {
-    String val;
-    switch (mode) {
-      case V2FilterMode.myDisses:
-        val = 'me';
-        break;
-      case V2FilterMode.ignoreDisses:
-        val = 'ignore';
-        break;
-      case V2FilterMode.povDisses:
-        val = 'pov';
-        break;
-    }
-    Setting.get(SettingType.dis).value = val;
+  set filterMode(DisFilterMode mode) {
+    Setting.get(SettingType.dis).value = mode.name;
   }
 
   String? get tagFilter {
@@ -181,7 +160,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
   List<SubjectAggregation> _computeEffectiveSubjects(
     ContentAggregation aggregation,
-    V2FilterMode mode,
+    DisFilterMode mode,
     bool censorshipEnabled, {
     String? tagFilter,
     String? typeFilter,
@@ -225,7 +204,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  bool shouldShow(SubjectAggregation subject, V2FilterMode mode, bool censorshipEnabled,
+  bool shouldShow(SubjectAggregation subject, DisFilterMode mode, bool censorshipEnabled,
       {String? tagFilter, Map<String, String>? tagEquivalence, String? typeFilter}) {
     // Only show subjects that exist in the PoV's feed (have statements from the PoV's network)
     if (subject.statements.isEmpty) return false;
@@ -258,12 +237,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
 
     switch (mode) {
-      case V2FilterMode.myDisses:
+      case DisFilterMode.my:
         final myStmts = value?.aggregation.myCanonicalDisses[subject.canonical] ?? [];
         return !SubjectGroup.checkIsDismissed(myStmts, subject);
-      case V2FilterMode.povDisses:
+      case DisFilterMode.pov:
         return !subject.isDismissed;
-      case V2FilterMode.ignoreDisses:
+      case DisFilterMode.ignore:
         return true;
     }
   }

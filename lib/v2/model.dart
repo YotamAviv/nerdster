@@ -13,10 +13,18 @@ enum V2SortMode {
   mostComments,
 }
 
-enum V2FilterMode {
-  myDisses,
-  povDisses,
-  ignoreDisses,
+enum DisFilterMode {
+  my,
+  pov,
+  ignore;
+
+  static DisFilterMode fromString(String val) {
+    try {
+      return DisFilterMode.values.byName(val);
+    } catch (_) {
+      return my;
+    }
+  }
 }
 
 /// Represents a notification or conflict discovered during graph construction.
@@ -457,7 +465,7 @@ class V2FeedModel {
   final IdentityKey povIdentity;
   final String fcontext;
   final V2SortMode sortMode;
-  final V2FilterMode filterMode;
+  final DisFilterMode filterMode;
   final String? tagFilter;
   final String? typeFilter;
   final bool enableCensorship;

@@ -50,7 +50,7 @@ void main() {
         povIdentity: pov,
         fcontext: '<identity>',
         sortMode: V2SortMode.recentActivity,
-        filterMode: V2FilterMode.ignoreDisses,
+        filterMode: DisFilterMode.ignore,
         enableCensorship: false,
       );
 
@@ -102,7 +102,7 @@ void main() {
         povIdentity: pov,
         fcontext: 'news',
         sortMode: V2SortMode.recentActivity,
-        filterMode: V2FilterMode.ignoreDisses,
+        filterMode: DisFilterMode.ignore,
         enableCensorship: false,
       );
 
@@ -153,7 +153,7 @@ void main() {
         povIdentity: pov,
         fcontext: '<identity>',
         sortMode: V2SortMode.recentActivity,
-        filterMode: V2FilterMode.ignoreDisses,
+        filterMode: DisFilterMode.ignore,
         enableCensorship: false,
       );
 
