@@ -2,16 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
-import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/v2/source_factory.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 
 import 'spy_source.dart';
 
@@ -25,13 +20,14 @@ void main() {
 
   test('Partial Refresh: Dismissal avoids network fetch', () async {
     Setting.get(SettingType.dis).value = 'my';
-    await simpsonsDemo();
+    var (DemoIdentityKey lisa, DemoDelegateKey? lisaDelegate) = await simpsonsDemo();
 
-    final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
-    final DemoDelegateKey lisaDelegate = await lisa.makeDelegate();
-    await lisa.delegate(lisaDelegate, domain: kNerdsterDomain);
+    // This alternative passes, too. It tests using a new delegate, and so the cache would be [], 
+    // and this would be the first statement (previous == null).
+    // lisaDelegate = await lisa.makeDelegate();
+    // await lisa.delegate(lisaDelegate, domain: kNerdsterDomain);
 
-    await signInState.signIn(lisa.id.value, lisaDelegate.keyPair);
+    await signInState.signIn(lisa.id.value, lisaDelegate!.keyPair);
     signInState.pov = lisa.id.value;
 
     final realTrustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));

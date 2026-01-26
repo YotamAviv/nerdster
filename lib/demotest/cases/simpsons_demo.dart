@@ -36,7 +36,7 @@ import 'package:nerdster/v2/follow_logic.dart';
 /// work to make it writeable by the demo'ing user (change follow contexts, submit, diss, etc..).
 /// DEFER: Option to show statements like FakeFire which uses Prefs.labelKeys to show nice.
 
-Future<(DemoKey, DemoKey?)> simpsonsDemo() async {
+Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   useClock(TestClock(Duration(days: 1)));
 
   DemoIdentityKey lisa = await DemoIdentityKey.findOrCreate('lisa');

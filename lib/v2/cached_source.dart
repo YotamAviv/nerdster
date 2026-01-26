@@ -53,48 +53,33 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
 
     // 1. Write through to persistence
     final Statement statement = await _writer!.push(json, signer);
+    if (statement is! T) {
+      throw Exception('type ${statement.runtimeType} but cache expects $T');
+    }
 
     // 2. Update cache
-    if (statement is T) {
-      _inject(statement);
-    } else {
-      // In theory, we could throw, but if we are just a cache for T, 
-      // and we wrote something else (unlikely given writer pairing), we just ignore caching it.
-       debugPrint('CachedSource: warning - wrote statement of type ${statement.runtimeType} but cache expects $T');
-    }
+    _inject(statement);
 
     return statement;
   }
 
   void _inject(T statement) {
-    if (statement.iToken.isEmpty) return;
+    assert(statement.iToken.isNotEmpty);
     final String token = statement.iToken;
-
-    // Safety: If we don't have the full history cached, create it if missing?
-    // The previous logic was strict: "If we don't have the full history cached, we cannot safely prepend."
-    // However, if we just wrote the HEAD, and we have nothing else, we are safe to say the history is [HEAD].
-    // BUT only if 'previous' is null. If 'previous' exists, we are missing history.
-    
-    // Get current history or create new list
-    List<T> history = [];
-    if (_fullCache.containsKey(token)) {
-      history = List.of(_fullCache[token]!);
-    } else if (statement['previous'] != null) {
-      // Missing history, safe to ignore cache update?
-      // If we blindly add it, we have a gap.
-      // Better to return and let next fetch resolve it.
-      return; 
+    if (!_fullCache.containsKey(token)) {
+      return;
     }
+    List<T> history = List.of(_fullCache[token]!);
 
-    if (history.isNotEmpty) {
+    final String? previous = statement['previous'];
+    if (history.isEmpty) {
+      if (previous != null) {
+        throw Exception('Cache inconsistency detected for token $token');
+      }
+    } else {
       final T head = history.first;
-      // 'previous' is not a property on Statement but accessible via loose access
-      final String? previous = statement['previous'];
       if (previous != head.token) {
-        // Optimistic concurrency mismatch or cache stale.
-        // Invalidate cache for this token to force refetch next time.
-        _fullCache.remove(token);
-        return;
+        throw Exception('Cache inconsistency detected for token $token');
       }
     }
 
@@ -107,7 +92,7 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
     final Map<String, List<T>> results = {};
     final Map<String, String?> missing = {};
 
-    debugPrint('CachedSource: fetching ${keys.length} keys');
+    // debugPrint('CachedSource: fetching ${keys.length} keys');
 
     // 1. Check cache
     for (final MapEntry<String, String?> entry in keys.entries) {
@@ -129,16 +114,17 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
         // Partial history is safe if the revokeAt matches exactly.
         results[token] = List.unmodifiable(_partialCache[token]!.$2);
       } else {
-        if (_partialCache.containsKey(token)) {
-           debugPrint('CachedSource miss for $token: partial mismatch req=$revokeAt, cached=${_partialCache[token]!.$1}');
-        } else {
-           debugPrint('CachedSource miss for $token: not in cache');
-        }
+        // if (_partialCache.containsKey(token)) {
+        //   debugPrint(
+        //       'CachedSource miss for $token: partial mismatch req=$revokeAt, cached=${_partialCache[token]!.$1}');
+        // } else {
+        //   debugPrint('CachedSource miss for $token: not in cache');
+        // }
         missing[token] = revokeAt;
       }
     }
 
-    debugPrint('CachedSource: results=${results.length}, missing=${missing.length}');
+    // debugPrint('CachedSource: results=${results.length}, missing=${missing.length}');
 
     // 2. Fetch missing
     if (missing.isNotEmpty) {

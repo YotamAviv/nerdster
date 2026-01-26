@@ -280,8 +280,6 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   Future<void> _load({bool showLoading = true}) async {
-    debugPrint('V2FeedController._load: showLoading=$showLoading');
-
     if (_loading) {
       return;
     }
