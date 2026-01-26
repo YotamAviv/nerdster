@@ -65,6 +65,8 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     final http.Request request = http.Request('GET', uri);
     final http.StreamedResponse response = await client.send(request);
 
+    print('CloudFunctionsSource: fetch from $uri');
+
     if (response.statusCode != 200) {
       throw Exception('Failed to fetch statements from $baseUrl: ${response.statusCode}');
     }

@@ -21,7 +21,6 @@ import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/trust_settings_bar.dart';
 import 'package:nerdster/verify.dart';
 
-import 'refresh_signal.dart';
 import 'submit.dart';
 
 class ContentView extends StatefulWidget {
@@ -36,7 +35,6 @@ class ContentView extends StatefulWidget {
 
 class _ContentViewState extends State<ContentView> {
   late final V2FeedController _controller;
-  IdentityKey? _currentPov;
   final ValueNotifier<ContentKey?> _markedSubjectToken = ValueNotifier(null);
   final ValueNotifier<bool> _showFilters = ValueNotifier(false);
   final ValueNotifier<bool> _showEtc = ValueNotifier(false);
@@ -44,7 +42,6 @@ class _ContentViewState extends State<ContentView> {
   @override
   void initState() {
     super.initState();
-    _currentPov = widget.pov;
     _controller = V2FeedController(
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
@@ -54,8 +51,8 @@ class _ContentViewState extends State<ContentView> {
         globalLabeler.value = _controller.value!.labeler;
       }
     });
-    _controller.refresh(_currentPov, meIdentity: IdentityKey(signInState.identity));
-    v2RefreshSignal.addListener(_onRefresh);
+    _controller.refresh(); // Assuming refresh() now handles defaults via stored state or defaults?
+    // v2RefreshSignal removed
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       verifyInit(navigatorKey);
@@ -68,7 +65,6 @@ class _ContentViewState extends State<ContentView> {
     if (oldWidget.pov != widget.pov) {
       debugPrint('ContentView: povIdentity changed from ${oldWidget.pov} to ${widget.pov}');
       setState(() {
-        _currentPov = widget.pov;
         _markedSubjectToken.value = null;
       });
       // We use a small delay to ensure the previous refresh (if any) has a chance to see the loading state
@@ -79,33 +75,15 @@ class _ContentViewState extends State<ContentView> {
 
   @override
   void dispose() {
-    v2RefreshSignal.removeListener(_onRefresh);
     _controller.dispose();
     _showFilters.dispose();
     _showEtc.dispose();
     super.dispose();
   }
 
-  void _onStatementPublished(ContentStatement s) {
-    _controller.push(s);
-    _onRefresh(clearCache: false);
-  }
-
-  Future<void> _onRefresh({bool clearCache = true}) async {
+  Future<void> _onRefresh() async {
     if (!mounted) return;
-
-    // The controller handles overlapping refreshes internally.
-    await _controller.refresh(_currentPov,
-        meIdentity: IdentityKey(signInState.identity), clearCache: clearCache);
-  }
-
-  void _changePov(String? newToken) {
-    if (newToken != null) signInState.pov = newToken;
-    setState(() {
-      _currentPov = newToken != null ? IdentityKey(newToken) : null;
-      _markedSubjectToken.value = null;
-    });
-    _onRefresh();
+    await _controller.notify();
   }
 
   void _onTagTap(String? tag) {
@@ -138,12 +116,11 @@ class _ContentViewState extends State<ContentView> {
           context,
           subject1,
           subject2,
-          model,
+          _controller, // Changed from model
           onRefresh: null,
         );
 
         if (statement != null) {
-          _onStatementPublished(statement);
           _markedSubjectToken.value = null;
         } else {
           // If the dialog was just closed or failed without statement, usually we do nothing.
@@ -240,6 +217,7 @@ class _ContentViewState extends State<ContentView> {
                           duration: const Duration(milliseconds: 200),
                           child: show
                               ? EtcBar(
+                                  controller: _controller, // Added
                                   notifications: Builder(builder: (context) {
                                     final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
                                     final hasTrust =
@@ -290,9 +268,7 @@ class _ContentViewState extends State<ContentView> {
                                       padding: EdgeInsets.zero,
                                       visualDensity: VisualDensity.compact,
                                       icon: const Icon(Icons.add),
-                                      onPressed: () => v2Submit(context, model,
-                                          onRefresh: _onRefresh,
-                                          onStatementPublished: _onStatementPublished),
+                                      onPressed: () => v2Submit(context, _controller),
                                       tooltip: 'Submit new content',
                                     ),
                                   ),
@@ -426,11 +402,10 @@ class _ContentViewState extends State<ContentView> {
         return ContentCard(
           aggregation: subjects[index],
           model: model,
-          onPovChange: _changePov,
+          controller: _controller, // Added
           onTagTap: _onTagTap,
           onMark: _onMark,
           markedSubjectToken: _markedSubjectToken,
-          onStatementPublished: _onStatementPublished,
           onGraphFocus: (identity) {
             Navigator.push(
               context,

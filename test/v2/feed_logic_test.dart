@@ -52,7 +52,7 @@ void main() {
 
   test('Lisa feed should have expected names and content', () async {
     final String lisaToken = DemoIdentityKey.findByName('lisa')!.token;
-    await controller.refresh(IdentityKey(lisaToken));
+    await controller.refresh(pov: IdentityKey(lisaToken));
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
@@ -106,7 +106,7 @@ void main() {
 
     // 5. Refresh with Stranger as PoV
     // Stranger does NOT trust Me, so Me is not in the trust graph.
-    await controller.refresh(stranger.id, meIdentity: me.id);
+    await controller.refresh(pov: stranger.id, meIdentity: me.id);
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
@@ -171,7 +171,7 @@ void main() {
     await criticDelegate.doRate(subject: ratingToken, recommend: false, comment: 'Bad take');
 
     // 4. Refresh Viewer's feed
-    await controller.refresh(viewer.id);
+    await controller.refresh(pov: viewer.id);
 
     expect(controller.error, isNull);
     final V2FeedModel model = controller.value!;
@@ -207,7 +207,7 @@ void main() {
 
     // 4. Refresh with Stranger as PoV
     // Stranger does NOT trust Me.
-    await controller.refresh(stranger.id, meIdentity: me.id);
+    await controller.refresh(pov: stranger.id, meIdentity: me.id);
 
     // Wait for controller to finish loading the requested PoV
     // (Because signIn triggered a refresh for 'Me', the explicit refresh call might have returned early)

@@ -10,28 +10,27 @@ import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
 import 'package:nerdster/v2/statement_tile.dart';
+import 'package:nerdster/v2/feed_controller.dart'; // Added
 import 'package:url_launcher/url_launcher.dart';
 
 class ContentCard extends StatefulWidget {
   final SubjectAggregation aggregation;
   final V2FeedModel model;
-  final ValueChanged<String?>? onPovChange;
+  final V2FeedController controller; // Added
   final ValueChanged<String?>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
   final ValueNotifier<ContentKey?>? markedSubjectToken;
   final ValueChanged<ContentKey?>? onMark;
-  final ValueChanged<ContentStatement> onStatementPublished;
 
   const ContentCard({
     super.key,
     required this.aggregation,
     required this.model,
-    this.onPovChange,
+    required this.controller, // Added
     this.onTagTap,
     this.onGraphFocus,
     this.markedSubjectToken,
     this.onMark,
-    required this.onStatementPublished,
   });
 
   @override
@@ -100,12 +99,11 @@ class _ContentCardState extends State<ContentCard> {
                 child: ContentCard(
                   aggregation: agg.toNarrow(),
                   model: widget.model,
-                  onPovChange: widget.onPovChange,
+                  controller: widget.controller, // Added
                   onTagTap: widget.onTagTap,
                   onGraphFocus: widget.onGraphFocus,
                   markedSubjectToken: widget.markedSubjectToken,
                   onMark: widget.onMark,
-                  onStatementPublished: widget.onStatementPublished,
                 ),
               ),
             );
@@ -417,6 +415,7 @@ class _ContentCardState extends State<ContentCard> {
           ...topRoots.map((s) => StatementTile(
                 statement: s,
                 model: widget.model,
+                controller: widget.controller, // Added
                 depth: 0,
                 aggregation: widget.aggregation,
                 onGraphFocus: widget.onGraphFocus,
@@ -424,7 +423,6 @@ class _ContentCardState extends State<ContentCard> {
                 markedSubjectToken: widget.markedSubjectToken,
                 onInspect: _showInspectionSheet,
 
-                onStatementPublished: widget.onStatementPublished,
                 onTagTap: widget.onTagTap,
                 maxLines: 1,
               )),
@@ -432,13 +430,12 @@ class _ContentCardState extends State<ContentCard> {
           SubjectDetailsView(
             aggregation: widget.aggregation,
             model: widget.model,
-            onPovChange: widget.onPovChange,
+            controller: widget.controller, // Added
             onTagTap: widget.onTagTap,
             onGraphFocus: widget.onGraphFocus,
             onMark: widget.onMark,
             markedSubjectToken: widget.markedSubjectToken,
             onInspect: _showInspectionSheet,
-            onStatementPublished: widget.onStatementPublished,
           ),
         if (hasMore || _isHistoryExpanded)
           Center(
@@ -677,11 +674,11 @@ class _ContentCardState extends State<ContentCard> {
     final ContentStatement? statement = await V2RateDialog.show(
       context,
       widget.aggregation,
-      widget.model,
+      widget.controller, // Changed from model
       intent: RateIntent.none,
     );
     if (statement != null) {
-      widget.onStatementPublished(statement);
+      // Handled by controller.push
     }
   }
 }
@@ -689,25 +686,23 @@ class _ContentCardState extends State<ContentCard> {
 class SubjectDetailsView extends StatelessWidget {
   final SubjectAggregation aggregation;
   final V2FeedModel model;
-  final ValueChanged<String?>? onPovChange;
+  final V2FeedController controller; // Added
   final ValueChanged<String>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
   final ValueChanged<ContentKey?>? onMark;
   final ValueNotifier<ContentKey?>? markedSubjectToken;
   final ValueChanged<ContentKey>? onInspect;
-  final ValueChanged<ContentStatement> onStatementPublished;
 
   const SubjectDetailsView({
     super.key,
     required this.aggregation,
     required this.model,
-    this.onPovChange,
+    required this.controller, // Added
     this.onTagTap,
     this.onGraphFocus,
     this.onMark,
     this.markedSubjectToken,
     this.onInspect,
-    required this.onStatementPublished,
   });
 
   @override
@@ -745,13 +740,13 @@ class SubjectDetailsView extends StatelessWidget {
     tree.add(StatementTile(
       statement: s,
       model: model,
+      controller: controller, // Added
       depth: depth,
       aggregation: aggregation,
       onGraphFocus: onGraphFocus,
       onMark: onMark,
       markedSubjectToken: markedSubjectToken,
       onInspect: onInspect,
-      onStatementPublished: onStatementPublished,
       onTagTap: onTagTap,
     ));
 

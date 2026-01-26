@@ -6,10 +6,13 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/feed_controller.dart'; // Added
 import 'package:nerdster/v2/rate_dialog.dart';
 
-Future<void> v2Submit(BuildContext context, V2FeedModel model,
-    {VoidCallback? onRefresh, ValueChanged<ContentStatement>? onStatementPublished}) async {
+Future<void> v2Submit(BuildContext context, V2FeedController controller) async {
+  final model = controller.value;
+  if (model == null) return;
+  
   if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
 
   Jsonish? subject = await establishSubjectDialog(context);
@@ -27,15 +30,12 @@ Future<void> v2Submit(BuildContext context, V2FeedModel model,
         );
 
     if (context.mounted) {
-      final statement = await V2RateDialog.show(
+      await V2RateDialog.show(
         context,
         aggregation,
-        model,
-        onRefresh: onStatementPublished != null ? null : onRefresh,
+        controller, // Changed
+        // onRefresh removed
       );
-      if (statement != null) {
-        onStatementPublished?.call(statement);
-      }
     }
   }
 }

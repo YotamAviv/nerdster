@@ -7,12 +7,14 @@ import 'package:nerdster/verify.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
-import 'package:nerdster/v2/refresh_signal.dart';
+// v2/refresh_signal.dart import removed via editing
+import 'package:nerdster/v2/feed_controller.dart'; // Add
 
 class EtcBar extends StatelessWidget {
   final Widget notifications;
+  final V2FeedController controller; // Add
 
-  const EtcBar({super.key, required this.notifications});
+  const EtcBar({super.key, required this.notifications, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +66,7 @@ $link''',
             message: 'Refresh the feed',
             child: IconButton(
               icon: const Icon(Icons.refresh),
-              onPressed: () => v2RefreshSignal.signal(),
+              onPressed: () => controller.refresh(),
             ),
           ),
           const SizedBox(width: 8),

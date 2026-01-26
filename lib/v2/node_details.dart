@@ -13,6 +13,7 @@ import 'package:nerdster/v2/follow_logic.dart';
 import 'package:collection/collection.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
@@ -258,8 +259,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
             // Updating global POV
             Navigator.pop(context); // Close sheet/dialog first
             signInState.pov = widget.identity.value;
-            widget.controller.refresh(widget.identity,
-                meIdentity: IdentityKey(signInState.identity));
+            widget.controller.refresh();
           },
           child: const Text('Set as PoV'),
         ),
@@ -548,9 +548,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         comment: _commentController.text.trim(),
       );
 
-      final writer = SourceFactory.getWriter(kNerdsterDomain,
-          context: context, labeler: widget.controller.value!.labeler);
-      await writer.push(json, signer);
+      await widget.controller.push(json, signer, context: context);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -562,8 +560,6 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           _originalContexts = Map.of(_pendingContexts);
           _originalComment = _commentController.text.trim();
         });
-        await widget.controller.refresh(model.trustGraph.pov,
-            meIdentity: IdentityKey(signInState.identity));
       }
     } catch (e) {
       if (mounted) {

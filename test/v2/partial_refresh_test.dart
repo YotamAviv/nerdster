@@ -44,7 +44,7 @@ void main() {
     final controller = V2FeedController(trustSource: spyTrust, contentSource: spyContent);
 
     // Initial Refresh - Should hit network
-    await controller.refresh(lisa.id, meIdentity: lisa.id);
+    await controller.refresh(); // uses signInState pov
     expect(controller.value, isNotNull);
 
     // Check initial fetch history
@@ -76,11 +76,9 @@ void main() {
 
     // 2. Lisa dismisses Shakes
     final signer = await OouSigner.make(lisaDelegate.keyPair);
-    final writer = SourceFactory.getWriter(kNerdsterDomain);
-    
+    // writer removed
+
     // Construct dismiss statement
-    // We need the exact subject object or constructed one.
-    // Shakes subject from aggregation is fine.
     final Json json = ContentStatement.make(
       Jsonish.find(lisaDelegate.token)!.json,
       ContentVerb.rate,
@@ -88,15 +86,14 @@ void main() {
       dismiss: true,
     );
 
-    // Write to Firestore (Network Side Effect)
-    final Statement statement = await writer.push(json, signer);
+    // Write to Firestore AND Cache (Network Side Effect + Local Update)
+    // Uses spyContent -> realContentSource -> FakeFirestore
+    // Explicitly casting contentSource to CachedSource to access internal writer via interface?
+    // CachedSource implements StatementWriter now.
+    await controller.contentSource.push(json, signer);
 
-    // 3. PUSH to controller (Partial Refresh Logic)
-    // This is what V2RateDialog + ContentView integration does
-    controller.push(statement as ContentStatement);
-
-    // 4. Refresh controller (Local Logic Update)
-    await controller.refresh(lisa.id, meIdentity: lisa.id, clearCache: false);
+    // 4. Update controller (Local Logic Update)
+    await controller.notify();
 
     // 5. Verification
     // A. UI Updated?

@@ -1,7 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart'; // Added for BuildContext, ScaffoldMessenger
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/most_strings.dart';
+import 'package:nerdster/oneofus/jsonish.dart'; // Added Json
 import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/oneofus/statement.dart'; // Added StatementSigner
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
@@ -15,21 +19,44 @@ import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/orchestrator.dart';
+import 'package:nerdster/v2/source_factory.dart'; // Added
 import 'package:nerdster/v2/trust_logic.dart';
 
 class V2FeedController extends ValueNotifier<V2FeedModel?> {
   final CachedSource<TrustStatement> trustSource;
   final CachedSource<ContentStatement> contentSource;
 
-  void push(ContentStatement statement) {
-    contentSource.push(statement);
+  /// Pushes a new content statement through the write-through cache.
+  /// Handles LGTM check, Writing, Caching, and UI Update (Partial Refresh).
+  /// Returns the posted statement if successful, or null if cancelled (LGTM).
+  Future<Statement?> push(Json json, StatementSigner signer, {required BuildContext context}) async {
+    final model = value;
+    if (model == null) return null; // Cannot push if feed not loaded
+
+    // 1. LGTM Check
+    if (await Lgtm.check(json, context, labeler: model.labeler) != true) {
+      return null;
+    }
+
+    // 2. Write & Cache
+    try {
+      final statement = await contentSource.push(json, signer);
+      // 3. Update UI (Partial Refresh)
+      notify();
+      return statement;
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error publishing: $e')));
+      }
+      rethrow;
+    }
   }
 
   V2FeedController({
     required StatementSource<TrustStatement> trustSource,
     required StatementSource<ContentStatement> contentSource,
-  })  : trustSource = CachedSource(trustSource),
-        contentSource = CachedSource(contentSource),
+  })  : trustSource = CachedSource(trustSource, SourceFactory.getWriter(kOneofusDomain)),
+        contentSource = CachedSource(contentSource, SourceFactory.getWriter(kNerdsterDomain)),
         super(null) {
     Setting.get(SettingType.identityPathsReq).notifier.addListener(_onSettingChanged);
     signInState.povNotifier.addListener(_onPovChanged);
@@ -43,7 +70,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   void _onSettingChanged() {
-    refresh(_latestRequestedPov, meIdentity: _latestRequestedMeIdentity);
+    // Implicit update (no clear cache)
+    notify();
   }
 
   void _onDisplaySettingChanged() {
@@ -53,12 +81,12 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   void _onCensorChanged() {
-    refresh(_latestRequestedPov, meIdentity: _latestRequestedMeIdentity);
+    notify();
   }
 
   void _onPovChanged() {
     final newPov = signInState.pov;
-    refresh(IdentityKey(newPov), meIdentity: _latestRequestedMeIdentity);
+    _load(IdentityKey(newPov), meIdentity: _latestRequestedMeIdentity);
   }
 
   @override
@@ -255,8 +283,27 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  Future<void> refresh(IdentityKey? povIdentity,
-      {IdentityKey? meIdentity, bool clearCache = true}) async {
+  Future<void> refresh({IdentityKey? pov, IdentityKey? meIdentity}) {
+    if (pov != null) _latestRequestedPov = pov;
+    if (meIdentity != null) _latestRequestedMeIdentity = meIdentity;
+
+    final effectivePov = _latestRequestedPov ?? IdentityKey(signInState.pov);
+    final effectiveMe = _latestRequestedMeIdentity ??
+        (signInState.isSignedIn ? IdentityKey(signInState.identity) : null);
+    return _load(effectivePov, meIdentity: effectiveMe, clearCache: true);
+  }
+
+  Future<void> notify() {
+    final effectivePov = _latestRequestedPov ?? IdentityKey(signInState.pov);
+    final effectiveMe = _latestRequestedMeIdentity ??
+        (signInState.isSignedIn ? IdentityKey(signInState.identity) : null);
+    return _load(effectivePov,
+        meIdentity: effectiveMe, clearCache: false, showLoading: false);
+  }
+
+  Future<void> _load(IdentityKey? povIdentity,
+      {IdentityKey? meIdentity, bool clearCache = true, bool showLoading = true}) async {
+    debugPrint('V2FeedController._load: clearCache=$clearCache, showLoading=$showLoading');
     _latestRequestedPov = povIdentity;
     _latestRequestedMeIdentity = meIdentity;
 
@@ -267,7 +314,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     _loading = true;
     loadingMessage.value = 'Starting refresh...';
     progress.value = 0;
-    notifyListeners();
+    if (showLoading) notifyListeners();
 
     try {
       while (true) {
@@ -283,7 +330,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
         _error = null;
         loadingMessage.value = 'Initializing...';
-        notifyListeners();
+        if (showLoading) notifyListeners();
 
         final fcontext = Setting.get<String>(SettingType.fcontext).value;
 

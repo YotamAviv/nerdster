@@ -12,7 +12,6 @@ import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/oneofus/keys.dart';
 
-import 'refresh_signal.dart';
 import 'submit.dart';
 
 class PhoneView extends StatefulWidget {
@@ -37,15 +36,12 @@ class _PhoneViewState extends State<PhoneView> {
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
-    _controller.refresh(widget.meIdentity,
-        meIdentity: widget.meIdentity);
-    v2RefreshSignal.addListener(_onRefresh);
+    _controller.refresh(); // Assuming refresh() handles loading
     Setting.get<String>(SettingType.tag).addListener(_onSettingChanged);
   }
 
   @override
   void dispose() {
-    v2RefreshSignal.removeListener(_onRefresh);
     Setting.get<String>(SettingType.tag).removeListener(_onSettingChanged);
     _controller.dispose();
     super.dispose();
@@ -56,8 +52,7 @@ class _PhoneViewState extends State<PhoneView> {
   }
 
   void _onRefresh() {
-    _controller.refresh(widget.meIdentity,
-        meIdentity: widget.meIdentity);
+    _controller.refresh();
   }
 
   @override
@@ -91,7 +86,7 @@ class _PhoneViewState extends State<PhoneView> {
             child: const Icon(Icons.add, color: Colors.white),
             onPressed: () async {
               if (model != null) {
-                await v2Submit(context, model, onRefresh: _onRefresh);
+                await v2Submit(context, _controller);
               }
             },
           ),

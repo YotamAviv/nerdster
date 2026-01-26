@@ -8,7 +8,6 @@ import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/source_error.dart';
-import 'package:nerdster/v2/refresh_signal.dart';
 
 /// Fetches statements directly from Firestore.
 /// This is used for:
@@ -198,7 +197,6 @@ class DirectFirestoreWriter implements StatementWriter {
       transaction.set(docRef, jsonish.json);
     });
 
-    v2RefreshSignal.signal();
     return statement;
   }
 }

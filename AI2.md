@@ -40,3 +40,7 @@ Feature: Implement Partial Refresh for Rate/Dismiss/Relate actions
     - Removed dead code `_onSettingChanged` in `ContentView`.
 - **Testing**: Added `partial_refresh_test.dart` with `SpyStatementSource` to verify that dismissal updates the UI without triggering network fetches.
 - **Docs**: Added `docs/partial_refresh.md`.
+
+Updated Commit Message Recommendation:
+- **Refactor**: Added `showLoading` parameter to `V2FeedController.refresh` to suppress loading UI during partial updates.
+- **Fix**: Ensured partial refreshes do not clear the cache or trigger network re-fetches.

@@ -7,6 +7,7 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/interpreter.dart';
+import 'package:nerdster/v2/feed_controller.dart'; // Added
 import 'package:nerdster/v2/json_display.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
@@ -15,13 +16,13 @@ import 'package:nerdster/v2/rate_dialog.dart';
 class StatementTile extends StatelessWidget {
   final ContentStatement statement;
   final V2FeedModel model;
+  final V2FeedController controller; // Added
   final int depth;
   final SubjectAggregation aggregation;
   final ValueChanged<String?>? onGraphFocus;
   final ValueChanged<ContentKey?>? onMark;
   final ValueNotifier<ContentKey?>? markedSubjectToken;
   final ValueChanged<ContentKey>? onInspect;
-  final ValueChanged<ContentStatement> onStatementPublished;
   final ValueChanged<String>? onTagTap;
   final int? maxLines;
 
@@ -29,13 +30,13 @@ class StatementTile extends StatelessWidget {
     super.key,
     required this.statement,
     required this.model,
+    required this.controller,
     required this.depth,
     required this.aggregation,
     this.onGraphFocus,
     this.onMark,
     this.markedSubjectToken,
     this.onInspect,
-    required this.onStatementPublished,
     this.onTagTap,
     this.maxLines,
   });
@@ -249,12 +250,9 @@ class StatementTile extends StatelessWidget {
                       group: group,
                       narrowGroup: group,
                     ),
-                    model,
+                    controller,
                     intent: RateIntent.none,
                   );
-                  if (statement != null) {
-                    onStatementPublished(statement);
-                  }
                 },
               ),
               ValueListenableBuilder<bool>(

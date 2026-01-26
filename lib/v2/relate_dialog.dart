@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/feed_controller.dart'; // Added
 import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/subject_view.dart';
 
 class V2RelateDialog extends StatefulWidget {
@@ -24,9 +25,11 @@ class V2RelateDialog extends StatefulWidget {
     BuildContext context,
     SubjectAggregation subject1,
     SubjectAggregation subject2,
-    V2FeedModel model, {
+    V2FeedController controller, {
     VoidCallback? onRefresh,
   }) async {
+    final model = controller.value;
+    if (model == null) return null;
     if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return null;
 
     final result = await showModalBottomSheet<Json>(
@@ -42,28 +45,7 @@ class V2RelateDialog extends StatefulWidget {
     );
 
     if (result != null) {
-      try {
-        final writer =
-            SourceFactory.getWriter(kNerdsterDomain, context: context, labeler: model.labeler);
-        final ContentStatement statement = await writer.push(result, signInState.signer!) as ContentStatement;
-        onRefresh?.call();
-        return statement;
-      } catch (e, stackTrace) {
-        if (e.toString().contains('LGTM check failed')) return null;
-        debugPrint('V2RelateDialog Error: $e\n$stackTrace');
-        if (context.mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Error'),
-              content: Text('Failed to post statement: $e'),
-              actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
-              ],
-            ),
-          );
-        }
-      }
+      return (await controller.push(result, signInState.signer!, context: context)) as ContentStatement?;
     }
     return null;
   }

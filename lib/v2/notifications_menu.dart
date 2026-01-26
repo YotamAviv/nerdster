@@ -389,11 +389,13 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
   CachedSource<TrustStatement> get trustSource => CachedSource(DummySource<TrustStatement>());
 
   @override
-  void push(ContentStatement statement) {}
+  Future<Statement?> push(Json json, StatementSigner signer, {required BuildContext context}) async => null;
 
   @override
-  Future<void> refresh(IdentityKey? povIdentity,
-      {IdentityKey? meIdentity, bool clearCache = true}) async {}
+  Future<void> refresh({IdentityKey? pov, IdentityKey? meIdentity}) async {}
+
+  @override
+  Future<void> notify() async {}
 
   @override
   bool get loading => false;
