@@ -1,11 +1,10 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart'; // Added for BuildContext, ScaffoldMessenger
+import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/most_strings.dart';
-import 'package:nerdster/oneofus/jsonish.dart'; // Added Json
+import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/oneofus/statement.dart'; // Added StatementSigner
+import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
@@ -15,11 +14,10 @@ import 'package:nerdster/v2/content_pipeline.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/io.dart';
-import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/orchestrator.dart';
-import 'package:nerdster/v2/source_factory.dart'; // Added
+import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 
 class V2FeedController extends ValueNotifier<V2FeedModel?> {

@@ -5,7 +5,7 @@ import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/feed_controller.dart'; // Added
+import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/subject_view.dart';
 

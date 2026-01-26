@@ -10,13 +10,13 @@ import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
 import 'package:nerdster/v2/statement_tile.dart';
-import 'package:nerdster/v2/feed_controller.dart'; // Added
+import 'package:nerdster/v2/feed_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ContentCard extends StatefulWidget {
   final SubjectAggregation aggregation;
   final V2FeedModel model;
-  final V2FeedController controller; // Added
+  final V2FeedController controller;
   final ValueChanged<String?>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
   final ValueNotifier<ContentKey?>? markedSubjectToken;
@@ -26,7 +26,7 @@ class ContentCard extends StatefulWidget {
     super.key,
     required this.aggregation,
     required this.model,
-    required this.controller, // Added
+    required this.controller,
     this.onTagTap,
     this.onGraphFocus,
     this.markedSubjectToken,
@@ -99,7 +99,7 @@ class _ContentCardState extends State<ContentCard> {
                 child: ContentCard(
                   aggregation: agg.toNarrow(),
                   model: widget.model,
-                  controller: widget.controller, // Added
+                  controller: widget.controller,
                   onTagTap: widget.onTagTap,
                   onGraphFocus: widget.onGraphFocus,
                   markedSubjectToken: widget.markedSubjectToken,
@@ -415,7 +415,7 @@ class _ContentCardState extends State<ContentCard> {
           ...topRoots.map((s) => StatementTile(
                 statement: s,
                 model: widget.model,
-                controller: widget.controller, // Added
+                controller: widget.controller,
                 depth: 0,
                 aggregation: widget.aggregation,
                 onGraphFocus: widget.onGraphFocus,
@@ -430,7 +430,7 @@ class _ContentCardState extends State<ContentCard> {
           SubjectDetailsView(
             aggregation: widget.aggregation,
             model: widget.model,
-            controller: widget.controller, // Added
+            controller: widget.controller,
             onTagTap: widget.onTagTap,
             onGraphFocus: widget.onGraphFocus,
             onMark: widget.onMark,
@@ -686,7 +686,7 @@ class _ContentCardState extends State<ContentCard> {
 class SubjectDetailsView extends StatelessWidget {
   final SubjectAggregation aggregation;
   final V2FeedModel model;
-  final V2FeedController controller; // Added
+  final V2FeedController controller;
   final ValueChanged<String>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
   final ValueChanged<ContentKey?>? onMark;
@@ -697,7 +697,7 @@ class SubjectDetailsView extends StatelessWidget {
     super.key,
     required this.aggregation,
     required this.model,
-    required this.controller, // Added
+    required this.controller,
     this.onTagTap,
     this.onGraphFocus,
     this.onMark,
@@ -740,7 +740,7 @@ class SubjectDetailsView extends StatelessWidget {
     tree.add(StatementTile(
       statement: s,
       model: model,
-      controller: controller, // Added
+      controller: controller,
       depth: depth,
       aggregation: aggregation,
       onGraphFocus: onGraphFocus,

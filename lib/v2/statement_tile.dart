@@ -7,7 +7,7 @@ import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/interpreter.dart';
-import 'package:nerdster/v2/feed_controller.dart'; // Added
+import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/json_display.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
@@ -16,7 +16,7 @@ import 'package:nerdster/v2/rate_dialog.dart';
 class StatementTile extends StatelessWidget {
   final ContentStatement statement;
   final V2FeedModel model;
-  final V2FeedController controller; // Added
+  final V2FeedController controller;
   final int depth;
   final SubjectAggregation aggregation;
   final ValueChanged<String?>? onGraphFocus;

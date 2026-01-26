@@ -217,7 +217,7 @@ class _ContentViewState extends State<ContentView> {
                           duration: const Duration(milliseconds: 200),
                           child: show
                               ? EtcBar(
-                                  controller: _controller, // Added
+                                  controller: _controller,
                                   notifications: Builder(builder: (context) {
                                     final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
                                     final hasTrust =
@@ -402,7 +402,7 @@ class _ContentViewState extends State<ContentView> {
         return ContentCard(
           aggregation: subjects[index],
           model: model,
-          controller: _controller, // Added
+          controller: _controller,
           onTagTap: _onTagTap,
           onMark: _onMark,
           markedSubjectToken: _markedSubjectToken,

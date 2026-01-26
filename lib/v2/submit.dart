@@ -6,7 +6,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/v2/feed_controller.dart'; // Added
+import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/rate_dialog.dart';
 
 Future<void> v2Submit(BuildContext context, V2FeedController controller) async {
