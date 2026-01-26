@@ -1,7 +1,4 @@
 import 'package:nerdster/demotest/cases/test_utils.dart';
-import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/orchestrator.dart';
 import 'package:nerdster/v2/source_factory.dart';
@@ -10,7 +7,7 @@ import 'package:nerdster/v2/source_factory.dart';
 ///
 /// [source] - The source to use. Defaults to [SourceFactory.get(kOneofusDomain)].
 /// [description] - Optional description for error messages (useful for permutations).
-Future<void> testBasicScenario({
+Future<(DemoIdentityKey, DemoDelegateKey?)> basicScenario({
   StatementSource<TrustStatement>? source,
   String? description,
 }) async {
@@ -36,4 +33,6 @@ Future<void> testBasicScenario({
 
   check(graph.isTrusted(bart.id), '${p}Marge should trust Bart');
   check(graph.distances[bart.id] == 1, '${p}Bart should be distance 1');
+ 
+  return (lisa, null);
 }

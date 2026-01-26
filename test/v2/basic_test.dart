@@ -8,6 +8,6 @@ void main() {
   });
 
   test('Basic Scenario: Marge sees Bart and Lisa', () async {
-    await testBasicScenario();
+    await basicScenario();
   });
 }

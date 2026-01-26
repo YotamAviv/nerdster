@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nerdster/about.dart';
-import 'package:nerdster/app.dart';
-import 'package:nerdster/comp.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demo_setup.dart';
-import 'package:nerdster/demotest/cases/integration_tests.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dev/corruption_check.dart';
-import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/dump_all_statements.dart';
 import 'package:nerdster/dump_and_load.dart';
-import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
@@ -19,7 +13,6 @@ import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/verify.dart';
 
 const iconSpacer = SizedBox(width: 3);
 
@@ -83,21 +76,12 @@ class Menus {
                 Jsonish(povJson);
               },
               child: const Text('Refresh Jsonish cache')),
-          SubmenuButton(menuChildren: [
-            MenuItemButton(onPressed: integrationTests, child: const Text('misc demos')),
-            MenuItemButton(
-                onPressed: () {
-                  integrationTests();
-                },
-                child: const Text('all')),
-          ], child: const Text('integration tests')),
           SubmenuButton(menuChildren: [], child: const Text('V2 Scenarios')),
           SubmenuButton(menuChildren: [
             MenuItemButton(
                 onPressed: DemoKey.dumpDemoCredentials, child: const Text('dumpDemoCredentials')),
             ...demos
           ], child: const Text('demo')),
-          MenuItemButton(onPressed: () => Comp.dumpComps(), child: const Text('compDump')),
           MenuItemButton(
               onPressed: () {
                 CorruptionCheck.check(signInState.pov, kOneofusDomain);
@@ -118,10 +102,6 @@ class Menus {
               onPressed: () async {
                 await DumpAllStatements.show(context);
               }),
-          MenuItemButton(
-              child: const Text('MediaQuery.of(context).size'),
-              onPressed: () =>
-                  alert(MediaQuery.of(context).size.toString(), '', ['okay'], context)),
         ], child: const Text('DEV')),
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
     ];

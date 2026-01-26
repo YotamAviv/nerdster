@@ -1,28 +1,20 @@
-import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/content/content_types.dart';
 import 'dart:collection';
 
-import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/egos.dart';
 import 'package:nerdster/demotest/cases/equivalence_bug.dart';
 import 'package:nerdster/demotest/cases/loner.dart';
 import 'package:nerdster/demotest/cases/notifications_gallery.dart';
-
+import 'package:nerdster/demotest/cases/rate_when_not_in_network.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
-import 'package:nerdster/demotest/cases/rate_when_not_in_network.dart';
 import 'package:nerdster/demotest/cases/v2_verification.dart';
-
+import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/crypto/crypto2559.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
 import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/source_factory.dart';
 
@@ -42,7 +34,7 @@ abstract class DemoKey {
     'notificationsGallery': notificationsGallery,
     'simpsonsDemo': simpsonsDemo,
     'simpsonsRelateDemo': simpsonsRelateDemo,
-    'basicScenario': testBasicScenario,
+    'basicScenario': basicScenario,
     'egosCorrupt': egosCorrupt,
     'lonerCorrupt': lonerCorrupt,
     'lonerBadDelegate': lonerBadDelegate,
