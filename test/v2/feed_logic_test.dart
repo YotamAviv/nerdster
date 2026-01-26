@@ -29,6 +29,15 @@ void main() {
   late FakeFirebaseFirestore oneofusFire;
   late V2FeedController controller;
 
+  Future<void> waitForLoad(V2FeedController controller) async {
+    while (controller.loading || controller.value == null) {
+      if (!controller.loading && controller.value == null && controller.error != null) {
+        throw Exception('Controller failed: ${controller.error}');
+      }
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+  }
+
   setUp(() async {
     // Reset global state
     signInState.signOut(clearIdentity: true);
@@ -52,7 +61,8 @@ void main() {
 
   test('Lisa feed should have expected names and content', () async {
     final String lisaToken = DemoIdentityKey.findByName('lisa')!.token;
-    await controller.refresh(pov: IdentityKey(lisaToken));
+    await signInState.signIn(lisaToken, null);
+    await waitForLoad(controller);
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
@@ -106,7 +116,8 @@ void main() {
 
     // 5. Refresh with Stranger as PoV
     // Stranger does NOT trust Me, so Me is not in the trust graph.
-    await controller.refresh(pov: stranger.id, meIdentity: me.id);
+    signInState.pov = stranger.id.value;
+    await waitForLoad(controller);
 
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
@@ -171,7 +182,8 @@ void main() {
     await criticDelegate.doRate(subject: ratingToken, recommend: false, comment: 'Bad take');
 
     // 4. Refresh Viewer's feed
-    await controller.refresh(pov: viewer.id);
+    await signInState.signIn(viewer.id.value, null);
+    await waitForLoad(controller);
 
     expect(controller.error, isNull);
     final V2FeedModel model = controller.value!;
@@ -207,7 +219,8 @@ void main() {
 
     // 4. Refresh with Stranger as PoV
     // Stranger does NOT trust Me.
-    await controller.refresh(pov: stranger.id, meIdentity: me.id);
+    signInState.pov = stranger.id.value;
+    await waitForLoad(controller);
 
     // Wait for controller to finish loading the requested PoV
     // (Because signIn triggered a refresh for 'Me', the explicit refresh call might have returned early)

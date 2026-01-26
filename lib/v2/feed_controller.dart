@@ -59,18 +59,17 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         contentSource = CachedSource(contentSource, SourceFactory.getWriter(kNerdsterDomain)),
         super(null) {
     Setting.get(SettingType.identityPathsReq).notifier.addListener(_onSettingChanged);
-    signInState.povNotifier.addListener(_onPovChanged);
+    signInState.povNotifier.addListener(_onSettingChanged);
     Setting.get(SettingType.fcontext).notifier.addListener(_onSettingChanged);
 
     Setting.get(SettingType.sort).notifier.addListener(_onDisplaySettingChanged);
     Setting.get(SettingType.dis).notifier.addListener(_onDisplaySettingChanged);
     Setting.get(SettingType.tag).notifier.addListener(_onDisplaySettingChanged);
     Setting.get(SettingType.contentType).notifier.addListener(_onDisplaySettingChanged);
-    Setting.get(SettingType.censor).notifier.addListener(_onCensorChanged);
+    Setting.get(SettingType.censor).notifier.addListener(_onSettingChanged);
   }
 
   void _onSettingChanged() {
-    // Implicit update (no clear cache)
     notify();
   }
 
@@ -80,33 +79,22 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  void _onCensorChanged() {
-    notify();
-  }
-
-  void _onPovChanged() {
-    final newPov = signInState.pov;
-    _load(IdentityKey(newPov), meIdentity: _latestRequestedMeIdentity);
-  }
-
   @override
   void dispose() {
     Setting.get(SettingType.identityPathsReq).notifier.removeListener(_onSettingChanged);
-    signInState.povNotifier.removeListener(_onPovChanged);
+    signInState.povNotifier.removeListener(_onSettingChanged);
     Setting.get(SettingType.fcontext).notifier.removeListener(_onSettingChanged);
 
     Setting.get(SettingType.sort).notifier.removeListener(_onDisplaySettingChanged);
     Setting.get(SettingType.dis).notifier.removeListener(_onDisplaySettingChanged);
     Setting.get(SettingType.tag).notifier.removeListener(_onDisplaySettingChanged);
     Setting.get(SettingType.contentType).notifier.removeListener(_onDisplaySettingChanged);
-    Setting.get(SettingType.censor).notifier.removeListener(_onCensorChanged);
+    Setting.get(SettingType.censor).notifier.removeListener(_onSettingChanged);
     super.dispose();
   }
 
   bool _loading = false;
   bool get loading => _loading;
-  IdentityKey? _latestRequestedPov;
-  IdentityKey? _latestRequestedMeIdentity;
 
   final ValueNotifier<double> progress = ValueNotifier(0);
   final ValueNotifier<String?> loadingMessage = ValueNotifier(null);
@@ -283,29 +271,18 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  Future<void> refresh({IdentityKey? pov, IdentityKey? meIdentity}) {
-    if (pov != null) _latestRequestedPov = pov;
-    if (meIdentity != null) _latestRequestedMeIdentity = meIdentity;
-
-    final effectivePov = _latestRequestedPov ?? IdentityKey(signInState.pov);
-    final effectiveMe = _latestRequestedMeIdentity ??
-        (signInState.isSignedIn ? IdentityKey(signInState.identity) : null);
-    return _load(effectivePov, meIdentity: effectiveMe, clearCache: true);
+  Future<void> refresh() {
+    trustSource.clear();
+    contentSource.clear();
+    return _load();
   }
 
   Future<void> notify() {
-    final effectivePov = _latestRequestedPov ?? IdentityKey(signInState.pov);
-    final effectiveMe = _latestRequestedMeIdentity ??
-        (signInState.isSignedIn ? IdentityKey(signInState.identity) : null);
-    return _load(effectivePov,
-        meIdentity: effectiveMe, clearCache: false, showLoading: false);
+    return _load(showLoading: false);
   }
 
-  Future<void> _load(IdentityKey? povIdentity,
-      {IdentityKey? meIdentity, bool clearCache = true, bool showLoading = true}) async {
-    debugPrint('V2FeedController._load: clearCache=$clearCache, showLoading=$showLoading');
-    _latestRequestedPov = povIdentity;
-    _latestRequestedMeIdentity = meIdentity;
+  Future<void> _load({bool showLoading = true}) async {
+    debugPrint('V2FeedController._load: showLoading=$showLoading');
 
     if (_loading) {
       return;
@@ -318,27 +295,22 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
     try {
       while (true) {
-        final currentPovIdentity = _latestRequestedPov;
-        final currentMeIdentity = _latestRequestedMeIdentity;
-
-        List<DelegateKey>? meDelegateKeys;
-
-        if (currentPovIdentity == null) {
+        if (!signInState.isSignedIn && signInState.povNotifier.value == null) {
           value = null;
           break;
         }
+
+        final IdentityKey currentPovIdentity = IdentityKey(signInState.pov);
+        final IdentityKey? currentMeIdentity =
+            signInState.isSignedIn ? IdentityKey(signInState.identity) : null;
+
+        List<DelegateKey>? meDelegateKeys;
 
         _error = null;
         loadingMessage.value = 'Initializing...';
         if (showLoading) notifyListeners();
 
         final fcontext = Setting.get<String>(SettingType.fcontext).value;
-
-        // Clear caches to ensure we get the latest statements (e.g. after a new like/comment)
-        if (clearCache) {
-          trustSource.clear();
-          contentSource.clear();
-        }
 
         // 1. Trust Pipeline
         loadingMessage.value = 'Loading signed content from one-of-us.net (Trust)';
@@ -486,8 +458,9 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
           }
         }
 
-        if (_latestRequestedPov == currentPovIdentity &&
-            _latestRequestedMeIdentity == currentMeIdentity) {
+        if (currentPovIdentity == IdentityKey(signInState.pov) &&
+            currentMeIdentity?.value ==
+                (signInState.isSignedIn ? signInState.identity : null)) {
           final allErrors = [
             ...trustSource.errors,
             ...contentSource.errors,

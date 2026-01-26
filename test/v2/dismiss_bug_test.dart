@@ -36,7 +36,7 @@ void main() {
     final controller = V2FeedController(trustSource: trustSource, contentSource: contentSource);
 
     // Initial Refresh
-    await controller.refresh(pov: lisa.id, meIdentity: lisa.id);
+    await controller.refresh();
     expect(controller.value, isNotNull);
 
     // Find Shakes the Clown in the feed
@@ -62,7 +62,7 @@ void main() {
     await writer.push(dismissStmt, signer);
 
     // 3. Refresh the feed (First time - "Minor Refresh" simulation)
-    await controller.refresh(pov: lisa.id, meIdentity: lisa.id);
+    await controller.refresh();
 
     // 4. Verification Check 1
     V2FeedModel feedAfter = controller.value!;
@@ -71,7 +71,7 @@ void main() {
     expect(shakesAfter, isNull, reason: "Shakes should be hidden immediately after first refresh");
 
     // 5. Full verify (just to be safe)
-    await controller.refresh(pov: lisa.id, meIdentity: lisa.id);
+    await controller.refresh();
 
     feedAfter = controller.value!;
     shakesAfter = feedAfter.effectiveSubjects.where((s) => s.token == shakesToken).firstOrNull;
@@ -83,7 +83,7 @@ void main() {
     // Trigger update (controller listens to settings, but might need manual refresh call if listener logic is complex or async)
     // The controller listener calls refresh, but we await it in test? No, listener is void.
     // So we manually refresh or wait. Best to manually refresh to be deterministic.
-    await controller.refresh(pov: lisa.id, meIdentity: lisa.id);
+    await controller.refresh();
 
     final V2FeedModel feedIgnored = controller.value!;
     final SubjectAggregation? shakesIgnored =
