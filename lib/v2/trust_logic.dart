@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/model.dart';
 
 final Map<String, String> pathsReq = {

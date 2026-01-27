@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/util_ui.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/sign_in_session.dart';
 

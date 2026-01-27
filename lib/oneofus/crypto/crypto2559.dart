@@ -7,6 +7,8 @@ import 'package:jwk/jwk.dart';
 import '/oneofus/jsonish.dart';
 import 'crypto.dart';
 
+const OouCryptoFactory crypto = CryptoFactoryEd25519();
+
 final ed25519 = Ed25519(); // Ed25519, a popular signature algorithm:
 final x25519 = X25519(); // Key exchange algorithm
 final aesGcm256 = AesGcm.with256bits();

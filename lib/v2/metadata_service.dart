@@ -39,7 +39,8 @@ String getFallbackImageUrl(String? url, String contentType, String? title, {List
     case 'video':
       return 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Video_camera_font_awesome.svg/512px-Video_camera_font_awesome.svg.png';
     case 'movie':
-      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Clapperboard.svg/600px-Clapperboard.svg.png';
+      // return 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Clapperboard.svg/600px-Clapperboard.svg.png';
+      return 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/600px-No_image_available.svg.png';
     case 'book':
       return 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Book_font_awesome.svg/512px-Book_font_awesome.svg.png';
     case 'article':

@@ -16,7 +16,6 @@ import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/notifications_menu.dart';
 import 'package:nerdster/v2/relate_dialog.dart';
-import 'package:nerdster/v2/sign_in_widget.dart';
 import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/v2/trust_settings_bar.dart';
 import 'package:nerdster/verify.dart';

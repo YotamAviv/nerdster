@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
-import 'package:nerdster/content/dialogs/lgtm.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/model.dart';
@@ -30,7 +28,7 @@ class V2RelateDialog extends StatefulWidget {
   }) async {
     final model = controller.value;
     if (model == null) return null;
-    if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return null;
+    if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return null;
 
     final result = await showModalBottomSheet<Json>(
       context: context,

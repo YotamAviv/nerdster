@@ -1,10 +1,11 @@
-import 'jsonish.dart';
-export 'jsonish.dart';
-import 'statement.dart';
-import 'util.dart';
-import 'keys.dart';
+import 'package:nerdster/clock.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+export 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/oneofus/statement.dart';
 
 const String kOneofusDomain = 'one-of-us.net';
+const String kSinceAlways = '<since always>';
 
 class TrustStatement extends Statement {
   // CONSIDER: wipeCaches? ever?
@@ -66,9 +67,9 @@ class TrustStatement extends Statement {
     dynamic subject;
     for (verb in TrustVerb.values) {
       subject = jsonish[verb.label];
-      if (b(subject)) break; // could continue to loop to assert that there isn't a second subject
+      if (subject != null) break; // could continue to loop to assert that there isn't a second subject
     }
-    assert(b(subject));
+    assert(subject != null);
 
     Json? withx = jsonish['with'];
     TrustStatement s = TrustStatement._internal(
@@ -90,16 +91,16 @@ class TrustStatement extends Statement {
       TrustVerb verb, String? revokeAt, String? moniker, String? comment, String? domain) {
     switch (verb) {
       case TrustVerb.trust:
-        assert(!b(revokeAt));
+        assert(revokeAt == null);
         // assert(b(moniker)); For phone UI in construction..
-        assert(!b(domain));
+        assert(domain == null);
       case TrustVerb.block:
-        assert(!b(revokeAt));
-        assert(!b(domain));
+        assert(revokeAt == null);
+        assert(domain == null);
       case TrustVerb.replace:
         // assert(b(comment)); For phone UI in construction..
         // assert(b(revokeAt)); For phone UI in construction..
-        assert(!b(domain));
+        assert(domain == null);
       case TrustVerb.delegate:
       // assert(b(domain)); For phone UI in construction..
       case TrustVerb.clear:
@@ -138,7 +139,7 @@ class TrustStatement extends Statement {
     if (revokeAt != null) withx['revokeAt'] = revokeAt;
     if (domain != null) withx['domain'] = domain;
     if (moniker != null) withx['moniker'] = moniker;
-    withx.removeWhere((key, value) => !b(value));
+    withx.removeWhere((key, value) => value == null);
     if (withx.isNotEmpty) json['with'] = withx;
     return json;
   }
@@ -148,8 +149,8 @@ class TrustStatement extends Statement {
 
   @override
   String getDistinctSignature({Transformer? iTransformer, Transformer? sTransformer}) {
-    String canonI = b(iTransformer) ? iTransformer!(iToken) : iToken;
-    String canonS = b(sTransformer) ? sTransformer!(subjectToken) : subjectToken;
+    String canonI = iTransformer != null ? iTransformer(iToken) : iToken;
+    String canonS = sTransformer != null ? sTransformer(subjectToken) : subjectToken;
     return [canonI, canonS].join(':');
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import '../oneofus/util.dart';
 import '../setting_type.dart';
 
 // Incluces Clacker made changes to support String? settings.
@@ -36,7 +35,7 @@ class Setting<T> implements ValueListenable<T> {
 
   // Helper method to parse string values into type T
   T _parseValue(String value) {
-    if (type.type == bool) return bs(value) as T;
+    if (type.type == bool) return (value == 'true') as T;
     if (type.type == int) return int.parse(value) as T;
     if (type.type == String) return value as T;
     if (type.type == List<String>) return value.split(',') as T;
@@ -46,11 +45,11 @@ class Setting<T> implements ValueListenable<T> {
   void updateFromQueryParam(Map<String, String> params) {
     if (!param) return;
     String? paramValue;
-    if (b(params[name])) {
+    if (params[name] != null) {
       paramValue = params[name];
     } else {
       for (String alias in aliases) {
-        if (b(params[alias])) {
+        if (params[alias] != null) {
           paramValue = params[alias];
           break;
         }
@@ -74,14 +73,14 @@ class Setting<T> implements ValueListenable<T> {
     if (!persist) return;
     try {
       String? value = await storage.read(key: name);
-      if (!b(value)) {
+      if (value == null) {
         for (String alias in aliases) {
           value = await storage.read(key: alias);
-          if (b(value)) break;
+          if (value != null) break;
         }
       }
-      if (b(value)) {
-        _notifier.value = _parseValue(value!);
+      if (value != null) {
+        _notifier.value = _parseValue(value);
       }
     } catch (e) {
       print(e);
@@ -148,7 +147,7 @@ class Prefs {
           .map((setting) => setting.loadFromStorage(_storage)),
     );
 
-    Map<String, String> params = collectQueryParameters();
+    Map<String, String> params = Uri.base.queryParameters;
     print('Query parameters: $params');
     print('params[dev].runtimeType=${params['dev'].runtimeType}');
     for (final setting in Setting.all) {

@@ -2,7 +2,6 @@ import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/source_error.dart';
-import 'package:flutter/foundation.dart';
 
 /// A caching decorator for [StatementSource].
 /// Stores fetched statements in memory to avoid redundant network calls.

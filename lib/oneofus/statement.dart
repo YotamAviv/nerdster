@@ -1,5 +1,4 @@
 import 'jsonish.dart';
-import 'util.dart';
 
 typedef Transformer = String Function(String);
 
@@ -75,7 +74,7 @@ abstract class Statement {
   }
 
   Statement(this.jsonish, this.subject)
-      : time = parseIso(jsonish['time']),
+      : time = DateTime.parse(jsonish['time']),
         i = jsonish['I'],
         iToken = getToken(jsonish['I']),
         comment = jsonish['comment'];

@@ -85,7 +85,7 @@ FollowNetwork reduceFollowNetwork(
         // The subject of a follow statement is an identity.
         final IdentityKey subjectIdentity = trustGraph.resolveIdentity(IdentityKey(s.subjectToken));
 
-        final Map<String, dynamic> contexts = s.contexts ?? {};
+        final Json contexts = s.contexts ?? {};
         final dynamic weight = contexts[fcontext];
 
         if (weight == null) continue;

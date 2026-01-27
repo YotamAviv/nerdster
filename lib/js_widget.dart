@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/interpreter.dart';
 
 class JSWidget extends StatelessWidget {
   final Jsonish jsonish;

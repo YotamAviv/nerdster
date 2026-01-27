@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:nerdster/app.dart';
-import '../../oneofus/util.dart';
 
 class MyCheckbox extends StatefulWidget {
   final ValueNotifier<bool> valueNotifier;
@@ -42,7 +41,7 @@ class _MyCheckboxState extends State<MyCheckbox> {
           setState(() => widget.valueNotifier.value = widget.opposite ? !value! : value!),
     );
 
-    if (b(widget.title)) {
+    if (widget.title != null) {
       if (isSmall.value) {
         return Tooltip(message: widget.title!, child: checkbox);
       } else {

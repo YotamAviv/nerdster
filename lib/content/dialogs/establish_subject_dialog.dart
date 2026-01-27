@@ -6,7 +6,6 @@ import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/v2/metadata_service.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/util_ui.dart';
 
 /// Fetching URL title:
@@ -133,8 +132,8 @@ class _SubjectFieldsState extends State<SubjectFields> {
         if (title != null) {
           titleController.text = title;
         }
-        fetchingUrlWidget.message.value = b(error) ? error! : 'Title fetched from URL.';
-        fetchingUrlWidget.isError.value = b(error);
+        fetchingUrlWidget.message.value = error ?? 'Title fetched from URL.';
+        fetchingUrlWidget.isError.value = error != null;
         if (error != null) {
           print(error);
         }
@@ -143,7 +142,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
   }
 
   void _okHandler() async {
-    Map<String, dynamic> map = <String, dynamic>{};
+    Json map = <String, dynamic>{};
     map['contentType'] = contentType.label;
     for (final entry in key2controller.entries) {
       final value = entry.value.text.trim();

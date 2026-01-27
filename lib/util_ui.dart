@@ -20,3 +20,7 @@ Future<void> myLaunchUrl(String url, BuildContext context) async {
     await alert('Bad URL?', 'Could not launch "$uri"', ['okay'], context);
   }
 }
+
+const kPadding = EdgeInsets.all(4);
+const kTallPadding = EdgeInsets.fromLTRB(0, 8, 0, 4);
+final BorderRadius kBorderRadius = BorderRadius.circular(8);

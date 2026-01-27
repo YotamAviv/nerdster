@@ -24,6 +24,7 @@ import 'package:crypto/crypto.dart';
 /// CONSIDER: We use either Json or a token all over the place (subject, other, oneofusKey, ..).
 /// Make Jsonish be either Json or a string token.
 
+const JsonEncoder encoder = JsonEncoder.withIndent('  ');
 typedef Json = Map<String, dynamic>;
 
 abstract class StatementSigner {

@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/util_ui.dart';
 
 class JustSign {
   static Future<void> sign(BuildContext context) async {
-    if (!bb(await checkSignedIn(context))) return;
+    if ((await checkSignedIn(context)) != true) return;
 
     Json? x = await showKeyValueDialog(context);
-    if (!b(x)) return;
-    Json json = {}..addAll(x!);
+    if (x == null) return;
+    Json json = {}..addAll(x);
     json['I'] = signInState.delegatePublicKeyJson!;
     json = LinkedHashMap()..addAll(Jsonish(json).json); // order
     String signature = await signInState.signer!.sign(json, encoder.convert(json));

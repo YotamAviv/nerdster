@@ -6,8 +6,6 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 
-import 'package:nerdster/oneofus/util.dart';
-
 Future<(DemoIdentityKey, DemoDelegateKey?)> loner() async {
   DemoIdentityKey loner = await DemoIdentityKey.findOrCreate('loner');
   DemoDelegateKey lonerN = await loner.makeDelegate();
@@ -73,7 +71,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> lonerCorrupt() async {
 
   FirebaseFirestore fire = FireFactory.find(kNerdsterDomain);
 
-  final CollectionReference<Map<String, dynamic>> fireStatements =
+  final CollectionReference<Json> fireStatements =
       fire.collection(delegate.token).doc('statements').collection('statements');
   try {
     final doc = await fireStatements.doc(s.token).get();

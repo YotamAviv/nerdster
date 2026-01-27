@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 // import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/content_view.dart';
@@ -23,7 +22,7 @@ class NerdsterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Merge parameters from both query string and fragment (common in Flutter Web)
-    Map<String, String> params = collectQueryParameters();
+    Map<String, String> params = Uri.base.queryParameters;
 
     // Check for qrSignIn query parameter on startup
     if (params.containsKey('qrSignIn') && params['qrSignIn'] == 'true') {
@@ -58,7 +57,7 @@ class NerdsterApp extends StatelessWidget {
                 }
 
                 if (params.containsKey('verifyFullScreen') &&
-                    b(Setting.get(SettingType.verify).value)) {
+                    Setting.get<bool>(SettingType.verify).value == true) {
                   return const StandaloneVerify();
                 } else {
                   return ContentView(

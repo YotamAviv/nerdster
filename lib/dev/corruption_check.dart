@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 

@@ -2,7 +2,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/clock.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 
 // This was useful and remains in the tests. The "decentralized" demo Simpsons are in a different file.

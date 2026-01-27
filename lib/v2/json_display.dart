@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/json_highlighter.dart';
-import 'package:nerdster/oneofus/util.dart';
 
 abstract class Interpreter {
   dynamic interpret(dynamic d);
@@ -35,8 +35,8 @@ class _State extends State<V2JsonDisplay> {
     final Interpreter? interpreter = widget.interpreter;
     final useSubject = widget.subject;
 
-    var interpreted = (b(interpreter) && widget.interpret.value)
-        ? interpreter!.interpret(useSubject)
+    var interpreted = (interpreter != null && widget.interpret.value)
+        ? interpreter.interpret(useSubject)
         : useSubject;
     String display = encoder.convert(interpreted);
 
@@ -53,7 +53,7 @@ class _State extends State<V2JsonDisplay> {
     return Stack(
       children: [
         SelectableText.rich(TextSpan(children: spans)),
-        if (b(interpreter))
+        if (interpreter != null)
           Positioned(
             bottom: 0,
             right: 0,

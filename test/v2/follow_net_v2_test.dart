@@ -7,7 +7,6 @@ import 'package:nerdster/app.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:nerdster/v2/content_logic.dart';
 import 'package:nerdster/v2/model.dart';

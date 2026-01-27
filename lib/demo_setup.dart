@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
 String? demo;
 
 Future<bool> tryDemoSignIn(BuildContext? context, {String? pov}) async {
   Map<String, String> params = Uri.base.queryParameters;
-  if (b(params['demo'])) {
+  if (params['demo'] != null) {
     if (fireChoice == FireChoice.prod) throw 'not on production';
     demo = params['demo']!;
     final (DemoKey identityDemoKey, DemoKey? delegateDemoKey) = await DemoKey.demos[demo]();

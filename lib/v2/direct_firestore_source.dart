@@ -4,7 +4,6 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/source_error.dart';
@@ -39,15 +38,15 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
       final String? limitToken = entry.value;
 
       try {
-        final CollectionReference<Map<String, dynamic>> collectionRef =
+        final CollectionReference<Json> collectionRef =
             _fire.collection(token).doc('statements').collection('statements');
 
         DateTime? limitTime;
         if (limitToken != null) {
-          final DocumentSnapshot<Map<String, dynamic>> doc =
+          final DocumentSnapshot<Json> doc =
               await collectionRef.doc(limitToken).get();
           if (doc.exists && doc.data() != null) {
-            limitTime = parseIso(doc.data()!['time']);
+            limitTime = DateTime.parse(doc.data()!['time']);
           } else {
             // If limit token not found, return empty list
             results[token] = [];
@@ -55,21 +54,21 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
           }
         }
 
-        Query<Map<String, dynamic>> query = collectionRef.orderBy('time', descending: true);
+        Query<Json> query = collectionRef.orderBy('time', descending: true);
 
         if (limitTime != null) {
-          query = query.where('time', isLessThanOrEqualTo: formatIso(limitTime));
+          query = query.where('time', isLessThanOrEqualTo: limitTime.toUtc().toIso8601String());
         }
 
-        final QuerySnapshot<Map<String, dynamic>> snapshot = await query.get();
+        final QuerySnapshot<Json> snapshot = await query.get();
         final List<T> chain = [];
 
         String? previousToken;
         DateTime? previousTime;
         bool first = true;
 
-        for (final QueryDocumentSnapshot<Map<String, dynamic>> doc in snapshot.docs) {
-          final Map<String, dynamic> json = doc.data();
+        for (final QueryDocumentSnapshot<Json> doc in snapshot.docs) {
+          final Json json = doc.data();
 
           Jsonish jsonish;
           if (!skipVerify) {
@@ -94,7 +93,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
             );
           }
 
-          final DateTime time = parseIso(jsonish['time']);
+          final DateTime time = DateTime.parse(jsonish['time']);
 
           assert(previousTime == null || !time.isAfter(previousTime));
           if (first) {
@@ -168,7 +167,7 @@ class DirectFirestoreWriter implements StatementWriter {
     if (latestSnapshot.docs.isNotEmpty) {
       final latestDoc = latestSnapshot.docs.first;
       previousToken = latestDoc.id;
-      prevTime = parseIso(latestDoc.data()['time']);
+      prevTime = DateTime.parse(latestDoc.data()['time']);
     }
 
     // 2. Optimistic Concurrency Check
@@ -201,7 +200,7 @@ class DirectFirestoreWriter implements StatementWriter {
       }
 
       if (prevTime != null) {
-        final DateTime thisTime = parseIso(json['time']!);
+        final DateTime thisTime = DateTime.parse(json['time']!);
         if (!thisTime.isAfter(prevTime)) {
           throw Exception('Timestamp must be after previous statement ($thisTime <= $prevTime)');
         }

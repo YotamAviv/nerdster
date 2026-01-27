@@ -4,7 +4,6 @@ import 'package:nerdster/content/tag.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/merger.dart';
 import 'package:nerdster/oneofus/distincter.dart';
-import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/labeler.dart';

@@ -21,10 +21,10 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final String statementType;
   final http.Client client;
   final StatementVerifier verifier;
-  final Map<String, dynamic>? paramsOverride;
+  final Json? paramsOverride;
   final Map<String, SourceError> _errors = {};
 
-  static const Map<String, dynamic> _paramsProto = {
+  static const Json _paramsProto = {
     "distinct": "true",
     "orderStatements": "false",
     "includeId": "true",
@@ -54,7 +54,7 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
       return {e.key: e.value};
     }).toList();
 
-    final Map<String, dynamic> params = Map.of(_paramsProto);
+    final Json params = Map.of(_paramsProto);
     if (paramsOverride != null) {
       params.addAll(paramsOverride!);
     }
@@ -77,7 +77,7 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
       if (line.trim().isEmpty) continue;
 
       // Expect: { "abc": [...] } or { "abc": { "error": "..." } }
-      final Map<String, dynamic> jsonToken2Statements = jsonDecode(line);
+      final Json jsonToken2Statements = jsonDecode(line);
 
       for (final MapEntry<String, dynamic> entry in jsonToken2Statements.entries) {
         final String token = entry.key;

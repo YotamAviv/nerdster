@@ -10,7 +10,6 @@ import '../content/content_statement.dart';
 import '../content/dialogs/on_off_icon.dart';
 import '../content/dialogs/on_off_icons.dart';
 import '../oneofus/statement.dart';
-import '../oneofus/util.dart';
 import '../singletons.dart';
 import 'subject_view.dart';
 
@@ -43,7 +42,7 @@ class V2RateDialog extends StatefulWidget {
     final model = controller.value;
     if (model == null) return null;
 
-    if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return null;
+    if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return null;
 
     final result = await showModalBottomSheet<Json>(
       context: context,
@@ -149,7 +148,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
     bool isReSnooze = dis.value == 'snooze' && priorStatement?.dismiss == 'snooze';
     okEnabled.value = !compareToPrior || censor.value || isReSnooze;
 
-    if (b(priorStatement)) {
+    if (priorStatement != null) {
       erase.value = bAllFieldsClear;
     }
     if (mounted) setState(() {});
@@ -159,25 +158,25 @@ class _V2RateDialogState extends State<V2RateDialog> {
     if (erase.value) {
       clearFields();
     } else {
-      if (b(priorStatement)) setToPrior();
+      if (priorStatement != null) setToPrior();
     }
     listener();
   }
 
   void setToPrior() {
-    if (b(priorStatement)) {
+    if (priorStatement != null) {
       like.value = priorStatement!.like;
       dis.value = priorStatement!.dismiss;
-      censor.value = b(priorStatement!.censor);
+      censor.value = priorStatement!.censor != null;
       commentController.text = priorStatement!.comment ?? '';
     }
   }
 
   bool get compareToPrior {
-    if (b(priorStatement)) {
+    if (priorStatement != null) {
       return like.value == priorStatement!.like &&
           dis.value == priorStatement!.dismiss &&
-          censor.value == b(priorStatement!.censor) &&
+          censor.value == (priorStatement!.censor != null) &&
           commentController.text == (priorStatement!.comment ?? '');
     } else {
       return bAllFieldsClear;
@@ -192,7 +191,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
   }
 
   bool get bAllFieldsClear =>
-      !b(like.value) && dis.value == null && !censor.value && commentController.text.isEmpty;
+      like.value == null && dis.value == null && !censor.value && commentController.text.isEmpty;
 
   bool? trueOrNull(bool b) => b ? true : null;
 
@@ -272,7 +271,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
     OnOffIcon eraseButton = OnOffIcon(erase, Icons.cancel, Icons.cancel_outlined,
         text: 'Clear',
         tooltipText: 'Clear (erase) my rating',
-        disabled: !b(priorStatement),
+        disabled: priorStatement == null,
         callback: eraseListener);
 
     return Container(
@@ -368,14 +367,11 @@ class _V2RateDialogState extends State<V2RateDialog> {
 
 class _DismissToggle extends StatelessWidget {
   final ValueNotifier<String?> notifier;
-  final bool disabled;
   final VoidCallback? callback;
 
   const _DismissToggle({
     required this.notifier,
-    this.disabled = false,
     this.callback,
-    super.key,
   });
 
   @override
@@ -401,7 +397,7 @@ class _DismissToggle extends StatelessWidget {
           tooltip = 'Dismiss';
         }
 
-        TextStyle? textStyle = disabled ? hintStyle : null;
+        TextStyle? textStyle;
 
         return Tooltip(
           message: tooltip,
@@ -412,9 +408,7 @@ class _DismissToggle extends StatelessWidget {
               IconButton(
                 icon: Icon(icon),
                 color: color,
-                onPressed: disabled
-                    ? null
-                    : () {
+                onPressed: () {
                         if (value == null) {
                           notifier.value = 'snooze';
                         } else if (value == 'snooze') {

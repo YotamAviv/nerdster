@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/util_ui.dart';
 
 class OnOffIcon extends StatefulWidget {
@@ -52,13 +51,13 @@ class _OnOffIconState extends State<OnOffIcon> {
   @override
   Widget build(BuildContext context) {
     IconData iconData = widget.valueNotifier.value ? widget.iconOn : widget.iconOff;
-    TextStyle? textStyle = bb(widget.disabled) ? hintStyle : null;
+    TextStyle? textStyle = (widget.disabled == true) ? hintStyle : null;
     return Tooltip(
         message: widget.tooltipText,
         child: Row(children: [
-          if (!isSmall.value && b(widget.text)) Text(style: textStyle, widget.text!),
+          if (!isSmall.value && widget.text != null) Text(style: textStyle, widget.text!),
           IconButton(
-              onPressed: bb(widget.disabled) ? null : onPressed,
+              onPressed: (widget.disabled == true) ? null : onPressed,
               color: widget.color,
               icon: Icon(iconData)),
         ]));

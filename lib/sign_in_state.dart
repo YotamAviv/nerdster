@@ -3,7 +3,6 @@ import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_signer.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 
 /// This class tracks the sign-in state of the user using 3 main variables:
@@ -86,18 +85,18 @@ class SignInState with ChangeNotifier {
   factory SignInState() => _singleton;
 
   set pov(String oneofusToken) {
-    assert(b(Jsonish.find(oneofusToken)));
+    assert(Jsonish.find(oneofusToken) != null);
     povNotifier.value = oneofusToken;
     // CONSIDER: show [pov, identity, delegate] in credentials display
-    if (!b(_identity)) _identity = povNotifier.value;
+    if (_identity == null) _identity = povNotifier.value;
     notifyListeners();
   }
 
   Future<void> signIn(String identity, OouKeyPair? delegateKeyPair) async {
     _identity = identity;
     povNotifier.value = identity;
-    if (b(delegateKeyPair)) {
-      OouPublicKey delegatePublicKey = await delegateKeyPair!.publicKey;
+    if (delegateKeyPair != null) {
+      OouPublicKey delegatePublicKey = await delegateKeyPair.publicKey;
       _delegatePublicKeyJson = await delegatePublicKey.json;
       _delegate = getToken(_delegatePublicKeyJson);
       _signer = await OouSigner.make(delegateKeyPair);

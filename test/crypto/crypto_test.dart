@@ -6,7 +6,7 @@ import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-final OouCryptoFactory factory = CryptoFactoryEd25519();
+final OouCryptoFactory factory = crypto;
 
 void main() {
   test('keyPair json', () async {

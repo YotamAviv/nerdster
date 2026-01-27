@@ -13,12 +13,12 @@ import 'package:nerdster/app.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/key_store.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/fire_util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/config.dart';
@@ -55,10 +55,10 @@ Future<void> main() async {
   });
 
   // ------------ Fire ------------
-  Map<String, String> params = collectQueryParameters();
+  Map<String, String> params = Uri.base.queryParameters;
   String? fireParam = params['fire'];
-  if (b(fireParam)) {
-    fireChoice = FireChoice.values.byName(fireParam!);
+  if (fireParam != null) {
+    fireChoice = FireChoice.values.byName(fireParam);
   }
   if (fireChoice != FireChoice.fake) {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -136,8 +136,8 @@ Future<void> defaultSignIn({BuildContext? context}) async {
   String? identityParam = params['identity'];
   String? oneofusParam = params['oneofus']; // alias, deprecated.
   String? pov;
-  if (b(identityParam) || b(oneofusParam)) {
-    Json povJson = json.decode(b(identityParam) ? identityParam! : oneofusParam!);
+  if (identityParam != null || oneofusParam != null) {
+    Json povJson = json.decode(identityParam != null ? identityParam : oneofusParam!);
     pov = getToken(povJson);
   }
 
@@ -148,8 +148,8 @@ Future<void> defaultSignIn({BuildContext? context}) async {
     OouPublicKey? identityPublicKey;
     OouKeyPair? nerdsterKeyPair;
     (identityPublicKey, nerdsterKeyPair) = await KeyStore.readKeys();
-    if (b(identityPublicKey) && b(nerdsterKeyPair)) {
-      String identity = getToken(await identityPublicKey!.json);
+    if (identityPublicKey != null && nerdsterKeyPair != null) {
+      String identity = getToken(await identityPublicKey.json);
       await signInState.signIn(identity, nerdsterKeyPair);
       if (pov != null) signInState.pov = pov;
       return;

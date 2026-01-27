@@ -6,8 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/sign_in_state.dart';
 
 class SignInSession {
@@ -84,15 +84,15 @@ class SignInSession {
       // Optionally unpack and decrypt Nerdster private key
       Json? delegateJson;
       OouKeyPair? nerdsterKeyPair;
-      if (b(data['delegateCiphertext']) || b(data['delegateCleartext'])) {
+      if (data['delegateCiphertext'] != null || data['delegateCleartext'] != null) {
         final String ephemeralPKKey = data.containsKey('ephemeralPK') ? 'ephemeralPK' : 'publicKey';
         PkePublicKey phonePkePublicKey = await crypto.parsePkePublicKey(data[ephemeralPKKey]);
 
         String? delegateCiphertext = data['delegateCiphertext'];
         String? delegateCleartext = data['delegateCleartext'];
-        assert(!(b(delegateCiphertext) && b(delegateCleartext)));
-        if (b(delegateCiphertext)) {
-          delegateCleartext = await pkeKeyPair.decrypt(delegateCiphertext!, phonePkePublicKey);
+        assert(!(delegateCiphertext != null && delegateCleartext != null));
+        if (delegateCiphertext != null) {
+          delegateCleartext = await pkeKeyPair.decrypt(delegateCiphertext, phonePkePublicKey);
         }
         delegateJson = jsonDecode(delegateCleartext!);
         nerdsterKeyPair = await crypto.parseKeyPair(delegateJson!);

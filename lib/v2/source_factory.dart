@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
@@ -8,7 +7,6 @@ import 'package:nerdster/v2/config.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/io.dart';
 
-import 'package:nerdster/v2/labeler.dart';
 
 class SourceFactory {
   static StatementSource<T> get<T extends Statement>(String domain) =>

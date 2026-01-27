@@ -4,11 +4,11 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/oneofus/json_highlighter.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/interpreter.dart';
@@ -69,7 +69,7 @@ void verifyInit(GlobalKey<NavigatorState> navigatorKey) {
       dialogContext = null;
     }
 
-    if (!b(value)) return;
+    if (value == null) return;
 
     if (navigatorKey.currentContext != null) {
       ScaffoldMessenger.of(navigatorKey.currentContext!).removeCurrentSnackBar();
@@ -146,7 +146,7 @@ class _VerifyState extends State<Verify> {
     super.dispose();
   }
 
-  bool get _hasChanged => b(widget.input) && _controller.text != _initialText;
+  bool get _hasChanged => widget.input != null && _controller.text != _initialText;
 
   @override
   Widget build(BuildContext context) {

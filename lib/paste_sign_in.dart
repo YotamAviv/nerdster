@@ -9,7 +9,7 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
-import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/oneofus/crypto/crypto2559.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/util_ui.dart';
 
@@ -21,7 +21,7 @@ Future<void> pasteSignIn(BuildContext context) async {
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             child: PasteSignInWidget(storeKeys),
           ));
   if (credentials == null) return;
@@ -29,8 +29,8 @@ Future<void> pasteSignIn(BuildContext context) async {
   OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
   Json? delegateJson = credentials[kNerdsterDomain];
   OouKeyPair? nerdsterKeyPair;
-  if (b(delegateJson)) {
-    nerdsterKeyPair = await crypto.parseKeyPair(delegateJson!);
+  if (delegateJson != null) {
+    nerdsterKeyPair = await crypto.parseKeyPair(delegateJson);
   }
 
   // ignore: unawaited_futures
@@ -79,7 +79,7 @@ Or just the identity key, like this:
       Json? identityJson;
       Json? delegateJson;
 
-      Map<String, dynamic> credentials = jsonDecode(_controller.text);
+      Json credentials = jsonDecode(_controller.text);
 
       if (credentials.containsKey(kIdentity)) {
         // Validate...
@@ -87,8 +87,8 @@ Or just the identity key, like this:
         await crypto.parsePublicKey(identityJson!);
 
         delegateJson = credentials[kNerdsterDomain];
-        if (b(delegateJson)) {
-          await crypto.parseKeyPair(delegateJson!);
+        if (delegateJson != null) {
+          await crypto.parseKeyPair(delegateJson);
           Navigator.of(context).pop({kIdentity: identityJson, kNerdsterDomain: delegateJson});
         } else {
           Navigator.of(context).pop({kIdentity: identityJson});

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
 
 const String jsonStatements = '''
 [
@@ -39,7 +40,6 @@ void main() {
   });
 
   test('json encode map created in different order', () {
-    const JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
     Map map1 = {};
     // expect(map1.runtimeType.toString(), '');
@@ -66,7 +66,6 @@ void main() {
 
   test('json encode statements', () {
     var statements = jsonDecode(jsonStatements);
-    const JsonEncoder encoder = JsonEncoder.withIndent('  ');
     String jsonStatements2 = encoder.convert(statements);
 
     expect(jsonStatements2, jsonStatements);

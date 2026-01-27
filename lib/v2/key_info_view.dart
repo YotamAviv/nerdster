@@ -6,7 +6,6 @@ import 'package:nerdster/v2/interpreter.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/json_qr_display.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:nerdster/v2/config.dart';
@@ -152,7 +151,7 @@ class KeyInfoView extends StatelessWidget {
                       height: height,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: kBorderRadius,
+                        borderRadius: BorderRadius.circular(8),
                         boxShadow: const [BoxShadow(blurRadius: 10, color: Colors.black26)],
                       ),
                       child: Padding(
@@ -168,7 +167,7 @@ class KeyInfoView extends StatelessWidget {
           }
 
           return Dialog(
-              shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               child: ConstrainedBox(
                   constraints:
                       constraints ?? const BoxConstraints(maxWidth: 600), // Default safeguard

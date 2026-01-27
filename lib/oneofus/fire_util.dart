@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:nerdster/clock.dart';
 import 'jsonish.dart';
-
-import 'util.dart';
 
 Future<List> checkWrite(FirebaseFirestore fire, String collection) async {
   List out = [];
@@ -20,7 +19,7 @@ Future<List> checkRead(FirebaseFirestore fire, String collection) async {
   List out = [];
   final CollectionReference<Json> fireStatements = fire.collection(collection);
   try {
-    QuerySnapshot<Map<String, dynamic>> snapshots =
+    QuerySnapshot<Json> snapshots =
         await fireStatements.orderBy('time', descending: true).limit(2).get();
     for (var docSnapshot in snapshots.docs) {
       var data = docSnapshot.data();

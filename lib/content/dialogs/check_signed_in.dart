@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/util_ui.dart';
 
 Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) async {
   String? issue;
-  if (!b(signInState.delegate)) {
+  if (signInState.delegate == null) {
     issue = 'You are not signed in';
   } else if (trustGraph != null) {
     final myDelegate = signInState.delegate;
@@ -15,7 +15,7 @@ Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) asy
 
     if (trustGraph.replacements.containsKey(IdentityKey(myDelegate!))) {
       issue = 'Your delegate key is revoked';
-    } else if (myIdentity != null && trustGraph.isTrusted(IdentityKey(myIdentity))) {
+    } else if (trustGraph.isTrusted(IdentityKey(myIdentity))) {
       // Check association
       bool isAssociated = false;
       final statements = trustGraph.edges[IdentityKey(myIdentity)];
@@ -33,11 +33,11 @@ Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) asy
     }
   }
 
-  if (!b(issue)) return true;
+  if (issue == null) return true;
 
-  if (!b(context)) return false;
+  if (context == null) return false;
   return showDialog<bool>(
-      context: context!,
+      context: context,
       barrierDismissible: true,
       builder: (context) => Dialog(
           shape: RoundedRectangleBorder(borderRadius: kBorderRadius),

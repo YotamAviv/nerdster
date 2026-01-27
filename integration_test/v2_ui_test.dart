@@ -1,23 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nerdster/app.dart' as app;
-import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/content_card.dart';
-import 'package:nerdster/v2/statement_tile.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/fire_choice.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/v2/config.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
+import 'package:nerdster/fire_choice.dart';
+import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/oneofus/endpoint.dart';
-import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
+import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster/v2/config.dart';
+import 'package:nerdster/v2/content_card.dart';
 import 'package:nerdster/v2/model.dart';
+import 'package:nerdster/v2/statement_tile.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -89,13 +88,11 @@ void main() {
 
       for (int i = 0; i < cardCount; i++) {
         final card = tester.widget<ContentCard>(contentCards.at(i));
-        final title = (card.aggregation.subject is Map)
-            ? (card.aggregation.subject['title'] ?? 'Untitled')
-            : card.model.labeler.getLabel(card.aggregation.subject.toString());
+        final title = card.aggregation.subject['title'] ?? 'Untitled';
         print('Card $i: Title="$title"');
 
         for (final s in card.aggregation.statements) {
-          if (b(s.comment)) {
+          if (s.comment != null) {
             final label = card.model.labeler.getLabel(s.iToken);
             print('  Comment by $label: ${s.comment}');
           }
@@ -118,9 +115,9 @@ void main() {
       await tester.tap(filterButton);
       await tester.pumpAndSettle();
 
-      // Verify DisFilterMode dropdown exists (replaces simple "Hide Seen" switch)
-      final filterDropdownFinder = find.byType(DropdownButton<DisFilterMode>);
-      expect(filterDropdownFinder, findsOneWidget);
+      // Verify DisFilterMode control exists (Checkbox)
+      final dismissFilterFinder = find.byTooltip("Hide content I've dismissed");
+      expect(dismissFilterFinder, findsOneWidget);
 
       // 6. Verify History/Comments are visible
       // The new design shows comments by default (up to 2) without an expansion tile title "History"

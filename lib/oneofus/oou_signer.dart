@@ -16,7 +16,7 @@ class OouSigner implements StatementSigner {
   OouSigner._internal(this._keyPair, this._publicKeyJson);
 
   @override
-  Future<String> sign(Map<String, dynamic> json, String string) async {
+  Future<String> sign(Json json, String string) async {
     assert(mapEquals(json['I'], _publicKeyJson));
     String out = await _keyPair.sign(string);
     return out;

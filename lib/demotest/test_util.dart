@@ -1,27 +1,25 @@
-export 'package:nerdster/content/content_types.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:nerdster/app.dart';
+import 'package:nerdster/clock.dart';
+import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/content/content_types.dart';
+import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/demotest/test_clock.dart';
+import 'package:nerdster/oneofus/fire_factory.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+
+export 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+export 'package:nerdster/app.dart';
+export 'package:nerdster/clock.dart';
 export 'package:nerdster/content/content_statement.dart';
-export 'package:nerdster/oneofus/trust_statement.dart';
+export 'package:nerdster/content/content_types.dart';
+export 'package:nerdster/demotest/demo_key.dart';
+export 'package:nerdster/demotest/test_clock.dart';
+export 'package:nerdster/oneofus/fire_factory.dart';
 export 'package:nerdster/oneofus/jsonish.dart';
 export 'package:nerdster/oneofus/keys.dart';
-export 'package:nerdster/oneofus/util.dart';
-export 'package:nerdster/demotest/test_clock.dart';
-export 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-export 'package:nerdster/oneofus/fire_factory.dart';
-export 'package:nerdster/app.dart';
 export 'package:nerdster/oneofus/prefs.dart';
-export 'package:nerdster/demotest/demo_key.dart';
-
-import 'package:nerdster/content/content_types.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/demotest/test_clock.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
-import 'package:nerdster/app.dart';
-import 'package:nerdster/demotest/demo_key.dart';
+export 'package:nerdster/oneofus/trust_statement.dart';
 
 /// A globally accessible counter for unique test titles
 int _testSubjectCount = 0;
@@ -42,7 +40,7 @@ Json mockKey([String? label]) {
 /// - Must have 'contentType'
 /// - Must have 'title'
 /// - Does not use stubs/tokens.
-Map<String, dynamic> createTestSubject({
+Json createTestSubject({
   ContentType type = ContentType.article,
   String? title,
   String? url,
@@ -55,7 +53,7 @@ Map<String, dynamic> createTestSubject({
   final String effectiveTitle = title ?? 'Test Title $_testSubjectCount';
   final String effectiveUrl = url ?? 'https://bogus.com/$_testSubjectCount';
 
-  final Map<String, dynamic> subject = {
+  final Json subject = {
     'contentType': type.name,
     'title': effectiveTitle,
   };

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
-import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/util_ui.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:package_info_plus/package_info_plus.dart';

@@ -1,6 +1,6 @@
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/util.dart';
+import 'package:nerdster/clock.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
@@ -85,11 +85,11 @@ class ContentStatement extends Statement {
     dynamic subject;
     for (verb in ContentVerb.values) {
       subject = jsonish[verb.label];
-      if (b(subject)) {
+      if (subject != null) {
         break;
       }
     }
-    assert(b(subject));
+    assert(subject != null);
 
     Json? withx = jsonish['with'];
 
@@ -184,7 +184,7 @@ class ContentStatement extends Statement {
       'censor': censor,
       'contexts': contexts,
     };
-    withx.removeWhere((key, value) => !b(value));
+    withx.removeWhere((key, value) => value == null);
     if (withx.isNotEmpty) {
       json['with'] = withx;
     }
@@ -195,7 +195,7 @@ class ContentStatement extends Statement {
   /// (making a "Relation" visible from either subject) and for signature generation.
   Iterable<String> get involvedTokens sync* {
     yield subjectToken;
-    if (b(other)) yield getToken(other);
+    if (other != null) yield getToken(other);
   }
 
   /// Generates a unique signature for this statement's intent to identify redundancies
@@ -208,9 +208,9 @@ class ContentStatement extends Statement {
   /// regardless of token order or which delegate issued them.
   @override
   String getDistinctSignature({Transformer? iTransformer, Transformer? sTransformer}) {
-    final String tiToken = b(iTransformer) ? iTransformer!(iToken) : iToken;
+    final String tiToken = iTransformer != null ? iTransformer(iToken) : iToken;
     final List<String> ts =
-        involvedTokens.map((t) => b(sTransformer) ? sTransformer!(t) : t).toList();
+        involvedTokens.map((t) => sTransformer != null ? sTransformer(t) : t).toList();
 
     // We want just one of 'subject relatedTo otherSubject' and 'otherSubject relatedTo subject',
     // and so we sort the tokens.

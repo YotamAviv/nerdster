@@ -11,10 +11,7 @@ import 'package:nerdster/v2/json_display.dart';
 import 'package:nerdster/v2/interpreter.dart';
 import 'package:nerdster/v2/follow_logic.dart';
 import 'package:collection/collection.dart';
-import 'package:nerdster/v2/source_factory.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
-import 'package:nerdster/content/dialogs/lgtm.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 
@@ -102,7 +99,6 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     if (!mounted) return;
 
     if (!signInState.isSignedIn) return;
-    final myId = signInState.identity;
 
     final canonical = model.trustGraph.resolveIdentity(widget.identity);
 
@@ -121,10 +117,10 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
       setState(() {
         _originalComment = priorStatement!.comment ?? '';
         _commentController.text = _originalComment;
-        if (priorStatement!.contexts != null) {
+        if (priorStatement.contexts != null) {
           _originalContexts.clear();
           _pendingContexts.clear();
-          priorStatement!.contexts!.forEach((k, v) {
+          priorStatement.contexts!.forEach((k, v) {
             if (v is int) {
               _originalContexts[k] = v;
               _pendingContexts[k] = v;
@@ -146,8 +142,8 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
   Widget build(BuildContext context) {
     final V2Labeler labeler = model.labeler;
     // V2Labeler label/getLabel takes string or key? currently string
-    final identityStr = widget.identity.value;
     // Assuming labeler has getAllLabels returning List<String> or similar?
+
     // I didn't implement getAllLabels in new Labeler!
     // I should implement it or remove this feature.
     // Let's implement basic label for now.
@@ -449,7 +445,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
             ],
             selected: {value == 0 ? 0 : (value > 0 ? 1 : -1)},
             onSelectionChanged: (Set<int> newSelection) async {
-              if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
+              if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
               setState(() {
                 final val = newSelection.first;
                 _pendingContexts[contextName] = val;
@@ -492,7 +488,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
               });
             },
             onSelected: (String selection) async {
-              if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
+              if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
               setState(() {
                 _pendingContexts[selection] = 0; // Default to neutral
                 _autocompleteController?.clear();
@@ -514,7 +510,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
                   ),
                   onSubmitted: (String value) async {
                     if (value.isNotEmpty) {
-                      if (!bb(await checkSignedIn(context, trustGraph: model.trustGraph))) return;
+                      if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
                       setState(() {
                         _pendingContexts[value] = 0; // Default to neutral
                         controller.clear();
@@ -533,7 +529,6 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
   Future<void> _saveChanges() async {
     setState(() => _isUpdating = true);
     try {
-      final myId = signInState.identity;
       final signer = signInState.signer;
       if (signer == null) return;
 

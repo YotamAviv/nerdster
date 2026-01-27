@@ -1,7 +1,7 @@
 import 'package:nerdster/v2/json_display.dart';
+import 'package:intl/intl.dart';
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/v2/labeler.dart';
 
 const kUnknown = '<unknown>';
@@ -50,12 +50,12 @@ class V2Interpreter implements Interpreter {
         return '<crypto token>';
       }
       try {
-        return formatUiDatetime(parseIso(d));
+        return DateFormat.yMd().add_jm().format(DateTime.parse(d).toLocal());
       } catch (e) {
         return d;
       }
     } else if (d is DateTime) {
-      return formatUiDatetime(d);
+      return DateFormat.yMd().add_jm().format(d.toLocal());
     } else {
       return d;
     }

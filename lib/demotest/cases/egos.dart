@@ -75,7 +75,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> egosCorrupt() async {
 
   FirebaseFirestore fire = FireFactory.find(kNerdsterDomain);
 
-  final CollectionReference<Map<String, dynamic>> fireStatements =
+  final CollectionReference<Json> fireStatements =
       fire.collection(delegate.token).doc('statements').collection('statements');
   try {
     final doc = await fireStatements.doc(s.token).get();

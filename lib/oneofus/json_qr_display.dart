@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import 'package:nerdster/util_ui.dart';
 import 'package:nerdster/v2/json_display.dart';
 import 'jsonish.dart';
-import 'util.dart';
 
 class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null
@@ -18,7 +18,7 @@ class JsonQrDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
       double qrSize = min(constraints.maxWidth, constraints.maxHeight * (2 / 3));
-      if (b(subject)) {
+      if (subject != null) {
         String display = subject is Json ? encoder.convert(subject) : subject;
         return Column(
           mainAxisSize: MainAxisSize.min,

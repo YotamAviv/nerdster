@@ -1,26 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/content/content_statement.dart';
 
-import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/singletons.dart';
 
 import 'simpsons_data_helper.dart';
 import 'package:nerdster/setting_type.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/most_strings.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/app.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -110,8 +100,8 @@ void main() {
     await meDelegate.doRate(subject: secretariat, recommend: true, comment: 'I like horses');
 
     // 4. Sign in as Me
-    await me.keyPair;
-    final OouKeyPair meDelegateKeyPair = await meDelegate.keyPair;
+    me.keyPair;
+    final OouKeyPair meDelegateKeyPair = meDelegate.keyPair;
     await signInState.signIn(me.token, meDelegateKeyPair);
 
     // 5. Refresh with Stranger as PoV

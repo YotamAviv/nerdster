@@ -14,7 +14,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/keys.dart';
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart'; // For getToken
+import 'package:nerdster/oneofus/jsonish.dart'; // For getToken
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/cached_source.dart';
 import 'package:nerdster/v2/delegates.dart';
@@ -114,9 +114,9 @@ class V2NotificationsMenu extends StatelessWidget {
 
     // Check for "Not in network" warning
     final myIdentity = signInState.identity;
-    if (b(myIdentity) && followNetwork != null) {
+    if (followNetwork != null) {
       final canonicalIdentity =
-          trustGraph?.resolveIdentity(IdentityKey(myIdentity)) ?? IdentityKey(myIdentity!);
+          trustGraph?.resolveIdentity(IdentityKey(myIdentity)) ?? IdentityKey(myIdentity);
       if (!followNetwork!.identities.contains(canonicalIdentity)) {
         items.add(MenuItemButton(
           onPressed: () {
@@ -138,9 +138,9 @@ class V2NotificationsMenu extends StatelessWidget {
 
     // Check for "Delegate key revoked" warning
     final myDelegate = signInState.delegate;
-    if (b(myDelegate) && trustGraph != null) {
+    if (myDelegate != null && trustGraph != null) {
       // Check if the delegate key is replaced
-      if (trustGraph!.replacements.containsKey(IdentityKey(myDelegate!))) {
+      if (trustGraph!.replacements.containsKey(IdentityKey(myDelegate))) {
         items.add(MenuItemButton(
           onPressed: () {
             showDialog(

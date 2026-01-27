@@ -16,7 +16,7 @@ void main() {
       firestore = FakeFirebaseFirestore();
       writer = DirectFirestoreWriter(firestore);
 
-      final keyPair = await CryptoFactoryEd25519().createKeyPair();
+      final keyPair = await crypto.createKeyPair();
       signer = await OouSigner.make(keyPair);
       publicKeyJson = await (await keyPair.publicKey).json;
     });

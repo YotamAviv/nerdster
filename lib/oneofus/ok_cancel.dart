@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'util.dart';
-
 class OkCancel extends StatefulWidget {
   final VoidCallback okHandler;
   final String okText;
@@ -22,7 +20,7 @@ class OkCancelState extends State<OkCancel> {
   @override
   void initState() {
     super.initState();
-    if (b(widget.okEnabled)) {
+    if (widget.okEnabled != null) {
       widget.okEnabled!.addListener(listener);
     }
   }
@@ -33,7 +31,7 @@ class OkCancelState extends State<OkCancel> {
 
   @override
   Widget build(BuildContext context) {
-    bool enabled = !b(widget.okEnabled) || widget.okEnabled!.value;
+    bool enabled = widget.okEnabled == null || widget.okEnabled!.value;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -41,7 +39,7 @@ class OkCancelState extends State<OkCancel> {
           onPressed: enabled ? widget.okHandler : null,
           child: Text(widget.okText),
         ),
-        if (b(widget.otherText))
+        if (widget.otherText != null)
           OutlinedButton(
             onPressed: widget.otherHandler,
             child: Text(widget.otherText!),

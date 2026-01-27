@@ -10,7 +10,6 @@ import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/oneofus/fire_factory.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 
 import 'package:nerdster/oneofus/statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -325,7 +324,7 @@ void main() {
 
     // Assert
     expect(fn.edges[bo.id], isNotNull);
-    expect(fn.edges[bo.id]!.any((s) => IdentityKey(s.subjectToken!) == luke.id), isTrue,
+    expect(fn.edges[bo.id]!.any((s) => IdentityKey(s.subjectToken) == luke.id), isTrue,
         reason:
             'Bo should still follow Luke because the delegate was revoked AT the follow statement');
   });

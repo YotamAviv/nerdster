@@ -7,7 +7,6 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/sign_in_session.dart';
@@ -46,7 +45,7 @@ class _SignInMenuState extends State<SignInMenu> {
 
   @override
   Widget build(BuildContext context) {
-    bool signedIn = b(signInState.delegate);
+    bool signedIn = signInState.delegate != null;
 
     if (signedIn) {
       return SplitMenuButton(
@@ -60,7 +59,7 @@ class _SignInMenuState extends State<SignInMenu> {
         ],
       );
     } else {
-      if (b(demo)) {
+      if (demo != null) {
         List<Widget> demoSignIns = <Widget>[];
         for (final DemoIdentityKey key in DemoIdentityKey.all) {
           // if (key.name.contains('-nerdster')) continue; // KLUGEY: Don't center as the delegate - Identity keys shouldn't have this.

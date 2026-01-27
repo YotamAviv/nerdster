@@ -19,7 +19,7 @@ import 'package:nerdster/v2/io.dart';
 import 'package:nerdster/v2/source_factory.dart';
 
 /// For testing, development, and maybe demo.
-const OouCryptoFactory _crypto = CryptoFactoryEd25519();
+const OouCryptoFactory _crypto = crypto;
 
 /// A Namespace for the demos and shared static state.
 abstract class DemoKey {
@@ -190,10 +190,10 @@ class DemoIdentityKey implements DemoKey {
       case TrustVerb.trust:
         moniker ??= other.name;
       case TrustVerb.block:
-        assert(!b(moniker));
+        assert(!(moniker != null));
         comment ??= 'blocking demo ${other.name}';
       case TrustVerb.replace:
-        assert(!b(moniker));
+        assert(!(moniker != null));
         comment ??= 'replacing demo ${other.name}';
       case TrustVerb.clear:
         break; // fine
@@ -338,8 +338,8 @@ class DemoDelegateKey implements DemoKey {
       dynamic dismiss,
       bool? censor,
       String? export}) async {
-    assert(countNonNull(title) + countNonNull(subject) == 1);
-    if (b(title)) {
+    assert((title != null ? 1 : 0) + (subject != null ? 1 : 0) == 1);
+    if (title != null) {
       subject = createTestSubject(title: title);
     }
 
@@ -369,12 +369,12 @@ class DemoDelegateKey implements DemoKey {
     String? otherTitle,
     String? export,
   }) async {
-    assert(countNonNull(subject) + countNonNull(title) == 1);
-    assert(countNonNull(other) + countNonNull(otherTitle) == 1);
-    if (b(title)) {
+    assert((subject != null ? 1 : 0) + (title != null ? 1 : 0) == 1);
+    assert((other != null ? 1 : 0) + (otherTitle != null ? 1 : 0) == 1);
+    if (title != null) {
       subject = createTestSubject(title: title);
     }
-    if (b(otherTitle)) {
+    if (otherTitle != null) {
       other = createTestSubject(title: otherTitle);
     }
 

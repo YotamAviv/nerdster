@@ -243,7 +243,7 @@ class StatementTile extends StatelessWidget {
                     statements: uniqueStatements,
                     lastActivity: s.time,
                   );
-                  final statement = await V2RateDialog.show(
+                  await V2RateDialog.show(
                     context,
                     SubjectAggregation(
                       subject: s.json,

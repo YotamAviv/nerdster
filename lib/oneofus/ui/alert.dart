@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:nerdster/util_ui.dart';
+
 import '../json_qr_display.dart';
 import '../jsonish.dart';
-import '../util.dart';
 import 'linky.dart';
 
 Future<void> alertException(BuildContext context, Object exception, {StackTrace? stackTrace}) {
-  if (b(stackTrace)) debugPrintStack(stackTrace: stackTrace!);
+  if (stackTrace != null) debugPrintStack(stackTrace: stackTrace);
 
   return showDialog<void>(
     context: context,
@@ -62,7 +63,7 @@ Future<String?> alert(String? title, dynamic content, List<String> options, Buil
     builder: (BuildContext context) {
       return AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-        title: b(title) ? SelectableText(title!) : null,
+        title: title != null ? SelectableText(title) : null,
         content: widget,
         actions: buttons,
       );

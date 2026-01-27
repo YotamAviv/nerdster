@@ -8,17 +8,17 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/ok_cancel.dart';
 import 'package:nerdster/oneofus/ui/linky.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/config.dart';
+import 'package:nerdster/util_ui.dart';
 
 class Lgtm {
   static Future<bool?> check(Json json, BuildContext context, {required V2Labeler labeler}) async {
     if (isSmall.value || Setting.get<bool>(SettingType.skipLgtm).value) return true;
 
-    assert(b(signInState.delegate));
+    assert(signInState.delegate != null);
 
     var spec = signInState.delegate!;
     Uri uri = FirebaseConfig.makeSimpleUri(kNerdsterDomain, spec);

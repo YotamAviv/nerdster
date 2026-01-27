@@ -1,6 +1,5 @@
 import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 var statementJson = {
@@ -30,7 +29,7 @@ void main() {
     Json i = Jsonish.find(stat1.iToken)!.json;
     Json him = Jsonish.find(stat1.subjectToken)!.json;
     Json json3 = TrustStatement.make(i, him, TrustVerb.trust, moniker: stat1.moniker);
-    json3['time'] = formatIso(stat1.time); // fudge the time
+    json3['time'] = stat1.time.toUtc().toIso8601String(); // fudge the time
     Jsonish jsonish3 = Jsonish(json3);
     TrustStatement stat3 = TrustStatement(jsonish3);
     expect(stat1 == stat3, true);

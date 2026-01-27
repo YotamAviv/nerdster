@@ -1,27 +1,16 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/util.dart';
-import 'package:nerdster/v2/follow_logic.dart';
-import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/v2/trust_logic.dart';
-import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/fire_choice.dart';
-import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/oneofus/keys.dart';
+import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/v2/delegates.dart';
 import 'package:nerdster/v2/follow_logic.dart';
+import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
-import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/labeler.dart';
+
 
 void main() {
   late FakeFirebaseFirestore firestore;
