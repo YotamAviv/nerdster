@@ -59,7 +59,8 @@ class V2RateDialog extends StatefulWidget {
     );
 
     if (result != null) {
-      return (await controller.push(result, signInState.signer!, context: context)) as ContentStatement?;
+      return (await controller.push(result, signInState.signer!, context: context))
+          as ContentStatement?;
     }
     return null;
   }
@@ -233,8 +234,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
         subjectIsMyStatement = (stmt.iKey.value == myIdentity);
       } else if (stmt is ContentStatement) {
         subjectIsMyStatement =
-            (widget.model.delegateResolver.getIdentityForDelegate(stmt.iKey)?.value ==
-                myIdentity);
+            (widget.model.delegateResolver.getIdentityForDelegate(stmt.iKey)?.value == myIdentity);
       }
     }
 
@@ -330,9 +330,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
                       child: Text(
                         'rating a rating?',
                         style: TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
-                            fontSize: 12),
+                            color: Colors.blue, decoration: TextDecoration.underline, fontSize: 12),
                       ),
                     ),
                   ],
@@ -363,7 +361,6 @@ class _V2RateDialogState extends State<V2RateDialog> {
     );
   }
 }
-
 
 class _DismissToggle extends StatelessWidget {
   final ValueNotifier<String?> notifier;
@@ -409,15 +406,15 @@ class _DismissToggle extends StatelessWidget {
                 icon: Icon(icon),
                 color: color,
                 onPressed: () {
-                        if (value == null) {
-                          notifier.value = 'snooze';
-                        } else if (value == 'snooze') {
-                          notifier.value = 'forever';
-                        } else {
-                          notifier.value = null;
-                        }
-                        callback?.call();
-                      },
+                  if (value == null) {
+                    notifier.value = 'snooze';
+                  } else if (value == 'snooze') {
+                    notifier.value = 'forever';
+                  } else {
+                    notifier.value = null;
+                  }
+                  callback?.call();
+                },
               ),
             ],
           ),

@@ -39,7 +39,6 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return MenuBar(
-        children: Menus.build(context, v2Notifications: widget.v2Notifications));
+    return MenuBar(children: Menus.build(context, v2Notifications: widget.v2Notifications));
   }
 }

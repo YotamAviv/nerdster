@@ -123,14 +123,16 @@ class SignInState with ChangeNotifier {
     if (_identity == null) throw StateError("Accessed pov before sign in");
     return povNotifier.value ?? _identity!;
   }
+
   Json get identityJson => Jsonish.find(identity)!.json;
 
   // derived
   bool get isSignedIn => _identity != null;
   String get identity {
-     if (_identity == null) throw StateError("Accessed identity before sign in");
-     return _identity!;
+    if (_identity == null) throw StateError("Accessed identity before sign in");
+    return _identity!;
   }
+
   Json? get delegatePublicKeyJson => _delegatePublicKeyJson;
   String? get delegate => _delegate;
   StatementSigner? get signer => _signer;

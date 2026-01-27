@@ -263,7 +263,8 @@ ContentAggregation reduceContentAggregation(
     final ContentKey literalSubject = ContentKey(s.subjectToken);
     final ContentKey canonicalSubject = subjectEquivalence[literalSubject] ?? literalSubject;
 
-    final List<ContentKey> primaryLiteralTokens = s.involvedTokens.map((t) => ContentKey(t)).toList();
+    final List<ContentKey> primaryLiteralTokens =
+        s.involvedTokens.map((t) => ContentKey(t)).toList();
     final ContentKey l1 = primaryLiteralTokens[0];
     final ContentKey? l2 = primaryLiteralTokens.length > 1 ? primaryLiteralTokens[1] : null;
 
@@ -290,8 +291,7 @@ ContentAggregation reduceContentAggregation(
       // Update stats: ONLY if this subject is a primary target of the rating
       int likes = group.likes;
       int dislikes = group.dislikes;
-      final bool isPrimary =
-          isCanonical ? (key == c1 || key == c2) : (key == l1 || key == l2);
+      final bool isPrimary = isCanonical ? (key == c1 || key == c2) : (key == l1 || key == l2);
 
       if (isPrimary && s.verb == ContentVerb.rate) {
         if (s.like == true) likes++;

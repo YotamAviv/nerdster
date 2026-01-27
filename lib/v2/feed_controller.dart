@@ -27,7 +27,8 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   /// Pushes a new content statement through the write-through cache.
   /// Handles LGTM check, Writing, Caching, and UI Update (Partial Refresh).
   /// Returns the posted statement if successful, or null if cancelled (LGTM).
-  Future<Statement?> push(Json json, StatementSigner signer, {required BuildContext context}) async {
+  Future<Statement?> push(Json json, StatementSigner signer,
+      {required BuildContext context}) async {
     final model = value;
     if (model == null) return null; // Cannot push if feed not loaded
 
@@ -188,9 +189,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       if (s.token != s.canonical) return false;
 
       return shouldShow(s, mode, censorshipEnabled,
-          tagFilter: tagFilter,
-          typeFilter: typeFilter,
-          aggregation: aggregation);
+          tagFilter: tagFilter, typeFilter: typeFilter, aggregation: aggregation);
     }).toList();
 
     sortSubjects(results);
@@ -225,9 +224,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
   }
 
   bool shouldShow(SubjectAggregation subject, DisFilterMode mode, bool censorshipEnabled,
-      {String? tagFilter,
-      String? typeFilter,
-      required ContentAggregation aggregation}) {
+      {String? tagFilter, String? typeFilter, required ContentAggregation aggregation}) {
     // Only show subjects that exist in the PoV's feed (have statements from the PoV's network)
     if (subject.statements.isEmpty) return false;
 
@@ -455,8 +452,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         }
 
         if (currentPovIdentity == IdentityKey(signInState.pov) &&
-            currentMeIdentity?.value ==
-                (signInState.isSignedIn ? signInState.identity : null)) {
+            currentMeIdentity?.value == (signInState.isSignedIn ? signInState.identity : null)) {
           final allErrors = [
             ...trustSource.errors,
             ...contentSource.errors,

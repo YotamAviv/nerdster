@@ -470,7 +470,6 @@ class _ContentCardState extends State<ContentCard> {
                 onMark: (token) => widget.onMark?.call(token),
                 markedSubjectToken: widget.markedSubjectToken,
                 onInspect: _showInspectionSheet,
-
                 onTagTap: widget.onTagTap,
                 maxLines: 1,
               )),
@@ -691,7 +690,8 @@ class _ContentCardState extends State<ContentCard> {
                     ),
                     tooltip: isMarked ? 'Unmark' : 'Mark to Relate/Equate',
                     onPressed: () async {
-                      if ((await checkSignedIn(context, trustGraph: widget.model.trustGraph)) == true) {
+                      if ((await checkSignedIn(context, trustGraph: widget.model.trustGraph)) ==
+                          true) {
                         widget.onMark!(widget.aggregation.token);
                       }
                     },

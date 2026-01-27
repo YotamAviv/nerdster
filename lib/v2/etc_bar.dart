@@ -119,8 +119,7 @@ $link''',
                   SubmenuButton(
                     menuChildren: ['permissive', 'standard', 'strict'].map((val) {
                       return ValueListenableBuilder<String>(
-                        valueListenable:
-                            Setting.get<String>(SettingType.identityPathsReq).notifier,
+                        valueListenable: Setting.get<String>(SettingType.identityPathsReq).notifier,
                         builder: (context, current, _) {
                           return MenuItemButton(
                             onPressed: () =>

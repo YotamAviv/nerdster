@@ -389,7 +389,9 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
   CachedSource<TrustStatement> get trustSource => CachedSource(DummySource<TrustStatement>());
 
   @override
-  Future<Statement?> push(Json json, StatementSigner signer, {required BuildContext context}) async => null;
+  Future<Statement?> push(Json json, StatementSigner signer,
+          {required BuildContext context}) async =>
+      null;
 
   @override
   Future<void> refresh({IdentityKey? pov, IdentityKey? meIdentity}) async {}
@@ -439,9 +441,7 @@ class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2Feed
 
   @override
   bool shouldShow(SubjectAggregation subject, DisFilterMode mode, bool censorshipEnabled,
-          {String? tagFilter,
-          String? typeFilter,
-          required ContentAggregation aggregation}) =>
+          {String? tagFilter, String? typeFilter, required ContentAggregation aggregation}) =>
       true;
 
   @override

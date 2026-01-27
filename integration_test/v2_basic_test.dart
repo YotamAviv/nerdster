@@ -99,8 +99,7 @@ void main() {
             verifier: OouVerifier(),
           );
 
-          await basicScenario(
-              source: source, description: '${p.name} (skipVerify: $skipVerify)');
+          await basicScenario(source: source, description: '${p.name} (skipVerify: $skipVerify)');
 
           debugPrint('Permutation ${p.name} Verified!');
         }

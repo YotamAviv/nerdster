@@ -19,10 +19,7 @@ class V2JsonDisplay extends StatefulWidget {
   final Interpreter? interpreter;
 
   V2JsonDisplay(this.subject,
-      {ValueNotifier<bool>? interpret,
-      this.strikethrough = false,
-      this.interpreter,
-      super.key})
+      {ValueNotifier<bool>? interpret, this.strikethrough = false, this.interpreter, super.key})
       : interpret = interpret ?? ValueNotifier<bool>(true);
 
   @override

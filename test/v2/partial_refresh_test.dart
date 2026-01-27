@@ -22,7 +22,7 @@ void main() {
     Setting.get(SettingType.dis).value = 'my';
     var (DemoIdentityKey lisa, DemoDelegateKey? lisaDelegate) = await simpsonsDemo();
 
-    // This alternative passes, too. It tests using a new delegate, and so the cache would be [], 
+    // This alternative passes, too. It tests using a new delegate, and so the cache would be [],
     // and this would be the first statement (previous == null).
     // lisaDelegate = await lisa.makeDelegate();
     // await lisa.delegate(lisaDelegate, domain: kNerdsterDomain);

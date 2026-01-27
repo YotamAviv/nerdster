@@ -57,8 +57,7 @@ class Lgtm {
                                 child: Align(
                                     alignment: Alignment.centerRight,
                                     child: MyCheckbox(
-                                        Setting.get<bool>(SettingType.skipLgtm)
-                                            .notifier,
+                                        Setting.get<bool>(SettingType.skipLgtm).notifier,
                                         '''Don't show again'''))),
                           ],
                         ),

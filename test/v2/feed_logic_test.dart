@@ -3,7 +3,6 @@ import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 
-
 import 'package:nerdster/singletons.dart';
 
 import 'simpsons_data_helper.dart';

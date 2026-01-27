@@ -74,11 +74,10 @@ class TrustGraph {
     List<TrustNotification> notifications = const [],
     Map<IdentityKey, List<TrustStatement>> edges = const {},
   })  : orderedKeys = List.unmodifiable(orderedKeys),
-        paths = Map<IdentityKey, List<List<IdentityKey>>>.unmodifiable(paths.map(
-            (k, v) => MapEntry(
-                k,
-                List<List<IdentityKey>>.unmodifiable(
-                    v.map((p) => List<IdentityKey>.unmodifiable(p)))))),
+        paths = Map<IdentityKey, List<List<IdentityKey>>>.unmodifiable(paths.map((k, v) => MapEntry(
+            k,
+            List<List<IdentityKey>>.unmodifiable(
+                v.map((p) => List<IdentityKey>.unmodifiable(p)))))),
         notifications = List<TrustNotification>.unmodifiable(notifications),
         edges = Map<IdentityKey, List<TrustStatement>>.unmodifiable(
             edges.map((k, v) => MapEntry(k, List<TrustStatement>.unmodifiable(v))));
@@ -197,8 +196,7 @@ class FollowNetwork {
             paths.map((k, v) => MapEntry(k, List<IdentityKey>.unmodifiable(v)))),
         notifications = List<TrustNotification>.unmodifiable(notifications),
         edges = Map<IdentityKey, List<ContentStatement>>.unmodifiable(
-            edges.map(
-                (k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v))));
+            edges.map((k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v))));
 
   bool contains(IdentityKey identity) => identities.contains(identity);
 }
@@ -447,12 +445,9 @@ class ContentAggregation {
   })  : statements = List<ContentStatement>.unmodifiable(statements),
         mostTags = List<String>.unmodifiable(mostTags),
         myCanonicalDisses = Map<ContentKey, List<ContentStatement>>.unmodifiable(
-            myCanonicalDisses
-                .map((k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v)))),
-        myLiteralStatements =
-            Map<ContentKey, List<ContentStatement>>.unmodifiable(
-                myLiteralStatements.map(
-                    (k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v))));
+            myCanonicalDisses.map((k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v)))),
+        myLiteralStatements = Map<ContentKey, List<ContentStatement>>.unmodifiable(
+            myLiteralStatements.map((k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v))));
 }
 
 /// A complete snapshot of the feed data, ready for display.
@@ -501,6 +496,5 @@ class ContentResult {
   ContentResult({
     Map<DelegateKey, List<ContentStatement>> delegateContent = const {},
   }) : delegateContent = Map<DelegateKey, List<ContentStatement>>.unmodifiable(
-            delegateContent.map((k, v) =>
-                MapEntry(k, List<ContentStatement>.unmodifiable(v))));
+            delegateContent.map((k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v))));
 }

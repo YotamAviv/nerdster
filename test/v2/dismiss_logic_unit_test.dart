@@ -175,12 +175,11 @@ void main() {
         ],
         statements: <ContentStatement>[
           makeStatement(
-            verb: ContentVerb.rate, 
-            subject: c1.value, 
-            time: t1, 
-            recommend: true, 
-            dismiss: 'snooze'
-          ),
+              verb: ContentVerb.rate,
+              subject: c1.value,
+              time: t1,
+              recommend: true,
+              dismiss: 'snooze'),
         ],
       );
       agg = SubjectAggregation(

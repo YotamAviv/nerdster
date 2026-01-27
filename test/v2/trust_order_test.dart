@@ -11,7 +11,6 @@ import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/model.dart';
 import 'package:nerdster/v2/trust_logic.dart';
 
-
 void main() {
   late FakeFirebaseFirestore firestore;
 

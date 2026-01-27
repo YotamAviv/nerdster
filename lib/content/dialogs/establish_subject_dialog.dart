@@ -33,8 +33,8 @@ Future<Jsonish?> establishSubjectDialog(BuildContext context) {
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              padding: EdgeInsets.fromLTRB(
-                  16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+              padding:
+                  EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
               child: SingleChildScrollView(child: SubjectFields()))));
 }
 

@@ -33,6 +33,6 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> basicScenario({
 
   check(graph.isTrusted(bart.id), '${p}Marge should trust Bart');
   check(graph.distances[bart.id] == 1, '${p}Bart should be distance 1');
- 
+
   return (lisa, null);
 }

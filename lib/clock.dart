@@ -1,4 +1,3 @@
-
 abstract class Clock {
   DateTime get now;
   String get nowIso => now.toUtc().toIso8601String();

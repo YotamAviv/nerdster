@@ -49,23 +49,23 @@ class NerdsterApp extends StatelessWidget {
             }
 
             return Builder(builder: (context) {
-                final bool smallNow = MediaQuery.of(context).size.width < 600;
-                if (smallNow != isSmall.value) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    isSmall.value = smallNow;
-                  });
-                }
+              final bool smallNow = MediaQuery.of(context).size.width < 600;
+              if (smallNow != isSmall.value) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  isSmall.value = smallNow;
+                });
+              }
 
-                if (params.containsKey('verifyFullScreen') &&
-                    Setting.get<bool>(SettingType.verify).value == true) {
-                  return const StandaloneVerify();
-                } else {
-                  return ContentView(
-                    pov: IdentityKey(signInState.pov),
-                    meIdentity: IdentityKey(signInState.identity),
-                  );
-                }
-              });
+              if (params.containsKey('verifyFullScreen') &&
+                  Setting.get<bool>(SettingType.verify).value == true) {
+                return const StandaloneVerify();
+              } else {
+                return ContentView(
+                  pov: IdentityKey(signInState.pov),
+                  meIdentity: IdentityKey(signInState.identity),
+                );
+              }
+            });
           },
         ));
   }

@@ -353,9 +353,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
                       constraints: const BoxConstraints(maxWidth: 600)),
                   child: Text('• $delegateLabel',
                       style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline)),
+                          fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
                 ),
               );
             });
@@ -411,7 +409,8 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         const SizedBox(height: 12),
         _buildAddContextRow(),
         const SizedBox(height: 12),
-        const Text('Comment (Optional):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        const Text('Comment (Optional):',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         TextField(
           controller: _commentController,
@@ -510,7 +509,8 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
                   ),
                   onSubmitted: (String value) async {
                     if (value.isNotEmpty) {
-                      if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
+                      if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true)
+                        return;
                       setState(() {
                         _pendingContexts[value] = 0; // Default to neutral
                         controller.clear();
@@ -628,8 +628,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Incoming Follows (<nerdster>):',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        const Text('Incoming Follows (<nerdster>):', style: TextStyle(fontWeight: FontWeight.bold)),
         const Text(
           'Includes explicit follows AND implicit follows derived from Trust (unless overridden).',
           style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),

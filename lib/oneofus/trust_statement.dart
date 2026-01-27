@@ -67,7 +67,8 @@ class TrustStatement extends Statement {
     dynamic subject;
     for (verb in TrustVerb.values) {
       subject = jsonish[verb.label];
-      if (subject != null) break; // could continue to loop to assert that there isn't a second subject
+      if (subject != null)
+        break; // could continue to loop to assert that there isn't a second subject
     }
     assert(subject != null);
 

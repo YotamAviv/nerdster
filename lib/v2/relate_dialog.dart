@@ -43,7 +43,8 @@ class V2RelateDialog extends StatefulWidget {
     );
 
     if (result != null) {
-      return (await controller.push(result, signInState.signer!, context: context)) as ContentStatement?;
+      return (await controller.push(result, signInState.signer!, context: context))
+          as ContentStatement?;
     }
     return null;
   }
@@ -184,8 +185,7 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
                               ),
                               const DropdownMenuItem(
                                 value: ContentVerb.dontRelate,
-                                child:
-                                    Text('is not related to', style: TextStyle(fontSize: 16)),
+                                child: Text('is not related to', style: TextStyle(fontSize: 16)),
                               ),
                               const DropdownMenuItem(
                                 value: ContentVerb.equate,
@@ -193,8 +193,7 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
                               ),
                               const DropdownMenuItem(
                                 value: ContentVerb.dontEquate,
-                                child:
-                                    Text('is not the same as', style: TextStyle(fontSize: 16)),
+                                child: Text('is not the same as', style: TextStyle(fontSize: 16)),
                               ),
                               DropdownMenuItem(
                                 value: ContentVerb.clear,

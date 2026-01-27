@@ -5,7 +5,6 @@ import 'package:nerdster/oneofus/jsonish.dart';
 import 'package:nerdster/oneofus/oou_verifier.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
 const String jsonSubjects = '''
 [
   {

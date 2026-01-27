@@ -43,8 +43,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
 
         DateTime? limitTime;
         if (limitToken != null) {
-          final DocumentSnapshot<Json> doc =
-              await collectionRef.doc(limitToken).get();
+          final DocumentSnapshot<Json> doc = await collectionRef.doc(limitToken).get();
           if (doc.exists && doc.data() != null) {
             limitTime = DateTime.parse(doc.data()!['time']);
           } else {

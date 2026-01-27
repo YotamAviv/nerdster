@@ -40,7 +40,6 @@ void main() {
   });
 
   test('json encode map created in different order', () {
-
     Map map1 = {};
     // expect(map1.runtimeType.toString(), '');
     map1['a'] = 1;

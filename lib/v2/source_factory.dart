@@ -7,7 +7,6 @@ import 'package:nerdster/v2/config.dart';
 import 'package:nerdster/v2/direct_firestore_source.dart';
 import 'package:nerdster/v2/io.dart';
 
-
 class SourceFactory {
   static StatementSource<T> get<T extends Statement>(String domain) =>
       (fireChoice == FireChoice.fake)

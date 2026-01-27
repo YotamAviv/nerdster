@@ -163,8 +163,8 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
   check(trustGraph.notifications.any((n) => n.reason.contains("replaced by both")),
       "Missing: replaced by both");
   check(
-      (trustGraph.notifications + resolver.notifications).any((n) =>
-          n.reason.contains("Trusted key") && n.reason.contains("is being replaced")),
+      (trustGraph.notifications + resolver.notifications)
+          .any((n) => n.reason.contains("Trusted key") && n.reason.contains("is being replaced")),
       "Missing: Trusted key is being replaced");
   check(trustGraph.notifications.any((n) => n.reason.contains("Attempt to trust blocked key")),
       "Missing: Attempt to trust blocked key");

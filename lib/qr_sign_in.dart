@@ -22,7 +22,7 @@ final deepCollectionEquality = const DeepCollectionEquality();
 Future<void> qrSignIn(BuildContext context) async {
   final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(true);
   final completer = Completer<void>();
-  
+
   final session = await SignInSession.create();
   // Start listening BEFORE showing dialog
   // ignore: unawaited_futures

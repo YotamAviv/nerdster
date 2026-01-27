@@ -66,7 +66,8 @@ void main() {
 
     // 4. Verification Check 1
     V2FeedModel feedAfter = controller.value!;
-    SubjectAggregation? shakesAfter = feedAfter.effectiveSubjects.where((s) => s.token == shakesToken).firstOrNull;
+    SubjectAggregation? shakesAfter =
+        feedAfter.effectiveSubjects.where((s) => s.token == shakesToken).firstOrNull;
 
     expect(shakesAfter, isNull, reason: "Shakes should be hidden immediately after first refresh");
 

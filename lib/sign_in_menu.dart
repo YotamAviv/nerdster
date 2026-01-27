@@ -41,8 +41,6 @@ class _SignInMenuState extends State<SignInMenu> {
     super.dispose();
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     bool signedIn = signInState.delegate != null;
@@ -55,8 +53,7 @@ class _SignInMenuState extends State<SignInMenu> {
           await KeyStore.wipeKeys();
           signInState.signOut();
         },
-        menuChildren: [
-        ],
+        menuChildren: [],
       );
     } else {
       if (demo != null) {

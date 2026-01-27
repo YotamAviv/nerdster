@@ -10,7 +10,7 @@ import 'package:nerdster/v2/rate_dialog.dart';
 Future<void> v2Submit(BuildContext context, V2FeedController controller) async {
   final model = controller.value;
   if (model == null) return;
-  
+
   if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
 
   Jsonish? subject = await establishSubjectDialog(context);
