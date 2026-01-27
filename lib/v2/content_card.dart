@@ -447,7 +447,15 @@ class _ContentCardState extends State<ContentCard> {
     }).toList();
 
     final topRoots = roots.take(2).toList();
+    // Check if comments are truncated. We pass maxLines: 1 to the tiles below.
+    final bool anyCommentTruncated = topRoots.any((s) {
+      if (s.comment == null) return false;
+      // Heuristic: If comment has newlines or is long, assume truncated by maxLines: 1
+      return s.comment!.contains('\n') || s.comment!.length > 50;
+    });
+
     final hasMore = allStatements.length > topRoots.length;
+    final showExpandButton = hasMore || anyCommentTruncated;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -478,13 +486,11 @@ class _ContentCardState extends State<ContentCard> {
             markedSubjectToken: widget.markedSubjectToken,
             onInspect: _showInspectionSheet,
           ),
-        if (hasMore || _isHistoryExpanded)
+        if (showExpandButton || _isHistoryExpanded)
           Center(
             child: TextButton.icon(
               icon: Icon(_isHistoryExpanded ? Icons.expand_less : Icons.expand_more, size: 16),
-              label: Text(_isHistoryExpanded
-                  ? 'Show less'
-                  : 'Show full history (${allStatements.length} total)'),
+              label: Text(_isHistoryExpanded ? 'Show less' : 'Show more'),
               onPressed: () {
                 setState(() {
                   _isHistoryExpanded = !_isHistoryExpanded;
