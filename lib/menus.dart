@@ -4,11 +4,8 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dev/corruption_check.dart';
-import 'package:nerdster/dump_all_statements.dart';
-import 'package:nerdster/dump_and_load.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
 import 'package:nerdster/oneofus/ui/my_checkbox.dart';
 import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/sign_in_menu.dart';
@@ -90,18 +87,6 @@ class Menus {
                 }
               },
               child: const Text('CorruptionCheck')),
-          MenuItemButton(onPressed: () => dumpDump(context), child: const Text('Dump JSON state')),
-          MenuItemButton(
-              child: const Text('Load JSON statements'),
-              onPressed: () async {
-                await loadDumpDialog(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('done')));
-              }),
-          MenuItemButton(
-              child: const Text('dump all statements'),
-              onPressed: () async {
-                await DumpAllStatements.show(context);
-              }),
         ], child: const Text('DEV')),
       // CONSIDER: const MenuTitle(['nerd', 'ster', '.', 'org'])
     ];
