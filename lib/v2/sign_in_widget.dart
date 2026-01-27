@@ -119,8 +119,8 @@ class _SignInDialogState extends State<SignInDialog> {
     Widget buildUniversalBtn(bool recommended) => _buildSquareButton(
           context,
           icon: Icons.link,
-          label: 'Universal Links (iOS) & App Links (Android)\n- Coming soon..',
-          onPressed: () {}, // TODO: Implement universal links
+          label: 'Universal Links (iOS) & App Links (Android)',
+          onPressed: () => _magicLinkSignIn(context, useUniversalLink: true),
           recommended: recommended,
         );
 
@@ -359,7 +359,7 @@ class _SignInDialogState extends State<SignInDialog> {
         });
   }
 
-  Future<void> _magicLinkSignIn(BuildContext context) async {
+  Future<void> _magicLinkSignIn(BuildContext context, {bool useUniversalLink = false}) async {
     final completer = Completer<void>();
 
     // Start session creation immediately
@@ -372,6 +372,7 @@ class _SignInDialogState extends State<SignInDialog> {
           return MagicLinkDialog(
             sessionFuture: sessionFuture,
             storeKeys: _storeKeys,
+            useUniversalLink: useUniversalLink,
             onCancel: () {
               // Logic handled in widget
             },
@@ -392,6 +393,7 @@ class MagicLinkDialog extends StatefulWidget {
   final ValueNotifier<bool> storeKeys;
   final VoidCallback onCancel;
   final VoidCallback onSuccess;
+  final bool useUniversalLink;
 
   const MagicLinkDialog({
     super.key,
@@ -399,6 +401,7 @@ class MagicLinkDialog extends StatefulWidget {
     required this.storeKeys,
     required this.onCancel,
     required this.onSuccess,
+    this.useUniversalLink = false,
   });
 
   @override
@@ -422,10 +425,12 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
 
       final paramsJson = jsonEncode(session.forPhone);
       final base64Params = base64Url.encode(utf8.encode(paramsJson));
-      final link = 'keymeid://signin?parameters=$base64Params';
+      final link = widget.useUniversalLink
+          ? 'https://one-of-us.net/sign-in?parameters=$base64Params'
+          : 'keymeid://signin?parameters=$base64Params';
 
       // Launch immediately
-      await launchUrl(Uri.parse(link));
+      await launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
 
       // Listen
       session.listen(
