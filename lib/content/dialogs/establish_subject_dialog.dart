@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_types.dart';
@@ -23,13 +22,21 @@ import 'package:nerdster/util_ui.dart';
 /// This class uses that mechanism.
 
 Future<Jsonish?> establishSubjectDialog(BuildContext context) {
-  double width = max(MediaQuery.of(context).size.width / 2, 500);
-  return showDialog<Jsonish?>(
+  return showModalBottomSheet<Jsonish?>(
       context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-          child: SizedBox(width: width, child: SubjectFields())));
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) => Theme(
+          data: Theme.of(context),
+          child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              padding: EdgeInsets.fromLTRB(
+                  16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+              child: SingleChildScrollView(child: SubjectFields()))));
 }
 
 class SubjectFields extends StatefulWidget {
@@ -43,8 +50,9 @@ class _SubjectFieldsState extends State<SubjectFields> {
   ContentType contentType = ContentType.article;
   final LinkedHashMap<String, TextEditingController> key2controller =
       LinkedHashMap<String, TextEditingController>();
-  final List<ContentType> typesMinusAll = List.from(ContentType.values)..removeAt(0);
+  final List<ContentType> types = ContentType.values;
   final _FetchingUrlWidget fetchingUrlWidget = _FetchingUrlWidget();
+  final ValueNotifier<bool> okEnabled = ValueNotifier(false);
   List<TextField> fields = [];
 
   @override
@@ -53,12 +61,42 @@ class _SubjectFieldsState extends State<SubjectFields> {
     _initControllers();
   }
 
+  @override
+  void dispose() {
+    for (final controller in key2controller.values) {
+      controller.dispose();
+    }
+    okEnabled.dispose();
+    super.dispose();
+  }
+
+  void _validate() {
+    bool valid = true;
+    for (final entry in key2controller.entries) {
+      if (entry.value.text.trim().isEmpty) {
+        valid = false;
+        break;
+      }
+    }
+    if (valid && contentType.type2field2type.containsKey('url')) {
+      final url = key2controller['url']?.text.trim() ?? '';
+      final uri = Uri.tryParse(url);
+      if (uri == null || !uri.hasScheme || !['http', 'https'].contains(uri.scheme)) {
+        valid = false;
+      }
+    }
+    if (valid != okEnabled.value) {
+      okEnabled.value = valid;
+    }
+  }
+
   void _initControllers() {
     key2controller.clear();
     for (MapEntry<String, String> entry in contentType.type2field2type.entries) {
       final key = entry.key;
       final controller = TextEditingController();
       key2controller[key] = controller;
+      controller.addListener(_validate);
 
       // Special case: auto-fill title from url
       if (key == 'url') {
@@ -66,6 +104,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
       }
     }
     _rebuildFields();
+    _validate();
   }
 
   void _rebuildFields() {
@@ -104,34 +143,6 @@ class _SubjectFieldsState extends State<SubjectFields> {
   }
 
   void _okHandler() async {
-    // Validate all fields are non-empty
-    for (final entry in key2controller.entries) {
-      if (entry.value.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Please fill in the ${entry.key} field'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-    }
-
-    // Validate URL format if present
-    if (contentType.type2field2type.containsKey('url')) {
-      final url = key2controller['url']?.text.trim() ?? '';
-      final uri = Uri.tryParse(url);
-      if (uri == null || !uri.hasScheme || !['http', 'https'].contains(uri.scheme)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Please enter a valid URL starting with http:// or https://'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-    }
-
     Map<String, dynamic> map = <String, dynamic>{};
     map['contentType'] = contentType.label;
     for (final entry in key2controller.entries) {
@@ -143,28 +154,29 @@ class _SubjectFieldsState extends State<SubjectFields> {
   }
 
   @override
-  void dispose() {
-    for (final controller in key2controller.values) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     Widget cornerWidget = const SizedBox(width: 80.0);
     if (!contentType.type2field2type.containsKey('url')) {
       cornerWidget = SizedBox(
         width: 80.0,
-        child: Tooltip(
-          message: '''A ${contentType.label} doesn't have a singular URL.
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Tooltip(
+            message: '''A ${contentType.label} doesn't have a singular URL.
 In case multiple people rate a book, their ratings will be grouped correctly only if they all use the same fields and values.
 You can include a URL in a comment or relate or equate this book to an article with a URL.''',
-          child: Text('no URL?', style: linkStyle),
+            child: Text('no URL?', style: linkStyle),
+          ),
         ),
       );
     } else {
-      cornerWidget = fetchingUrlWidget;
+      cornerWidget = SizedBox(
+        width: 80.0,
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: fetchingUrlWidget,
+        ),
+      );
     }
 
     return Padding(
@@ -195,7 +207,7 @@ You can include a URL in a comment or relate or equate this book to an article w
                     _initControllers(); // Create new controllers + fields
                   });
                 },
-                dropdownMenuEntries: typesMinusAll
+                dropdownMenuEntries: types
                     .map((type) => DropdownMenuEntry<ContentType>(
                           value: type,
                           label: type.label,
@@ -209,7 +221,7 @@ You can include a URL in a comment or relate or equate this book to an article w
           const SizedBox(height: 10),
           ...fields,
           const SizedBox(height: 10),
-          OkCancel(_okHandler, 'Establish Subject'),
+          OkCancel(_okHandler, 'Establish Subject', okEnabled: okEnabled),
         ],
       ),
     );
