@@ -91,26 +91,54 @@ class ContentBar extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
 
-                // Dismissal Filter (formerly "Filter")
+                // Dismissal Filter
                 Tooltip(
-                  message: 'Filter dismissed content',
-                  child: DropdownButton<DisFilterMode>(
-                    value: controller.filterMode,
-                    items: const [
-                      DropdownMenuItem(value: DisFilterMode.my, child: Text('My Disses')),
-                      DropdownMenuItem(value: DisFilterMode.pov, child: Text("PoV's Disses")),
-                      DropdownMenuItem(
-                          value: DisFilterMode.ignore, child: Text('Ignore Disses')),
+                  message: "Hide content I've dismissed",
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: controller.filterMode == DisFilterMode.my,
+                        activeColor: Colors.brown,
+                        side: const BorderSide(color: Colors.brown, width: 2.0),
+                        onChanged: (val) {
+                          controller.filterMode =
+                              (val == true) ? DisFilterMode.my : DisFilterMode.ignore;
+                        },
+                      ),
+                      Text(
+                        'Dismiss',
+                        style: TextStyle(fontSize: small ? 12 : 14),
+                      ),
                     ],
-                    onChanged: (val) {
-                      if (val != null) controller.filterMode = val;
-                    },
                   ),
                 ),
                 const SizedBox(width: 8),
 
                 // Censor Checkbox
-                MyCheckbox(controller.enableCensorshipNotifier, 'Censor'),
+                ValueListenableBuilder<bool>(
+                  valueListenable: controller.enableCensorshipNotifier,
+                  builder: (context, enabled, _) {
+                    return Tooltip(
+                      message: 'Filter censored content',
+                      child: Row(
+                        children: [
+                          Checkbox(
+                            value: enabled,
+                            activeColor: Colors.red,
+                            side: const BorderSide(color: Colors.red, width: 2.0),
+                            onChanged: (val) {
+                              controller.enableCensorshipNotifier.value = val ?? false;
+                            },
+                          ),
+                          if (!small) ...[
+                            const Text('Censor'),
+                            const SizedBox(width: 4),
+                          ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
