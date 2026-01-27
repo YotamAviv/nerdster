@@ -309,18 +309,6 @@ class _ContentViewState extends State<ContentView> {
                               ],
                             ),
                           ),
-                          // Floating SignInWidget (Right)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).canvasColor.withOpacity(0.8),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const SignInWidget(),
-                            ),
-                          ),
                         ],
                       ),
                     ),

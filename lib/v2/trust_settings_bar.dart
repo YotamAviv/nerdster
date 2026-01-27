@@ -6,6 +6,7 @@ import 'package:nerdster/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/v2/follow_logic.dart' show kFollowContextIdentity, kFollowContextNerdster;
 import 'package:nerdster/v2/labeler.dart';
+import 'package:nerdster/v2/sign_in_widget.dart';
 
 class TrustSettingsBar extends StatelessWidget {
   final List<IdentityKey> availableIdentities;
@@ -28,13 +29,14 @@ class TrustSettingsBar extends StatelessWidget {
         builder: (context, isSmall, _) {
           return Row(
             children: [
-              if (!isSmall)
+              if (!isSmall) ...[
                 const Tooltip(
                   message: "Point of View",
                   child: Text('PoV: ', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
+              ],
               Flexible(
-                flex: 5,
+                flex: isSmall ? 2 : 5,
                 child: Tooltip(
                   message: "Point of View",
                   child: ValueListenableBuilder<String?>(
@@ -46,6 +48,7 @@ class TrustSettingsBar extends StatelessWidget {
                             value: k.value,
                             child: Text(
                               labeler.getIdentityLabel(k),
+                              overflow: TextOverflow.ellipsis,
                               style: signInState.identity == k.value
                                   ? const TextStyle(color: Colors.green)
                                   : null,
@@ -56,14 +59,19 @@ class TrustSettingsBar extends StatelessWidget {
                             !availableIdentities.contains(IdentityKey(signInState.identity)))
                           DropdownMenuItem<String>(
                             value: signInState.identity,
-                            child: Text('<identity>', style: const TextStyle(color: Colors.green)),
+                            child: Text(
+                              '<identity>',
+                              style: const TextStyle(color: Colors.green),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                       ];
                       return DropdownButton<String>(
                         isExpanded: true,
                         value: currentPov ?? signInState.pov,
-                        hint: const Text('Select PoV'),
+                        hint: const Text('Select PoV', overflow: TextOverflow.ellipsis),
                         items: items,
+                        isDense: true,
                         onChanged: (val) {
                           if (val != null) signInState.pov = val;
                         },
@@ -72,14 +80,15 @@ class TrustSettingsBar extends StatelessWidget {
                   ),
                 ),
               ),
-              if (!isSmall) const SizedBox(width: 8),
-              if (!isSmall)
+              const SizedBox(width: 8),
+              if (!isSmall) ...[
                 const Tooltip(
                   message: 'Follow Context: Which follow network to use',
                   child: Text('Context: ', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
+              ],
               Flexible(
-                flex: 4,
+                flex: isSmall ? 2 : 4,
                 child: Tooltip(
                   message: '''- <identity>: anyone who is someone
 - <nerdster>: same as above with exceptions: follow/block to improve this network
@@ -106,10 +115,12 @@ class TrustSettingsBar extends StatelessWidget {
                               items: [
                                 const DropdownMenuItem(
                                     value: kFollowContextIdentity,
-                                    child: Text(kFollowContextIdentity)),
+                                    child: Text(kFollowContextIdentity,
+                                        overflow: TextOverflow.ellipsis)),
                                 const DropdownMenuItem(
                                     value: kFollowContextNerdster,
-                                    child: Text(kFollowContextNerdster)),
+                                    child: Text(kFollowContextNerdster,
+                                        overflow: TextOverflow.ellipsis)),
                                 ...availableContexts
                                     .where((c) =>
                                         c != kFollowContextIdentity && c != kFollowContextNerdster)
@@ -119,6 +130,7 @@ class TrustSettingsBar extends StatelessWidget {
                                     value: c,
                                     child: Text(
                                       c,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: isContextActive ? null : Colors.grey,
                                         fontStyle: isContextActive ? null : FontStyle.italic,
@@ -129,8 +141,11 @@ class TrustSettingsBar extends StatelessWidget {
                                 if (fcontext != kFollowContextIdentity &&
                                     fcontext != kFollowContextNerdster &&
                                     !availableContexts.contains(fcontext))
-                                  DropdownMenuItem(value: fcontext, child: Text(fcontext)),
+                                  DropdownMenuItem(
+                                      value: fcontext,
+                                      child: Text(fcontext, overflow: TextOverflow.ellipsis)),
                               ],
+                              isDense: true,
                               onChanged: (val) {
                                 if (val != null) {
                                   Setting.get<String>(SettingType.fcontext).value = val;
@@ -143,6 +158,11 @@ class TrustSettingsBar extends StatelessWidget {
                     },
                   ),
                 ),
+              ),
+              const SizedBox(width: 4),
+              const Flexible(
+                flex: 0,
+                child: SignInWidget(),
               ),
             ],
           );
