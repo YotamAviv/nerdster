@@ -46,13 +46,38 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
   /// The statement is prepended to the cached history (assuming descending time order).
   /// Verifies that `statement.previous` matches the current head of the history (if any).
   @override
-  Future<Statement> push(Json json, StatementSigner signer) async {
+  Future<Statement> push(Json json, StatementSigner signer, {String? previous}) async {
     if (_writer == null) {
       throw UnimplementedError('No writer provided to CachedSource');
     }
 
+    final String issuerId = getToken(json['I']);
+    String? expectedPrevious;
+
+    if (_fullCache.containsKey(issuerId)) {
+      if (_fullCache[issuerId]!.isEmpty) {
+        expectedPrevious = "";
+      } else {
+        expectedPrevious = _fullCache[issuerId]!.first.token;
+      }
+    }
+
+    // Auto-detect previous from cache if not provided
+    if (previous == null) {
+      previous = expectedPrevious;
+    } else {
+      // Validate provided previous against cache
+      // Note: We only validate if we actually have a cache history.
+      if (expectedPrevious != null && previous != expectedPrevious) {
+        throw Exception(
+            'Cache Inconsistency: Provided previous ($previous) does not match cached head ($expectedPrevious). Refresh required.');
+      }
+    }
+
     // 1. Write through to persistence
-    final Statement statement = await _writer!.push(json, signer);
+    // If a previous token is provided (from the cache head), pass it to the writer
+    // to enforce optimistic concurrency control.
+    final Statement statement = await _writer.push(json, signer, previous: previous);
     if (statement is! T) {
       throw Exception('type ${statement.runtimeType} but cache expects $T');
     }

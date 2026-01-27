@@ -261,13 +261,13 @@ class _ContentViewState extends State<ContentView> {
                                 if (model != null)
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).canvasColor.withOpacity(0.8),
+                                      color: Theme.of(context).canvasColor.withOpacity(0.9),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: IconButton(
                                       padding: EdgeInsets.zero,
                                       visualDensity: VisualDensity.compact,
-                                      icon: const Icon(Icons.add),
+                                      icon: const Icon(Icons.add, color: Colors.blue),
                                       onPressed: () => v2Submit(context, _controller),
                                       tooltip: 'Submit new content',
                                     ),
@@ -275,7 +275,7 @@ class _ContentViewState extends State<ContentView> {
                                 if (model != null) const SizedBox(width: 4),
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).canvasColor.withOpacity(0.8),
+                                    color: Theme.of(context).canvasColor.withOpacity(0.9),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: IconButton(
@@ -292,13 +292,13 @@ class _ContentViewState extends State<ContentView> {
                                 const SizedBox(width: 4),
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).canvasColor.withOpacity(0.8),
+                                    color: Theme.of(context).canvasColor.withOpacity(0.9),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: IconButton(
                                     padding: EdgeInsets.zero,
                                     visualDensity: VisualDensity.compact,
-                                    icon: const Icon(Icons.menu),
+                                    icon: const Icon(Icons.menu, color: Colors.blue),
                                     onPressed: () {
                                       if (!_showEtc.value) _showFilters.value = false;
                                       _showEtc.value = !_showEtc.value;
