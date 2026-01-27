@@ -105,10 +105,7 @@ class ContentBar extends StatelessWidget {
                               (val == true) ? DisFilterMode.my : DisFilterMode.ignore;
                         },
                       ),
-                      Text(
-                        'Dismiss',
-                        style: TextStyle(fontSize: small ? 12 : 14),
-                      ),
+                      if (!small) const Text('Dismiss'),
                     ],
                   ),
                 ),
