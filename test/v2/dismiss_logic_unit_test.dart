@@ -165,6 +165,30 @@ void main() {
       );
       expect(SubjectGroup.checkIsDismissed(myDisses, agg), true);
       expect(agg.isDismissed, false); // POV not dismissed
+
+      // Case 8: Snoozed, Disqualified Activity (Recommend + Snooze)
+      final SubjectGroup group8 = SubjectGroup(
+        canonical: c1,
+        lastActivity: t1,
+        povStatements: <ContentStatement>[
+          makeStatement(verb: ContentVerb.rate, subject: c1.value, dismiss: 'snooze', time: t0),
+        ],
+        statements: <ContentStatement>[
+          makeStatement(
+            verb: ContentVerb.rate, 
+            subject: c1.value, 
+            time: t1, 
+            recommend: true, 
+            dismiss: 'snooze'
+          ),
+        ],
+      );
+      agg = SubjectAggregation(
+        subject: s1,
+        group: group8,
+        narrowGroup: group8,
+      );
+      expect(agg.isDismissed, true); // Should remain dismissed
     });
   });
 }

@@ -79,7 +79,7 @@ Expresses a disposition or opinion about a subject.
     *   `true`: **Dismissed**. The subject is hidden indefinitely, regardless of future activity.
     *   `"snooze"`: **Snoozed**. The subject is hidden until *qualified new activity* occurs.
         *   **Qualified New Activity** (wakes up the subject):
-            *   A `rate` statement with a `comment` or `recommend: true`.
+            *   A `rate` statement with a `comment` or `recommend: true` (unless it includes any type of `dismiss`, to avoid a cyclical situation where my snooze and like wakes up your snooze and like).
             *   Any `relate` statement.
         *   **Disqualified Activity** (does not wake up the subject):
             *   A `rate` statement with `censor` or `dismiss`.
