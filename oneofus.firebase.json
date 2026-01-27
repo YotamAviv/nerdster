@@ -28,6 +28,12 @@
       "**/node_modules/**"
     ],
     "appAssociation": "AUTO",
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
     "headers": [
       {
         "source": "**",
