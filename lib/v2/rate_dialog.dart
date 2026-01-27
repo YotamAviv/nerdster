@@ -22,12 +22,16 @@ class V2RateDialog extends StatefulWidget {
   final SubjectAggregation aggregation;
   final V2FeedModel model;
   final RateIntent intent;
+  final bool? initialLike;
+  final String? initialDismiss;
 
   const V2RateDialog({
     super.key,
     required this.aggregation,
     required this.model,
     this.intent = RateIntent.none,
+    this.initialLike,
+    this.initialDismiss,
   });
 
   static Future<ContentStatement?> show(
@@ -35,6 +39,8 @@ class V2RateDialog extends StatefulWidget {
     SubjectAggregation aggregation,
     V2FeedController controller, {
     RateIntent intent = RateIntent.none,
+    bool? initialLike,
+    String? initialDismiss,
   }) async {
     final model = controller.value;
     if (model == null) return null;
@@ -50,6 +56,8 @@ class V2RateDialog extends StatefulWidget {
         aggregation: aggregation,
         model: model,
         intent: intent,
+        initialLike: initialLike,
+        initialDismiss: initialDismiss,
       ),
     );
 
@@ -85,8 +93,8 @@ class _V2RateDialogState extends State<V2RateDialog> {
 
     priorStatement = myLiteralStatements.isEmpty ? null : myLiteralStatements.first;
 
-    like = ValueNotifier(priorStatement?.like);
-    dis = ValueNotifier(priorStatement?.dismiss);
+    like = ValueNotifier(widget.initialLike ?? priorStatement?.like);
+    dis = ValueNotifier(widget.initialDismiss ?? priorStatement?.dismiss);
     censor = ValueNotifier(priorStatement?.censor ?? false);
     erase = ValueNotifier(false);
     okEnabled = ValueNotifier(false);

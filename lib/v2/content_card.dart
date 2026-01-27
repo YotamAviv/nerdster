@@ -140,79 +140,113 @@ class _ContentCardState extends State<ContentCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Stack(
-                    children: [
-                      AspectRatio(
-                        aspectRatio: 16 / 9,
-                        child: kIsWeb
-                            ? Image.network(
-                                'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=800&fit=cover',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Image.network(imageUrl, fit: BoxFit.cover),
-                              )
-                            : Image.network(imageUrl, fit: BoxFit.cover),
-                      ),
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.4),
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.7),
-                              ],
+                  Dismissible(
+                    key: Key(widget.aggregation.canonical.value),
+                    direction: DismissDirection.horizontal,
+                    confirmDismiss: (direction) async {
+                      bool? initialLike;
+                      String? initialDismiss;
+                      if (direction == DismissDirection.startToEnd) {
+                        initialLike = true;
+                        initialDismiss = 'snooze';
+                      } else {
+                        initialDismiss = 'forever';
+                      }
+                      final result = await V2RateDialog.show(
+                        context,
+                        widget.aggregation,
+                        widget.controller,
+                        initialLike: initialLike,
+                        initialDismiss: initialDismiss,
+                      );
+                      return result != null;
+                    },
+                    background: Container(
+                      color: Colors.green,
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: const Icon(Icons.thumb_up, color: Colors.white, size: 32),
+                    ),
+                    secondaryBackground: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20.0),
+                      child: const Icon(Icons.delete, color: Colors.white, size: 32),
+                    ),
+                    child: Stack(
+                      children: [
+                        AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: kIsWeb
+                              ? Image.network(
+                                  'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=800&fit=cover',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Image.network(imageUrl, fit: BoxFit.cover),
+                                )
+                              : Image.network(imageUrl, fit: BoxFit.cover),
+                        ),
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.4),
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.7),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: _buildActionBar(),
-                      ),
-                      Positioned(
-                        bottom: 12,
-                        left: 12,
-                        right: 12,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                final subject = widget.aggregation.subject;
-                                String? url = subject['url'];
-                                if (url == null) {
-                                  final values = subject.values.where((v) => v != null).join(' ');
-                                  url =
-                                      'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
-                                }
-                                launchUrl(Uri.parse(url));
-                              },
-                              child: Text(
-                                title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                              ),
-                            ),
-                            Text(
-                              type.toUpperCase(),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(color: Colors.white70),
-                            ),
-                          ],
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: _buildActionBar(),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          bottom: 12,
+                          left: 12,
+                          right: 12,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  final subject = widget.aggregation.subject;
+                                  String? url = subject['url'];
+                                  if (url == null) {
+                                    final values = subject.values.where((v) => v != null).join(' ');
+                                    url =
+                                        'https://www.google.com/search?q=${Uri.encodeComponent(values)}';
+                                  }
+                                  launchUrl(Uri.parse(url));
+                                },
+                                child: Text(
+                                  title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                ),
+                              ),
+                              Text(
+                                type.toUpperCase(),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(color: Colors.white70),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(12.0),

@@ -6,17 +6,16 @@ AI NOTE: This is my (the human) file with my own notes.
   - modifying any value in it.
 
 # Misc...
-?fire=emulator&skipCredentialsDisplay
+?fire=emulator
 ?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}
 
 ?identity={"crv": "Ed25519","kty": "OKP","x": "Sf-EQHCY94WB_4QFzEQWkO2SYFNTBgtfsc-Ic25oL84"}&skipVerify=false&dev=true
 
 # Fake egosCircle
-?fire=fake&demo=egosCircle&skipCredentialsDisplay
+?fire=fake&demo=egosCircle
 # Fake equivalenceBug
 ?fire=fake&demo=equivalenceBug
 
-# Fake simpsonsRelateDemo
 ?fire=fake&demo=simpsonsRelateDemox 
 
 ?fire=fake&demo=simpsonsDemo
@@ -34,8 +33,6 @@ AI NOTE: This is my (the human) file with my own notes.
 
 # Emulator yotam
 ?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}
-
-&skipCredentialsDisplay=true&showCrypto=true
 
 # Nice ones:
 ```

@@ -4,7 +4,6 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/oneofus/prefs.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
 import 'package:nerdster/setting_type.dart';
-// import 'package:nerdster/singletons.dart'; // Unused
 import 'package:nerdster/v2/feed_controller.dart';
 import 'package:nerdster/v2/labeler.dart';
 import 'package:nerdster/v2/metadata_service.dart';
