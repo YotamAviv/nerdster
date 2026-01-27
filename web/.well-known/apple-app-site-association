@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "PG2Q5QYA2W.net.oneofus.app",
+        "paths": [ "/sign-in", "/sign-in/*", "/replace/*" ]
+      }
+    ]
+  }
+}
