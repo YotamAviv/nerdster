@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-import '../singletons.dart';
-import '../content/content_statement.dart';
-import '../oneofus/jsonish.dart';
-import '../oneofus/util.dart';
-import '../oneofus/statement.dart';
-import '../content/dialogs/on_off_icon.dart';
-import '../content/dialogs/on_off_icons.dart';
-import 'package:nerdster/v2/feed_controller.dart';
-import 'package:nerdster/v2/model.dart';
-import 'source_factory.dart';
-import 'dismiss_toggle.dart';
-import 'subject_view.dart';
-
-import 'package:nerdster/content/dialogs/lgtm.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/content/dialogs/check_signed_in.dart';
 import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/util_ui.dart';
+import 'package:nerdster/v2/feed_controller.dart';
+import 'package:nerdster/v2/model.dart';
+
+import '../content/content_statement.dart';
+import '../content/dialogs/on_off_icon.dart';
+import '../content/dialogs/on_off_icons.dart';
+import '../oneofus/statement.dart';
+import '../oneofus/util.dart';
+import '../singletons.dart';
+import 'subject_view.dart';
 
 enum RateIntent { like, dislike, dismiss, comment, censor, clear, none }
 
@@ -253,7 +251,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
         key2colors: const {true: Colors.green, false: Colors.red},
         callback: listener);
 
-    Widget disButton = DismissToggle(
+    Widget disButton = _DismissToggle(
       notifier: dis,
       callback: listener,
     );
@@ -363,6 +361,74 @@ class _V2RateDialogState extends State<V2RateDialog> {
           )
         ],
       ),
+    );
+  }
+}
+
+
+class _DismissToggle extends StatelessWidget {
+  final ValueNotifier<String?> notifier;
+  final bool disabled;
+  final VoidCallback? callback;
+
+  const _DismissToggle({
+    required this.notifier,
+    this.disabled = false,
+    this.callback,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String?>(
+      valueListenable: notifier,
+      builder: (context, value, _) {
+        IconData icon;
+        Color? color;
+        String tooltip;
+
+        if (value == 'snooze') {
+          icon = Icons.snooze;
+          color = Colors.brown;
+          tooltip = 'Snoozed (hidden until new activity)';
+        } else if (value == 'forever') {
+          icon = Icons.swipe_left;
+          color = Colors.brown;
+          tooltip = 'Dismissed forever';
+        } else {
+          icon = Icons.swipe_left_outlined;
+          color = null; // Default icon color (usually grey/black)
+          tooltip = 'Dismiss';
+        }
+
+        TextStyle? textStyle = disabled ? hintStyle : null;
+
+        return Tooltip(
+          message: tooltip,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!isSmall.value) Text('Dismiss', style: textStyle),
+              IconButton(
+                icon: Icon(icon),
+                color: color,
+                onPressed: disabled
+                    ? null
+                    : () {
+                        if (value == null) {
+                          notifier.value = 'snooze';
+                        } else if (value == 'snooze') {
+                          notifier.value = 'forever';
+                        } else {
+                          notifier.value = null;
+                        }
+                        callback?.call();
+                      },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
