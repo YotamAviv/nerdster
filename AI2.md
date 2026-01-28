@@ -17,11 +17,11 @@ run all tests, unti and integration tests included.
 
 
 read AI.md
-run git status
-run git diff on the changes between this branch and the main branch.
-read those changes.
+run git diff on the changes between this branch and the main branch and read those changes.
 Let me know if you notice anything that might be problematic.
-I've upgraded the build number, but I want a commit message that will be appropriate for add the diffs between this and the main branch.
+Base your opinion on the diffs, not on your recent memory.
 Copy/paste from our conversation never works for me for this, and so
 append the commit message to the end of this file
 READ-ONLY MODE
+
+Refactor V2 components: Rename V2Labeler/V2FeedModel to Labeler/FeedModel, move tests to test/logic, and update imports.
