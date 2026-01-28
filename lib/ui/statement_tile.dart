@@ -251,7 +251,6 @@ class StatementTile extends StatelessWidget {
                       narrowGroup: group,
                     ),
                     controller,
-                    intent: RateIntent.none,
                   );
                 },
               ),

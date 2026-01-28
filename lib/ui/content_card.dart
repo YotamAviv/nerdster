@@ -721,7 +721,6 @@ class _ContentCardState extends State<ContentCard> {
       context,
       widget.aggregation,
       widget.controller, // Changed from model
-      intent: RateIntent.none,
     );
     if (statement != null) {
       // Handled by controller.push

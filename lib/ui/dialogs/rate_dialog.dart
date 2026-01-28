@@ -14,12 +14,10 @@ import 'package:oneofus_common/statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/subject_view.dart';
 
-enum RateIntent { like, dislike, dismiss, comment, censor, clear, none }
 
 class RateDialog extends StatefulWidget {
   final SubjectAggregation aggregation;
   final FeedModel model;
-  final RateIntent intent;
   final bool? initialLike;
   final String? initialDismiss;
 
@@ -27,7 +25,6 @@ class RateDialog extends StatefulWidget {
     super.key,
     required this.aggregation,
     required this.model,
-    this.intent = RateIntent.none,
     this.initialLike,
     this.initialDismiss,
   });
@@ -36,7 +33,6 @@ class RateDialog extends StatefulWidget {
     BuildContext context,
     SubjectAggregation aggregation,
     FeedController controller, {
-    RateIntent intent = RateIntent.none,
     bool? initialLike,
     String? initialDismiss,
   }) async {
@@ -53,7 +49,6 @@ class RateDialog extends StatefulWidget {
       builder: (context) => RateDialog(
         aggregation: aggregation,
         model: model,
-        intent: intent,
         initialLike: initialLike,
         initialDismiss: initialDismiss,
       ),
@@ -98,36 +93,6 @@ class _RateDialogState extends State<RateDialog> {
     erase = ValueNotifier(false);
     okEnabled = ValueNotifier(false);
     commentController = TextEditingController(text: priorStatement?.comment ?? '');
-
-    switch (widget.intent) {
-      case RateIntent.like:
-        like.value = (like.value == true ? null : true);
-        break;
-      case RateIntent.dislike:
-        like.value = (like.value == false ? null : false);
-        break;
-      case RateIntent.dismiss:
-        // Toggle between null and snooze
-        if (dis.value == null) {
-          dis.value = 'snooze';
-        } else if (dis.value == 'snooze') {
-          dis.value = 'forever';
-        } else {
-          dis.value = null;
-        }
-        break;
-      case RateIntent.comment:
-        break;
-      case RateIntent.censor:
-        censor.value = !censor.value;
-        break;
-      case RateIntent.clear:
-        erase.value = true;
-        clearFields();
-        break;
-      case RateIntent.none:
-        break;
-    }
 
     commentController.addListener(listener);
     listener();
@@ -321,7 +286,6 @@ class _RateDialogState extends State<RateDialog> {
                       border: OutlineInputBorder(),
                     ),
                     maxLines: 4,
-                    autofocus: widget.intent == RateIntent.comment,
                   ),
                   if (isStatement) ...[
                     const SizedBox(height: 12),
