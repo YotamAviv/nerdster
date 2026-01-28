@@ -4,12 +4,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
-import 'package:nerdster/oneofus/ui/my_checkbox.dart';
-import 'package:nerdster/oneofus/crypto/crypto2559.dart';
+import 'package:oneofus_common/crypto/crypto.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:nerdster/ui/ok_cancel.dart';
+import 'package:nerdster/ui/alert.dart';
+import 'package:nerdster/ui/my_checkbox.dart';
+import 'package:oneofus_common/crypto/crypto2559.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/util_ui.dart';
 

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:nerdster/app.dart';
-import 'package:nerdster/oneofus/prefs.dart';
+import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/singletons.dart';
 
 String generateLink() {

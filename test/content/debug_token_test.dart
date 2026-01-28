@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/settings/setting_type.dart';
 
 import '../test_utils.dart';
 

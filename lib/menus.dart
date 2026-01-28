@@ -4,10 +4,10 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dev/corruption_check.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/oneofus/ui/my_checkbox.dart';
-import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/settings/prefs.dart';
+import 'package:oneofus_common/trust_statement.dart';
+import 'package:nerdster/ui/my_checkbox.dart';
+import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
 

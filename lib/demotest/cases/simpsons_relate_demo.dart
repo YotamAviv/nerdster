@@ -1,8 +1,8 @@
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/clock.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/trust_statement.dart';
+import 'package:oneofus_common/clock.dart';
 
 /// Simpsons Relate/Equate Demo
 ///

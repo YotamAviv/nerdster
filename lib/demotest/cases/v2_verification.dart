@@ -1,7 +1,7 @@
 import 'package:nerdster/demotest/cases/test_utils.dart';
-import 'package:nerdster/v2/io.dart';
-import 'package:nerdster/v2/orchestrator.dart';
-import 'package:nerdster/v2/source_factory.dart';
+import 'package:oneofus_common/io.dart';
+import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster/io/source_factory.dart';
 
 /// Executes the pipeline and verifies the graph state for the Basic Scenario.
 ///

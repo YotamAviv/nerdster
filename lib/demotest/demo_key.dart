@@ -11,12 +11,12 @@ import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/v2_verification.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/oneofus/crypto/crypto2559.dart';
-import 'package:nerdster/oneofus/oou_signer.dart';
-import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/v2/io.dart';
-import 'package:nerdster/v2/source_factory.dart';
+import 'package:oneofus_common/crypto/crypto.dart';
+import 'package:oneofus_common/crypto/crypto2559.dart';
+import 'package:oneofus_common/oou_signer.dart';
+import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/io.dart';
+import 'package:nerdster/io/source_factory.dart';
 
 /// For testing, development, and maybe demo.
 const OouCryptoFactory _crypto = crypto;

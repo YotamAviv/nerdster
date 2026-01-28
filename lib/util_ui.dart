@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/oneofus/ui/alert.dart';
+import 'package:nerdster/ui/alert.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const Color linkColor = Colors.blueAccent;

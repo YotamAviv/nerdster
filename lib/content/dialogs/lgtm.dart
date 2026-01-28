@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/v2/json_display.dart';
-import 'package:nerdster/v2/interpreter.dart';
-import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/ok_cancel.dart';
-import 'package:nerdster/oneofus/ui/linky.dart';
-import 'package:nerdster/oneofus/ui/my_checkbox.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/ui/json_display.dart';
+import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster/logic/labeler.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:nerdster/ui/ok_cancel.dart';
+import 'package:nerdster/ui/linky.dart';
+import 'package:nerdster/ui/my_checkbox.dart';
+import 'package:nerdster/settings/prefs.dart';
+import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/config.dart';
+import 'package:nerdster/config.dart';
 import 'package:nerdster/util_ui.dart';
 
 class Lgtm {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/v2/model.dart';
-import 'package:nerdster/oneofus/keys.dart';
+import 'package:oneofus_common/trust_statement.dart';
+import 'package:nerdster/models/model.dart';
+import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/util_ui.dart';
 
 Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) async {

@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:oneofus_common/fire_factory.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/trust_statement.dart';
 
 Future<(DemoIdentityKey, DemoDelegateKey?)> loner() async {
   DemoIdentityKey loner = await DemoIdentityKey.findOrCreate('loner');

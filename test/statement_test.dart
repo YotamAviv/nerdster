@@ -1,5 +1,5 @@
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/trust_statement.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 var statementJson = {

@@ -2,7 +2,7 @@ import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/cases/egos.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_util.dart'; // import shared helper
-import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:oneofus_common/jsonish.dart';
 
 Future<(DemoIdentityKey, DemoDelegateKey?)> equivalenceBug() async {
   final (poser, poserN, _) = await equivalenceBugWithStatements();

@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
-import 'package:nerdster/v2/direct_firestore_source.dart';
+import 'package:oneofus_common/fire_factory.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/trust_statement.dart';
+import 'package:oneofus_common/direct_firestore_source.dart';
 
 /// Can be useful for simple scenarios at: http://localhost:<port>/?fire=fake&demo=egosCircle
 Future<(DemoIdentityKey, DemoDelegateKey?)> egos() async {

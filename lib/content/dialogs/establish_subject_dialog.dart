@@ -3,9 +3,9 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_types.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/v2/metadata_service.dart';
-import 'package:nerdster/oneofus/ok_cancel.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:nerdster/logic/metadata_service.dart';
+import 'package:nerdster/ui/ok_cancel.dart';
 import 'package:nerdster/util_ui.dart';
 
 /// Fetching URL title:

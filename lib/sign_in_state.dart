@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/key_store.dart';
-import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/oou_signer.dart';
+import 'package:oneofus_common/crypto/crypto.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/oou_signer.dart';
 import 'package:nerdster/singletons.dart';
 
 /// This class tracks the sign-in state of the user using 3 main variables:

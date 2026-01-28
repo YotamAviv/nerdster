@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/v2/source_factory.dart';
-import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/io/source_factory.dart';
+import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 

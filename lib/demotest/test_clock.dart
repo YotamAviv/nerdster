@@ -1,4 +1,4 @@
-import 'package:nerdster/clock.dart';
+import 'package:oneofus_common/clock.dart';
 
 /// Would be nice to have this in the test dir, but I couldn't
 /// easily make that work.

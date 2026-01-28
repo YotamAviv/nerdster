@@ -1,8 +1,8 @@
 import 'package:nerdster/demotest/cases/test_utils.dart';
-import 'package:nerdster/v2/delegates.dart';
-import 'package:nerdster/v2/labeler.dart';
-import 'package:nerdster/v2/orchestrator.dart';
-import 'package:nerdster/v2/source_factory.dart';
+import 'package:nerdster/logic/delegates.dart';
+import 'package:nerdster/logic/labeler.dart';
+import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster/io/source_factory.dart';
 
 // TODO: Use proper DemoKey
 

@@ -4,11 +4,11 @@ import 'package:integration_test/integration_test.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/v2/config.dart';
-import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:nerdster/config.dart';
+import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
+import 'package:oneofus_common/fire_factory.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/app.dart';
 

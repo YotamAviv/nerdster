@@ -4,10 +4,10 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/oneofus/json_qr_display.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:nerdster/ui/json_qr_display.dart';
+import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/util_ui.dart';
-import 'package:nerdster/oneofus/ui/my_checkbox.dart';
+import 'package:nerdster/ui/my_checkbox.dart';
 import 'package:nerdster/sign_in_session.dart';
 
 /// Nerdster web client / phone app QR sign-in:

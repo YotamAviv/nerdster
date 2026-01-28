@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:nerdster/menus.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/settings/prefs.dart';
+import 'package:nerdster/settings/setting_type.dart';
 
 class NerdsterMenu extends StatefulWidget {
   final Widget v2Notifications;

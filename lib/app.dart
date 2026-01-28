@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 // import 'package:nerdster/content/content_tree.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/setting_type.dart';
+import 'package:nerdster/settings/prefs.dart';
+import 'package:oneofus_common/keys.dart';
+import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/content_view.dart';
-import 'package:nerdster/v2/sign_in_screen.dart';
+import 'package:nerdster/ui/content_view.dart';
+import 'package:nerdster/ui/sign_in_screen.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/qr_sign_in.dart';
 
 export 'package:nerdster/fire_choice.dart';
-export 'package:nerdster/oneofus/jsonish.dart';
+export 'package:oneofus_common/jsonish.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 

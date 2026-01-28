@@ -3,15 +3,15 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/oneofus/crypto/crypto2559.dart';
-import 'package:nerdster/oneofus/json_highlighter.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/oou_verifier.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/setting_type.dart';
+import 'package:oneofus_common/crypto/crypto.dart';
+import 'package:oneofus_common/crypto/crypto2559.dart';
+import 'package:nerdster/ui/json_highlighter.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/oou_verifier.dart';
+import 'package:nerdster/settings/prefs.dart';
+import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/v2/interpreter.dart';
+import 'package:nerdster/logic/interpreter.dart';
 
 /// This Verify feature is for:
 /// - The ONE-OF-US.NET home page, where the Nerdster is embedded in a frame.

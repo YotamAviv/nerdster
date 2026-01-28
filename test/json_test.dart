@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nerdster/oneofus/jsonish.dart';
+import 'package:oneofus_common/jsonish.dart';
 
 const String jsonStatements = '''
 [

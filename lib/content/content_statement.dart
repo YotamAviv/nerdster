@@ -1,9 +1,9 @@
-import 'package:nerdster/oneofus/jsonish.dart';
-import 'package:nerdster/oneofus/statement.dart';
-import 'package:nerdster/clock.dart';
-import 'package:nerdster/oneofus/keys.dart';
-import 'package:nerdster/oneofus/prefs.dart';
-import 'package:nerdster/setting_type.dart';
+import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/clock.dart';
+import 'package:oneofus_common/keys.dart';
+import 'package:nerdster/settings/prefs.dart';
+import 'package:nerdster/settings/setting_type.dart';
 
 const String kNerdsterDomain = 'nerdster.org';
 

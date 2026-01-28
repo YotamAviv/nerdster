@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:nerdster/equivalence/eg.dart';
 import 'package:nerdster/equivalence/equate_statement.dart';
 import 'package:nerdster/equivalence/equivalence.dart';
-import 'package:nerdster/oneofus/statement.dart';
+import 'package:oneofus_common/statement.dart';
 
 abstract class EquivalenceBridgeParser {
   EquateStatement? parse(Statement statement);

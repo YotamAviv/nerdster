@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/fire_choice.dart';
-import 'package:nerdster/oneofus/crypto/crypto.dart';
+import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:nerdster/singletons.dart';
 
 String? demo;

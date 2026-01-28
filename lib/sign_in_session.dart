@@ -5,9 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/oneofus/crypto/crypto.dart';
-import 'package:nerdster/oneofus/crypto/crypto2559.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:oneofus_common/crypto/crypto.dart';
+import 'package:oneofus_common/crypto/crypto2559.dart';
+import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/sign_in_state.dart';
 
 class SignInSession {

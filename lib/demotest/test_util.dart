@@ -1,25 +1,25 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/clock.dart';
+import 'package:oneofus_common/clock.dart';
 import 'package:nerdster/content/content_statement.dart';
 import 'package:nerdster/content/content_types.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/oneofus/fire_factory.dart';
-import 'package:nerdster/oneofus/trust_statement.dart';
+import 'package:oneofus_common/fire_factory.dart';
+import 'package:oneofus_common/trust_statement.dart';
 
 export 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 export 'package:nerdster/app.dart';
-export 'package:nerdster/clock.dart';
+export 'package:oneofus_common/clock.dart';
 export 'package:nerdster/content/content_statement.dart';
 export 'package:nerdster/content/content_types.dart';
 export 'package:nerdster/demotest/demo_key.dart';
 export 'package:nerdster/demotest/test_clock.dart';
-export 'package:nerdster/oneofus/fire_factory.dart';
-export 'package:nerdster/oneofus/jsonish.dart';
-export 'package:nerdster/oneofus/keys.dart';
-export 'package:nerdster/oneofus/prefs.dart';
-export 'package:nerdster/oneofus/trust_statement.dart';
+export 'package:oneofus_common/fire_factory.dart';
+export 'package:oneofus_common/jsonish.dart';
+export 'package:oneofus_common/keys.dart';
+export 'package:nerdster/settings/prefs.dart';
+export 'package:oneofus_common/trust_statement.dart';
 
 /// A globally accessible counter for unique test titles
 int _testSubjectCount = 0;
