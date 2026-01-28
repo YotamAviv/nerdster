@@ -113,7 +113,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)> rateWhenNotInNetwork() async {
     final followNetwork = reduceFollowNetwork(graph, delegateResolver, contentResult, context);
 
     // Reduce Aggregation
-    final labeler = V2Labeler(
+    final labeler = Labeler(
       graph,
       delegateResolver: delegateResolver,
       meIdentity: delegateResolver.getIdentityForDelegate(meDelegate),

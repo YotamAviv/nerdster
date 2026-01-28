@@ -96,7 +96,7 @@ void main() async {
         reduceFollowNetwork(graph, delegateResolver, contentResult, kFollowContextNerdster);
 
     // Verify Network Order
-    final V2Labeler labeler = V2Labeler(graph);
+    final Labeler labeler = Labeler(graph);
     final List<IdentityKey> expected = <IdentityKey>[alice.id, charlie.id, bob.id];
     final List<IdentityKey> actual = netAlice.identities.toList();
 

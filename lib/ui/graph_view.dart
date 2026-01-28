@@ -12,7 +12,7 @@ import 'package:nerdster/ui/node_details.dart';
 import 'package:nerdster/logic/labeler.dart';
 
 class NerdyGraphView extends StatefulWidget {
-  final V2FeedController controller;
+  final FeedController controller;
   final String? initialFocus;
 
   const NerdyGraphView({
@@ -178,7 +178,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   @override
   Widget build(BuildContext context) {
-    final V2FeedModel? model = widget.controller.value;
+    final FeedModel? model = widget.controller.value;
     if (model == null || _data == null || _data!.nodes.isEmpty) {
       return Scaffold(
         body: SafeArea(
@@ -284,14 +284,14 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     );
   }
 
-  Widget _buildTrustSettingsBar(V2FeedModel? model) {
+  Widget _buildTrustSettingsBar(FeedModel? model) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
       child: TrustSettingsBar(
         availableIdentities: model?.trustGraph.orderedKeys ?? [],
         availableContexts: model?.availableContexts ?? [],
         activeContexts: model?.activeContexts ?? {},
-        labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
+        labeler: model?.labeler ?? Labeler(TrustGraph(pov: IdentityKey(''))),
       ),
     );
   }

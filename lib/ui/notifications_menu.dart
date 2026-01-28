@@ -4,7 +4,7 @@
 //    - One for paths to the Issuer.
 //    - One for paths to the Subject.
 // 3. Implement a `StaticFeedController` to adapt the existing `TrustGraph` and `FollowNetwork`
-//    into a `V2FeedController` required by `NerdyGraphView`.
+//    into a `FeedController` required by `NerdyGraphView`.
 // 4. Launch `NerdyGraphView` in a dialog or new screen when the buttons are clicked.
 
 import 'package:float_column/float_column.dart';
@@ -28,14 +28,14 @@ import 'package:nerdster/models/model.dart';
 import 'package:oneofus_common/source_error.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class V2NotificationsMenu extends StatelessWidget {
+class NotificationsMenu extends StatelessWidget {
   final TrustGraph? trustGraph;
   final FollowNetwork? followNetwork;
   final DelegateResolver? delegateResolver;
-  final V2Labeler labeler;
+  final Labeler labeler;
   final List<SourceError> sourceErrors;
 
-  const V2NotificationsMenu({
+  const NotificationsMenu({
     super.key,
     this.trustGraph,
     this.followNetwork,
@@ -248,7 +248,7 @@ class V2NotificationsMenu extends StatelessWidget {
 
 class _V2StatementNotification extends StatelessWidget {
   final TrustNotification notification;
-  final V2Labeler labeler;
+  final Labeler labeler;
   final TrustGraph? trustGraph;
   final FollowNetwork? followNetwork;
 
@@ -277,7 +277,7 @@ class _V2StatementNotification extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SingleChildScrollView(
-                      child: V2JsonDisplay(jsonish.json, interpreter: V2Interpreter(labeler)),
+                      child: JsonDisplay(jsonish.json, interpreter: NerdsterInterpreter(labeler)),
                     ),
                   ),
                 ),
@@ -341,7 +341,7 @@ Tactics for addressing this:
   void _showGraph(BuildContext context, String focusIdentity) {
     if (trustGraph == null) return;
 
-    final model = V2FeedModel(
+    final model = FeedModel(
       trustGraph: trustGraph!,
       followNetwork: followNetwork ??
           FollowNetwork(
@@ -379,8 +379,8 @@ class DummySource<T extends Statement> implements StatementSource<T> {
 }
 
 // TODO: Justify or remove
-class StaticFeedController extends ValueNotifier<V2FeedModel?> implements V2FeedController {
-  StaticFeedController(V2FeedModel value) : super(value);
+class StaticFeedController extends ValueNotifier<FeedModel?> implements FeedController {
+  StaticFeedController(FeedModel value) : super(value);
 
   @override
   CachedSource<ContentStatement> get contentSource => CachedSource(DummySource<ContentStatement>());

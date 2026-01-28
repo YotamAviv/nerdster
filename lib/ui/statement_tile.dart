@@ -15,8 +15,8 @@ import 'package:nerdster/ui/rate_dialog.dart';
 // Question: Do ... canonical/equivalent..?
 class StatementTile extends StatelessWidget {
   final ContentStatement statement;
-  final V2FeedModel model;
-  final V2FeedController controller;
+  final FeedModel model;
+  final FeedController controller;
   final int depth;
   final SubjectAggregation aggregation;
   final ValueChanged<String?>? onGraphFocus;
@@ -243,7 +243,7 @@ class StatementTile extends StatelessWidget {
                     statements: uniqueStatements,
                     lastActivity: s.time,
                   );
-                  await V2RateDialog.show(
+                  await RateDialog.show(
                     context,
                     SubjectAggregation(
                       subject: s.json,
@@ -269,7 +269,7 @@ class StatementTile extends StatelessWidget {
                         title: const Text('Cryptographic Proof'),
                         content: SizedBox(
                           width: double.maxFinite,
-                          child: V2JsonDisplay(s.json, interpreter: V2Interpreter(model.labeler)),
+                          child: JsonDisplay(s.json, interpreter: NerdsterInterpreter(model.labeler)),
                         ),
                         actions: [
                           TextButton(

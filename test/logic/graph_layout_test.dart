@@ -6,8 +6,8 @@ import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/demotest/test_util.dart';
 
-class MockV2FeedModel extends V2FeedModel {
-  MockV2FeedModel({
+class MockFeedModel extends FeedModel {
+  MockFeedModel({
     required TrustGraph trustGraph,
     required FollowNetwork followNetwork,
     DelegateResolver? delegateResolver,
@@ -16,7 +16,7 @@ class MockV2FeedModel extends V2FeedModel {
           followNetwork: followNetwork,
           delegateResolver: delegateResolver ?? DelegateResolver(trustGraph),
           aggregation: ContentAggregation(),
-          labeler: V2Labeler(trustGraph, delegateResolver: delegateResolver),
+          labeler: Labeler(trustGraph, delegateResolver: delegateResolver),
           povIdentity: trustGraph.pov,
           fcontext: 'test',
           sortMode: V2SortMode.recentActivity,
@@ -59,7 +59,7 @@ void main() {
     );
 
     final fn = FollowNetwork(fcontext: 'test', povIdentity: lisa.id);
-    final model = MockV2FeedModel(trustGraph: tg, followNetwork: fn);
+    final model = MockFeedModel(trustGraph: tg, followNetwork: fn);
 
     final controller = GraphController(model);
     controller.mode = GraphViewMode.identity;
@@ -125,7 +125,7 @@ void main() {
     );
 
     final fn = FollowNetwork(fcontext: 'test', povIdentity: root.id);
-    final model = MockV2FeedModel(trustGraph: tg, followNetwork: fn);
+    final model = MockFeedModel(trustGraph: tg, followNetwork: fn);
 
     final controller = GraphController(model);
     controller.mode = GraphViewMode.identity;

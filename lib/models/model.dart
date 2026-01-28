@@ -451,11 +451,11 @@ class ContentAggregation {
 }
 
 /// A complete snapshot of the feed data, ready for display.
-class V2FeedModel {
+class FeedModel {
   final TrustGraph trustGraph;
   final FollowNetwork followNetwork;
   final DelegateResolver delegateResolver;
-  final V2Labeler labeler;
+  final Labeler labeler;
   final ContentAggregation aggregation;
   final IdentityKey povIdentity;
   final String fcontext;
@@ -469,7 +469,7 @@ class V2FeedModel {
   final List<SubjectAggregation> effectiveSubjects; // Filtered and sorted
   final List<SourceError> sourceErrors;
 
-  V2FeedModel({
+  FeedModel({
     required this.trustGraph,
     required this.followNetwork,
     required this.delegateResolver,

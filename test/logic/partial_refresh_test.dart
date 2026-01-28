@@ -37,7 +37,7 @@ void main() {
     final spyTrust = SpyStatementSource(realTrustSource);
     final spyContent = SpyStatementSource(realContentSource);
 
-    final controller = V2FeedController(trustSource: spyTrust, contentSource: spyContent);
+    final controller = FeedController(trustSource: spyTrust, contentSource: spyContent);
 
     // Initial Refresh - Should hit network
     await controller.refresh(); // uses signInState pov

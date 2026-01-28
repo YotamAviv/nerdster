@@ -6,5 +6,5 @@ import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/models/model.dart';
 
 final SignInState signInState = SignInState();
-final ValueNotifier<V2Labeler> globalLabeler =
-    ValueNotifier(V2Labeler(TrustGraph(pov: IdentityKey('anonymous'))));
+final ValueNotifier<Labeler> globalLabeler =
+    ValueNotifier(Labeler(TrustGraph(pov: IdentityKey('anonymous'))));

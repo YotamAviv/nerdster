@@ -32,7 +32,7 @@ ContentAggregation reduceContentAggregation(
   ContentResult contentResult, {
   bool enableCensorship = true,
   List<DelegateKey>? meDelegateKeys,
-  required V2Labeler labeler,
+  required Labeler labeler,
 }) {
   final Set<String> censored = {};
 
@@ -357,7 +357,7 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  // Pass 2b: Aggregate My Statements (For [RateDialog, V2RelateDialog, NodeDetails] and "My Disses")
+  // Pass 2b: Aggregate My Statements (For [RateDialog, RelateDialog, NodeDetails] and "My Disses")
   final List<Iterable<ContentStatement>> mySources = meDelegateKeys
           ?.map((k) => contentResult.delegateContent[k])
           .whereType<Iterable<ContentStatement>>()

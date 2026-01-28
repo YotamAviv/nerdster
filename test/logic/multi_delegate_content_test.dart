@@ -100,7 +100,7 @@ void main() {
       resolver,
       contentResult,
       enableCensorship: false,
-      labeler: V2Labeler(graph, delegateResolver: resolver),
+      labeler: Labeler(graph, delegateResolver: resolver),
     );
 
     // 7. Assertions

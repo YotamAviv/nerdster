@@ -7,12 +7,12 @@ import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/subject_view.dart';
 
-class V2RelateDialog extends StatefulWidget {
+class RelateDialog extends StatefulWidget {
   final SubjectAggregation subject1;
   final SubjectAggregation subject2;
-  final V2FeedModel model;
+  final FeedModel model;
 
-  const V2RelateDialog({
+  const RelateDialog({
     super.key,
     required this.subject1,
     required this.subject2,
@@ -23,7 +23,7 @@ class V2RelateDialog extends StatefulWidget {
     BuildContext context,
     SubjectAggregation subject1,
     SubjectAggregation subject2,
-    V2FeedController controller, {
+    FeedController controller, {
     VoidCallback? onRefresh,
   }) async {
     final model = controller.value;
@@ -35,7 +35,7 @@ class V2RelateDialog extends StatefulWidget {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => V2RelateDialog(
+      builder: (context) => RelateDialog(
         subject1: subject1,
         subject2: subject2,
         model: model,
@@ -50,10 +50,10 @@ class V2RelateDialog extends StatefulWidget {
   }
 
   @override
-  State<V2RelateDialog> createState() => _V2RelateDialogState();
+  State<RelateDialog> createState() => _RelateDialogState();
 }
 
-class _V2RelateDialogState extends State<V2RelateDialog> {
+class _RelateDialogState extends State<RelateDialog> {
   ContentVerb _verb = ContentVerb.relate;
   final TextEditingController _commentController = TextEditingController();
   late SubjectAggregation _subject1;
@@ -149,7 +149,7 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
                       labelText: label1,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
                     ),
-                    child: V2SubjectView(
+                    child: SubjectView(
                       subject: _subject1.subject,
                       labeler: widget.model.labeler,
                     ),
@@ -224,7 +224,7 @@ class _V2RelateDialogState extends State<V2RelateDialog> {
                       labelText: label2,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
                     ),
-                    child: V2SubjectView(
+                    child: SubjectView(
                       subject: _subject2.subject,
                       labeler: widget.model.labeler,
                     ),

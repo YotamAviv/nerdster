@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/demotest/cases/v2_verification.dart';
+import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/firebase_options.dart';
 import 'package:oneofus_common/endpoint.dart';

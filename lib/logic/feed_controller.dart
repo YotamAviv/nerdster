@@ -20,7 +20,7 @@ import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/trust_logic.dart';
 
-class V2FeedController extends ValueNotifier<V2FeedModel?> {
+class FeedController extends ValueNotifier<FeedModel?> {
   final CachedSource<TrustStatement> trustSource;
   final CachedSource<ContentStatement> contentSource;
 
@@ -51,7 +51,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
     }
   }
 
-  V2FeedController({
+  FeedController({
     required StatementSource<TrustStatement> trustSource,
     required StatementSource<ContentStatement> contentSource,
   })  : trustSource = CachedSource(trustSource, SourceFactory.getWriter(kOneofusDomain)),
@@ -157,7 +157,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
       typeFilter: typeFilter,
     );
 
-    value = V2FeedModel(
+    value = FeedModel(
       trustGraph: value!.trustGraph,
       followNetwork: value!.followNetwork,
       delegateResolver: value!.delegateResolver,
@@ -409,7 +409,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
 
         // 6. Labeling
         final labeler =
-            V2Labeler(graph, delegateResolver: delegateResolver, meIdentity: currentMeIdentity);
+            Labeler(graph, delegateResolver: delegateResolver, meIdentity: currentMeIdentity);
 
         final aggregation = reduceContentAggregation(
           followNetwork,
@@ -466,7 +466,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
             typeFilter: typeFilter,
           );
 
-          value = V2FeedModel(
+          value = FeedModel(
             trustGraph: graph,
             followNetwork: followNetwork,
             delegateResolver: delegateResolver,
@@ -489,7 +489,7 @@ class V2FeedController extends ValueNotifier<V2FeedModel?> {
         }
       }
     } catch (e, stack) {
-      debugPrint('V2FeedController Error: $e\n$stack');
+      debugPrint('FeedController Error: $e\n$stack');
       _error = e.toString();
       rethrow;
     } finally {

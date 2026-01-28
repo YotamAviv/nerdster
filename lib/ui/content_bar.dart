@@ -6,7 +6,7 @@ import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/model.dart';
 
 class ContentBar extends StatelessWidget {
-  final V2FeedController controller;
+  final FeedController controller;
   final List<String> tags;
 
   const ContentBar({super.key, required this.controller, required this.tags});

@@ -41,7 +41,7 @@ class JsonQrDisplay extends StatelessWidget {
                 height: qrSize / 2,
                 child: Padding(
                     padding: kPadding,
-                    child: V2JsonDisplay(subject, interpret: interpret, interpreter: interpreter))),
+                    child: JsonDisplay(subject, interpret: interpret, interpreter: interpreter))),
           ],
         );
       } else {

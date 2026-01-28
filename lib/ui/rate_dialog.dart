@@ -16,14 +16,14 @@ import 'subject_view.dart';
 
 enum RateIntent { like, dislike, dismiss, comment, censor, clear, none }
 
-class V2RateDialog extends StatefulWidget {
+class RateDialog extends StatefulWidget {
   final SubjectAggregation aggregation;
-  final V2FeedModel model;
+  final FeedModel model;
   final RateIntent intent;
   final bool? initialLike;
   final String? initialDismiss;
 
-  const V2RateDialog({
+  const RateDialog({
     super.key,
     required this.aggregation,
     required this.model,
@@ -35,7 +35,7 @@ class V2RateDialog extends StatefulWidget {
   static Future<ContentStatement?> show(
     BuildContext context,
     SubjectAggregation aggregation,
-    V2FeedController controller, {
+    FeedController controller, {
     RateIntent intent = RateIntent.none,
     bool? initialLike,
     String? initialDismiss,
@@ -50,7 +50,7 @@ class V2RateDialog extends StatefulWidget {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => V2RateDialog(
+      builder: (context) => RateDialog(
         aggregation: aggregation,
         model: model,
         intent: intent,
@@ -67,10 +67,10 @@ class V2RateDialog extends StatefulWidget {
   }
 
   @override
-  State<V2RateDialog> createState() => _V2RateDialogState();
+  State<RateDialog> createState() => _RateDialogState();
 }
 
-class _V2RateDialogState extends State<V2RateDialog> {
+class _RateDialogState extends State<RateDialog> {
   late ValueNotifier<bool?> like;
   late ValueNotifier<String?> dis;
   late ValueNotifier<bool> censor;
@@ -300,7 +300,7 @@ class _V2RateDialogState extends State<V2RateDialog> {
                       labelText: 'Subject',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
                     ),
-                    child: V2SubjectView(
+                    child: SubjectView(
                       subject: rawSubject,
                       strikethrough: censor.value,
                       labeler: widget.model.labeler,

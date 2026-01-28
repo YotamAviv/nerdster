@@ -16,9 +16,9 @@ void main() {
 
   late FakeFirebaseFirestore nerdsterFire;
   late FakeFirebaseFirestore oneofusFire;
-  late V2FeedController controller;
+  late FeedController controller;
 
-  Future<void> waitForLoad(V2FeedController controller) async {
+  Future<void> waitForLoad(FeedController controller) async {
     while (controller.loading || controller.value == null) {
       if (!controller.loading && controller.value == null && controller.error != null) {
         throw Exception('Controller failed: ${controller.error}');
@@ -42,7 +42,7 @@ void main() {
 
     Setting.get<String>(SettingType.fcontext).value = 'family';
 
-    controller = V2FeedController(
+    controller = FeedController(
       trustSource: DirectFirestoreSource<TrustStatement>(oneofusFire),
       contentSource: DirectFirestoreSource<ContentStatement>(nerdsterFire),
     );
@@ -56,8 +56,8 @@ void main() {
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
 
-    final V2FeedModel model = controller.value!;
-    final V2Labeler labeler = model.labeler;
+    final FeedModel model = controller.value!;
+    final Labeler labeler = model.labeler;
 
     // Verify some names from Simpsons data
     // We need to know what's in demoData.js to make specific assertions.
@@ -111,7 +111,7 @@ void main() {
     expect(controller.error, isNull);
     expect(controller.value, isNotNull);
 
-    final V2FeedModel model = controller.value!;
+    final FeedModel model = controller.value!;
 
     // 6. Find Secretariat aggregation
     final SubjectAggregation? secretariatAgg = model.aggregation.subjects.values
@@ -175,7 +175,7 @@ void main() {
     await waitForLoad(controller);
 
     expect(controller.error, isNull);
-    final V2FeedModel model = controller.value!;
+    final FeedModel model = controller.value!;
 
     // 5. Verify "Inception" is a subject
     final Iterable<SubjectAggregation> inceptionAgg = model.aggregation.subjects.values
@@ -218,7 +218,7 @@ void main() {
     }
 
     expect(controller.error, isNull);
-    final V2FeedModel model = controller.value!;
+    final FeedModel model = controller.value!;
 
     // 5. Find Secretariat aggregation in the FEED result
     final SubjectAggregation? secretariatInFeed = model.effectiveSubjects

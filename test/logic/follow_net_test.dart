@@ -95,7 +95,7 @@ void main() {
         reduceFollowNetwork(trustLisa, delegatesLisa, allContentStatements, kFollowContextNerdster);
     final ContentAggregation contentLisa = reduceContentAggregation(
         followLisa, trustLisa, delegatesLisa, allContentStatements,
-        labeler: V2Labeler(trustLisa, delegateResolver: delegatesLisa));
+        labeler: Labeler(trustLisa, delegateResolver: delegatesLisa));
 
     // Lisa should see content from Marge and Homer2
     expect(followLisa.contains(trustLisa.resolveIdentity(marge.id)), true,
@@ -117,7 +117,7 @@ void main() {
         reduceFollowNetwork(trustBart, delegatesBart, allContentStatements, kFollowContextNerdster);
     final ContentAggregation contentBart = reduceContentAggregation(
         followBart, trustBart, delegatesBart, allContentStatements,
-        labeler: V2Labeler(trustBart, delegateResolver: delegatesBart));
+        labeler: Labeler(trustBart, delegateResolver: delegatesBart));
 
     // Bart blocks Lisa in <nerdster> context in simpsons.dart
     expect(followBart.contains(trustBart.resolveIdentity(lisa.id)), false,
@@ -130,7 +130,7 @@ void main() {
         trustHomer, delegatesHomer, allContentStatements, kFollowContextNerdster);
     final ContentAggregation contentHomer = reduceContentAggregation(
         followHomer, trustHomer, delegatesHomer, allContentStatements,
-        labeler: V2Labeler(trustHomer, delegateResolver: delegatesHomer));
+        labeler: Labeler(trustHomer, delegateResolver: delegatesHomer));
 
     expect(followHomer.contains(trustHomer.resolveIdentity(lisa.id)), true,
         reason: 'Homer2 should follow Lisa');
@@ -235,7 +235,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // Spam should be censored
@@ -298,7 +298,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // Lisa censored Bart's statement, so Bart's rating should be gone.
@@ -323,7 +323,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // 5. Lisa censors Bart's censorship statement
@@ -338,7 +338,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // Lisa is more trusted than Bart.
@@ -404,7 +404,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // Bart's delegate's statement should be included
@@ -464,7 +464,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // Lisa censored Bart's statement, so Bart's rating should be gone.
@@ -488,7 +488,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // Now the URL is censored by Bart.
@@ -506,7 +506,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // Lisa censored Bart's censorship of the URL.
@@ -578,7 +578,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // The equate statement should be filtered because subject2 is censored
@@ -599,7 +599,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     expect(aggregation2.statements.any((ContentStatement s) => s.token == relate13.token), isFalse);
@@ -656,7 +656,7 @@ void main() {
       graph,
       delegateResolver,
       allStatementsByToken,
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     expect(aggregation.subjects.containsKey(ContentKey(sToken)), isTrue);

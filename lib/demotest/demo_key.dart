@@ -9,7 +9,7 @@ import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
-import 'package:nerdster/demotest/cases/v2_verification.dart';
+import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:nerdster/demotest/test_util.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto2559.dart';

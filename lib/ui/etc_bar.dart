@@ -12,7 +12,7 @@ import 'package:nerdster/logic/feed_controller.dart'; // Add
 
 class EtcBar extends StatelessWidget {
   final Widget notifications;
-  final V2FeedController controller; // Add
+  final FeedController controller; // Add
 
   const EtcBar({super.key, required this.notifications, required this.controller});
 

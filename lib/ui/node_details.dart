@@ -18,12 +18,12 @@ import 'package:nerdster/settings/setting_type.dart';
 @Deprecated('Use NodeDetailsSheet')
 class NodeDetails extends StatelessWidget {
   final IdentityKey identity;
-  final V2FeedController controller;
+  final FeedController controller;
 
   const NodeDetails({super.key, required this.identity, required this.controller});
 
   static Future<void> show(
-      BuildContext context, IdentityKey identity, V2FeedController controller) {
+      BuildContext context, IdentityKey identity, FeedController controller) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -41,7 +41,7 @@ class NodeDetails extends StatelessWidget {
 
 class NodeDetailsSheet extends StatefulWidget {
   final IdentityKey identity;
-  final V2FeedController controller;
+  final FeedController controller;
   final ScrollController? scrollController;
 
   const NodeDetailsSheet({
@@ -56,14 +56,14 @@ class NodeDetailsSheet extends StatefulWidget {
 }
 
 class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
-  IdentityKey _resolveIdentity(IdentityKey key, V2FeedModel model) {
+  IdentityKey _resolveIdentity(IdentityKey key, FeedModel model) {
     if (model.trustGraph.isTrusted(key)) {
       return model.trustGraph.resolveIdentity(key);
     }
     return key;
   }
 
-  IdentityKey _resolveDelegate(DelegateKey key, V2FeedModel model) {
+  IdentityKey _resolveDelegate(DelegateKey key, FeedModel model) {
     final identity = model.delegateResolver.getIdentityForDelegate(key);
     if (identity != null) {
       return _resolveIdentity(identity, model);
@@ -78,7 +78,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
   TextEditingController? _autocompleteController;
   final TextEditingController _commentController = TextEditingController();
 
-  V2FeedModel get model => widget.controller.value!;
+  FeedModel get model => widget.controller.value!;
 
   @override
   void initState() {
@@ -140,8 +140,8 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final V2Labeler labeler = model.labeler;
-    // V2Labeler label/getLabel takes string or key? currently string
+    final Labeler labeler = model.labeler;
+    // Labeler label/getLabel takes string or key? currently string
     // Assuming labeler has getAllLabels returning List<String> or similar?
 
     // I didn't implement getAllLabels in new Labeler!
@@ -205,7 +205,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     );
   }
 
-  Widget _buildHeader(V2Labeler labeler, IdentityKey identity) {
+  Widget _buildHeader(Labeler labeler, IdentityKey identity) {
     final identityStr = identity.value;
     final primaryLabel = labeler.getLabel(identityStr);
     final allLabels = labeler.getAllLabels(identity);
@@ -292,7 +292,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     ];
   }
 
-  Widget _buildKeysSection(TrustGraph tg, V2Labeler labeler, List<String> delegates) {
+  Widget _buildKeysSection(TrustGraph tg, Labeler labeler, List<String> delegates) {
     return ExpansionTile(
       title: const Text('Keys', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       tilePadding: EdgeInsets.zero,
@@ -565,7 +565,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     }
   }
 
-  Widget _buildIdentityDetails(IdentityKey identity, V2FeedModel model) {
+  Widget _buildIdentityDetails(IdentityKey identity, FeedModel model) {
     final tg = model.trustGraph;
 
     final statements = tg.edges.values
@@ -583,7 +583,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     );
   }
 
-  Widget _buildContextDetails(IdentityKey identity, V2FeedModel model, String context) {
+  Widget _buildContextDetails(IdentityKey identity, FeedModel model, String context) {
     final fn = model.followNetwork;
 
     final statements = fn.edges.values
@@ -602,7 +602,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     );
   }
 
-  Widget _buildNerdsterDetails(IdentityKey identity, V2FeedModel model) {
+  Widget _buildNerdsterDetails(IdentityKey identity, FeedModel model) {
     final fn = model.followNetwork;
     final tg = model.trustGraph;
 
@@ -646,7 +646,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
     );
   }
 
-  Widget _buildStatementTile(dynamic s, V2FeedModel model, {String? fcontext}) {
+  Widget _buildStatementTile(dynamic s, FeedModel model, {String? fcontext}) {
     final labeler = model.labeler;
     // s can be TrustStatement or ContentStatement.
     // Both have iKey/iToken (but IdentityKey in refactor).
@@ -713,7 +713,7 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
                     title: const Text('Cryptographic Proof'),
                     content: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 600),
-                      child: V2JsonDisplay(s.json, interpreter: V2Interpreter(labeler)),
+                      child: JsonDisplay(s.json, interpreter: NerdsterInterpreter(labeler)),
                     ),
                     actions: [
                       TextButton(
@@ -733,9 +733,9 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           color: Colors.grey[100],
           height: 200,
           child: SingleChildScrollView(
-            child: V2JsonDisplay(s.json,
+            child: JsonDisplay(s.json,
                 interpreter: widget.controller.value != null
-                    ? V2Interpreter(widget.controller.value!.labeler)
+                    ? NerdsterInterpreter(widget.controller.value!.labeler)
                     : null),
           ),
         ),

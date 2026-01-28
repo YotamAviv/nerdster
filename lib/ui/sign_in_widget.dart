@@ -350,7 +350,7 @@ class _SignInDialogState extends State<SignInDialog> {
                 child: SizedBox(
               width: min(width * 0.8, 300.0),
               child: JsonQrDisplay(json,
-                  interpret: ValueNotifier(true), interpreter: V2Interpreter(globalLabeler.value)),
+                  interpret: ValueNotifier(true), interpreter: NerdsterInterpreter(globalLabeler.value)),
             )),
             actions: [
               TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close"))

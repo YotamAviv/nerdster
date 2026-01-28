@@ -6,14 +6,14 @@ import 'package:nerdster/logic/labeler.dart';
 
 const kUnknown = '<unknown>';
 
-class V2Interpreter implements Interpreter {
-  final V2Labeler labeler;
+class NerdsterInterpreter implements Interpreter {
+  final Labeler labeler;
 
-  V2Interpreter(this.labeler);
+  NerdsterInterpreter(this.labeler);
 
   @override
   Future<void> waitUntilReady() async {
-    // V2Labeler is synchronous for now, or already ready when passed here.
+    // Labeler is synchronous for now, or already ready when passed here.
     return;
   }
 

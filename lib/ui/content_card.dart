@@ -14,8 +14,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ContentCard extends StatefulWidget {
   final SubjectAggregation aggregation;
-  final V2FeedModel model;
-  final V2FeedController controller;
+  final FeedModel model;
+  final FeedController controller;
   final ValueChanged<String?>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
   final ValueNotifier<ContentKey?>? markedSubjectToken;
@@ -151,7 +151,7 @@ class _ContentCardState extends State<ContentCard> {
                       } else {
                         initialDismiss = 'forever';
                       }
-                      final result = await V2RateDialog.show(
+                      final result = await RateDialog.show(
                         context,
                         widget.aggregation,
                         widget.controller,
@@ -717,7 +717,7 @@ class _ContentCardState extends State<ContentCard> {
   }
 
   Future<void> _react() async {
-    final ContentStatement? statement = await V2RateDialog.show(
+    final ContentStatement? statement = await RateDialog.show(
       context,
       widget.aggregation,
       widget.controller, // Changed from model
@@ -731,8 +731,8 @@ class _ContentCardState extends State<ContentCard> {
 
 class SubjectDetailsView extends StatelessWidget {
   final SubjectAggregation aggregation;
-  final V2FeedModel model;
-  final V2FeedController controller;
+  final FeedModel model;
+  final FeedController controller;
   final ValueChanged<String>? onTagTap;
   final ValueChanged<String?>? onGraphFocus;
   final ValueChanged<ContentKey?>? onMark;
@@ -818,7 +818,7 @@ class SubjectDetailsView extends StatelessWidget {
   }
 }
 
-bool _shouldShowStatement(ContentStatement s, V2FeedModel model) {
+bool _shouldShowStatement(ContentStatement s, FeedModel model) {
   final canonicalToken = model.aggregation.equivalence[ContentKey(s.token)] ?? ContentKey(s.token);
   final subjectAgg = model.aggregation.subjects[canonicalToken];
   if (subjectAgg == null) return true;

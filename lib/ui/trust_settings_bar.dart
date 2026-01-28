@@ -12,7 +12,7 @@ class TrustSettingsBar extends StatelessWidget {
   final List<IdentityKey> availableIdentities;
   final List<String> availableContexts;
   final Set<String> activeContexts;
-  final V2Labeler labeler;
+  final Labeler labeler;
 
   const TrustSettingsBar({
     super.key,

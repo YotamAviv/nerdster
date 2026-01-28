@@ -30,7 +30,7 @@ void main() {
     final DemoIdentityKey homer = DemoIdentityKey.findByName('homer')!;
     final DemoIdentityKey homer2 = DemoIdentityKey.findByName('homer2')!;
 
-    final V2Labeler labeler = V2Labeler(graph);
+    final Labeler labeler = Labeler(graph);
 
     expect(graph.isTrusted(homer.id), isTrue);
 
@@ -51,7 +51,7 @@ void main() {
         DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(lisa.id);
-    final V2Labeler labeler = V2Labeler(graph);
+    final Labeler labeler = Labeler(graph);
 
     // PoV should be "Lisa" because Marge (and others) name her "Lisa" in the graph.
     expect(labeler.getIdentityLabel(lisa.id), 'Lisa');
@@ -68,7 +68,7 @@ void main() {
         DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(bart.id);
-    final V2Labeler labeler = V2Labeler(graph);
+    final Labeler labeler = Labeler(graph);
 
     expect(labeler.getIdentityLabel(bart.id), 'Bart');
     expect(labeler.getIdentityLabel(DemoIdentityKey.findByName('lisa')!.id), 'Sis');

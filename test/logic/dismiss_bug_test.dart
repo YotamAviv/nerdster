@@ -33,7 +33,7 @@ void main() {
     final trustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final contentSource =
         DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
-    final controller = V2FeedController(trustSource: trustSource, contentSource: contentSource);
+    final controller = FeedController(trustSource: trustSource, contentSource: contentSource);
 
     // Initial Refresh
     await controller.refresh();
@@ -65,7 +65,7 @@ void main() {
     await controller.refresh();
 
     // 4. Verification Check 1
-    V2FeedModel feedAfter = controller.value!;
+    FeedModel feedAfter = controller.value!;
     SubjectAggregation? shakesAfter =
         feedAfter.effectiveSubjects.where((s) => s.token == shakesToken).firstOrNull;
 
@@ -86,7 +86,7 @@ void main() {
     // So we manually refresh or wait. Best to manually refresh to be deterministic.
     await controller.refresh();
 
-    final V2FeedModel feedIgnored = controller.value!;
+    final FeedModel feedIgnored = controller.value!;
     final SubjectAggregation? shakesIgnored =
         feedIgnored.effectiveSubjects.where((s) => s.token == shakesToken).firstOrNull;
 

@@ -127,7 +127,7 @@ void main() {
       contentResult,
       enableCensorship: true,
       meDelegateKeys: [lisaD.id],
-      labeler: V2Labeler(graph, delegateResolver: delegateResolver),
+      labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
     // Check if the nested rating is in the aggregation

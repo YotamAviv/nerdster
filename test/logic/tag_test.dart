@@ -75,7 +75,7 @@ void main() {
         DelegateKey(delegateToken): [s2, s1],
       };
 
-      final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
+      final Labeler labeler = Labeler(trustGraph, delegateResolver: delegateResolver);
       final ContentAggregation aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
@@ -135,7 +135,7 @@ void main() {
         DelegateKey(delegateToken): [s2, s1],
       };
 
-      final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
+      final Labeler labeler = Labeler(trustGraph, delegateResolver: delegateResolver);
       final ContentAggregation aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
@@ -198,7 +198,7 @@ void main() {
         DelegateKey(delegateToken): [s2, s1],
       };
 
-      final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
+      final Labeler labeler = Labeler(trustGraph, delegateResolver: delegateResolver);
       final ContentAggregation aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,
@@ -259,7 +259,7 @@ void main() {
         DelegateKey(delegateToken): [s2, s1],
       };
 
-      final V2Labeler labeler = V2Labeler(trustGraph, delegateResolver: delegateResolver);
+      final Labeler labeler = Labeler(trustGraph, delegateResolver: delegateResolver);
       final ContentAggregation aggregation = reduceContentAggregation(
         followNetwork,
         trustGraph,

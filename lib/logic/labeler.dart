@@ -24,7 +24,7 @@ import 'package:oneofus_common/jsonish.dart';
 ///    - The **Canonical Key** receives the base name ("Bob").
 ///    - **Historical Keys** (old keys in the equivalence set) receive the base name
 ///      with prime notation (e.g., "Bob'", "Bob''") to indicate their status.
-class V2Labeler {
+class Labeler {
   final TrustGraph graph;
   final DelegateResolver? delegateResolver;
   final IdentityKey? meIdentity;
@@ -37,7 +37,7 @@ class V2Labeler {
 
   final Set<String> _usedNames = {};
 
-  V2Labeler(this.graph, {this.delegateResolver, this.meIdentity}) {
+  Labeler(this.graph, {this.delegateResolver, this.meIdentity}) {
     _computeLabels();
   }
 

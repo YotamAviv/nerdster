@@ -25,7 +25,7 @@ void main() {
     setUpTestRegistry(firestore: firestore);
   });
 
-  test('V2Labeler: Greedy Moniker Assignment', () async {
+  test('Labeler: Greedy Moniker Assignment', () async {
     final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
     final DemoIdentityKey charlie = await DemoIdentityKey.create('charlie');
@@ -47,7 +47,7 @@ void main() {
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
-    final V2Labeler labeler = V2Labeler(graph, meIdentity: alice.id);
+    final Labeler labeler = Labeler(graph, meIdentity: alice.id);
 
     expect(labeler.getIdentityLabel(alice.id), 'Me');
     expect(labeler.getIdentityLabel(bob.id), 'Bobby');
@@ -55,7 +55,7 @@ void main() {
     expect(labeler.getIdentityLabel(dave.id), 'David');
   });
 
-  test('V2Labeler: PoV Moniker Discovery', () async {
+  test('Labeler: PoV Moniker Discovery', () async {
     final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
 
@@ -69,13 +69,13 @@ void main() {
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
-    final V2Labeler labeler = V2Labeler(graph);
+    final Labeler labeler = Labeler(graph);
 
     // Alice is the pov, but Bob (who she trusts) calls her "Lisa".
     expect(labeler.getIdentityLabel(alice.id), 'Lisa');
   });
 
-  test('V2Labeler: Identity Resolution', () async {
+  test('Labeler: Identity Resolution', () async {
     final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final DemoIdentityKey bob1 = await DemoIdentityKey.create('bob1');
     final DemoIdentityKey bob2 = await DemoIdentityKey.create('bob2');
@@ -100,7 +100,7 @@ void main() {
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
-    final V2Labeler labeler = V2Labeler(graph);
+    final Labeler labeler = Labeler(graph);
 
     // Since Bob2 replaces Bob1, Bob2 is canonical and Bob1 is old.
     // Both should have unique labels.
@@ -108,7 +108,7 @@ void main() {
     expect(labeler.getIdentityLabel(bob1.id), "Bob'");
   });
 
-  test('V2Labeler: Name Conflicts (Disambiguation)', () async {
+  test('Labeler: Name Conflicts (Disambiguation)', () async {
     final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final DemoIdentityKey bob1 = await DemoIdentityKey.create('bob1');
     final DemoIdentityKey bob2 = await DemoIdentityKey.create('bob2');
@@ -123,7 +123,7 @@ void main() {
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
-    final V2Labeler labeler = V2Labeler(graph);
+    final Labeler labeler = Labeler(graph);
 
     // Order in orderedKeys depends on newest-first.
     // Bob2 was trusted last, so it comes first in the BFS layer.
@@ -131,7 +131,7 @@ void main() {
     expect(labeler.getIdentityLabel(bob1.id), 'Bob (2)');
   });
 
-  test('V2Labeler: Complex Conflict (Old + Collision)', () async {
+  test('Labeler: Complex Conflict (Old + Collision)', () async {
     final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final DemoIdentityKey bob1 = await DemoIdentityKey.create('bob1');
     final DemoIdentityKey bob2 = await DemoIdentityKey.create('bob2');
@@ -157,7 +157,7 @@ void main() {
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
-    final V2Labeler labeler = V2Labeler(graph);
+    final Labeler labeler = Labeler(graph);
 
     // Charlie identity was trusted last by Alice, so it comes first in orderedKeys.
     // Charlie identity (also named "Bob"). Charlie2 is canonical.

@@ -41,7 +41,7 @@ class GraphData {
 }
 
 class GraphController {
-  final V2FeedModel feedModel;
+  final FeedModel feedModel;
   GraphViewMode mode = GraphViewMode.follow;
   IdentityKey? focusedIdentity;
 

@@ -15,7 +15,7 @@ import 'package:nerdster/config.dart';
 import 'package:nerdster/util_ui.dart';
 
 class Lgtm {
-  static Future<bool?> check(Json json, BuildContext context, {required V2Labeler labeler}) async {
+  static Future<bool?> check(Json json, BuildContext context, {required Labeler labeler}) async {
     if (isSmall.value || Setting.get<bool>(SettingType.skipLgtm).value) return true;
 
     assert(signInState.delegate != null);
@@ -43,9 +43,9 @@ class Lgtm {
 - Publish it at: ${uri.toString()}'''),
                         SizedBox(
                             height: 300,
-                            child: V2JsonDisplay(json,
+                            child: JsonDisplay(json,
                                 interpret: ValueNotifier(true),
-                                interpreter: V2Interpreter(labeler))),
+                                interpreter: NerdsterInterpreter(labeler))),
                         const SizedBox(height: 10),
                         Row(
                           children: [

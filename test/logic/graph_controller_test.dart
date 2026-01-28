@@ -41,11 +41,11 @@ void main() {
         },
       );
 
-      final V2FeedModel feedModel = V2FeedModel(
+      final FeedModel feedModel = FeedModel(
         trustGraph: trustGraph,
         followNetwork: FollowNetwork(povIdentity: pov, fcontext: '<identity>'),
         delegateResolver: DelegateResolver(trustGraph),
-        labeler: V2Labeler(trustGraph),
+        labeler: Labeler(trustGraph),
         aggregation: ContentAggregation(),
         povIdentity: pov,
         fcontext: '<identity>',
@@ -93,11 +93,11 @@ void main() {
         },
       );
 
-      final V2FeedModel feedModel = V2FeedModel(
+      final FeedModel feedModel = FeedModel(
         trustGraph: trustGraph,
         followNetwork: followNetwork,
         delegateResolver: DelegateResolver(trustGraph),
-        labeler: V2Labeler(trustGraph),
+        labeler: Labeler(trustGraph),
         aggregation: ContentAggregation(),
         povIdentity: pov,
         fcontext: 'news',
@@ -144,11 +144,11 @@ void main() {
         },
       );
 
-      final V2FeedModel feedModel = V2FeedModel(
+      final FeedModel feedModel = FeedModel(
         trustGraph: trustGraph,
         followNetwork: FollowNetwork(fcontext: '<identity>', povIdentity: pov),
         delegateResolver: DelegateResolver(trustGraph),
-        labeler: V2Labeler(trustGraph),
+        labeler: Labeler(trustGraph),
         aggregation: ContentAggregation(),
         povIdentity: pov,
         fcontext: '<identity>',

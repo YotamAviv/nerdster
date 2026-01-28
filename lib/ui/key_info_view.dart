@@ -15,7 +15,7 @@ class KeyInfoView extends StatelessWidget {
   final Jsonish jsonish;
   final String domain;
   final StatementSource source;
-  final V2Labeler labeler;
+  final Labeler labeler;
 
   const KeyInfoView({
     super.key,
@@ -31,7 +31,7 @@ class KeyInfoView extends StatelessWidget {
       children: [
         Expanded(
           child: JsonQrDisplay(jsonish.json,
-              interpret: ValueNotifier(true), interpreter: V2Interpreter(labeler)),
+              interpret: ValueNotifier(true), interpreter: NerdsterInterpreter(labeler)),
         ),
         _buildStatementsLink(context),
       ],
@@ -80,7 +80,7 @@ class KeyInfoView extends StatelessWidget {
         return AlertDialog(
             title: const Text('Signed by this key'),
             content:
-                SingleChildScrollView(child: V2JsonDisplay(j, interpreter: V2Interpreter(labeler))),
+                SingleChildScrollView(child: JsonDisplay(j, interpreter: NerdsterInterpreter(labeler))),
             actions: [
               TextButton(child: const Text('Okay'), onPressed: () => Navigator.of(context).pop())
             ]);
@@ -94,7 +94,7 @@ class KeyInfoView extends StatelessWidget {
     String domain, {
     TapDownDetails? details,
     required StatementSource source,
-    required V2Labeler labeler,
+    required Labeler labeler,
     BoxConstraints? constraints,
   }) {
     final jsonish = Jsonish.find(token);

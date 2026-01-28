@@ -76,7 +76,7 @@ void main() {
         reason: 'Marge cannot claim margeN because Sideshow already claimed it');
   });
 
-  test('V2Labeler: Should label delegate correctly when revoked by owner', () async {
+  test('Labeler: Should label delegate correctly when revoked by owner', () async {
     final mel = await DemoIdentityKey.create('mel');
     final DemoIdentityKey marge = await DemoIdentityKey.create('marge');
     final DemoDelegateKey margeN = await DemoDelegateKey.create('margeN');
@@ -106,7 +106,7 @@ void main() {
     resolver.resolveForIdentity(mel.id);
     resolver.resolveForIdentity(marge.id);
 
-    final labeler = V2Labeler(tg, delegateResolver: resolver);
+    final labeler = Labeler(tg, delegateResolver: resolver);
 
     // margeN should be labeled as Marge@nerdster.org
     expect(labeler.getLabel(margeN.token), equals('Marge@nerdster.org'));
@@ -329,7 +329,7 @@ void main() {
             'Bo should still follow Luke because the delegate was revoked AT the follow statement');
   });
 
-  test('V2Labeler: Should number multiple delegates for same identity and domain', () async {
+  test('Labeler: Should number multiple delegates for same identity and domain', () async {
     final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
     final DemoDelegateKey d1 = await DemoDelegateKey.create('d1');
     final DemoDelegateKey d2 = await DemoDelegateKey.create('d2');
@@ -356,7 +356,7 @@ void main() {
     final DelegateResolver resolver = DelegateResolver(tg);
     resolver.resolveForIdentity(bob.id);
 
-    final labeler = V2Labeler(tg, delegateResolver: resolver);
+    final labeler = Labeler(tg, delegateResolver: resolver);
 
     expect(labeler.getLabel(d2.token), equals('Bob@nerdster.org'));
     expect(labeler.getLabel(d1.token), equals('Bob@nerdster.org (2)'));

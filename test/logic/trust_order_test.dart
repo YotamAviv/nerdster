@@ -52,7 +52,7 @@ void main() {
 
     final FollowNetwork netAlice = reduceFollowNetwork(graph, delegateResolver,
         ContentResult(delegateContent: delegateContent), kFollowContextNerdster);
-    final V2Labeler labeler = V2Labeler(graph);
+    final Labeler labeler = Labeler(graph);
 
     final List<String> expected = [alice.token, bob.token, charlie.token];
     final List<String> actual = netAlice.identities.map((IdentityKey k) => k.value).toList();

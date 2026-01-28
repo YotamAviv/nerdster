@@ -176,7 +176,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
       "Missing: Delegate key already claimed");
 
   // Verify Labels
-  final labeler = V2Labeler(trustGraph, delegateResolver: resolver);
+  final labeler = Labeler(trustGraph, delegateResolver: resolver);
   final bobDelegates = resolver.getDelegatesForIdentity(bob.id);
   final nerdsterDelegates =
       bobDelegates.where((d) => resolver.getDomainForDelegate(d) == 'nerdster.org').toList();

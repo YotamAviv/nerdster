@@ -37,7 +37,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Prefs.init();
 
-  V2JsonDisplay.highlightKeys = Set.unmodifiable({
+  JsonDisplay.highlightKeys = Set.unmodifiable({
     'I',
     'moniker',
     'domain',

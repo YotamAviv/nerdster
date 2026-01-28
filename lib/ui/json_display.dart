@@ -10,7 +10,7 @@ abstract class Interpreter {
 
 Color? interpretedColor = Colors.green[900];
 
-class V2JsonDisplay extends StatefulWidget {
+class JsonDisplay extends StatefulWidget {
   static Set<String> highlightKeys = {};
 
   final dynamic subject; // String (ex. token) or Json (ex. key, statement)
@@ -18,7 +18,7 @@ class V2JsonDisplay extends StatefulWidget {
   final bool strikethrough;
   final Interpreter? interpreter;
 
-  V2JsonDisplay(this.subject,
+  JsonDisplay(this.subject,
       {ValueNotifier<bool>? interpret, this.strikethrough = false, this.interpreter, super.key})
       : interpret = interpret ?? ValueNotifier<bool>(true);
 
@@ -26,7 +26,7 @@ class V2JsonDisplay extends StatefulWidget {
   State<StatefulWidget> createState() => _State();
 }
 
-class _State extends State<V2JsonDisplay> {
+class _State extends State<JsonDisplay> {
   @override
   Widget build(BuildContext context) {
     final Interpreter? interpreter = widget.interpreter;
@@ -45,7 +45,7 @@ class _State extends State<V2JsonDisplay> {
     );
 
     List<TextSpan> spans =
-        highlightJsonKeys(display, baseStyle, keysToHighlight: V2JsonDisplay.highlightKeys);
+        highlightJsonKeys(display, baseStyle, keysToHighlight: JsonDisplay.highlightKeys);
 
     return Stack(
       children: [

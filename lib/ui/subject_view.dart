@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/logic/labeler.dart';
 
-class V2SubjectView extends StatelessWidget {
+class SubjectView extends StatelessWidget {
   final Json subject;
   final bool strikethrough;
-  final V2Labeler? labeler;
+  final Labeler? labeler;
 
-  const V2SubjectView({
+  const SubjectView({
     super.key,
     required this.subject,
     this.strikethrough = false,

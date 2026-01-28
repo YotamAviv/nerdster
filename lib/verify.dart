@@ -432,7 +432,7 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
       _notifyStatus('Not signed', Colors.grey[700]!);
     }
 
-    V2Interpreter interpreter = V2Interpreter(globalLabeler.value);
+    NerdsterInterpreter interpreter = NerdsterInterpreter(globalLabeler.value);
     final String interpreted = encoder.convert(interpreter.interpret(json));
     children.addAll([
       _space,

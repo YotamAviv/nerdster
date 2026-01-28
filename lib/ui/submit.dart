@@ -7,7 +7,7 @@ import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/ui/rate_dialog.dart';
 
-Future<void> v2Submit(BuildContext context, V2FeedController controller) async {
+Future<void> v2Submit(BuildContext context, FeedController controller) async {
   final model = controller.value;
   if (model == null) return;
 
@@ -28,7 +28,7 @@ Future<void> v2Submit(BuildContext context, V2FeedController controller) async {
         );
 
     if (context.mounted) {
-      await V2RateDialog.show(
+      await RateDialog.show(
         context,
         aggregation,
         controller, // Changed

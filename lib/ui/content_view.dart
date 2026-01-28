@@ -33,7 +33,7 @@ class ContentView extends StatefulWidget {
 }
 
 class _ContentViewState extends State<ContentView> {
-  late final V2FeedController _controller;
+  late final FeedController _controller;
   final ValueNotifier<ContentKey?> _markedSubjectToken = ValueNotifier(null);
   final ValueNotifier<bool> _showFilters = ValueNotifier(false);
   final ValueNotifier<bool> _showEtc = ValueNotifier(false);
@@ -41,7 +41,7 @@ class _ContentViewState extends State<ContentView> {
   @override
   void initState() {
     super.initState();
-    _controller = V2FeedController(
+    _controller = FeedController(
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
     );
@@ -111,7 +111,7 @@ class _ContentViewState extends State<ContentView> {
         final SubjectAggregation subject1 = model.aggregation.subjects[currentMarked]!;
         final SubjectAggregation subject2 = model.aggregation.subjects[token]!;
 
-        final statement = await V2RelateDialog.show(
+        final statement = await RelateDialog.show(
           context,
           subject1,
           subject2,
@@ -131,7 +131,7 @@ class _ContentViewState extends State<ContentView> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<V2FeedModel?>(
+    return ValueListenableBuilder<FeedModel?>(
       valueListenable: _controller,
       builder: (context, model, _) {
         return Scaffold(
@@ -159,7 +159,7 @@ class _ContentViewState extends State<ContentView> {
                                   debugPrint(
                                       'ContentView: Displaying ${model.sourceErrors.length} errors');
                                 }
-                                return V2NotificationsMenu(
+                                return NotificationsMenu(
                                   trustGraph: model.trustGraph,
                                   followNetwork: model.followNetwork,
                                   delegateResolver: model.delegateResolver,
@@ -229,7 +229,7 @@ class _ContentViewState extends State<ContentView> {
                                         debugPrint(
                                             'ContentView: Displaying ${model.sourceErrors.length} errors');
                                       }
-                                      return V2NotificationsMenu(
+                                      return NotificationsMenu(
                                         trustGraph: model.trustGraph,
                                         followNetwork: model.followNetwork,
                                         delegateResolver: model.delegateResolver,
@@ -321,19 +321,19 @@ class _ContentViewState extends State<ContentView> {
     );
   }
 
-  Widget _buildTrustSettingsBar(V2FeedModel? model) {
+  Widget _buildTrustSettingsBar(FeedModel? model) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
       child: TrustSettingsBar(
         availableIdentities: model?.trustGraph.orderedKeys ?? [],
         availableContexts: model?.availableContexts ?? [],
         activeContexts: model?.activeContexts ?? {},
-        labeler: model?.labeler ?? V2Labeler(TrustGraph(pov: IdentityKey(''))),
+        labeler: model?.labeler ?? Labeler(TrustGraph(pov: IdentityKey(''))),
       ),
     );
   }
 
-  Widget _buildContent(V2FeedModel? model) {
+  Widget _buildContent(FeedModel? model) {
     if (_controller.loading && model == null) {
       return Center(
         child: Column(
