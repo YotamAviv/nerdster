@@ -4,7 +4,7 @@ import 'package:nerdster/io/source_factory.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/util_ui.dart';
+import 'package:nerdster/ui/util_ui.dart';
 
 class DumpAllStatements extends StatelessWidget {
   final TextEditingController controller = TextEditingController()..text = signInState.pov;

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/demo_setup.dart';
+import 'package:nerdster/dev/demo_setup.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/key_store.dart';
@@ -11,7 +11,7 @@ import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/split_menu_button.dart';
+import 'package:nerdster/dev/split_menu_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const uriSchemesName = 'keymeid';

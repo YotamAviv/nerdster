@@ -86,7 +86,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> egosCorrupt() async {
     print('Error deleting statement: $e');
   }
 
-  // V2 Verification
+  // Verification
   final source = DirectFirestoreSource<ContentStatement>(fire);
   await source.fetch({delegate.token: null});
 

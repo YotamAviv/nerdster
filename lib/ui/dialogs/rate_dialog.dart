@@ -7,8 +7,8 @@ import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/model.dart';
 
 import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/ui/dialogs/on_off_icon.dart';
-import 'package:nerdster/ui/dialogs/on_off_icons.dart';
+import 'package:nerdster/ui/util/on_off_icon.dart';
+import 'package:nerdster/ui/util/on_off_icons.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:nerdster/singletons.dart';

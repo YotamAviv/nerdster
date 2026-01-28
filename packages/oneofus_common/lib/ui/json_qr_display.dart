@@ -3,8 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import 'package:nerdster/util_ui.dart';
-import 'package:nerdster/ui/json_display.dart';
+import 'package:oneofus_common/ui/json_display.dart';
 import 'package:oneofus_common/jsonish.dart';
 
 class JsonQrDisplay extends StatelessWidget {
@@ -40,7 +39,7 @@ class JsonQrDisplay extends StatelessWidget {
                 width: qrSize,
                 height: qrSize / 2,
                 child: Padding(
-                    padding: kPadding,
+                    padding: EdgeInsets.all(8.0),
                     child: JsonDisplay(subject, interpret: interpret, interpreter: interpreter))),
           ],
         );
@@ -57,7 +56,7 @@ class JsonQrDisplay extends StatelessWidget {
           return LayoutBuilder(builder: (context, constraints) {
             double x = min(constraints.maxWidth, constraints.maxHeight * (2 / 3)) * reduction;
             return Dialog(
-                shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                 child: SizedBox(
                     width: x,
                     height: x * 3 / 2,

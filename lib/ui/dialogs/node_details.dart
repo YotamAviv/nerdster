@@ -7,7 +7,7 @@ import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/ui/json_display.dart';
+import 'package:oneofus_common/ui/json_display.dart';
 import 'package:nerdster/logic/interpreter.dart';
 import 'package:nerdster/logic/follow_logic.dart';
 import 'package:collection/collection.dart';

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/fire_choice.dart';
-import 'package:nerdster/ui/json_display.dart';
+import 'package:oneofus_common/ui/json_display.dart';
 import 'package:nerdster/logic/interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
-import 'package:nerdster/ui/json_qr_display.dart';
+import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:url_launcher/url_launcher.dart';
 

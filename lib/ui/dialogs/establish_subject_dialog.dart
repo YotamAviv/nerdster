@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/models/content_types.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/logic/metadata_service.dart';
-import 'package:nerdster/ui/ok_cancel.dart';
-import 'package:nerdster/util_ui.dart';
+import 'package:nerdster/ui/util/ok_cancel.dart';
+import 'package:nerdster/ui/util_ui.dart';
 
 /// Fetching URL title:
 /// CORS rules out fetching the HTML title ourselves.

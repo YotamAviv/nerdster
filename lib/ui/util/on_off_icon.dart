@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/util_ui.dart';
+import 'package:nerdster/ui/util_ui.dart';
 
 class OnOffIcon extends StatefulWidget {
   final ValueNotifier<bool> valueNotifier;

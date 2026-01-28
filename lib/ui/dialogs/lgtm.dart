@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/ui/json_display.dart';
+import 'package:oneofus_common/ui/json_display.dart';
 import 'package:nerdster/logic/interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:nerdster/ui/ok_cancel.dart';
-import 'package:nerdster/ui/linky.dart';
-import 'package:nerdster/ui/my_checkbox.dart';
+import 'package:nerdster/ui/util/ok_cancel.dart';
+import 'package:nerdster/ui/util/linky.dart';
+import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/config.dart';
-import 'package:nerdster/util_ui.dart';
+import 'package:nerdster/ui/util_ui.dart';
 
 class Lgtm {
   static Future<bool?> check(Json json, BuildContext context, {required Labeler labeler}) async {

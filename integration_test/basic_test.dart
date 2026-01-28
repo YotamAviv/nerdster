@@ -33,7 +33,7 @@ void main() {
     FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
     OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
 
-    // Configure V2 for Emulator
+    // Configure for Emulator
     const host = 'localhost';
     const oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
     const nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
@@ -56,7 +56,7 @@ void main() {
     FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, null);
   });
 
-  testWidgets('V2 Integration: Basic Scenario', (WidgetTester tester) async {
+  testWidgets('Integration: Basic Scenario', (WidgetTester tester) async {
     try {
       // Define permutations to test
       final List<({String name, Map<String, dynamic>? params})> permutations = [

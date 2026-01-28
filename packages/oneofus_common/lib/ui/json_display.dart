@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:nerdster/ui/json_highlighter.dart';
+import 'package:oneofus_common/ui/json_highlighter.dart';
 
 abstract class Interpreter {
   dynamic interpret(dynamic d);

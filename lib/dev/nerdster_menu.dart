@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:nerdster/menus.dart';
+import 'package:nerdster/dev/menus.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 
 class NerdsterMenu extends StatefulWidget {
-  final Widget v2Notifications;
+  final Widget notifications;
 
   const NerdsterMenu({
     super.key,
-    required this.v2Notifications,
+    required this.notifications,
   });
 
   @override
@@ -39,6 +39,6 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return MenuBar(children: Menus.build(context, v2Notifications: widget.v2Notifications));
+    return MenuBar(children: Menus.build(context, notifications: widget.notifications));
   }
 }

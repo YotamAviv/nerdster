@@ -4,9 +4,10 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:nerdster/ui/dialogs/alert.dart';
+import 'package:nerdster/ui/util/alert.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/util_ui.dart';
+import 'package:nerdster/ui/util_ui.dart';
+import 'package:oneofus_common/ui/json_qr_display.dart';
 
 class JustSign {
   static Future<void> sign(BuildContext context) async {
@@ -20,7 +21,10 @@ class JustSign {
     String signature = await signInState.signer!.sign(json, encoder.convert(json));
     json['signature'] = signature;
 
-    unawaited(alert('Signed!', json, ['Okay'], context));
+    JsonQrDisplay jqd = JsonQrDisplay(json, interpret: ValueNotifier(false));
+    alert('Signed!', SizedBox(
+        width: MediaQuery.of(context).size.width * 0.8,
+        child: jqd), ['Okay'], context);
   }
 }
 

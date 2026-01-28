@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/nerdster_menu.dart';
+import 'package:nerdster/dev/nerdster_menu.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -148,7 +148,7 @@ class _ContentViewState extends State<ContentView> {
                         builder: (context, dev, child) {
                           if (!dev) return const SizedBox.shrink();
                           return NerdsterMenu(
-                            v2Notifications: Builder(builder: (context) {
+                            notifications: Builder(builder: (context) {
                               final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
                               final hasTrust = model?.trustGraph.notifications.isNotEmpty ?? false;
                               final hasFollow =

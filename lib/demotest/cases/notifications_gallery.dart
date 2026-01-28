@@ -9,7 +9,7 @@ import 'package:nerdster/io/source_factory.dart';
 /// A gallery of all possible Trust and Follow notifications.
 ///
 /// This demo sets up a scenario where every type of notification defined in the
-/// V2 specification is generated.
+/// specification is generated.
 ///
 /// Trust Notifications:
 /// 1. Attempt to block your key

@@ -38,7 +38,7 @@ void main() {
     FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
     OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
 
-    // Configure V2 for Emulator
+    // Configure for Emulator
     const host = 'localhost';
     const oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
     const nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
@@ -61,7 +61,7 @@ void main() {
     FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, null);
   });
 
-  group('V2 UI Integration Tests', () {
+  group('UI Integration Tests', () {
     testWidgets('Verify ContentView loads and displays monikers', (WidgetTester tester) async {
       // 1. Setup environment for Emulator
       fireChoice = FireChoice.emulator;

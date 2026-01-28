@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/demo_setup.dart';
+import 'package:nerdster/dev/demo_setup.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
@@ -22,7 +22,7 @@ import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/config.dart';
-import 'package:nerdster/ui/json_display.dart';
+import 'package:oneofus_common/ui/json_display.dart';
 import 'package:nerdster/verify.dart';
 
 import 'firebase_options.dart';

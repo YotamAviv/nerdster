@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/demo_setup.dart';
+import 'package:nerdster/dev/demo_setup.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dev/corruption_check.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/ui/my_checkbox.dart';
+import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/settings/setting_type.dart';
-import 'package:nerdster/sign_in_menu.dart';
+import 'package:nerdster/dev/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
 
 const iconSpacer = SizedBox(width: 3);
@@ -16,7 +16,7 @@ const iconSpacer = SizedBox(width: 3);
 class Menus {
   static List<Widget> build(
     BuildContext context, {
-    required Widget v2Notifications,
+    required Widget notifications,
   }) {
     List<Widget> demos = <Widget>[];
     for (final e in DemoKey.demos.entries) {
@@ -73,7 +73,7 @@ class Menus {
                 Jsonish(povJson);
               },
               child: const Text('Refresh Jsonish cache')),
-          SubmenuButton(menuChildren: [], child: const Text('V2 Scenarios')),
+          SubmenuButton(menuChildren: [], child: const Text('Scenarios')),
           SubmenuButton(menuChildren: [
             MenuItemButton(
                 onPressed: DemoKey.dumpDemoCredentials, child: const Text('dumpDemoCredentials')),

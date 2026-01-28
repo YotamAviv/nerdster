@@ -20,23 +20,23 @@ class SignInSession {
   SignInSession({required this.forPhone, required this.session, required this.pkeKeyPair});
 
   static Future<SignInSession> create() async {
-    Json forPhoneV2 = {};
-    forPhoneV2['domain'] = kNerdsterDomain;
+    Json forPhone = {};
+    forPhone['domain'] = kNerdsterDomain;
 
-    forPhoneV2['url'] = 'https://signin.nerdster.org/signin';
+    forPhone['url'] = 'https://signin.nerdster.org/signin';
     if (fireChoice == FireChoice.emulator) {
       // Use 10.0.2.2 (not 127.0.0.1) for Android Emulator to access host machine localhost
-      forPhoneV2['url'] = 'http://10.0.2.2:5001/nerdster/us-central1/signin';
+      forPhone['url'] = 'http://10.0.2.2:5001/nerdster/us-central1/signin';
     }
 
     final PkeKeyPair pkeKeyPair = await crypto.createPke();
     final PkePublicKey pkePK = await pkeKeyPair.publicKey;
     var pkePKJson = await pkePK.json;
     final String session = getToken(pkePKJson);
-    forPhoneV2['encryptionPk'] = pkePKJson;
+    forPhone['encryptionPk'] = pkePKJson;
 
     return SignInSession(
-      forPhone: forPhoneV2,
+      forPhone: forPhone,
       session: session,
       pkeKeyPair: pkeKeyPair,
     );

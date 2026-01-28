@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nerdster/ui/util_ui.dart';
 
-import 'package:nerdster/util_ui.dart';
-
-import '../json_qr_display.dart';
-import 'package:oneofus_common/jsonish.dart';
-import '../linky.dart';
+import 'linky.dart';
 
 Future<void> alertException(BuildContext context, Object exception, {StackTrace? stackTrace}) {
   if (stackTrace != null) debugPrintStack(stackTrace: stackTrace);
@@ -53,10 +50,6 @@ Future<String?> alert(String? title, dynamic content, List<String> options, Buil
     widget = content;
   } else if (content is String) {
     widget = Linky(content);
-  } else if (content is Json) {
-    widget = SizedBox(
-        width: MediaQuery.of(context).size.width * 0.8,
-        child: JsonQrDisplay(content, interpret: ValueNotifier(false)));
   }
   return showDialog<String?>(
     context: context,
