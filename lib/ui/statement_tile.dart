@@ -10,7 +10,7 @@ import 'package:nerdster/logic/interpreter.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/ui/json_display.dart';
 import 'package:nerdster/models/model.dart';
-import 'package:nerdster/ui/rate_dialog.dart';
+import 'package:nerdster/ui/dialogs/rate_dialog.dart';
 
 // Question: Do ... canonical/equivalent..?
 class StatementTile extends StatelessWidget {

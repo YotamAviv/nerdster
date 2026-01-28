@@ -11,8 +11,8 @@ import 'package:nerdster/ui/dialogs/on_off_icon.dart';
 import 'package:nerdster/ui/dialogs/on_off_icons.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/statement.dart';
-import '../singletons.dart';
-import 'subject_view.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster/ui/subject_view.dart';
 
 enum RateIntent { like, dislike, dismiss, comment, censor, clear, none }
 

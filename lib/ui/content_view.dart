@@ -15,7 +15,7 @@ import 'package:nerdster/ui/graph_view.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/notifications_menu.dart';
-import 'package:nerdster/ui/relate_dialog.dart';
+import 'package:nerdster/ui/dialogs/relate_dialog.dart';
 import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/ui/trust_settings_bar.dart';
 import 'package:nerdster/verify.dart';

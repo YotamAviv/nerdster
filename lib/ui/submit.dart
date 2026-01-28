@@ -5,7 +5,7 @@ import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/feed_controller.dart';
-import 'package:nerdster/ui/rate_dialog.dart';
+import 'package:nerdster/ui/dialogs/rate_dialog.dart';
 
 Future<void> v2Submit(BuildContext context, FeedController controller) async {
   final model = controller.value;

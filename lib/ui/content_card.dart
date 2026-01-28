@@ -7,7 +7,7 @@ import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:nerdster/logic/metadata_service.dart';
 import 'package:nerdster/models/model.dart';
-import 'package:nerdster/ui/rate_dialog.dart';
+import 'package:nerdster/ui/dialogs/rate_dialog.dart';
 import 'package:nerdster/ui/statement_tile.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
