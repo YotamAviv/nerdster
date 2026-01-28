@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:integration_test/integration_test_driver.dart';
 
 /// This is the test driver script for running integration tests.
@@ -13,7 +11,7 @@ import 'package:integration_test/integration_test_driver.dart';
 /// ```bash
 /// flutter drive \
 ///   --driver=test_driver/integration_test.dart \
-///   --target=integration_test/v2_basic_test.dart \
+///   --target=integration_test/basic_test.dart \
 ///   -d chrome
 /// ```
 ///

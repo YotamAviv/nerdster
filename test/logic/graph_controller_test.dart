@@ -49,7 +49,7 @@ void main() {
         aggregation: ContentAggregation(),
         povIdentity: pov,
         fcontext: '<identity>',
-        sortMode: V2SortMode.recentActivity,
+        sortMode: SortMode.recentActivity,
         filterMode: DisFilterMode.ignore,
         enableCensorship: false,
       );
@@ -101,7 +101,7 @@ void main() {
         aggregation: ContentAggregation(),
         povIdentity: pov,
         fcontext: 'news',
-        sortMode: V2SortMode.recentActivity,
+        sortMode: SortMode.recentActivity,
         filterMode: DisFilterMode.ignore,
         enableCensorship: false,
       );
@@ -152,7 +152,7 @@ void main() {
         aggregation: ContentAggregation(),
         povIdentity: pov,
         fcontext: '<identity>',
-        sortMode: V2SortMode.recentActivity,
+        sortMode: SortMode.recentActivity,
         filterMode: DisFilterMode.ignore,
         enableCensorship: false,
       );

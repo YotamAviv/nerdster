@@ -20,7 +20,7 @@ import 'package:oneofus_common/direct_firestore_source.dart';
 class CorruptionCheck {
   static final OouVerifier _oouVerifier = OouVerifier();
 
-  // TODO: Restore iteration over all keys when V2 key discovery is available.
+  // TODO: Restore iteration over all keys when key discovery is available.
   static Future<void> make(List<String> keysToCheck) async {
     print('Checking ${keysToCheck.length} keys...');
 

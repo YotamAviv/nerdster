@@ -1,28 +1,19 @@
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/demotest/cases/simpsons.dart';
-import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/demotest/test_clock.dart';
-import 'package:nerdster/app.dart';
-import 'package:oneofus_common/fire_factory.dart';
-import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/logic/follow_logic.dart';
-import 'package:nerdster/logic/content_logic.dart';
-import 'package:nerdster/models/model.dart';
-import 'package:nerdster/logic/trust_logic.dart';
-import 'package:nerdster/logic/delegates.dart';
-import 'package:nerdster/logic/labeler.dart';
-import 'package:oneofus_common/keys.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/logic/content_logic.dart';
+import 'package:nerdster/logic/delegates.dart';
+import 'package:nerdster/logic/follow_logic.dart';
+import 'package:nerdster/logic/labeler.dart';
+import 'package:nerdster/logic/trust_logic.dart';
+import 'package:nerdster/models/model.dart';
 
 void main() {
   setUp(() async {
     setUpTestRegistry();
   });
 
-  test('Simpsons Follow Network (V2)', () async {
+  test('Simpsons Follow Network', () async {
     await simpsons();
     final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
 
@@ -136,7 +127,7 @@ void main() {
         reason: 'Homer2 should follow Lisa');
   });
 
-  test('Custom Context Filtering (V2)', () async {
+  test('Custom Context Filtering', () async {
     await simpsons();
     final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
 
@@ -177,7 +168,7 @@ void main() {
     expect(familyNet.contains(trustGraph.resolveIdentity(milhouse.id)), false);
   });
 
-  test('V2 Content Aggregation: Censorship and Equivalence', () async {
+  test('Content Aggregation: Censorship and Equivalence', () async {
     final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
     final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
     final DemoIdentityKey lisa = await DemoIdentityKey.create('lisa');
@@ -244,7 +235,7 @@ void main() {
     expect(contentAgg.equivalence[news2Key], contentAgg.equivalence[news1Key]);
   });
 
-  test('V2 Content Aggregation: Censorship Overrides', () async {
+  test('Content Aggregation: Censorship Overrides', () async {
     final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
     final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
     final DemoIdentityKey lisa = await DemoIdentityKey.create('lisa');
@@ -349,7 +340,7 @@ void main() {
     expect(aggregation3.statements.map((ContentStatement s) => s.token), contains(homerRate.token));
   });
 
-  test('V2 Follow Network: Delegate Resolution', () async {
+  test('Follow Network: Delegate Resolution', () async {
     final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
     final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
     final DemoDelegateKey bartDelegate = await DemoDelegateKey.create('bart-delegate');
@@ -411,7 +402,7 @@ void main() {
     expect(aggregation.statements.any((ContentStatement s) => s.subjectToken == newsToken), isTrue);
   });
 
-  test('V2 Content Aggregation: Proximity-Based Censorship (Censor-the-Censor)', () async {
+  test('Content Aggregation: Proximity-Based Censorship (Censor-the-Censor)', () async {
     final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
     final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
     final DemoIdentityKey lisa = await DemoIdentityKey.create('lisa');
@@ -516,7 +507,7 @@ void main() {
     expect(aggregation3.statements.map((ContentStatement s) => s.token), contains(homerRate.token));
   });
 
-  test('Censoring Relate and Equate Statements (V2)', () async {
+  test('Censoring Relate and Equate Statements', () async {
     final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
     final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
     final DemoIdentityKey lisa = await DemoIdentityKey.create('lisa');
@@ -605,7 +596,7 @@ void main() {
     expect(aggregation2.statements.any((ContentStatement s) => s.token == relate13.token), isFalse);
   });
 
-  test('V2 Subject Aggregation: Grouping and Stats', () async {
+  test('Subject Aggregation: Grouping and Stats', () async {
     final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
     final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
 

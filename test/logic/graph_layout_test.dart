@@ -19,7 +19,7 @@ class MockFeedModel extends FeedModel {
           labeler: Labeler(trustGraph, delegateResolver: delegateResolver),
           povIdentity: trustGraph.pov,
           fcontext: 'test',
-          sortMode: V2SortMode.recentActivity,
+          sortMode: SortMode.recentActivity,
           filterMode: DisFilterMode.ignore,
           enableCensorship: false,
         );

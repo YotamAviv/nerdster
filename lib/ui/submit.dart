@@ -7,7 +7,7 @@ import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/ui/dialogs/rate_dialog.dart';
 
-Future<void> v2Submit(BuildContext context, FeedController controller) async {
+Future<void> submit(BuildContext context, FeedController controller) async {
   final model = controller.value;
   if (model == null) return;
 

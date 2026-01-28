@@ -7,7 +7,6 @@ import 'package:nerdster/verify.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
-// v2/refresh_signal.dart import removed via editing
 import 'package:nerdster/logic/feed_controller.dart'; // Add
 
 class EtcBar extends StatelessWidget {

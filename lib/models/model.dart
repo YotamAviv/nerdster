@@ -7,7 +7,7 @@ import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:oneofus_common/source_error.dart';
 
-enum V2SortMode {
+enum SortMode {
   recentActivity,
   netLikes,
   mostComments,
@@ -459,7 +459,7 @@ class FeedModel {
   final ContentAggregation aggregation;
   final IdentityKey povIdentity;
   final String fcontext;
-  final V2SortMode sortMode;
+  final SortMode sortMode;
   final DisFilterMode filterMode;
   final String? tagFilter;
   final String? typeFilter;

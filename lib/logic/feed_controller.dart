@@ -101,13 +101,13 @@ class FeedController extends ValueNotifier<FeedModel?> {
   String? _error;
   String? get error => _error;
 
-  V2SortMode get sortMode {
+  SortMode get sortMode {
     final val = Setting.get(SettingType.sort).value as String;
-    return V2SortMode.values
-        .firstWhere((e) => e.name == val, orElse: () => V2SortMode.recentActivity);
+    return SortMode.values
+        .firstWhere((e) => e.name == val, orElse: () => SortMode.recentActivity);
   }
 
-  set sortMode(V2SortMode mode) {
+  set sortMode(SortMode mode) {
     Setting.get(SettingType.sort).value = mode.name;
   }
 
@@ -198,11 +198,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
   void sortSubjects(List<SubjectAggregation> subjects) {
     switch (sortMode) {
-      case V2SortMode.recentActivity:
+      case SortMode.recentActivity:
         // CONSIDER: Might be already sorted by lastActivity descending via the aggregation subjects map.
         subjects.sort((a, b) => b.lastActivity.compareTo(a.lastActivity));
         break;
-      case V2SortMode.netLikes:
+      case SortMode.netLikes:
         subjects.sort((a, b) {
           final scoreA = a.likes - a.dislikes;
           final scoreB = b.likes - b.dislikes;
@@ -210,7 +210,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           return b.lastActivity.compareTo(a.lastActivity);
         });
         break;
-      case V2SortMode.mostComments:
+      case SortMode.mostComments:
         subjects.sort((a, b) {
           final commentsA =
               a.statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;

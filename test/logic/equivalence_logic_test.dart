@@ -1,27 +1,18 @@
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/demotest/test_clock.dart';
-import 'package:oneofus_common/fire_factory.dart';
-import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/logic/follow_logic.dart';
-import 'package:nerdster/logic/content_logic.dart';
-import 'package:nerdster/models/model.dart';
-import 'package:nerdster/logic/trust_logic.dart';
-import 'package:nerdster/logic/delegates.dart';
-import 'package:nerdster/logic/labeler.dart';
-import 'package:oneofus_common/keys.dart';
-import 'package:nerdster/fire_choice.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/logic/content_logic.dart';
+import 'package:nerdster/logic/delegates.dart';
+import 'package:nerdster/logic/follow_logic.dart';
+import 'package:nerdster/logic/labeler.dart';
+import 'package:nerdster/logic/trust_logic.dart';
+import 'package:nerdster/models/model.dart';
 
 void main() async {
   setUp(() async {
     setUpTestRegistry();
   });
 
-  test('V2 Equivalence: Transitive and DontEquate', () async {
+  test('Equivalence: Transitive and DontEquate', () async {
     final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
     final DemoIdentityKey charlie = await DemoIdentityKey.create('charlie');

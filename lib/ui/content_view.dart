@@ -50,8 +50,7 @@ class _ContentViewState extends State<ContentView> {
         globalLabeler.value = _controller.value!.labeler;
       }
     });
-    _controller.refresh(); // Assuming refresh() now handles defaults via stored state or defaults?
-    // v2RefreshSignal removed
+    _controller.refresh();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       verifyInit(navigatorKey);
@@ -267,7 +266,7 @@ class _ContentViewState extends State<ContentView> {
                                       padding: EdgeInsets.zero,
                                       visualDensity: VisualDensity.compact,
                                       icon: const Icon(Icons.add, color: Colors.blue),
-                                      onPressed: () => v2Submit(context, _controller),
+                                      onPressed: () => submit(context, _controller),
                                       tooltip: 'Submit new content',
                                     ),
                                   ),

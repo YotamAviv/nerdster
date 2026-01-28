@@ -29,7 +29,7 @@ void main() {
     setUpTestRegistry();
   });
 
-  group('V2 Tag Logic Tests', () {
+  group('Tag Logic Tests', () {
     test('Recursive Tag Collection', () {
       final Json identityKey = mockKey('identity1');
       final String identityToken = Jsonish(identityKey).token;

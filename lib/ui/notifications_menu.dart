@@ -220,7 +220,7 @@ class NotificationsMenu extends StatelessWidget {
               title: SelectableText(reason),
               content: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
-                child: _V2StatementNotification(notification,
+                child: _StatementNotification(notification,
                     labeler: labeler, trustGraph: trustGraph, followNetwork: followNetwork),
               ),
               actions: <Widget>[
@@ -246,13 +246,13 @@ class NotificationsMenu extends StatelessWidget {
   }
 }
 
-class _V2StatementNotification extends StatelessWidget {
+class _StatementNotification extends StatelessWidget {
   final TrustNotification notification;
   final Labeler labeler;
   final TrustGraph? trustGraph;
   final FollowNetwork? followNetwork;
 
-  const _V2StatementNotification(this.notification,
+  const _StatementNotification(this.notification,
       {required this.labeler, this.trustGraph, this.followNetwork});
 
   @override
@@ -353,7 +353,7 @@ Tactics for addressing this:
       aggregation: ContentAggregation(),
       povIdentity: trustGraph!.pov,
       fcontext: 'identity',
-      sortMode: V2SortMode.recentActivity,
+      sortMode: SortMode.recentActivity,
       filterMode: DisFilterMode.ignore,
       enableCensorship: false,
     );
@@ -412,9 +412,9 @@ class StaticFeedController extends ValueNotifier<FeedModel?> implements FeedCont
   String? get error => null;
 
   @override
-  V2SortMode get sortMode => V2SortMode.recentActivity;
+  SortMode get sortMode => SortMode.recentActivity;
   @override
-  set sortMode(V2SortMode mode) {}
+  set sortMode(SortMode mode) {}
 
   @override
   DisFilterMode get filterMode => DisFilterMode.ignore;

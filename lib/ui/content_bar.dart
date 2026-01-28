@@ -30,12 +30,12 @@ class ContentBar extends StatelessWidget {
                     children: [
                       if (!small)
                         const Text('Sort: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      DropdownButton<V2SortMode>(
+                      DropdownButton<SortMode>(
                         value: controller.sortMode,
                         items: const [
-                          DropdownMenuItem(value: V2SortMode.recentActivity, child: Text('Recent')),
-                          DropdownMenuItem(value: V2SortMode.netLikes, child: Text('Net Likes')),
-                          DropdownMenuItem(value: V2SortMode.mostComments, child: Text('Comments')),
+                          DropdownMenuItem(value: SortMode.recentActivity, child: Text('Recent')),
+                          DropdownMenuItem(value: SortMode.netLikes, child: Text('Net Likes')),
+                          DropdownMenuItem(value: SortMode.mostComments, child: Text('Comments')),
                         ],
                         onChanged: (val) {
                           if (val != null) controller.sortMode = val;

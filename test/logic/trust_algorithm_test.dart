@@ -402,19 +402,19 @@ void main() {
 
   test('Double Replacement (Shortcut vs Fork)', () async {
     final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
-    final DemoIdentityKey bobV1 = await DemoIdentityKey.create('bobV1');
-    final DemoIdentityKey bobV2 = await DemoIdentityKey.create('bobV2');
-    final DemoIdentityKey bobV3 = await DemoIdentityKey.create('bobV3');
+    final DemoIdentityKey bob1 = await DemoIdentityKey.create('bob1');
+    final DemoIdentityKey bob2 = await DemoIdentityKey.create('bob2');
+    final DemoIdentityKey bob3 = await DemoIdentityKey.create('bob3');
 
     // Alice trusts the newest key
-    await alice.trust(bobV3, moniker: 'bobV3');
+    await alice.trust(bob3, moniker: 'bob3');
 
-    // bobV3 replaces both predecessors
-    await bobV3.replace(bobV2);
-    await bobV3.replace(bobV1);
+    // bob3 replaces both predecessors
+    await bob3.replace(bob2);
+    await bob3.replace(bob1);
 
-    // bobV2 also replaces bobV1 (the standard chain)
-    await bobV2.replace(bobV1);
+    // bob2 also replaces bob1 (the standard chain)
+    await bob2.replace(bob1);
 
     final DirectFirestoreSource<TrustStatement> source =
         DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
@@ -422,26 +422,26 @@ void main() {
     final TrustGraph graph = await pipeline.build(alice.id);
 
     // --- THOUGHTS ON DOUBLE REPLACEMENT ---
-    // Scenario: bobV3 replaces bobV2 AND bobV1. bobV2 replaces bobV1.
+    // Scenario: bob3 replaces bob2 AND bob1. bob2 replaces bob1.
     //
     // 1. Is it a Conflict?
-    //    Technically, bobV1 has two keys claiming to be its successor. If bobV2 and bobV3
+    //    Technically, bob1 has two keys claiming to be its successor. If bob2 and bob3
     //    were different people, this would be a "Fork" (a hijack attempt).
     //
     // 2. Is it a Shortcut?
-    //    Since bobV3 also replaces bobV2, it's a consistent chain. bobV3 is just
-    //    providing a "shortcut" for anyone who only knows bobV1.
+    //    Since bob3 also replaces bob2, it's a consistent chain. bob3 is just
+    //    providing a "shortcut" for anyone who only knows bob1.
     //
     // 3. Current Algorithm Behavior:
-    //    The algorithm uses "Distance Authority". Since bobV3 (dist 1) is closer
-    //    than bobV2 (dist 2), bobV3's replacement of bobV1 is processed first.
-    //    When bobV2 tries to replace bobV1, the algorithm sees bobV1 is already
+    //    The algorithm uses "Distance Authority". Since bob3 (dist 1) is closer
+    //    than bob2 (dist 2), bob3's replacement of bob1 is processed first.
+    //    When bob2 tries to replace bob1, the algorithm sees bob1 is already
     //    trusted via a shorter path and ignores the second replacement constraint,
     //    issuing an INFO notification.
 
-    expect(graph.isTrusted(bobV3.id), isTrue);
-    expect(graph.isTrusted(bobV2.id), isTrue);
-    expect(graph.isTrusted(bobV1.id), isTrue);
+    expect(graph.isTrusted(bob3.id), isTrue);
+    expect(graph.isTrusted(bob2.id), isTrue);
+    expect(graph.isTrusted(bob1.id), isTrue);
 
     final bool hasConflict = graph.notifications
         .any((TrustNotification n) => n.isConflict && n.reason.contains('replaced by both'));
