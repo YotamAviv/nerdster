@@ -1,5 +1,5 @@
 {
-  "one-of-us.net": {
+  "identity": {
     "crv": "Ed25519",
     "d": "WCtPGxyJ9dL6qP3eEuuOCxLHgTZjbbdofge3j6c85vo",
     "kty": "OKP",

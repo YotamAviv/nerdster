@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:nerdster/ui/alert.dart';
+import 'package:nerdster/ui/dialogs/alert.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/util_ui.dart';
 

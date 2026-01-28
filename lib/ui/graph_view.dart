@@ -8,7 +8,7 @@ import 'package:nerdster/logic/feed_controller.dart';
 
 import 'package:nerdster/logic/follow_logic.dart';
 import 'package:nerdster/ui/trust_settings_bar.dart';
-import 'package:nerdster/ui/node_details.dart';
+import 'package:nerdster/ui/dialogs/node_details.dart';
 import 'package:nerdster/logic/labeler.dart';
 
 class NerdyGraphView extends StatefulWidget {

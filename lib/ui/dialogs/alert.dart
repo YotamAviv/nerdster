@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:nerdster/util_ui.dart';
 
-import 'json_qr_display.dart';
+import '../json_qr_display.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'linky.dart';
+import '../linky.dart';
 
 Future<void> alertException(BuildContext context, Object exception, {StackTrace? stackTrace}) {
   if (stackTrace != null) debugPrintStack(stackTrace: stackTrace);

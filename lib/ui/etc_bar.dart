@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/nerdster_link.dart';
-import 'package:nerdster/ui/alert.dart'; // For alert dialog
+import 'package:nerdster/ui/dialogs/alert.dart'; // For alert dialog
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/ui/my_checkbox.dart';
 import 'package:nerdster/settings/prefs.dart';
