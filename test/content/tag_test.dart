@@ -1,4 +1,4 @@
-import 'package:nerdster/content/tag.dart';
+import 'package:nerdster/utils/tag.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // From

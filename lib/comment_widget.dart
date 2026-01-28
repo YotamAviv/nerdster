@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
-import 'package:nerdster/content/tag.dart';
+import 'package:nerdster/utils/tag.dart';
 
 // Author: Grok
 // CODE: Should probably be in ContentTile file.

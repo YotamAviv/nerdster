@@ -1,4 +1,4 @@
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:oneofus_common/fire_factory.dart';

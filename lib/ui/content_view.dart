@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/nerdster_menu.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/settings/prefs.dart';

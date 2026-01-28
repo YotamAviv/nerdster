@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nerdster/content/content_types.dart';
+import 'package:nerdster/models/content_types.dart';
 import '../test_utils.dart';
 import 'package:nerdster/models/model.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/keys.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/content/dialogs/lgtm.dart';
-import 'package:nerdster/most_strings.dart';
+import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/ui/dialogs/lgtm.dart';
+import 'package:nerdster/utils/most_strings.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:oneofus_common/statement.dart';

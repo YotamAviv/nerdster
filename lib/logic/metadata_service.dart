@@ -1,8 +1,8 @@
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:oneofus_common/fire_factory.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/content/content_types.dart';
+import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/content_types.dart';
 
 class MetadataResult {
   final String? title;

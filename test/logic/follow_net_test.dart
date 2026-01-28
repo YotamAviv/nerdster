@@ -1,5 +1,5 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';

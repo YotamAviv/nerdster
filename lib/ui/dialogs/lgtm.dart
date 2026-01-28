@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/ui/json_display.dart';
 import 'package:nerdster/logic/interpreter.dart';

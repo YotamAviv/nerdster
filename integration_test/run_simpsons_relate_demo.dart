@@ -7,7 +7,7 @@ import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/config.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/fire_factory.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/app.dart';

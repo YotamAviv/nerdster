@@ -13,7 +13,7 @@ import 'package:nerdster/io/source_factory.dart';
 import 'package:oneofus_common/oou_signer.dart';
 
 import 'package:nerdster/models/model.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 
 import 'package:nerdster/demotest/test_util.dart';
 

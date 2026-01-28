@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/jsonish.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:nerdster/logic/metadata_service.dart';

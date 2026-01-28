@@ -9,7 +9,7 @@ import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:oneofus_common/fire_factory.dart';
 import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 
 import 'package:oneofus_common/statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/content/content_types.dart';
+import 'package:nerdster/models/content_types.dart';
 
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/model.dart';

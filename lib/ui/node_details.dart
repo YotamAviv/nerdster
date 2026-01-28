@@ -6,12 +6,12 @@ import 'package:nerdster/ui/key_info_view.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/logic/feed_controller.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/ui/json_display.dart';
 import 'package:nerdster/logic/interpreter.dart';
 import 'package:nerdster/logic/follow_logic.dart';
 import 'package:collection/collection.dart';
-import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 

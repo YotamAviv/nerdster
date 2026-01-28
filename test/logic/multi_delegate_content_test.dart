@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:oneofus_common/fire_factory.dart';
 import 'package:oneofus_common/keys.dart';

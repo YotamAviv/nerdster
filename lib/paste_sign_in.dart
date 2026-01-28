@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/ok_cancel.dart';

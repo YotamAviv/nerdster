@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto2559.dart';
 import 'package:oneofus_common/jsonish.dart';

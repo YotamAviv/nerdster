@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/firebase_options.dart';

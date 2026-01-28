@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/demo_setup.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/dev/corruption_check.dart';

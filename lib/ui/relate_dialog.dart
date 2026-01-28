@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/logic/feed_controller.dart';

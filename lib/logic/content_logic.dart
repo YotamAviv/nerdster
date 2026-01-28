@@ -1,6 +1,6 @@
-import 'package:nerdster/most_strings.dart';
-import 'package:nerdster/content/content_statement.dart';
-import 'package:nerdster/content/tag.dart';
+import 'package:nerdster/utils/most_strings.dart';
+import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/utils/tag.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/merger.dart';
 import 'package:oneofus_common/distincter.dart';

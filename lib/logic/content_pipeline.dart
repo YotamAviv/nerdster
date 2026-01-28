@@ -1,5 +1,5 @@
 import 'dart:collection';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/io.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/delegates.dart';

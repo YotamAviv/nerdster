@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/content/dialogs/check_signed_in.dart';
+import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/model.dart';
 
-import '../content/content_statement.dart';
-import '../content/dialogs/on_off_icon.dart';
-import '../content/dialogs/on_off_icons.dart';
+import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/ui/dialogs/on_off_icon.dart';
+import 'package:nerdster/ui/dialogs/on_off_icons.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/statement.dart';
 import '../singletons.dart';

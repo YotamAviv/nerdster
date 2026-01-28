@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:oneofus_common/fire_factory.dart';
 import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/content/content_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/logic/content_pipeline.dart';

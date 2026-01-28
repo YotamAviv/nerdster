@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:nerdster/content/content_types.dart';
+import 'package:nerdster/models/content_types.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/logic/metadata_service.dart';
 import 'package:nerdster/ui/ok_cancel.dart';
