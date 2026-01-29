@@ -27,7 +27,7 @@
       "!**/.well-known/**",
       "**/node_modules/**"
     ],
-    "appAssociation": "AUTO",
+    "appAssociation": "NONE",
     "rewrites": [
       {
         "source": "**",
@@ -35,6 +35,15 @@
       }
     ],
     "headers": [
+      {
+        "source": "/.well-known/apple-app-site-association",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      },
       {
         "source": "**",
         "headers": [
