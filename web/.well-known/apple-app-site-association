@@ -4,7 +4,11 @@
     "details": [
       {
         "appID": "PG2Q5QYA2W.net.oneofus.iapp",
-        "paths": [ "/sign-in", "/sign-in/*", "/replace/*", "*" ]
+        "paths": ["/sign-in", "/sign-in/*", "/replace/*"]
+      },
+      {
+        "appID": "PG2Q5QYA2W.net.oneofus.app",
+        "paths": ["/sign-in", "/sign-in/*", "/replace/*"]
       }
     ]
   }
