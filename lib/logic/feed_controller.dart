@@ -57,8 +57,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
   })  : trustSource = CachedSource(trustSource, SourceFactory.getWriter(kOneofusDomain)),
         contentSource = CachedSource(contentSource, SourceFactory.getWriter(kNerdsterDomain)),
         super(null) {
+    _lastIdentity = signInState.isSignedIn ? signInState.identity : null;
+    _lastPov = signInState.povNotifier.value;
+    _lastDelegate = signInState.delegate;
     Setting.get(SettingType.identityPathsReq).notifier.addListener(_onSettingChanged);
-    signInState.povNotifier.addListener(_onSettingChanged);
+    signInState.addListener(_onSignInStateChanged);
     Setting.get(SettingType.fcontext).notifier.addListener(_onSettingChanged);
 
     Setting.get(SettingType.sort).notifier.addListener(_onDisplaySettingChanged);
@@ -66,6 +69,30 @@ class FeedController extends ValueNotifier<FeedModel?> {
     Setting.get(SettingType.tag).notifier.addListener(_onDisplaySettingChanged);
     Setting.get(SettingType.contentType).notifier.addListener(_onDisplaySettingChanged);
     Setting.get(SettingType.censor).notifier.addListener(_onSettingChanged);
+  }
+
+  String? _lastIdentity;
+  String? _lastPov;
+  String? _lastDelegate;
+
+  void _onSignInStateChanged() {
+    final currentIdentity = signInState.isSignedIn ? signInState.identity : null;
+    final currentPov = signInState.povNotifier.value;
+    final currentDelegate = signInState.delegate;
+
+    final identityChanged = currentIdentity != _lastIdentity;
+    final povChanged = currentPov != _lastPov;
+    final delegateChanged = currentDelegate != _lastDelegate;
+
+    _lastIdentity = currentIdentity;
+    _lastPov = currentPov;
+    _lastDelegate = currentDelegate;
+
+    if (identityChanged || delegateChanged) {
+      refresh();
+    } else if (povChanged) {
+      notify();
+    }
   }
 
   void _onSettingChanged() {
@@ -81,7 +108,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
   @override
   void dispose() {
     Setting.get(SettingType.identityPathsReq).notifier.removeListener(_onSettingChanged);
-    signInState.povNotifier.removeListener(_onSettingChanged);
+    signInState.removeListener(_onSignInStateChanged);
     Setting.get(SettingType.fcontext).notifier.removeListener(_onSettingChanged);
 
     Setting.get(SettingType.sort).notifier.removeListener(_onDisplaySettingChanged);
