@@ -118,54 +118,45 @@ class _SignInDialogState extends State<SignInDialog> {
     final bool hasIdentity = signInState.isSignedIn;
     final bool hasDelegate = signInState.delegate != null;
 
-    final bool isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
-    final bool isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
 
     Widget buildUniversalBtn(bool recommended) {
-      if (kIsWeb) {
-        return FutureBuilder<SignInSession>(
-            future: _sessionFuture,
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
+      return FutureBuilder<SignInSession>(
+          future: _sessionFuture,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return _buildSquareButton(
+                context,
+                icon: Icons.link,
+                label: 'Universal Links (iOS) & App Links (Android)',
+                onPressed: () {},
+                recommended: recommended,
+              );
+            }
+            final session = snapshot.data!;
+            final paramsJson = jsonEncode(session.forPhone);
+            final base64Params = base64Url.encode(utf8.encode(paramsJson));
+            final link = 'https://one-of-us.net/sign-in?parameters=$base64Params';
+
+            return Link(
+              uri: Uri.parse(link),
+              target: LinkTarget.blank,
+              builder: (context, followLink) {
                 return _buildSquareButton(
                   context,
                   icon: Icons.link,
                   label: 'Universal Links (iOS) & App Links (Android)',
-                  onPressed: () {},
+                  onPressed: () {
+                    _magicLinkSignIn(context,
+                        useUniversalLink: true, precreatedSessionFuture: _sessionFuture, autoLaunch: false);
+                    followLink?.call();
+                  },
                   recommended: recommended,
                 );
-              }
-              final session = snapshot.data!;
-              final paramsJson = jsonEncode(session.forPhone);
-              final base64Params = base64Url.encode(utf8.encode(paramsJson));
-              final link = 'https://one-of-us.net/sign-in?parameters=$base64Params';
-
-              return Link(
-                uri: Uri.parse(link),
-                target: LinkTarget.blank,
-                builder: (context, followLink) {
-                  return _buildSquareButton(
-                    context,
-                    icon: Icons.link,
-                    label: 'Universal Links (iOS) & App Links (Android)',
-                    onPressed: () {
-                      _magicLinkSignIn(context,
-                          useUniversalLink: true, precreatedSessionFuture: _sessionFuture, autoLaunch: false);
-                      followLink?.call();
-                    },
-                    recommended: recommended,
-                  );
-                },
-              );
-            });
-      }
-      return _buildSquareButton(
-        context,
-        icon: Icons.link,
-        label: 'Universal Links (iOS) & App Links (Android)',
-        onPressed: () => _magicLinkSignIn(context, useUniversalLink: true),
-        recommended: recommended,
-      );
+              },
+            );
+          });
     }
 
     Widget buildCustomBtn(bool recommended) => _buildSquareButton(
