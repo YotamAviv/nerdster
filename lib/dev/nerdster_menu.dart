@@ -5,11 +5,8 @@ import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 
 class NerdsterMenu extends StatefulWidget {
-  final Widget notifications;
-
   const NerdsterMenu({
-    super.key,
-    required this.notifications,
+    super.key
   });
 
   @override
@@ -39,6 +36,6 @@ class _NerdsterMenuState extends State<NerdsterMenu> {
 
   @override
   Widget build(BuildContext context) {
-    return MenuBar(children: Menus.build(context, notifications: widget.notifications));
+    return MenuBar(children: Menus.build(context));
   }
 }

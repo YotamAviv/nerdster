@@ -17,11 +17,10 @@ run all tests, unti and integration tests included.
 
 
 read AI.md
-run git diff on the changes between this branch and the main branch and read those changes.
+I've made updates myself.
+run git diff on the changes and read those changes. 
 Let me know if you notice anything that might be problematic.
 Base your opinion on the diffs, not on your recent memory.
+List the modified files from the diff output, then write the commit message based ONLY on those files.
 Copy/paste from our conversation never works for me for this, and so
 append the commit message to the end of this file
-READ-ONLY MODE
-
-Refactor V2 components: Rename V2Labeler/V2FeedModel to Labeler/FeedModel, move tests to test/logic, and update imports.

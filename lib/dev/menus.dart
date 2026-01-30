@@ -15,9 +15,7 @@ const iconSpacer = SizedBox(width: 3);
 
 class Menus {
   static List<Widget> build(
-    BuildContext context, {
-    required Widget notifications,
-  }) {
+    BuildContext context) {
     List<Widget> demos = <Widget>[];
     for (final e in DemoKey.demos.entries) {
       String name = e.key;
@@ -56,7 +54,6 @@ class Menus {
     }
 
     return <Widget>[
-      // Sign in
       SignInMenu(),
 
       // Dev

@@ -27,6 +27,21 @@ enum DisFilterMode {
   }
 }
 
+/// Represents a generic system notification (e.g. Invisibility, Delegate issues)
+class SystemNotification {
+  final String title;
+  final String description;
+  final bool isError;
+  final String? icon; // Optional custom icon?
+
+  SystemNotification({
+    required this.title, 
+    required this.description, 
+    this.isError = false,
+    this.icon,
+  });
+}
+
 /// Represents a notification or conflict discovered during graph construction.
 class TrustNotification {
   final String reason;
@@ -468,6 +483,7 @@ class FeedModel {
   final Set<String> activeContexts;
   final List<SubjectAggregation> effectiveSubjects; // Filtered and sorted
   final List<SourceError> sourceErrors;
+  final List<SystemNotification> systemNotifications;
 
   FeedModel({
     required this.trustGraph,
@@ -486,6 +502,7 @@ class FeedModel {
     this.activeContexts = const {},
     this.effectiveSubjects = const [],
     this.sourceErrors = const [],
+    this.systemNotifications = const [],
   });
 }
 

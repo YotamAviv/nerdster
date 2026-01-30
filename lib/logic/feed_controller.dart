@@ -201,6 +201,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
       activeContexts: value!.activeContexts,
       effectiveSubjects: effectiveSubjects,
       sourceErrors: value!.sourceErrors,
+      systemNotifications: value!.systemNotifications,
     );
   }
 
@@ -478,12 +479,67 @@ class FeedController extends ValueNotifier<FeedModel?> {
           }
         }
 
-        if (currentPovIdentity == IdentityKey(signInState.pov) &&
+        if (currentPovIdentity.value == signInState.pov &&
             currentMeIdentity?.value == (signInState.isSignedIn ? signInState.identity : null)) {
           final allErrors = [
             ...trustSource.errors,
             ...contentSource.errors,
           ];
+
+          final systemNotifications = <SystemNotification>[];
+
+          // 1. Invisibility
+          // Note: We use the identity from the start of the refresh loop to ensure consistency
+          if (currentMeIdentity != null) {
+            final isVisible = followNetwork.identities
+                .any((k) => k.value == currentMeIdentity.value);
+            debugPrint(
+                'Invisibility Check: Me=${currentMeIdentity.value} InNetwork=$isVisible Size=${followNetwork.identities.length}');
+
+            if (!isVisible) {
+              systemNotifications.add(SystemNotification(
+                title: "You're invisible",
+                description:
+                    "You're not in the network you're viewing.",
+              ));
+            }
+          }
+
+          // 2. Delegate Issues
+          if (currentMeIdentity != null && signInState.delegate != null) {
+             final myDelegate = signInState.delegate!;
+             
+             // Revoked
+             if (graph.replacements.containsKey(IdentityKey(myDelegate))) {
+                systemNotifications.add(SystemNotification(
+                   title: "Your delegate key is revoked",
+                   description: "Your current delegate key has been replaced or revoked by your identity.\n\n"
+                    "You cannot perform actions (like posting or liking) until you sign in with a valid key.",
+                   isError: true,
+                ));
+             }
+
+             // Not associated
+             if (graph.isTrusted(currentMeIdentity)) {
+                bool isAssociated = false;
+                final statements = graph.edges[currentMeIdentity];
+                if (statements != null) {
+                  for (final s in statements) {
+                    if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
+                      isAssociated = true;
+                      break;
+                    }
+                  }
+                }
+                if (!isAssociated) {
+                   systemNotifications.add(SystemNotification(
+                      title: "Delegate key not associated",
+                      description: "Your current delegate key is not associated with your identity.",
+                      isError: true,
+                   ));
+                }
+             }
+          }
 
           final effectiveSubjects = _computeEffectiveSubjects(
             aggregation,
@@ -510,6 +566,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
             activeContexts: activeContexts,
             effectiveSubjects: effectiveSubjects,
             sourceErrors: allErrors,
+            systemNotifications: systemNotifications,
           );
           progress.value = 1.0;
           break;

@@ -15,7 +15,6 @@ import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/jsonish.dart'; // For getToken
-import 'package:nerdster/singletons.dart';
 import 'package:oneofus_common/cached_source.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/feed_controller.dart';
@@ -34,6 +33,7 @@ class NotificationsMenu extends StatelessWidget {
   final DelegateResolver? delegateResolver;
   final Labeler labeler;
   final List<SourceError> sourceErrors;
+  final List<SystemNotification> systemNotifications;
 
   const NotificationsMenu({
     super.key,
@@ -42,7 +42,18 @@ class NotificationsMenu extends StatelessWidget {
     this.delegateResolver,
     required this.labeler,
     this.sourceErrors = const [],
+    this.systemNotifications = const [],
   });
+
+  static bool shouldShow(FeedModel? model) {
+    if (model == null) return false;
+
+    return model.sourceErrors.isNotEmpty ||
+        model.trustGraph.notifications.isNotEmpty ||
+        model.followNetwork.notifications.isNotEmpty ||
+        model.delegateResolver.notifications.isNotEmpty ||
+        model.systemNotifications.isNotEmpty;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,85 +123,44 @@ class NotificationsMenu extends StatelessWidget {
       ));
     }
 
-    // Check for "Not in network" warning
-    final myIdentity = signInState.identity;
-    if (followNetwork != null) {
-      final canonicalIdentity =
-          trustGraph?.resolveIdentity(IdentityKey(myIdentity)) ?? IdentityKey(myIdentity);
-      if (!followNetwork!.identities.contains(canonicalIdentity)) {
-        items.add(MenuItemButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => const AlertDialog(
-                title: Text("You're not in this network"),
-                content: Text(
-                    "Your identity is not included among the identities defining the view you are seeing.\n\n"
-                    "This means your posts and actions may not be visible to others in this context."),
-              ),
-            );
-          },
-          child:
-              const Text("⚠️ You're not in this network", style: TextStyle(color: Colors.orange)),
-        ));
-      }
-    }
-
-    // Check for "Delegate key revoked" warning
-    final myDelegate = signInState.delegate;
-    if (myDelegate != null && trustGraph != null) {
-      // Check if the delegate key is replaced
-      if (trustGraph!.replacements.containsKey(IdentityKey(myDelegate))) {
-        items.add(MenuItemButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => const AlertDialog(
-                title: Text("Your delegate key is revoked"),
-                content: Text(
-                    "Your current delegate key has been replaced or revoked by your identity.\n\n"
-                    "You cannot perform actions (like posting or liking) until you sign in with a valid key."),
-              ),
-            );
-          },
-          child: const Text("⛔ Your delegate key is revoked", style: TextStyle(color: Colors.red)),
-        ));
-      } else if (trustGraph!.isTrusted(IdentityKey(myIdentity))) {
-        // Check if the delegate key is associated with the identity
-        // We can check if the identity has a 'delegate' statement for this key in the graph edges
-        bool isAssociated = false;
-        final statements = trustGraph!.edges[IdentityKey(myIdentity)];
-        if (statements != null) {
-          for (final s in statements) {
-            if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
-              isAssociated = true;
-              break;
-            }
-          }
-        }
-
-        if (!isAssociated) {
-          items.add(MenuItemButton(
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => const AlertDialog(
-                  title: Text("Delegate key not associated"),
-                  content: Text("Your current delegate key is not associated with your identity."),
+    // System Notifications (Invisible, Delegate issues, etc)
+    for (final notification in systemNotifications) {
+      items.add(MenuItemButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(notification.title),
+              content: Text(notification.description),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
                 ),
-              );
-            },
-            child: const Text("⛔ Delegate key not associated", style: TextStyle(color: Colors.red)),
-          ));
-        }
-      }
+              ],
+            ),
+          );
+        },
+        child: Text(
+          "${notification.isError ? '⛔' : '⚠️'} ${notification.title}",
+          style: TextStyle(color: notification.isError ? Colors.red : Colors.orange),
+          softWrap: false,
+        ),
+      ));
     }
 
     for (final notification in allNotifications) {
       items.add(_buildNotificationItem(notification, context));
     }
 
-    Color? color = items.isNotEmpty ? Colors.red : null;
+    if (items.isEmpty) {
+      debugPrint('NotificationsMenu: items is empty but shouldShow was likely true.');
+      debugPrint('counts: sys=${systemNotifications.length} err=${sourceErrors.length} '
+          'trust=${trustGraph?.notifications.length} follow=${followNetwork?.notifications.length}');
+      return const SizedBox.shrink();
+    }
+
+    Color? color = Colors.red;
     return SubmenuButton(
         menuChildren: items,
         child: Row(

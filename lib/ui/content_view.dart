@@ -146,29 +146,7 @@ class _ContentViewState extends State<ContentView> {
                         valueListenable: Setting.get<bool>(SettingType.dev).notifier,
                         builder: (context, dev, child) {
                           if (!dev) return const SizedBox.shrink();
-                          return NerdsterMenu(
-                            notifications: Builder(builder: (context) {
-                              final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
-                              final hasTrust = model?.trustGraph.notifications.isNotEmpty ?? false;
-                              final hasFollow =
-                                  model?.followNetwork.notifications.isNotEmpty ?? false;
-
-                              if (model != null && (hasTrust || hasFollow || hasErrors)) {
-                                if (hasErrors) {
-                                  debugPrint(
-                                      'ContentView: Displaying ${model.sourceErrors.length} errors');
-                                }
-                                return NotificationsMenu(
-                                  trustGraph: model.trustGraph,
-                                  followNetwork: model.followNetwork,
-                                  delegateResolver: model.delegateResolver,
-                                  labeler: model.labeler,
-                                  sourceErrors: model.sourceErrors,
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            }),
-                          );
+                          return NerdsterMenu();
                         }),
                     if (_controller.loading)
                       Column(
@@ -217,14 +195,8 @@ class _ContentViewState extends State<ContentView> {
                               ? EtcBar(
                                   controller: _controller,
                                   notifications: Builder(builder: (context) {
-                                    final hasErrors = model?.sourceErrors.isNotEmpty ?? false;
-                                    final hasTrust =
-                                        model?.trustGraph.notifications.isNotEmpty ?? false;
-                                    final hasFollow =
-                                        model?.followNetwork.notifications.isNotEmpty ?? false;
-
-                                    if (model != null && (hasTrust || hasFollow || hasErrors)) {
-                                      if (hasErrors) {
+                                    if (NotificationsMenu.shouldShow(model)) {
+                                      if (model!.sourceErrors.isNotEmpty) {
                                         debugPrint(
                                             'ContentView: Displaying ${model.sourceErrors.length} errors');
                                       }
@@ -234,6 +206,7 @@ class _ContentViewState extends State<ContentView> {
                                         delegateResolver: model.delegateResolver,
                                         labeler: model.labeler,
                                         sourceErrors: model.sourceErrors,
+                                        systemNotifications: model.systemNotifications,
                                       );
                                     }
                                     return const SizedBox.shrink();
@@ -296,7 +269,10 @@ class _ContentViewState extends State<ContentView> {
                                   child: IconButton(
                                     padding: EdgeInsets.zero,
                                     visualDensity: VisualDensity.compact,
-                                    icon: const Icon(Icons.menu, color: Colors.blue),
+                                    icon: Icon(Icons.menu,
+                                        color: NotificationsMenu.shouldShow(model)
+                                            ? Colors.pink
+                                            : Colors.blue),
                                     onPressed: () {
                                       if (!_showEtc.value) _showFilters.value = false;
                                       _showEtc.value = !_showEtc.value;
