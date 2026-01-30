@@ -15,6 +15,7 @@ import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/logic/interpreter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/link.dart';
 
 class SignInWidget extends StatefulWidget {
   const SignInWidget({super.key});
@@ -91,10 +92,14 @@ class SignInDialog extends StatefulWidget {
 class _SignInDialogState extends State<SignInDialog> {
   final ValueNotifier<bool> _storeKeys = ValueNotifier(true);
 
+  // We pre-create the session so we can generate a valid Link widget immediately.
+  late Future<SignInSession> _sessionFuture;
+
   @override
   void initState() {
     super.initState();
     signInState.addListener(_update);
+    _sessionFuture = SignInSession.create();
   }
 
   @override
@@ -116,13 +121,52 @@ class _SignInDialogState extends State<SignInDialog> {
     final bool isIOS = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
     final bool isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
-    Widget buildUniversalBtn(bool recommended) => _buildSquareButton(
-          context,
-          icon: Icons.link,
-          label: 'Universal Links (iOS) & App Links (Android)',
-          onPressed: () => _magicLinkSignIn(context, useUniversalLink: true),
-          recommended: recommended,
-        );
+    Widget buildUniversalBtn(bool recommended) {
+      if (kIsWeb) {
+        return FutureBuilder<SignInSession>(
+            future: _sessionFuture,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return _buildSquareButton(
+                  context,
+                  icon: Icons.link,
+                  label: 'Universal Links (iOS) & App Links (Android)',
+                  onPressed: () {},
+                  recommended: recommended,
+                );
+              }
+              final session = snapshot.data!;
+              final paramsJson = jsonEncode(session.forPhone);
+              final base64Params = base64Url.encode(utf8.encode(paramsJson));
+              final link = 'https://one-of-us.net/sign-in?parameters=$base64Params';
+
+              return Link(
+                uri: Uri.parse(link),
+                target: LinkTarget.blank,
+                builder: (context, followLink) {
+                  return _buildSquareButton(
+                    context,
+                    icon: Icons.link,
+                    label: 'Universal Links (iOS) & App Links (Android)',
+                    onPressed: () {
+                      _magicLinkSignIn(context,
+                          useUniversalLink: true, precreatedSessionFuture: _sessionFuture, autoLaunch: false);
+                      followLink?.call();
+                    },
+                    recommended: recommended,
+                  );
+                },
+              );
+            });
+      }
+      return _buildSquareButton(
+        context,
+        icon: Icons.link,
+        label: 'Universal Links (iOS) & App Links (Android)',
+        onPressed: () => _magicLinkSignIn(context, useUniversalLink: true),
+        recommended: recommended,
+      );
+    }
 
     Widget buildCustomBtn(bool recommended) => _buildSquareButton(
           context,
@@ -359,11 +403,14 @@ class _SignInDialogState extends State<SignInDialog> {
         });
   }
 
-  Future<void> _magicLinkSignIn(BuildContext context, {bool useUniversalLink = false}) async {
+  Future<void> _magicLinkSignIn(BuildContext context,
+      {bool useUniversalLink = false,
+      Future<SignInSession>? precreatedSessionFuture,
+      bool autoLaunch = true}) async {
     final completer = Completer<void>();
 
     // Start session creation immediately
-    final sessionFuture = SignInSession.create();
+    final sessionFuture = precreatedSessionFuture ?? SignInSession.create();
 
     await showDialog(
         context: context,
@@ -373,6 +420,7 @@ class _SignInDialogState extends State<SignInDialog> {
             sessionFuture: sessionFuture,
             storeKeys: _storeKeys,
             useUniversalLink: useUniversalLink,
+            autoLaunch: autoLaunch,
             onCancel: () {
               // Logic handled in widget
             },
@@ -394,6 +442,7 @@ class MagicLinkDialog extends StatefulWidget {
   final VoidCallback onCancel;
   final VoidCallback onSuccess;
   final bool useUniversalLink;
+  final bool autoLaunch;
 
   const MagicLinkDialog({
     super.key,
@@ -402,6 +451,7 @@ class MagicLinkDialog extends StatefulWidget {
     required this.onCancel,
     required this.onSuccess,
     this.useUniversalLink = false,
+    this.autoLaunch = true,
   });
 
   @override
@@ -430,7 +480,9 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
           : 'keymeid://signin?parameters=$base64Params';
 
       // Launch immediately
-      await launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
+      if (widget.autoLaunch) {
+        await launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
+      }
 
       // Listen
       session.listen(
