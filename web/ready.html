@@ -101,7 +101,12 @@
     <script>
       (function () {
         const iframe = document.getElementById("flutterApp");
-        if (!iframe) return;
+
+        const dummy = `{
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "VP_2SPvYhn9quOo1nEKNCuwkPnQqQmmpaUdvK_YoKns"
+}`;
 
         iframe.src = IframeHelper.constructUrl({
           qrSignIn: true,

@@ -92,19 +92,17 @@
     <script>
       (function () {
         const iframe = document.getElementById("flutterApp");
-        if (!iframe) return;
 
         const identity = demoData["lisa"];
 
         const verify = demoData["bart-follow-milhouse-social"];
-        console.log("verify:", verify);
 
         iframe.src = IframeHelper.constructUrl({
           identity: JSON.stringify(identity),
           verify: JSON.stringify(verify, null, 2),
-          verifyImmediately: "true",
-          showCrypto: "true",
-          skipCredentialsDisplay: "true",
+          identityPathsReq: "permissive",
+          verifyImmediately: true,
+          showCrypto: true,
         });
 
         VerifyHelper.setupListeners([

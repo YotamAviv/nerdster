@@ -57,7 +57,7 @@ class NerdsterApp extends StatelessWidget {
               }
 
               if (params.containsKey('verifyFullScreen') &&
-                  Setting.get<bool>(SettingType.verify).value == true) {
+                  Setting.get<String?>(SettingType.verify).value != null) {
                 return const StandaloneVerify();
               } else {
                 return ContentView(

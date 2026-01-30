@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -70,18 +70,22 @@
     <script>
       (function () {
         const iframe = document.getElementById("flutterApp");
-        if (!iframe) return;
+
+        const dummy = `{
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "VP_2SPvYhn9quOo1nEKNCuwkPnQqQmmpaUdvK_YoKns"
+}`;
 
         // Initial load
         const initialKey = "lisa-trust-mom";
         const initialData = demoData[initialKey];
-        if (initialData) {
-          iframe.src = IframeHelper.constructUrl({
-            verify: JSON.stringify(initialData, null, 2),
-            verifyImmediately: "true",
-            verifyFullScreen: "true",
-          });
-        }
+        iframe.src = IframeHelper.constructUrl({
+          identity: dummy,
+          verify: JSON.stringify(initialData, null, 2),
+          verifyImmediately: true,
+          verifyFullScreen: true,
+        });
 
         VerifyHelper.setupListeners([
           "lisa-trust-mom",

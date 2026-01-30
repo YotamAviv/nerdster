@@ -109,10 +109,16 @@
     </main>
 
     <script src="iframe_helper.js"></script>
+    <script src="verify_helper.js"></script>
     <script>
       (function () {
         const iframe = document.getElementById("flutterApp");
-        if (!iframe) return;
+
+        const dummy = `{
+  "crv": "Ed25519",
+  "kty": "OKP",
+  "x": "VP_2SPvYhn9quOo1nEKNCuwkPnQqQmmpaUdvK_YoKns"
+}`;
 
         const verify = `{
   "I": {
@@ -125,10 +131,13 @@
 }`;
 
         iframe.src = IframeHelper.constructUrl({
+          identity: dummy,
           verify: verify,
-          verifyFullScreen: "true",
+          verifyFullScreen: true,
         });
       })();
     </script>
+
+
   </body>
 </html>
