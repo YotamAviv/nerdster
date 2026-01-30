@@ -6,5 +6,9 @@ build
 exports
 lib/firebase_options.dart
 lib/oneofus_fire.dart
-yotam.json
 firestore-debug.log
+yotam.json
+lisa.json
+lisa2.json
+simpsonsDemo.json
+simpsonsDemo2.json
