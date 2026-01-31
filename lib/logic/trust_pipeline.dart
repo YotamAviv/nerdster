@@ -1,5 +1,5 @@
+import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/trust_logic.dart';
 import 'package:oneofus_common/keys.dart';

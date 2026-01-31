@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/models/content_types.dart';
+import 'package:oneofus_common/statement_source.dart';
 import '../test_utils.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/models/model.dart';
@@ -7,7 +8,6 @@ import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/logic/delegates.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/settings/setting_type.dart';

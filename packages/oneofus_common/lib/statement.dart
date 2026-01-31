@@ -6,12 +6,11 @@ abstract class Statement {
   final Jsonish jsonish;
   final DateTime time;
   final Json i;
-  final String iToken; // TODO: IdentityToken
-
-  final dynamic
-      subject; // Object of verb, may be Json or a token (like, for censor) or a statement..
-
+  final String iToken; // TODO: IdentityKey
+  // Object of verb, may be Json or a token (like, for censor) or a statement..
+  final dynamic subject;
   final String? comment;
+
   static final Map<Type, String> _class2type = <Type, String>{};
   static final Map<String, String> _domain2type = <String, String>{};
 

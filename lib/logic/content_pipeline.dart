@@ -1,9 +1,9 @@
 import 'dart:collection';
 import 'package:nerdster/models/content_statement.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:oneofus_common/keys.dart';
+import 'package:oneofus_common/statement_source.dart';
 
 class ContentPipeline {
   final StatementSource<ContentStatement> delegateSource;

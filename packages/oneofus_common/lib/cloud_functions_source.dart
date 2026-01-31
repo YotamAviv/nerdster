@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/statement.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:oneofus_common/source_error.dart';
+import 'package:oneofus_common/statement_source.dart';
 
 /// Fetches statements using the Cloud Function HTTP endpoint.
 /// This is the preferred method for Production and Emulator environments as it is more efficient.

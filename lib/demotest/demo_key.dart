@@ -15,8 +15,8 @@ import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto2559.dart';
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:oneofus_common/statement.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:nerdster/io/source_factory.dart';
+import 'package:oneofus_common/statement_writer.dart';
 
 /// For testing, development, and maybe demo.
 const OouCryptoFactory _crypto = crypto;

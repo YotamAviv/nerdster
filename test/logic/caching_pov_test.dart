@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:oneofus_common/cached_source.dart';
 import 'package:oneofus_common/source_error.dart';
+import 'package:oneofus_common/statement_source.dart';
 
 class MockSource implements StatementSource<TrustStatement> {
   final Map<String, List<TrustStatement>> data;

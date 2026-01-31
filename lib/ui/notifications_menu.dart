@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/jsonish.dart'; // For getToken
 import 'package:oneofus_common/cached_source.dart';
@@ -20,7 +21,6 @@ import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/ui/graph_view.dart';
 import 'package:nerdster/logic/interpreter.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:oneofus_common/ui/json_display.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';

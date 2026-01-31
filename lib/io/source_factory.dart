@@ -1,3 +1,4 @@
+import 'package:oneofus_common/direct_firestore_writer.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:oneofus_common/fire_factory.dart';
@@ -5,9 +6,10 @@ import 'package:oneofus_common/oou_verifier.dart';
 import 'package:oneofus_common/cloud_functions_source.dart';
 import 'package:nerdster/config.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
+import 'package:oneofus_common/statement_source.dart';
+import 'package:oneofus_common/statement_writer.dart';
 
 class SourceFactory {
   static StatementSource<T> get<T extends Statement>(String domain) =>

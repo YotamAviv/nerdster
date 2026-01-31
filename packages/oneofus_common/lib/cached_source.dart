@@ -1,7 +1,8 @@
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:oneofus_common/source_error.dart';
+import 'package:oneofus_common/statement_source.dart';
+import 'package:oneofus_common/statement_writer.dart';
 
 /// A caching decorator for [StatementSource].
 /// Stores fetched statements in memory to avoid redundant network calls.

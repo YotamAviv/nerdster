@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/fire_choice.dart';
+import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/ui/json_display.dart';
 import 'package:nerdster/logic/interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
@@ -9,7 +10,6 @@ import 'package:oneofus_common/trust_statement.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:nerdster/config.dart';
-import 'package:oneofus_common/io.dart';
 
 class KeyInfoView extends StatelessWidget {
   final Jsonish jsonish;

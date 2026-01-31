@@ -1,6 +1,6 @@
 import 'package:oneofus_common/statement.dart';
-import 'package:oneofus_common/io.dart';
 import 'package:oneofus_common/source_error.dart';
+import 'package:oneofus_common/statement_source.dart';
 
 /// A wrapper around [StatementSource] that records fetch calls.
 class SpyStatementSource<T extends Statement> implements StatementSource<T> {
