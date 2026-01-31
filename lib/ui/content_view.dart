@@ -205,6 +205,7 @@ class _ContentViewState extends State<ContentView> {
                                         followNetwork: model.followNetwork,
                                         delegateResolver: model.delegateResolver,
                                         labeler: model.labeler,
+                                        controller: _controller,
                                         sourceErrors: model.sourceErrors,
                                         systemNotifications: model.systemNotifications,
                                       );

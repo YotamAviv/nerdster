@@ -1,12 +1,3 @@
-// PLAN:
-// 1. Remove the text-based path visualization (_buildPathSpans and its usage).
-// 2. Add "Show Trust Graph" buttons/links to the notification dialog.
-//    - One for paths to the Issuer.
-//    - One for paths to the Subject.
-// 3. Implement a `StaticFeedController` to adapt the existing `TrustGraph` and `FollowNetwork`
-//    into a `FeedController` required by `NerdyGraphView`.
-// 4. Launch `NerdyGraphView` in a dialog or new screen when the buttons are clicked.
-
 import 'package:float_column/float_column.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -14,14 +5,10 @@ import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/logic/interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
-import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/graph_view.dart';
-import 'package:oneofus_common/cached_source.dart';
-import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/source_error.dart';
 import 'package:oneofus_common/statement.dart';
-import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/ui/json_display.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -31,6 +18,7 @@ class NotificationsMenu extends StatelessWidget {
   final FollowNetwork? followNetwork;
   final DelegateResolver? delegateResolver;
   final Labeler labeler;
+  final FeedController controller;
   final List<SourceError> sourceErrors;
   final List<SystemNotification> systemNotifications;
 
@@ -40,6 +28,7 @@ class NotificationsMenu extends StatelessWidget {
     this.followNetwork,
     this.delegateResolver,
     required this.labeler,
+    required this.controller,
     this.sourceErrors = const [],
     this.systemNotifications = const [],
   });
@@ -190,7 +179,10 @@ class NotificationsMenu extends StatelessWidget {
               content: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
                 child: _StatementNotification(notification,
-                    labeler: labeler, trustGraph: trustGraph, followNetwork: followNetwork),
+                    labeler: labeler,
+                    trustGraph: trustGraph,
+                    followNetwork: followNetwork,
+                    controller: controller),
               ),
               actions: <Widget>[
                 TextButton(
@@ -213,6 +205,7 @@ class NotificationsMenu extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class _StatementNotification extends StatelessWidget {
@@ -220,9 +213,13 @@ class _StatementNotification extends StatelessWidget {
   final Labeler labeler;
   final TrustGraph? trustGraph;
   final FollowNetwork? followNetwork;
+  final FeedController controller;
 
   const _StatementNotification(this.notification,
-      {required this.labeler, this.trustGraph, this.followNetwork});
+      {required this.labeler,
+      this.trustGraph,
+      this.followNetwork,
+      required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -308,27 +305,6 @@ Tactics for addressing this:
   }
 
   void _showGraph(BuildContext context, String focusIdentity) {
-    if (trustGraph == null) return;
-
-    final model = FeedModel(
-      trustGraph: trustGraph!,
-      followNetwork: followNetwork ??
-          FollowNetwork(
-            fcontext: 'identity',
-            povIdentity: trustGraph!.pov,
-          ),
-      delegateResolver: labeler.delegateResolver ?? DelegateResolver(trustGraph!),
-      labeler: labeler,
-      aggregation: ContentAggregation(),
-      povIdentity: trustGraph!.pov,
-      fcontext: 'identity',
-      sortMode: SortMode.recentActivity,
-      filterMode: DisFilterMode.ignore,
-      enableCensorship: false,
-    );
-
-    final controller = StaticFeedController(model);
-
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => NerdyGraphView(
         controller: controller,
@@ -336,83 +312,4 @@ Tactics for addressing this:
       ),
     ));
   }
-}
-
-// TODO: Justify or remove
-class DummySource<T extends Statement> implements StatementSource<T> {
-  @override
-  Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async => {};
-
-  @override
-  List<SourceError> get errors => [];
-}
-
-// TODO: Justify or remove
-class StaticFeedController extends ValueNotifier<FeedModel?> implements FeedController {
-  StaticFeedController(FeedModel value) : super(value);
-
-  @override
-  CachedSource<ContentStatement> get contentSource => CachedSource(DummySource<ContentStatement>());
-
-  @override
-  CachedSource<TrustStatement> get trustSource => CachedSource(DummySource<TrustStatement>());
-
-  @override
-  Future<ContentStatement?> push(Json json, StatementSigner signer,
-          {required BuildContext context}) async =>
-      null;
-
-  @override
-  Future<void> refresh({IdentityKey? pov, IdentityKey? meIdentity}) async {}
-
-  @override
-  Future<void> notify() async {}
-
-  @override
-  bool get loading => false;
-
-  @override
-  ValueNotifier<double> get progress => ValueNotifier(0);
-
-  @override
-  ValueNotifier<String?> get loadingMessage => ValueNotifier(null);
-
-  @override
-  String? get error => null;
-
-  @override
-  SortMode get sortMode => SortMode.recentActivity;
-  @override
-  set sortMode(SortMode mode) {}
-
-  @override
-  DisFilterMode get filterMode => DisFilterMode.ignore;
-  @override
-  set filterMode(DisFilterMode mode) {}
-
-  @override
-  String? get tagFilter => null;
-  @override
-  set tagFilter(String? tag) {}
-
-  @override
-  String? get typeFilter => null;
-  @override
-  set typeFilter(String? type) {}
-
-  @override
-  bool get enableCensorship => false;
-  @override
-  set enableCensorship(bool enable) {}
-
-  @override
-  ValueNotifier<bool> get enableCensorshipNotifier => ValueNotifier(false);
-
-  @override
-  bool shouldShow(SubjectAggregation subject, DisFilterMode mode, bool censorshipEnabled,
-          {String? tagFilter, String? typeFilter, required ContentAggregation aggregation}) =>
-      true;
-
-  @override
-  void sortSubjects(List<SubjectAggregation> subjects) {}
 }
