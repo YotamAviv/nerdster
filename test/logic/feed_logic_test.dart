@@ -48,6 +48,10 @@ void main() {
     );
   });
 
+  tearDown(() {
+    controller.dispose();
+  });
+
   test('Lisa feed should have expected names and content', () async {
     final String lisaToken = DemoIdentityKey.findByName('lisa')!.token;
     await signInState.signIn(lisaToken, null);
