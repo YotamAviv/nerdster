@@ -492,8 +492,6 @@ class FeedController extends ValueNotifier<FeedModel?> {
           if (currentMeIdentity != null) {
             final isVisible = followNetwork.identities
                 .any((k) => k.value == currentMeIdentity.value);
-            debugPrint(
-                'Invisibility Check: Me=${currentMeIdentity.value} InNetwork=$isVisible Size=${followNetwork.identities.length}');
 
             if (!isVisible) {
               systemNotifications.add(SystemNotification(
