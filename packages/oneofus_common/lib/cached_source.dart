@@ -46,7 +46,7 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
   /// The statement is prepended to the cached history (assuming descending time order).
   /// Verifies that `statement.previous` matches the current head of the history (if any).
   @override
-  Future<Statement> push(Json json, StatementSigner signer, {String? previous}) async {
+  Future<T> push(Json json, StatementSigner signer, {String? previous}) async {
     if (_writer == null) {
       throw UnimplementedError('No writer provided to CachedSource');
     }

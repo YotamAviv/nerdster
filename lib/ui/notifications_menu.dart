@@ -10,21 +10,20 @@
 import 'package:float_column/float_column.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:nerdster/logic/delegates.dart';
+import 'package:nerdster/logic/feed_controller.dart';
+import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/model.dart';
+import 'package:nerdster/ui/graph_view.dart';
+import 'package:oneofus_common/cached_source.dart';
 import 'package:oneofus_common/keys.dart';
+import 'package:oneofus_common/source_error.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
-import 'package:oneofus_common/jsonish.dart'; // For getToken
-import 'package:oneofus_common/cached_source.dart';
-import 'package:nerdster/logic/delegates.dart';
-import 'package:nerdster/logic/feed_controller.dart';
-import 'package:nerdster/ui/graph_view.dart';
-import 'package:nerdster/logic/interpreter.dart';
 import 'package:oneofus_common/ui/json_display.dart';
-import 'package:nerdster/logic/labeler.dart';
-import 'package:nerdster/models/model.dart';
-import 'package:oneofus_common/source_error.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NotificationsMenu extends StatelessWidget {
@@ -359,7 +358,7 @@ class StaticFeedController extends ValueNotifier<FeedModel?> implements FeedCont
   CachedSource<TrustStatement> get trustSource => CachedSource(DummySource<TrustStatement>());
 
   @override
-  Future<Statement?> push(Json json, StatementSigner signer,
+  Future<ContentStatement?> push(Json json, StatementSigner signer,
           {required BuildContext context}) async =>
       null;
 

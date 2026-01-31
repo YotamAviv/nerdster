@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/ui/dialogs/check_signed_in.dart';
-import 'package:oneofus_common/trust_statement.dart';
-
 import 'package:nerdster/logic/feed_controller.dart';
-import 'package:nerdster/models/model.dart';
-
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/model.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster/ui/dialogs/check_signed_in.dart';
+import 'package:nerdster/ui/subject_view.dart';
 import 'package:nerdster/ui/util/on_off_icon.dart';
 import 'package:nerdster/ui/util/on_off_icons.dart';
-import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/statement.dart';
-import 'package:nerdster/singletons.dart';
-import 'package:nerdster/ui/subject_view.dart';
+import 'package:oneofus_common/trust_statement.dart';
 
 
 class RateDialog extends StatefulWidget {
@@ -41,7 +38,7 @@ class RateDialog extends StatefulWidget {
 
     if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return null;
 
-    final result = await showModalBottomSheet<Json>(
+    final Json? result = await showModalBottomSheet<Json>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
@@ -55,8 +52,7 @@ class RateDialog extends StatefulWidget {
     );
 
     if (result != null) {
-      return (await controller.push(result, signInState.signer!, context: context))
-          as ContentStatement?;
+      return (await controller.push(result, signInState.signer!, context: context));
     }
     return null;
   }
@@ -174,7 +170,7 @@ class _RateDialogState extends State<RateDialog> {
       verb = ContentVerb.rate;
     }
 
-    final json = ContentStatement.make(
+    final Json json = ContentStatement.make(
       i,
       verb,
       widget.aggregation.subject,

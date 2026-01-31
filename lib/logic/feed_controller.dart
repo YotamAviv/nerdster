@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/ui/dialogs/lgtm.dart';
-import 'package:nerdster/utils/most_strings.dart';
-import 'package:oneofus_common/keys.dart';
-import 'package:nerdster/settings/prefs.dart';
-import 'package:oneofus_common/statement.dart';
-import 'package:oneofus_common/statement_source.dart';
-import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/settings/setting_type.dart';
-import 'package:nerdster/singletons.dart';
-import 'package:oneofus_common/cached_source.dart';
+import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/content_pipeline.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/follow_logic.dart';
 import 'package:nerdster/logic/labeler.dart';
-import 'package:nerdster/models/model.dart';
-import 'package:nerdster/logic/trust_pipeline.dart';
-import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/trust_logic.dart';
+import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/model.dart';
+import 'package:nerdster/settings/prefs.dart';
+import 'package:nerdster/settings/setting_type.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster/ui/dialogs/lgtm.dart';
+import 'package:nerdster/utils/most_strings.dart';
+import 'package:oneofus_common/cached_source.dart';
+import 'package:oneofus_common/keys.dart';
+import 'package:oneofus_common/statement_source.dart';
+import 'package:oneofus_common/trust_statement.dart';
 
 class FeedController extends ValueNotifier<FeedModel?> {
   final CachedSource<TrustStatement> trustSource;
@@ -27,9 +26,9 @@ class FeedController extends ValueNotifier<FeedModel?> {
   /// Pushes a new content statement through the write-through cache.
   /// Handles LGTM check, Writing, Caching, and UI Update (Partial Refresh).
   /// Returns the posted statement if successful, or null if cancelled (LGTM).
-  Future<Statement?> push(Json json, StatementSigner signer,
+  Future<ContentStatement?> push(Json json, StatementSigner signer,
       {required BuildContext context}) async {
-    final model = value;
+    final FeedModel? model = value;
     if (model == null) return null; // Cannot push if feed not loaded
 
     // 1. LGTM Check
@@ -39,7 +38,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
     // 2. Write & Cache
     try {
-      final statement = await contentSource.push(json, signer);
+      final ContentStatement statement = await contentSource.push(json, signer);
       // 3. Update UI (Partial Refresh)
       notify();
       return statement;
