@@ -15,12 +15,17 @@ import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 
-@Deprecated('Use NodeDetailsSheet')
-class NodeDetails extends StatelessWidget {
+class NodeDetails extends StatefulWidget {
   final IdentityKey identity;
   final FeedController controller;
+  final ScrollController? scrollController;
 
-  const NodeDetails({super.key, required this.identity, required this.controller});
+  const NodeDetails({
+    super.key,
+    required this.identity,
+    required this.controller,
+    this.scrollController,
+  });
 
   static Future<void> show(
       BuildContext context, IdentityKey identity, FeedController controller) {
@@ -29,33 +34,15 @@ class NodeDetails extends StatelessWidget {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => NodeDetailsSheet(identity: identity, controller: controller),
+      builder: (context) => NodeDetails(identity: identity, controller: controller),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return NodeDetailsSheet(identity: identity, controller: controller);
-  }
+  State<NodeDetails> createState() => _NodeDetailsState();
 }
 
-class NodeDetailsSheet extends StatefulWidget {
-  final IdentityKey identity;
-  final FeedController controller;
-  final ScrollController? scrollController;
-
-  const NodeDetailsSheet({
-    super.key,
-    required this.identity,
-    required this.controller,
-    this.scrollController,
-  });
-
-  @override
-  State<NodeDetailsSheet> createState() => _NodeDetailsSheetState();
-}
-
-class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
+class _NodeDetailsState extends State<NodeDetails> {
   IdentityKey _resolveIdentity(IdentityKey key, FeedModel model) {
     if (model.trustGraph.isTrusted(key)) {
       return model.trustGraph.resolveIdentity(key);
@@ -573,10 +560,14 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      title: const Text('Incoming Vouches',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
       children: [
-        const Text('Incoming Trust Statements:', style: TextStyle(fontWeight: FontWeight.bold)),
         if (statements.isEmpty) const Text('None'),
         ...statements.map((s) => _buildStatementTile(s, model)),
       ],
@@ -592,10 +583,14 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         .where((s) => s.contexts?.containsKey(context) == true)
         .toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      title: Text('Incoming Follows ($context)',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
       children: [
-        Text('Incoming Follows ($context):', style: const TextStyle(fontWeight: FontWeight.bold)),
         if (statements.isEmpty) const Text('None'),
         ...statements.map((s) => _buildStatementTile(s, model, fcontext: context)),
       ],
@@ -625,10 +620,14 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
       return !explicitIssuers.contains(issuer);
     }).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      title: const Text('Incoming Follows (<nerdster>)',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
       children: [
-        const Text('Incoming Follows (<nerdster>):', style: TextStyle(fontWeight: FontWeight.bold)),
         const Text(
           'Includes explicit follows AND implicit follows derived from Trust (unless overridden).',
           style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
