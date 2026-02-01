@@ -44,6 +44,7 @@ class _ContentViewState extends State<ContentView> {
     _controller = FeedController(
       trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
       contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
+      optimisticConcurrencyFunc: nerdsterOptimisticConcurrencyFunc,
     );
     _controller.addListener(() {
       if (_controller.value != null) {

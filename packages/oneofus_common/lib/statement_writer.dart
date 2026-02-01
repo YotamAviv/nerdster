@@ -1,7 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/statement.dart';
-
-typedef OptimisticConcurrencyFunc = void Function();
 
 abstract class StatementWriter<T extends Statement> {
   /// Pushes a new statement to the store.
@@ -14,5 +13,5 @@ abstract class StatementWriter<T extends Statement> {
   ///   The push MUST fail if the assertion is incorrect.
   /// Returns the created Statement.
   Future<T> push(Json json, StatementSigner signer,
-      {String? previous, OptimisticConcurrencyFunc? func});
+      {String? previous, VoidCallback? optimisticConcurrencyFunc});
 }

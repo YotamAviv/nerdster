@@ -1,4 +1,5 @@
 import 'package:oneofus_common/statement.dart';
+import 'package:flutter/foundation.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/source_error.dart';
 import 'package:oneofus_common/statement_source.dart';
@@ -24,7 +25,9 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
 
   final Map<String, SourceError> _errorCache = {};
 
-  CachedSource(this._delegate, [this._writer]);
+  final VoidCallback? optimisticConcurrencyFunc;
+
+  CachedSource(this._delegate, [this._writer, this.optimisticConcurrencyFunc]);
 
   @override
   List<SourceError> get errors => List.unmodifiable(_errorCache.values);
@@ -47,9 +50,7 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
   /// Verifies that `statement.previous` matches the current head of the history (if any).
   @override
   Future<T> push(Json json, StatementSigner signer,
-      {String? previous, OptimisticConcurrencyFunc? func}) async {
-    assert(func == null, 'TODO');
-
+      {String? previous, VoidCallback? optimisticConcurrencyFunc}) async {
     if (_writer == null) throw UnimplementedError('No writer');
     if (previous != null) throw StateError('CachedSource.push, no previous parameter');
 
@@ -66,7 +67,9 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
     // 1. Write through to persistence
     // If a previous token is provided (from the cache head), pass it to the writer
     // to enforce optimistic concurrency control.
-    final Statement statement = await _writer.push(json, signer, previous: previous);
+    final Statement statement = await _writer!.push(json, signer,
+        previous: previous,
+        optimisticConcurrencyFunc: optimisticConcurrencyFunc ?? this.optimisticConcurrencyFunc);
     if (statement is! T) {
       throw Exception('type ${statement.runtimeType} but cache expects $T');
     }
@@ -87,13 +90,13 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
 
     final String? previous = statement['previous'];
     if (history.isEmpty) {
-      if (previous != null) {
-        throw Exception('Cache inconsistency detected for token $token');
+      if (previous != null && previous.isNotEmpty) {
+        throw Exception('Cache inconsistency detected for token $token (expected Genesis)');
       }
     } else {
       final T head = history.first;
       if (previous != head.token) {
-        throw Exception('Cache inconsistency detected for token $token');
+        throw Exception('Cache inconsistency detected for token $token (prev $previous != head ${head.token})');
       }
     }
 

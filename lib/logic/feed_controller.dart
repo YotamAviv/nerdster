@@ -53,8 +53,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
   FeedController({
     required StatementSource<TrustStatement> trustSource,
     required StatementSource<ContentStatement> contentSource,
-  })  : trustSource = CachedSource(trustSource, SourceFactory.getWriter(kOneofusDomain)),
-        contentSource = CachedSource(contentSource, SourceFactory.getWriter(kNerdsterDomain)),
+    VoidCallback? optimisticConcurrencyFunc,
+  })  : trustSource = CachedSource(trustSource, SourceFactory.getWriter(kOneofusDomain),
+            optimisticConcurrencyFunc),
+        contentSource = CachedSource(contentSource,
+            SourceFactory.getWriter(kNerdsterDomain), optimisticConcurrencyFunc),
         super(null) {
     _lastIdentity = signInState.isSignedIn ? signInState.identity : null;
     _lastPov = signInState.povNotifier.value;
