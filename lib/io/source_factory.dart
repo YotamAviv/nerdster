@@ -24,7 +24,7 @@ class SourceFactory {
               skipVerify: Setting.get<bool>(SettingType.skipVerify),
             );
 
-  static StatementWriter getWriter(String domain) {
+  static StatementWriter<T> getWriter<T extends Statement>(String domain) {
     return DirectFirestoreWriter(FireFactory.find(domain));
   }
 }

@@ -13,9 +13,9 @@ import 'package:oneofus_common/statement_writer.dart';
 /// It does not cache different 'revokeAt' views separately, as the trust algorithm
 /// is greedy and deterministic; once a key is fetched, its statements are filtered
 /// in memory by the logic layer.
-class CachedSource<T extends Statement> implements StatementSource<T>, StatementWriter {
+class CachedSource<T extends Statement> implements StatementSource<T>, StatementWriter<T> {
   final StatementSource<T> _delegate;
-  final StatementWriter? _writer;
+  final StatementWriter<T>? _writer;
 
   // Full histories: Map<Token, List<Statement>>
   final Map<String, List<T>> _fullCache = {};
@@ -67,12 +67,9 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
     // 1. Write through to persistence
     // If a previous token is provided (from the cache head), pass it to the writer
     // to enforce optimistic concurrency control.
-    final Statement statement = await _writer!.push(json, signer,
+    final T statement = await _writer.push(json, signer,
         previous: previous,
         optimisticConcurrencyFailed: optimisticConcurrencyFailed ?? this.optimisticConcurrencyFunc);
-    if (statement is! T) {
-      throw Exception('type ${statement.runtimeType} but cache expects $T');
-    }
 
     // 2. Update cache
     _inject(statement);
