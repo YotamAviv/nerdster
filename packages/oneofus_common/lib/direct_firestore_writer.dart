@@ -46,15 +46,15 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
 
   @override
   Future<T> push(Json json, StatementSigner signer,
-      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFunc}) async {
-    assert(optimisticConcurrencyFunc == null || previous != null,
-        'optimisticConcurrencyFunc requires previous');
+      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed}) async {
+    assert(optimisticConcurrencyFailed == null || previous != null,
+        'optimisticConcurrencyFailed requires previous');
     assert(!json.containsKey('previous'), 'unexpected');
     final String issuerToken = getToken(json['I']);
     final CollectionReference<Map<String, dynamic>> fireStatements =
         _fire.collection(issuerToken).doc('statements').collection('statements');
 
-    if (optimisticConcurrencyFunc != null) {
+    if (optimisticConcurrencyFailed != null) {
       // Optimistic Path: Return immediately, write in background.
 
       // 1. Synchronously reserve a spot in the write queue.
@@ -75,7 +75,7 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
         // Perform the actual Firestore transaction.
         return _writeOptimistic(fireStatements, jsonish, json['time']);
       }).onError((error, stackTrace) {
-        optimisticConcurrencyFunc();
+        optimisticConcurrencyFailed();
         // Propagate error to next task in chain?
         // Since we called func() to kill cache, subsequent writes in this queue
         // are likely doomed anyway until refresh.

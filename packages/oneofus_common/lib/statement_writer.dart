@@ -21,5 +21,5 @@ abstract class StatementWriter<T extends Statement> {
   ///   The push MUST fail if the assertion is incorrect.
   /// Returns the created Statement.
   Future<T> push(Json json, StatementSigner signer,
-      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFunc});
+      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed});
 }

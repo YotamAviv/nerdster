@@ -50,7 +50,7 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
   /// Verifies that `statement.previous` matches the current head of the history (if any).
   @override
   Future<T> push(Json json, StatementSigner signer,
-      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFunc}) async {
+      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed}) async {
     if (_writer == null) throw UnimplementedError('No writer');
     if (previous != null) throw StateError('CachedSource.push, no previous parameter');
 
@@ -69,7 +69,7 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
     // to enforce optimistic concurrency control.
     final Statement statement = await _writer!.push(json, signer,
         previous: previous,
-        optimisticConcurrencyFunc: optimisticConcurrencyFunc ?? this.optimisticConcurrencyFunc);
+        optimisticConcurrencyFailed: optimisticConcurrencyFailed ?? this.optimisticConcurrencyFunc);
     if (statement is! T) {
       throw Exception('type ${statement.runtimeType} but cache expects $T');
     }
