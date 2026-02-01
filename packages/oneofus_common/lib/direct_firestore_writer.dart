@@ -18,17 +18,6 @@ import 'package:oneofus_common/statement_writer.dart';
 /// It seems dangerous to have invalid instances.
 /// And so if I create the Statement before verifying the optimistic concurrency, I should
 /// clear all caches, crash, or something like that.
-///
-/// The plan is to pass in a function to do that if needed.
-/// If that function is supplied, then the writer will
-/// - return a Statement quickly,
-/// - queue up the actual write,
-/// - and if the write fails due to optimistic concurrency, call the function to clear caches.
-/// If that function is not supplied, the writer will do the current behavior of
-/// - synchronously verifying optimistic concurrency,
-/// - waiting for the write to complete.
-/// - returning the Statement,
-///
 
 class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
   final FirebaseFirestore _fire;
@@ -47,9 +36,9 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
   @override
   Future<T> push(Json json, StatementSigner signer,
       {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed}) async {
+    assert(!json.containsKey('previous'), 'unexpected');
     assert(optimisticConcurrencyFailed == null || previous != null,
         'optimisticConcurrencyFailed requires previous');
-    assert(!json.containsKey('previous'), 'unexpected');
     final String issuerToken = getToken(json['I']);
     final CollectionReference<Map<String, dynamic>> fireStatements =
         _fire.collection(issuerToken).doc('statements').collection('statements');
