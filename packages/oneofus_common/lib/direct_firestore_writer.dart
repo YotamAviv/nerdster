@@ -65,10 +65,7 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
         return _writeOptimistic(fireStatements, jsonish, json['time']);
       }).onError((error, stackTrace) {
         optimisticConcurrencyFailed();
-        // Propagate error to next task in chain?
-        // Since we called func() to kill cache, subsequent writes in this queue
-        // are likely doomed anyway until refresh.
-        throw error as Object;
+        return;
       });
 
       _writeQueues[issuerToken] = currentWrite;
@@ -90,54 +87,56 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
         signingCompleter.completeError(e);
         rethrow;
       }
-    }
-
-    // Standard Path
-    // 1. Find the latest statement (Non-Atomic)
-    // Note: This is not truly transactional because the Flutter SDK does not
-    // support queries inside transactions.
-    final latestSnapshot = await fireStatements.orderBy('time', descending: true).limit(1).get();
-    String? previousToken;
-    DateTime? prevTime;
-    if (latestSnapshot.docs.isNotEmpty) {
-      final latestDoc = latestSnapshot.docs.first;
-      previousToken = latestDoc.id;
-      prevTime = DateTime.parse(latestDoc.data()['time']);
-    }
-
-    // 2. Optimistic Concurrency Check
-    if (previous != null && previous.token != previousToken) {
-      throw Exception(
-          'Push Rejected: Optimistic locking failure. Expected previous=${previous.token}, found=$previousToken');
-    }
-
-    // 3. Set previous and sign
-    if (previousToken != null) {
-      json['previous'] = previousToken;
-    }
-
-    final Jsonish jsonish = await Jsonish.makeSign(json, signer);
-    final T statement = Statement.make(jsonish) as T;
-
-    // 3. Write statement (transactional check for existence)
-    await _fire.runTransaction((transaction) async {
-      final docRef = fireStatements.doc(jsonish.token);
-      final doc = await transaction.get(docRef);
-      if (doc.exists) {
-        throw Exception('Statement already exists: ${jsonish.token}');
+    } else {
+      // Standard Path
+      // 1. Find the latest statement (Non-Atomic)
+      // Note: This is not truly transactional because the Flutter SDK does not
+      // support queries inside transactions.
+      final latestSnapshot =
+          await fireStatements.orderBy('time', descending: true).limit(1).get();
+      String? previousToken;
+      DateTime? prevTime;
+      if (latestSnapshot.docs.isNotEmpty) {
+        final latestDoc = latestSnapshot.docs.first;
+        previousToken = latestDoc.id;
+        prevTime = DateTime.parse(latestDoc.data()['time']);
       }
 
-      if (prevTime != null) {
-        final DateTime thisTime = DateTime.parse(json['time']!);
-        if (!thisTime.isAfter(prevTime)) {
-          throw Exception('Timestamp must be after previous statement ($thisTime <= $prevTime)');
+      // 2. Optimistic Concurrency Check
+      if (previous != null && previous.token != previousToken) {
+        throw Exception(
+            'Push Rejected: Optimistic locking failure. Expected previous=${previous.token}, found=$previousToken');
+      }
+
+      // 3. Set previous and sign
+      if (previousToken != null) {
+        json['previous'] = previousToken;
+      }
+
+      final Jsonish jsonish = await Jsonish.makeSign(json, signer);
+      final T statement = Statement.make(jsonish) as T;
+
+      // 3. Write statement (transactional check for existence)
+      await _fire.runTransaction((transaction) async {
+        final docRef = fireStatements.doc(jsonish.token);
+        final doc = await transaction.get(docRef);
+        if (doc.exists) {
+          throw Exception('Statement already exists: ${jsonish.token}');
         }
-      }
 
-      transaction.set(docRef, jsonish.json);
-    });
+        if (prevTime != null) {
+          final DateTime thisTime = DateTime.parse(json['time']!);
+          if (!thisTime.isAfter(prevTime)) {
+            throw Exception(
+                'Timestamp must be after previous statement ($thisTime <= $prevTime)');
+          }
+        }
 
-    return statement;
+        transaction.set(docRef, jsonish.json);
+      });
+
+      return statement;
+    }
   }
 
   Future<void> _writeOptimistic(CollectionReference<Map<String, dynamic>> fireStatements,
