@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/labeler.dart';
+import 'package:nerdster/ui/key_icon.dart';
 import 'package:nerdster/ui/key_info_view.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
@@ -296,6 +297,9 @@ class _NodeDetailsState extends State<NodeDetails> {
           final equivIdentityToken = equivKey.value;
           final bool isCanonical = equivKey == widget.identity;
           final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
+          // Replaced keys are considered revoked for visualization
+          final status = isCanonical ? KeyStatus.active : KeyStatus.revoked;
+          
           return Builder(builder: (context) {
             TapDownDetails? tapDetails;
             return Align(
@@ -309,11 +313,25 @@ class _NodeDetailsState extends State<NodeDetails> {
                       labeler: labeler,
                       constraints: const BoxConstraints(maxWidth: 600));
                 },
-                child: Text('• $equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: isCanonical ? Colors.black : Colors.grey,
-                        decoration: TextDecoration.underline)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      KeyIcon(
+                        type: KeyType.identity, 
+                        status: status,
+                        isOwned: false, // Per instructions, only delegate key is owned
+                      ),
+                      const SizedBox(width: 8),
+                      Text('$equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: isCanonical ? Colors.black : Colors.grey,
+                              decoration: TextDecoration.underline)),
+                    ],
+                  ),
+                ),
               ),
             );
           });
@@ -327,6 +345,11 @@ class _NodeDetailsState extends State<NodeDetails> {
           ),
           ...delegates.map((d) {
             final String delegateLabel = labeler.getLabel(d);
+            final bool isMyDelegate = signInState.delegate == d;
+
+            final isRevoked = labeler.delegateResolver?.getConstraintForDelegate(DelegateKey(d)) != null;
+            final status = isRevoked ? KeyStatus.revoked : KeyStatus.active;
+
             return Builder(builder: (context) {
               TapDownDetails? tapDetails;
               return Align(
@@ -338,9 +361,26 @@ class _NodeDetailsState extends State<NodeDetails> {
                       source: widget.controller.contentSource,
                       labeler: labeler,
                       constraints: const BoxConstraints(maxWidth: 600)),
-                  child: Text('• $delegateLabel',
-                      style: const TextStyle(
-                          fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        KeyIcon(
+                          type: KeyType.delegate,
+                          status: status,
+                          isOwned: isMyDelegate,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(delegateLabel,
+                            style: TextStyle(
+                                fontSize: 12, 
+                                color: isRevoked ? Colors.grey : Colors.blue, 
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.blue)), // Keep link underline color if possible, or grey? Blue usually implies link.
+                      ],
+                    ),
+                  ),
                 ),
               );
             });
