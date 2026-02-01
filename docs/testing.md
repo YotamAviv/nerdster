@@ -6,6 +6,7 @@ Run unit tests using the standard Flutter command:
 
 ```bash
 flutter test
+flutter test packages/oneofus_common/
 ```
 
 ## Backend (JavaScript) Tests
