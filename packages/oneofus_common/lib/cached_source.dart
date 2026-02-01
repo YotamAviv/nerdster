@@ -50,7 +50,7 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
   /// Verifies that `statement.previous` matches the current head of the history (if any).
   @override
   Future<T> push(Json json, StatementSigner signer,
-      {String? previous, VoidCallback? optimisticConcurrencyFunc}) async {
+      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFunc}) async {
     if (_writer == null) throw UnimplementedError('No writer');
     if (previous != null) throw StateError('CachedSource.push, no previous parameter');
 
@@ -58,9 +58,9 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
 
     if (_fullCache.containsKey(issuerId)) {
       if (_fullCache[issuerId]!.isEmpty) {
-        previous = "";
+        previous = const ExpectedPrevious(null);
       } else {
-        previous = _fullCache[issuerId]!.first.token;
+        previous = ExpectedPrevious(_fullCache[issuerId]!.first.token);
       }
     }
 

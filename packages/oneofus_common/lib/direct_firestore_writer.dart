@@ -18,13 +18,13 @@ import 'package:oneofus_common/statement_writer.dart';
 /// It seems dangerous to have invalid instances.
 /// And so if I create the Statement before verifying the optimistic concurrency, I should
 /// clear all caches, crash, or something like that.
-/// 
+///
 /// The plan is to pass in a function to do that if needed.
-/// If that function is supplied, then the writer will 
-/// - return a Statement quickly, 
+/// If that function is supplied, then the writer will
+/// - return a Statement quickly,
 /// - queue up the actual write,
 /// - and if the write fails due to optimistic concurrency, call the function to clear caches.
-/// If that function is not supplied, the writer will do the current behavior of 
+/// If that function is not supplied, the writer will do the current behavior of
 /// - synchronously verifying optimistic concurrency,
 /// - waiting for the write to complete.
 /// - returning the Statement,
@@ -46,24 +46,29 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
 
   @override
   Future<T> push(Json json, StatementSigner signer,
-      {String? previous, VoidCallback? optimisticConcurrencyFunc}) async {
+      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFunc}) async {
+    assert(optimisticConcurrencyFunc == null || previous != null,
+        'optimisticConcurrencyFunc requires previous');
+    assert(!json.containsKey('previous'), 'unexpected');
     final String issuerToken = getToken(json['I']);
-    final fireStatements = _fire.collection(issuerToken).doc('statements').collection('statements');
+    final CollectionReference<Map<String, dynamic>> fireStatements =
+        _fire.collection(issuerToken).doc('statements').collection('statements');
 
     if (optimisticConcurrencyFunc != null) {
       // Optimistic Path: Return immediately, write in background.
-      
+
       // 1. Synchronously reserve a spot in the write queue.
       // We must establish the order of writes *before* any async operations (like signing)
       // to ensure the database writes happen in the exact same order as the push() calls.
       final Completer<Jsonish> signingCompleter = Completer();
-      
+
       // Get the current "tail" of the write chain for this issuer.
       final Future<void> previousWrite = _writeQueues[issuerToken] ?? Future.value();
-      
+
       // Append our write task to the chain.
       final Future<void> currentWrite = previousWrite
-          .catchError((_) {}) // Swallow errors from the *previous* write so this one still attempts to run.
+          .catchError(
+              (_) {}) // Swallow errors from the *previous* write so this one still attempts to run.
           .then((_) async {
         // Wait for the statement to be signed (step 2 below).
         final Jsonish jsonish = await signingCompleter.future;
@@ -71,25 +76,25 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
         return _writeOptimistic(fireStatements, jsonish, json['time']);
       }).onError((error, stackTrace) {
         optimisticConcurrencyFunc();
-        // Propagate error to next task in chain? 
-        // Since we called func() to kill cache, subsequent writes in this queue 
+        // Propagate error to next task in chain?
+        // Since we called func() to kill cache, subsequent writes in this queue
         // are likely doomed anyway until refresh.
-        throw error as Object; 
+        throw error as Object;
       });
 
       _writeQueues[issuerToken] = currentWrite;
 
       // 2. Perform async signing
       try {
-        if (previous != null) {
-          json['previous'] = previous; // Trust the caller (cache)
+        if (previous != null && previous.token != null) {
+          json['previous'] = previous.token!; // Trust the caller (cache)
         }
 
         final Jsonish jsonish = await Jsonish.makeSign(json, signer);
-        
+
         // 3. Hand off to the write queue
         signingCompleter.complete(jsonish);
-        
+
         // 4. Return optimistic result immediately
         return Statement.make(jsonish) as T;
       } catch (e) {
@@ -112,22 +117,16 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
     }
 
     // 2. Optimistic Concurrency Check
-    if (previous != null) {
-      if (previous.isEmpty) {
-        if (previousToken != null) {
-          throw Exception(
-              'Push Rejected: Optimistic locking failure. Expected Genesis (no previous), found=$previousToken');
-        }
-      } else if (previousToken != previous) {
-        throw Exception(
-            'Push Rejected: Optimistic locking failure. Expected previous=$previous, found=$previousToken');
-      }
+    if (previous != null && previous.token != previousToken) {
+      throw Exception(
+          'Push Rejected: Optimistic locking failure. Expected previous=${previous.token}, found=$previousToken');
     }
 
     // 3. Set previous and sign
     if (previousToken != null) {
       json['previous'] = previousToken;
     }
+
     final Jsonish jsonish = await Jsonish.makeSign(json, signer);
     final T statement = Statement.make(jsonish) as T;
 
@@ -152,8 +151,8 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
     return statement;
   }
 
-  Future<void> _writeOptimistic(
-      CollectionReference<Map<String, dynamic>> fireStatements, Jsonish jsonish, String timeString) async {
+  Future<void> _writeOptimistic(CollectionReference<Map<String, dynamic>> fireStatements,
+      Jsonish jsonish, String timeString) async {
     final latestSnapshot = await fireStatements.orderBy('time', descending: true).limit(1).get();
     String? previousToken;
     DateTime? prevTime;
@@ -164,11 +163,8 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
     }
 
     final String? signedPrevious = jsonish['previous'];
-    
-    // Normalize empty strings to null for comparison with DB state (which is null-or-ID)
-    final String? effectiveSigned = (signedPrevious?.isEmpty ?? true) ? null : signedPrevious;
 
-    if (effectiveSigned != previousToken) {
+    if (signedPrevious != previousToken) {
       throw Exception(
           'Optimistic locking failure. Expected previous=$signedPrevious, found=$previousToken');
     }
