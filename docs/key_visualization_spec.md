@@ -1,3 +1,5 @@
+NOTE: This is duplicated in the other project
+
 # Key Visualization Specification
 
 This document outlines the visual representation rules for cryptographic keys within the application (e.g., Node Details, Sign In, Key Info).
