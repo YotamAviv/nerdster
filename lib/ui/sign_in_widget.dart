@@ -14,6 +14,8 @@ import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster/ui/key_icon.dart';
+import 'package:oneofus_common/keys.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/link.dart';
 
@@ -29,11 +31,13 @@ class _SignInWidgetState extends State<SignInWidget> {
   void initState() {
     super.initState();
     signInState.addListener(_update);
+    globalLabeler.addListener(_update);
   }
 
   @override
   void dispose() {
     signInState.removeListener(_update);
+    globalLabeler.removeListener(_update);
     super.dispose();
   }
 
@@ -46,28 +50,64 @@ class _SignInWidgetState extends State<SignInWidget> {
     bool hasIdentity = signInState.isSignedIn;
     bool hasDelegate = signInState.delegate != null;
 
-    IconData icon;
-    Color? color;
+    Widget iconWidget;
     String tooltip;
 
     if (hasIdentity && hasDelegate) {
-      icon = Icons.vpn_key;
-      color = Colors.blue;
-      tooltip = "Signed in with Identity and Delegate";
+      // Logic to determine delegate status
+      KeyStatus delegateStatus = KeyStatus.active;
+      String statusMsg = "active";
+
+      final labeler = globalLabeler.value;
+      final resolver = labeler.delegateResolver;
+      
+      if (resolver != null) {
+        final dKey = DelegateKey(signInState.delegate!);
+        final iKey = IdentityKey(signInState.identity);
+        
+        final IdentityKey? resolvedIdentity = resolver.getIdentityForDelegate(dKey);
+        final String? revokeConstraint = resolver.getConstraintForDelegate(dKey);
+        
+        final resolvedMyIdentity = labeler.graph.resolveIdentity(iKey);
+        
+        // 1. Check Association: Is this delegate mapped to our current canonical identity?
+        bool isAssociated = resolvedIdentity != null && resolvedIdentity == resolvedMyIdentity;
+        
+        // 2. Check Revocation: Is there a revocation constraint?
+        bool isRevoked = revokeConstraint != null;
+        
+        if (!isAssociated) {
+          delegateStatus = KeyStatus.revoked;
+          statusMsg = "not associated with identity";
+        } else if (isRevoked) {
+          delegateStatus = KeyStatus.revoked;
+          statusMsg = "revoked";
+        }
+      }
+
+      // Delegate key is active/owned
+      iconWidget = KeyIcon(
+        type: KeyType.delegate,
+        status: delegateStatus,
+        isOwned: true,
+      );
+      tooltip = "Signed in with Identity and Delegate ($statusMsg)";
     } else if (hasIdentity) {
-      icon = Icons.vpn_key;
-      color = Colors.green;
+      iconWidget = const KeyIcon(
+        type: KeyType.identity,
+        status: KeyStatus.active,
+        isOwned: false,
+      );
       tooltip = "Signed in with Identity only";
     } else {
-      icon = Icons.no_accounts; // or login
-      color = Colors.grey;
+      iconWidget = const Icon(Icons.no_accounts, color: Colors.grey);
       tooltip = "Not signed in";
     }
 
     return Tooltip(
       message: tooltip,
       child: IconButton(
-        icon: Icon(icon, color: color),
+        icon: iconWidget,
         onPressed: () {
           showModalBottomSheet(
             context: context,
@@ -287,7 +327,7 @@ class _SignInDialogState extends State<SignInDialog> {
             "Identity",
             hasIdentity,
             Colors.green,
-            hasIdentity ? Icons.vpn_key : Icons.vpn_key_outlined,
+            Icons.vpn_key_outlined, // Identity key is never owned by Nerdster
             hasIdentity ? signInState.identityJson : null,
           ),
         ),

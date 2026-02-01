@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/labeler.dart';
+import 'package:nerdster/ui/key_icon.dart';
 import 'package:nerdster/ui/key_info_view.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
@@ -15,12 +16,17 @@ import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 
-@Deprecated('Use NodeDetailsSheet')
-class NodeDetails extends StatelessWidget {
+class NodeDetails extends StatefulWidget {
   final IdentityKey identity;
   final FeedController controller;
+  final ScrollController? scrollController;
 
-  const NodeDetails({super.key, required this.identity, required this.controller});
+  const NodeDetails({
+    super.key,
+    required this.identity,
+    required this.controller,
+    this.scrollController,
+  });
 
   static Future<void> show(
       BuildContext context, IdentityKey identity, FeedController controller) {
@@ -29,33 +35,15 @@ class NodeDetails extends StatelessWidget {
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => NodeDetailsSheet(identity: identity, controller: controller),
+      builder: (context) => NodeDetails(identity: identity, controller: controller),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return NodeDetailsSheet(identity: identity, controller: controller);
-  }
+  State<NodeDetails> createState() => _NodeDetailsState();
 }
 
-class NodeDetailsSheet extends StatefulWidget {
-  final IdentityKey identity;
-  final FeedController controller;
-  final ScrollController? scrollController;
-
-  const NodeDetailsSheet({
-    super.key,
-    required this.identity,
-    required this.controller,
-    this.scrollController,
-  });
-
-  @override
-  State<NodeDetailsSheet> createState() => _NodeDetailsSheetState();
-}
-
-class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
+class _NodeDetailsState extends State<NodeDetails> {
   IdentityKey _resolveIdentity(IdentityKey key, FeedModel model) {
     if (model.trustGraph.isTrusted(key)) {
       return model.trustGraph.resolveIdentity(key);
@@ -309,6 +297,9 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           final equivIdentityToken = equivKey.value;
           final bool isCanonical = equivKey == widget.identity;
           final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
+          // Replaced keys are considered revoked for visualization
+          final status = isCanonical ? KeyStatus.active : KeyStatus.revoked;
+          
           return Builder(builder: (context) {
             TapDownDetails? tapDetails;
             return Align(
@@ -322,11 +313,25 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
                       labeler: labeler,
                       constraints: const BoxConstraints(maxWidth: 600));
                 },
-                child: Text('• $equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: isCanonical ? Colors.black : Colors.grey,
-                        decoration: TextDecoration.underline)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      KeyIcon(
+                        type: KeyType.identity, 
+                        status: status,
+                        isOwned: false, // Per instructions, only delegate key is owned
+                      ),
+                      const SizedBox(width: 8),
+                      Text('$equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: isCanonical ? Colors.black : Colors.grey,
+                              decoration: TextDecoration.underline)),
+                    ],
+                  ),
+                ),
               ),
             );
           });
@@ -340,6 +345,11 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
           ),
           ...delegates.map((d) {
             final String delegateLabel = labeler.getLabel(d);
+            final bool isMyDelegate = signInState.delegate == d;
+
+            final isRevoked = labeler.delegateResolver?.getConstraintForDelegate(DelegateKey(d)) != null;
+            final status = isRevoked ? KeyStatus.revoked : KeyStatus.active;
+
             return Builder(builder: (context) {
               TapDownDetails? tapDetails;
               return Align(
@@ -351,9 +361,26 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
                       source: widget.controller.contentSource,
                       labeler: labeler,
                       constraints: const BoxConstraints(maxWidth: 600)),
-                  child: Text('• $delegateLabel',
-                      style: const TextStyle(
-                          fontSize: 12, color: Colors.blue, decoration: TextDecoration.underline)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        KeyIcon(
+                          type: KeyType.delegate,
+                          status: status,
+                          isOwned: isMyDelegate,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(delegateLabel,
+                            style: TextStyle(
+                                fontSize: 12, 
+                                color: isRevoked ? Colors.grey : Colors.blue, 
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.blue)), // Keep link underline color if possible, or grey? Blue usually implies link.
+                      ],
+                    ),
+                  ),
                 ),
               );
             });
@@ -573,10 +600,14 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      title: const Text('Incoming Vouches',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
       children: [
-        const Text('Incoming Trust Statements:', style: TextStyle(fontWeight: FontWeight.bold)),
         if (statements.isEmpty) const Text('None'),
         ...statements.map((s) => _buildStatementTile(s, model)),
       ],
@@ -592,10 +623,14 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
         .where((s) => s.contexts?.containsKey(context) == true)
         .toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      title: Text('Incoming Follows ($context)',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
       children: [
-        Text('Incoming Follows ($context):', style: const TextStyle(fontWeight: FontWeight.bold)),
         if (statements.isEmpty) const Text('None'),
         ...statements.map((s) => _buildStatementTile(s, model, fcontext: context)),
       ],
@@ -625,10 +660,14 @@ class _NodeDetailsSheetState extends State<NodeDetailsSheet> {
       return !explicitIssuers.contains(issuer);
     }).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ExpansionTile(
+      title: const Text('Incoming Follows (<nerdster>)',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
       children: [
-        const Text('Incoming Follows (<nerdster>):', style: TextStyle(fontWeight: FontWeight.bold)),
         const Text(
           'Includes explicit follows AND implicit follows derived from Trust (unless overridden).',
           style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
