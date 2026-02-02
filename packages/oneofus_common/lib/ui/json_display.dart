@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oneofus_common/jsonish.dart';
@@ -5,73 +6,96 @@ import 'package:oneofus_common/ui/json_highlighter.dart';
 
 abstract class Interpreter {
   dynamic interpret(dynamic d);
-  Future<void> waitUntilReady();
 }
 
-Color? interpretedColor = Colors.green[900];
-
 class JsonDisplay extends StatefulWidget {
+  // Global interpreter that can be set by the app
+  static Interpreter? interpreter;
+
+  // Custom text style fallback - can be set globally
+  static TextStyle? defaultTextStyle;
+
   static Set<String> highlightKeys = {};
 
   final dynamic subject; // String (ex. token) or Json (ex. key, statement)
   final ValueNotifier<bool> interpret;
   final bool strikethrough;
-  final Interpreter? interpreter;
+  final Interpreter? interpreterParam;
+  final StackFit fit;
+  final TextStyle? textStyle;
 
+  // Use 'interpreter' as parameter name to match legacy usage in Nerdster
   JsonDisplay(this.subject,
-      {ValueNotifier<bool>? interpret, this.strikethrough = false, this.interpreter, super.key})
-      : interpret = interpret ?? ValueNotifier<bool>(true);
+      {ValueNotifier<bool>? interpret,
+      this.strikethrough = false,
+      Interpreter? interpreter,
+      this.fit = StackFit.loose,
+      this.textStyle,
+      super.key})
+      : interpret = interpret ?? ValueNotifier<bool>(true),
+        interpreterParam = interpreter;
 
   @override
   State<StatefulWidget> createState() => _State();
 }
 
 class _State extends State<JsonDisplay> {
+  static const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+
   @override
   Widget build(BuildContext context) {
-    final Interpreter? interpreter = widget.interpreter;
-    final useSubject = widget.subject;
+    // Basic interpretation: If interpreter is present, use it. Otherwise just use subject.
+    Map show = Jsonish.order(widget.subject);
+    final Interpreter? activeInterpreter = widget.interpreterParam ?? JsonDisplay.interpreter;
+    if (widget.interpret.value) {
+      show = activeInterpreter!.interpret(widget.subject);
+    }
 
-    var interpreted = (interpreter != null && widget.interpret.value)
-        ? interpreter.interpret(useSubject)
-        : Jsonish.order(useSubject);
-    String display = encoder.convert(interpreted);
+    String display = encoder.convert(show);
 
-    TextStyle baseStyle = GoogleFonts.courierPrime(
-      fontWeight: FontWeight.w700,
-      fontSize: 10,
+    // Use passed style, then global default, then hardcoded fallback
+    final effectiveTextStyle = widget.textStyle ??
+        JsonDisplay.defaultTextStyle ??
+        GoogleFonts.courierPrime(
+          fontWeight: FontWeight.w700,
+          fontSize: 10,
+        );
+
+    TextStyle baseStyle = effectiveTextStyle.copyWith(
       decoration: widget.strikethrough ? TextDecoration.lineThrough : null,
-      color: widget.interpret.value ? interpretedColor : null,
+      color: widget.interpret.value ? Colors.green[900] : null,
     );
 
     List<TextSpan> spans =
         highlightJsonKeys(display, baseStyle, keysToHighlight: JsonDisplay.highlightKeys);
 
     return Stack(
+      fit: widget.fit,
       children: [
-        SelectableText.rich(TextSpan(children: spans)),
-        if (interpreter != null)
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: FloatingActionButton(
-                heroTag: null, // Fix for multiple FABs
-                mini: true, // 40x40 instead of 56x56
-                tooltip: !widget.interpret.value
-                    ? '''Raw JSON shown; click to interpret (make more human readable):
-- label known and unknown keys
-- convert dates to local time and format
-- strip clutter (signature, previous)'''
-                    : 'Interpreted JSON shown; click to show the actual data',
-                // Was "interpret"
-                child:
-                    Icon(Icons.transform, color: widget.interpret.value ? interpretedColor : null),
-                onPressed: () async {
-                  widget.interpret.value = !widget.interpret.value;
-                  // firstTap = true;
-                  setState(() {});
-                }),
+        SelectionArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 64, left: 16, right: 16),
+            child: Text.rich(TextSpan(children: spans)),
           ),
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: FloatingActionButton(
+              heroTag: null,
+              mini: true,
+              tooltip: !widget.interpret.value
+                  ? 'Raw JSON shown; click to interpret'
+                  : 'Interpreted JSON shown; click to show raw',
+              backgroundColor: Colors.white,
+              child: Icon(Icons.transform,
+                  color: widget.interpret.value ? Colors.green[900] : Colors.grey),
+              onPressed: () {
+                setState(() {
+                  widget.interpret.value = !widget.interpret.value;
+                });
+              }),
+        ),
       ],
     );
   }
