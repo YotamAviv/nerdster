@@ -1,19 +1,18 @@
 import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/config.dart';
-import 'package:oneofus_common/statement.dart';
-import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/models/content_statement.dart';
-import 'package:oneofus_common/fire_factory.dart';
-import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/app.dart';
-
-import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/config.dart';
 import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
+import 'package:nerdster/demotest/demo_key.dart';
+import 'package:nerdster/firebase_options.dart';
+import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/oneofus_fire.dart';
+import 'package:oneofus_common/trust_statement.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

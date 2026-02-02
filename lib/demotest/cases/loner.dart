@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:oneofus_common/fire_factory.dart';
-import 'package:oneofus_common/jsonish.dart';
+import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 

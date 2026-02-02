@@ -1,15 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/demotest/demo_key.dart';
-import 'package:oneofus_common/fire_factory.dart';
-import 'package:oneofus_common/keys.dart';
-import 'package:oneofus_common/trust_statement.dart';
+import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/delegates.dart';
-import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/labeler.dart';
-import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/models/model.dart';
+
 
 void main() {
   late FakeFirebaseFirestore firestore;

@@ -1,13 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:oneofus_common/oou_signer.dart';
+import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/io/source_factory.dart';
+import 'package:nerdster/logic/feed_controller.dart';
+import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
-import 'package:nerdster/logic/feed_controller.dart';
-import 'package:nerdster/models/model.dart';
-import 'package:nerdster/io/source_factory.dart';
+import 'package:oneofus_common/oou_signer.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;

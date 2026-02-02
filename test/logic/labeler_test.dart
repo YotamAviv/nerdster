@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';

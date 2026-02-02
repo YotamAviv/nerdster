@@ -4,19 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nerdster/app.dart' as app;
-import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/config.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:oneofus_common/endpoint.dart';
-import 'package:oneofus_common/fire_factory.dart';
-import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/trust_statement.dart';
+import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/config.dart';
 import 'package:nerdster/ui/content_card.dart';
-import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/statement_tile.dart';
+import 'package:oneofus_common/trust_statement.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

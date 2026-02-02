@@ -1,15 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
-import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
+import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/content_pipeline.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/follow_logic.dart';
-import 'package:nerdster/logic/content_logic.dart';
-import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
-import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/labeler.dart';
+import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/setting_type.dart';
-import 'package:nerdster/demotest/test_util.dart';
+import 'package:oneofus_common/direct_firestore_source.dart';
 
 void main() {
   setUp(() async {

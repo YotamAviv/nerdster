@@ -1,16 +1,14 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
-import 'package:oneofus_common/jsonish.dart';
-
-import 'package:oneofus_common/fire_factory.dart';
-import 'package:oneofus_common/oou_verifier.dart';
 import 'package:nerdster/settings/prefs.dart';
-import 'package:oneofus_common/statement.dart';
-import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
+import 'package:oneofus_common/oou_verifier.dart';
+import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/trust_statement.dart';
 
 /// BUG: Totally broken.
 /// DirectFirestoreSource does not expose a way to fetch all statements for a given identity token.
