@@ -5,7 +5,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:oneofus_common/direct_firestore_writer.dart';
 import 'package:oneofus_common/statement_writer.dart';
 import 'package:oneofus_common/oou_signer.dart';
-import 'package:oneofus_common/crypto/crypto2559.dart';
+import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/jsonish.dart';
 

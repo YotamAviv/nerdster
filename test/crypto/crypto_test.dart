@@ -2,7 +2,7 @@ import 'package:convert/convert.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:jwk/jwk.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
-import 'package:oneofus_common/crypto/crypto2559.dart';
+import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:flutter_test/flutter_test.dart';
 

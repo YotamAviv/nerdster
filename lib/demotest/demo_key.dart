@@ -12,7 +12,7 @@ import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:nerdster/demotest/test_util.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
-import 'package:oneofus_common/crypto/crypto2559.dart';
+import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:nerdster/io/source_factory.dart';

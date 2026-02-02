@@ -1,4 +1,4 @@
-import 'crypto/crypto2559.dart';
+import 'crypto/crypto25519.dart';
 import 'crypto/crypto.dart';
 import 'jsonish.dart';
 

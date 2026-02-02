@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:oneofus_common/direct_firestore_writer.dart';
 import 'package:oneofus_common/oou_signer.dart';
-import 'package:oneofus_common/crypto/crypto2559.dart';
+import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:nerdster/demotest/test_util.dart';
 
 void main() {

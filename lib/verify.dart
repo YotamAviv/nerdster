@@ -4,7 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
-import 'package:oneofus_common/crypto/crypto2559.dart';
+import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/ui/json_highlighter.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/oou_verifier.dart';

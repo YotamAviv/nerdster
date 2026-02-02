@@ -9,7 +9,7 @@ import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util/ok_cancel.dart';
 import 'package:nerdster/ui/util/alert.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
-import 'package:oneofus_common/crypto/crypto2559.dart';
+import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/ui/util_ui.dart';
 
