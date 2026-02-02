@@ -259,9 +259,20 @@ void main() {
   });
 
   test('yotam data', () async {
-    final Json yotamNerdster = jsonDecode(File('test/yotam-nerdster.json').readAsStringSync());
-    final Json yotamOneofus = jsonDecode(File('test/yotam-oneofus.json').readAsStringSync());
-    final Json other = jsonDecode(File('test/other.json').readAsStringSync());
+    // Helper to find test data whether running from root or package dir
+    File findFile(String filename) {
+      if (File('test/$filename').existsSync()) return File('test/$filename');
+      if (File('packages/oneofus_common/test/$filename').existsSync()) {
+        return File('packages/oneofus_common/test/$filename');
+      }
+      throw Exception('Could not find test data: $filename');
+    }
+
+    final Json yotamNerdster =
+        jsonDecode(findFile('yotam-nerdster.json').readAsStringSync());
+    final Json yotamOneofus =
+        jsonDecode(findFile('yotam-oneofus.json').readAsStringSync());
+    final Json other = jsonDecode(findFile('other.json').readAsStringSync());
     // DEFER: TEST: Other with unknow fields
     for (final exported in [yotamOneofus, yotamNerdster, other]) {
       for (final Json statement in exported['statements'] as Iterable) {

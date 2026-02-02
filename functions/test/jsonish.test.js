@@ -3,9 +3,9 @@ const assert = require('node:assert');
 const { getToken, order, parseIrevoke } = require('../jsonish_util');
 
 // Load parity data from the root test directory
-const yotam_oneofus = require('../../test/yotam-oneofus.json');
-const yotam_nerdster = require('../../test/yotam-nerdster.json');
-const other = require('../../test/other.json');
+const yotam_oneofus = require('../../packages/oneofus_common/test/yotam-oneofus.json');
+const yotam_nerdster = require('../../packages/oneofus_common/test/yotam-nerdster.json');
+const other = require('../../packages/oneofus_common/test/other.json');
 
 describe('Jsonish Parity Tests', () => {
   

@@ -1,6 +1,5 @@
-import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/trust_statement.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oneofus_common/trust_statement.dart';
 
 var statementJson = {
   "statement": "net.one-of-us",
