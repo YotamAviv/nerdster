@@ -34,7 +34,7 @@ class _State extends State<JsonDisplay> {
 
     var interpreted = (interpreter != null && widget.interpret.value)
         ? interpreter.interpret(useSubject)
-        : useSubject;
+        : Jsonish.order(useSubject);
     String display = encoder.convert(interpreted);
 
     TextStyle baseStyle = GoogleFonts.courierPrime(
