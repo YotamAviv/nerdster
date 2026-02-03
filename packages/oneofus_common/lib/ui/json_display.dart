@@ -45,7 +45,7 @@ class _State extends State<JsonDisplay> {
   @override
   Widget build(BuildContext context) {
     // Basic interpretation: If interpreter is present, use it. Otherwise just use subject.
-    Map show = Jsonish.order(widget.subject);
+    dynamic show = Jsonish.order(widget.subject);
     final Interpreter? activeInterpreter = widget.interpreterParam ?? JsonDisplay.interpreter;
     if (widget.interpret.value) {
       show = activeInterpreter!.interpret(widget.subject);
