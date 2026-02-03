@@ -3,441 +3,348 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>one-of-us.net — manual</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;600;800&display=swap"
-      rel="stylesheet"
-    />
+    <title>one-of-us.net(1) — manual</title>
     <style>
-      :root {
-        --primary: #00897b;
-        --text: #1a1a1a;
-        --bg: #f5f5f5;
-        --card-bg: #ffffff;
-      }
-
       body {
         margin: 0;
-        padding: 0;
-        font-family: "Inter", sans-serif;
-        line-height: 1.6;
-        background-color: var(--bg);
-        color: var(--text);
+        padding: 20px 20px;
+        font-family: monospace;
+        line-height: 1.4;
+        background-color: #ffffff;
+        color: #000000;
+        max-width: 80ch;
+        margin-left: auto;
+        margin-right: auto;
+        border-top: 20px solid #224488;
+        border-bottom: 20px solid #224488;
       }
 
-      .container {
-        max-width: 800px;
-        margin: 40px auto;
-        background: var(--card-bg);
-        padding: 40px 60px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border-radius: 8px;
-      }
-
-      @media (max-width: 768px) {
-        .container {
-          margin: 0;
-          padding: 20px;
-          border-radius: 0;
-          box-shadow: none;
-        }
-      }
-
-      /* Header */
-      header {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        margin-bottom: 60px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 20px;
-      }
-
-      .logo {
-        width: 64px;
-        height: 64px;
-      }
-
-      .brand h1 {
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 1.5rem;
+      /* Man page layout helpers */
+      h1, h2, h3 {
+        font-weight: bold;
+        text-transform: uppercase;
         margin: 0;
-        letter-spacing: -0.5px;
-      }
-
-      .tagline {
-        font-family: "IBM Plex Mono", monospace;
-        font-size: 0.85rem;
-        color: #666;
-        margin-top: 8px;
-        white-space: pre-wrap;
-      }
-
-      /* Typography */
-      h1,
-      h2,
-      h3 {
-        font-family: "Inter", sans-serif;
-        color: #000;
+        padding: 0;
+        font-size: 1rem;
+        color: #224488;
       }
 
       h1 {
-        font-size: 2rem;
-        font-weight: 800;
-        margin-top: 2rem;
-        margin-bottom: 1.5rem;
-        letter-spacing: -1px;
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
       }
 
       h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-top: 40px;
-        margin-bottom: 16px;
-        border-bottom: 2px solid var(--primary);
-        display: inline-block;
-        padding-bottom: 4px;
+        margin-top: 1.2em;
+        margin-bottom: 0.5em;
+        margin-left: 0;
       }
 
       h3 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-top: 24px;
-        color: #444;
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+        margin-left: 4ch;
       }
 
-      p,
+      p {
+        margin-left: 8ch;
+        margin-bottom: 1em;
+        text-align: justify;
+      }
+
+      ul, ol {
+        margin-left: 8ch;
+        padding-left: 4ch;
+        margin-bottom: 1em;
+      }
+
       li {
-        color: #333;
-        font-size: 1.05rem;
+        margin-bottom: 0.5em;
       }
 
-      code {
-        font-family: "IBM Plex Mono", monospace;
+      dt {
+        margin-left: 8ch;
+        font-weight: bold;
+        margin-top: 1em;
+      }
+
+      dd {
+        margin-left: 12ch;
+        margin-bottom: 1em;
+      }
+
+      pre {
+        margin-left: 12ch;
         background: #f0f0f0;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 0.9em;
+        padding: 1ch;
+        white-space: pre-wrap;
+        border-left: 4px solid #224488;
       }
 
       a {
-        color: var(--primary);
         text-decoration: none;
-        font-weight: 600;
-        border-bottom: 1px solid transparent;
-        transition: border-bottom 0.2s;
+        color: #224488;
       }
-
       a:hover {
-        border-bottom-color: var(--primary);
+        text-decoration: underline;
+      }
+      
+      .header-line {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        margin-bottom: 2em;
+        color: #224488;
+      }
+      
+      .center-header {
+        text-transform: uppercase;
       }
 
-      .alert {
-        background: #fff3e0;
-        border-left: 4px solid #ff9800;
-        padding: 16px;
-        margin: 20px 0;
-        border-radius: 4px;
+      .footer-line {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        margin-top: 3em;
+        border-top: 1px solid #ccc;
+        padding-top: 1em;
+        color: #224488;
       }
 
-      .alert h3 {
-        margin-top: 0;
-        color: #e65100;
-      }
-
+      /* Special highlighting for UI elements in man page style */
       .ui-ref {
-        font-weight: 700;
-        color: #000;
+        font-weight: bold;
+        font-style: italic;
+      }
+
+      /* Warning/Note blocks */
+      .note-block {
+        margin-left: 8ch;
+        margin-bottom: 1em;
+        border: 1px solid #000;
+        padding: 1ch;
+      }
+      .note-title {
+        font-weight: bold;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 0.5em;
+      }
+
+      /* Bold toggle for emphasis similar to man pages */
+      strong {
+        font-weight: bold;
+      }
+      
+      code {
+        font-weight: bold;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <a href="index.html">
-          <img src="img/oneofus_1024.png" alt="ONE-OF-US.NET" class="logo" />
-        </a>
-        <div class="brand">
-          <h1>ONE-OF-US.NET</h1>
-          <div class="tagline">
-            A network of the people, by the people, for the people. Retis, ergo
-            sum. (I network, therefore I am)
-          </div>
-        </div>
-      </header>
+    <!-- Top Header Line: NAME(SECTION) ... NAME(SECTION) -->
+    <div class="header-line">
+      <span>ONE-OF-US.NET(1)</span>
+      <span class="center-header">User Manual</span>
+      <span>ONE-OF-US.NET(1)</span>
+    </div>
 
-      <h1>Manual</h1>
+    <h1>NAME</h1>
+    <p>one-of-us.net - a decentralized web of trust and identity wallet</p>
 
-      <p class="intro">
-        The <strong>one-of-us.net</strong> phone app is your digital wallet for
-        identity. It creates, stores, and lets you sign statements with your
-        cryptographic public/private key pairs (a single identity key pair; as
-        many delegate keys as you want).
-      </p>
+    <h1>SYNOPSIS</h1>
+    <p>
+      <strong>one-of-us.net</strong> [application]
+    </p>
 
-      <ul>
-        <li>
-          Sign and publish trust/block statements referencing other keys thus
-          forming our cryptographically secure, web-of-trust.
-        </li>
-        <li>
-          Create disposable, delegate key pairs, associate them with your
-          identity, and allow other services (<a href="https://nerdster.org/"
-            >the Nerdster</a
-          >) to state stuff on your behalf.
-        </li>
-      </ul>
+    <h1>DESCRIPTION</h1>
+    <p>
+      The <strong>one-of-us.net</strong> phone app is your digital wallet for
+      identity. It creates, stores, and lets you sign statements with your
+      cryptographic public/private key pairs (a single identity key pair; as
+      many delegate keys as you want).
+    </p>
+    <p>
+      It allows you to:
+    </p>
+    <ul>
+      <li>
+        Sign and publish trust/block statements referencing other keys, thus
+        forming our cryptographically secure web-of-trust.
+      </li>
+      <li>
+        Create disposable, delegate key pairs, associate them with your
+        identity, and allow other services (like <a href="https://nerdster.org/">the Nerdster</a>) to state stuff on your behalf.
+      </li>
+    </ul>
+    <p>
+      The statements are replicated to the cloud and are meant to be portable
+      and available to be read and trusted by anyone or any service.
+    </p>
 
-      <p>
-        The statements are replicated to the cloud and are meant to be portable
-        and available to be read and trusted by anyone or any service. For
-        example, my identity statements are here:
-        <a
-          href="https://export.one-of-us.net/?token=2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431"
-          >export.one-of-us.net</a
-        >
-      </p>
+    <h1>GETTING STARTED</h1>
+    
+    <h2>Join the network</h2>
+    <p>
+      Until you trust someone else on the network, your network will be empty.
+      Until someone else on the network trusts you, you'll be invisible to the
+      network.
+    </p>
 
-      <h1>Beginner: Join the network</h1>
+    <h2>Trusting others</h2>
+    <p>
+      There are three main ways to trust another identity:
+    </p>
 
-      <p>
-        Until you trust someone else on the network, your network will be empty.
-        Until someone else on the network trusts you, you'll be invisible to the
-        network.
-      </p>
+    <dl>
+      <dt>1. Meet them in person</dt>
+      <dd>
+        Tap the big <span class="ui-ref">Scan</span> button (QR icon) at the bottom center
+        of the main screen, and scan the QR code on the main screen of the
+        other person's app.
+      </dd>
 
-      <h2>Trust someone</h2>
+      <dt>2. Remote sharing</dt>
+      <dd>
+        Use the <span class="ui-ref">Share</span> button (bottom left) to send
+        your public key/QR to a friend. Receive theirs in return. View the QR
+        code they sent you on another screen (laptop/tablet) and scan it with
+        your phone using the <span class="ui-ref">Scan</span> button.
+      </dd>
+      
+      <dt>3. Copy/Paste</dt>
+      <dd>
+        If someone sends you their key as text (JSON), copy it to your
+        clipboard. Open the scanner (<span class="ui-ref">Scan</span> button)
+        and look for the <strong>Paste</strong> icon/button to process the
+        text directly.
+      </dd>
+    </dl>
 
-      <p>Options:</p>
+    <p>
+      Once scanned, the app will initiate a "Trust Statement". Fill in the
+      "moniker" (typically first name) and optionally a "comment", then tap
+      <strong>Trust</strong>.
+    </p>
 
-      <ol>
-        <li>
-          <strong>Meet them in person:</strong> Tap the big
-          <span class="ui-ref">Scan</span> button (QR icon) at the bottom center
-          of the main screen, and scan the QR code on the main screen of the
-          other person's app.
-        </li>
-        <li>
-          <strong>Remote sharing:</strong>
-          Use the <span class="ui-ref">Share</span> button (bottom left) to send
-          your public key/QR to a friend. Receive theirs in return. View the QR
-          code they sent you on another screen (laptop/tablet) and scan it with
-          your phone using the <span class="ui-ref">Scan</span> button.
-        </li>
-        <li>
-          <strong>Copy/Paste:</strong>
-          If someone sends you their key as text (JSON), copy it to your
-          clipboard. Open the scanner (<span class="ui-ref">Scan</span> button)
-          and look for the <strong>Paste</strong> icon/button to process the
-          text directly.
-        </li>
-      </ol>
+    <h2>Being trusted</h2>
+    <p>
+      Do the reverse of the above. Show them your QR code, or share it via the
+      Share button. Until someone on the network trusts you, you are effectively invisible.
+    </p>
 
-      <p>
-        Once scanned, the app will initiate a "Trust Statement". Fill in the
-        "moniker" (typically first name) and optionally a "comment", then tap
-        <strong>Trust</strong>.
-      </p>
+    <h1>DELEGATION (SIGNING IN)</h1>
+    <p>
+      You can authorize services like the Nerdster to act on your behalf without giving them your main identity key.
+    </p>
 
-      <h3>Let your associates trust you</h3>
+    <h3>Method A: On a separate screen (Computer/Tablet)</h3>
+    <ol>
+      <li>Go to <a href="https://nerdster.org/">nerdster.org</a>.</li>
+      <li>Click "QR sign-in" to display the Nerdster's sign-in QR code.</li>
+      <li>Use your ONE-OF-US phone app: Tap <span class="ui-ref">Scan</span> and point it at the screen.</li>
+      <li>Confirm the "delegate key" creation.</li>
+    </ol>
 
-      <p>
-        Do the reverse of the above. Show them your QR code, or share it via the
-        Share button.
-      </p>
-      <p>
-        <strong>Note:</strong> Until someone on the network trusts you, you are
-        effectively invisible to the entire network.
-      </p>
+    <h3>Method B: On the same device (Phone)</h3>
+    <p>
+      If you are visiting Nerdster on your phone's browser, use one of the <strong>Magic Links</strong> provided on the sign-in screen:
+    </p>
+    <ul>
+      <li><strong>Universal Link</strong> (<code>https://...</code>): Best for <strong>iPhones</strong>.</li>
+      <li><strong>Magic Link</strong> (<code>keymeid://...</code>): Best for <strong>Android</strong>.</li>
+    </ul>
 
-      <h2>Delegate sign-in to the Nerdster</h2>
+    <h1>STATEMENT TYPES</h1>
+    <p>
+      Statements are signed by your active ONE-OF-US public/private key pair.
+      The subject is always another public key. The verb defines your
+      disposition:
+    </p>
 
-      <h3>Method A: On a separate screen (Computer/Tablet)</h3>
+    <dl>
+      <dt>trust / block</dt>
+      <dd>
+        Form the network. Your trust network is defined by these relationships.
+        Requires <strong>--moniker</strong> (e.g., "Alice").
+      </dd>
 
-      <p>Access the Nerdster on a computer web browser:</p>
+      <dt>delegate</dt>
+      <dd>
+        Authorize other services. Your identity key is <em>you</em>. Delegate keys are
+        disposable keys you hand to services. Can be revoked with <strong>--revokeAt</strong>.
+      </dd>
 
-      <ol>
-        <li>Go to <a href="https://nerdster.org/">nerdster.org</a>.</li>
-        <li>Click "QR sign-in" to display the Nerdster's sign-in QR code.</li>
-      </ol>
+      <dt>replace</dt>
+      <dd>
+        Maintain your identity. If you lose your phone or key, you can replace it. 
+        This links your new key to your old identity history.
+      </dd>
+    </dl>
 
-      <p>Use your ONE-OF-US phone app:</p>
+    <h1>USER INTERFACE</h1>
+    <p>
+      Navigate by swiping left/right or using the
+      <span class="ui-ref">Menu</span> button (bottom right) to access the Management Hub.
+    </p>
 
-      <ol>
-        <li>
-          Tap the <span class="ui-ref">Scan</span> button (bottom center).
-        </li>
-        <li>Scan the Nerdster's QR code on your computer screen.</li>
-        <li>
-          If this is your first time, the app will ask to create a "delegate
-          key" for the Nerdster. Confirm this. (This authorizes the Nerdster to
-          post on your behalf without exposing your main identity private key).
-        </li>
-      </ol>
+    <dl>
+      <dt>PEOPLE</dt>
+      <dd>Lists everyone you {trust, block}. Manage statements here.</dd>
+      
+      <dt>SERVICES</dt>
+      <dd>Lists your active {delegate} keys.</dd>
+      
+      <dt>ADVANCED</dt>
+      <dd>Options to {replace} your key or view history.</dd>
+    </dl>
 
-      <h3>Method B: On the same device (Phone)</h3>
+    <h2>Overwrite or Clear</h2>
+    <p>
+      Your disposition towards another key is singular. If you trust a key and
+      then block it, only the block counts. <strong>Clear</strong> acts as an erase; it is as if you never spoke about it.
+    </p>
 
-      <p>
-        If you are visiting Nerdster on your phone's browser, you can't scan a QR code. 
-        Instead, use one of the <strong>Magic Links</strong> provided on the sign-in screen.
-      </p>
+    <h1>KEY MAINTENANCE</h1>
 
-      <ul>
-        <li>
-          <strong>Universal Link</strong> (<code>https://...</code>): usually works best on <strong>iPhones</strong>.
-        </li>
-        <li>
-          <strong>Magic Link</strong> (<code>keymeid://...</code>): usually works best on <strong>Android</strong>.
-        </li>
-      </ul>
+    <h2>Recovering from lost keys</h2>
+    <ol>
+      <li>Reinstall the app and create a <strong>new</strong> identity.</li>
+      <li>Go to <strong>Advanced > Manage Identity History</strong>.</li>
+      <li>Reach out to friends who trusted your <strong>old</strong> key and ask them to trust your <strong>new</strong> one.</li>
+      <li>Once they verify and trust your new key, the link is re-established.</li>
+    </ol>
 
-      <p>
-        Tap the link recommended for your device to launch the app and authenticate seamlessly.
-      </p>
+    <h2>Helping friends recover</h2>
+    <p>
+      If a trusted associate loses their key:
+    </p>
+    <ul>
+      <li>Verify their new identity (meet them, call them).</li>
+      <li>Trust their <strong>new</strong> key.</li>
+      <li>Clear your trust in their <strong>old</strong> key (optional).</li>
+    </ul>
 
-      <p>You should now be signed in.</p>
+    <h1>WARNINGS</h1>
 
-      <h1>Statement types</h1>
+    <div class="note-block">
+      <span class="note-title">BLOCKING</span>
+      Only block if a key is a bot, a bad actor, or hopelessly careless.
+      Do not block people just because you dislike them—that is what content filtering is for.
+      Blocking at the identity layer says "This is not a valid human."
+    </div>
 
-      <p>
-        Statements are signed by your active ONE-OF-US public/private key pair.
-        The subject is always another public key. The verb defines your
-        disposition:
-      </p>
+    <div class="note-block">
+      <span class="note-title">REMOTE TRUST</span>
+      If you get a text/email with a QR code saying "Trust me, it's Bob",
+      verify it is actually Bob (call him, recognize his voice). Don't just
+      scan random QRs.
+    </div>
 
-      <h2>Form the network: {trust, block}</h2>
-      <p>Your trust network is defined by these relationships.</p>
-      <ul>
-        <li>
-          <strong>--moniker:</strong> Required for trust statements (e.g.
-          "Alice").
-        </li>
-      </ul>
-
-      <h2>Authorize other services: {delegate}</h2>
-      <p>
-        Your <strong>identity key</strong> is <em>you</em>. Delegate keys are
-        disposable keys you hand to services (like Nerdster).
-      </p>
-      <ul>
-        <li>
-          <strong>--revokeAt:</strong> If a service is compromised, you can
-          revoke its key.
-        </li>
-      </ul>
-
-      <h2>Maintain your identity {replace}</h2>
-      <p>
-        If you lose your phone or key, you can replace it. This links your new
-        key to your old identity history.
-      </p>
-
-      <h1>Mechanics of using the app</h1>
-
-      <p>
-        Navigate by swiping left/right or using the
-        <span class="ui-ref">Menu</span> button (bottom right) to access the
-        Management Hub.
-      </p>
-
-      <ul>
-        <li>
-          <strong>PEOPLE screen:</strong> Lists everyone you {trust, block}.
-          Manage these statements here.
-        </li>
-        <li>
-          <strong>SERVICES screen:</strong> Lists your active {delegate} keys.
-        </li>
-        <li>
-          <strong>ADVANCED screen:</strong> Options to {replace} your key or
-          view history.
-        </li>
-      </ul>
-
-      <h2>Overwrite or Clear</h2>
-
-      <p>
-        Your disposition towards another key is singular. If you trust a key and
-        then block it, only the block counts.
-      </p>
-      <p>
-        <strong>Clear</strong> acts as an erase. If you "clear" a key, it's as
-        if you never spoke about it.
-      </p>
-      <p>
-        To change a statement, simply find the person in the
-        <strong>PEOPLE</strong> screen and edit the relationship.
-      </p>
-
-      <h1>Novice: Maintain your own keys</h1>
-
-      <p>
-        When you create replacement keys, you need to ensure your network knows
-        it's still you.
-      </p>
-
-      <h2>Your identity keys</h2>
-      <p>If you lose your key (phone lost/wiped):</p>
-      <ol>
-        <li>Reinstall the app and create a <strong>new</strong> identity.</li>
-        <li>
-          Go to <strong>Advanced > Manage Identity History</strong> (or similar
-          flow if prompted).
-        </li>
-        <li>
-          You will need to reach out to friends who trusted your
-          <strong>old</strong> key and ask them to trust your
-          <strong>new</strong> one.
-        </li>
-      </ol>
-      <p>
-        Once they verify and trust your new key, the link is re-established.
-      </p>
-
-      <h1>Advanced: Maintain your network</h1>
-
-      <h2>Blocking</h2>
-      <div class="alert">
-        <h3>Use sparingly!</h3>
-        <p>
-          Only block if a key is a bot, a bad actor, or hopelessly careless
-          (trusting bots). Do not block people just because you dislike
-          them—that's what content filtering is for.
-        </p>
-      </div>
-
-      <h2>Help friends recover</h2>
-      <p>If a trusted associate loses their key:</p>
-      <ul>
-        <li>Verify their new identity (meet them, call them).</li>
-        <li>Trust their <strong>new</strong> key.</li>
-        <li>
-          Clear your trust in their <strong>old</strong> key (optional but
-          clean).
-        </li>
-      </ul>
-
-      <h1>Pitfalls</h1>
-
-      <div class="alert">
-        <h3>DO NOT: Block people you dislike</h3>
-        <p>
-          Those are real people. Block them on the application layer (Nerdster)
-          if you don't want to see their posts. Blocking at the identity layer
-          says "This is not a valid human."
-        </p>
-      </div>
-
-      <div class="alert">
-        <h3>DO NOT: Trust via remote QR blindly</h3>
-        <p>
-          If you get a text/email with a QR code saying "Trust me, it's Bob",
-          verify it's actually Bob (call him, recognize his voice). Don't just
-          scan random QRs.
-        </p>
-      </div>
+    <div class="footer-line">
+      <span>ONE-OF-US.NET 2.0</span>
+      <span>2026-02-03</span>
+      <span>ONE-OF-US.NET(1)</span>
     </div>
   </body>
 </html>
