@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -595,7 +595,15 @@ A network of the people, by the people, for the people.
                 src="https://www.youtube.com/embed/videoseries?si=consuSay-BYVEtC2&amp;list=PL6RB74Oj39ErzJ7ae5y02BdQhizEwR-My"
                 title="YouTube video player"
                 class="video-iframe"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allow="
+                  accelerometer;
+                  autoplay;
+                  clipboard-write;
+                  encrypted-media;
+                  gyroscope;
+                  picture-in-picture;
+                  web-share;
+                "
                 allowfullscreen
               >
               </iframe>
@@ -606,21 +614,26 @@ A network of the people, by the people, for the people.
                 <ul>
                   <li>
                     Vouch for someone (whoever forwarded this to you): Click the
-                    QR icon on the bottom right of your phone app to scan their
+                    QR icon on the bottom center of your phone app to scan their
                     identity key QR code (front and center on the phone app).
                   </li>
                   <li>
                     Have someone vouch for you (have them scan your phone app
                     with theirs) or email them your identity public key using
-                    the app's "Share" menu.
+                    the app's "Share" button.
                   </li>
                 </ul>
-                <h4>Access the Nerd'ster: https://nerdster.org</h4>
+                <h4>
+                  Access the Nerd'ster:
+                  <a href="https://nerdster.org">https://nerdster.org</a>
+                </h4>
                 <ul>
                   <li>
-                    Sign in using your phone app (Click "QR Sign-in" on Nerdster
-                    to display its Sign-in Parameters; Use the same QR button on
-                    your phone app to scan what's being shown).
+                    Sign in using your phone app. This is done differently
+                    depending on whether you are using the Nerdster on same
+                    device as your ONE-OF-US.NET app, iPhone or Android, or a
+                    separate device. The Nerdster should suggest the appropriate
+                    method in first place.
                   </li>
                   <li>Rate, submit, comment, follow, etc...</li>
                 </ul>
@@ -698,7 +711,7 @@ A network of the people, by the people, for the people.
           e.data.src === "possibilities.html"
         ) {
           const iframe = document.querySelector(
-            'iframe[src="possibilities.html"]'
+            'iframe[src="possibilities.html"]',
           );
           if (iframe) {
             iframe.style.height = e.data.height + "px";
