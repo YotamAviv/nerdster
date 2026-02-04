@@ -5,10 +5,12 @@ import 'package:graphview/GraphView.dart';
 class FanAlgorithm extends Algorithm {
   final String rootId;
   final double levelSeparation;
+  final Map<String, Offset>? pinnedNodes;
 
   FanAlgorithm({
     required this.rootId,
     this.levelSeparation = 200,
+    this.pinnedNodes,
     EdgeRenderer? edgeRenderer,
   }) {
     renderer = edgeRenderer ?? CurvedEdgeRenderer();
@@ -68,6 +70,17 @@ class FanAlgorithm extends Algorithm {
     int unreachableCount = 0;
 
     for (final node in graph.nodes) {
+      if (pinnedNodes != null && pinnedNodes!.containsKey(node.key?.value.toString())) {
+        final pinned = pinnedNodes![node.key!.value.toString()]!;
+        node.x = pinned.dx;
+        node.y = pinned.dy;
+        minX = min(minX, node.x);
+        minY = min(minY, node.y);
+        maxX = max(maxX, node.x);
+        maxY = max(maxY, node.y);
+        continue;
+      }
+
       Offset pos;
       if (positions.containsKey(node)) {
         pos = positions[node]!;
@@ -135,34 +148,41 @@ class FanAlgorithm extends Algorithm {
 class CurvedEdgeRenderer extends EdgeRenderer {
   @override
   void renderEdge(Canvas canvas, Edge edge, Paint paint) {
-    final source = edge.source.position;
-    final destination = edge.destination.position;
-    final center = const Offset(100, 100); // Root position in FanAlgorithm
+    var sourcePos = edge.source.position;
+    var destinationPos = edge.destination.position;
+
+    // Center edges
+    final sourceCenter = Offset(sourcePos.dx + edge.source.width / 2, sourcePos.dy + edge.source.height / 2);
+    final destinationCenter = Offset(destinationPos.dx + edge.destination.width / 2, destinationPos.dy + edge.destination.height / 2);
 
     // Only skip if both are zero, which is unlikely for a valid edge
-    if (source == Offset.zero && destination == Offset.zero) return;
+    if (sourcePos == Offset.zero && destinationPos == Offset.zero) return;
 
     final path = Path();
-    path.moveTo(source.dx, source.dy);
 
-    // Calculate a control point that curves "outwards" from the center
-    final midPoint = Offset(
-      (source.dx + destination.dx) / 2,
-      (source.dy + destination.dy) / 2,
-    );
+    // Calculate vector from source to destination
+    final vector = destinationCenter - sourceCenter;
+    final distance = vector.distance;
 
-    final vectorToMid = midPoint - center;
-    // Push the control point outward to create a radial curve effect
-    // The factor 1.2 makes it curve slightly outward.
-    final cp = center + vectorToMid * 1.2;
+    if (distance == 0) return; // Overlapping nodes
 
-    path.quadraticBezierTo(cp.dx, cp.dy, destination.dx, destination.dy);
+    final direction = vector / distance;
+
+    // Adjust start and end points to be on the boundary of the nodes
+    final sourceRadius = edge.source.width / 2;
+    final destRadius = edge.destination.width / 2;
+
+    final startPoint = sourceCenter + direction * sourceRadius;
+    final endPoint = destinationCenter - direction * destRadius;
+
+    path.moveTo(startPoint.dx, startPoint.dy);
+    path.lineTo(endPoint.dx, endPoint.dy);
 
     final edgePaint = edge.paint ?? paint;
     canvas.drawPath(path, edgePaint);
 
     // Draw arrow head
-    _drawArrowHead(canvas, cp, destination, edgePaint);
+    _drawArrowHead(canvas, startPoint, endPoint, edgePaint);
   }
 
   void _drawArrowHead(Canvas canvas, Offset from, Offset to, Paint paint) {

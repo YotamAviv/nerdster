@@ -33,6 +33,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
 
   GraphData? _data;
   Set<GraphEdgeData> _pathEdges = {};
+  final Map<String, Offset> _pinnedNodes = {};
 
   @override
   void initState() {
@@ -92,6 +93,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     _algorithm = FanAlgorithm(
       rootId: rootId,
       levelSeparation: 200,
+      pinnedNodes: _pinnedNodes,
     );
   }
 
@@ -110,6 +112,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       setState(() {
         _data = null;
         _pathEdges = {};
+        _pinnedNodes.clear();
         _buildGraphView();
       });
       return;
@@ -120,6 +123,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     setState(() {
       _data = newData;
       _pathEdges = newPathEdges;
+      _pinnedNodes.clear();
       _updateAlgorithm();
       _buildGraphView();
     });
@@ -239,14 +243,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
                         ..color = Colors.black
                         ..strokeWidth = 1
                         ..style = PaintingStyle.stroke,
-                      builder: (Node node) {
-                        final key = node.key!.value;
-                        if (key is IdentityKey) {
-                          return _buildNodeWidget(key);
-                        }
-                        // Should not happen if we only add IdentityKeys
-                        return _buildNodeWidget(IdentityKey(key.toString()));
-                      },
+                      builder: (Node node) => _buildNodeWidget(node),
                     ),
                   ),
                 ),
@@ -296,15 +293,21 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     );
   }
 
-  Widget _buildNodeWidget(IdentityKey identity) {
+  Widget _buildNodeWidget(Node node) {
+    final keyVal = node.key!.value;
+    final IdentityKey identity = keyVal is IdentityKey ? keyVal : IdentityKey(keyVal.toString());
+
     if (identity.value.startsWith('...')) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(20),
+          shape: BoxShape.circle,
           border: Border.all(color: Colors.grey),
         ),
+        width: 30,
+        height: 30,
+        alignment: Alignment.center,
         child: const Text('...', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
       );
     }
@@ -336,15 +339,28 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     final isFocused = identity == resolvedFocused;
 
     return GestureDetector(
+      onPanUpdate: (details) {
+        if (identity.value.startsWith('...')) return;
+        final currentPos = Offset(node.x, node.y);
+        final newPos = currentPos + details.delta;
+
+        setState(() {
+          _pinnedNodes[identity.value] = newPos;
+          _updateAlgorithm();
+        });
+      },
       onTap: () {
         if (identity.value.startsWith('...')) return;
         _showNodeDetails(identity);
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        width: 60,
+        height: 60,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          color: isRoot ? Colors.blue[50] : (isFocused ? Colors.orange[50] : Colors.white),
-          borderRadius: BorderRadius.circular(8),
+          color: (isRoot ? Colors.blue[50] : (isFocused ? Colors.orange[50] : Colors.white))?.withOpacity(0.8),
+          shape: BoxShape.circle,
           border: Border.all(
             color: isFocused ? Colors.orange : (isRoot ? Colors.blue : Colors.grey[300]!),
             width: isFocused || isRoot ? 2 : 1,
@@ -360,8 +376,11 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
         ),
         child: Text(
           label,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: isRoot ? 13 : 11,
+            fontSize: isRoot ? 11 : 9,
             fontWeight: isRoot || isFocused ? FontWeight.bold : FontWeight.normal,
             color: isRoot ? Colors.blue[900] : (isFocused ? Colors.orange[900] : Colors.black87),
           ),
