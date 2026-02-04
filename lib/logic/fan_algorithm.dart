@@ -176,7 +176,23 @@ class CurvedEdgeRenderer extends EdgeRenderer {
     final endPoint = destinationCenter - direction * destRadius;
 
     path.moveTo(startPoint.dx, startPoint.dy);
-    path.lineTo(endPoint.dx, endPoint.dy);
+    
+    // Check if edge is dashed (from paint override)
+    if (edge.paint != null && edge.paint!.style == PaintingStyle.stroke && edge.paint!.strokeCap == StrokeCap.butt) {
+      // Draw dashed line
+      const dashWidth = 5.0;
+      const dashSpace = 5.0;
+      double currentDistance = 0.0;
+      while (currentDistance < distance) {
+        final dashStart = startPoint + direction * currentDistance;
+        final dashEnd = startPoint + direction * min(currentDistance + dashWidth, distance);
+        path.moveTo(dashStart.dx, dashStart.dy);
+        path.lineTo(dashEnd.dx, dashEnd.dy);
+        currentDistance += dashWidth + dashSpace;
+      }
+    } else {
+      path.lineTo(endPoint.dx, endPoint.dy);
+    }
 
     final edgePaint = edge.paint ?? paint;
     canvas.drawPath(path, edgePaint);

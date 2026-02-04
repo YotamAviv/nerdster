@@ -160,24 +160,23 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   }
 
   Paint _getEdgePaint(GraphEdgeData e, bool isPath) {
-    Color color = Colors.grey;
-    double strokeWidth = isPath ? 3.0 : 1.5;
+    Color color = Colors.green; // Default to trust/identity
+    bool isDashed = e.isConflict;
 
-    if (e.isConflict) {
-      color = Colors.orange;
-    } else if (e.isNonCanonical) {
-      color = Colors.green;
-    } else if (e.isIdentity) {
-      color = Colors.green;
-    } else if (e.isFollow) {
+    if (e.isFollow) {
       color = Colors.blue;
+    }
+
+    if (e.isBlock) {
+      color = Colors.red;
     }
 
     return Paint()
       ..color = color.withOpacity(isPath ? 1.0 : 0.6)
-      ..strokeWidth = strokeWidth
+      ..strokeWidth = isPath ? 3.0 : 1.5
       ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+      // Use butt cap as a hacky signal to the renderer to draw dashed lines
+      ..strokeCap = isDashed ? StrokeCap.butt : StrokeCap.round;
   }
 
   @override

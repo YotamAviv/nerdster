@@ -16,6 +16,7 @@ class GraphEdgeData {
   final bool isFollow;
   final bool isConflict;
   final bool isNonCanonical;
+  final bool isBlock;
 
   GraphEdgeData({
     required this.from,
@@ -25,6 +26,7 @@ class GraphEdgeData {
     this.isFollow = false,
     this.isConflict = false,
     this.isNonCanonical = false,
+    this.isBlock = false,
   });
 }
 
@@ -182,6 +184,7 @@ class GraphController {
                 isIdentity: true,
                 isConflict: isConflict,
                 isNonCanonical: isNonCanonical,
+                isBlock: s.verb == TrustVerb.block,
               ));
         }
       }
@@ -256,6 +259,7 @@ class GraphController {
           isFollow: e.isFollow || newEdge.isFollow,
           isConflict: e.isConflict || newEdge.isConflict,
           isNonCanonical: e.isNonCanonical || newEdge.isNonCanonical,
+          isBlock: e.isBlock || newEdge.isBlock,
         );
         return;
       }
@@ -297,6 +301,7 @@ class GraphController {
             isFollow: match.isFollow,
             isConflict: true,
             isNonCanonical: match.isNonCanonical,
+            isBlock: match.isBlock || conflict.rejectedStatement.verb == TrustVerb.block,
           ));
         } else {
           edges.add(GraphEdgeData(
@@ -304,6 +309,7 @@ class GraphController {
             to: toId,
             statements: [conflict],
             isConflict: true,
+            isBlock: conflict.rejectedStatement.verb == TrustVerb.block,
           ));
         }
       }
