@@ -183,9 +183,11 @@ class CurvedEdgeRenderer extends EdgeRenderer {
       const dashWidth = 5.0;
       const dashSpace = 5.0;
       double currentDistance = 0.0;
-      while (currentDistance < distance) {
+      final drawDistance = (endPoint - startPoint).distance;
+      
+      while (currentDistance < drawDistance) {
         final dashStart = startPoint + direction * currentDistance;
-        final dashEnd = startPoint + direction * min(currentDistance + dashWidth, distance);
+        final dashEnd = startPoint + direction * min(currentDistance + dashWidth, drawDistance);
         path.moveTo(dashStart.dx, dashStart.dy);
         path.lineTo(dashEnd.dx, dashEnd.dy);
         currentDistance += dashWidth + dashSpace;

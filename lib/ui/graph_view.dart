@@ -34,6 +34,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   GraphData? _data;
   Set<GraphEdgeData> _pathEdges = {};
   final Map<String, Offset> _pinnedNodes = {};
+  int _layoutVersion = 0;
 
   @override
   void initState() {
@@ -124,6 +125,9 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       _data = newData;
       _pathEdges = newPathEdges;
       _pinnedNodes.clear();
+      // Force a full reset of the InteractiveViewer and GraphView when the graph logical content changes
+      _transformationController.value = Matrix4.identity();
+      _layoutVersion++; 
       _updateAlgorithm();
       _buildGraphView();
     });
@@ -175,7 +179,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       ..color = color.withOpacity(isPath ? 1.0 : 0.6)
       ..strokeWidth = isPath ? 3.0 : 1.5
       ..style = PaintingStyle.stroke
-      // Use butt cap as a hacky signal to the renderer to draw dashed lines
+      // Use butt cap as a signal to the renderer to draw dashed lines
       ..strokeCap = isDashed ? StrokeCap.butt : StrokeCap.round;
   }
 
@@ -227,15 +231,14 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
                 _buildTrustSettingsBar(model),
                 Expanded(
                   child: InteractiveViewer(
-                    key: ValueKey(_graphController!.povIdentity.value),
+                    key: ValueKey(_graphController!.povIdentity.value + _layoutVersion.toString()),
                     transformationController: _transformationController,
                     constrained: false,
                     boundaryMargin: const EdgeInsets.all(500),
                     minScale: 0.01,
                     maxScale: 5.6,
                     child: GraphView(
-                      key: ValueKey(
-                          '${_graphController!.povIdentity.value}_${_data?.nodes.length}_${_data?.edges.length}'),
+                      key: ValueKey(_graphController!.povIdentity.value + _layoutVersion.toString()),
                       graph: _graph,
                       algorithm: _algorithm,
                       paint: Paint()
@@ -338,13 +341,20 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     final isFocused = identity == resolvedFocused;
 
     return GestureDetector(
+      key: ValueKey(identity.value),
+      behavior: HitTestBehavior.translucent,
       onPanUpdate: (details) {
         if (identity.value.startsWith('...')) return;
+        final Matrix4 transform = _transformationController.value;
+        final double scale = transform.getMaxScaleOnAxis();
+
+        // Update the specific node's position in the pinned set
         final currentPos = Offset(node.x, node.y);
-        final newPos = currentPos + details.delta;
+        final newPos = currentPos + details.delta / scale;
+        _pinnedNodes[identity.value] = newPos;
 
         setState(() {
-          _pinnedNodes[identity.value] = newPos;
+          // Update algorithm to respect new pin
           _updateAlgorithm();
         });
       },
@@ -353,6 +363,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
         _showNodeDetails(identity);
       },
       child: Container(
+        key: ValueKey(identity.value),
         width: 60,
         height: 60,
         alignment: Alignment.center,
