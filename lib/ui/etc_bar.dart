@@ -115,21 +115,27 @@ $link''',
                     ],
                   ),
                   // Identity Network Confidence
-                  SubmenuButton(
-                    menuChildren: ['permissive', 'standard', 'strict'].map((val) {
-                      return ValueListenableBuilder<String>(
-                        valueListenable: Setting.get<String>(SettingType.identityPathsReq).notifier,
-                        builder: (context, current, _) {
+                  ValueListenableBuilder<String>(
+                    valueListenable: Setting.get<String>(SettingType.identityPathsReq).notifier,
+                    builder: (context, current, _) {
+                      return SubmenuButton(
+                        menuChildren: ['permissive', 'standard', 'strict'].map((val) {
                           return MenuItemButton(
                             onPressed: () =>
                                 Setting.get<String>(SettingType.identityPathsReq).value = val,
                             trailingIcon: current == val ? const Icon(Icons.check) : null,
                             child: Text(val),
                           );
-                        },
+                        }).toList(),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.shield_outlined),
+                            const SizedBox(width: 8),
+                            Text(current),
+                          ],
+                        ),
                       );
-                    }).toList(),
-                    child: const Text('Identity Network Confidence'),
+                    },
                   ),
                 ],
                 child: const Text('/etc'),
