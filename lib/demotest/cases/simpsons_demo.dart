@@ -130,6 +130,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   await carl.doTrust(TrustVerb.trust, smithers, moniker: 'Smithers');
 
   // school
+  await nelson.doTrust(TrustVerb.block, luann, comment: 'Ho');
   await milhouse.doTrust(TrustVerb.trust, luann, moniker: 'Mom');
   await ralph.doTrust(TrustVerb.trust, nelson, moniker: 'Nelson');
   await nelson.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
