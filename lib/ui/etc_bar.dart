@@ -4,7 +4,6 @@ import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/ui/util/alert.dart'; // For alert dialog
 import 'package:nerdster/verify.dart';
-import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/logic/feed_controller.dart'; // Add
@@ -104,23 +103,46 @@ $link''',
                     onPressed: () => JustSign.sign(context),
                   ),
                   // Show Crypto
-                  Row(
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(left: 12.0),
-                        child: Icon(Icons.key),
-                      ),
-                      MyCheckbox(Setting.get<bool>(SettingType.showCrypto).notifier,
-                          'Show Crypto (JSON, keys, and statements)'),
-                    ],
+                  ValueListenableBuilder<bool>(
+                    valueListenable: Setting.get<bool>(SettingType.showCrypto).notifier,
+                    builder: (context, showCrypto, _) {
+                      return MenuItemButton(
+                        leadingIcon: Icon(showCrypto ? Icons.key : Icons.key_off,
+                            color: showCrypto ? Theme.of(context).primaryColor : null),
+                        closeOnActivate: false,
+                        onPressed: () =>
+                            Setting.get<bool>(SettingType.showCrypto).value = !showCrypto,
+                        child: Text('Show Crypto details',
+                            style: TextStyle(
+                                fontWeight: showCrypto ? FontWeight.bold : FontWeight.normal)),
+                      );
+                    },
                   ),
                   // Identity Network Confidence
                   ValueListenableBuilder<String>(
                     valueListenable: Setting.get<String>(SettingType.identityPathsReq).notifier,
                     builder: (context, current, _) {
+                      IconData shieldIcon = Icons.shield_outlined;
+                      Color? shieldColor;
+                      switch (current) {
+                        case 'permissive':
+                          shieldIcon = Icons.shield_outlined;
+                          shieldColor = Colors.green;
+                          break;
+                        case 'standard':
+                          shieldIcon = Icons.shield_sharp;
+                          shieldColor = Colors.blue;
+                          break;
+                        case 'strict':
+                          shieldIcon = Icons.security;
+                          shieldColor = Colors.red;
+                          break;
+                      }
+
                       return SubmenuButton(
                         menuChildren: ['permissive', 'standard', 'strict'].map((val) {
                           return MenuItemButton(
+                            closeOnActivate: false,
                             onPressed: () =>
                                 Setting.get<String>(SettingType.identityPathsReq).value = val,
                             trailingIcon: current == val ? const Icon(Icons.check) : null,
@@ -129,7 +151,7 @@ $link''',
                         }).toList(),
                         child: Row(
                           children: [
-                            const Icon(Icons.shield_outlined),
+                            Icon(shieldIcon, color: shieldColor),
                             const SizedBox(width: 8),
                             Text(current),
                           ],
