@@ -4,5 +4,9 @@
   "dart.runTestsWithErrors": true,
   "dart.promptToRunIfErrors": false,
   "dart.testExplorerEnabled": true,
-  "dart.showTestCodeLens": true
+  "dart.showTestCodeLens": true,
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+    "editor.wordWrap": "on"
+  }
 }
