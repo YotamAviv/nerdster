@@ -601,3 +601,18 @@ h3,
   background: rgba(0, 0, 0, 0.1);
   margin-top: 0.5rem;
 }
+
+/* Man page link style */
+a.man-link {
+  font-family: inherit;
+  color: var(--fg-secondary);
+  text-decoration: underline;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+a.man-link:hover {
+  background-color: var(--fg-primary);
+  color: var(--bg-primary);
+  text-decoration: none;
+}

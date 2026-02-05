@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>nerdster(1) — manual</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px 20px;
+        font-family: monospace;
+        line-height: 1.4;
+        background-color: #ffffff;
+        color: #000000;
+        max-width: 80ch;
+        margin-left: auto;
+        margin-right: auto;
+        border-top: 20px solid #224488;
+        border-bottom: 20px solid #224488;
+      }
+
+      /* Man page layout helpers */
+      h1,
+      h2,
+      h3 {
+        font-weight: bold;
+        text-transform: uppercase;
+        margin: 0;
+        padding: 0;
+        font-size: 1rem;
+        color: #224488;
+      }
+
+      h1 {
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+      }
+
+      h2 {
+        margin-top: 1.2em;
+        margin-bottom: 0.5em;
+        margin-left: 0;
+      }
+
+      h3 {
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+        margin-left: 4ch;
+      }
+
+      p {
+        margin-left: 8ch;
+        margin-bottom: 1em;
+        text-align: justify;
+      }
+
+      ul,
+      ol {
+        margin-left: 8ch;
+        padding-left: 4ch;
+        margin-bottom: 1em;
+      }
+
+      li {
+        margin-bottom: 0.5em;
+      }
+
+      dt {
+        margin-left: 8ch;
+        font-weight: bold;
+        margin-top: 1em;
+      }
+
+      dd {
+        margin-left: 12ch;
+        margin-bottom: 1em;
+      }
+
+      pre {
+        margin-left: 12ch;
+        background: #f0f0f0;
+        padding: 1ch;
+        white-space: pre-wrap;
+        border-left: 4px solid #224488;
+      }
+
+      a {
+        text-decoration: none;
+        color: #224488;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .header-line {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+        margin-bottom: 2em;
+        color: #224488;
+      }
+
+      .center-header {
+        text-align: center;
+        width: 100%;
+        margin-bottom: 2em;
+        font-weight: bold;
+        color: #224488;
+        text-transform: uppercase;
+      }
+
+      .footer-line {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 4em;
+        color: #224488;
+        border-top: 1px solid #224488;
+        padding-top: 1em;
+      }
+
+      /* Special highlighting for UI elements in man page style */
+      .ui-ref {
+        font-weight: bold;
+        font-style: italic;
+      }
+
+      /* Warning/Note blocks */
+      .note-block {
+        margin-left: 8ch;
+        margin-bottom: 1em;
+        border: 1px solid #000;
+        padding: 1ch;
+      }
+      .note-title {
+        font-weight: bold;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 0.5em;
+      }
+
+      /* Bold toggle for emphasis similar to man pages */
+      strong {
+        font-weight: bold;
+      }
+
+      code {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header-line">
+      <span>NERDSTER(1)</span>
+      <span>General Commands Manual</span>
+      <span>NERDSTER(1)</span>
+    </div>
+
+    <div class="center-header">nerdster — content layer.</div>
+
+    <h2>NAME</h2>
+    <p>
+      nerdster — a content rating and discovery tool built on the ONE-OF-US.NET
+      identity layer
+    </p>
+
+    <h2>SYNOPSIS</h2>
+    <p>
+      Reference implementation for the decentralized identity paradigm All your
+      likes are belong to us (us)..
+    </p>
+
+    <h2>DESCRIPTION</h2>
+    <p>
+      <b>Nerdster</b> is a decentralized web application for discovering,
+      rating, and discussing content (movies, books, recipes, etc.). Unlike
+      traditional social networks, it does not rely on a central authority to
+      curate your feed or manage your identity. Instead, it uses the
+      <b>ONE-OF-US.NET</b> identity layer to establish a "Web of Trust".
+    </p>
+    <p>
+      Users sign their own content statements using cryptographic keys. Nerdster
+      aggregates these statements to build a view of the world that is unique to
+      each user's <b>Point of View (PoV)</b>.
+    </p>
+
+    <h2>TRANSPARENCY</h2>
+    <p>
+      Nerdster is designed to be &quot;naked&quot; data-wise. It does not hide
+      the underlying mechanics of the decentralized web.
+    </p>
+    <ul>
+      <li>
+        <b>Verifiable Statements</b>: Every action you take (rate, comment,
+        follow) signs and publishes a cryptographic statement. These can be
+        verified by any service, not just Nerdster.
+      </li>
+      <li>
+        <b>Exposed Plumbing</b>: You can inspect the raw data at any time. Turn
+        on <b>Show Crypto</b> in the settings to see the signed JSON statements
+        for every item in your feed.
+      </li>
+      <li>
+        <b>Service Discovery</b>: Clicking on a key in the node details view
+        reveals where that user's data is being served on the internet.
+      </li>
+    </ul>
+
+    <h2>IDENTITY & SIGN IN</h2>
+    <p>
+      Nerdster does not have its own account system. Identity is managed
+      exclusively by the <b>ONE-OF-US.NET</b> mobile app.
+    </p>
+
+    <dl>
+      <dt>Identity</dt>
+      <dd>
+        Access to Nerdster requires an identity (a cryptographic public key).
+      </dd>
+
+      <dt>Delegate Keys</dt>
+      <dd>
+        To sign in, use your phone app to create a <b>Delegate Key</b> for the
+        Nerdster's use. You can revoke or disassociate this delegation at any
+        time on your own (using your <b>ONE-OF-US.NET</b> mobile app, not the
+        Nerdster).
+      </dd>
+
+      <dt>Sign In</dt>
+      <dd>
+        <b>Desktop</b>: Use the <b>ONE-OF-US.NET</b> app on your phone to scan
+        the QR code displayed on the Nerdster sign-in screen.
+      </dd>
+      <dd>
+        <b>Android</b>: Tap the "Magic Link" button on the sign-in page. This
+        uses a custom scheme (<code>keymeid://</code>) to launch the identity
+        app and initiate the delegation process.
+      </dd>
+      <dd>
+        <b>iPhone</b>: Tap the "Universal Link" button. This uses a recognized
+        web link (<code>https://one-of-us.net/...</code>) which iOS redirects to
+        the installed ONE-OF-US.NET phone app.
+      </dd>
+      <dd>
+        <b>Copy/Paste</b>: Advanced users can copy/paste JSON blobs containing a
+        public key for &quot;identity&quot; and a public/private key pair for
+        the delegate key as &quot;nerdster.org&quot;.
+      </dd>
+    </dl>
+
+    <h2>POINT OF VIEW (PoV)</h2>
+    <p>
+      Everything in Nerdster is subjective. There is no "global truth" or
+      "global average rating". When you use Nerdster, you are seeing the world
+      from a specific <b>Point of View</b> (usually your own).
+    </p>
+    <p>
+      The content you see, the ratings you trust, and the tags you browse are
+      all filtered filtered by trust. You only see content from people you
+      trust, or people trusted by people you trust (up to a configured
+      distance).
+    </p>
+    <p>
+      You can change the active <b>PoV</b> and <b>Context</b> using the controls
+      in the <b>Network Settings Bar</b>. Switching the PoV or Context affects
+      your view <b>immediately</b>, updating the graph, feed, and ratings to
+      match the selected perspective and topic.
+    </p>
+
+    <h2>FOLLOWING & CONTEXTS</h2>
+    <p>
+      While the Identity Layer handles "who is human", Nerdster handles "who is
+      interesting". You can follow users for different <b>Contexts</b>.
+    </p>
+
+    <dl>
+      <dt>&lt;nerdster&gt;</dt>
+      <dd>
+        The default context is &quot;&lt;nerdster&gt;&quot; which follows
+        everyone you have personally vouched for in the Identity Layer. You can
+        tune this context explicitly (follow or block people in this context)
+        without affecting your real-world identity vouching. This affects the
+        view of those who &quot;&lt;nerdster&gt;&quot; follow you.
+      </dd>
+
+      <dt>Custom Contexts</dt>
+      <dd>
+        You can define arbitrary contexts like <code>music</code>,
+        <code>news</code>, <code>family</code>, <code>local</code>, etc... A
+        user you trust for coding advice might be blocked in your
+        <code>politics</code> context. This granular control ensures your feed
+        remains relevant.
+      </dd>
+
+      <dt>Changing Follows</dt>
+      <dd>
+        You manage your follows visually using the <b>Graph View</b>. Simply
+        <b>click on a node</b> (representing a user identity) to select it. The
+        side panel will update to show your current relationship. Click
+        <b>Follow</b>, <b>Block</b>, or <b>Clear</b> to update your stance for
+        any context.
+      </dd>
+    </dl>
+
+    <h2>CONTENT & VERBS</h2>
+    <p>
+      Users interact with subjects by publishing statements signed by your
+      delegate key.
+    </p>
+
+    <dl>
+      <dt>Like</dt>
+      <dd>Thumbs up or down.</dd>
+
+      <dt>Comment</dt>
+
+      <dt>Dismiss</dt>
+      <dd>
+        A gentle way to hide content you've already seen or aren't interested
+        in. Dismissals can be set to <b>Snooze</b>, which hides the item until
+        new "qualified activity" (like a new comment from a friend) wakes it up
+        or for <b>Forever</b>. You can choose to ignore dismissals using a
+        checkbox on the filter bar.
+      </dd>
+
+      <dt>Mobile Swipe Actions</dt>
+      <dd>
+        On touch devices, you can <b>Swipe the Image Left</b> to dismiss it
+        <b>Forever</b> (you can add other ratings before hitting publish).
+        <b>Swipe the Image Right</b> to <b>Snooze</b> and <b>Like</b>.
+      </dd>
+
+      <dt>Censor</dt>
+      <dd>
+        A harsh action for offensive or dangerous content. Censoring a subject
+        removes it from your view entirely. Crucially, your censorship protects
+        those who follow you—if you censor something, it is hidden from your
+        followers who trust your judgment. You can choose to ignore censorship
+        using a checkbox on the filter bar. Like everything else, censorship is
+        decentralized and is respected based on who you follow in the context
+        you're using.
+      </dd>
+
+      <dt>Relate / Equate</dt>
+      <dd>
+        Users can link subjects together.
+        <b>Relate</b> suggests a connection (e.g., "The Matrix" related to
+        "Cyberpunk"). <b>Equate</b> asserts two subjects are the same thing
+        (e.g., two URLs for the same article).
+      </dd>
+    </dl>
+
+    <h2>TAGS</h2>
+    <p>
+      Tags are extracted from comments (e.g., <code>#scifi</code>). Clicking on
+      a tag or selecting it in the tags dropdown in the filter bar should show
+      content tagged as such and possibly related content.
+    </p>
+
+    <h2>FILTERS</h2>
+    <p>The interface provides powerful tools to curate your experience.</p>
+
+    <dl>
+      <dt>Dismissal Filters</dt>
+      <dd>
+        Controls whose dismissals are respected.
+        <ul>
+          <li><b>My Disses</b>: Hide things I have dismissed.</li>
+          <li>
+            <b>PoV's Disses</b>: Hide things the current PoV user has dismissed.
+            (Currently not in the UI.)
+          </li>
+          <li><b>Ignore Disses</b>: Show everything, even if dismissed.</li>
+        </ul>
+      </dd>
+
+      <dt>Censorship</dt>
+      <dd>
+        By default, censored content is hidden. You can toggle "Show Censored"
+        to inspect what your network has flagged.
+      </dd>
+    </dl>
+
+    <h2>SINGULAR DISPOSITION</h2>
+    <p>
+      A user can only have one active disposition toward a subject at a time. If
+      you "Like" a movie at 10:00 and "Dismiss" it at 10:05, the system only
+      respects the Dismissal. The latest statement hides the previous one. A
+      newer comment overwrites the former.
+      <br />
+      The clear rating action removes your previous disposition, like you never
+      said nothin' at all.
+    </p>
+    <p>
+      Conflicts between users (e.g., Alice says "Related", Bob says "Not
+      Related") are resolved based on your computed Trust Graph. If you trust
+      Alice more than Bob, you see the relationship.
+    </p>
+
+    <h2>COMPUTING YOUR NETWORK, SHOWING CONFLICTS</h2>
+    <p>
+      Nerdster's computation of your Web of Trust is neither definitive nor
+      particularly smart. It avoids complex heuristics or voting systems.
+    </p>
+    <p>
+      Consider the core dilemma: If one of your trusted friends vouches for an
+      identity key (asserting it represents a capable human, acting in good
+      faith), but another friend blocks that same key, no software can
+      definitively know the truth. Other tools might leverage counts or
+      statistical signals to guess, but Nerdster does not.
+    </p>
+    <p>
+      Instead, Nerdster simply <b>notifies the parties involved</b>. If your
+      associates are in conflict, they'll need to talk to each other and sort it
+      out.
+    </p>
+
+    <h2>SEE ALSO</h2>
+    <p>
+      <a href="https://one-of-us.net/man">one-of-us.net(1)</a>
+    </p>
+
+    <div class="footer-line">
+      <span>2026-02-04</span>
+      <span>NERDSTER(1)</span>
+    </div>
+  </body>
+</html>
