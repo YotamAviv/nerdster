@@ -490,7 +490,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
           final systemNotifications = <SystemNotification>[];
 
-          // 1. Invisibility
+          // 1. Invisibility / Unnamed
           // Note: We use the identity from the start of the refresh loop to ensure consistency
           if (currentMeIdentity != null) {
             final isVisible = followNetwork.identities
@@ -499,8 +499,29 @@ class FeedController extends ValueNotifier<FeedModel?> {
             if (!isVisible) {
               systemNotifications.add(SystemNotification(
                 title: "You're invisible",
-                description:
-                    "You're not in the network you're viewing.",
+                description: "You're not in the network you're viewing.",
+              ));
+            }
+
+            final canonicalMe = graph.resolveIdentity(currentMeIdentity);
+            bool isNamed = false;
+
+            for (final edges in graph.edges.values) {
+              for (final edge in edges) {
+                if (edge.moniker != null) {
+                  if (graph.resolveIdentity(IdentityKey(edge.subjectToken)) == canonicalMe) {
+                    isNamed = true;
+                    break;
+                  }
+                }
+              }
+              if (isNamed) break;
+            }
+
+            if (!isNamed) {
+              systemNotifications.add(SystemNotification(
+                title: "You're 'Me'",
+                description: "You're 'Me' because no one has vouched for your identity.",
               ));
             }
           }

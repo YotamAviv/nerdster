@@ -129,10 +129,33 @@ class NotificationsMenu extends StatelessWidget {
             ),
           );
         },
-        child: Text(
-          "${notification.isError ? '⛔' : '⚠️'} ${notification.title}",
-          style: TextStyle(color: notification.isError ? Colors.red : Colors.orange),
-          softWrap: false,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 350),
+          child: Row(
+            children: [
+              Text(notification.isError ? '⛔' : '⚠️'),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      notification.title,
+                      style: TextStyle(
+                          color: notification.isError ? Colors.red : Colors.orange,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      notification.description,
+                      style: const TextStyle(fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ));
     }
@@ -196,12 +219,22 @@ class NotificationsMenu extends StatelessWidget {
           },
         );
       },
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 8),
-          Text(reason, style: TextStyle(color: color)),
-        ],
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 350),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                reason,
+                style: TextStyle(color: color),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
