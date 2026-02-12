@@ -34,7 +34,7 @@ The technology does exist today for us to organize ourselves independent of any 
 
 I read this about the [Houthi mess in Yemen in the Wall Street Journal today (1/13/24)](https://www.wsj.com/world/middle-east/u-s-strikes-give-yemens-houthis-the-enemy-they-long-sought-50415f4c) ([archived here](https://archive.is/jbVfm)):  
 “War has become a way of life,” she said. “Governance for the people to create prosperity is an alien concept.”  
-Are we Americans any different today? True that, our Protestants and Catholics get along just fine, but we have Republicans and Democrats. Are Republicans really trying to improve the border situation, would they agree to improving it under Democrat rule, or is our country like Yemen, where **War has become a way of life**, and **Governance for the people to create prosperity is an alien concept**?  
+Are we Americans any different today? True that, our Protestants and Catholics get along just fine, but we have Republicans and Democrats. Are Republicans really trying to improve the border situation, would they agree to improving it under Democrat rule, or is our country like Yemen, where "War has become a way of life", and "Governance for the people to create prosperity is an alien concept"?  
 Time for us to organize ourselves on our own terms, right?
 
 ## **Reputation today**
@@ -45,13 +45,13 @@ These services and others try to address reputation, but only from the limited e
 - Airbnb (for hosts and renters)  
 - Uber (for drivers and passengers)
 
-But what about actual people, not just **users**? These services make no effort to consider a person's lifetime of accumulated reputation.  
+But what about actual people, not just "users"? These services make no effort to consider a person's lifetime of accumulated reputation.  
 Wouldn't you rather buy something online from someone your own trust network says is trustworthy rather than from an Ebay user with a high star rating based only on their selling history as that user on that site?
 
 ### The Myth of the Homogeneous Personality and Trust Contexts
 
 I might trust a man to fix my car but not to date my daughter.  
-I might consider you to be **reliable** but not **interesting**, or maybe **interesting** but not **reliable**.  
+I might consider you to be "reliable" but not "interesting", or maybe "interesting" but not "reliable".  
 One-of-us.net will be built with this in mind and will use trust contexts to support this reality.
 
 ## **Information today**
@@ -63,7 +63,7 @@ Consider today's mess
 - media corruption  
 - censorship and cancel culture  
 - viral posts  
-- **2 minute** reads  
+- "2 minute" reads  
 - memes  
 - hot influencers
 
@@ -101,9 +101,9 @@ They're susceptible to spam, bots, idiots, or worse.
 Wouldn't you rather find a restaurant, book, or movie based on a network of folks you trust for such recommendations?
 
 Other services like Netflix, YouTube, or Amazon, for example, do know what you've watched or bought, what you started watching but ditched halfway through, what you've explicitly disliked, what you chose to follow or bookmark, but like other services mentioned earlier, they have a monopoly on this information and so they make little effort as they feel little pressure from competition (which lacks that information) to improve.  
-We've all heard about the **algorithms** these platforms use to get us to engage with their platforms, to find content we might enjoy, to show us ads for products we might buy, to find stories we might read, etc...  
+We've all heard about the "algorithms" these platforms use to get us to engage with their platforms, to find content we might enjoy, to show us ads for products we might buy, to find stories we might read, etc...  
 These algorithms are effective because they're backed by lots of data. That data is from us, but it's not ours. It's not possible for anyone other than Netflix to use Netflix's data to make better movie suggestions for you (ditto for TikTok, Amazon, Facebook, IG, etc..).  
-Furthermore, these algorithms are opaque to us. We don't know if they're slanted to promote, demote, suppress, or even censor certain content to serve themselves or their backers instead of us. Did my post about **The Great Barrington Declaration** receive zero likes because my friends didn't like it, or because Facebook decided to not even show it to them?  
+Furthermore, these algorithms are opaque to us. We don't know if they're slanted to promote, demote, suppress, or even censor certain content to serve themselves or their backers instead of us. Did my post about "The Great Barrington Declaration" receive zero likes because my friends didn't like it, or because Facebook decided to not even show it to them?  
 Were this data all open, it'd be possible for competing services to leverage it and to compete on a variety of fronts, integrity being among them.
 
 # The possibilities
@@ -141,18 +141,18 @@ Censorship is challenging. We don't want to ban books or cancel ideas, but we pr
 
 "I shall not today attempt further to define the kinds of material I understand to be embraced... but I know it when I see it ..."
 
-- Justice Potter Stewart explaining **hard-core** pornography, or what is obscene (1964)
+- Justice Potter Stewart explaining "hard-core" pornography, or what is obscene (1964)
 
 Why not use a trust network to know it, tag it, and that way you don't even have to see it?  
-This is a trivial case for the decentralized trust network concept. Anyone can tag content as **censored**, or **obscene**, thereby censoring it from anyone who trusts their judgment regarding censorship or obscenity.  
+This is a trivial case for the decentralized trust network concept. Anyone can tag content as "censored", or "obscene", thereby censoring it from anyone who trusts their judgment regarding censorship or obscenity.  
 The rest follows trivially. Different folks will trust different folks to censor for them, or not. When something has been censored that someone thinks shouldn't have been, they can adjust their network (ie. block someone, trust others), thereby also adjusting the network for those that trust them for this use.  
 There are details to flesh out (websites, domains, accounts, wildcards and such) of course, and some time will be required for your network and tools to stabilize into exactly the censorship you desire, but the concept is sound \- use your distributed trust network for your censorship needs instead of having some other power center do it to you.
 
 ## **Top 40, from your point of view, or even from someone else's**
 
 You could trust folks for net.one-of-us.like.music, and so could they.  
-You could **like** songs. Apps could integrate that into their players.  
-You're on top of your network, and so you should be able to check out the **top 40** from your point of view.  
+You could "like" songs. Apps could integrate that into their players.  
+You're on top of your network, and so you should be able to check out the "top 40" from your point of view.  
 But as it's all open, you should also be able to check out the top 40 from someone else's point of view, say Lisa's. And in case you enjoy listening to music using Lisa's network more than you do your own, then you could trust Lisa for net.one-of-us.like.music and stop trusting your lame music connections. Now your top 40 is better, and it's also better for those who trust you for net.one-of-us.like.music.  
 In case a song that sucks comes on, you can check who liked it and block them from your network.
 
@@ -161,15 +161,15 @@ In case a song that sucks comes on, you can check who liked it and block them fr
 Someone creates a challenge to sign a statement in the form:  
 	I'll go if at least \<X\> others that I trust as \<Y\> commit to going.  
 One user says (signs a statement) :  
-I'll go if at least 100 others that I trust as **reliable** commit to going.  
+I'll go if at least 100 others that I trust as "reliable" commit to going.  
 Another might say:  
-I'll go if at least 300 others that I trust as **reliable** or **serious** commit to going.  
+I'll go if at least 300 others that I trust as "reliable" or "serious" commit to going.  
 It should not be difficult to develop an app or website to support this and to let you know when you, yourself, have committed to going (because the conditions you've signed on to have been met; for example, you said that you'd go if 100 others you trust as reliable would, and that's happened).
 
 And it wouldn't even need to be movement related like a march, a protest, or a walkout. It could simply be Giants fans showing up at a Miami sports bar to catch Monday Night Football, Gmen vs Finns.  
 Not anytime soon, of course, but we could use this to finally elect a third party candidate.
 
-Now, of course, this is similar to Facebook's **Interested in going**. The majority of the world today probably has a Facebook account, and no one uses one-of-us.net, and so why exactly would a developer implement an app like this using one-of-us.net tech instead of as a Facebook app? Because it's [open](#bookmark=id.v4g036lmze0i); if you make your group or develop your app inside Facebook, then you're bound to the limitations of their technology and policies, and you can't be sure that they won't divert your traffic away, shut you down, take it from you, or worse..
+Now, of course, this is similar to Facebook's "Interested in going". The majority of the world today probably has a Facebook account, and no one uses one-of-us.net, and so why exactly would a developer implement an app like this using one-of-us.net tech instead of as a Facebook app? Because it's [open](#bookmark=id.v4g036lmze0i); if you make your group or develop your app inside Facebook, then you're bound to the limitations of their technology and policies, and you can't be sure that they won't divert your traffic away, shut you down, take it from you, or worse..
 
 ## **Discover truth**
 
@@ -182,8 +182,8 @@ Well, it depends on whom you trust. I feel good about whom I trust, and I know s
 
 ## **Businesses become reputable**
 
-**Pasture Raised**, **Sustainable**, **All Natural**.. Would these phrases or logos mean something instead of nothing to you if the companies producing these hired reputable folks who you trust and who signed those statements on the product?  
-**Pasture Raised** and **Free Trade** packaging often does contain a logo of some certifying organization; you're invited to Google it, check out their webpage, and wonder.. Is this legit?
+"Pasture Raised", "Sustainable", "All Natural".. Would these phrases or logos mean something instead of nothing to you if the companies producing these hired reputable folks who you trust and who signed those statements on the product?  
+"Pasture Raised" and "Free Trade" packaging often does contain a logo of some certifying organization; you're invited to Google it, check out their webpage, and wonder.. Is this legit?
 
 ## **Comment on any comment on any platform**
 
@@ -192,12 +192,12 @@ Comments about different things should be in different places, but comments abou
 Consider the comments section of an article about a single, specific event in several of today's online newspapers.  
 The one-of-us.net search server intends to allow users the ability to
 
-- state an **equivalence** among URLs  
+- state an "equivalence" among URLs  
 - comment on any URL
 
 This will surely be clunky at first and also late to arrive, but still. Open, heterogeneous, decentralized, and so why not strive for that, right?
 
-## The **cool** network, or **nerdy**, how about **young**, **family**, or **college friend**
+## **The "cool" network, or "nerdy", how about "young", "family", or "college friend"**
 
 One-of-us.net is planned to release with a stack of apps that support flexible trust contexts. Naturally, I don't expect us to immediately start classifying everyone we know. But I do expect trends and for some networks like these to actually catch on.
 

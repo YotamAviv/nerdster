@@ -25,13 +25,13 @@ I'd like to be able to view both home pages during the development
 ## Nerdster
 index.html must serve the web app wrapper and be available at https://nerdster.org/index.html
 
-The **home** page is developed in file home.html and should be available at https://nerdster.org/home.html
+The "home" page is developed in file home.html and should be available at https://nerdster.org/home.html
 
 ## ONE-OF-US.NET
-The **home** page is developed in oneofus.html and should be available at https://one-of-us.net/index.html
+The "home" page is developed in oneofus.html and should be available at https://one-of-us.net/index.html
 
 # Development
-I use VSCode to debug the Flutter app, possibly using **nerdster (web fixed port)**.
+I use VSCode to debug the Flutter app, possibly using "nerdster (web fixed port)".
 
 I want to develop both sites as well as the Flutter app.
 
