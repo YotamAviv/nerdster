@@ -14,7 +14,7 @@ It performs the following core functions:
   - The public key serves as the person's identity.
   - The public key QR code is displayed front and center for easy sharing.
 - **Vouching (Web of Trust):** Allows scanning other people's identity QR codes to vouch for their humanity and identity.
-  - **Criteria:** Uses the standard "human capable and acting in good faith". People not capable of understanding how this works should not be trusted.
+  - **Criteria:** Uses the standard **human capable and acting in good faith**. People not capable of understanding how this works should not be trusted.
   - **Management:** Manages trust statements, supporting updates (changing moniker, comment) or changing the verb from 'trust' to 'block', as well as clearing them.
 - **Service Sign-In:** Allows scanning sign-in parameters to authenticate with a service (like Nerdster).
   - Communicates the person's identity to the service via HTTP POST.
@@ -28,7 +28,7 @@ The project codebase is available at: https://github.com/YotamAviv/oneofusv2
 
 ### Key Concepts:
 
-- **Self-Sovereign Identity:** You do not have an "account" on a central server. Your identity is a cryptographic **identity key** pair generated and stored securely on your phone.
+- **Self-Sovereign Identity:** You do not have an **account** on a central server. Your identity is a cryptographic **identity key** pair generated and stored securely on your phone.
 - **Vouching (The Web of Trust):** The core action in the Identity Layer is **Vouching**.
   - When you meet someone in person, you scan their **identity key** QR code to "vouch" for them.
   - This statement means: _"I certify that this person is a real human being and I know who they are."_
@@ -47,16 +47,16 @@ All actions a person carries out using the ONE-OF-US.NET app use their **identit
 
 - **Trust-Based Content & Follow Contexts:**
   - **Humanity First:** Nerdster leverages the Identity Layer to ensure that every user you see is a real person, not a bot or a fake account.
-  - **Follow Network:** While the Identity Layer establishes _who is real_, the Nerdster Application Layer establishes _who is interesting_. You can follow people for specific contexts like 'social', 'local', or 'news'.
+  - **Follow Network:** While the Identity Layer establishes **who is real**, the Nerdster Application Layer establishes **who is interesting**. You can follow people for specific contexts like 'social', 'local', or 'news'.
   - **Default Context:** The `<nerdster>` context is a built-in default. By default, you follow the people you have personally vouched for in the Identity Layer.
     - You can specifically **follow** people you haven't identity-vouched for in the `<nerdster>` context to bring them closer to you.
     - You can specifically **block** people in the `<nerdster>` context (even if you vouched for their identity) if you aren't interested in their ratings. This also protects those who follow you from seeing their content.
 - **Submitting Content:** Users submit **Content Statements** signed by their delegated app key. Types of statements include:
-  - **Rate:** Expressing an opinion (e.g., "I rate 'The Matrix' 5 stars").
+  - **Rate:** Expressing an opinion (e.g., **I rate 'The Matrix' 5 stars**).
   - **Comment:** Adding text discussion to a subject.
-  - **Relate:** Linking two subjects together (e.g., "'The Matrix' is related to 'Cyberpunk'"). Supports negative assertions ("not related").
-  - **Equate:** Asserting that two subjects are identical (e.g., "'Sci-Fi' is the same as 'Science Fiction'"). Supports negative assertions ("not the same").
-  - **Conflict Resolution:** Nerdster resolves conflicting statements (e.g., one user says "related", another says "not related") based on who is more trusted in the active context.
+  - **Relate:** Linking two subjects together (e.g., **'The Matrix' is related to 'Cyberpunk'**). Supports negative assertions ("not related").
+  - **Equate:** Asserting that two subjects are identical (e.g., **'Sci-Fi' is the same as 'Science Fiction'**). Supports negative assertions ("not the same").
+  - **Conflict Resolution:** Nerdster resolves conflicting statements (e.g., one user says **related**, another says **not related**) based on who is more trusted in the active context.
 - **Censorship as Protection:** You can "censor" content you find objectionable.
   - This doesn't delete it from the internet, but it hides it from _your_ view.
   - Crucially, your censorship protects those who follow you. If you are a trusted node for your family or friends, your censorship decisions help filter their feed, creating a community-curated safety layer.
@@ -84,5 +84,5 @@ The system treats data differently from traditional web apps. The cloud is not a
 - **Portability via Signatures:** A person's statements are trusted because they are **cryptographically signed**, not because of where they are stored or from where they are served. This makes the data portable; it can be moved between servers or stored locally without losing its validity.
 - **Data Visibility:** All data visible in the apps comes from reading and verifying these published statements. The application constructs its view of the world by aggregating these individual assertions.
 - **The Cloud as a Relay:** Currently, the cloud acts as a "dumb" storage bucket (Firebase/Firestore). It simply stores and serves the signed statements.
-  - **No Central Truth:** The cloud does not calculate who is trusted or what the "average rating" is.
+  - **No Central Truth:** The cloud does not calculate who is trusted or what the **average rating** is.
   - **Verification:** Logic for verifying signatures and calculating the trust graph currently happens on the client, ensuring that the user's view is mathematically derived from their own trust roots.

@@ -1,13 +1,13 @@
 # Nerdster Content & Follow Network Requirements
 
 ## Overview
-Nerdster is a decentralized content aggregation platform built on the **Identity Layer**. This document defines the requirements for content statements (`org.nerdster`) and the logic for building the "Follow Network" that determines which content is visible to a user.
+Nerdster is a decentralized content aggregation platform built on the **Identity Layer**. This document defines the requirements for content statements (`org.nerdster`) and the logic for building the **Follow Network** that determines which content is visible to a user.
 
 **Core Principle**: All participants in the network are humans with singular **identity keys**. The Follow Network is built exclusively upon the Identity Web of Trust; content is only aggregated from identities that are reachable from the user's Point of View (PoV).
 
 **Important Distinction**:
 *   **Identity Layer (Trust Graph)**: Managed by **Identity Keys**. Nerdster (the app) *cannot* modify this layer (Trust/Block/Replace) because it does not possess the user's private identity key. It only has a delegate key.
-*   **Follow Network (Content Layer)**: Managed by **Delegate Keys**. Nerdster *can* modify this layer by issuing `ContentStatement`s with the `follow` verb. This allows users to Follow or Block identities for specific contexts (e.g., "nerd", "politics") *on top of* the Identity Layer. You can only follow/block identities that are already established in the Identity Layer.
+*   **Follow Network (Content Layer)**: Managed by **Delegate Keys**. Nerdster *can* modify this layer by issuing `ContentStatement`s with the `follow` verb. This allows users to Follow or Block identities for specific contexts (e.g., `nerd`, `politics`) *on top of* the Identity Layer. You can only follow/block identities that are already established in the Identity Layer.
 
 ---
 
@@ -32,15 +32,15 @@ A statement must contain exactly one of the following verb fields, which points 
 The **Subject** of a statement can be a full JSON object or a **Token** (SHA-1 hash of the Jsonish canonical representation).
 *   **Bandwidth & Storage**: Using tokens avoids repeating full metadata for existing items.
 *   **Privacy & Censorship**: A `rate` statement with `censor: true` uses the token of the target subject to avoid revealing the objectionable content itself.
-*   **Interactions**: Commenting on a "Like", relating content, or equating subjects use tokens to point to specific statements or entities.
+*   **Interactions**: Commenting on a **Like**, relating content, or equating subjects use tokens to point to specific statements or entities.
 
 ### 1.3. Metadata and Modifiers (The `with` Block)
 Additional metadata is stored in an optional `with` object:
-*   **`recommend`** (Boolean): Used with `rate`. `true` for a "Like", `false` for a "Dislike".
+*   **`recommend`** (Boolean): Used with `rate`. `true` for a **Like**, `false` for a **Dislike**.
 *   **`dismiss`** (Boolean): A personal flag to hide the subject from the user's own view.
 *   **`censor`** (Boolean): A request to hide the subject for everyone in the user's trust network.
 *   **`otherSubject`** (Any): The target for `relate` or `equate` verbs.
-*   **`contexts`** (Map<String, Integer>): Used with `follow`. Maps a context name (e.g., `"nerd"`, `"social"`, `"music"`) to a weight.
+*   **`contexts`** (Map<String, Integer>): Used with `follow`. Maps a context name (e.g., `nerd`, `social`, `music`) to a weight.
     *   `1`: Follow the identity in this context.
     *   `-1`: Block the identity in this context.
     *   Absence of a context is equivalent to a `clear` action for that context.

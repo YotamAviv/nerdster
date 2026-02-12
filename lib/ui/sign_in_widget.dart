@@ -202,7 +202,7 @@ class _SignInDialogState extends State<SignInDialog> {
     Widget buildCustomBtn(bool recommended) => _buildSquareButton(
           context,
           icon: Icons.auto_fix_high,
-          label: 'Custom URL Schemes (The "Magic" Link)\nkeymeid://signin',
+          label: 'Custom URL Schemes (The Magic Link)\nkeymeid://signin',
           onPressed: () => _magicLinkSignIn(context),
           recommended: recommended,
         );

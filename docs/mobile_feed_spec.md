@@ -17,31 +17,31 @@ TODO: I do want to repect relations and show them, but we have less room for the
 * **Swipe Gestures:** Swiping left (Red/Dismiss) or right (Green/Like) only removes the card visually from the UI. It does not save any rating or hide preference to the backend.
 * **Action Bar Buttons:**
      * **Rate/Review Icon:** The `rate_review_outlined` icon below the image has an empty `onTap: () {}` action.
-     * **"View all reviews" Link:** The text "View all 5 reviews" (dynamic number, static action) has an empty `onTap: () {}` action.
+     * **View all reviews Link:** The text **View all 5 reviews** (dynamic number, static action) has an empty `onTap: () {}` action.
  * **Modal Sheet (Tap on Image):**
      * **Star Selection:** Clicking any stars immediately closes the modal without saving a rating.
-     * **Text Field:** You can type in "Add a comment...", but the text is lost immediately.
-     * **"Post Review" Button:** Closes the modal without submitting any data.
+     * **Text Field:** You can type in **Add a comment...**, but the text is lost immediately.
+     * **Post Review Button:** Closes the modal without submitting any data.
 
 ### Static Display Elements (Non-interactive):
- * **Header "More" Icon:** The `Icons.more_horiz` (three dots) in the top-right of the card is just an `Icon` widget. It is not clickable (no `IconButton` or `GestureDetector` wrapper).
+ * **Header **More** Icon:** The `Icons.more_horiz` (three dots) in the top-right of the card is just an `Icon` widget. It is not clickable (no `IconButton` or `GestureDetector` wrapper).
  * **Comment Actions:** Each individual comment row shows a small `rate_review_outlined` icon on the far right, which is purely decorative and not interactive.
  * **Fallback Imagery:** Uses `loremflickr.com` with a hash of the title to generate random images when `og:image` is missing.
 
-## 1. Visual Elements (The "Content Card")
+## 1. Visual Elements (The **Content Card**)
 
 Each item in the feed is represented as a card containing:
 
 ### Header
 *   **Identity Icon:** A color-coded circle avatar with an icon representing the content type (e.g., Movie, Book, Article, Album).
 *   **Title:** The subject's title, wrapping up to 3 lines before truncating.
-*   **Metadata:** The content type label (e.g., "MOVIE") displayed in small, spaced typography.
-*   **Options Menu:** A "more" (horizontal dots) icon for secondary actions (placeholder).
+*   **Metadata:** The content type label (e.g., **MOVIE**) displayed in small, spaced typography.
+*   **Options Menu:** A **more** (horizontal dots) icon for secondary actions (placeholder).
 
 ### Media Area
 *   **Dynamic Image:** A square (1:1) image area that attempts to scrape the `og:image` from the source URL.
 *   **Fallback Imagery:** If no image is found, a deterministic, relevant image is generated via LoremFlickr using the subject's tags and a unique hash seed.
-*   **Overlay Stats:** A "Star" badge in the top-right corner showing the total number of likes/ratings if greater than zero.
+*   **Overlay Stats:** A **Star** badge in the top-right corner showing the total number of likes/ratings if greater than zero.
 *   **Readability Gradient:** A subtle dark gradient at the bottom of the image to ensure text contrast.
 
 ### Action Bar
