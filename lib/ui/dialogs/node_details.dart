@@ -28,8 +28,7 @@ class NodeDetails extends StatefulWidget {
     this.scrollController,
   });
 
-  static Future<void> show(
-      BuildContext context, IdentityKey identity, FeedController controller) {
+  static Future<void> show(BuildContext context, IdentityKey identity, FeedController controller) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -151,6 +150,9 @@ class _NodeDetailsState extends State<NodeDetails> {
         [];
     final String fcontext = model.fcontext;
 
+    // Resolve identity to ensure we lookup correctly in graphs
+    final canonicalIdentity = _resolveIdentity(widget.identity, model);
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -161,7 +163,7 @@ class _NodeDetailsState extends State<NodeDetails> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeader(labeler, widget.identity),
+          _buildHeader(labeler, canonicalIdentity),
           const SizedBox(height: 12),
           Flexible(
             child: SingleChildScrollView(
@@ -173,12 +175,16 @@ class _NodeDetailsState extends State<NodeDetails> {
                   const Divider(),
                   _buildKeysSection(tg, labeler, delegates),
                   const Divider(),
-                  if (fcontext == kFollowContextIdentity)
-                    _buildIdentityDetails(widget.identity, model)
-                  else if (fcontext == kFollowContextNerdster)
-                    _buildNerdsterDetails(widget.identity, model)
-                  else
-                    _buildContextDetails(widget.identity, model, fcontext),
+                  if (fcontext == kFollowContextIdentity) ...[
+                    _buildIdentityDetails(canonicalIdentity, model),
+                    _buildIdentityOutgoing(canonicalIdentity, model),
+                  ] else if (fcontext == kFollowContextNerdster) ...[
+                    _buildNerdsterDetails(canonicalIdentity, model),
+                    _buildNerdsterOutgoing(canonicalIdentity, model),
+                  ] else ...[
+                    _buildContextDetails(canonicalIdentity, model, fcontext),
+                    _buildContextOutgoing(canonicalIdentity, model, fcontext),
+                  ],
                 ],
               ),
             ),
@@ -299,7 +305,7 @@ class _NodeDetailsState extends State<NodeDetails> {
           final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
           // Replaced keys are considered revoked for visualization
           final status = isCanonical ? KeyStatus.active : KeyStatus.revoked;
-          
+
           return Builder(builder: (context) {
             TapDownDetails? tapDetails;
             return Align(
@@ -319,7 +325,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       KeyIcon(
-                        type: KeyType.identity, 
+                        type: KeyType.identity,
                         status: status,
                         isOwned: false, // Per instructions, only delegate key is owned
                       ),
@@ -347,7 +353,8 @@ class _NodeDetailsState extends State<NodeDetails> {
             final String delegateLabel = labeler.getLabel(d);
             final bool isMyDelegate = signInState.delegate == d;
 
-            final isRevoked = labeler.delegateResolver?.getConstraintForDelegate(DelegateKey(d)) != null;
+            final isRevoked =
+                labeler.delegateResolver?.getConstraintForDelegate(DelegateKey(d)) != null;
             final status = isRevoked ? KeyStatus.revoked : KeyStatus.active;
 
             return Builder(builder: (context) {
@@ -374,10 +381,11 @@ class _NodeDetailsState extends State<NodeDetails> {
                         const SizedBox(width: 8),
                         Text(delegateLabel,
                             style: TextStyle(
-                                fontSize: 12, 
-                                color: isRevoked ? Colors.grey : Colors.blue, 
+                                fontSize: 12,
+                                color: isRevoked ? Colors.grey : Colors.blue,
                                 decoration: TextDecoration.underline,
-                                decorationColor: Colors.blue)), // Keep link underline color if possible, or grey? Blue usually implies link.
+                                decorationColor: Colors
+                                    .blue)), // Keep link underline color if possible, or grey? Blue usually implies link.
                       ],
                     ),
                   ),
@@ -592,11 +600,113 @@ class _NodeDetailsState extends State<NodeDetails> {
     }
   }
 
+  Widget _buildIdentityOutgoing(IdentityKey identity, FeedModel model) {
+    final TrustGraph tg = model.trustGraph;
+    final List<TrustStatement> allStatements = tg.edges[identity] ?? [];
+
+    final List<TrustStatement> statements = allStatements
+        .where((s) => s.verb == TrustVerb.trust)
+        .toList();
+
+    return ExpansionTile(
+      title: const Text('Outgoing Vouches',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
+      children: [
+        if (statements.isEmpty) const Text('None'),
+        ...statements.map((s) => _buildStatementTile(s, model, isOutgoing: true)),
+      ],
+    );
+  }
+
+  Widget _buildContextOutgoing(IdentityKey identity, FeedModel model, String context) {
+    final fn = model.followNetwork;
+
+    final List<ContentStatement> statements = fn.edges.values
+        .expand((l) => l)
+        .where((s) => _resolveIdentity(IdentityKey(s.iKey.value), model) == identity)
+        .where((s) => s.contexts?.containsKey(context) == true)
+        .toList();
+
+    return ExpansionTile(
+      title: Text('Outgoing Follows ($context)',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
+      children: [
+        if (statements.isEmpty) const Text('None'),
+        ...statements
+            .map((s) => _buildStatementTile(s, model, fcontext: context, isOutgoing: true)),
+      ],
+    );
+  }
+
+  Widget _buildNerdsterOutgoing(IdentityKey identity, FeedModel model) {
+    final fn = model.followNetwork;
+    final tg = model.trustGraph;
+
+    // 1. Explicit Follows (Outgoing)
+    final List<ContentStatement> explicitStatements = fn.edges.values
+        .expand((l) => l)
+        .where(
+            (s) => _resolveIdentity(IdentityKey(s.iKey.value), model) == identity) // Check issuer
+        .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
+        .toList();
+
+    // 2. Implicit Follows (Trust) (Outgoing)
+    // "Who does THIS identity trust?" -> tg.edges[identity]
+    final List<TrustStatement> trustStatements = (tg.edges[identity] ?? [])
+        .where((s) => s.verb == TrustVerb.trust)
+        .toList();
+
+    // Filter implicitly trusted that are NOT explicitly followed
+    // Note: This logic is slightly different than incoming. Incoming we dedup based on issuer.
+    // Here we are the issuer. We check if we have an explicit follow for the *subject*.
+
+    final explicitSubjects =
+        explicitStatements.map((s) => _resolveIdentity(IdentityKey(s.subjectToken), model)).toSet();
+
+    final List<TrustStatement> implicitStatements = trustStatements.where((s) {
+      final subject = _resolveIdentity(IdentityKey(s.subjectToken), model);
+      return !explicitSubjects.contains(subject);
+    }).toList();
+
+    return ExpansionTile(
+      title: const Text('Outgoing Follows (<nerdster>)',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      initiallyExpanded: false,
+      children: [
+        const Text(
+          'Includes explicit follows AND implicit follows derived from Trust.',
+          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+        ),
+        const SizedBox(height: 10),
+        const Text('Explicit:', style: TextStyle(fontWeight: FontWeight.bold)),
+        if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
+        ...explicitStatements.map((s) =>
+            _buildStatementTile(s, model, fcontext: kFollowContextNerdster, isOutgoing: true)),
+        const SizedBox(height: 10),
+        const Text('Implicit (Trust):', style: TextStyle(fontWeight: FontWeight.bold)),
+        if (implicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
+        ...implicitStatements.map((s) => _buildStatementTile(s, model, isOutgoing: true)),
+      ],
+    );
+  }
+
   Widget _buildIdentityDetails(IdentityKey identity, FeedModel model) {
     final tg = model.trustGraph;
 
-    final statements = tg.edges.values
+    final List<TrustStatement> statements = tg.edges.values
         .expand((l) => l)
+        .where((s) => s.verb == TrustVerb.trust) // Only show actual vouches
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .toList();
 
@@ -617,7 +727,7 @@ class _NodeDetailsState extends State<NodeDetails> {
   Widget _buildContextDetails(IdentityKey identity, FeedModel model, String context) {
     final fn = model.followNetwork;
 
-    final statements = fn.edges.values
+    final List<ContentStatement> statements = fn.edges.values
         .expand((l) => l)
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .where((s) => s.contexts?.containsKey(context) == true)
@@ -642,7 +752,7 @@ class _NodeDetailsState extends State<NodeDetails> {
     final tg = model.trustGraph;
 
     // 1. Explicit Follows
-    final explicitStatements = fn.edges.values
+    final List<ContentStatement> explicitStatements = fn.edges.values
         .expand((l) => l)
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
@@ -652,8 +762,9 @@ class _NodeDetailsState extends State<NodeDetails> {
         explicitStatements.map((s) => _resolveDelegate(DelegateKey(s.iKey.value), model)).toSet();
 
     // 2. Implicit Follows (Trust)
-    final implicitStatements = tg.edges.values
+    final List<TrustStatement> implicitStatements = tg.edges.values
         .expand((l) => l)
+        .where((s) => s.verb == TrustVerb.trust) // Only trust implies follow
         .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
         .where((s) {
       final issuer = _resolveDelegate(DelegateKey(s.iKey.value), model);
@@ -685,27 +796,33 @@ class _NodeDetailsState extends State<NodeDetails> {
     );
   }
 
-  Widget _buildStatementTile(dynamic s, FeedModel model, {String? fcontext}) {
+  Widget _buildStatementTile(dynamic s, FeedModel model,
+      {String? fcontext, bool isOutgoing = false}) {
     final labeler = model.labeler;
     // s can be TrustStatement or ContentStatement.
-    // Both have iKey/iToken (but IdentityKey in refactor).
-    // TrustStatement has iKey. ContentStatement has iKey?
-    // ContentStatement is from `nerdster/content/content_statement.dart`.
-    // I need to check ContentStatement definition.
-    // Assuming both have a way to get issuer IdentityKey.
 
-    IdentityKey issuerKey;
-    if (s is TrustStatement) {
-      issuerKey = s.iKey;
-    } else if (s is ContentStatement) {
-      // Assuming ContentStatement has iKey or compatible.
-      // If it has String iToken, we assume it's IdentityKey.
-      issuerKey = IdentityKey(s.iToken);
+    IdentityKey relevantKey;
+    if (isOutgoing) {
+      // For outgoing, we care about the SUBJECT
+      if (s is TrustStatement) {
+        relevantKey = IdentityKey(s.subjectToken);
+      } else if (s is ContentStatement) {
+        relevantKey = IdentityKey(s.subjectToken);
+      } else {
+        relevantKey = IdentityKey('?');
+      }
     } else {
-      issuerKey = IdentityKey('?');
+      // For incoming, we care about the ISSUER
+      if (s is TrustStatement) {
+        relevantKey = s.iKey;
+      } else if (s is ContentStatement) {
+        relevantKey = IdentityKey(s.iToken);
+      } else {
+        relevantKey = IdentityKey('?');
+      }
     }
 
-    final issuerLabel = labeler.getLabel(_resolveIdentity(issuerKey, model).value);
+    final keyLabel = labeler.getLabel(_resolveIdentity(relevantKey, model).value);
     String verbLabel = s is TrustStatement ? s.verb.label : (s as ContentStatement).verb.label;
     bool isBlock = false;
 
@@ -727,7 +844,7 @@ class _NodeDetailsState extends State<NodeDetails> {
             child: Text.rich(
               TextSpan(
                 children: [
-                  TextSpan(text: 'From $issuerLabel ('),
+                  TextSpan(text: '$keyLabel ('),
                   TextSpan(
                     text: verbLabel,
                     style: TextStyle(color: isBlock ? Colors.red : null),
