@@ -15,7 +15,7 @@
 .box {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   /* min-height ensures consistent row height */
   min-height: 6rem; 
 }
