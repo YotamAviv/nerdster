@@ -70,6 +70,22 @@ class _NodeDetailsState extends State<NodeDetails> {
   final ExpansibleController _incomingController = ExpansibleController();
   final ExpansibleController _outgoingController = ExpansibleController();
 
+  final Map<String, ExpansibleController> _statementControllers = {};
+
+  ExpansibleController _getStatementController(String id) {
+    return _statementControllers.putIfAbsent(id, () => ExpansibleController());
+  }
+
+  void _onStatementExpansionChanged(bool expanded, String id) {
+    if (expanded) {
+      for (final entry in _statementControllers.entries) {
+        if (entry.key != id) {
+          entry.value.collapse();
+        }
+      }
+    }
+  }
+
   void _onExpansionChanged(bool expanded, ExpansibleController current) {
     if (expanded) {
       if (current != _followController) {
@@ -881,7 +897,12 @@ class _NodeDetailsState extends State<NodeDetails> {
       }
     }
 
+    // Ensure we have a unique ID for this statement to manage expansion state
+    final String statementId = s.token;
+
     return ExpansionTile(
+      controller: _getStatementController(statementId),
+      onExpansionChanged: (val) => _onStatementExpansionChanged(val, statementId),
       trailing: const SizedBox.shrink(),
       title: Row(
         children: [
