@@ -65,6 +65,26 @@ class _NodeDetailsState extends State<NodeDetails> {
   TextEditingController? _autocompleteController;
   final TextEditingController _commentController = TextEditingController();
 
+  final ExpansibleController _followController = ExpansibleController();
+  final ExpansibleController _keysController = ExpansibleController();
+  final ExpansibleController _incomingController = ExpansibleController();
+  final ExpansibleController _outgoingController = ExpansibleController();
+
+  void _onExpansionChanged(bool expanded, ExpansibleController current) {
+    if (expanded) {
+      if (current != _followController) {
+        try {
+          _followController.collapse();
+        } catch (_) {
+          // Controller might not be attached if showing "This is you."
+        }
+      }
+      if (current != _keysController) _keysController.collapse();
+      if (current != _incomingController) _incomingController.collapse();
+      if (current != _outgoingController) _outgoingController.collapse();
+    }
+  }
+
   FeedModel get model => widget.controller.value!;
 
   @override
@@ -288,6 +308,9 @@ class _NodeDetailsState extends State<NodeDetails> {
 
   Widget _buildKeysSection(TrustGraph tg, Labeler labeler, List<String> delegates) {
     return ExpansionTile(
+      controller: _keysController,
+      onExpansionChanged: (val) => _onExpansionChanged(val, _keysController),
+      controlAffinity: ListTileControlAffinity.leading,
       title: const Text('Keys', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -407,6 +430,9 @@ class _NodeDetailsState extends State<NodeDetails> {
     final label = model.labeler.getLabel(widget.identity.value);
 
     return ExpansionTile(
+      controller: _followController,
+      onExpansionChanged: (val) => _onExpansionChanged(val, _followController),
+      controlAffinity: ListTileControlAffinity.leading,
       title: Text('How I follow/block $label',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       subtitle: _hasChanges
@@ -609,6 +635,9 @@ class _NodeDetailsState extends State<NodeDetails> {
         .toList();
 
     return ExpansionTile(
+      controller: _outgoingController,
+      onExpansionChanged: (val) => _onExpansionChanged(val, _outgoingController),
+      controlAffinity: ListTileControlAffinity.leading,
       title: const Text('Outgoing Vouches',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       tilePadding: EdgeInsets.zero,
@@ -632,6 +661,9 @@ class _NodeDetailsState extends State<NodeDetails> {
         .toList();
 
     return ExpansionTile(
+      controller: _outgoingController,
+      onExpansionChanged: (val) => _onExpansionChanged(val, _outgoingController),
+      controlAffinity: ListTileControlAffinity.leading,
       title: Text('Outgoing Follows ($context)',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       tilePadding: EdgeInsets.zero,
@@ -677,6 +709,9 @@ class _NodeDetailsState extends State<NodeDetails> {
     }).toList();
 
     return ExpansionTile(
+      controller: _outgoingController,
+      onExpansionChanged: (val) => _onExpansionChanged(val, _outgoingController),
+      controlAffinity: ListTileControlAffinity.leading,
       title: const Text('Outgoing Follows (<nerdster>)',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       tilePadding: EdgeInsets.zero,
@@ -711,6 +746,9 @@ class _NodeDetailsState extends State<NodeDetails> {
         .toList();
 
     return ExpansionTile(
+      controller: _incomingController,
+      onExpansionChanged: (val) => _onExpansionChanged(val, _incomingController),
+      controlAffinity: ListTileControlAffinity.leading,
       title: const Text('Incoming Vouches',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       tilePadding: EdgeInsets.zero,
@@ -734,6 +772,9 @@ class _NodeDetailsState extends State<NodeDetails> {
         .toList();
 
     return ExpansionTile(
+      controller: _incomingController,
+      onExpansionChanged: (val) => _onExpansionChanged(val, _incomingController),
+      controlAffinity: ListTileControlAffinity.leading,
       title: Text('Incoming Follows ($context)',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       tilePadding: EdgeInsets.zero,
@@ -772,6 +813,9 @@ class _NodeDetailsState extends State<NodeDetails> {
     }).toList();
 
     return ExpansionTile(
+      controller: _incomingController,
+      onExpansionChanged: (val) => _onExpansionChanged(val, _incomingController),
+      controlAffinity: ListTileControlAffinity.leading,
       title: const Text('Incoming Follows (<nerdster>)',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       tilePadding: EdgeInsets.zero,
@@ -838,6 +882,7 @@ class _NodeDetailsState extends State<NodeDetails> {
     }
 
     return ExpansionTile(
+      trailing: const SizedBox.shrink(),
       title: Row(
         children: [
           Expanded(
