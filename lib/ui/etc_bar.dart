@@ -6,6 +6,7 @@ import 'package:nerdster/ui/util/alert.dart'; // For alert dialog
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
+import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/logic/feed_controller.dart'; // Add
 
 class EtcBar extends StatelessWidget {
@@ -157,6 +158,13 @@ $link''',
                           ],
                         ),
                       );
+                    },
+                  ),
+                  // FYI
+                  ValueListenableBuilder<bool>(
+                    valueListenable: Setting.get<bool>(SettingType.lgtm).notifier,
+                    builder: (context, val, _) {
+                      return MyCheckbox(Setting.get<bool>(SettingType.lgtm).notifier, 'FYI');
                     },
                   ),
                 ],
