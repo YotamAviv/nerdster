@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vouch for Identity | ONE-OF-US.NET</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #fdfdfd; color: #333; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; text-align: center; }
+        .card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.1); max-width: 400px; width: 100%; }
+        h1 { margin-top: 0; font-size: 24px; }
+        p { color: #666; margin-bottom: 24px; }
+        #qr-container { margin: 0 auto; display: flex; justify-content: center; }
+        .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 30px; }
+        .btn { display: inline-block; background: #000; color: white; padding: 14px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 16px; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.8; }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+        #key-display { display: none; margin-top: 20px; text-align: left; }
+        textarea { width: 100%; height: 100px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: monospace; font-size: 12px; resize: none; }
+        .error { color: #d32f2f; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Vouch for This Person</h1>
+        <p>Scan this QR code with your ONE OF US app to verify their identity.</p>
+        
+        <div id="qr-container"></div>
+        <div class="error" id="error-msg">Invalid or missing key data.</div>
+
+        <div class="actions">
+            <a href="https://one-of-us.net" class="btn">Get the App</a>
+            <button class="btn btn-secondary" onclick="copyKey()">Copy Key Text</button>
+        </div>
+
+        <div id="key-display">
+            <textarea readonly id="key-text"></textarea>
+        </div>
+    </div>
+
+    <script>
+        function init() {
+            try {
+                // Get hash without the #
+                const hash = window.location.hash.substring(1);
+                if (!hash) {
+                    document.getElementById('qr-container').style.display = 'none';
+                    return; 
+                }
+
+                // Decode URL-Safe Base64
+                let base64 = hash.replace(/-/g, '+').replace(/_/g, '/');
+                
+                // Decode Base64 to binary string
+                const binaryString = window.atob(base64);
+
+                // Convert binary string to UTF-8
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const jsonString = new TextDecoder().decode(bytes);
+                
+                // Validate JSON
+                const jsonObj = JSON.parse(jsonString);
+                const prettyJson = JSON.stringify(jsonObj, null, 2);
+
+                // Render QR
+                new QRCode(document.getElementById("qr-container"), {
+                    text: prettyJson,
+                    width: 256,
+                    height: 256,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+
+                // Set text for copy
+                document.getElementById('key-text').value = prettyJson;
+
+            } catch (e) {
+                console.error(e);
+                document.getElementById('qr-container').style.display = 'none';
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('error-msg').innerText = "Invalid link: " + e.message;
+            }
+        }
+
+        function copyKey() {
+            const keyDisplay = document.getElementById('key-display');
+            keyDisplay.style.display = 'block';
+            const textarea = document.getElementById('key-text');
+            textarea.select();
+            document.execCommand('copy');
+            alert("Key copied to clipboard!");
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
