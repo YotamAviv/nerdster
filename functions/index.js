@@ -20,6 +20,8 @@ const {
   extractImages 
 } = require('./metadata_fetchers');
 
+const { parseUrlMetadata } = require('./url_metadata_parser');
+
 const { executeFetchImages } = require('./core_logic');
 
 const { fetchStatements } = require('./statement_fetcher');
@@ -81,6 +83,37 @@ exports.fetchImages = onCall(async (request) => {
       throw new HttpsError("invalid-argument", e.message);
     }
     throw new HttpsError("internal", e.message);
+  }
+});
+
+/**
+ * "Magic Paste" - Smart URL Parser.
+ * Fetches the URL and extracts metadata (Title, Year, Author, Image, ContentType)
+ * using Schema.org (JSON-LD), OpenGraph, or standard HTML tags.
+ */
+exports.magicPaste = onCall(async (request) => {
+  const url = request.data.url;
+  if (!url || !url.startsWith('http')) {
+    throw new HttpsError("invalid-argument", "A valid URL starting with http is required.");
+  }
+
+  try {
+    logger.info(`[magicPaste] Processing: ${url}`);
+    const metadata = await parseUrlMetadata(url); // Pass null for html to let it fetch
+    
+    if (!metadata) {
+       // Graceful failure - return generic structure rather than throwing
+       return { 
+           title: null, 
+           contentType: 'article', // Safety default
+           canonicalUrl: url 
+       };
+    }
+    return metadata;
+  } catch (e) {
+    logger.error(`[magicPaste] Error: ${e.message}`);
+    // Return partial/empty data instead of crashing the client
+    return { title: null, error: e.message };
   }
 });
 

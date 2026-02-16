@@ -99,6 +99,23 @@ Future<String?> fetchTitle(String url) async {
   }
 }
 
+/// Use Case 2: Magic Paste
+/// Fetches metadata from a URL to auto-populate the Establish Subject form.
+Future<Map<String, dynamic>?> magicPaste(String url) async {
+  if (_functions == null || url.isEmpty) return null;
+  if (!url.startsWith('http')) return null;
+
+  try {
+    final retval = await _functions!.httpsCallable('magicPaste').call({
+      "url": url,
+    });
+    return Map<String, dynamic>.from(retval.data as Map);
+  } catch (e) {
+    debugPrint('magicPaste error: $e');
+    return null;
+  }
+}
+
 /// Fetches high-quality images for a subject to enhance the visual presentation.
 Future<void> fetchImages({
   required Map<String, dynamic> subject,

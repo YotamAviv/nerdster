@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nerdster/models/content_types.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/logic/metadata_service.dart';
@@ -52,6 +53,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
   final List<ContentType> types = ContentType.values;
   final _FetchingUrlWidget fetchingUrlWidget = _FetchingUrlWidget();
   final ValueNotifier<bool> okEnabled = ValueNotifier(false);
+  final ValueNotifier<bool> isMagicPasting = ValueNotifier(false);
   List<TextField> fields = [];
 
   @override
@@ -66,6 +68,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
       controller.dispose();
     }
     okEnabled.dispose();
+    isMagicPasting.dispose();
     super.dispose();
   }
 
@@ -141,6 +144,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
     });
   }
 
+
   void _okHandler() async {
     Json map = <String, dynamic>{};
     map['contentType'] = contentType.label;
@@ -150,6 +154,83 @@ class _SubjectFieldsState extends State<SubjectFields> {
     }
     final Jsonish subject = Jsonish(map);
     Navigator.pop(context, subject);
+  }
+
+  Future<void> _handleMagicPaste() async {
+    isMagicPasting.value = true;
+    try {
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      final text = data?.text?.trim();
+
+      if (text == null || text.isEmpty) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Clipboard is empty.')));
+        return;
+      }
+      
+      // Basic URL Check
+      final uri = Uri.tryParse(text);
+      if (uri == null || !['http', 'https'].contains(uri.scheme)) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Clipboard does not contain a valid URL.')));
+        return;
+      }
+
+      // Call Cloud Function
+      final metadata = await magicPaste(text);
+      
+      if (!mounted) return;
+
+      if (metadata == null) {
+         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not fetch details for this URL.')));
+         return;
+      }
+
+      setState(() {
+         // 1. Switch Content Type if detected and different
+         if (metadata['contentType'] != null) {
+            try {
+               final newType = ContentType.values.byName(metadata['contentType']);
+               if (newType != contentType) {
+                  contentType = newType;
+                  // Re-init controllers for new type
+                  for (final controller in key2controller.values) controller.dispose();
+                  _initControllers(); 
+               }
+            } catch (e) {
+               // Initial Content Type guess failed or not in our enum
+               debugPrint('Unknown detected content type: ${metadata['contentType']}');
+            }
+         }
+
+         // 2. Populate Fields - with safety checks for controllers existing
+         // URL
+         if (key2controller.containsKey('url')) {
+            key2controller['url']!.text = metadata['canonicalUrl'] ?? text;
+         }
+         
+         // Title
+         if (key2controller.containsKey('title') && metadata['title'] != null) {
+            key2controller['title']!.text = metadata['title'];
+         }
+
+         // Year
+         if (key2controller.containsKey('year') && metadata['year'] != null) {
+            key2controller['year']!.text = metadata['year'].toString();
+         }
+
+         // Author
+         if (key2controller.containsKey('author') && metadata['author'] != null) {
+            key2controller['author']!.text = metadata['author'];
+         }
+
+         // Validate form
+         _validate();
+      });
+
+    } catch (e) {
+       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+       isMagicPasting.value = false;
+    }
   }
 
   @override
@@ -187,33 +268,48 @@ You can include a URL in a comment or relate or equate this book to an article w
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const SizedBox(width: 80.0),
-              DropdownMenu<ContentType>(
-                initialSelection: contentType,
-                requestFocusOnTap: true,
-                label: const Text('Type'),
-                onSelected: (ContentType? newType) {
-                  if (newType == null || newType == contentType) return;
-                  setState(() {
-                    // Clean up old controllers
-                    for (final controller in key2controller.values) {
-                      controller.dispose();
+              SizedBox(
+                width: 80.0,
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: isMagicPasting,
+                  builder: (context, isLoading, child) {
+                    if (isLoading) {
+                      return const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)));
                     }
-                    contentType = newType;
-                    fetchingUrlWidget.isError.value = false;
-                    fetchingUrlWidget.isRunning.value = false;
-                    fetchingUrlWidget.message.value = '';
-                    _initControllers(); // Create new controllers + fields
-                  });
-                },
-                dropdownMenuEntries: types
-                    .map((type) => DropdownMenuEntry<ContentType>(
-                          value: type,
-                          label: type.label,
-                          leadingIcon: Icon(type.iconDatas.$1),
-                        ))
-                    .toList(),
+                    return IconButton(
+                      icon: const Icon(Icons.content_paste_go, color: Colors.blueAccent),
+                      tooltip: 'Magic Paste (Detect from Clipboard)',
+                      onPressed: _handleMagicPaste,
+                    );
+                  },
+                ),
               ),
+              DropdownMenu<ContentType>(
+                  initialSelection: contentType,
+                  requestFocusOnTap: true,
+                  label: const Text('Type'),
+                  onSelected: (ContentType? newType) {
+                    if (newType == null || newType == contentType) return;
+                    setState(() {
+                      // Clean up old controllers
+                      for (final controller in key2controller.values) {
+                        controller.dispose();
+                      }
+                      contentType = newType;
+                      fetchingUrlWidget.isError.value = false;
+                      fetchingUrlWidget.isRunning.value = false;
+                      fetchingUrlWidget.message.value = '';
+                      _initControllers(); // Create new controllers + fields
+                    });
+                  },
+                  dropdownMenuEntries: types
+                      .map((type) => DropdownMenuEntry<ContentType>(
+                            value: type,
+                            label: type.label,
+                            leadingIcon: Icon(type.iconDatas.$1),
+                          ))
+                      .toList(),
+                ),
               cornerWidget,
             ],
           ),
