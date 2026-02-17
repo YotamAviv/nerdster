@@ -51,7 +51,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
   final LinkedHashMap<String, TextEditingController> key2controller =
       LinkedHashMap<String, TextEditingController>();
   final List<ContentType> types = ContentType.values;
-  final _FetchingUrlWidget fetchingUrlWidget = _FetchingUrlWidget();
+  // fetchingUrlWidget removed as auto-fetch is deprecated
   final ValueNotifier<bool> okEnabled = ValueNotifier(false);
   final ValueNotifier<bool> isMagicPasting = ValueNotifier(false);
   List<TextField> fields = [];
@@ -93,57 +93,61 @@ class _SubjectFieldsState extends State<SubjectFields> {
   }
 
   void _initControllers() {
-    key2controller.clear();
-    for (MapEntry<String, String> entry in contentType.type2field2type.entries) {
-      final key = entry.key;
-      final controller = TextEditingController();
-      key2controller[key] = controller;
-      controller.addListener(_validate);
+    // 1. Create new controllers first
+    final LinkedHashMap<String, TextEditingController> newControllers = LinkedHashMap.of({}); // Correctly init map
 
-      // Special case: auto-fill title from url
-      if (key == 'url') {
-        controller.addListener(_listenForUrlTitle);
+    contentType.type2field2type.forEach((key, type) {
+      final controller = TextEditingController();
+      // If we had a value for this key before (e.g. switching types but keeping 'title'), copy it over?
+      // For now, let's keep it clean as different types might mean different things for 'title'.
+      // But preserving 'title' is usually nice.
+      if (key2controller.containsKey(key)) {
+        try {
+          controller.text = key2controller[key]!.text;
+        } catch(e) { /* ignore if old controller is somehow dead */ }
       }
-    }
+      newControllers[key] = controller;
+      controller.addListener(_validate);
+    });
+
+    // 2. Safely dispose old controllers
+    // We defer disposal to the end of the frame to ensure they aren't being used by the UI during the transition
+    final oldControllers = key2controller.values.toList();
+    // Be very careful about disposal timing. It's safer to just let GC handle it if we remove from map
+    // OR create new, then dispose old immediately BUT the UI must rebuild WITH new ones first.
+    // The previous error was because we disposed BEFORE rebuilding the fields list.
+    // By creating new ones first, putting them in the map, and REBUILDING fields,
+    // the UI will use the new ones on next build.
+    // But we still need to dispose the old ones eventually.
+    // Let's just create new, rebuild fields, and THEN dispose.
+    
+    key2controller.clear();
+    key2controller.addAll(newControllers);
+
     _rebuildFields();
-    _validate();
+    
+    // Now dispose old ones - safely.
+    // Actually, since we replaced key2controller contents, the next build() will generate text fields with NEW controllers.
+    // The OLD widgets are still holding the OLD controllers until that build happens.
+    // So disposal MUST happen after next frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final controller in oldControllers) {
+         try { controller.dispose(); } catch(_) {}
+      }
+    });
   }
 
   void _rebuildFields() {
     fields = key2controller.entries.map((entry) {
       return TextField(
+        controller: entry.value,
         decoration: InputDecoration(
-          hintText: entry.key,
-          hintStyle: hintStyle,
+          labelText: entry.key,
           border: const OutlineInputBorder(),
         ),
-        controller: entry.value,
       );
     }).toList();
   }
-
-  void _listenForUrlTitle() {
-    final urlController = key2controller['url'];
-    final titleController = key2controller['title'];
-    if (urlController == null || titleController == null || urlController.text.isEmpty) return;
-
-    fetchingUrlWidget.isRunning.value = true;
-
-    tryFetchTitle(urlController.text, (String url, {String? title, String? error}) {
-      if (urlController.text == url) {
-        fetchingUrlWidget.isRunning.value = false;
-        if (title != null) {
-          titleController.text = title;
-        }
-        fetchingUrlWidget.message.value = error ?? 'Title fetched from URL.';
-        fetchingUrlWidget.isError.value = error != null;
-        if (error != null) {
-          print(error);
-        }
-      }
-    });
-  }
-
 
   void _okHandler() async {
     Json map = <String, dynamic>{};
@@ -236,27 +240,38 @@ class _SubjectFieldsState extends State<SubjectFields> {
   @override
   Widget build(BuildContext context) {
     Widget cornerWidget = const SizedBox(width: 80.0);
+    // Help users understand why some types don't have URL fields
     if (!contentType.type2field2type.containsKey('url')) {
       cornerWidget = SizedBox(
         width: 80.0,
         child: Align(
-          alignment: Alignment.centerRight,
-          child: Tooltip(
-            message: '''A ${contentType.label} doesn't have a singular URL.
-In case multiple people rate a book, their ratings will be grouped correctly only if they all use the same fields and values.
-You can include a URL in a comment or relate or equate this book to an article with a URL.''',
-            child: Text('no URL?', style: linkStyle),
-          ),
-        ),
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              icon: const Icon(Icons.help_outline, color: Colors.grey),
+              tooltip: 'Why no URL field?',
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Why No URL for ${contentType.label}?'),
+                    content: Text(
+                      'Nerdster tracks the logical subject (the work itself), not a specific product listing.\n\n'
+                      'For example, a Book is defined by its Title and Author, not by its Amazon or Goodreads link.\n\n'
+                      'This ensures that everyone rating "The Hobbit" is contributing to the same subject, regardless of which edition or store they bought it from.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Got it'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            )),
       );
     } else {
-      cornerWidget = SizedBox(
-        width: 80.0,
-        child: Align(
-          alignment: Alignment.centerRight,
-          child: fetchingUrlWidget,
-        ),
-      );
+      cornerWidget = const SizedBox(width: 80); // Placeholder for alignment
     }
 
     return Padding(
@@ -296,9 +311,6 @@ You can include a URL in a comment or relate or equate this book to an article w
                         controller.dispose();
                       }
                       contentType = newType;
-                      fetchingUrlWidget.isError.value = false;
-                      fetchingUrlWidget.isRunning.value = false;
-                      fetchingUrlWidget.message.value = '';
                       _initControllers(); // Create new controllers + fields
                     });
                   },
@@ -320,55 +332,5 @@ You can include a URL in a comment or relate or equate this book to an article w
         ],
       ),
     );
-  }
-}
-
-void tryFetchTitle(
-    String url, Function(String url, {String? title, String? error}) callback) async {
-  if (!url.startsWith('http://') && !url.startsWith('https://')) return;
-  try {
-    final title = await fetchTitle(url);
-    callback(url, title: title);
-  } catch (e) {
-    callback(url, error: e.toString());
-  }
-}
-
-class _FetchingUrlWidget extends StatefulWidget {
-  final ValueNotifier<bool> isRunning = ValueNotifier(false);
-  final ValueNotifier<bool> isError = ValueNotifier(false);
-  final ValueNotifier<String> message = ValueNotifier('');
-
-  @override
-  State<StatefulWidget> createState() => _FetchingUrlWidgetState();
-}
-
-class _FetchingUrlWidgetState extends State<_FetchingUrlWidget> {
-  @override
-  void initState() {
-    super.initState();
-    widget.isRunning.addListener(listener);
-    widget.message.addListener(listener);
-  }
-
-  @override
-  void dispose() {
-    widget.isRunning.removeListener(listener);
-    widget.message.removeListener(listener);
-    super.dispose();
-  }
-
-  void listener() => setState(() {});
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-        message: widget.message.value,
-        child: Icon(!widget.isRunning.value ? Icons.refresh : Icons.rotate_right_outlined,
-            color: widget.isRunning.value
-                ? Colors.green
-                : widget.isError.value
-                    ? Colors.red
-                    : Colors.black));
   }
 }

@@ -14,6 +14,7 @@ flutter test packages/oneofus_common/
 The backend logic (Cloud Functions) is tested using the built-in Node.js test runner. This includes:
 - **Jsonish Parity**: Ensuring the JavaScript implementation of tokenization and ordering matches the Dart implementation.
 - **Metadata Fetchers**: Verifying title and image extraction from external sources.
+- **Magic Paste**: Verifying URL parsing logic, including JSON-LD extraction and fallback mechanisms for robust metadata retrieval.
 
 ### Running Backend Tests
 

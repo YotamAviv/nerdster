@@ -17,9 +17,10 @@ async function parseUrlMetadata(url, html) {
       try {
         const response = await fetch(url, {
              headers: { 
-                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                 'Accept-Language': 'en-US,en;q=0.9',
-                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                 'Accept-Language': 'en-US,en;q=0.5',
+                 'Referer': 'https://www.google.com/'
              },
              redirect: 'follow',
              timeout: 10000
@@ -126,8 +127,17 @@ async function parseUrlMetadata(url, html) {
       const titleYearMatch = metadata.title.match(/\(((?:19|20)\d{2})\)/);
       if (titleYearMatch) {
           metadata.year = titleYearMatch[1];
-          // Optional: Clean title? Keeping it might be safer for now.
       }
+  }
+
+  // Final Safety Fallback:
+  // If we still have no title, use the simple HTML scraper (same robust logic as the old fetchTitle)
+  if (!metadata.title) {
+      metadata.title = extractTitle($, html);
+  }
+  // If we have a title but no content type, default to 'article' so it's usable
+  if (metadata.title && !metadata.contentType) {
+      metadata.contentType = 'article';
   }
 
   return metadata;
@@ -205,14 +215,19 @@ function processJsonLdItem(item, metadata) {
     metadata.image = getImage();
     metadata.description = val('description');
   }
-  else if (['NewsArticle', 'BlogPosting', 'Article'].includes(type)) {
-     // Only set if we haven't found a more specific type yet
-     if (!metadata.contentType) {
-         metadata.contentType = 'article';
-         metadata.title = val('headline') || val('name');
-         metadata.image = getImage();
-         metadata.author = getAuthor();
-         metadata.year = val('datePublished');
+  else if (item['@type']) {
+     // Flexible check for news/articles (e.g. 'ReportageNewsArticle', 'OpinionNewsArticle', 'NewsArticle')
+     const typeStr = Array.isArray(item['@type']) ? item['@type'].join(',') : item['@type'];
+     
+     if (typeStr.includes('NewsArticle') || typeStr.includes('BlogPosting') || typeStr.includes('Article')) {
+         if (!metadata.contentType) {
+             metadata.contentType = 'article';
+             metadata.title = val('headline') || val('name');
+             metadata.image = getImage();
+             metadata.author = getAuthor();
+             metadata.year = val('datePublished');
+             metadata.description = val('description');
+         }
      }
   }
   else if (['MusicAlbum'].includes(type)) {
