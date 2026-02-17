@@ -21,8 +21,6 @@ const {
 } = require('./metadata_fetchers');
 const { parseUrlMetadata } = require('./url_metadata_parser');
 
-const { parseUrlMetadata } = require('./url_metadata_parser');
-
 const { executeFetchImages } = require('./core_logic');
 
 const { fetchStatements } = require('./statement_fetcher');
