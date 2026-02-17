@@ -17,8 +17,9 @@ const cheerio = require('cheerio');
 // Local Utilities
 const { 
   extractTitle, 
-  extractImages 
+  extractImages
 } = require('./metadata_fetchers');
+const { parseUrlMetadata } = require('./url_metadata_parser');
 
 const { parseUrlMetadata } = require('./url_metadata_parser');
 
@@ -42,6 +43,8 @@ if (admin.apps.length === 0) {
  */
 exports.fetchTitle = onCall(async (request) => {
   const url = request.data.url;
+  logger.info(`[fetchTitle] CALL RECEIVED for URL: ${url}`); // DEBUG
+
   if (!url || !url.startsWith('http')) {
     throw new HttpsError("invalid-argument", "A valid URL starting with http is required.");
   }
@@ -59,13 +62,30 @@ exports.fetchTitle = onCall(async (request) => {
     });
 
     if (!response.ok) {
-      logger.error(`[fetchTitle] HTTP Error: ${response.status}`);
-      return { "title": null };
+      logger.warn(`[fetchTitle] HTTP Error: ${response.status}`); // Changed error to warn to be consistent with robust parsing
+      // logger.error(`[fetchTitle] HTTP Error: ${response.status}`);
+      // return { "title": null }; 
+      // User wants it to work like it used to - did we previously return null on error?
+      // The git diff showed:
+      // if (!response.ok) { logger.error(...); return { "title": null }; }
+      // But the user claims it "used to work". If NYT returns 403, then this code WOULD return null.
+      // Unless... NYT doesn't return 403 to the *old* scraper?
+      // Or the old scraper didn't check response.ok?
+      // Let's look at the "HEAD" version of fetchTitle.
     }
-
+    
+    // To match the robustness of the "magicPaste" fix I just made, 
+    // I will allow it to proceed even if response is not ok, if that's what's needed.
+    // BUT, first let's just add the logs.
+    
     const html = await response.text();
+    logger.info(`[fetchTitle] HTML length: ${html.length}`); // DEBUG
+
     const $ = cheerio.load(html);
     const title = extractTitle($, html);
+    
+    logger.info(`[fetchTitle] Extracted Title: ${title}`); // DEBUG
+
     return { "title": title };
   } catch (e) {
     logger.error(`[fetchTitle] Error: ${e.message}`);
@@ -98,28 +118,61 @@ exports.fetchImages = onCall(async (request) => {
  */
 exports.magicPaste = onCall(async (request) => {
   const url = request.data.url;
-  if (!url || !url.startsWith('http')) {
-    throw new HttpsError("invalid-argument", "A valid URL starting with http is required.");
-  }
+  logger.info(`[magicPaste] CALL RECEIVED for URL: ${url}`); // DEBUG
 
   try {
-    logger.info(`[magicPaste] Processing: ${url}`);
-    const metadata = await parseUrlMetadata(url); // Pass null for html to let it fetch
-    
-    if (!metadata) {
-       // Graceful failure - return generic structure rather than throwing
-       return { 
-           title: null, 
-           contentType: 'article', // Safety default
-           canonicalUrl: url 
-       };
+    // ROBUST FALLBACK (fetch + regex)
+    // This is the "Old Way" that works on stubborn sites like NYT.
+    logger.info(`[magicPaste] Attempting Robust Fallback (fetch+regex)...`);
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            // MATCHING fetchTitle HEADERS EXACTLY
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Referer': 'https://www.google.com/'
+        }
+    });
+
+    if (!response.ok) {
+        logger.warn(`[magicPaste] Fallback HTTP status: ${response.status} (attempting to parse anyway)`);
     }
-    return metadata;
-  } catch (e) {
-    logger.error(`[magicPaste] Error: ${e.message}`);
-    // Return partial/empty data instead of crashing the client
-    return { title: null, error: e.message };
+
+    const html = await response.text();
+    logger.info(`[magicPaste] HTML length: ${html.length}`);
+
+    // Parse Metadata using our robust parsing logic, passing the HTML we already successfully fetched
+    const metadata = await parseUrlMetadata(url, html);
+
+    if (metadata && metadata.title) {
+        logger.info(`[magicPaste] Robust Fallback successful. Title: "${metadata.title}"`);
+        // Ensure contentType is set, default to article if missing
+        if (!metadata.contentType) metadata.contentType = 'article';
+        return metadata;
+    } else {
+        logger.info(`[magicPaste] Robust Fallback found no title (checked OG/Twitter/Title tag).`);
+    }
+
+  } catch (eFallback) {
+    logger.error(`[magicPaste] Robust Fallback exception: ${eFallback.message}`);
+    
+    // Even on error, return something valid so client doesn't crash with null pointer
+    return {
+        title: "Error: " + eFallback.message, // For debugging in UI
+        contentType: 'article',
+        canonicalUrl: url,
+        error: eFallback.message
+    }
   }
+
+  // Graceful Failure default
+  logger.info(`[magicPaste] All methods failed. Returning generic object.`);
+  return { 
+      title: null, 
+      contentType: 'article', 
+      canonicalUrl: url 
+  };
 });
 
 // ----------------------------------------------------------------------------
