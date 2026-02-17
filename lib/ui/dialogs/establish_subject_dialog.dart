@@ -196,7 +196,6 @@ class _SubjectFieldsState extends State<SubjectFields> {
                if (newType != contentType) {
                   contentType = newType;
                   // Re-init controllers for new type
-                  for (final controller in key2controller.values) controller.dispose();
                   _initControllers(); 
                }
             } catch (e) {
@@ -239,40 +238,35 @@ class _SubjectFieldsState extends State<SubjectFields> {
 
   @override
   Widget build(BuildContext context) {
-    Widget cornerWidget = const SizedBox(width: 80.0);
-    // Help users understand why some types don't have URL fields
-    if (!contentType.type2field2type.containsKey('url')) {
-      cornerWidget = SizedBox(
-        width: 80.0,
-        child: Align(
-            alignment: Alignment.centerRight,
-            child: IconButton(
-              icon: const Icon(Icons.help_outline, color: Colors.grey),
-              tooltip: 'Why no URL field?',
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text('Why No URL for ${contentType.label}?'),
-                    content: Text(
-                      'Nerdster tracks the logical subject (the work itself), not a specific product listing.\n\n'
-                      'For example, a Book is defined by its Title and Author, not by its Amazon or Goodreads link.\n\n'
-                      'This ensures that everyone rating "The Hobbit" is contributing to the same subject, regardless of which edition or store they bought it from.',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Got it'),
-                      ),
-                    ],
+    Widget cornerWidget = SizedBox(
+      width: 80.0,
+      child: Align(
+          alignment: Alignment.centerRight,
+          child: IconButton(
+            icon: const Icon(Icons.help_outline, color: Colors.grey),
+            tooltip: 'What is a Subject?',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('What is a Subject?'),
+                  content: Text(
+                    'Nerdster tracks the logical subject (the work itself), not a specific product listing.\n\n'
+                    'For example, a Book is defined by its Title and Author, not by its Amazon or Goodreads link.\n\n'
+                    'This ensures that everyone rating "The Hobbit" is contributing to the same subject, regardless of which edition or store they bought it from.\n\n'
+                    'If a Content Type does not prompt for a URL, it means we track it by its logical attributes (like Title/Year) rather than a persistent link.',
                   ),
-                );
-              },
-            )),
-      );
-    } else {
-      cornerWidget = const SizedBox(width: 80); // Placeholder for alignment
-    }
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Got it'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          )),
+    );
 
     return Padding(
       padding: kTallPadding,
@@ -306,10 +300,6 @@ class _SubjectFieldsState extends State<SubjectFields> {
                   onSelected: (ContentType? newType) {
                     if (newType == null || newType == contentType) return;
                     setState(() {
-                      // Clean up old controllers
-                      for (final controller in key2controller.values) {
-                        controller.dispose();
-                      }
                       contentType = newType;
                       _initControllers(); // Create new controllers + fields
                     });
