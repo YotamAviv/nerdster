@@ -7,10 +7,9 @@ import 'package:nerdster/models/content_types.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/logic/metadata_service.dart';
 import 'package:nerdster/ui/util/ok_cancel.dart';
-import 'package:nerdster/ui/util_ui.dart';
 
 /// Fetching URL Metadata:
-/// Uses Firebase Cloud Functions (magicPaste) to extract title, author, year, 
+/// Uses Firebase Cloud Functions (magicPaste) to extract title, author, year,
 /// and image from URLs. The backend handles CORS and parsing Schema.org/OpenGraph metadata.
 
 Future<Jsonish?> establishSubjectDialog(BuildContext context) {
@@ -86,7 +85,8 @@ class _SubjectFieldsState extends State<SubjectFields> {
 
   void _initControllers() {
     // 1. Create new controllers first
-    final LinkedHashMap<String, TextEditingController> newControllers = LinkedHashMap.of({}); // Correctly init map
+    final LinkedHashMap<String, TextEditingController> newControllers =
+        LinkedHashMap.of({}); // Correctly init map
 
     contentType.type2field2type.forEach((key, type) {
       final controller = TextEditingController();
@@ -96,7 +96,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
       if (key2controller.containsKey(key)) {
         try {
           controller.text = key2controller[key]!.text;
-        } catch(e) { /* ignore if old controller is somehow dead */ }
+        } catch (e) {/* ignore if old controller is somehow dead */}
       }
       newControllers[key] = controller;
       controller.addListener(_validate);
@@ -112,19 +112,21 @@ class _SubjectFieldsState extends State<SubjectFields> {
     // the UI will use the new ones on next build.
     // But we still need to dispose the old ones eventually.
     // Let's just create new, rebuild fields, and THEN dispose.
-    
+
     key2controller.clear();
     key2controller.addAll(newControllers);
 
     _rebuildFields();
-    
+
     // Now dispose old ones - safely.
     // Actually, since we replaced key2controller contents, the next build() will generate text fields with NEW controllers.
     // The OLD widgets are still holding the OLD controllers until that build happens.
     // So disposal MUST happen after next frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       for (final controller in oldControllers) {
-         try { controller.dispose(); } catch(_) {}
+        try {
+          controller.dispose();
+        } catch (_) {}
       }
     });
   }
@@ -159,148 +161,143 @@ class _SubjectFieldsState extends State<SubjectFields> {
       final text = data?.text?.trim();
 
       if (text == null || text.isEmpty) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Clipboard is empty.')));
+        if (mounted)
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Clipboard is empty.')));
         return;
       }
-      
+
       // Basic URL Check
       final uri = Uri.tryParse(text);
       if (uri == null || !['http', 'https'].contains(uri.scheme)) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Clipboard does not contain a valid URL.')));
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Clipboard does not contain a valid URL.')));
         return;
       }
 
       // Call Cloud Function
       final metadata = await magicPaste(text);
-      
+
       if (!mounted) return;
 
       if (metadata == null) {
-         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not fetch details for this URL.')));
-         return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Could not fetch details for this URL.')));
+        return;
       }
-      
+
       // Handle known errors from robust logic
       if (metadata['error'] != null) {
-          final errHelper = metadata['error'].toString();
-          debugPrint('MagicPaste backend error: $errHelper');
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Metadata Fetch Failed: $errHelper')));
-          // Still populate partial data if available (e.g. timeout might return partial?)
-          // But usually we stop.
-          if (metadata['title'] == null || metadata['title'] == 'Error') {
-             return;
-          }
+        final errHelper = metadata['error'].toString();
+        debugPrint('MagicPaste backend error: $errHelper');
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Metadata Fetch Failed: $errHelper')));
+        // Still populate partial data if available (e.g. timeout might return partial?)
+        // But usually we stop.
+        if (metadata['title'] == null || metadata['title'] == 'Error') {
+          return;
+        }
       }
 
       setState(() {
-         // 1. Switch Content Type if detected and different
-         if (metadata['contentType'] != null) {
-            try {
-               final newType = ContentType.values.byName(metadata['contentType']);
-               if (newType != contentType) {
-                  contentType = newType;
-                  // Re-init controllers for new type
-                  _initControllers(); 
-               }
-            } catch (e) {
-               // Initial Content Type guess failed or not in our enum
-               debugPrint('Unknown detected content type: ${metadata['contentType']}');
+        // 1. Switch Content Type if detected and different
+        if (metadata['contentType'] != null) {
+          try {
+            final newType = ContentType.values.byName(metadata['contentType']);
+            if (newType != contentType) {
+              contentType = newType;
+              // Re-init controllers for new type
+              _initControllers();
             }
-         }
+          } catch (e) {
+            // Initial Content Type guess failed or not in our enum
+            debugPrint('Unknown detected content type: ${metadata['contentType']}');
+          }
+        }
 
-         // 2. Populate Fields - with safety checks for controllers existing
-         // URL
-         if (key2controller.containsKey('url')) {
-            key2controller['url']!.text = metadata['canonicalUrl'] ?? text;
-         }
-         
-         // Title
-         if (key2controller.containsKey('title') && metadata['title'] != null) {
-            key2controller['title']!.text = metadata['title'];
-         }
+        // 2. Populate Fields - with safety checks for controllers existing
+        // URL
+        if (key2controller.containsKey('url')) {
+          key2controller['url']!.text = metadata['canonicalUrl'] ?? text;
+        }
 
-         // Year
-         if (key2controller.containsKey('year') && metadata['year'] != null) {
-            key2controller['year']!.text = metadata['year'].toString();
-         }
+        // Title
+        if (key2controller.containsKey('title') && metadata['title'] != null) {
+          key2controller['title']!.text = metadata['title'];
+        }
 
-         // Author
-         if (key2controller.containsKey('author') && metadata['author'] != null) {
-            key2controller['author']!.text = metadata['author'];
-         }
+        // Year
+        if (key2controller.containsKey('year') && metadata['year'] != null) {
+          key2controller['year']!.text = metadata['year'].toString();
+        }
 
-         // Validate form
-         _validate();
+        // Author
+        if (key2controller.containsKey('author') && metadata['author'] != null) {
+          key2controller['author']!.text = metadata['author'];
+        }
+
+        // Validate form
+        _validate();
       });
-
     } catch (e) {
-       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
-       isMagicPasting.value = false;
+      isMagicPasting.value = false;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget cornerWidget = SizedBox(
-      width: 80.0,
-      child: Align(
-          alignment: Alignment.centerRight,
-          child: IconButton(
-            icon: const Icon(Icons.help_outline, color: Colors.grey),
-            tooltip: 'What is a Subject?',
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Establish Subject...'),
-                  content: Text(
-                    '''Define the Subject you want to rate, comment on, etc.
+    void showHelpDialog() {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Establish Subject'),
+          content: const Text(
+            'Define the Subject you want to rate, comment on, etc.\n\n'
+            'The Nerdster tries to use the logical subject (the work itself), not a specific product listing. '
+            'For example, a Book is defined by its Title and Author, not by its Amazon or Goodreads link.\n\n'
+            'Some content types (like newspaper articles or online videos) do require a URL, but the core idea is to track the underlying work, not a specific edition or listing. '
+            'In case of the same article or video being available at different URLs or being referenced with differing details, the Nerdster allows folks to EQUATE or RELATE subjects so that ratings, comments and other interactions are aggregated together.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Got it'),
+            ),
+          ],
+        ),
+      );
+    }
 
-The Nerdster tries to use the logical subject (the work itself), not a specific product listing.
-For example, a Book is defined by its Title and Author, not by its Amazon or Goodreads link.
-
-Some content types (like newspaper articles or online videos) do require a URL, but the core idea is to track the underlying work, not a specific edition or listing.
-In case of the same article or video being available at different URLs or being referenced with differing details, the Nerdster allows folks to EQUATE or RELATE subjects so that ratings, comments and other interactions are aggregated together.''',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Got it'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          )),
+    Widget helpLink = GestureDetector(
+      onTap: showHelpDialog,
+      child: const Text(
+        'What is a Subject?',
+        style: TextStyle(
+          color: Colors.blue,
+          decoration: TextDecoration.underline,
+          decorationColor: Colors.blue,
+          fontSize: 12,
+        ),
+      ),
     );
 
     return Padding(
-      padding: kTallPadding,
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                width: 80.0,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: isMagicPasting,
-                  builder: (context, isLoading, child) {
-                    if (isLoading) {
-                      return const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)));
-                    }
-                    return IconButton(
-                      icon: const Icon(Icons.content_paste_go, color: Colors.blueAccent),
-                      tooltip: 'Magic Paste (Detect from Clipboard)',
-                      onPressed: _handleMagicPaste,
-                    );
-                  },
-                ),
-              ),
-              DropdownMenu<ContentType>(
+          // Header: [dropdown] [📋 paste]   [Establish Subject]
+          //                                  [What is a Subject?]
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Left: type dropdown
+                DropdownMenu<ContentType>(
                   initialSelection: contentType,
                   requestFocusOnTap: true,
                   label: const Text('Type'),
@@ -308,7 +305,7 @@ In case of the same article or video being available at different URLs or being 
                     if (newType == null || newType == contentType) return;
                     setState(() {
                       contentType = newType;
-                      _initControllers(); // Create new controllers + fields
+                      _initControllers();
                     });
                   },
                   dropdownMenuEntries: types
@@ -319,12 +316,50 @@ In case of the same article or video being available at different URLs or being 
                           ))
                       .toList(),
                 ),
-              cornerWidget,
-            ],
+                // Magic paste button + loading spinner
+                ValueListenableBuilder<bool>(
+                  valueListenable: isMagicPasting,
+                  builder: (context, isLoading, child) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.content_paste_go,
+                              color: isLoading
+                                  ? Colors.blueAccent.withOpacity(0.4)
+                                  : Colors.blueAccent),
+                          iconSize: 32,
+                          tooltip: 'Magic Paste (Detect from Clipboard)',
+                          onPressed: isLoading ? null : _handleMagicPaste,
+                        ),
+                        if (isLoading)
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+                const Spacer(),
+                // Right: title top, help link bottom
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Establish Subject',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    helpLink,
+                  ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
-          ...fields,
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+          ...fields.expand((f) => [f, const SizedBox(height: 8)]),
           OkCancel(_okHandler, 'Establish Subject', okEnabled: okEnabled),
         ],
       ),
