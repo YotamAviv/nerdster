@@ -187,6 +187,18 @@ class _SubjectFieldsState extends State<SubjectFields> {
          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not fetch details for this URL.')));
          return;
       }
+      
+      // Handle known errors from robust logic
+      if (metadata['error'] != null) {
+          final errHelper = metadata['error'].toString();
+          debugPrint('MagicPaste backend error: $errHelper');
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Metadata Fetch Failed: $errHelper')));
+          // Still populate partial data if available (e.g. timeout might return partial?)
+          // But usually we stop.
+          if (metadata['title'] == null || metadata['title'] == 'Error') {
+             return;
+          }
+      }
 
       setState(() {
          // 1. Switch Content Type if detected and different

@@ -25,6 +25,8 @@ AI NOTE: This is my (the human) file with my own notes.
 # Notifications gallery
 ?fire=fake&demo=notificationsGallery
 
+?fire=emulator&demo=loner
+
 # Emulator simpsonsDemo from PROD
 # Lisa
 ?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}

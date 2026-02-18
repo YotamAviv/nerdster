@@ -122,26 +122,58 @@ exports.magicPaste = onCall(async (request) => {
     // ROBUST FALLBACK (fetch + regex)
     // This is the "Old Way" that works on stubborn sites like NYT.
     logger.info(`[magicPaste] Attempting Robust Fallback (fetch+regex)...`);
-    const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-            // MATCHING fetchTitle HEADERS EXACTLY
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Referer': 'https://www.google.com/'
-        }
-    });
+    
+    // Explicit timeout using Promise.race to guarantee control flow resumes
+    let html;
+    try {
+      const timeoutMs = 15000; // 15s timeout
+      
+      const fetchAndRead = async () => {
+          const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                  // MATCHING fetchTitle HEADERS EXACTLY
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                  'Accept-Language': 'en-US,en;q=0.5',
+                  'Referer': 'https://www.google.com/'
+              }
+          });
+          if (!response.ok) {
+              logger.warn(`[magicPaste] Fallback HTTP status: ${response.status} (attempting to parse anyway)`);
+          }
+          return await response.text();
+      };
 
-    if (!response.ok) {
-        logger.warn(`[magicPaste] Fallback HTTP status: ${response.status} (attempting to parse anyway)`);
+      const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => {
+              reject(new Error('Fetch timeout'));
+          }, timeoutMs)
+      );
+
+      html = await Promise.race([fetchAndRead(), timeoutPromise]);
+    } catch (e) {
+      if (e.message === 'Fetch timeout') logger.warn(`[magicPaste] Fetch timed out after 15s`);
+      // Return robust error object immediately
+      return {
+          title: "Error: Fetch timeout", 
+          contentType: 'article',
+          canonicalUrl: url,
+          error: "Fetch timeout"
+      }
     }
 
-    const html = await response.text();
     logger.info(`[magicPaste] HTML length: ${html.length}`);
 
     // Parse Metadata using our robust parsing logic, passing the HTML we already successfully fetched
-    const metadata = await parseUrlMetadata(url, html);
+    let metadata = await parseUrlMetadata(url, html);
+    
+    // Safety: ensure no undefined values are returned (Cloud Functions can be picky)
+    if (metadata) {
+        metadata = JSON.parse(JSON.stringify(metadata));
+    }
+    
+    logger.info(`[magicPaste] parseUrlMetadata returned: ${JSON.stringify(metadata)}`); // DEBUG LOG
 
     if (metadata && metadata.title) {
         logger.info(`[magicPaste] Robust Fallback successful. Title: "${metadata.title}"`);
@@ -167,11 +199,14 @@ exports.magicPaste = onCall(async (request) => {
   // Graceful Failure default
   logger.info(`[magicPaste] All methods failed. Returning generic object.`);
   return { 
-      title: null, 
+      title: "", 
       contentType: 'article', 
       canonicalUrl: url 
   };
 });
+
+// REMOVED BROKEN magicPaste2
+// exports.magicPaste2 = ...
 
 // ----------------------------------------------------------------------------
 // 2. HTTP Functions (v2 onRequest)

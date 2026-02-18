@@ -12,9 +12,12 @@ const { logger } = require("firebase-functions");
  * @returns {Object} Structured metadata { contentType, title, year, author, image, description, canonicalUrl }
  */
 async function parseUrlMetadata(url, html) {
+  logger.info(`[parseUrlMetadata] Start for URL: ${url}`); // DEBUG
+
   if (!html) {
       const fetch = require("node-fetch");
       try {
+        logger.info(`[parseUrlMetadata] Fetching URL...`); // DEBUG
         const response = await fetch(url, {
              headers: { 
                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -27,15 +30,19 @@ async function parseUrlMetadata(url, html) {
         });
         if (!response.ok) {
             logger.warn(`[MagicPaste] HTTP Error ${response.status} for ${url}`);
-            return null;
+            logger.info(`[MagicPaste] Proceeding anyway to try HTML title scrape...`); // DEBUG
+            // Do not return null immediately. Often, 403/429 responses still contain useful HTML/Title.
+            // Continue to extract what we can from the body.
         }
         
         // Update URL to the final destination (handling redirects like a.co -> amazon.com)
         if (response.url && response.url !== url) {
+             logger.info(`[MagicPaste] Redirected to: ${response.url}`); // DEBUG
              url = response.url;
         }
         
         html = await response.text();
+        logger.info(`[MagicPaste] Fetched HTML, length: ${html.length}`); // DEBUG
       } catch (e) {
         logger.error(`[MagicPaste] Fetch error: ${e.message}`);
         return null;

@@ -106,13 +106,31 @@ Future<Map<String, dynamic>?> magicPaste(String url) async {
   if (!url.startsWith('http')) return null;
 
   try {
-    final retval = await _functions!.httpsCallable('magicPaste').call({
-      "url": url,
-    });
-    return Map<String, dynamic>.from(retval.data as Map);
+    debugPrint('magicPaste calling cloud function...');
+    try {
+      final retval = await _functions!.httpsCallable('magicPaste').call({
+        "url": url,
+      });
+      debugPrint('magicPaste raw data: ${retval.data}');
+      debugPrint('magicPaste data type: ${retval.data.runtimeType}');
+
+      if (retval.data == null) return null;
+      return Map<String, dynamic>.from(retval.data as Map);
+    } catch (e, stack) {
+      debugPrint('magicPaste error: $e');
+      debugPrint('magicPaste stack: $stack');
+      // Return error structure for debugging/robustness
+      return {
+        'title': 'Error',
+        'error': e.toString(),
+      };
+    }
   } catch (e) {
     debugPrint('magicPaste error: $e');
-    return null;
+    return {
+      'title': 'Error',
+      'error': e.toString(),
+    };
   }
 }
 
