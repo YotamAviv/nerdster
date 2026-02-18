@@ -261,12 +261,15 @@ class _SubjectFieldsState extends State<SubjectFields> {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('What is a Subject?'),
+                  title: const Text('Establish Subject...'),
                   content: Text(
-                    'Nerdster tracks the logical subject (the work itself), not a specific product listing.\n\n'
-                    'For example, a Book is defined by its Title and Author, not by its Amazon or Goodreads link.\n\n'
-                    'This ensures that everyone rating "The Hobbit" is contributing to the same subject, regardless of which edition or store they bought it from.\n\n'
-                    'If a Content Type does not prompt for a URL, it means we track it by its logical attributes (like Title/Year) rather than a persistent link.',
+                    '''Define the Subject you want to rate, comment on, etc...
+
+The Nerdster tries to use logical subject (the work itself), not a specific product listing.
+For example, a Book is defined by its Title and Author, not by its Amazon or Goodreads link.
+
+Some content types (like newspaper articles or online videos) do require a URL, but the core idea is to track the underlying work, not a specific edition or listing.
+In case of the same article or video being available at different URLs or being referenced with differing details, the Nerdster allows folks to EQUATE or RELATE subjects so that ratings, comments and other interactions are aggregated together.''',
                   ),
                   actions: [
                     TextButton(
