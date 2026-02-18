@@ -4,7 +4,8 @@ import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/logic/follow_logic.dart' show kFollowContextIdentity, kFollowContextNerdster;
+import 'package:nerdster/logic/follow_logic.dart'
+    show kFollowContextIdentity, kFollowContextNerdster;
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/ui/sign_in_widget.dart';
 

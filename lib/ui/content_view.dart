@@ -136,165 +136,194 @@ class _ContentViewState extends State<ContentView> {
       builder: (context, model, _) {
         return Scaffold(
           appBar: AppBar(
-            toolbarHeight: 0, // Hide the default AppBar
+            toolbarHeight: 0,
           ),
           body: SafeArea(
-            child: Stack(
+            child: Column(
               children: [
-                Column(
-                  children: [
-                    ValueListenableBuilder<bool>(
-                        valueListenable: Setting.get<bool>(SettingType.dev).notifier,
-                        builder: (context, dev, child) {
-                          if (!dev) return const SizedBox.shrink();
-                          return NerdsterMenu();
-                        }),
-                    if (_controller.loading)
-                      Column(
-                        children: [
-                          ValueListenableBuilder<double>(
-                            valueListenable: _controller.progress,
-                            builder: (context, p, _) => LinearProgressIndicator(value: p),
-                          ),
-                          ValueListenableBuilder<String?>(
-                            valueListenable: _controller.loadingMessage,
-                            builder: (context, msg, _) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2.0),
-                              child: Text(
-                                msg ?? '',
-                                style:
-                                    Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    else
-                      const SizedBox(height: 18), // Match height of progress + text
-                    _buildTrustSettingsBar(model),
-                    // Filters Dropdown
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _showFilters,
-                      builder: (context, show, _) {
-                        return AnimatedSize(
-                          duration: const Duration(milliseconds: 200),
-                          child: show
-                              ? ContentBar(
-                                  controller: _controller, tags: model?.aggregation.mostTags ?? [])
-                              : const SizedBox.shrink(),
-                        );
-                      },
-                    ),
-                    // Etc Dropdown
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _showEtc,
-                      builder: (context, show, _) {
-                        return AnimatedSize(
-                          duration: const Duration(milliseconds: 200),
-                          child: show
-                              ? EtcBar(
-                                  controller: _controller,
-                                  notifications: Builder(builder: (context) {
-                                    if (NotificationsMenu.shouldShow(model)) {
-                                      if (model!.sourceErrors.isNotEmpty) {
-                                        debugPrint(
-                                            'ContentView: Displaying ${model.sourceErrors.length} errors');
-                                      }
-                                      return NotificationsMenu(
-                                        trustGraph: model.trustGraph,
-                                        followNetwork: model.followNetwork,
-                                        delegateResolver: model.delegateResolver,
-                                        labeler: model.labeler,
-                                        controller: _controller,
-                                        sourceErrors: model.sourceErrors,
-                                        systemNotifications: model.systemNotifications,
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  }),
-                                )
-                              : const SizedBox.shrink(),
-                        );
-                      },
-                    ),
-                    Expanded(
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: _buildContent(model),
-                          ),
-                          // Floating Controls (Left)
-                          Positioned(
-                            top: 4,
-                            left: 4,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (model != null)
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context).canvasColor.withOpacity(0.9),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: IconButton(
-                                      padding: EdgeInsets.zero,
-                                      visualDensity: VisualDensity.compact,
-                                      icon: const Icon(Icons.add, color: Colors.blue),
-                                      onPressed: () => submit(context, _controller),
-                                      tooltip: 'Submit new content',
-                                    ),
-                                  ),
-                                if (model != null) const SizedBox(width: 4),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).canvasColor.withOpacity(0.9),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: IconButton(
-                                    padding: EdgeInsets.zero,
-                                    visualDensity: VisualDensity.compact,
-                                    icon: const Icon(Icons.tune, color: Colors.blue),
-                                    onPressed: () {
-                                      if (!_showFilters.value) _showEtc.value = false;
-                                      _showFilters.value = !_showFilters.value;
-                                    },
-                                    tooltip: 'Show/Hide Filters',
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).canvasColor.withOpacity(0.9),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: IconButton(
-                                    padding: EdgeInsets.zero,
-                                    visualDensity: VisualDensity.compact,
-                                    icon: Icon(Icons.menu,
-                                        color: NotificationsMenu.shouldShow(model)
-                                            ? Colors.pink
-                                            : Colors.blue),
-                                    onPressed: () {
-                                      if (!_showEtc.value) _showFilters.value = false;
-                                      _showEtc.value = !_showEtc.value;
-                                    },
-                                    tooltip: 'Show/Hide Menu',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                ValueListenableBuilder<bool>(
+                    valueListenable: Setting.get<bool>(SettingType.dev).notifier,
+                    builder: (context, dev, child) {
+                      if (!dev) return const SizedBox.shrink();
+                      return NerdsterMenu();
+                    }),
+                if (_controller.loading)
+                  Column(
+                    children: [
+                      ValueListenableBuilder<double>(
+                        valueListenable: _controller.progress,
+                        builder: (context, p, _) => LinearProgressIndicator(value: p),
                       ),
-                    ),
-                  ],
+                      ValueListenableBuilder<String?>(
+                        valueListenable: _controller.loadingMessage,
+                        builder: (context, msg, _) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2.0),
+                          child: Text(
+                            msg ?? '',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(fontSize: 10),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  const SizedBox.shrink(),
+                _buildTrustSettingsBar(model),
+                // Toolbar row: [+ Add] [Filters] [Menu]
+                _buildToolbar(context, model),
+                // Filters bar (slides in/out)
+                ValueListenableBuilder<bool>(
+                  valueListenable: _showFilters,
+                  builder: (context, show, _) {
+                    return AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      child: show
+                          ? ContentBar(
+                              controller: _controller, tags: model?.aggregation.mostTags ?? [])
+                          : const SizedBox.shrink(),
+                    );
+                  },
                 ),
+                // Etc bar (slides in/out)
+                ValueListenableBuilder<bool>(
+                  valueListenable: _showEtc,
+                  builder: (context, show, _) {
+                    return AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      child: show
+                          ? EtcBar(
+                              controller: _controller,
+                              notifications: Builder(builder: (context) {
+                                if (NotificationsMenu.shouldShow(model)) {
+                                  if (model!.sourceErrors.isNotEmpty) {
+                                    debugPrint(
+                                        'ContentView: Displaying ${model.sourceErrors.length} errors');
+                                  }
+                                  return NotificationsMenu(
+                                    trustGraph: model.trustGraph,
+                                    followNetwork: model.followNetwork,
+                                    delegateResolver: model.delegateResolver,
+                                    labeler: model.labeler,
+                                    controller: _controller,
+                                    sourceErrors: model.sourceErrors,
+                                    systemNotifications: model.systemNotifications,
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              }),
+                            )
+                          : const SizedBox.shrink(),
+                    );
+                  },
+                ),
+                Expanded(child: _buildContent(model)),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildToolbar(BuildContext context, FeedModel? model) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isSmall,
+      builder: (context, small, _) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: _showFilters,
+          builder: (context, showFilters, _) {
+            return ValueListenableBuilder<bool>(
+              valueListenable: _showEtc,
+              builder: (context, showEtc, _) {
+                final hasNotifications = NotificationsMenu.shouldShow(model);
+                return Container(
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.grey.shade300, width: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      // Add button
+                      if (model != null)
+                        _toolbarButton(
+                          context,
+                          icon: Icons.add,
+                          label: 'Submit',
+                          small: small,
+                          active: false,
+                          onTap: () => submit(context, _controller),
+                          tooltip: 'Submit new content',
+                        ),
+                      const Spacer(),
+                      // Filters toggle
+                      _toolbarButton(
+                        context,
+                        icon: Icons.tune,
+                        label: 'Filters',
+                        small: small,
+                        active: showFilters,
+                        onTap: () {
+                          if (!_showFilters.value) _showEtc.value = false;
+                          _showFilters.value = !_showFilters.value;
+                        },
+                        tooltip: 'Show/Hide Filters',
+                      ),
+                      // Menu toggle
+                      _toolbarButton(
+                        context,
+                        icon: Icons.menu,
+                        label: 'Menu',
+                        small: small,
+                        active: showEtc,
+                        activeColor: hasNotifications ? Colors.pink : null,
+                        onTap: () {
+                          if (!_showEtc.value) _showFilters.value = false;
+                          _showEtc.value = !_showEtc.value;
+                        },
+                        tooltip: 'Show/Hide Menu',
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _toolbarButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required bool small,
+    required bool active,
+    required VoidCallback onTap,
+    required String tooltip,
+    Color? activeColor,
+  }) {
+    final color = active
+        ? (activeColor ?? Theme.of(context).colorScheme.primary)
+        : (activeColor ?? Colors.grey.shade700);
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 20, color: color),
+              if (!small) ...[
+                const SizedBox(width: 4),
+                Text(label, style: TextStyle(fontSize: 13, color: color)),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 
