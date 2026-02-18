@@ -56,38 +56,25 @@ exports.fetchTitle = onCall(async (request) => {
         'Accept-Language': 'en-US,en;q=0.5',
         'Referer': 'https://www.google.com/'
       },
-      timeout: 5000
+      timeout: 10000
     });
 
     if (!response.ok) {
-      logger.warn(`[fetchTitle] HTTP Error: ${response.status}`); // Changed error to warn to be consistent with robust parsing
-      // logger.error(`[fetchTitle] HTTP Error: ${response.status}`);
-      // return { "title": null }; 
-      // User wants it to work like it used to - did we previously return null on error?
-      // The git diff showed:
-      // if (!response.ok) { logger.error(...); return { "title": null }; }
-      // But the user claims it "used to work". If NYT returns 403, then this code WOULD return null.
-      // Unless... NYT doesn't return 403 to the *old* scraper?
-      // Or the old scraper didn't check response.ok?
-      // Let's look at the "HEAD" version of fetchTitle.
+      logger.warn(`[fetchTitle] HTTP Error: ${response.status}`);
     }
     
-    // To match the robustness of the "magicPaste" fix I just made, 
-    // I will allow it to proceed even if response is not ok, if that's what's needed.
-    // BUT, first let's just add the logs.
-    
     const html = await response.text();
-    logger.info(`[fetchTitle] HTML length: ${html.length}`); // DEBUG
+    logger.info(`[fetchTitle] HTML length: ${html.length}`);
 
     const $ = cheerio.load(html);
     const title = extractTitle($, html);
     
-    logger.info(`[fetchTitle] Extracted Title: ${title}`); // DEBUG
-
-    return { "title": title };
+    logger.info(`[fetchTitle] Extracted Title: ${title}`);
+    
+    return { title: title || null };
   } catch (e) {
-    logger.error(`[fetchTitle] Error: ${e.message}`);
-    return { "title": null };
+    logger.error(`[fetchTitle] Error: ${e.message}`, { stack: e.stack });
+    return { title: null };
   }
 });
 
@@ -179,6 +166,12 @@ exports.magicPaste = onCall(async (request) => {
         logger.info(`[magicPaste] Robust Fallback successful. Title: "${metadata.title}"`);
         // Ensure contentType is set, default to article if missing
         if (!metadata.contentType) metadata.contentType = 'article';
+        
+        // Flatten image object to simple URL string for Firebase Functions Web compatibility
+        if (metadata.image && typeof metadata.image === 'object') {
+            metadata.image = metadata.image.url || metadata.image.contentUrl || null;
+        }
+        
         return metadata;
     } else {
         logger.info(`[magicPaste] Robust Fallback found no title (checked OG/Twitter/Title tag).`);

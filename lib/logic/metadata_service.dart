@@ -89,12 +89,18 @@ Future<String?> fetchTitle(String url) async {
   if (!url.startsWith('http')) return null;
 
   try {
+    debugPrint('[fetchTitle] Calling function for: $url');
     final retval = await _functions!.httpsCallable('fetchTitle').call({
       "url": url,
     });
-    return retval.data["title"];
-  } catch (e) {
-    debugPrint('fetchTitle error: $e');
+    debugPrint('[fetchTitle] Got response - data type: ${retval.data.runtimeType}');
+    debugPrint('[fetchTitle] Response data: ${retval.data}');
+    final title = retval.data["title"];
+    debugPrint('[fetchTitle] Extracted title: $title');
+    return title;
+  } catch (e, stack) {
+    debugPrint('[fetchTitle] ERROR: $e');
+    debugPrint('[fetchTitle] Stack: $stack');
     return null;
   }
 }
@@ -115,7 +121,17 @@ Future<Map<String, dynamic>?> magicPaste(String url) async {
       debugPrint('magicPaste data type: ${retval.data.runtimeType}');
 
       if (retval.data == null) return null;
-      return Map<String, dynamic>.from(retval.data as Map);
+      
+      // Deep copy to handle nested objects properly
+      final result = _deepCopyMap(retval.data);
+      
+      // Extract image URL if image is an object
+      if (result['image'] is Map) {
+        final imageObj = result['image'] as Map;
+        result['image'] = imageObj['url'] ?? imageObj['contentUrl'];
+      }
+      
+      return result;
     } catch (e, stack) {
       debugPrint('magicPaste error: $e');
       debugPrint('magicPaste stack: $stack');
@@ -132,6 +148,24 @@ Future<Map<String, dynamic>?> magicPaste(String url) async {
       'error': e.toString(),
     };
   }
+}
+
+Map<String, dynamic> _deepCopyMap(dynamic data) {
+  if (data is Map) {
+    return Map<String, dynamic>.fromEntries(
+      data.entries.map((e) => MapEntry(e.key.toString(), _deepCopyValue(e.value)))
+    );
+  }
+  return {};
+}
+
+dynamic _deepCopyValue(dynamic value) {
+  if (value is Map) {
+    return _deepCopyMap(value);
+  } else if (value is List) {
+    return value.map((item) => _deepCopyValue(item)).toList();
+  }
+  return value;
 }
 
 /// Fetches high-quality images for a subject to enhance the visual presentation.
