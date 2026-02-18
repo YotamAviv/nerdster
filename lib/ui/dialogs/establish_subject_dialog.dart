@@ -263,9 +263,9 @@ class _SubjectFieldsState extends State<SubjectFields> {
                 builder: (context) => AlertDialog(
                   title: const Text('Establish Subject...'),
                   content: Text(
-                    '''Define the Subject you want to rate, comment on, etc...
+                    '''Define the Subject you want to rate, comment on, etc.
 
-The Nerdster tries to use logical subject (the work itself), not a specific product listing.
+The Nerdster tries to use the logical subject (the work itself), not a specific product listing.
 For example, a Book is defined by its Title and Author, not by its Amazon or Goodreads link.
 
 Some content types (like newspaper articles or online videos) do require a URL, but the core idea is to track the underlying work, not a specific edition or listing.
