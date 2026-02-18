@@ -37,6 +37,9 @@ class _ContentViewState extends State<ContentView> {
   final ValueNotifier<ContentKey?> _markedSubjectToken = ValueNotifier(null);
   final ValueNotifier<bool> _showFilters = ValueNotifier(false);
   final ValueNotifier<bool> _showEtc = ValueNotifier(false);
+  final ValueNotifier<bool> _headerVisible = ValueNotifier(true);
+  final ScrollController _scrollController = ScrollController();
+  double _lastScrollOffset = 0;
 
   @override
   void initState() {
@@ -53,9 +56,26 @@ class _ContentViewState extends State<ContentView> {
     });
     _controller.refresh();
 
+    _scrollController.addListener(_onScroll);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       verifyInit(navigatorKey);
     });
+  }
+
+  void _onScroll() {
+    final offset = _scrollController.offset;
+    final delta = offset - _lastScrollOffset;
+    _lastScrollOffset = offset;
+    // Show header when scrolling up or near top; hide when scrolling down
+    if (delta > 4 && offset > 60) {
+      // Only hide if filters/etc are closed
+      if (!_showFilters.value && !_showEtc.value) {
+        _headerVisible.value = false;
+      }
+    } else if (delta < -4) {
+      _headerVisible.value = true;
+    }
   }
 
   @override
@@ -66,8 +86,6 @@ class _ContentViewState extends State<ContentView> {
       setState(() {
         _markedSubjectToken.value = null;
       });
-      // We use a small delay to ensure the previous refresh (if any) has a chance to see the loading state
-      // or we can just call _controller.refresh directly which we will make smarter.
       _onRefresh();
     }
   }
@@ -77,6 +95,8 @@ class _ContentViewState extends State<ContentView> {
     _controller.dispose();
     _showFilters.dispose();
     _showEtc.dispose();
+    _headerVisible.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -170,50 +190,68 @@ class _ContentViewState extends State<ContentView> {
                 else
                   const SizedBox.shrink(),
                 _buildTrustSettingsBar(model),
-                // Toolbar row: [+ Add] [Filters] [Menu]
-                _buildToolbar(context, model),
-                // Filters bar (slides in/out)
+                // Toolbar row: [Submit] [Filters] [Menu] — auto-hides on scroll
                 ValueListenableBuilder<bool>(
-                  valueListenable: _showFilters,
-                  builder: (context, show, _) {
-                    return AnimatedSize(
+                  valueListenable: _headerVisible,
+                  builder: (context, visible, _) {
+                    return AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      child: show
-                          ? ContentBar(
-                              controller: _controller, tags: model?.aggregation.mostTags ?? [])
-                          : const SizedBox.shrink(),
-                    );
-                  },
-                ),
-                // Etc bar (slides in/out)
-                ValueListenableBuilder<bool>(
-                  valueListenable: _showEtc,
-                  builder: (context, show, _) {
-                    return AnimatedSize(
-                      duration: const Duration(milliseconds: 200),
-                      child: show
-                          ? EtcBar(
-                              controller: _controller,
-                              notifications: Builder(builder: (context) {
-                                if (NotificationsMenu.shouldShow(model)) {
-                                  if (model!.sourceErrors.isNotEmpty) {
-                                    debugPrint(
-                                        'ContentView: Displaying ${model.sourceErrors.length} errors');
-                                  }
-                                  return NotificationsMenu(
-                                    trustGraph: model.trustGraph,
-                                    followNetwork: model.followNetwork,
-                                    delegateResolver: model.delegateResolver,
-                                    labeler: model.labeler,
-                                    controller: _controller,
-                                    sourceErrors: model.sourceErrors,
-                                    systemNotifications: model.systemNotifications,
-                                  );
-                                }
-                                return const SizedBox.shrink();
-                              }),
-                            )
-                          : const SizedBox.shrink(),
+                      curve: Curves.easeInOut,
+                      clipBehavior: Clip.hardEdge,
+                      decoration: const BoxDecoration(),
+                      height: visible ? null : 0,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildToolbar(context, model),
+                          // Filters bar (slides in/out)
+                          ValueListenableBuilder<bool>(
+                            valueListenable: _showFilters,
+                            builder: (context, show, _) {
+                              return AnimatedSize(
+                                duration: const Duration(milliseconds: 200),
+                                child: show
+                                    ? ContentBar(
+                                        controller: _controller,
+                                        tags: model?.aggregation.mostTags ?? [])
+                                    : const SizedBox.shrink(),
+                              );
+                            },
+                          ),
+                          // Etc bar (slides in/out)
+                          ValueListenableBuilder<bool>(
+                            valueListenable: _showEtc,
+                            builder: (context, show, _) {
+                              return AnimatedSize(
+                                duration: const Duration(milliseconds: 200),
+                                child: show
+                                    ? EtcBar(
+                                        controller: _controller,
+                                        notifications: Builder(builder: (context) {
+                                          if (NotificationsMenu.shouldShow(model)) {
+                                            if (model!.sourceErrors.isNotEmpty) {
+                                              debugPrint(
+                                                  'ContentView: Displaying ${model.sourceErrors.length} errors');
+                                            }
+                                            return NotificationsMenu(
+                                              trustGraph: model.trustGraph,
+                                              followNetwork: model.followNetwork,
+                                              delegateResolver: model.delegateResolver,
+                                              labeler: model.labeler,
+                                              controller: _controller,
+                                              sourceErrors: model.sourceErrors,
+                                              systemNotifications: model.systemNotifications,
+                                            );
+                                          }
+                                          return const SizedBox.shrink();
+                                        }),
+                                      )
+                                    : const SizedBox.shrink(),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -390,6 +428,7 @@ class _ContentViewState extends State<ContentView> {
     final subjects = model.effectiveSubjects;
 
     return ListView.builder(
+      controller: _scrollController,
       itemCount: subjects.length,
       itemBuilder: (context, index) {
         return ContentCard(
