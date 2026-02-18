@@ -1,0 +1,71 @@
+i  emulators: Starting emulators: functions, firestore
+⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, database, hosting, pubsub, storage, dataconnect
+⚠  functions: Unable to fetch project Admin SDK configuration, Admin SDK behavior in Cloud Functions emulator may be incorrect.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator UI websocket is running on 9150.
+i  functions: Watching "/home/aviv/src/github/nerdster13/functions" for Cloud Functions...
+⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+✔  functions: Using node@20 from host.
+Serving at port 8174
+
+✔  functions: Loaded functions definitions from source: fetchTitle, fetchImages, signin, export.
+✔  functions[us-central1-fetchTitle]: http function initialized (http://127.0.0.1:5001/nerdster13/us-central1/fetchTitle).
+✔  functions[us-central1-fetchImages]: http function initialized (http://127.0.0.1:5001/nerdster13/us-central1/fetchImages).
+✔  functions[us-central1-signin]: http function initialized (http://127.0.0.1:5001/nerdster13/us-central1/signin).
+✔  functions[us-central1-export]: http function initialized (http://127.0.0.1:5001/nerdster13/us-central1/export).
+
+[90m┌─────────────────────────────────────────────────────────────┐[39m
+[90m│[39m ✔  All emulators ready! It is now safe to connect your app. [90m│[39m
+[90m│[39m i  View Emulator UI at http://127.0.0.1:4000/               [90m│[39m
+[90m└─────────────────────────────────────────────────────────────┘[39m
+
+[90m┌───────────[39m[90m┬────────────────[39m[90m┬─────────────────────────────────┐[39m
+[90m│[39m[33m Emulator  [39m[90m│[39m[33m Host:Port      [39m[90m│[39m[33m View in Emulator UI             [39m[90m│[39m
+[90m├───────────[39m[90m┼────────────────[39m[90m┼─────────────────────────────────┤[39m
+[90m│[39m Functions [90m│[39m 127.0.0.1:5001 [90m│[39m http://127.0.0.1:4000/functions [90m│[39m
+[90m├───────────[39m[90m┼────────────────[39m[90m┼─────────────────────────────────┤[39m
+[90m│[39m Firestore [90m│[39m 127.0.0.1:8080 [90m│[39m http://127.0.0.1:4000/firestore [90m│[39m
+[90m└───────────[39m[90m┴────────────────[39m[90m┴─────────────────────────────────┘[39m
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://stackoverflow.com/questions/79891300/"}
+⚠  External network resource requested!
+   - URL: "https://stackoverflow.com/questions/79891300/"
+ - Be careful, this may be a production service.
+⚠  External network resource requested!
+   - URL: "https://stackoverflow.com/questions/79891300"
+ - Be careful, this may be a production service.
+⚠  External network resource requested!
+   - URL: "https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"
+ - Be careful, this may be a production service.
+i  functions: Finished "us-central1-fetchTitle" in 754.520656ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://stackoverflow.com/questions/79891300/"}
+i  functions: Finished "us-central1-fetchTitle" in 644.415271ms
+⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+✔  functions: Using node@20 from host.
+Serving at port 8295
+
+✔  functions: Loaded functions definitions from source: fetchTitle, fetchImages, magicPaste, signin, export.
+✔  functions[us-central1-magicPaste]: http function initialized (http://127.0.0.1:5001/nerdster13/us-central1/magicPaste).
+⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+✔  functions: Using node@20 from host.
+Serving at port 8305
+
+ 
+i  emulators: Received SIGTERM for the first time. Starting a clean shutdown.
+i  emulators: Please wait for a clean shutdown or send the SIGTERM signal again to stop right now.
+i  emulators: Shutting down emulators.
+i  ui: Stopping Emulator UI
+i  functions: Stopping Functions Emulator
+i  firestore: Stopping Firestore Emulator
+i  eventarc: Stopping Eventarc Emulator
+i  tasks: Stopping Cloud Tasks Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator

@@ -1,0 +1,58 @@
+i  emulators: Starting emulators: functions, firestore
+i  firestore: Detected non-emulator Firestore export at /home/aviv/src/github/nerdster13/exports/nerdster-26-02-04--18-20
+⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, database, hosting, pubsub, storage, dataconnect
+i  firestore: Importing data from /home/aviv/src/github/nerdster13/exports/nerdster-26-02-04--18-20/nerdster-26-02-04--18-20.overall_export_metadata
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator UI websocket is running on 9150.
+i  functions: Watching "/home/aviv/src/github/nerdster13/functions" for Cloud Functions...
+⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+✔  functions: Using node@20 from host.
+Serving at port 8240
+
+✔  functions: Loaded functions definitions from source: fetchTitle, fetchImages, magicPaste, signin, export.
+✔  functions[us-central1-fetchTitle]: http function initialized (http://127.0.0.1:5001/one-of-us-net/us-central1/fetchTitle).
+✔  functions[us-central1-fetchImages]: http function initialized (http://127.0.0.1:5001/one-of-us-net/us-central1/fetchImages).
+✔  functions[us-central1-magicPaste]: http function initialized (http://127.0.0.1:5001/one-of-us-net/us-central1/magicPaste).
+✔  functions[us-central1-signin]: http function initialized (http://127.0.0.1:5001/one-of-us-net/us-central1/signin).
+✔  functions[us-central1-export]: http function initialized (http://127.0.0.1:5001/one-of-us-net/us-central1/export).
+
+[90m┌─────────────────────────────────────────────────────────────┐[39m
+[90m│[39m ✔  All emulators ready! It is now safe to connect your app. [90m│[39m
+[90m│[39m i  View Emulator UI at http://127.0.0.1:4000/               [90m│[39m
+[90m└─────────────────────────────────────────────────────────────┘[39m
+
+[90m┌───────────[39m[90m┬────────────────[39m[90m┬─────────────────────────────────┐[39m
+[90m│[39m[33m Emulator  [39m[90m│[39m[33m Host:Port      [39m[90m│[39m[33m View in Emulator UI             [39m[90m│[39m
+[90m├───────────[39m[90m┼────────────────[39m[90m┼─────────────────────────────────┤[39m
+[90m│[39m Functions [90m│[39m 127.0.0.1:5001 [90m│[39m http://127.0.0.1:4000/functions [90m│[39m
+[90m├───────────[39m[90m┼────────────────[39m[90m┼─────────────────────────────────┤[39m
+[90m│[39m Firestore [90m│[39m 127.0.0.1:8080 [90m│[39m http://127.0.0.1:4000/firestore [90m│[39m
+[90m└───────────[39m[90m┴────────────────[39m[90m┴─────────────────────────────────┘[39m
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+⚠  External network resource requested!
+   - URL: "https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"
+ - Be careful, this may be a production service.
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 477391"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 719.045917ms
+ 
+i  emulators: Received SIGTERM for the first time. Starting a clean shutdown.
+i  emulators: Please wait for a clean shutdown or send the SIGTERM signal again to stop right now.
+i  emulators: Shutting down emulators.
+i  ui: Stopping Emulator UI
+i  functions: Stopping Functions Emulator
+i  firestore: Stopping Firestore Emulator
+i  eventarc: Stopping Eventarc Emulator
+i  tasks: Stopping Cloud Tasks Emulator
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator

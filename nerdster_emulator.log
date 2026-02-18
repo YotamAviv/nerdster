@@ -1,0 +1,403 @@
+i  emulators: Starting emulators: functions, firestore, hosting, extensions
+i  firestore: Detected non-emulator Firestore export at /home/aviv/src/github/nerdster13/exports/nerdster-26-02-04--18-20
+⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, database, pubsub, storage, dataconnect
+i  firestore: Importing data from /home/aviv/src/github/nerdster13/exports/nerdster-26-02-04--18-20/nerdster-26-02-04--18-20.overall_export_metadata
+i  firestore: Firestore Emulator logging to firestore-debug.log
+✔  firestore: Firestore Emulator UI websocket is running on 9150.
+i  hosting[nerdster]: Serving hosting files from: build/web
+✔  hosting[nerdster]: Local server: http://127.0.0.1:5000
+i  functions: Watching "/home/aviv/src/github/nerdster13/functions" for Cloud Functions...
+⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+✔  functions: Using node@20 from host.
+Serving at port 8076
+
+✔  functions: Loaded functions definitions from source: fetchTitle, fetchImages, magicPaste, signin, export.
+✔  functions[us-central1-fetchTitle]: http function initialized (http://127.0.0.1:5001/nerdster/us-central1/fetchTitle).
+✔  functions[us-central1-fetchImages]: http function initialized (http://127.0.0.1:5001/nerdster/us-central1/fetchImages).
+✔  functions[us-central1-magicPaste]: http function initialized (http://127.0.0.1:5001/nerdster/us-central1/magicPaste).
+✔  functions[us-central1-signin]: http function initialized (http://127.0.0.1:5001/nerdster/us-central1/signin).
+✔  functions[us-central1-export]: http function initialized (http://127.0.0.1:5001/nerdster/us-central1/export).
+
+[90m┌─────────────────────────────────────────────────────────────┐[39m
+[90m│[39m ✔  All emulators ready! It is now safe to connect your app. [90m│[39m
+[90m│[39m i  View Emulator UI at http://127.0.0.1:4000/               [90m│[39m
+[90m└─────────────────────────────────────────────────────────────┘[39m
+
+[90m┌────────────[39m[90m┬────────────────[39m[90m┬──────────────────────────────────┐[39m
+[90m│[39m[33m Emulator   [39m[90m│[39m[33m Host:Port      [39m[90m│[39m[33m View in Emulator UI              [39m[90m│[39m
+[90m├────────────[39m[90m┼────────────────[39m[90m┼──────────────────────────────────┤[39m
+[90m│[39m Functions  [90m│[39m 127.0.0.1:5001 [90m│[39m http://127.0.0.1:4000/functions  [90m│[39m
+[90m├────────────[39m[90m┼────────────────[39m[90m┼──────────────────────────────────┤[39m
+[90m│[39m Firestore  [90m│[39m 127.0.0.1:8080 [90m│[39m http://127.0.0.1:4000/firestore  [90m│[39m
+[90m├────────────[39m[90m┼────────────────[39m[90m┼──────────────────────────────────┤[39m
+[90m│[39m Hosting    [90m│[39m 127.0.0.1:5000 [90m│[39m n/a                              [90m│[39m
+[90m├────────────[39m[90m┼────────────────[39m[90m┼──────────────────────────────────┤[39m
+[90m│[39m Extensions [90m│[39m 127.0.0.1:5001 [90m│[39m http://127.0.0.1:4000/extensions [90m│[39m
+[90m└────────────[39m[90m┴────────────────[39m[90m┴──────────────────────────────────┘[39m
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+[90m┌─────────────────────────[39m[90m┬───────────────[39m[90m┬─────────────────────┐[39m
+[90m│[39m[33m Extension Instance Name [39m[90m│[39m[33m Extension Ref [39m[90m│[39m[33m View in Emulator UI [39m[90m│[39m
+[90m└─────────────────────────[39m[90m┴───────────────[39m[90m┴─────────────────────┘[39m
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+i  functions: Beginning execution of "us-central1-export"
+i  functions: Finished "us-central1-export" in 630.236518ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 2.706886ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+⚠  External network resource requested!
+   - URL: "https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"
+ - Be careful, this may be a production service.
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 477391"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 238.975801ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.865901ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+⚠  External network resource requested!
+   - URL: "https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"
+ - Be careful, this may be a production service.
+>  {"severity":"WARNING","message":"[magicPaste] Fallback HTTP status: 403 (attempting to parse anyway)"}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 7634"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Just a moment...\",\"year\":null,\"author\":null,\"canonicalUrl\":\"https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Just a moment...\""}
+i  functions: Finished "us-central1-magicPaste" in 95.679695ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.225492ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+⚠  External network resource requested!
+   - URL: "https://www.goodreads.com/book/show/131791.The_Deer_Park"
+ - Be careful, this may be a production service.
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 705697"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"book\",\"title\":\"The Deer Park\",\"year\":null,\"author\":\"Norman Mailer\",\"image\":\"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1349124858i/131791.jpg\",\"description\":\"Amid the cactus wilds some two hundred miles from Holly…\",\"canonicalUrl\":\"https://www.goodreads.com/book/show/131791.The_Deer_Park\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Deer Park\""}
+i  functions: Finished "us-central1-magicPaste" in 1077.446423ms
+i  functions: Beginning execution of "us-central1-export"
+i  functions: Finished "us-central1-export" in 14.151017ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 3.452631ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 707000"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"book\",\"title\":\"The Deer Park\",\"year\":null,\"author\":\"Norman Mailer\",\"image\":\"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1349124858i/131791.jpg\",\"description\":\"Amid the cactus wilds some two hundred miles from Holly…\",\"canonicalUrl\":\"https://www.goodreads.com/book/show/131791.The_Deer_Park\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Deer Park\""}
+i  functions: Finished "us-central1-magicPaste" in 2882.687817ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+i  functions: Finished "us-central1-fetchTitle" in 1.931209ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+⚠  External network resource requested!
+   - URL: "https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"
+ - Be careful, this may be a production service.
+>  {"severity":"WARNING","message":"[fetchTitle] HTTP Error: 403"}
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 7655"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Just a moment..."}
+i  functions: Finished "us-central1-fetchTitle" in 193.145276ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+⚠  External network resource requested!
+   - URL: "https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"
+ - Be careful, this may be a production service.
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 477391"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Trump Sought Vast Budget Cuts. Congress Granted Few."}
+i  functions: Finished "us-central1-fetchTitle" in 241.487283ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+i  functions: Finished "us-central1-fetchTitle" in 2.682585ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"WARNING","message":"[fetchTitle] HTTP Error: 403"}
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 8039"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Just a moment..."}
+i  functions: Finished "us-central1-fetchTitle" in 154.543251ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 477397"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Trump Sought Vast Budget Cuts. Congress Granted Few."}
+i  functions: Finished "us-central1-fetchTitle" in 282.210006ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+i  functions: Finished "us-central1-fetchTitle" in 2.017667ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"WARNING","message":"[fetchTitle] HTTP Error: 403"}
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 8039"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Just a moment..."}
+i  functions: Finished "us-central1-fetchTitle" in 95.556845ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 477391"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Trump Sought Vast Budget Cuts. Congress Granted Few."}
+i  functions: Finished "us-central1-fetchTitle" in 236.814377ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+i  functions: Finished "us-central1-fetchTitle" in 2.790188ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"WARNING","message":"[fetchTitle] HTTP Error: 403"}
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 8060"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Just a moment..."}
+i  functions: Finished "us-central1-fetchTitle" in 95.682086ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 477391"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Trump Sought Vast Budget Cuts. Congress Granted Few."}
+i  functions: Finished "us-central1-fetchTitle" in 257.905593ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+i  functions: Finished "us-central1-fetchTitle" in 2.028033ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display"}
+>  {"severity":"WARNING","message":"[fetchTitle] HTTP Error: 403"}
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 8060"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Just a moment..."}
+i  functions: Finished "us-central1-fetchTitle" in 90.428712ms
+i  functions: Beginning execution of "us-central1-fetchTitle"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[fetchTitle] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[fetchTitle] Fetching: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[fetchTitle] HTML length: 477391"}
+>  {"severity":"INFO","message":"[fetchTitle] Extracted Title: Trump Sought Vast Budget Cuts. Congress Granted Few."}
+i  functions: Finished "us-central1-fetchTitle" in 517.345574ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 2.214097ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 706209"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"book\",\"title\":\"The Deer Park\",\"year\":null,\"author\":\"Norman Mailer\",\"image\":\"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1349124858i/131791.jpg\",\"description\":\"Amid the cactus wilds some two hundred miles from Holly…\",\"canonicalUrl\":\"https://www.goodreads.com/book/show/131791.The_Deer_Park\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Deer Park\""}
+i  functions: Finished "us-central1-magicPaste" in 901.948538ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.486688ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 706763"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"book\",\"title\":\"The Deer Park\",\"year\":null,\"author\":\"Norman Mailer\",\"image\":\"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1349124858i/131791.jpg\",\"description\":\"Amid the cactus wilds some two hundred miles from Holly…\",\"canonicalUrl\":\"https://www.goodreads.com/book/show/131791.The_Deer_Park\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Deer Park\""}
+i  functions: Finished "us-central1-magicPaste" in 671.655069ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.923185ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.imdb.com/title/tt0133093/"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+⚠  External network resource requested!
+   - URL: "https://www.imdb.com/title/tt0133093/"
+ - Be careful, this may be a production service.
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 1530804"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.imdb.com/title/tt0133093/"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"movie\",\"title\":\"The Matrix\",\"year\":\"1999\",\"image\":\"https://m.media-amazon.com/images/M/MV5BN2NmN2VhMTQtMDNiOS00NDlhLTliMjgtODE2ZTY0ODQyNDRhXkEyXkFqcGc@._V1_.jpg\",\"description\":\"When a beautiful stranger leads computer hacker Neo to a forbidding underworld, he discovers the shocking truth--the life he knows is the elaborate deception of an evil cyber-intelligence.\",\"canonicalUrl\":\"https://www.imdb.com/title/tt0133093/\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Matrix\""}
+i  functions: Finished "us-central1-magicPaste" in 782.920461ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.099675ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.imdb.com/title/tt0133093/"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 1530680"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.imdb.com/title/tt0133093/"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"movie\",\"title\":\"The Matrix\",\"year\":\"1999\",\"image\":\"https://m.media-amazon.com/images/M/MV5BN2NmN2VhMTQtMDNiOS00NDlhLTliMjgtODE2ZTY0ODQyNDRhXkEyXkFqcGc@._V1_.jpg\",\"description\":\"When a beautiful stranger leads computer hacker Neo to a forbidding underworld, he discovers the shocking truth--the life he knows is the elaborate deception of an evil cyber-intelligence.\",\"canonicalUrl\":\"https://www.imdb.com/title/tt0133093/\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Matrix\""}
+i  functions: Finished "us-central1-magicPaste" in 846.58391ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.703088ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 477391"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 729.985036ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.278223ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 477391"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 210.518521ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.256001ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 477391"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 219.003636ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.509983ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 477391"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 473.576581ms
+i  functions: Beginning execution of "us-central1-export"
+i  functions: Finished "us-central1-export" in 71.542666ms
+i  functions: Beginning execution of "us-central1-export"
+i  functions: Finished "us-central1-export" in 61.123679ms
+⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+✔  functions: Using node@20 from host.
+Serving at port 8992
+
+✔  functions: Loaded functions definitions from source: fetchTitle, fetchImages, magicPaste, signin, export.
+⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+✔  functions: Using node@20 from host.
+Serving at port 8563
+
+✔  functions: Loaded functions definitions from source: fetchImages, magicPaste, signin, export.
+⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory.
+✔  functions: Using node@20 from host.
+Serving at port 8166
+
+✔  functions: Loaded functions definitions from source: fetchImages, magicPaste, signin, export.
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 2.412481ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+⚠  External network resource requested!
+   - URL: "https://www.goodreads.com/book/show/131791.The_Deer_Park"
+ - Be careful, this may be a production service.
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 705972"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"book\",\"title\":\"The Deer Park\",\"year\":null,\"author\":\"Norman Mailer\",\"image\":\"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1349124858i/131791.jpg\",\"description\":\"Amid the cactus wilds some two hundred miles from Holly…\",\"canonicalUrl\":\"https://www.goodreads.com/book/show/131791.The_Deer_Park\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Deer Park\""}
+i  functions: Finished "us-central1-magicPaste" in 1612.997015ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.521916ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 705668"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.goodreads.com/book/show/131791.The_Deer_Park"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"book\",\"title\":\"The Deer Park\",\"year\":null,\"author\":\"Norman Mailer\",\"image\":\"https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1349124858i/131791.jpg\",\"description\":\"Amid the cactus wilds some two hundred miles from Holly…\",\"canonicalUrl\":\"https://www.goodreads.com/book/show/131791.The_Deer_Park\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Deer Park\""}
+i  functions: Finished "us-central1-magicPaste" in 649.996272ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.704363ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.imdb.com/title/tt0133093/"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+⚠  External network resource requested!
+   - URL: "https://www.imdb.com/title/tt0133093/"
+ - Be careful, this may be a production service.
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 1530954"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.imdb.com/title/tt0133093/"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"movie\",\"title\":\"The Matrix\",\"year\":\"1999\",\"image\":\"https://m.media-amazon.com/images/M/MV5BN2NmN2VhMTQtMDNiOS00NDlhLTliMjgtODE2ZTY0ODQyNDRhXkEyXkFqcGc@._V1_.jpg\",\"description\":\"When a beautiful stranger leads computer hacker Neo to a forbidding underworld, he discovers the shocking truth--the life he knows is the elaborate deception of an evil cyber-intelligence.\",\"canonicalUrl\":\"https://www.imdb.com/title/tt0133093/\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Matrix\""}
+i  functions: Finished "us-central1-magicPaste" in 924.316322ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.185756ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.imdb.com/title/tt0133093/"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 1530882"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.imdb.com/title/tt0133093/"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"movie\",\"title\":\"The Matrix\",\"year\":\"1999\",\"image\":\"https://m.media-amazon.com/images/M/MV5BN2NmN2VhMTQtMDNiOS00NDlhLTliMjgtODE2ZTY0ODQyNDRhXkEyXkFqcGc@._V1_.jpg\",\"description\":\"When a beautiful stranger leads computer hacker Neo to a forbidding underworld, he discovers the shocking truth--the life he knows is the elaborate deception of an evil cyber-intelligence.\",\"canonicalUrl\":\"https://www.imdb.com/title/tt0133093/\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"The Matrix\""}
+i  functions: Finished "us-central1-magicPaste" in 604.106879ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.755701ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+⚠  External network resource requested!
+   - URL: "https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"
+ - Be careful, this may be a production service.
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 480890"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 667.203708ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.0824ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 480896"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 537.80166ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.54025ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 480896"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 359.067923ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+i  functions: Finished "us-central1-magicPaste" in 1.615555ms
+i  functions: Beginning execution of "us-central1-magicPaste"
+>  {"verifications":{"app":"MISSING","auth":"MISSING"},"logging.googleapis.com/labels":{"firebase-log-type":"callable-request-verification"},"severity":"DEBUG","message":"Callable request verification passed"}
+>  {"severity":"INFO","message":"[magicPaste] CALL RECEIVED for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] Attempting Robust Fallback (fetch+regex)..."}
+>  {"severity":"INFO","message":"[magicPaste] HTML length: 480890"}
+>  {"severity":"INFO","message":"[parseUrlMetadata] Start for URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html"}
+>  {"severity":"INFO","message":"[magicPaste] parseUrlMetadata returned: {\"contentType\":\"article\",\"title\":\"Trump Sought Vast Budget Cuts. Congress Granted Few.\",\"year\":\"2026\",\"author\":\"Tony Romm\",\"image\":{\"@context\":\"https://schema.org\",\"@type\":\"ImageObject\",\"url\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"height\":899,\"width\":1600,\"contentUrl\":\"https://static01.nyt.com/images/2026/02/11/multimedia/00dc-trump-budget-01-mvqh/00dc-trump-budget-01-mvqh-videoSixteenByNineJumbo1600.jpg\",\"caption\":\"Congress has left intact a large set of federal programs that the White House tried to slash or eliminate this fiscal year.\",\"creditText\":\"Eric Lee for The New York Times\"},\"description\":\"In a series of deals over the past three months, lawmakers rejected some of the president’s most aggressive attempts to whittle down the government.\",\"canonicalUrl\":\"https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html\"}"}
+>  {"severity":"INFO","message":"[magicPaste] Robust Fallback successful. Title: \"Trump Sought Vast Budget Cuts. Congress Granted Few.\""}
+i  functions: Finished "us-central1-magicPaste" in 506.044265ms
+i  functions: Beginning execution of "us-central1-export"
+i  functions: Finished "us-central1-export" in 186.018713ms
+i  functions: Beginning execution of "us-central1-export"
+i  functions: Finished "us-central1-export" in 60.707853ms

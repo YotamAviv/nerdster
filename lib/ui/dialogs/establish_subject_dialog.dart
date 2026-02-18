@@ -9,17 +9,9 @@ import 'package:nerdster/logic/metadata_service.dart';
 import 'package:nerdster/ui/util/ok_cancel.dart';
 import 'package:nerdster/ui/util_ui.dart';
 
-/// Fetching URL title:
-/// CORS rules out fetching the HTML title ourselves.
-/// This class used to have code that does that, and it worked locally with security disabled in Chrome.
-/// flutter run -d chrome --web-browser-flag "--disable-web-security"
-///
-/// We use Firebase backend functions to
-/// - listen to writes to a 'urls' collection,
-/// - get the url from documents tha appear there
-/// - use Node on the server side to fetch the HTML and exctract the title
-/// - write that back to the Firebase doc.
-/// This class uses that mechanism.
+/// Fetching URL Metadata:
+/// Uses Firebase Cloud Functions (magicPaste) to extract title, author, year, 
+/// and image from URLs. The backend handles CORS and parsing Schema.org/OpenGraph metadata.
 
 Future<Jsonish?> establishSubjectDialog(BuildContext context) {
   return showModalBottomSheet<Jsonish?>(

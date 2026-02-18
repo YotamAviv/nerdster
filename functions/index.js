@@ -36,49 +36,6 @@ if (admin.apps.length === 0) {
 // ----------------------------------------------------------------------------
 
 /**
- * Fetches the canonical title from a URL to help establish a subject identity.
- * Fail Fast: Requires a valid URL.
- */
-exports.fetchTitle = onCall(async (request) => {
-  const url = request.data.url;
-  logger.info(`[fetchTitle] CALL RECEIVED for URL: ${url}`); // DEBUG
-
-  if (!url || !url.startsWith('http')) {
-    throw new HttpsError("invalid-argument", "A valid URL starting with http is required.");
-  }
-
-  try {
-    logger.info(`[fetchTitle] Fetching: ${url}`);
-    const response = await fetch(url, {
-      headers: { 
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Referer': 'https://www.google.com/'
-      },
-      timeout: 10000
-    });
-
-    if (!response.ok) {
-      logger.warn(`[fetchTitle] HTTP Error: ${response.status}`);
-    }
-    
-    const html = await response.text();
-    logger.info(`[fetchTitle] HTML length: ${html.length}`);
-
-    const $ = cheerio.load(html);
-    const title = extractTitle($, html);
-    
-    logger.info(`[fetchTitle] Extracted Title: ${title}`);
-    
-    return { title: title || null };
-  } catch (e) {
-    logger.error(`[fetchTitle] Error: ${e.message}`, { stack: e.stack });
-    return { title: null };
-  }
-});
-
-/**
  * Fetches high-quality images for a subject to enhance visual presentation.
  * This is dynamic and NOT part of the subject's identity.
  * Fail Fast: Requires a subject with a contentType.

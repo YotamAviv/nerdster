@@ -1,0 +1,235 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 85.0.0 (95.0.0 available)
+  analyzer 7.7.1 (10.1.0 available)
+  characters 1.4.0 (1.4.1 available)
+  flutter_secure_storage 9.2.4 (10.0.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.0 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.0 available)
+  flutter_secure_storage_windows 3.1.2 (4.1.0 available)
+  google_fonts 6.3.2 (8.0.1 available)
+  js 0.6.7 (0.7.2 available)
+  leak_tracker 10.0.9 (11.0.2 available)
+  leak_tracker_flutter_testing 3.0.9 (3.0.10 available)
+  leak_tracker_testing 3.0.1 (3.0.2 available)
+  matcher 0.12.17 (0.12.18 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.16.0 (1.18.1 available)
+  path_provider_android 2.2.19 (2.2.22 available)
+  path_provider_foundation 2.4.2 (2.6.0 available)
+  process 5.0.3 (5.0.5 available)
+  rx 0.4.0 (0.5.0 available)
+  source_span 1.10.1 (1.10.2 available)
+  test 1.25.15 (1.29.0 available)
+  test_api 0.7.4 (0.7.9 available)
+  test_core 0.6.8 (0.6.15 available)
+  url_launcher_android 6.3.20 (6.3.28 available)
+  url_launcher_ios 6.3.4 (6.4.1 available)
+  url_launcher_macos 3.2.3 (3.2.5 available)
+  url_launcher_web 2.4.1 (2.4.2 available)
+  vector_math 2.1.4 (2.2.0 available)
+  vm_service 15.0.0 (15.0.2 available)
+Got dependencies!
+31 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Launching integration_test/fetch_title_test.dart on Chrome in debug mode...
+Waiting for connection from debug service on Chrome...              8.6s
+This app is linked to the debug service: ws://127.0.0.1:40425/TpfZYHwXOi0=/ws
+Debug service listening on ws://127.0.0.1:40425/TpfZYHwXOi0=/ws
+00:00 +0: (setUpAll)
+00:00 +1: Integration: Fetch Title (Old Logic) Live Check
+Testing fetchTitle (old logic) against emulator with URL: https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html
+fetchTitle error: [firebase_functions/internal] internal
+
+
+Fetch Title Result: null
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Fetch Title returned null. The old logic is broken too!
+
+When the exception was thrown, this was the stack:
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/errors.dart 266:3       throw_
+package:matcher/src/expect/expect.dart 149:31                                     fail
+fetch_title_test.dart 33:7                                                        <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 593:31               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 224:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 951:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 980:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 723:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 503:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 570:12               _asyncReturn
+package:nerdster/logic/metadata_service.dart 100:1                                <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 597:5                <fn>
+dart-sdk/lib/async/zone.dart 1560:47                                              _rootRunBinary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1436:19                                              runBinary
+dart-sdk/lib/async/future_impl.dart 239:22                                        handleError
+dart-sdk/lib/async/future_impl.dart 963:46                                        handleError
+dart-sdk/lib/async/future_impl.dart 984:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 741:5                                         [_completeErrorObject]
+dart-sdk/lib/async/future_impl.dart 745:5                                         [_completeError]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 510:7                completeError
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 581:12               _asyncRethrow
+package:cloud_functions/src/https_callable.dart 33:34                             <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 597:5                <fn>
+dart-sdk/lib/async/zone.dart 1560:47                                              _rootRunBinary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1436:19                                              runBinary
+dart-sdk/lib/async/future_impl.dart 239:22                                        handleError
+dart-sdk/lib/async/future_impl.dart 963:46                                        handleError
+dart-sdk/lib/async/future_impl.dart 984:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 741:5                                         [_completeErrorObject]
+dart-sdk/lib/async/future_impl.dart 745:5                                         [_completeError]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 510:7                completeError
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 581:12               _asyncRethrow
+package:cloud_functions_web/https_callable_web.dart 60:3                          <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 597:5                <fn>
+dart-sdk/lib/async/zone.dart 1560:47                                              _rootRunBinary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1436:19                                              runBinary
+dart-sdk/lib/async/future_impl.dart 239:22                                        handleError
+dart-sdk/lib/async/future_impl.dart 963:46                                        handleError
+dart-sdk/lib/async/future_impl.dart 984:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 741:5                                         [_completeErrorObject]
+dart-sdk/lib/async/future_impl.dart 745:5                                         [_completeError]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 510:7                completeError
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 581:12               _asyncRethrow
+package:cloud_functions_web/interop/functions.dart 78:31                          <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 597:5                <fn>
+dart-sdk/lib/async/zone.dart 1560:47                                              _rootRunBinary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1436:19                                              runBinary
+dart-sdk/lib/async/future_impl.dart 239:22                                        handleError
+dart-sdk/lib/async/future_impl.dart 963:46                                        handleError
+dart-sdk/lib/async/future_impl.dart 984:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 741:5                                         [_completeErrorObject]
+dart-sdk/lib/async/future_impl.dart 835:7                                         <fn>
+dart-sdk/lib/async/zone.dart 1525:13                                              _rootRun
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1422:19                                              run
+dart-sdk/lib/async/zone.dart 1321:7                                               runGuarded
+dart-sdk/lib/async/zone.dart 1362:23                                              callback
+dart-sdk/lib/async/schedule_microtask.dart 40:11                                  _microtaskLoop
+dart-sdk/lib/async/schedule_microtask.dart 49:5                                   _startMicrotaskLoop
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 186:7                <fn>
+
+The test description was:
+  Integration: Fetch Title (Old Logic) Live Check
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +1: Integration: Fetch Title (Old Logic) Live Check [E]
+  Test failed. See exception logs above.
+  The test description was: Integration: Fetch Title (Old Logic) Live Check
+
+00:00 +1 -1: (tearDownAll)
+00:00 +2 -1: Some tests failed.
+Failure Details:
+Failure in method: Integration: Fetch Title (Old Logic) Live Check
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞═════════════════
+The following TestFailure was thrown running a test:
+Fetch Title returned null. The old logic is broken too!
+
+When the exception was thrown, this was the stack:
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/errors.dart 266:3       throw_
+package:matcher/src/expect/expect.dart 149:31                                     fail
+fetch_title_test.dart 33:7                                                        <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 593:31               <fn>
+dart-sdk/lib/async/zone.dart 1538:47                                              _rootRunUnary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1429:19                                              runUnary
+dart-sdk/lib/async/future_impl.dart 224:18                                        handleValue
+dart-sdk/lib/async/future_impl.dart 951:44                                        handleValueCallback
+dart-sdk/lib/async/future_impl.dart 980:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 723:5                                         [_completeWithValue]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 503:7                complete
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 570:12               _asyncReturn
+package:nerdster/logic/metadata_service.dart 100:1                                <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 597:5                <fn>
+dart-sdk/lib/async/zone.dart 1560:47                                              _rootRunBinary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1436:19                                              runBinary
+dart-sdk/lib/async/future_impl.dart 239:22                                        handleError
+dart-sdk/lib/async/future_impl.dart 963:46                                        handleError
+dart-sdk/lib/async/future_impl.dart 984:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 741:5                                         [_completeErrorObject]
+dart-sdk/lib/async/future_impl.dart 745:5                                         [_completeError]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 510:7                completeError
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 581:12               _asyncRethrow
+package:cloud_functions/src/https_callable.dart 33:34                             <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 597:5                <fn>
+dart-sdk/lib/async/zone.dart 1560:47                                              _rootRunBinary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1436:19                                              runBinary
+dart-sdk/lib/async/future_impl.dart 239:22                                        handleError
+dart-sdk/lib/async/future_impl.dart 963:46                                        handleError
+dart-sdk/lib/async/future_impl.dart 984:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 741:5                                         [_completeErrorObject]
+dart-sdk/lib/async/future_impl.dart 745:5                                         [_completeError]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 510:7                completeError
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 581:12               _asyncRethrow
+package:cloud_functions_web/https_callable_web.dart 60:3                          <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 597:5                <fn>
+dart-sdk/lib/async/zone.dart 1560:47                                              _rootRunBinary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1436:19                                              runBinary
+dart-sdk/lib/async/future_impl.dart 239:22                                        handleError
+dart-sdk/lib/async/future_impl.dart 963:46                                        handleError
+dart-sdk/lib/async/future_impl.dart 984:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 741:5                                         [_completeErrorObject]
+dart-sdk/lib/async/future_impl.dart 745:5                                         [_completeError]
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 510:7                completeError
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 581:12               _asyncRethrow
+package:cloud_functions_web/interop/functions.dart 78:31                          <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 622:19               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 647:23               <fn>
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 597:5                <fn>
+dart-sdk/lib/async/zone.dart 1560:47                                              _rootRunBinary
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1436:19                                              runBinary
+dart-sdk/lib/async/future_impl.dart 239:22                                        handleError
+dart-sdk/lib/async/future_impl.dart 963:46                                        handleError
+dart-sdk/lib/async/future_impl.dart 984:13                                        _propagateToListeners
+dart-sdk/lib/async/future_impl.dart 741:5                                         [_completeErrorObject]
+dart-sdk/lib/async/future_impl.dart 835:7                                         <fn>
+dart-sdk/lib/async/zone.dart 1525:13                                              _rootRun
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/async/zone.dart 1422:19                                              run
+dart-sdk/lib/async/zone.dart 1321:7                                               runGuarded
+dart-sdk/lib/async/zone.dart 1362:23                                              callback
+dart-sdk/lib/async/schedule_microtask.dart 40:11                                  _microtaskLoop
+dart-sdk/lib/async/schedule_microtask.dart 49:5                                   _startMicrotaskLoop
+dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/operations.dart 117:77  tear
+dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 186:7                <fn>
+
+The test description was:
+  Integration: Fetch Title (Old Logic) Live Check
+═════════════════════════════════════════════════════════════════
+
+end of failure 1
+
+
+
+Application finished.

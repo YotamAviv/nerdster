@@ -82,29 +82,6 @@ FirebaseFunctions? get _functions => FireFactory.findFunctions(kNerdsterDomain);
 // Simple in-memory cache to prevent redundant fetches on scroll
 final Map<String, MetadataResult> _metadataCache = {};
 
-/// Use Case 1: Establish Subject (Canonicalization)
-/// Fetches ONLY the title from a URL to help the user create a canonical subject.
-Future<String?> fetchTitle(String url) async {
-  if (_functions == null || url.isEmpty) return null;
-  if (!url.startsWith('http')) return null;
-
-  try {
-    debugPrint('[fetchTitle] Calling function for: $url');
-    final retval = await _functions!.httpsCallable('fetchTitle').call({
-      "url": url,
-    });
-    debugPrint('[fetchTitle] Got response - data type: ${retval.data.runtimeType}');
-    debugPrint('[fetchTitle] Response data: ${retval.data}');
-    final title = retval.data["title"];
-    debugPrint('[fetchTitle] Extracted title: $title');
-    return title;
-  } catch (e, stack) {
-    debugPrint('[fetchTitle] ERROR: $e');
-    debugPrint('[fetchTitle] Stack: $stack');
-    return null;
-  }
-}
-
 /// Use Case 2: Magic Paste
 /// Fetches metadata from a URL to auto-populate the Establish Subject form.
 Future<Map<String, dynamic>?> magicPaste(String url) async {
@@ -122,16 +99,7 @@ Future<Map<String, dynamic>?> magicPaste(String url) async {
 
       if (retval.data == null) return null;
       
-      // Deep copy to handle nested objects properly
-      final result = _deepCopyMap(retval.data);
-      
-      // Extract image URL if image is an object
-      if (result['image'] is Map) {
-        final imageObj = result['image'] as Map;
-        result['image'] = imageObj['url'] ?? imageObj['contentUrl'];
-      }
-      
-      return result;
+      return retval.data as Map<String, dynamic>;
     } catch (e, stack) {
       debugPrint('magicPaste error: $e');
       debugPrint('magicPaste stack: $stack');
@@ -148,24 +116,6 @@ Future<Map<String, dynamic>?> magicPaste(String url) async {
       'error': e.toString(),
     };
   }
-}
-
-Map<String, dynamic> _deepCopyMap(dynamic data) {
-  if (data is Map) {
-    return Map<String, dynamic>.fromEntries(
-      data.entries.map((e) => MapEntry(e.key.toString(), _deepCopyValue(e.value)))
-    );
-  }
-  return {};
-}
-
-dynamic _deepCopyValue(dynamic value) {
-  if (value is Map) {
-    return _deepCopyMap(value);
-  } else if (value is List) {
-    return value.map((item) => _deepCopyValue(item)).toList();
-  }
-  return value;
 }
 
 /// Fetches high-quality images for a subject to enhance the visual presentation.
