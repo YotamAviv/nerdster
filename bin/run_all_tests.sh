@@ -4,7 +4,10 @@
 FAILED_TESTS=()
 PASSED_TESTS=()
 
-# Checks
+# Prerequisites:
+#   Firebase emulators: firebase --project=nerdster emulators:start
+#                       firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start
+#   ChromeDriver:       chromedriver --port=4444
 echo "Ensure Firebase Emulators (8080/5001) & ChromeDriver (4444) are running."
 echo ""
 
@@ -35,6 +38,11 @@ fi
 echo ""
 
 # 3. Integration Tests
+# Note: integration tests run against the local emulator by default (USE_EMULATOR=true).
+# To run magic_paste_test.dart against production instead:
+#   flutter drive --driver=test_driver/integration_test.dart \
+#     --target=integration_test/magic_paste_test.dart -d chrome \
+#     --dart-define=USE_EMULATOR=false
 echo "=== Running Integration Tests ==="
 shopt -s nullglob
 for test_file in integration_test/*.dart; do

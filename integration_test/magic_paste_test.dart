@@ -24,10 +24,14 @@ Future<List<Map<String, dynamic>>> loadCases() async {
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  const useEmulator = bool.fromEnvironment('USE_EMULATOR', defaultValue: true);
+
   setUpAll(() async {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
-    FirebaseFirestore.instance.useFirestoreEmulator('127.0.0.1', 8080);
+    if (useEmulator) {
+      FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
+      FirebaseFirestore.instance.useFirestoreEmulator('127.0.0.1', 8080);
+    }
     FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
   });
 
@@ -94,7 +98,8 @@ void main() {
     for (final tc in optionalCases) {
       final url = tc['url'] as String;
       final note = tc['note'] as String? ?? '';
-      print('\n--- Optional case (expectSuccess=false): $url${note.isNotEmpty ? ' ($note)' : ''} ---');
+      print(
+          '\n--- Optional case (expectSuccess=false): $url${note.isNotEmpty ? ' ($note)' : ''} ---');
 
       final result = await metadata_service.magicPaste(url);
       if (result == null) {

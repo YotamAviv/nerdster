@@ -20,7 +20,11 @@ read AI.md
 I've made updates myself.
 run git diff on the changes and read those changes. 
 Let me know if you notice anything that might be problematic.
+
 Base your opinion on the diffs, not on your recent memory.
+Write the git diff to a temp file, read it, then suggest a commit message.
+
+
 List the modified files from the diff output, then write the commit message based ONLY on those files.
 Copy/paste from our conversation never works for me for this, and so
 append the commit message to the end of this file

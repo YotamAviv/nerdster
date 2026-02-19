@@ -28,5 +28,12 @@
     "expectedTitle": "Ionic",
     "expectSuccess": false,
     "note": "Stack Overflow - known to be unreliable in test environment"
+  },
+  {
+    "url": "https://www.youtube.com/shorts/NsMKvVdEPkw",
+    "expectedContentType": "video",
+    "expectedTitle": "Kitten",
+    "expectSuccess": true,
+    "note": "YouTube Shorts - works in emulator but not in production"
   }
 ]
