@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nerdster/app.dart';
 import 'package:nerdster/models/content_types.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/logic/metadata_service.dart';
@@ -271,98 +272,102 @@ class _SubjectFieldsState extends State<SubjectFields> {
       );
     }
 
-    Widget helpLink = GestureDetector(
-      onTap: showHelpDialog,
-      child: const Text(
-        'What is a Subject?',
-        style: TextStyle(
-          color: Colors.blue,
-          decoration: TextDecoration.underline,
-          decorationColor: Colors.blue,
-          fontSize: 12,
-        ),
-      ),
-    );
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Header: [dropdown] [📋 paste]   [Establish Subject]
-          //                                  [What is a Subject?]
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Left: type dropdown
-                DropdownMenu<ContentType>(
-                  initialSelection: contentType,
-                  requestFocusOnTap: true,
-                  label: const Text('Type'),
-                  onSelected: (ContentType? newType) {
-                    if (newType == null || newType == contentType) return;
-                    setState(() {
-                      contentType = newType;
-                      _initControllers();
-                    });
-                  },
-                  dropdownMenuEntries: types
-                      .map((type) => DropdownMenuEntry<ContentType>(
-                            value: type,
-                            label: type.label,
-                            leadingIcon: Icon(type.iconDatas.$1),
-                          ))
-                      .toList(),
-                ),
-                // Magic paste button + loading spinner
-                ValueListenableBuilder<bool>(
-                  valueListenable: isMagicPasting,
-                  builder: (context, isLoading, child) {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.content_paste_go,
-                              color: isLoading
-                                  ? Colors.blueAccent.withOpacity(0.4)
-                                  : Colors.blueAccent),
-                          iconSize: 32,
-                          tooltip: 'Magic Paste (Detect from Clipboard)',
-                          onPressed: isLoading ? null : _handleMagicPaste,
-                        ),
-                        if (isLoading)
-                          const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-                const Spacer(),
-                // Right: title top, help link bottom
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Establish Subject',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    ),
-                    helpLink,
-                  ],
-                ),
-              ],
+    return ValueListenableBuilder<bool>(
+      valueListenable: isSmall,
+      builder: (context, small, _) {
+        final Widget helpLink = GestureDetector(
+          onTap: showHelpDialog,
+          child: Text(
+            small ? 'What?' : 'What is a Subject?',
+            style: const TextStyle(
+              color: Colors.blue,
+              decoration: TextDecoration.underline,
+              decorationColor: Colors.blue,
+              fontSize: 12,
             ),
           ),
-          const SizedBox(height: 8),
-          ...fields.expand((f) => [f, const SizedBox(height: 8)]),
-          OkCancel(_okHandler, 'Establish Subject', okEnabled: okEnabled),
-        ],
-      ),
+        );
+        return Padding(
+          padding: EdgeInsets.fromLTRB(small ? 4 : 12, 16, small ? 4 : 12, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Header: [dropdown] [📋 paste]   [Establish Subject]
+              //                                  [What is a Subject?]
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Left: type dropdown
+                    DropdownMenu<ContentType>(
+                      initialSelection: contentType,
+                      requestFocusOnTap: true,
+                      label: const Text('Type'),
+                      onSelected: (ContentType? newType) {
+                        if (newType == null || newType == contentType) return;
+                        setState(() {
+                          contentType = newType;
+                          _initControllers();
+                        });
+                      },
+                      dropdownMenuEntries: types
+                          .map((type) => DropdownMenuEntry<ContentType>(
+                                value: type,
+                                label: type.label,
+                                leadingIcon: Icon(type.iconDatas.$1),
+                              ))
+                          .toList(),
+                    ),
+                    // Magic paste button + loading spinner
+                    ValueListenableBuilder<bool>(
+                      valueListenable: isMagicPasting,
+                      builder: (context, isLoading, child) {
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.content_paste_go,
+                                  color: isLoading
+                                      ? Colors.blueAccent.withOpacity(0.4)
+                                      : Colors.blueAccent),
+                              iconSize: 32,
+                              tooltip: 'Magic Paste (Detect from Clipboard)',
+                              onPressed: isLoading ? null : _handleMagicPaste,
+                            ),
+                            if (isLoading)
+                              const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                    const Spacer(),
+                    // Right: title top, help link bottom
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          small ? 'Subject' : 'Establish Subject',
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
+                        helpLink,
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...fields.expand((f) => [f, const SizedBox(height: 8)]),
+              OkCancel(_okHandler, 'Establish Subject', okEnabled: okEnabled),
+            ],
+          ),
+        );
+      },
     );
   }
 }
