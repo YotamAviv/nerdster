@@ -255,12 +255,15 @@ class _SubjectFieldsState extends State<SubjectFields> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Establish Subject'),
-          content: const Text(
-            'Define the Subject you want to rate, comment on, etc.\n\n'
-            'The Nerdster tries to use the logical subject (the work itself), not a specific product listing. '
-            'For example, a Book is defined by its Title and Author, not by its Amazon or Goodreads link.\n\n'
-            'Some content types (like newspaper articles or online videos) do require a URL, but the core idea is to track the underlying work, not a specific edition or listing. '
-            'In case of the same article or video being available at different URLs or being referenced with differing details, the Nerdster allows folks to EQUATE or RELATE subjects so that ratings, comments and other interactions are aggregated together.',
+          content: Scrollbar(
+            child: SingleChildScrollView(
+              child: const Text(
+                'Define the Subject you want to rate, comment on, etc.\n\n'
+                'The Nerdster uses the logical subject, not a specific product listing. '
+                'For example, a Book is defined by title and author, not by an Amazon or Goodreads link.\n\n'
+                'Correcting subjects is always possible using EQUATE; click on the link icons to do that.',
+              ),
+            ),
           ),
           actions: [
             TextButton(
@@ -332,7 +335,8 @@ class _SubjectFieldsState extends State<SubjectFields> {
                                       ? Colors.blueAccent.withOpacity(0.4)
                                       : Colors.blueAccent),
                               iconSize: 32,
-                              tooltip: 'Magic Paste (Detect from Clipboard)',
+                              tooltip: '''Paste link to fill fields.
+Copy a web URL or a Share link first.''',
                               onPressed: isLoading ? null : _handleMagicPaste,
                             ),
                             if (isLoading)
