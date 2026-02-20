@@ -257,11 +257,28 @@ class _SubjectFieldsState extends State<SubjectFields> {
           title: const Text('Establish Subject'),
           content: Scrollbar(
             child: SingleChildScrollView(
-              child: const Text(
-                'Define the Subject you want to rate, comment on, etc.\n\n'
-                'The Nerdster uses the logical subject, not a specific product listing. '
-                'For example, a Book is defined by title and author, not by an Amazon or Goodreads link.\n\n'
-                'Correcting subjects is always possible using EQUATE; click on the link icons to do that.',
+              child: Text.rich(
+                TextSpan(
+                  style: const TextStyle(fontSize: 14),
+                  children: [
+                    const TextSpan(
+                        text: 'Define the Subject you want to rate, comment on, etc.\n\n'),
+                    const TextSpan(
+                        text:
+                            'The Nerdster uses the logical subject, not a specific product listing. '),
+                    const TextSpan(
+                        text:
+                            'For example, a book is defined by title and author, not by an Amazon or Goodreads link.\n\n'),
+                    const TextSpan(
+                        text:
+                            'Correcting subjects is always possible using EQUATE; click on the link icons ('),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Icon(Icons.link, size: 16, color: Colors.blue),
+                    ),
+                    const TextSpan(text: ') to do that.'),
+                  ],
+                ),
               ),
             ),
           ),
