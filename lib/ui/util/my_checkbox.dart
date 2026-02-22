@@ -6,7 +6,9 @@ class MyCheckbox extends StatefulWidget {
   final ValueNotifier<bool> valueNotifier;
   final String? title;
   final bool opposite;
-  const MyCheckbox(this.valueNotifier, this.title, {super.key, this.opposite = false});
+  final bool alwaysShowTitle;
+  const MyCheckbox(this.valueNotifier, this.title,
+      {super.key, this.opposite = false, this.alwaysShowTitle = false});
 
   @override
   State<StatefulWidget> createState() {
@@ -42,7 +44,7 @@ class _MyCheckboxState extends State<MyCheckbox> {
     );
 
     if (widget.title != null) {
-      if (isSmall.value) {
+      if (isSmall.value && !widget.alwaysShowTitle) {
         return Tooltip(message: widget.title!, child: checkbox);
       } else {
         return Row(children: [checkbox, Text(widget.title!)]);

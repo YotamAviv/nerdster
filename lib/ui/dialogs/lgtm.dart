@@ -37,7 +37,8 @@ class Lgtm {
                     child: ListView(
                       shrinkWrap: true,
                       children: [
-                        Linky('''FYI: To be signed using the nerdster.org delegate key which you signed using your identity key and published at: ${uri.toString()}'''),
+                        Linky(
+                            '''FYI: To be signed using the nerdster.org delegate key (which you signed using your identity key) and published at: ${uri.toString()}\n'''),
                         SizedBox(
                             height: 300,
                             child: JsonDisplay(json,
@@ -53,8 +54,7 @@ class Lgtm {
                             Expanded(
                                 child: Align(
                                     alignment: Alignment.centerRight,
-                                    child: MyCheckbox(
-                                        Setting.get<bool>(SettingType.lgtm).notifier,
+                                    child: MyCheckbox(Setting.get<bool>(SettingType.lgtm).notifier,
                                         '''Don't show again'''))),
                           ],
                         ),

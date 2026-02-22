@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/about.dart';
+import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/nerdster_link.dart';
 import 'package:nerdster/ui/util/alert.dart'; // For alert dialog
@@ -80,45 +81,6 @@ $link''',
             children: [
               SubmenuButton(
                 menuChildren: [
-                  // Verify
-                  MenuItemButton(
-                    leadingIcon: const Icon(Icons.verified_user),
-                    child: const Text('Verify'),
-                    onPressed: () async {
-                      await showDialog(
-                        context: context,
-                        builder: (context) => Dialog(
-                          child: Navigator(
-                            onGenerateRoute: (settings) {
-                              return MaterialPageRoute(builder: (_) => Verify());
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  // Just Sign
-                  MenuItemButton(
-                    leadingIcon: const Icon(Icons.border_color),
-                    child: const Text('Sign'),
-                    onPressed: () => JustSign.sign(context),
-                  ),
-                  // Show Crypto
-                  ValueListenableBuilder<bool>(
-                    valueListenable: Setting.get<bool>(SettingType.showCrypto).notifier,
-                    builder: (context, showCrypto, _) {
-                      return MenuItemButton(
-                        leadingIcon: Icon(showCrypto ? Icons.key : Icons.key_off,
-                            color: showCrypto ? Theme.of(context).primaryColor : null),
-                        closeOnActivate: false,
-                        onPressed: () =>
-                            Setting.get<bool>(SettingType.showCrypto).value = !showCrypto,
-                        child: Text('Show Crypto details',
-                            style: TextStyle(
-                                fontWeight: showCrypto ? FontWeight.bold : FontWeight.normal)),
-                      );
-                    },
-                  ),
                   // Identity Network Confidence
                   ValueListenableBuilder<String>(
                     valueListenable: Setting.get<String>(SettingType.identityPathsReq).notifier,
@@ -160,11 +122,47 @@ $link''',
                       );
                     },
                   ),
+
+                  // Show Crypto
+                  ValueListenableBuilder<bool>(
+                    valueListenable: Setting.get<bool>(SettingType.showCrypto).notifier,
+                    builder: (context, showCrypto, _) {
+                      return MyCheckbox(
+                          Setting.get<bool>(SettingType.showCrypto).notifier, 'Show Crypto',
+                          alwaysShowTitle: true);
+                    },
+                  ),
+
                   // FYI
                   ValueListenableBuilder<bool>(
                     valueListenable: Setting.get<bool>(SettingType.lgtm).notifier,
                     builder: (context, val, _) {
-                      return MyCheckbox(Setting.get<bool>(SettingType.lgtm).notifier, 'FYI');
+                      return MyCheckbox(Setting.get<bool>(SettingType.lgtm).notifier, 'Show FYI',
+                          alwaysShowTitle: true);
+                    },
+                  ),
+
+                  // Just Sign
+                  MenuItemButton(
+                    leadingIcon: const Icon(Icons.border_color),
+                    child: Text('Just Sign'),
+                    onPressed: () => JustSign.sign(context),
+                  ),
+                  // Verify
+                  MenuItemButton(
+                    leadingIcon: const Icon(Icons.verified_user),
+                    child: Text('Just Verify'),
+                    onPressed: () async {
+                      await showDialog(
+                        context: context,
+                        builder: (context) => Dialog(
+                          child: Navigator(
+                            onGenerateRoute: (settings) {
+                              return MaterialPageRoute(builder: (_) => Verify());
+                            },
+                          ),
+                        ),
+                      );
                     },
                   ),
                 ],
