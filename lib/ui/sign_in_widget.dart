@@ -11,6 +11,8 @@ import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
+import 'package:nerdster/settings/prefs.dart';
+import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/logic/interpreter.dart';
@@ -60,22 +62,22 @@ class _SignInWidgetState extends State<SignInWidget> {
 
       final labeler = globalLabeler.value;
       final resolver = labeler.delegateResolver;
-      
+
       if (resolver != null) {
         final dKey = DelegateKey(signInState.delegate!);
         final iKey = IdentityKey(signInState.identity);
-        
+
         final IdentityKey? resolvedIdentity = resolver.getIdentityForDelegate(dKey);
         final String? revokeConstraint = resolver.getConstraintForDelegate(dKey);
-        
+
         final resolvedMyIdentity = labeler.graph.resolveIdentity(iKey);
-        
+
         // 1. Check Association: Is this delegate mapped to our current canonical identity?
         bool isAssociated = resolvedIdentity != null && resolvedIdentity == resolvedMyIdentity;
-        
+
         // 2. Check Revocation: Is there a revocation constraint?
         bool isRevoked = revokeConstraint != null;
-        
+
         if (!isAssociated) {
           delegateStatus = KeyStatus.revoked;
           statusMsg = "not associated with identity";
@@ -104,26 +106,29 @@ class _SignInWidgetState extends State<SignInWidget> {
       tooltip = "Not signed in";
     }
 
-    return Tooltip(
-      message: tooltip,
-      child: IconButton(
-        icon: iconWidget,
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            useSafeArea: true,
+    return IconButton(
+      tooltip: tooltip,
+      icon: iconWidget,
+      onPressed: () {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Dialog(
             backgroundColor: Colors.transparent,
-            builder: (context) => const SignInDialog(),
-          );
-        },
-      ),
+            child: SignInDialog(),
+          ),
+        );
+      },
     );
   }
 }
 
 class SignInDialog extends StatefulWidget {
-  const SignInDialog({super.key});
+  /// When used as a standalone screen, provide [onDismiss] to signal the
+  /// parent that the user is done. When used as a dialog, leave it null
+  /// and the Dismiss button will call Navigator.pop.
+  final VoidCallback? onDismiss;
+  const SignInDialog({this.onDismiss, super.key});
 
   @override
   State<SignInDialog> createState() => _SignInDialogState();
@@ -135,9 +140,16 @@ class _SignInDialogState extends State<SignInDialog> {
   // We pre-create the session so we can generate a valid Link widget immediately.
   late Future<SignInSession> _sessionFuture;
 
+  // Track previous key tokens so we can fire animations on any key change
+  // (including paste sign-in which may replace an already-present key).
+  String? _prevIdentityToken;
+  String? _prevDelegateToken;
+
   @override
   void initState() {
     super.initState();
+    _prevIdentityToken = signInState.isSignedIn ? signInState.identity : null;
+    _prevDelegateToken = signInState.delegate;
     signInState.addListener(_update);
     _sessionFuture = SignInSession.create();
   }
@@ -157,6 +169,25 @@ class _SignInDialogState extends State<SignInDialog> {
   Widget build(BuildContext context) {
     final bool hasIdentity = signInState.isSignedIn;
     final bool hasDelegate = signInState.delegate != null;
+    final String? currentIdentity = hasIdentity ? signInState.identity : null;
+    final String? currentDelegate = signInState.delegate;
+
+    // Animate when the key token is new or changed (covers paste re-sign-in).
+    final bool identityArrived = currentIdentity != null && currentIdentity != _prevIdentityToken;
+    final bool delegateArrived = currentDelegate != null && currentDelegate != _prevDelegateToken;
+    if (identityArrived || delegateArrived) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _prevIdentityToken = currentIdentity;
+            _prevDelegateToken = currentDelegate;
+          });
+        }
+      });
+    } else {
+      _prevIdentityToken = currentIdentity;
+      _prevDelegateToken = currentDelegate;
+    }
 
     final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS;
     final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
@@ -166,10 +197,11 @@ class _SignInDialogState extends State<SignInDialog> {
           future: _sessionFuture,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return _buildSquareButton(
-                context,
+              return _buildListButton(
                 icon: Icons.link,
-                label: 'Universal Links (iOS) & App Links (Android)',
+                label: 'App Link',
+                subtitle:
+                    'Universal Links (iOS) & App Links (Android)\nIdentity app must be available on same device.',
                 onPressed: () {},
                 recommended: recommended,
               );
@@ -183,13 +215,16 @@ class _SignInDialogState extends State<SignInDialog> {
               uri: Uri.parse(link),
               target: LinkTarget.blank,
               builder: (context, followLink) {
-                return _buildSquareButton(
-                  context,
+                return _buildListButton(
                   icon: Icons.link,
-                  label: 'Universal Links (iOS) & App Links (Android)',
+                  label: 'App Link',
+                  subtitle:
+                      'Universal Links (iOS) & App Links (Android)\nIdentity app must be available on same device.',
                   onPressed: () {
                     _magicLinkSignIn(context,
-                        useUniversalLink: true, precreatedSessionFuture: _sessionFuture, autoLaunch: false);
+                        useUniversalLink: true,
+                        precreatedSessionFuture: _sessionFuture,
+                        autoLaunch: false);
                     followLink?.call();
                   },
                   recommended: recommended,
@@ -199,29 +234,23 @@ class _SignInDialogState extends State<SignInDialog> {
           });
     }
 
-    Widget buildCustomBtn(bool recommended) => _buildSquareButton(
-          context,
+    Widget buildCustomBtn(bool recommended) => _buildListButton(
           icon: Icons.auto_fix_high,
-          label: 'Custom URL Schemes (The "Magic" Link)\nkeymeid://signin',
+          label: 'URL scheme',
+          subtitle: 'keymeid://...\nIdentity app must be available on same device',
           onPressed: () => _magicLinkSignIn(context),
           recommended: recommended,
         );
 
-    Widget buildQrBtn(bool recommended) => _buildSquareButton(
-          context,
+    Widget buildQrBtn(bool recommended) => _buildListButton(
           icon: Icons.qr_code,
-          label: 'QR Sign-in',
+          label: 'QR Code',
+          subtitle: 'Scan sign-in parameters with your phone\'s identity app',
           onPressed: () => qrSignIn(context),
           recommended: recommended,
         );
 
-    Widget buildPasteBtn() => _buildSquareButton(
-          context,
-          icon: Icons.content_paste,
-          label: 'Paste keys',
-          onPressed: () => pasteSignIn(context),
-          recommended: false,
-        );
+    final bool isDev = Setting.get<bool>(SettingType.dev).value;
 
     List<Widget> buttons;
     if (isIOS) {
@@ -229,14 +258,12 @@ class _SignInDialogState extends State<SignInDialog> {
         buildUniversalBtn(true),
         buildCustomBtn(false),
         buildQrBtn(false),
-        buildPasteBtn(),
       ];
     } else if (isAndroid) {
       buttons = [
         buildCustomBtn(true),
         buildUniversalBtn(false),
         buildQrBtn(false),
-        buildPasteBtn(),
       ];
     } else {
       // Desktop/Web
@@ -244,12 +271,17 @@ class _SignInDialogState extends State<SignInDialog> {
         buildQrBtn(true),
         buildCustomBtn(false),
         buildUniversalBtn(false),
-        buildPasteBtn(),
       ];
     }
-
-    final spacer = const SizedBox(width: 8);
-    final vSpacer = const SizedBox(height: 8);
+    if (isDev) {
+      buttons.add(_buildListButton(
+        icon: Icons.content_paste,
+        label: 'Paste Keys',
+        subtitle: 'Paste JSON keys directly',
+        onPressed: () => pasteSignIn(context),
+        recommended: false,
+      ));
+    }
 
     return Container(
       decoration: const BoxDecoration(
@@ -265,43 +297,55 @@ class _SignInDialogState extends State<SignInDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildStatusTable(hasIdentity, hasDelegate),
+              _buildStatusTable(hasIdentity, hasDelegate,
+                  identityArrived: identityArrived, delegateArrived: delegateArrived),
               const SizedBox(height: 12),
 
-              // Actions - Grid Layout
-              Row(
-                children: [
-                  Expanded(child: buttons[0]),
-                  spacer,
-                  Expanded(child: buttons[1]),
-                ],
+              // Sign-in method heading
+              const Align(
+                alignment: Alignment.centerLeft,
+                child:
+                    Text('Sign in using:', style: TextStyle(fontSize: 13, color: Colors.black54)),
               ),
-              vSpacer,
-              Row(
-                children: [
-                  Expanded(child: buttons[2]),
-                  spacer,
-                  Expanded(child: buttons[3]),
-                ],
-              ),
+
+              // Actions - Flat List
+              ...buttons,
               const SizedBox(height: 16),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (hasDelegate)
-                    TextButton.icon(
-                      icon: const Icon(Icons.logout),
-                      label: const Text('Sign Out'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.red,
-                      ),
-                      onPressed: () async {
-                        await KeyStore.wipeKeys();
-                        signInState.signOut();
-                        if (context.mounted) Navigator.pop(context);
-                      },
-                    ),
-                  MyCheckbox(_storeKeys, 'Store keys')
+                  // Dismiss: disabled when not signed in.
+                  // In standalone mode (screen), calls onDismiss; in dialog mode, pops.
+                  TextButton(
+                    onPressed: hasIdentity
+                        ? () {
+                            if (widget.onDismiss != null) {
+                              widget.onDismiss!();
+                            } else {
+                              Navigator.pop(context);
+                            }
+                          }
+                        : null,
+                    child: const Text('Dismiss'),
+                  ),
+                  Row(
+                    children: [
+                      if (hasDelegate)
+                        TextButton.icon(
+                          icon: const Icon(Icons.logout),
+                          label: const Text('Sign Out'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red,
+                          ),
+                          onPressed: () async {
+                            await KeyStore.wipeKeys();
+                            // Drop delegate only — keep identity so user can see it
+                            signInState.signOut(clearIdentity: false);
+                          },
+                        ),
+                      MyCheckbox(_storeKeys, 'Store keys'),
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -312,107 +356,102 @@ class _SignInDialogState extends State<SignInDialog> {
   }
 
   void _onKeyAnimationComplete() {
-    if (mounted && signInState.isSignedIn) {
-      Future.delayed(const Duration(seconds: 5), () {
-        if (mounted) Navigator.of(context).maybePop();
-      });
-    }
+    // Dialog stays open — user must explicitly dismiss.
   }
 
-  Widget _buildStatusTable(bool hasIdentity, bool hasDelegate) {
+  Widget _buildStatusTable(bool hasIdentity, bool hasDelegate,
+      {required bool identityArrived, required bool delegateArrived}) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Expanded(
-          child: _buildStatusColumn(
-            "Identity",
-            hasIdentity,
-            Colors.green,
-            Icons.vpn_key_outlined, // Identity key is never owned by Nerdster
-            hasIdentity ? signInState.identityJson : null,
-          ),
+        _buildStatusColumn(
+          "Identity",
+          hasIdentity,
+          keyArrived: identityArrived,
+          color: Colors.green,
+          icon: hasIdentity ? Icons.vpn_key : Icons.vpn_key_outlined,
+          json: hasIdentity ? signInState.identityJson : null,
         ),
-        Expanded(
-          child: _buildStatusColumn(
-            "Delegate",
-            hasDelegate,
-            Colors.blue,
-            hasDelegate ? Icons.vpn_key : Icons.vpn_key_outlined,
-            signInState.delegatePublicKeyJson,
-          ),
+        _buildStatusColumn(
+          "Delegate",
+          hasDelegate,
+          keyArrived: delegateArrived,
+          color: Colors.blue,
+          icon: hasDelegate ? Icons.vpn_key : Icons.vpn_key_outlined,
+          json: signInState.delegatePublicKeyJson,
         ),
       ],
     );
   }
 
-  Widget _buildStatusColumn(String label, bool hasKey, Color color, IconData icon, Json? json) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildStatusColumn(String label, bool hasKey,
+      {required bool keyArrived,
+      required Color color,
+      required IconData icon,
+      required Json? json}) {
+    return InkWell(
+      onTap: hasKey ? () => _showKeyDetail(label, json) : null,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 2),
-            Icon(
-              hasKey ? Icons.check : Icons.not_interested,
-              color: hasKey ? Colors.green : Colors.grey,
-              size: 20,
+            ThrowingKeyIcon(
+              visible: hasKey,
+              animate: keyArrived,
+              icon: icon,
+              color: color,
+              iconSize: 28,
+              onAnimationComplete: _onKeyAnimationComplete,
             ),
-          ],
-        ),
-        IconButton(
-          constraints: const BoxConstraints(),
-          padding: EdgeInsets.zero,
-          icon: ThrowingKeyIcon(
-            visible: hasKey,
-            icon: icon,
-            color: color,
-            onAnimationComplete: _onKeyAnimationComplete,
-          ),
-          onPressed: hasKey ? () => _showKeyDetail(label, json) : null,
-          tooltip: hasKey ? "View $label Key" : "$label Key Missing",
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSquareButton(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required VoidCallback onPressed,
-      required bool recommended}) {
-    return AspectRatio(
-      aspectRatio: 1.0,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(4),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: recommended ? const BorderSide(color: Colors.blue, width: 2.0) : BorderSide.none,
-          ),
-        ),
-        onPressed: onPressed,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 32),
-            const SizedBox(height: 4),
-            Expanded(
-              child: Center(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 10),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                Text(
+                  hasKey ? 'present' : 'not present',
+                  style: TextStyle(fontSize: 11, color: hasKey ? color : Colors.grey),
                 ),
-              ),
+              ],
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildListButton({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required VoidCallback onPressed,
+    required bool recommended,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Row(
+        children: [
+          Text(label),
+          if (recommended) ...[const SizedBox(width: 6), _recommendedChip()],
+        ],
+      ),
+      subtitle: Text(subtitle, style: const TextStyle(fontSize: 11)),
+      onTap: onPressed,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    );
+  }
+
+  Widget _recommendedChip() => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Text('Recommended', style: TextStyle(color: Colors.white, fontSize: 10)),
+      );
 
   void _showKeyDetail(String title, Json? json) {
     showDialog(
@@ -425,7 +464,8 @@ class _SignInDialogState extends State<SignInDialog> {
                 child: SizedBox(
               width: min(width * 0.8, 300.0),
               child: JsonQrDisplay(json,
-                  interpret: ValueNotifier(true), interpreter: NerdsterInterpreter(globalLabeler.value)),
+                  interpret: ValueNotifier(true),
+                  interpreter: NerdsterInterpreter(globalLabeler.value)),
             )),
             actions: [
               TextButton(onPressed: () => Navigator.pop(context), child: const Text("Close"))
@@ -452,15 +492,10 @@ class _SignInDialogState extends State<SignInDialog> {
             storeKeys: _storeKeys,
             useUniversalLink: useUniversalLink,
             autoLaunch: autoLaunch,
-            onCancel: () {
-              // Logic handled in widget
-            },
+            onCancel: () {},
             onSuccess: () {
               Navigator.of(dialogContext).pop();
               completer.complete();
-              // We do NOT pop the main context here, because we want the main dialog
-              // to show the "throw" animation when it detects the keys are present.
-              // The main dialog will then close itself after the animation.
             },
           );
         });
@@ -559,15 +594,19 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
 
 class ThrowingKeyIcon extends StatefulWidget {
   final bool visible;
+  final bool animate;
   final IconData icon;
   final Color color;
+  final double iconSize;
   final VoidCallback? onAnimationComplete;
 
   const ThrowingKeyIcon({
     super.key,
     required this.visible,
+    this.animate = false,
     required this.icon,
     required this.color,
+    this.iconSize = 48,
     this.onAnimationComplete,
   });
 
@@ -613,7 +652,11 @@ class _ThrowingKeyIconState extends State<ThrowingKeyIcon> with SingleTickerProv
   @override
   void didUpdateWidget(ThrowingKeyIcon oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!oldWidget.visible && widget.visible) {
+    // Fire animation when animate flips to true (key just arrived)
+    final bool shouldAnimate = widget.animate && !oldWidget.animate;
+    // Also fire if visible just became true (legacy path, for safety)
+    final bool justBecameVisible = !oldWidget.visible && widget.visible;
+    if (shouldAnimate || justBecameVisible) {
       debugPrint("ThrowingKeyIcon: Starting animation!");
       _ctrl.forward(from: 0);
     }
@@ -636,7 +679,7 @@ class _ThrowingKeyIconState extends State<ThrowingKeyIcon> with SingleTickerProv
           child: child,
         ),
       ),
-      child: Icon(widget.icon, color: widget.color, size: 48),
+      child: Icon(widget.icon, color: widget.color, size: widget.iconSize),
     );
   }
 }

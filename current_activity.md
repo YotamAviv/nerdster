@@ -3,40 +3,29 @@ AI Agent: Do not visit this file without invitation
 
 # Current Activity:
 
+Typical through the app:
+green / blue - identity / delegate key
+solid / outline: have private key, have public key only
+
+Sign in:
+- if we don't have identity, then the sign in dialog must be up. Dismiss should be disabled
+- sign out means drop the delegate key
+  If the user signs out, let him see that he still has an identity key and don't dismiss the dialog.
+- regardless of how we sign in (scan QR, keymeid://..., paste), behavave gthe same way. when the credentials are receieved
+  - show the "throw" key animatino for the appropriate key(s) (identity or both idenitty delegate)
+  - laeve the dialog up
+
+Clarity:
+Add text above the buttons that these are ways to sign in.
+Make the 2 keys smaller and add text describing them and whether or not we have them.
 
 
-
-
-
-BUG:
-- loading identity=... does not ignore stored keys correctly, not sure exactly, but after 
-signing in as Yotam, the link with identity=lisa had issues.
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
-Next steps:
-- use GitLens to compare this to v2clean
-- merge
-- read the interesting code.
-- address my own TODO, SUSPECT, BUG ..
-- name changes.. variables (token/id/key me/my), filenames (v2_nerdy_content_view_spec.md)
+Check: TODO, SUSPECT, BUG ..
 
 
-## Not required for V2 switch to PROD
-
-
-### node detail Enhancements
-- ability to toggle showCrypto in graph view
-  - while viewing the graph
-  - Reach goal: while KeyInfoDetail dialog is up
-
-BUGS:
-- clicking link icon on popup card affeccts the one behind it (if visible) but not that one.
-- images
-  - YouTube
-  - NYT
-  Maybe employ a stock article, video image, maybe stock NYT article, YouTube video ...
-- embeded Nerdster sign in (send identity) should sign out (if it was signed in with a delegate through secure storage)
 
 ### relating statements
 

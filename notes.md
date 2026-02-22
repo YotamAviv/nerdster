@@ -38,16 +38,11 @@ AI NOTE: This is my (the human) file with my own notes.
 
 # Nice ones:
 ```
-git tag PROD-v`date2`
-git tag PROD-11
-diff -r lib/oneofus ../oneofus/lib/oneofus
-diff -r ../oneofus/lib/oneofus lib/oneofus
 flutter clean
 flutter pub get
 flutter pub upgrade --major-versions
 flutter test
 flutter run -d chrome
-tar -czf ~/backups/nerdster.git.`date2`.tgz .git
 ```
 
 ```
@@ -71,22 +66,9 @@ firebase projects:list
 gcloud projects list
 gcloud auth login
 
-# If running in 2 windows, make sure to set (export) NOW in both
-export NOW=`date3`
-echo $NOW
-export NOW=26-02-04--18-20
-
-firebase use nerdster
-gcloud config set project nerdster
-gcloud firestore export gs://nerdster/nerdster-$NOW
-gsutil -m cp -r gs://nerdster/nerdster-$NOW exports
-firebase --project=nerdster emulators:start --import exports/nerdster-$NOW/
-
-firebase use one-of-us-net
-gcloud config set project one-of-us-net
-gcloud firestore export gs://one-of-us-net/oneofus-$NOW
-gsutil -m cp -r gs://one-of-us-net/oneofus-$NOW exports
-firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start --import exports/oneofus-$NOW/
+Run `./bin/start_emulators.sh` to start emulators in the background and log to `.log` files.
+Run `./bin/start_emulators.sh --export` to first export PROD data, and then start the emulators using the new export.
+Run `./bin/stop_emulators.sh` to stop them.
 
 
 

@@ -110,7 +110,10 @@ class SignInState with ChangeNotifier {
   }
 
   void signOut({bool? clearIdentity = false}) {
-    if (clearIdentity == true) _identity = null;
+    if (clearIdentity == true) {
+      if (povNotifier.value == _identity) povNotifier.value = null;
+      _identity = null;
+    }
     _delegatePublicKeyJson = null;
     _delegate = null;
     _signer = null;
@@ -120,8 +123,9 @@ class SignInState with ChangeNotifier {
 
   // inputs
   String get pov {
+    if (povNotifier.value != null) return povNotifier.value!;
     if (_identity == null) throw StateError("Accessed pov before sign in");
-    return povNotifier.value ?? _identity!;
+    return _identity!;
   }
 
   Json get identityJson => Jsonish.find(identity)!.json;

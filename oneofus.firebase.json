@@ -76,7 +76,8 @@
   ],
   "emulators": {
     "firestore": {
-      "port": 8081
+      "port": 8081,
+      "websocketPort": 9151
     },
     "functions": {
       "host": "127.0.0.1",
@@ -91,6 +92,15 @@
     "ui": {
       "enabled": true,
       "port": 4001
+    },
+    "eventarc": {
+      "port": 9300
+    },
+    "tasks": {
+      "port": 9500
+    },
+    "logging": {
+      "port": 4501
     }
   }
 }

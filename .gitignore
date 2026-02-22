@@ -14,3 +14,7 @@ bart2.json
 simpsonsDemo.json
 simpsonsDemo2.json
 firebase-debug.log
+.nerdster_emulator.pid
+.oneofus_emulator.pid
+nerdster_emulators.log
+oneofus_emulators.log
