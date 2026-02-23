@@ -115,6 +115,7 @@
 
         <div class="actions">
             <a href="https://one-of-us.net" class="btn">Get the App</a>
+            <a id="keymeid-link" href="#" class="btn btn-secondary">Open with Associated keymeid:// App</a>
             <button class="btn btn-secondary" onclick="copyKey()">Copy Key Text</button>
         </div>
 
@@ -130,8 +131,12 @@
                 const hash = window.location.hash.substring(1);
                 if (!hash) {
                     document.getElementById('qr-container').style.display = 'none';
+                    document.getElementById('keymeid-link').style.display = 'none';
                     return;
                 }
+
+                // Set keymeid:// link for associated apps
+                document.getElementById('keymeid-link').href = 'keymeid://vouch#' + hash;
 
                 // Decode URL-Safe Base64
                 let base64 = hash.replace(/-/g, '+').replace(/_/g, '/');
