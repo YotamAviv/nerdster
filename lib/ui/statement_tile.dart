@@ -175,6 +175,14 @@ class StatementTile extends StatelessWidget {
                 const Icon(Icons.delete, size: 12, color: Colors.red),
                 const SizedBox(width: 2),
               ],
+              if (s.dismiss == 'snooze') ...[
+                const Icon(Icons.snooze, size: 12, color: Colors.brown),
+                const SizedBox(width: 2),
+              ],
+              if (s.dismiss == 'forever') ...[
+                const Icon(Icons.swipe_left, size: 12, color: Colors.brown),
+                const SizedBox(width: 2),
+              ],
               if (s.comment != null && s.comment!.isNotEmpty) ...[
                 const Icon(Icons.chat_bubble_outline, size: 12, color: Colors.grey),
                 const SizedBox(width: 2),
@@ -268,7 +276,8 @@ class StatementTile extends StatelessWidget {
                         title: const Text('Cryptographic Proof'),
                         content: SizedBox(
                           width: double.maxFinite,
-                          child: JsonDisplay(s.json, interpreter: NerdsterInterpreter(model.labeler)),
+                          child:
+                              JsonDisplay(s.json, interpreter: NerdsterInterpreter(model.labeler)),
                         ),
                         actions: [
                           TextButton(
