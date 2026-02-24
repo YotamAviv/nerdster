@@ -161,7 +161,7 @@ exports.magicPaste = onCall(async (request) => {
 /**
  * Handles QR sign-in by adding session data to Firestore.
  */
-exports.signin = onRequest({ cors: true }, async (req, res) => {
+exports.signin = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
   const session = req.body.session;
   if (!session) {
     res.status(400).send("Missing session");
@@ -193,7 +193,7 @@ exports.signin = onRequest({ cors: true }, async (req, res) => {
  * and display appropriate notifications for the corrupted keys while showing
  * content for the valid ones.
  */
-exports.export = onRequest({ cors: true }, async (req, res) => {
+exports.export = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
