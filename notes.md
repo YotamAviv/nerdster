@@ -56,6 +56,10 @@ firebase --project=one-of-us-net deploy --only functions
 (flutter clean)
 firebase init hosting # Answer: build/web
 
+firebase --project=nerdster deploy --only functions:signin,functions:export
+firebase --project=one-of-us-net deploy --only functions:export
+
+
 add to .bashrc:
 export PATH="$PATH":"$HOME/.pub-cache/bin"
 ```

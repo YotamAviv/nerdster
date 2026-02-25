@@ -18,3 +18,6 @@ firebase-debug.log
 .oneofus_emulator.pid
 nerdster_emulators.log
 oneofus_emulators.log
+demo-nerdster.json
+demo-oneofus.json
+DEMO.json
