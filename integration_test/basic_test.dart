@@ -4,19 +4,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/io/fire_factory.dart';
-import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/config.dart';
 import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:oneofus_common/endpoint.dart';
-import 'package:oneofus_common/oou_verifier.dart';
-import 'package:nerdster/settings/prefs.dart';
-import 'package:oneofus_common/trust_statement.dart';
+import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
+import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:oneofus_common/cloud_functions_source.dart';
-import 'package:nerdster/config.dart';
+import 'package:oneofus_common/oou_verifier.dart';
+import 'package:oneofus_common/trust_statement.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

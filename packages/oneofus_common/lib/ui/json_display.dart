@@ -8,6 +8,9 @@ abstract class Interpreter {
   dynamic interpret(dynamic d);
 }
 
+// Cycle order: interpreted → raw → token → interpreted
+enum _DisplayMode { interpreted, raw, token }
+
 class JsonDisplay extends StatefulWidget {
   // Global interpreter that can be set by the app
   static Interpreter? interpreter;
@@ -42,16 +45,49 @@ class JsonDisplay extends StatefulWidget {
 class _State extends State<JsonDisplay> {
   static const JsonEncoder encoder = JsonEncoder.withIndent('  ');
 
+  late _DisplayMode _mode;
+
+  @override
+  void initState() {
+    super.initState();
+    _mode = widget.interpret.value ? _DisplayMode.interpreted : _DisplayMode.raw;
+  }
+
+  void _cycle() {
+    setState(() {
+      switch (_mode) {
+        case _DisplayMode.interpreted:
+          _mode = _DisplayMode.raw;
+          widget.interpret.value = false;
+          break;
+        case _DisplayMode.raw:
+          _mode = _DisplayMode.token;
+          widget.interpret.value = false;
+          break;
+        case _DisplayMode.token:
+          _mode = _DisplayMode.interpreted;
+          widget.interpret.value = true;
+          break;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Basic interpretation: If interpreter is present, use it. Otherwise just use subject.
-    dynamic show = Jsonish.order(widget.subject);
     final Interpreter? activeInterpreter = widget.interpreterParam ?? JsonDisplay.interpreter;
-    if (widget.interpret.value) {
-      show = activeInterpreter!.interpret(widget.subject);
-    }
 
-    String display = encoder.convert(show);
+    String display;
+    switch (_mode) {
+      case _DisplayMode.interpreted:
+        display = encoder.convert(activeInterpreter!.interpret(widget.subject));
+        break;
+      case _DisplayMode.raw:
+        display = encoder.convert(Jsonish.order(widget.subject));
+        break;
+      case _DisplayMode.token:
+        display = getToken(widget.subject);
+        break;
+    }
 
     // Use passed style, then global default, then hardcoded fallback
     final effectiveTextStyle = widget.textStyle ??
@@ -61,13 +97,25 @@ class _State extends State<JsonDisplay> {
           fontSize: 10,
         );
 
+    final Color? modeColor = switch (_mode) {
+      _DisplayMode.interpreted => Colors.green[900],
+      _DisplayMode.raw => null,
+      _DisplayMode.token => Colors.blue[900],
+    };
+
     TextStyle baseStyle = effectiveTextStyle.copyWith(
       decoration: widget.strikethrough ? TextDecoration.lineThrough : null,
-      color: widget.interpret.value ? Colors.green[900] : null,
+      color: modeColor,
     );
 
     List<TextSpan> spans =
         highlightJsonKeys(display, baseStyle, keysToHighlight: JsonDisplay.highlightKeys);
+
+    final (IconData icon, String tooltip) = switch (_mode) {
+      _DisplayMode.interpreted => (Icons.transform, 'Interpreted → Raw → Token'),
+      _DisplayMode.raw => (Icons.data_object, 'Raw → Token → Interpreted'),
+      _DisplayMode.token => (Icons.tag, 'Token → Interpreted → Raw'),
+    };
 
     return Stack(
       fit: widget.fit,
@@ -84,17 +132,10 @@ class _State extends State<JsonDisplay> {
           child: FloatingActionButton(
               heroTag: null,
               mini: true,
-              tooltip: !widget.interpret.value
-                  ? 'Raw JSON shown; click to interpret'
-                  : 'Interpreted JSON shown; click to show raw',
+              tooltip: tooltip,
               backgroundColor: Colors.white,
-              child: Icon(Icons.transform,
-                  color: widget.interpret.value ? Colors.green[900] : Colors.grey),
-              onPressed: () {
-                setState(() {
-                  widget.interpret.value = !widget.interpret.value;
-                });
-              }),
+              child: Icon(icon, color: modeColor ?? Colors.grey),
+              onPressed: _cycle),
         ),
       ],
     );

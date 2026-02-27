@@ -70,22 +70,6 @@ class _NodeDetailsState extends State<NodeDetails> {
   final ExpansibleController _incomingController = ExpansibleController();
   final ExpansibleController _outgoingController = ExpansibleController();
 
-  final Map<String, ExpansibleController> _statementControllers = {};
-
-  ExpansibleController _getStatementController(String id) {
-    return _statementControllers.putIfAbsent(id, () => ExpansibleController());
-  }
-
-  void _onStatementExpansionChanged(bool expanded, String id) {
-    if (expanded) {
-      for (final entry in _statementControllers.entries) {
-        if (entry.key != id) {
-          entry.value.collapse();
-        }
-      }
-    }
-  }
-
   void _onExpansionChanged(bool expanded, ExpansibleController current) {
     if (expanded) {
       if (current != _followController) {
@@ -895,13 +879,9 @@ class _NodeDetailsState extends State<NodeDetails> {
       }
     }
 
-    // Ensure we have a unique ID for this statement to manage expansion state
-    final String statementId = s.token;
-
-    return ExpansionTile(
-      controller: _getStatementController(statementId),
-      onExpansionChanged: (val) => _onStatementExpansionChanged(val, statementId),
-      trailing: const SizedBox.shrink(),
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
       title: Row(
         children: [
           Expanded(
@@ -923,43 +903,59 @@ class _NodeDetailsState extends State<NodeDetails> {
             valueListenable: Setting.get<bool>(SettingType.showCrypto),
             builder: (context, showCrypto, _) {
               if (!showCrypto) return const SizedBox.shrink();
-              return IconButton(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                constraints: const BoxConstraints(),
-                icon: const Icon(Icons.verified_user, size: 16, color: Colors.blue),
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Cryptographic Proof'),
-                    content: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      child: JsonDisplay(s.json, interpreter: NerdsterInterpreter(labeler)),
-                    ),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(context), child: const Text('Close')),
-                    ],
+              return Builder(builder: (ctx) {
+                Offset tapPosition = Offset.zero;
+                return GestureDetector(
+                  onTapDown: (d) => tapPosition = d.globalPosition,
+                  onTap: () {
+                    final screenSize = MediaQuery.of(ctx).size;
+                    final dialogW = (screenSize.width - 16).clamp(0.0, 420.0);
+                    final dialogH = (screenSize.height - 16).clamp(0.0, 390.0);
+                    double left = tapPosition.dx;
+                    double top = tapPosition.dy;
+                    if (left + dialogW > screenSize.width) left = tapPosition.dx - dialogW;
+                    if (top + dialogH > screenSize.height) top = tapPosition.dy - dialogH;
+                    if (left < 0) left = 0;
+                    if (top < 0) top = 0;
+                    showGeneralDialog<void>(
+                      context: ctx,
+                      barrierDismissible: true,
+                      barrierLabel: '',
+                      barrierColor: Colors.black12,
+                      transitionDuration: Duration.zero,
+                      pageBuilder: (_, __, ___) => Stack(
+                        children: [
+                          Positioned(
+                            left: left,
+                            top: top,
+                            child: Material(
+                              elevation: 12,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: SizedBox(
+                                  width: dialogW,
+                                  height: dialogH,
+                                  child: JsonDisplay(s.json,
+                                      interpreter: NerdsterInterpreter(labeler)),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Icon(Icons.verified_user_outlined, size: 16, color: Colors.blue),
                   ),
-                ),
-                visualDensity: VisualDensity.compact,
-              );
+                );
+              });
             },
           ),
         ],
       ),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          color: Colors.grey[100],
-          height: 200,
-          child: SingleChildScrollView(
-            child: JsonDisplay(s.json,
-                interpreter: widget.controller.value != null
-                    ? NerdsterInterpreter(widget.controller.value!.labeler)
-                    : null),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -266,27 +266,56 @@ class StatementTile extends StatelessWidget {
                 valueListenable: Setting.get<bool>(SettingType.showCrypto),
                 builder: (context, showCrypto, _) {
                   if (!showCrypto) return const SizedBox.shrink();
-                  return IconButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(Icons.verified_user, size: 16, color: Colors.blue),
-                    onPressed: () => showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Cryptographic Proof'),
-                        content: SizedBox(
-                          width: double.maxFinite,
-                          child:
-                              JsonDisplay(s.json, interpreter: NerdsterInterpreter(model.labeler)),
-                        ),
-                        actions: [
-                          TextButton(
-                              onPressed: () => Navigator.pop(context), child: const Text('Close')),
-                        ],
+                  return Builder(builder: (ctx) {
+                    Offset tapPosition = Offset.zero;
+                    return GestureDetector(
+                      onTapDown: (d) => tapPosition = d.globalPosition,
+                      onTap: () {
+                        final screenSize = MediaQuery.of(ctx).size;
+                        final dialogW = (screenSize.width - 16).clamp(0.0, 420.0);
+                        final dialogH = (screenSize.height - 16).clamp(0.0, 390.0);
+                        double left = tapPosition.dx;
+                        double top = tapPosition.dy;
+                        if (left + dialogW > screenSize.width) left = tapPosition.dx - dialogW;
+                        if (top + dialogH > screenSize.height) top = tapPosition.dy - dialogH;
+                        if (left < 0) left = 0;
+                        if (top < 0) top = 0;
+                        showGeneralDialog<void>(
+                          context: ctx,
+                          barrierDismissible: true,
+                          barrierLabel: '',
+                          barrierColor: Colors.black12,
+                          transitionDuration: Duration.zero,
+                          pageBuilder: (_, __, ___) => Stack(
+                            children: [
+                              Positioned(
+                                left: left,
+                                top: top,
+                                child: Material(
+                                  elevation: 12,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: SizedBox(
+                                      width: dialogW,
+                                      height: dialogH,
+                                      child: JsonDisplay(s.json,
+                                          interpreter: NerdsterInterpreter(model.labeler)),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4.0),
+                        child: Icon(Icons.verified_user_outlined, size: 16, color: Colors.blue),
                       ),
-                    ),
-                    visualDensity: VisualDensity.compact,
-                  );
+                    );
+                  });
                 },
               ),
             ],
