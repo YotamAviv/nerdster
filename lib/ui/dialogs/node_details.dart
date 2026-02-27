@@ -369,7 +369,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                         isOwned: false, // Per instructions, only delegate key is owned
                       ),
                       const SizedBox(width: 8),
-                      Text('$equivIdentityLabel ${isCanonical ? "(Canonical)" : "(Replaced)"}',
+                      Text('$equivIdentityLabel ${isCanonical ? "" : "(Replaced)"}',
                           style: TextStyle(
                               fontSize: 12,
                               color: isCanonical ? Colors.black : Colors.grey,
@@ -646,9 +646,8 @@ class _NodeDetailsState extends State<NodeDetails> {
     final TrustGraph tg = model.trustGraph;
     final List<TrustStatement> allStatements = tg.edges[identity] ?? [];
 
-    final List<TrustStatement> statements = allStatements
-        .where((s) => s.verb == TrustVerb.trust)
-        .toList();
+    final List<TrustStatement> statements =
+        allStatements.where((s) => s.verb == TrustVerb.trust).toList();
 
     return ExpansionTile(
       controller: _outgoingController,
@@ -708,9 +707,8 @@ class _NodeDetailsState extends State<NodeDetails> {
 
     // 2. Implicit Follows (Trust) (Outgoing)
     // "Who does THIS identity trust?" -> tg.edges[identity]
-    final List<TrustStatement> trustStatements = (tg.edges[identity] ?? [])
-        .where((s) => s.verb == TrustVerb.trust)
-        .toList();
+    final List<TrustStatement> trustStatements =
+        (tg.edges[identity] ?? []).where((s) => s.verb == TrustVerb.trust).toList();
 
     // Filter implicitly trusted that are NOT explicitly followed
     // Note: This logic is slightly different than incoming. Incoming we dedup based on issuer.
