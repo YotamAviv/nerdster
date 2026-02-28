@@ -283,22 +283,28 @@ ContentAggregation reduceContentAggregation(
       if (!isCanonical && !recognizedLiteralSubjects.contains(key)) return;
 
       bool isQualifiedActivity = false;
+      bool hasPositiveSignal = false;
       if (s.verb == ContentVerb.relate || s.verb == ContentVerb.equate) {
         isQualifiedActivity = true;
+        hasPositiveSignal = true;
       } else if (s.verb == ContentVerb.rate) {
         if (s.censor == true || s.like == false || s.dismiss != null) {
           isQualifiedActivity = false;
         } else if (s.like == true || (s.comment != null && s.comment!.isNotEmpty)) {
           isQualifiedActivity = true;
         }
+        // hasPositiveSignal: like=true OR non-empty comment, even when dismiss is also set.
+        if (s.like == true || (s.comment != null && s.comment!.isNotEmpty)) {
+          hasPositiveSignal = true;
+        }
       }
 
+      final DateTime epoch = DateTime.fromMillisecondsSinceEpoch(0);
       final SubjectGroup group = map[key] ??
           SubjectGroup(
             canonical: isCanonical ? key : canonicalSubject,
-            lastActivity: isQualifiedActivity
-                ? s.time
-                : DateTime.fromMillisecondsSinceEpoch(0),
+            lastActivity: isQualifiedActivity ? s.time : epoch,
+            lastSignalActivity: hasPositiveSignal ? s.time : epoch,
           );
 
       // Update stats: ONLY if this subject is a primary target of the rating
@@ -337,9 +343,12 @@ ContentAggregation reduceContentAggregation(
       }
 
       final DateTime lastActivity =
-          (isQualifiedActivity && s.time.isAfter(group.lastActivity))
+          (isQualifiedActivity && s.time.isAfter(group.lastActivity)) ? s.time : group.lastActivity;
+
+      final DateTime lastSignalActivity =
+          (hasPositiveSignal && s.time.isAfter(group.lastSignalActivity))
               ? s.time
-              : group.lastActivity;
+              : group.lastSignalActivity;
 
       map[key] = SubjectGroup(
         canonical: isCanonical ? key : canonicalSubject,
@@ -348,6 +357,7 @@ ContentAggregation reduceContentAggregation(
         likes: likes,
         dislikes: dislikes,
         lastActivity: lastActivity,
+        lastSignalActivity: lastSignalActivity,
         related: relatedSet,
         povStatements: newPovStatements,
         isCensored: group.isCensored ||
@@ -451,6 +461,7 @@ ContentAggregation reduceContentAggregation(
       narrowGroup ??= SubjectGroup(
         canonical: canonical,
         lastActivity: group.lastActivity,
+        lastSignalActivity: group.lastSignalActivity,
       );
 
       subjects[token] = SubjectAggregation(

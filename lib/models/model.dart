@@ -35,8 +35,8 @@ class SystemNotification {
   final String? icon; // Optional custom icon?
 
   SystemNotification({
-    required this.title, 
-    required this.description, 
+    required this.title,
+    required this.description,
     this.isError = false,
     this.icon,
   });
@@ -222,7 +222,19 @@ class SubjectGroup {
   final Set<String> tags;
   final int likes;
   final int dislikes;
+
+  /// Latest timestamp of any statement whose verb/fields count as "qualified"
+  /// activity (like, non-empty comment, relate, equate — but NOT dismiss-only
+  /// or dislike-only). Used as the sort key in my/pov filter modes and for
+  /// snooze wake-up logic.
   final DateTime lastActivity;
+
+  /// Latest timestamp of any statement that carries a positive signal
+  /// (like=true OR non-empty comment OR relate/equate), even if dismiss is
+  /// also set on the same statement. Used as the sort key in
+  /// DisFilterMode.ignore so that a dismissed-but-liked subject doesn't sink
+  /// to the bottom of the feed.
+  final DateTime lastSignalActivity;
   final Set<ContentKey> related; // Canonical tokens of related subjects
   final List<ContentStatement> povStatements;
   final bool isCensored;
@@ -234,10 +246,12 @@ class SubjectGroup {
     this.likes = 0,
     this.dislikes = 0,
     required this.lastActivity,
+    DateTime? lastSignalActivity,
     this.related = const {},
     List<ContentStatement> povStatements = const [],
     this.isCensored = false,
-  })  : statements = List.unmodifiable(statements),
+  })  : lastSignalActivity = lastSignalActivity ?? lastActivity,
+        statements = List.unmodifiable(statements),
         povStatements = List.unmodifiable(povStatements) {
     Statement.validateOrderTypes(this.statements);
     Statement.validateOrderTypes(this.povStatements);
@@ -249,6 +263,7 @@ class SubjectGroup {
     int? likes,
     int? dislikes,
     DateTime? lastActivity,
+    DateTime? lastSignalActivity,
     Set<ContentKey>? related,
     List<ContentStatement>? povStatements,
     bool? isCensored,
@@ -261,6 +276,7 @@ class SubjectGroup {
       likes: likes ?? this.likes,
       dislikes: dislikes ?? this.dislikes,
       lastActivity: lastActivity ?? this.lastActivity,
+      lastSignalActivity: lastSignalActivity ?? this.lastSignalActivity,
       related: related ?? this.related,
       povStatements: povStatements ?? this.povStatements,
       isCensored: isCensored ?? this.isCensored,
@@ -405,6 +421,7 @@ class SubjectAggregation {
   int get likes => activeGroup.likes;
   int get dislikes => activeGroup.dislikes;
   DateTime get lastActivity => activeGroup.lastActivity;
+  DateTime get lastSignalActivity => activeGroup.lastSignalActivity;
   Set<ContentKey> get related => activeGroup.related;
   List<ContentStatement> get povStatements => activeGroup.povStatements;
   bool get isCensored => activeGroup.isCensored;

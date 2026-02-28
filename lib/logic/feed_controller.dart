@@ -54,10 +54,10 @@ class FeedController extends ValueNotifier<FeedModel?> {
     required StatementSource<TrustStatement> trustSource,
     required StatementSource<ContentStatement> contentSource,
     VoidCallback? optimisticConcurrencyFunc,
-  })  : trustSource = CachedSource(trustSource, SourceFactory.getWriter(kOneofusDomain),
-            optimisticConcurrencyFunc),
-        contentSource = CachedSource(contentSource,
-            SourceFactory.getWriter(kNerdsterDomain), optimisticConcurrencyFunc),
+  })  : trustSource = CachedSource(
+            trustSource, SourceFactory.getWriter(kOneofusDomain), optimisticConcurrencyFunc),
+        contentSource = CachedSource(
+            contentSource, SourceFactory.getWriter(kNerdsterDomain), optimisticConcurrencyFunc),
         super(null) {
     _lastIdentity = signInState.isSignedIn ? signInState.identity : null;
     _lastPov = signInState.povNotifier.value;
@@ -132,8 +132,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
   SortMode get sortMode {
     final val = Setting.get(SettingType.sort).value as String;
-    return SortMode.values
-        .firstWhere((e) => e.name == val, orElse: () => SortMode.recentActivity);
+    return SortMode.values.firstWhere((e) => e.name == val, orElse: () => SortMode.recentActivity);
   }
 
   set sortMode(SortMode mode) {
@@ -230,7 +229,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
     switch (sortMode) {
       case SortMode.recentActivity:
         // CONSIDER: Might be already sorted by lastActivity descending via the aggregation subjects map.
-        subjects.sort((a, b) => b.lastActivity.compareTo(a.lastActivity));
+        subjects.sort((a, b) {
+          final timeA = filterMode == DisFilterMode.ignore ? a.lastSignalActivity : a.lastActivity;
+          final timeB = filterMode == DisFilterMode.ignore ? b.lastSignalActivity : b.lastActivity;
+          return timeB.compareTo(timeA);
+        });
         break;
       case SortMode.netLikes:
         subjects.sort((a, b) {
@@ -493,8 +496,8 @@ class FeedController extends ValueNotifier<FeedModel?> {
           // 1. Invisibility / Unnamed
           // Note: We use the identity from the start of the refresh loop to ensure consistency
           if (currentMeIdentity != null) {
-            final isVisible = followNetwork.identities
-                .any((k) => k.value == currentMeIdentity.value);
+            final isVisible =
+                followNetwork.identities.any((k) => k.value == currentMeIdentity.value);
 
             if (!isVisible) {
               systemNotifications.add(SystemNotification(
@@ -528,38 +531,39 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
           // 2. Delegate Issues
           if (currentMeIdentity != null && signInState.delegate != null) {
-             final myDelegate = signInState.delegate!;
-             
-             // Revoked
-             if (graph.replacements.containsKey(IdentityKey(myDelegate))) {
-                systemNotifications.add(SystemNotification(
-                   title: "Your delegate key is revoked",
-                   description: "Your current delegate key has been replaced or revoked by your identity.\n\n"
-                    "You cannot perform actions (like posting or liking) until you sign in with a valid key.",
-                   isError: true,
-                ));
-             }
+            final myDelegate = signInState.delegate!;
 
-             // Not associated
-             if (graph.isTrusted(currentMeIdentity)) {
-                bool isAssociated = false;
-                final statements = graph.edges[currentMeIdentity];
-                if (statements != null) {
-                  for (final s in statements) {
-                    if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
-                      isAssociated = true;
-                      break;
-                    }
+            // Revoked
+            if (graph.replacements.containsKey(IdentityKey(myDelegate))) {
+              systemNotifications.add(SystemNotification(
+                title: "Your delegate key is revoked",
+                description:
+                    "Your current delegate key has been replaced or revoked by your identity.\n\n"
+                    "You cannot perform actions (like posting or liking) until you sign in with a valid key.",
+                isError: true,
+              ));
+            }
+
+            // Not associated
+            if (graph.isTrusted(currentMeIdentity)) {
+              bool isAssociated = false;
+              final statements = graph.edges[currentMeIdentity];
+              if (statements != null) {
+                for (final s in statements) {
+                  if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
+                    isAssociated = true;
+                    break;
                   }
                 }
-                if (!isAssociated) {
-                   systemNotifications.add(SystemNotification(
-                      title: "Delegate key not associated",
-                      description: "Your current delegate key is not associated with your identity.",
-                      isError: true,
-                   ));
-                }
-             }
+              }
+              if (!isAssociated) {
+                systemNotifications.add(SystemNotification(
+                  title: "Delegate key not associated",
+                  description: "Your current delegate key is not associated with your identity.",
+                  isError: true,
+                ));
+              }
+            }
           }
 
           final effectiveSubjects = _computeEffectiveSubjects(
