@@ -61,10 +61,11 @@ class _State extends State<JsonDisplay> {
           widget.interpret.value = false;
           break;
         case _DisplayMode.raw:
-          _mode = _DisplayMode.token;
-          widget.interpret.value = false;
+          _mode = _DisplayMode.interpreted;
+          widget.interpret.value = true;
           break;
         case _DisplayMode.token:
+          // Token mode is not in the cycle but keep switch exhaustive
           _mode = _DisplayMode.interpreted;
           widget.interpret.value = true;
           break;
@@ -112,9 +113,9 @@ class _State extends State<JsonDisplay> {
         highlightJsonKeys(display, baseStyle, keysToHighlight: JsonDisplay.highlightKeys);
 
     final (IconData icon, String tooltip) = switch (_mode) {
-      _DisplayMode.interpreted => (Icons.transform, 'Interpreted → Raw → Token'),
-      _DisplayMode.raw => (Icons.data_object, 'Raw → Token → Interpreted'),
-      _DisplayMode.token => (Icons.tag, 'Token → Interpreted → Raw'),
+      _DisplayMode.interpreted => (Icons.transform, 'Interpreted → Raw'),
+      _DisplayMode.raw => (Icons.data_object, 'Raw → Interpreted'),
+      _DisplayMode.token => (Icons.tag, 'Token'),
     };
 
     return Stack(
@@ -126,17 +127,18 @@ class _State extends State<JsonDisplay> {
             child: Text.rich(TextSpan(children: spans)),
           ),
         ),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: FloatingActionButton(
-              heroTag: null,
-              mini: true,
-              tooltip: tooltip,
-              backgroundColor: Colors.white,
-              child: Icon(icon, color: modeColor ?? Colors.grey),
-              onPressed: _cycle),
-        ),
+        if (activeInterpreter != null)
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: FloatingActionButton(
+                heroTag: null,
+                mini: true,
+                tooltip: tooltip,
+                backgroundColor: Colors.white,
+                child: Icon(icon, color: modeColor ?? Colors.grey),
+                onPressed: _cycle),
+          ),
       ],
     );
   }

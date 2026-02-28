@@ -57,7 +57,7 @@ class TrustSettingsBar extends StatelessWidget {
                           );
                         }),
                         if (currentPov != null &&
-                            !availableIdentities.contains(IdentityKey(signInState.identity)))
+                            availableIdentities.every((k) => k.value != signInState.identity))
                           DropdownMenuItem<String>(
                             value: signInState.identity,
                             child: Text(
