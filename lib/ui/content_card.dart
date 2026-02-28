@@ -143,19 +143,12 @@ class _ContentCardState extends State<ContentCard> {
                     key: Key(widget.aggregation.canonical.value),
                     direction: DismissDirection.horizontal,
                     confirmDismiss: (direction) async {
-                      bool? initialLike;
-                      String? initialDismiss;
-                      if (direction == DismissDirection.startToEnd) {
-                        initialLike = true;
-                        initialDismiss = 'snooze';
-                      } else {
-                        initialDismiss = 'forever';
-                      }
+                      final String initialDismiss =
+                          direction == DismissDirection.startToEnd ? 'snooze' : 'forever';
                       final result = await RateDialog.show(
                         context,
                         widget.aggregation,
                         widget.controller,
-                        initialLike: initialLike,
                         initialDismiss: initialDismiss,
                       );
                       return result != null;

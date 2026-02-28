@@ -65,19 +65,12 @@ Each item in the feed is represented as a card containing:
 TODO: QUESTIONABLE: Can we do this?
 
 ### Card Gestures (Dismissible)
-*   **Swipe Right (Green):** Quick "Like" action. Removes the card from the current view and (planned) publishes a "Like" statement.
-TODO: Very similar (maybe same as) to RatingDialog.
-Reveal some options to:
-- dismiss (pre-checked) (TODO: New "dismiss" setting: until new activity)
-- like
-- comment
-*   **Swipe Left (Red):** Quick "Dismiss/Censor" action. Removes the card from the view and (planned) marks it as hidden or publishes a "Dismiss" statement.
-TODO: Very similar (maybe same as) to RatingDialog.
-Reveal some options to:
-- dismiss (pre-checked) (TODO: New "dismiss" setting: until new activity)
-- dislike
-- comment
-- censor
+*   **Swipe Right (Green):** Pre-sets `dismiss = snooze`. Opens `RateDialog`
+    with the dismiss field pre-filled. All other prior ratings (like/dislike,
+    comment, censor) are preserved as-is. The user can adjust any field and
+    then hit Publish, or cancel.
+*   **Swipe Left (Brown):** Pre-sets `dismiss = forever`. Same as swipe right
+    but with `dismiss = forever` pre-filled. All other prior ratings preserved.
 
 ### Media Interactions
 *   **Single Tap:** Opens the **Quick Rate Bottom Sheet**.
