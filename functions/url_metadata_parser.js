@@ -3,6 +3,23 @@ const { decode } = require('html-entities');
 const { extractTitle, extractImages } = require('./metadata_fetchers');
 const { logger } = require("firebase-functions");
 
+// ---------------------------------------------------------------------------
+// DUAL IMPLEMENTATION WARNING
+// This file implements URL metadata parsing (magicPaste) for the cloud function.
+// The same logic is implemented a second time in Dart for the native phone app:
+//   lib/logic/metadata_service.dart  (_magicPasteDirect and helpers)
+//
+// Why two implementations?
+//   - Web: CORS prevents the browser from fetching arbitrary URLs directly, so
+//     the cloud function fetches server-side and returns the parsed metadata.
+//   - Native (Android/iOS): No CORS restriction; the phone fetches directly via
+//     HTTP, bypassing the cloud function for speed and cost.
+//
+// If you change the parsing logic here (JSON-LD handling, OpenGraph fallbacks,
+// content-type inference, year extraction, etc.), update the Dart counterpart
+// too, and vice versa.
+// ---------------------------------------------------------------------------
+
 /**
  * Parses a URL to extract structured metadata for the "Magic Paste" feature.
  * Prioritizes Schema.org (JSON-LD) > OpenGraph > Standard HTML tags.

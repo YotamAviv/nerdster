@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -29,8 +30,9 @@ void main() {
   setUpAll(() async {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     if (useEmulator) {
-      FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
-      FirebaseFirestore.instance.useFirestoreEmulator('127.0.0.1', 8080);
+      final host = defaultTargetPlatform == TargetPlatform.android ? '10.0.2.2' : '127.0.0.1';
+      FirebaseFunctions.instance.useFunctionsEmulator(host, 5001);
+      FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
     }
     FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
   });

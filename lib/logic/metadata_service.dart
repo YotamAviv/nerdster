@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
+import 'package:http/http.dart' as http;
 import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/content_types.dart';
@@ -84,10 +87,23 @@ final Map<String, MetadataResult> _metadataCache = {};
 
 /// Use Case 2: Magic Paste
 /// Fetches metadata from a URL to auto-populate the Establish Subject form.
+/// On web, calls the Firebase cloud function (required to avoid CORS).
+/// On native (Android/iOS), fetches the URL directly via HTTP.
 Future<Map<String, dynamic>?> magicPaste(String url) async {
-  if (_functions == null || url.isEmpty) return null;
-  if (!url.startsWith('http')) return null;
+  if (url.isEmpty || !url.startsWith('http')) return null;
 
+  if (!kIsWeb) {
+    // Try direct HTTP first (faster, no cloud function cold start).
+    // If the title is empty — e.g. the site returned a bot-challenge page — fall through
+    // to the cloud function, which fetches from a GCP IP with better site reputation.
+    final direct = await _magicPasteDirect(url);
+    final hasTitle = direct != null && (direct['title'] as String?)?.isNotEmpty == true;
+    if (hasTitle) return direct;
+    debugPrint('magicPasteDirect returned no title, falling back to cloud function');
+  }
+
+  // Web: use cloud function (CORS requires server-side fetch).
+  if (_functions == null) return null;
   try {
     debugPrint('magicPaste calling cloud function...');
     try {
@@ -98,23 +114,15 @@ Future<Map<String, dynamic>?> magicPaste(String url) async {
       debugPrint('magicPaste data type: ${retval.data.runtimeType}');
 
       if (retval.data == null) return null;
-      
       return retval.data as Map<String, dynamic>;
     } catch (e, stack) {
       debugPrint('magicPaste error: $e');
       debugPrint('magicPaste stack: $stack');
-      // Return error structure for debugging/robustness
-      return {
-        'title': 'Error',
-        'error': e.toString(),
-      };
+      return {'title': 'Error', 'error': e.toString()};
     }
   } catch (e) {
     debugPrint('magicPaste error: $e');
-    return {
-      'title': 'Error',
-      'error': e.toString(),
-    };
+    return {'title': 'Error', 'error': e.toString()};
   }
 }
 
@@ -179,4 +187,204 @@ Future<void> fetchImages({
     _metadataCache[cacheKey] = result;
     onResult(result);
   }
+}
+
+// ---------------------------------------------------------------------------
+// magicPaste helpers — direct HTTP implementation for non-web platforms.
+//
+// DUAL IMPLEMENTATION WARNING
+// This is the Dart port of the cloud function logic in:
+//   functions/url_metadata_parser.js  (parseUrlMetadata and helpers)
+//
+// Why two implementations?
+//   - Web: CORS prevents the browser from fetching arbitrary URLs directly, so
+//     the cloud function fetches server-side and returns the parsed metadata.
+//   - Native (Android/iOS): No CORS restriction; the phone fetches directly via
+//     HTTP, bypassing the cloud function for speed and cost.
+//
+// If you change the parsing logic here (JSON-LD handling, OpenGraph fallbacks,
+// content-type inference, year extraction, etc.), update the JS counterpart
+// too, and vice versa.
+// ---------------------------------------------------------------------------
+
+/// Fetches URL metadata directly via HTTP (no cloud function).
+Future<Map<String, dynamic>?> _magicPasteDirect(String url) async {
+  try {
+    // YouTube: use oEmbed API (reliable; scraping fails from many IPs).
+    if (url.contains('youtube.com') || url.contains('youtu.be')) {
+      try {
+        final oembedUrl =
+            'https://www.youtube.com/oembed?url=${Uri.encodeComponent(url)}&format=json';
+        final r = await http.get(Uri.parse(oembedUrl)).timeout(const Duration(seconds: 10));
+        if (r.statusCode == 200) {
+          final data = jsonDecode(r.body) as Map<String, dynamic>;
+          return {'contentType': 'video', 'title': data['title'], 'canonicalUrl': url};
+        }
+      } catch (_) {}
+    }
+
+    // Fetch HTML.
+    final response = await http.get(Uri.parse(url), headers: {
+      'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+    }).timeout(const Duration(seconds: 15));
+
+    final html = response.body;
+    final metadata = <String, dynamic>{
+      'contentType': null,
+      'title': null,
+      'year': null,
+      'author': null,
+      'image': null,
+      'canonicalUrl': url,
+    };
+
+    // 1. JSON-LD (schema.org) — highest priority.
+    final jsonLdRegex = RegExp(
+      r'''<script[^>]*type=['"]application/ld\+json['"][^>]*>([\s\S]*?)</script>''',
+      caseSensitive: false,
+    );
+    for (final m in jsonLdRegex.allMatches(html)) {
+      try {
+        _processJsonLd(jsonDecode(m.group(1)!.trim()), metadata);
+      } catch (_) {}
+    }
+
+    // 2. OpenGraph fallbacks.
+    metadata['title'] ??= _extractMeta(html, 'og:title') ?? _extractHtmlTitle(html);
+    metadata['image'] ??= _extractMeta(html, 'og:image');
+
+    // 3. Infer content type.
+    metadata['contentType'] ??= _inferContentType(url, metadata);
+
+    // 4. Normalise year to YYYY.
+    if (metadata['year'] != null) {
+      final ym = RegExp(r'\b(19|20)\d{2}\b').firstMatch(metadata['year'].toString());
+      metadata['year'] = ym?.group(0);
+    }
+    // Extract year from title, e.g. "The Matrix (1999)".
+    if (metadata['year'] == null && metadata['title'] != null) {
+      final ym = RegExp(r'\(((?:19|20)\d{2})\)').firstMatch(metadata['title'] as String);
+      if (ym != null) metadata['year'] = ym.group(1);
+    }
+
+    if (metadata['title'] != null && metadata['contentType'] == null) {
+      metadata['contentType'] = 'article';
+    }
+    return metadata;
+  } catch (e) {
+    debugPrint('magicPasteDirect error: $e');
+    return null;
+  }
+}
+
+void _processJsonLd(dynamic json, Map<String, dynamic> metadata) {
+  if (json is List) {
+    for (final item in json) _processJsonLd(item, metadata);
+    return;
+  }
+  if (json is Map) {
+    if (json.containsKey('@graph')) {
+      _processJsonLd(json['@graph'], metadata);
+      return;
+    }
+    _processJsonLdItem(Map<String, dynamic>.from(json), metadata);
+  }
+}
+
+void _processJsonLdItem(Map<String, dynamic> item, Map<String, dynamic> metadata) {
+  final rawType = item['@type'];
+  final typeStr = rawType is List ? rawType.join(',') : (rawType as String? ?? '');
+
+  String? val(String key) {
+    final v = item[key];
+    if (v is String) return v;
+    if (v is Map) return v['name'] as String?;
+    return null;
+  }
+
+  String? getAuthor() {
+    final a = item['author'] ?? item['creator'];
+    if (a == null) return null;
+    if (a is Map) return a['name'] as String?;
+    if (a is List) return a.map((x) => x is Map ? x['name'] : x.toString()).join(', ');
+    return null;
+  }
+
+  String? getImage() {
+    final img = item['image'];
+    if (img is String) return img;
+    if (img is Map) return img['url'] as String?;
+    if (img is List && img.isNotEmpty) {
+      final first = img[0];
+      return first is String ? first : (first as Map?)?['url'] as String?;
+    }
+    return null;
+  }
+
+  if (typeStr == 'Movie' || typeStr == 'Film') {
+    metadata['contentType'] = 'movie';
+    metadata['title'] ??= val('name');
+    metadata['year'] ??= val('datePublished');
+    metadata['image'] ??= getImage();
+  } else if (typeStr == 'Book') {
+    metadata['contentType'] = 'book';
+    metadata['title'] ??= val('name');
+    metadata['author'] ??= getAuthor();
+    metadata['year'] ??= val('datePublished');
+    metadata['image'] ??= getImage();
+  } else if (typeStr == 'Recipe') {
+    metadata['contentType'] = 'recipe';
+    metadata['title'] ??= val('name');
+    metadata['image'] ??= getImage();
+  } else if (typeStr == 'MusicAlbum') {
+    metadata['contentType'] = 'album';
+    metadata['title'] ??= val('name');
+    metadata['year'] ??= val('datePublished');
+    metadata['image'] ??= getImage();
+    final artist = item['byArtist'];
+    metadata['author'] ??= artist is Map ? artist['name'] as String? : null;
+  } else if (typeStr.contains('NewsArticle') ||
+      typeStr.contains('BlogPosting') ||
+      typeStr.contains('Article')) {
+    if (metadata['contentType'] == null) {
+      metadata['contentType'] = 'article';
+      metadata['title'] ??= val('headline') ?? val('name');
+      metadata['author'] ??= getAuthor();
+      metadata['year'] ??= val('datePublished');
+      metadata['image'] ??= getImage();
+    }
+  }
+}
+
+/// Extracts a `<meta property="..." content="...">` value from raw HTML.
+String? _extractMeta(String html, String property) {
+  final p = RegExp.escape(property);
+  final pattern = RegExp(
+    '''property=['"]$p['"][^>]*content=['"]([^'"]+)['"]'''
+    '''|content=['"]([^'"]+)['"][^>]*property=['"]$p['"]''',
+    caseSensitive: false,
+  );
+  final m = pattern.firstMatch(html);
+  return m?.group(1) ?? m?.group(2);
+}
+
+/// Extracts the HTML <title> tag content.
+String? _extractHtmlTitle(String html) {
+  final m = RegExp(r'<title[^>]*>([\s\S]*?)</title>', caseSensitive: false).firstMatch(html);
+  return m?.group(1)?.trim();
+}
+
+/// Infers content type from URL patterns.
+String _inferContentType(String url, Map<String, dynamic> metadata) {
+  if (url.contains('imdb.com/title/')) return 'movie';
+  if (url.contains('youtube.com') || url.contains('youtu.be')) return 'video';
+  if (url.contains('spotify.com/album')) return 'album';
+  if (url.contains('allrecipes.com')) return 'recipe';
+  if (url.contains('goodreads.com') ||
+      url.contains('google.com/books') ||
+      url.contains('books.google.')) return 'book';
+  return 'article';
 }

@@ -4,8 +4,8 @@
     "expectedContentType": "movie",
     "expectedTitle": "The Matrix",
     "expectedYear": "1999",
-    "expectSuccess": true,
-    "note": "IMDb movie page - requires smart parsing to extract clean title and year"
+    "expectSuccess": false,
+    "note": "IMDb blocks direct HTTP and cloud function fetches (bot detection) — unreliable"
   },
   {
     "url": "https://www.goodreads.com/book/show/131791.The_Deer_Park",
@@ -34,6 +34,6 @@
     "expectedContentType": "video",
     "expectedTitle": "Kitten",
     "expectSuccess": true,
-    "note": "YouTube Shorts - works in emulator but not in production"
+    "note": "YouTube Shorts - uses oEmbed API directly on native (bypasses cloud function), works from any IP"
   }
 ]

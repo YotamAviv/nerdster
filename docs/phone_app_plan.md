@@ -68,8 +68,18 @@ Goal: get the phone app to build and run on Android/iOS without crashes.
 
 Goal: leverage phone capabilities where beneficial.
 
-- [ ] `magicPaste` (URL metadata): phone can fetch URLs directly via the `http` package,
-      bypassing the cloud function. Evaluate whether this is worthwhile.
+- [x] **URL metadata (`magicPaste`)**: On native, fetches URLs directly via `http` package,
+      bypassing the `magicPaste` cloud function. On web, cloud function is unchanged.
+      Logic ported from `functions/url_metadata_parser.js`: YouTube oEmbed → JSON-LD →
+      OpenGraph → title fallback → content-type inference.
+      Integration test (`magic_paste_test.dart`) on Android: **3/4 required pass**.
+      IMDb fails because Amazon's bot protection blocks direct HTTP from emulator/phone IPs
+      (GCP IPs used by the cloud function have better reputation). On web, the cloud function
+      continues to handle IMDb correctly.
+- [ ] **Image fetching (`fetchImages`)**: Requires multiple 3rd-party APIs (Wikipedia, OpenLibrary,
+      OMDB, TMDB) with potential API keys. Deferred — cloud function continues to handle this.
+- [x] **App icon**: `assets/images/nerd.png` resized to all Android mipmap densities
+      (mdpi 48px → xxxhdpi 192px) and placed in `android/app/src/main/res/mipmap-*/`.
 
 ## Deferred Items
 
