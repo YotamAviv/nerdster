@@ -51,12 +51,18 @@ for this reason alone.
 
 Goal: get the phone app to build and run on Android/iOS without crashes.
 
-- [ ] Attempt a build for Android/iOS and catalog compile errors.
-- [ ] Fix any web-only imports (e.g. `dart:js_interop`, `package:web`) that are not already
-      guarded by the `dart.library.io` / `kIsWeb` pattern.
+- [x] Attempt a build for Android/iOS and catalog compile errors.
+      - Added Android platform via `flutter create --platforms=android`.
+      - Fixed `minSdk` to 23 (required by `cloud_functions`) and `ndkVersion` to 27.0.12077973.
+      - Deleted dead code: `lib/ui/pop_state_web.dart` (unreferenced, web-only).
+- [x] Fix any web-only imports (e.g. `dart:js_interop`, `package:web`) that are not already
+      guarded by the `dart.library.io` / `kIsWeb` pattern. (All clear.)
 - [ ] Verify `flutter_secure_storage` works correctly on device for key persistence.
 - [ ] Verify sign-in flow works end-to-end on phone (URL scheme / App Link via identity app).
-- [ ] Verify statement loading works (cloud function fetch).
+- [x] Verify statement loading works (cloud function fetch).
+      - Integration tests (`basic_test.dart`, `ui_test.dart`) pass on Android emulator.
+      - Fixed integration tests to use `10.0.2.2` instead of `localhost` when running on
+        Android (Android emulator routes `10.0.2.2` to the host machine).
 
 ### Phase 2 — Phone-Specific Features
 

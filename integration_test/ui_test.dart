@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -32,13 +33,14 @@ void main() {
 
     // Connect to Emulators
     fireChoice = FireChoice.emulator;
-    FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
-    OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
+    // On Android emulator, the host machine is 10.0.2.2, not localhost.
+    final host = defaultTargetPlatform == TargetPlatform.android ? '10.0.2.2' : 'localhost';
+    FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
+    OneofusFire.firestore.useFirestoreEmulator(host, 8081);
 
     // Configure for Emulator
-    const host = 'localhost';
-    const oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
-    const nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
+    final oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
+    final nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
 
     FirebaseConfig.registerUrl(kOneofusDomain, oneofusUrl);
     FirebaseConfig.registerUrl(kNerdsterDomain, nerdsterUrl);
