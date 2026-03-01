@@ -22,15 +22,14 @@ class JustSign {
     json['signature'] = signature;
 
     JsonQrDisplay jqd = JsonQrDisplay(json, interpret: ValueNotifier(false));
-    alert('Signed!', SizedBox(
-        width: MediaQuery.of(context).size.width * 0.8,
-        child: jqd), ['Okay'], context);
+    alert('Signed!', SizedBox(width: MediaQuery.of(context).size.width * 0.8, child: jqd), ['Okay'],
+        context);
   }
 }
 
 Future<Json?> showKeyValueDialog(BuildContext context) {
   final keyController = TextEditingController(text: 'greeting');
-  final valueController = TextEditingController(text: "Hello, Nerd'ster!");
+  final valueController = TextEditingController(text: "Hello, Nerdster!");
   final formKey = GlobalKey<FormState>();
   String? keyError;
 

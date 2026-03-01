@@ -6,7 +6,7 @@ retis, ergo sum.
 
 # Long term goal
 
-- Both apps (ONE-OF-US.NET phone app, Nerd'ster web app) are extinct like Netscape Navigator, VHS, CDs, and your ham radio.  
+- Both apps (ONE-OF-US.NET phone app, Nerdster web app) are extinct like Netscape Navigator, VHS, CDs, and your ham radio.  
 - We each have our own cryptographic key pair on some app on our device.  
 - We've littered the Internet with our authentically signed statements  
   - Who's who  
