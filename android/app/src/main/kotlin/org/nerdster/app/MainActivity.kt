@@ -1,4 +1,4 @@
-package com.example.nerdster
+package org.nerdster.app
 
 import io.flutter.embedding.android.FlutterActivity
 

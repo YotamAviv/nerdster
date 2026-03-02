@@ -83,6 +83,71 @@ Goal: leverage phone capabilities where beneficial.
 - [x] **App icon**: `assets/images/nerd.png` resized to all Android mipmap densities
       (mdpi 48px → xxxhdpi 192px) and placed in `android/app/src/main/res/mipmap-*/`.
 
+### Phase 3 — Google Play Store
+
+#### Signing setup (one-time)
+
+The existing keystore is `~/googlekeystore.jks` (alias `oneofusandroidkey2` = ONE-OF-US.NET).
+Nerdster needs its own alias in the same file:
+
+```bash
+keytool -genkey -alias nerdsterandroidkey -keystore ~/googlekeystore.jks \
+  -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Then add a signing block to `android/app/build.gradle.kts`:
+
+```kotlin
+val keystoreProperties = java.util.Properties().apply {
+    load(rootProject.file("android/key.properties").inputStream())
+}
+
+android {
+    signingConfigs {
+        create("release") {
+            keyAlias     = keystoreProperties["keyAlias"] as String
+            keyPassword  = keystoreProperties["keyPassword"] as String
+            storeFile    = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }
+    buildTypes {
+        release { signingConfig = signingConfigs.getByName("release") }
+    }
+}
+```
+
+Create `android/key.properties` (gitignored — never commit this):
+
+```
+storeFile=/home/aviv/googlekeystore.jks
+storePassword=<your-keystore-password>
+keyAlias=nerdsterandroidkey
+keyPassword=<your-key-password>
+```
+
+Ensure `android/key.properties` is in `android/.gitignore`.
+
+#### Build and upload
+
+```bash
+flutter build appbundle          # produces build/app/outputs/bundle/release/app-release.aab
+```
+
+Upload `app-release.aab` to Play Console → create new app → Internal Testing → upload AAB.
+Play Console will prompt to opt in to Google Play App Signing (recommended — keeps the
+distribution key separate from the upload key).
+
+#### Store listing
+
+- [ ] Create screenshots from the Simpsons demo running on the emulator:
+      run demo → sign in as Lisa → screenshot content feed, adding an item, etc.
+- [ ] Write short description (~80 chars) and full description.
+- [ ] Confirm app icon (512×512 PNG) looks right at Play Store scale.
+- [ ] Privacy policy URL (required by Google).
+
+
+
 ## Deferred Items
 
 ### Shareable Link Support
