@@ -127,19 +127,15 @@ Future<Map<String, dynamic>?> magicPaste(String url) async {
 }
 
 /// Fetches high-quality images for a subject to enhance the visual presentation.
+/// On native (Android/iOS), fetches directly via HTTP (YouTube, og:image, OpenLibrary, Wikipedia).
+/// On web, calls the Firebase cloud function (CORS requires server-side fetch).
+/// Falls back to cloud function if the direct path returns no images.
 Future<void> fetchImages({
   required Map<String, dynamic> subject,
   required Function(MetadataResult result) onResult,
 }) async {
-  if (_functions == null) {
-    debugPrint('MetadataService: Firebase Functions not initialized');
-    return;
-  }
-
   // Fail Fast: Ensure we have the required fields for a subject
   assert(subject['contentType'] != null, 'Subject must have a contentType');
-
-  // Basic validation to avoid unnecessary cloud calls
   if (subject.isEmpty) return;
 
   final cacheKey = subject['url'] ?? subject['title'] ?? subject.toString();
@@ -148,12 +144,26 @@ Future<void> fetchImages({
     return;
   }
 
-  // TODO: Improve image relevance.
-  // We should explore using more specific search queries (e.g., including author/year)
-  // or using specialized APIs (Google Books, TMDB, etc.) based on contentType.
+  if (!kIsWeb) {
+    // Try direct HTTP on native (faster, no cold start, no CORS restriction).
+    final direct = await _fetchImagesDirect(subject);
+    if (direct != null && (direct.image != null || (direct.images?.isNotEmpty ?? false))) {
+      _metadataCache[cacheKey] = direct;
+      onResult(direct);
+      return;
+    }
+    debugPrint('fetchImagesDirect returned no images, falling back to cloud function');
+  }
+
+  // Cloud function path (web always, native as fallback).
+  if (_functions == null) {
+    debugPrint('MetadataService: Firebase Functions not initialized');
+    return;
+  }
 
   try {
-    debugPrint('MetadataService: Calling fetchImages for ${subject['url'] ?? subject['title']}');
+    debugPrint(
+        'MetadataService: Calling fetchImages cloud function for ${subject['url'] ?? subject['title']}');
     final retval = await _functions!.httpsCallable('fetchImages').call({
       "subject": subject,
     });
@@ -187,6 +197,148 @@ Future<void> fetchImages({
     _metadataCache[cacheKey] = result;
     onResult(result);
   }
+}
+
+// ---------------------------------------------------------------------------
+// fetchImages helpers — direct HTTP implementation for non-web platforms.
+//
+// DUAL IMPLEMENTATION WARNING
+// This is the Dart port of the cloud function logic in:
+//   functions/core_logic.js        (executeFetchImages)
+//   functions/metadata_fetchers.js (fetchFromYouTube, fetchFromOpenLibrary, fetchFromWikipedia)
+//
+// Sources covered: YouTube thumbnails, HTML og:image scraping, OpenLibrary (books), Wikipedia.
+// OMDB and TMDB are intentionally omitted — they require API keys not configured in this project.
+// See TODO.md.
+//
+// Keep in sync with the JS counterparts when changing fetch logic.
+// ---------------------------------------------------------------------------
+
+/// Fetches images for a subject directly via HTTP (no cloud function).
+Future<MetadataResult?> _fetchImagesDirect(Map<String, dynamic> subject) async {
+  final url = (subject['url'] as String?) ?? '';
+  final title = (subject['title'] as String?) ?? '';
+  final contentType = (subject['contentType'] as String?) ?? '';
+  final author = (subject['author'] as String?) ?? '';
+
+  final images = <String>[];
+
+  try {
+    // 1. YouTube: thumbnail URL from video ID.
+    if (url.contains('youtube.com') || url.contains('youtu.be')) {
+      final ytImages = _youTubeThumbnails(url);
+      images.addAll(ytImages);
+    }
+
+    // 2. Fetch og:image from the subject URL.
+    if (images.isEmpty && url.startsWith('http')) {
+      try {
+        final response = await http.get(Uri.parse(url), headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        }).timeout(const Duration(seconds: 8));
+        final ogImage = _extractMeta(response.body, 'og:image');
+        if (ogImage != null && ogImage.startsWith('http')) images.add(ogImage);
+      } catch (_) {}
+    }
+
+    // 3. OpenLibrary for books.
+    if (contentType == 'book') {
+      final olImage = await _fetchFromOpenLibrary(title, author);
+      if (olImage != null) images.add(olImage);
+    }
+
+    // 4. Wikipedia image (general fallback).
+    if (images.isEmpty && title.isNotEmpty) {
+      final wikiImage = await _fetchFromWikipedia(title, contentType);
+      if (wikiImage != null) images.add(wikiImage);
+    }
+  } catch (e) {
+    debugPrint('fetchImagesDirect error: $e');
+  }
+
+  if (images.isEmpty) return null;
+  return MetadataResult(image: images.first, images: images);
+}
+
+/// Returns YouTube thumbnail URLs for a given video URL.
+List<String> _youTubeThumbnails(String url) {
+  String? videoId;
+  if (url.contains('youtu.be/')) {
+    videoId = url.split('youtu.be/')[1].split(RegExp(r'[?#]'))[0];
+  } else if (url.contains('v=')) {
+    videoId = url.split('v=')[1].split(RegExp(r'[&?#]'))[0];
+  } else if (url.contains('embed/')) {
+    videoId = url.split('embed/')[1].split(RegExp(r'[?#]'))[0];
+  } else if (url.contains('shorts/')) {
+    videoId = url.split('shorts/')[1].split(RegExp(r'[?#]'))[0];
+  }
+  if (videoId == null || videoId.isEmpty) return [];
+  return [
+    'https://img.youtube.com/vi/$videoId/hqdefault.jpg',
+    'https://img.youtube.com/vi/$videoId/maxresdefault.jpg',
+  ];
+}
+
+/// Fetches a book cover URL from OpenLibrary by title (and optional author).
+Future<String?> _fetchFromOpenLibrary(String title, String author) async {
+  if (title.isEmpty) return null;
+  try {
+    var searchUrl =
+        'https://openlibrary.org/search.json?title=${Uri.encodeComponent(title)}&limit=1';
+    if (author.isNotEmpty) searchUrl += '&author=${Uri.encodeComponent(author)}';
+    final response = await http.get(Uri.parse(searchUrl), headers: {
+      'User-Agent': 'NerdsterApp/1.0',
+    }).timeout(const Duration(seconds: 8));
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final docs = data['docs'] as List?;
+    if (docs != null && docs.isNotEmpty) {
+      final coverId = docs[0]['cover_i'];
+      if (coverId != null) {
+        return 'https://covers.openlibrary.org/b/id/$coverId-L.jpg';
+      }
+    }
+  } catch (e) {
+    debugPrint('fetchFromOpenLibrary error: $e');
+  }
+  return null;
+}
+
+/// Fetches a representative image from Wikipedia for the given title.
+Future<String?> _fetchFromWikipedia(String title, String contentType) async {
+  if (title.isEmpty) return null;
+  try {
+    // Add "(film)" qualifier for movies to improve search accuracy.
+    final searchTerm =
+        contentType == 'movie' && !title.toLowerCase().contains('film') ? '$title (film)' : title;
+    // Search for the best page title.
+    final searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search'
+        '&srsearch=${Uri.encodeComponent(searchTerm)}&format=json&origin=*';
+    final searchResponse = await http.get(Uri.parse(searchUrl), headers: {
+      'User-Agent': 'NerdsterApp/1.0',
+    }).timeout(const Duration(seconds: 8));
+    final searchData = jsonDecode(searchResponse.body) as Map<String, dynamic>;
+    final results = (searchData['query']?['search'] as List?);
+    if (results == null || results.isEmpty) return null;
+    final pageTitle = results[0]['title'] as String;
+
+    // Fetch the page thumbnail via PageImages API.
+    final imageUrl = 'https://en.wikipedia.org/w/api.php?action=query'
+        '&titles=${Uri.encodeComponent(pageTitle)}'
+        '&prop=pageimages&format=json&pithumbsize=1000&origin=*';
+    final imageResponse = await http.get(Uri.parse(imageUrl), headers: {
+      'User-Agent': 'NerdsterApp/1.0',
+    }).timeout(const Duration(seconds: 8));
+    final imageData = jsonDecode(imageResponse.body) as Map<String, dynamic>;
+    final pages = imageData['query']?['pages'] as Map?;
+    if (pages != null) {
+      final page = pages.values.first as Map?;
+      final thumbnail = page?['thumbnail'] as Map?;
+      return thumbnail?['source'] as String?;
+    }
+  } catch (e) {
+    debugPrint('fetchFromWikipedia error: $e');
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------

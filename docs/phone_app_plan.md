@@ -76,8 +76,10 @@ Goal: leverage phone capabilities where beneficial.
       IMDb fails because Amazon's bot protection blocks direct HTTP from emulator/phone IPs
       (GCP IPs used by the cloud function have better reputation). On web, the cloud function
       continues to handle IMDb correctly.
-- [ ] **Image fetching (`fetchImages`)**: Requires multiple 3rd-party APIs (Wikipedia, OpenLibrary,
-      OMDB, TMDB) with potential API keys. Deferred — cloud function continues to handle this.
+- [/] **Image fetching (`fetchImages`)**: On native, fetch images directly via HTTP,
+      bypassing the `fetchImages` cloud function. Sources (all free, no API keys):
+      YouTube thumbnails, HTML `og:image`, OpenLibrary (books), Wikipedia.
+      OMDB/TMDB are skipped — they require API keys that are not configured (see `TODO.md`).
 - [x] **App icon**: `assets/images/nerd.png` resized to all Android mipmap densities
       (mdpi 48px → xxxhdpi 192px) and placed in `android/app/src/main/res/mipmap-*/`.
 
