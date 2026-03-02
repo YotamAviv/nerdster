@@ -147,6 +147,33 @@ distribution key separate from the upload key).
 - [ ] Privacy policy URL (required by Google).
 
 
+### Phase 4 — Apple App Store
+
+Do all of the following on **Linux** before touching the Mac:
+
+- [x] Generate the iOS folder (can be done on Linux, no Xcode needed):
+      `flutter create --platforms=ios .`
+- [x] iOS-specific config (`ios/Runner/Info.plist`): display name "Nerdster" ✓,
+      added `LSApplicationQueriesSchemes: [keymeid]`, `ITSAppUsesNonExemptEncryption: false`,
+      `FlutterDeepLinkingEnabled: false`. No camera permission needed.
+- [ ] Bump version in `pubspec.yaml` if needed (format: `major.minor.patch+buildNumber`).
+- [ ] App Store Connect metadata (via browser at appstoreconnect.apple.com):
+  - [ ] App name, subtitle, description, keywords, support URL.
+  - [ ] Privacy policy URL (`https://nerdster.org/policy.html`).
+  - [x] Screenshots: resized from Play Store originals to iOS sizes.
+        `~/ios_screenshots/6.5inch/` — 1242×2688 (4 files)
+        `~/ios_screenshots/6.9inch/` — 1320×2868 (4 files)
+  - [x] App icon (1024×1024 PNG, no alpha channel): `~/ios_app_icon_1024.png`
+- [ ] Commit and push everything to `main` / `phone-app` branch.
+
+Then **one Mac session**:
+
+1. `git pull`
+2. Plug in your iPhone, then `flutter run` — installs a debug build directly on your phone.
+3. Verify sign-in and basic functionality work on iOS.
+4. `flutter build ipa` (or open in Xcode → Product → Archive)
+5. Upload via Xcode Organizer or Transporter app.
+6. In App Store Connect → submit for review.
 
 ## Deferred Items
 

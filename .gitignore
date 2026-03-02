@@ -21,3 +21,5 @@ oneofus_emulators.log
 demo-nerdster.json
 demo-oneofus.json
 DEMO.json
+# Build artifacts
+builds/
