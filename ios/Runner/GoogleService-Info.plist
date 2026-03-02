@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCqZcaUzaRy0sTPK9_gmpEjxoSuXy0gVmw</string>
+	<key>GCM_SENDER_ID</key>
+	<string>210894467329</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.nerdster.app</string>
+	<key>PROJECT_ID</key>
+	<string>nerdster</string>
+	<key>STORAGE_BUCKET</key>
+	<string>nerdster.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:210894467329:ios:e3c1379380ddd36fca2b00</string>
+	<key>DATABASE_URL</key>
+	<string>https://nerdster-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
