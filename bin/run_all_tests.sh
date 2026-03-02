@@ -4,6 +4,10 @@
 FAILED_TESTS=()
 PASSED_TESTS=()
 
+# Per-test timeout = 3× the slowest observed test (ui_test: ~33s → 100s).
+# If a test exceeds this, it is counted as failed rather than hanging forever.
+TIMEOUT_SECS=100
+
 # Prerequisites:
 #   Firebase emulators: firebase --project=nerdster emulators:start
 #                       firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start
@@ -37,24 +41,50 @@ else
 fi
 echo ""
 
-# 3. Integration Tests
-# Note: integration tests run against the local emulator by default (USE_EMULATOR=true).
-# To run magic_paste_test.dart against production instead:
-#   flutter drive --driver=test_driver/integration_test.dart \
-#     --target=integration_test/magic_paste_test.dart -d chrome \
-#     --dart-define=USE_EMULATOR=false
-echo "=== Running Integration Tests ==="
+# 3. Integration Tests (Chrome)
+echo "=== Running Integration Tests (Chrome, timeout=${TIMEOUT_SECS}s each) ==="
 shopt -s nullglob
 for test_file in integration_test/*.dart; do
     test_name=$(basename "$test_file")
     echo "Running: $test_name"
-    if flutter drive --driver=test_driver/integration_test.dart --target="$test_file" -d chrome; then
-        PASSED_TESTS+=("$test_name")
+    if timeout "$TIMEOUT_SECS" flutter drive \
+        --driver=test_driver/integration_test.dart \
+        --target="$test_file" \
+        -d chrome; then
+        PASSED_TESTS+=("$test_name (chrome)")
     else
-        FAILED_TESTS+=("$test_name")
+        exit_code=$?
+        if [ "$exit_code" -eq 124 ]; then
+            echo "TIMEOUT: $test_name exceeded ${TIMEOUT_SECS}s"
+        fi
+        FAILED_TESTS+=("$test_name (chrome)")
     fi
     echo ""
 done
+
+# 4. Integration Tests (Android emulator, if one is running)
+ANDROID_DEVICE=$(flutter devices 2>/dev/null | grep '(emulator)' | awk -F'•' '{print $2}' | tr -d ' ' | head -1)
+if [ -n "$ANDROID_DEVICE" ]; then
+    echo "=== Running Integration Tests (Android emulator: $ANDROID_DEVICE, timeout=${TIMEOUT_SECS}s each) ==="
+    for test_file in integration_test/*.dart; do
+        test_name=$(basename "$test_file")
+        echo "Running: $test_name"
+        if timeout "$TIMEOUT_SECS" flutter test "$test_file" -d "$ANDROID_DEVICE"; then
+            PASSED_TESTS+=("$test_name (android)")
+        else
+            exit_code=$?
+            if [ "$exit_code" -eq 124 ]; then
+                echo "TIMEOUT: $test_name exceeded ${TIMEOUT_SECS}s"
+            fi
+            FAILED_TESTS+=("$test_name (android)")
+        fi
+        echo ""
+    done
+else
+    echo "=== No Android emulator running — skipping Android integration tests ==="
+    echo "    (Start one with: flutter emulators --launch Pixel_3a_API_35)"
+    echo ""
+fi
 
 # Summary
 echo "========================================"
