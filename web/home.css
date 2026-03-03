@@ -26,19 +26,26 @@
   /* slightly lighter than background for panels */
 
   /* Layout tokens */
-  --radius: 0.75rem; /* 12px */
-  --gap: 1.125rem;   /* 18px */
+  --radius: 0.75rem;
+  /* 12px */
+  --gap: 1.125rem;
+  /* 18px */
 
   /* Typography tokens */
   --mono-font: 'Fira Code', 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, monospace;
   --font-family-base: var(--mono-font);
   /* Base font sizes (use rem so scaling follows the root font-size)
     ordered smallest → largest for readability */
-  --fs-sm: 0.875rem;      /* 14px */
-  --fs-md: 0.9375rem;     /* 15px */
-  --fs-base: 1rem;        /* 16px */
-  --fs-18: 1.125rem;      /* 18px */
-  --fs-lg: 1.25rem;       /* 20px */
+  --fs-sm: 0.875rem;
+  /* 14px */
+  --fs-md: 0.9375rem;
+  /* 15px */
+  --fs-base: 1rem;
+  /* 16px */
+  --fs-18: 1.125rem;
+  /* 18px */
+  --fs-lg: 1.25rem;
+  /* 20px */
   --lh: 1.55;
 
   /* Shadows */
@@ -86,7 +93,7 @@ main#content {
   border-bottom: 1px solid rgba(124, 252, 0, 0.03);
   padding: 0.875rem calc(var(--gap) * 1.2);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
 }
@@ -305,12 +312,14 @@ main#content {
 
 /* Modal-specific typography: slightly smaller headings and body text */
 .modal-inner h2 {
-  font-size: 1.05rem; /* ~16.8px */
+  font-size: 1.05rem;
+  /* ~16.8px */
   margin-top: 0;
 }
 
 .modal-inner h3 {
-  font-size: 0.95rem; /* ~15.2px */
+  font-size: 0.95rem;
+  /* ~15.2px */
   margin-top: 0;
 }
 
@@ -344,8 +353,13 @@ main#content {
     font-size: 0.92rem;
   }
 
-  .modal-inner h2 { font-size: 1rem; }
-  .modal-inner h3 { font-size: 0.95rem; }
+  .modal-inner h2 {
+    font-size: 1rem;
+  }
+
+  .modal-inner h3 {
+    font-size: 0.95rem;
+  }
 
   .modal-inner .embed-area iframe {
     height: 16.25rem;
@@ -361,7 +375,8 @@ main#content {
   border: 0;
   background: transparent;
   font-size: var(--fs-18);
-  color: #fff; /* make the close X visible on dark modal backgrounds */
+  color: #fff;
+  /* make the close X visible on dark modal backgrounds */
   /* make it a circular tap target on touch devices */
   width: 2.25rem;
   height: 2.25rem;
@@ -369,7 +384,7 @@ main#content {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
 }
 
 /* -------------------- Buttons / Embeds / Footer -------------------- */
@@ -430,9 +445,10 @@ main#content {
   color: var(--accent);
   text-decoration: none;
 }
+
 .container a:visited,
 .modal-inner a:visited {
-  color: rgba(124,252,0,0.65);
+  color: rgba(124, 252, 0, 0.65);
 }
 
 .site-footer a:hover {
@@ -592,6 +608,7 @@ h3,
     transition: none !important
   }
 }
+
 .scrollable-content {
   max-height: 400px;
   overflow-y: auto;
@@ -615,4 +632,86 @@ a.man-link:hover {
   background-color: var(--fg-primary);
   color: var(--bg-primary);
   text-decoration: none;
+}
+
+/* -------------------- App Store Links -------------------- */
+.app-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.app-link-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+
+.app-link-btn img,
+.app-links a img {
+  height: 2.5rem;
+  width: auto;
+  display: block;
+  border-radius: 0.375rem;
+  transition: opacity 0.15s;
+}
+
+.app-link-btn:hover img,
+.app-links a:hover img {
+  opacity: 0.8;
+}
+
+.web-app-link {
+  font-size: var(--fs-sm);
+  color: var(--accent) !important;
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.web-app-link:hover {
+  text-decoration: underline;
+}
+
+/* -------------------- Testing Dialog -------------------- */
+#testing-dialog {
+  border: 1px solid rgba(124, 252, 0, 0.12);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-family-base);
+  padding: 1.5rem;
+  max-width: 26rem;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
+}
+
+#testing-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+#testing-dialog a {
+  color: var(--accent);
+}
+
+#testing-dialog .app-links {
+  flex-direction: row;
+  justify-content: center;
+}
+
+#close-testing-dialog {
+  appearance: none;
+  border: 1px solid rgba(124, 252, 0, 0.2);
+  background: transparent;
+  color: var(--fg);
+  font-family: var(--font-family-base);
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+#close-testing-dialog:hover {
+  background: rgba(124, 252, 0, 0.06);
 }

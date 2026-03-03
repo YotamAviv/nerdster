@@ -35,10 +35,31 @@ Reference implementation for the ONE-OF-US.NET paradigm
   All your likes are belong to us.</pre>
             </div>
           </div>
+          <aside class="app-links" aria-label="Get the Nerdster app">
+            <button class="app-link-btn" id="ios-app-btn" aria-label="Download on the App Store">
+              <img src="img/apple.webp" alt="Download on the App Store" />
+            </button>
+            <button class="app-link-btn" id="android-app-btn" aria-label="Get it on Google Play">
+              <img src="img/google.webp" alt="Get it on Google Play" />
+            </button>
+            <a href="https://nerdster.org" class="web-app-link">Nerdster Web</a>
+          </aside>
         </div>
       </div>
     </div>
   </header>
+
+  <dialog id="testing-dialog" aria-modal="true">
+    <p>The Nerdster phone app is currently in <strong>internal testing</strong>.</p>
+    <p>
+      Email <a href="mailto:contact@nerdster.org">contact@nerdster.org</a> to be added:<br />
+      <strong>iPhone:</strong> include your Apple ID email — you'll get a TestFlight invitation.<br />
+      <strong>Android:</strong> include your Gmail address — you'll get a Play Store opt-in link.
+    </p>
+    <div style="margin-top: 1rem;">
+      <button id="close-testing-dialog">Close</button>
+    </div>
+  </dialog>
 
   <div id="overlay" class="overlay" hidden></div>
 
@@ -391,6 +412,13 @@ DEFER: Sign out upon loading so that folks don't like Simpsons content too easil
   <script src="data/demoData.js" defer></script>
   <script src="verify_helper.js" defer></script>
   <script src="home.js" defer></script>
+  <script>
+    const testingDialog = document.getElementById('testing-dialog');
+    document.getElementById('ios-app-btn').addEventListener('click', () => testingDialog.showModal());
+    document.getElementById('android-app-btn').addEventListener('click', () => testingDialog.showModal());
+    document.getElementById('close-testing-dialog').addEventListener('click', () => testingDialog.close());
+    testingDialog.addEventListener('click', (e) => { if (e.target === testingDialog) testingDialog.close(); });
+  </script>
 </body>
 
 </html>
