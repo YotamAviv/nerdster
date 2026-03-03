@@ -401,10 +401,29 @@ DEFER: Sign out upon loading so that folks don't like Simpsons content too easil
     <div class="container">
       <p>
         <a href="mailto:contact@nerdster.org">contact@nerdster.org</a>,
-        <a href="https://github.com/YotamAviv/nerdster" target="_blank">source</a>
+        <a href="https://github.com/YotamAviv/nerdster" target="_blank">source</a>,
+        <a href="#" id="memoir-link">deleting a deletion</a>
       </p>
     </div>
   </footer>
+
+  <template id="memoir-content">
+    <h3>Deleting a Deletion.. A Memoir</h3>
+    <p>"You should write a book", friends have told me. They don't even read my emails.
+      And so instead of writing a book no one will read, I've chosen to write an app no one will use, to start a
+      movement
+      I expect no one will join..</p>
+    <p>I've been a hacker, a poser, a midnight toker, but always, consistently nerd.
+      As I was developing the Nerdster and started diving into the details, the purpose of allowing anyone to state
+      anything about anything (authentically (cryptographically securely, that is) as themselves to their trusted
+      network) as well as to delete (censor) anything publicly, openly, to protect their network that relies on them for
+      this, I stumbled: what if someone censors (deletes) someone else's deletion? Deleting a deletion.. I've been
+      enjoying the struggle, and it's what I've always been doing all along. This is me.</p>
+    <blockquote>
+      There was as little need to do this as there was use.<br />
+      — W. S. Maugham
+    </blockquote>
+  </template>
 
   <script src="guard.js" defer></script>
   <script src="iframe_helper.js" defer></script>
@@ -418,6 +437,17 @@ DEFER: Sign out upon loading so that folks don't like Simpsons content too easil
     document.getElementById('android-app-btn').addEventListener('click', () => testingDialog.showModal());
     document.getElementById('close-testing-dialog').addEventListener('click', () => testingDialog.close());
     testingDialog.addEventListener('click', (e) => { if (e.target === testingDialog) testingDialog.close(); });
+
+    document.getElementById('memoir-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      const modal = document.getElementById('modal');
+      const content = document.getElementById('modalContent');
+      const tmpl = document.getElementById('memoir-content');
+      content.innerHTML = '';
+      content.appendChild(tmpl.content.cloneNode(true));
+      modal.removeAttribute('hidden');
+      document.getElementById('overlay').removeAttribute('hidden');
+    });
   </script>
 </body>
 
