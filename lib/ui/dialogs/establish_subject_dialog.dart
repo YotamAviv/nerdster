@@ -24,7 +24,7 @@ Future<Jsonish?> establishSubjectDialog(BuildContext context) {
           child: Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
               ),
               padding:
                   EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),

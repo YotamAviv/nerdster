@@ -9,6 +9,7 @@ import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
+import 'package:nerdster/ui/util_ui.dart';
 import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/settings/prefs.dart';
@@ -288,7 +289,7 @@ class _SignInDialogState extends State<SignInDialog> {
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: kBorderRadius,
         ),
         padding: EdgeInsets.fromLTRB(16, 24, 16, MediaQuery.of(context).viewInsets.bottom + 16),
         child: ConstrainedBox(
@@ -556,7 +557,7 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(

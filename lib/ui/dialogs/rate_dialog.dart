@@ -11,7 +11,6 @@ import 'package:nerdster/ui/util/on_off_icons.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
-
 class RateDialog extends StatefulWidget {
   final SubjectAggregation aggregation;
   final FeedModel model;
@@ -239,7 +238,7 @@ class _RateDialogState extends State<RateDialog> {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
       padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
       child: Column(
