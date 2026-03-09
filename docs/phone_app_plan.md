@@ -160,9 +160,7 @@ Do all of the following on **Linux** before touching the Mac:
 - [ ] App Store Connect metadata (via browser at appstoreconnect.apple.com):
   - [ ] App name, subtitle, description, keywords, support URL.
   - [ ] Privacy policy URL (`https://nerdster.org/policy.html`).
-  - [x] Screenshots: resized from Play Store originals to iOS sizes.
-        `~/ios_screenshots/6.5inch/` — 1242×2688 (4 files)
-        `~/ios_screenshots/6.9inch/` — 1320×2868 (4 files)
+  - [ ] Screenshots (see **iOS Screenshots** section below for details).
   - [x] App icon (1024×1024 PNG, no alpha channel): `~/ios_app_icon_1024.png`
 - [ ] Commit and push everything to `main` / `phone-app` branch.
 
@@ -198,3 +196,69 @@ routing for settings is deferred.
 `defaultSignIn()` reads `Uri.base.queryParameters` to handle the POV query parameter on web.
 On mobile, `Uri.base` is not meaningful. Currently harmless (returns empty, falls through to
 key store). Full deep-link-based startup sign-in is deferred (see Shareable Link Support above).
+
+## iOS Screenshots
+
+### Apple's Minimum Requirements (2025)
+
+Apple only requires two sets to cover all devices. A screenshot set for a larger device is
+automatically scaled down for smaller ones, so you do **not** need separate 6.5" or 5.5" sets.
+
+| Slot | Required dimensions | Covers |
+|---|---|---|
+| **iPhone 6.9"** | 1320 × 2868 px | All iPhones (mandatory) |
+| **iPad 13"** | 2048 × 2732 px | All iPads (mandatory if app supports iPad) |
+
+### Avoid Resizing: Use the Right Simulator Device
+
+If you take a screenshot on the correct simulator, the output is already the exact required size.
+No ImageMagick needed.
+
+| Required size | Simulator device to use |
+|---|---|
+| 1320 × 2868 (iPhone 6.9") | **iPhone 16 Pro Max** |
+| 2048 × 2732 (iPad 13") | **iPad Pro 13-inch (M4)** |
+
+The app UI looks different between phone and tablet (`isSmall` flag). Take screenshots in both
+simulators to show both layouts.
+
+### Steps (on Mac)
+
+```bash
+# 1. Start the simulator (run one at a time, or use two terminal tabs)
+flutter run -d "iPhone 16 Pro Max"
+flutter run -d "iPad Pro 13-inch (M4)"
+
+# 2. Navigate to desired screens in the app (sign-in as Lisa for the Simpsons demo, etc.)
+
+# 3. Take screenshot from terminal (saves to Desktop by default)
+xcrun simctl io booted screenshot ~/Desktop/screenshot_phone_01.png
+xcrun simctl io booted screenshot ~/Desktop/screenshot_tablet_01.png
+
+# Or: File → Save Screenshot (⌘S) inside the Simulator window
+```
+
+Capture the key screens Apple looks for: content feed, item detail, sign-in/onboarding, etc.
+
+### Fallback: Resize with ImageMagick
+
+If you only have screenshots at a different resolution (e.g. from a different simulator device
+or from Android), resize to the exact required dimensions:
+
+```bash
+# iPhone 6.9" — 1320×2868
+convert input.png -resize 1320x2868^ -gravity center -extent 1320x2868 out_phone.png
+
+# iPad 13" — 2048×2732
+convert input.png -resize 2048x2732^ -gravity center -extent 2048x2732 out_tablet.png
+```
+
+Note: `-resize WxH^` fills the canvas (may crop), `-extent WxH` crops to exact size centered.
+Use this only when the source aspect ratio is close enough that cropping is acceptable.
+
+### Upload
+
+In App Store Connect → your app → **App Store** tab → **Previews and Screenshots**:
+- Select "iPhone 6.9"" and upload the phone screenshots.
+- Select "iPad 13"" (via "View All Sizes in Media Manager" if not shown by default) and upload
+  the tablet screenshots.
