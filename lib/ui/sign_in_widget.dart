@@ -9,6 +9,7 @@ import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
+import 'package:nerdster/ui/util_ui.dart';
 import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/settings/prefs.dart';
@@ -112,7 +113,7 @@ class _SignInWidgetState extends State<SignInWidget> {
       onPressed: () {
         showDialog(
           context: context,
-          barrierDismissible: false,
+          barrierDismissible: true,
           builder: (context) => const Dialog(
             backgroundColor: Colors.transparent,
             child: SignInDialog(),
@@ -124,11 +125,7 @@ class _SignInWidgetState extends State<SignInWidget> {
 }
 
 class SignInDialog extends StatefulWidget {
-  /// When used as a standalone screen, provide [onDismiss] to signal the
-  /// parent that the user is done. When used as a dialog, leave it null
-  /// and the Dismiss button will call Navigator.pop.
-  final VoidCallback? onDismiss;
-  const SignInDialog({this.onDismiss, super.key});
+  const SignInDialog({super.key});
 
   @override
   State<SignInDialog> createState() => _SignInDialogState();
@@ -136,6 +133,8 @@ class SignInDialog extends StatefulWidget {
 
 class _SignInDialogState extends State<SignInDialog> {
   final ValueNotifier<bool> _storeKeys = ValueNotifier(true);
+  int _headingTapCount = 0;
+  bool _showPaste = false;
 
   // We pre-create the session so we can generate a valid Link widget immediately.
   late Future<SignInSession> _sessionFuture;
@@ -158,6 +157,7 @@ class _SignInDialogState extends State<SignInDialog> {
   void dispose() {
     signInState.removeListener(_update);
     _storeKeys.dispose();
+    _sessionFuture.then((s) => s.cancel()).catchError((_) {});
     super.dispose();
   }
 
@@ -273,82 +273,78 @@ class _SignInDialogState extends State<SignInDialog> {
         buildUniversalBtn(false),
       ];
     }
-    if (isDev) {
+    if (isDev || _showPaste) {
       buttons.add(_buildListButton(
         icon: Icons.content_paste,
         label: 'Paste Keys',
         subtitle: 'Paste JSON keys directly',
-        onPressed: () => pasteSignIn(context),
+        onPressed: () => pasteSignIn(context, storeKeys: _storeKeys),
         recommended: false,
       ));
     }
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      padding: EdgeInsets.fromLTRB(16, 24, 16, MediaQuery.of(context).viewInsets.bottom + 16),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: SingleChildScrollView(
-          clipBehavior: Clip.none,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildStatusTable(hasIdentity, hasDelegate,
-                  identityArrived: identityArrived, delegateArrived: delegateArrived),
-              const SizedBox(height: 12),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop && hasIdentity) Navigator.of(context).pop();
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: kBorderRadius,
+        ),
+        padding: EdgeInsets.fromLTRB(16, 24, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: SingleChildScrollView(
+            clipBehavior: Clip.none,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildStatusTable(hasIdentity, hasDelegate,
+                    identityArrived: identityArrived, delegateArrived: delegateArrived),
+                const SizedBox(height: 12),
 
-              // Sign-in method heading
-              const Align(
-                alignment: Alignment.centerLeft,
-                child:
-                    Text('Sign in using:', style: TextStyle(fontSize: 13, color: Colors.black54)),
-              ),
-
-              // Actions - Flat List
-              ...buttons,
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Dismiss: disabled when not signed in.
-                  // In standalone mode (screen), calls onDismiss; in dialog mode, pops.
-                  TextButton(
-                    onPressed: hasIdentity
-                        ? () {
-                            if (widget.onDismiss != null) {
-                              widget.onDismiss!();
-                            } else {
-                              Navigator.pop(context);
-                            }
-                          }
-                        : null,
-                    child: const Text('Dismiss'),
+                // Sign-in method heading
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _headingTapCount++;
+                        if (_headingTapCount >= 7) _showPaste = true;
+                      });
+                    },
+                    child: const Text('Sign in using:',
+                        style: TextStyle(fontSize: 13, color: Colors.black54)),
                   ),
-                  Row(
-                    children: [
-                      if (hasDelegate)
-                        TextButton.icon(
-                          icon: const Icon(Icons.logout),
-                          label: const Text('Sign Out'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red,
-                          ),
-                          onPressed: () async {
-                            await KeyStore.wipeKeys();
-                            // Drop delegate only — keep identity so user can see it
-                            signInState.signOut(clearIdentity: false);
-                          },
+                ),
+
+                // Actions - Flat List
+                ...buttons,
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (hasDelegate)
+                      TextButton.icon(
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Sign Out'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.red,
                         ),
-                      MyCheckbox(_storeKeys, 'Store keys'),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+                        onPressed: () async {
+                          await KeyStore.wipeKeys();
+                          // Drop delegate only — keep identity so user can see it
+                          signInState.signOut(clearIdentity: false);
+                        },
+                      ),
+                    MyCheckbox(_storeKeys, 'Store keys'),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -571,7 +567,7 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(

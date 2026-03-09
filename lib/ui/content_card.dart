@@ -58,11 +58,12 @@ class _ContentCardState extends State<ContentCard> {
 
   Future<void> _fetchMetadata() async {
     final subject = widget.aggregation.subject;
+    final expectedToken = widget.aggregation.token;
     if (subject.containsKey('url') || subject.containsKey('title')) {
       await fetchImages(
         subject: subject,
         onResult: (result) {
-          if (mounted) {
+          if (mounted && widget.aggregation.token == expectedToken) {
             setState(() {
               _metadata = result;
             });
@@ -90,7 +91,7 @@ class _ContentCardState extends State<ContentCard> {
             return Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
               ),
               clipBehavior: Clip.antiAlias,
               child: SingleChildScrollView(

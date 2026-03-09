@@ -24,7 +24,7 @@ Future<Jsonish?> establishSubjectDialog(BuildContext context) {
           child: Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
               ),
               padding:
                   EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
@@ -298,7 +298,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
         final Widget helpLink = GestureDetector(
           onTap: showHelpDialog,
           child: Text(
-            small ? 'What?' : 'What is a Subject?',
+            small ? 'What?' : 'Logical Subject?',
             style: const TextStyle(
               color: Colors.blue,
               decoration: TextDecoration.underline,
@@ -313,8 +313,6 @@ class _SubjectFieldsState extends State<SubjectFields> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Header: [dropdown] [📋 paste]   [Establish Subject]
-              //                                  [What is a Subject?]
               IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -373,7 +371,7 @@ Copy a web URL or a Share link first.''',
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          small ? 'Subject' : 'Establish Subject',
+                          small ? 'Subject' : 'Establish Logical Subject',
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                         helpLink,

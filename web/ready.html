@@ -1,117 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="box.css" />
-    <link rel="stylesheet" href="oneofus.css" />
-  </head>
-  <body>
-    <main>
-      <h1>Ready Now</h1>
-      <p>
-        Any service, big or small (consider Craigslist.org, for example) could
-        do any of these today:
-      </p>
 
-      <ul>
-        <li>
-          have us sign in using the ONE-OF-US.NET phone app as ourselves and
-          using (or not) their own delegate keys
-        </li>
-        <li>
-          implement its own phone app to replace the ONE-OF-US.NET phone app
-          (your keys are yours and available for export)
-        </li>
-        <li>
-          read, verify, and leverage the content you've signed and published
-          elsewhere
-        </li>
-        <li>
-          start publishing content signed by our own delegate key for that
-          service and make it available (or not) to us all
-        </li>
-      </ul>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="box.css" />
+  <link rel="stylesheet" href="oneofus.css" />
+</head>
 
-      <p>
-        This (and only this) is what the Nerdster and the ONE-OF-US.NET phone
-        app use. The phone app stores your identity private key on your phone,
-        and Nerdster can remember your private delegate key, but otherwise, both
-        apps read and verify your own signed, published content as they load up
-        just like other services would to leverage that data.
-      </p>
+<body>
+  <main>
+    <h1>Ready Now</h1>
+    <p>
+      Any service, big or small (consider Craigslist.org, for example) could
+      do any of these today:
+    </p>
 
-      <h2>QR Sign-in</h2>
-      <div class="text-iframe-2col">
-        <div class="content">
-          <p>
-            There is no special access between one-of-us.net and nerdster.org.
-            The ONE-OF-US.NET phone app reads the
-            <strong>Sign-in Parameters</strong> in the QR code, checks if a
-            delegate key for (<span class="json-highlight">"domain"</span>) is
-            present, and then performs an HTTP POST over the Internet to the
-            address (<span class="json-highlight">"url"</span>) it was
-            instructed to, optionally end-to-end encrypted using the disposable
-            encryption public key provided (<span class="json-highlight"
-              >"encryptionPk"</span
-            >).
-          </p>
-        </div>
-        <div class="embed">
-          <iframe id="flutterApp"></iframe>
-        </div>
+    <ul>
+      <li>
+        have us sign in using the ONE-OF-US.NET phone app as ourselves and
+        using (or not) their own delegate keys
+      </li>
+      <li>
+        implement its own phone app to replace the ONE-OF-US.NET phone app
+        (your keys are yours and available for export)
+      </li>
+      <li>
+        read, verify, and leverage the content you've signed and published
+        elsewhere
+      </li>
+      <li>
+        start publishing content signed by our own delegate key for that
+        service and make it available (or not) to us all
+      </li>
+    </ul>
+
+    <p>
+      This (and only this) is what the Nerdster and the ONE-OF-US.NET phone
+      app use. The phone app stores your identity private key on your phone,
+      and Nerdster can remember your private delegate key, but otherwise, both
+      apps read and verify your own signed, published content as they load up
+      just like other services would to leverage that data.
+    </p>
+
+    <h2>QR Sign-in</h2>
+    <div class="text-iframe-2col">
+      <div class="content">
+        <p>
+          There is no special access between one-of-us.net and nerdster.org.
+          The ONE-OF-US.NET phone app reads the
+          <strong>Sign-in Parameters</strong> in the QR code, checks if a
+          delegate key for (<span class="json-highlight">"domain"</span>) is
+          present, and then performs an HTTP POST over the Internet to the
+          address (<span class="json-highlight">"url"</span>) it was
+          instructed to, optionally end-to-end encrypted using the disposable
+          encryption public key provided (<span class="json-highlight">"encryptionPk"</span>).
+        </p>
+        <p>
+          When signing in to a service on the same device as the ONE-OF-US.NET phone app, these 2 are offered:
+          <strong>https://keymeid</strong> (a &quot;URL scheme&quot;) is registered by the ONE-OF-US.NET phone app. It's
+          heterogeneous and works reliably on Android; on iPhones, not so much.
+          <br>
+          <strong>https://one-of-us.net</strong> is obviously not heterogeneous.
+          This tech goes by &quot;Universal Links (iOS) & App Links (Android)&quot;, and it does work reliably on
+          iPhones.
+          <br>
+          The data communcited is the same as what's in the Sign-in Parameters.
+        </p>
       </div>
+      <div class="embed">
+        <iframe id="flutterApp"></iframe>
+      </div>
+    </div>
 
-      <h2>Our signed content is published</h2>
-      <p>
-        For example: My signed content is here:
-        <a
-          href="https://export.one-of-us.net/?spec=%222c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431%22"
-          >identity</a
-        >,
-        <a
-          href="https://export.nerdster.org/?spec=%22f4e45451dd663b6c9caf90276e366f57e573841b%22"
-          >Nerdster content</a
-        >.<br />
-        Both services publish all signed content at
-        <span class="code"
-          >https://export.&lt;service&gt;/?spec=&lt;key token&gt;</span
-        >.
-      </p>
-      <ul>
-        <li>Identity statements so any service can compute who's who.</li>
-        <li>
-          Nerdster follow statements so any service can compute who Nerdster
-          follows who and for what (if they care ;), and all the rest of it too:
-          ratings, comments, equate/relate statements, censor statements, etc...
-        </li>
-      </ul>
+    <h2>Our signed content is published</h2>
+    <p>
+      For example: My signed content is here:
+      <a href="https://export.one-of-us.net/?spec=%222c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431%22">identity</a>,
+      <a href="https://export.nerdster.org/?spec=%22f4e45451dd663b6c9caf90276e366f57e573841b%22">Nerdster
+        content</a>.<br />
+      Both services publish all signed content at
+      <span class="code">https://export.&lt;service&gt;/?spec=&lt;key token&gt;</span>.
+    </p>
+    <ul>
+      <li>Identity statements so any service can compute who's who.</li>
+      <li>
+        Nerdster follow statements so any service can compute who Nerdster
+        follows who and for what (if they care ;), and all the rest of it too:
+        ratings, comments, equate/relate statements, censor statements, etc...
+      </li>
+    </ul>
 
-      <h2>Services are free to choose</h2>
-      <p>
-        Other services don't need to be as naked and transparent as the
-        Nerdster, don't have to use delegate keys (just identifying a Point of
-        View (PoV) might be enough), and they don't have to expose folks' signed
-        content, although this enables other services to audit, and that can
-        enhance credibility, which is nice.
-      </p>
-    </main>
+    <h2>Services are free to choose</h2>
+    <p>
+      Other services don't need to be as naked and transparent as the
+      Nerdster, don't have to use delegate keys (just identifying a Point of
+      View (PoV) might be enough), and they don't have to expose folks' signed
+      content, although this enables other services to audit, and that can
+      enhance credibility, which is nice.
+    </p>
+  </main>
 
-    <script src="iframe_helper.js"></script>
-    <script>
-      (function () {
-        const iframe = document.getElementById("flutterApp");
+  <script src="iframe_helper.js"></script>
+  <script>
+    (function () {
+      const iframe = document.getElementById("flutterApp");
 
-        const dummy = `{
+      const dummy = `{
   "crv": "Ed25519",
   "kty": "OKP",
   "x": "VP_2SPvYhn9quOo1nEKNCuwkPnQqQmmpaUdvK_YoKns"
 }`;
 
-        iframe.src = IframeHelper.constructUrl({
-          qrSignIn: true,
-        });
-      })();
-    </script>
-  </body>
+      iframe.src = IframeHelper.constructUrl({
+        qrSignIn: true,
+      });
+    })();
+  </script>
+</body>
+
 </html>

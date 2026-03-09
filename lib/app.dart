@@ -121,7 +121,7 @@ class _AppHomeState extends State<_AppHome> {
     _dialogShowing = true;
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (_) => const Dialog(
         backgroundColor: Colors.transparent,
         child: SignInDialog(),

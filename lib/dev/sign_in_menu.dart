@@ -79,7 +79,7 @@ class _SignInMenuState extends State<SignInMenu> {
           menuChildren: [
             MenuItemButton(
               leadingIcon: const Icon(Icons.copy),
-              onPressed: () => pasteSignIn(context),
+              onPressed: () => pasteSignIn(context, storeKeys: ValueNotifier(false)),
               child: const Text('Paste sign-in'),
             ),
             MenuItemButton(

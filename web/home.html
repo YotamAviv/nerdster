@@ -1,417 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-73L5H89X4Z"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag("js", new Date());
     gtag("config", "G-73L5H89X4Z");
   </script>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Nerdster — identity demo</title>
-    <!-- Add monospace/code fonts for a nerdy, terminal-like UI (Fira Code, JetBrains Mono) -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="box-common.css" />
-    <link rel="stylesheet" href="home.css" />
-  </head>
-  <body>
-    <header class="site-header">
-      <div class="top-row">
-        <div class="container">
-          <div class="header-band">
-            <div class="left-group">
-              <img src="img/nerd.png" alt="Nerdster" class="logo" />
-              <div class="brand">
-                <h1>Nerdster</h1>
-                <pre class="tagline-pre">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nerdster — identity demo</title>
+  <!-- Add monospace/code fonts for a nerdy, terminal-like UI (Fira Code, JetBrains Mono) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="box-common.css" />
+  <link rel="stylesheet" href="home.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="top-row">
+      <div class="container">
+        <div class="header-band">
+          <div class="left-group">
+            <img src="img/nerd.png" alt="Nerdster" class="logo" />
+            <div class="brand">
+              <h1>Nerdster</h1>
+              <pre class="tagline-pre">
 Reference implementation for the ONE-OF-US.NET paradigm
-  All your likes are belong to us.</pre
-                >
-              </div>
+  All your likes are belong to us.</pre>
             </div>
           </div>
+          <aside class="app-links" aria-label="Get the Nerdster app">
+            <button class="app-link-btn" id="ios-app-btn" aria-label="Download on the App Store">
+              <img src="img/apple.webp" alt="Download on the App Store" />
+            </button>
+            <button class="app-link-btn" id="android-app-btn" aria-label="Get it on Google Play">
+              <img src="img/google.webp" alt="Get it on Google Play" />
+            </button>
+            <a href="https://nerdster.org" class="web-app-link">Nerdster Web</a>
+          </aside>
         </div>
       </div>
-    </header>
+    </div>
+  </header>
 
-    <div id="overlay" class="overlay" hidden></div>
+  <dialog id="testing-dialog" aria-modal="true">
+    <p>The Nerdster phone app is currently in <strong>internal testing</strong>.</p>
+    <p>
+      Email <a href="mailto:contact@nerdster.org">contact@nerdster.org</a> to be added:<br />
+      <strong>iPhone:</strong> include your Apple ID email — you'll get a TestFlight invitation.<br />
+      <strong>Android:</strong> include your Gmail address — you'll get a Play Store opt-in link.
+    </p>
+    <div style="margin-top: 1rem;">
+      <button id="close-testing-dialog">Close</button>
+    </div>
+  </dialog>
 
-    <main class="container">
-      <section class="boxes" aria-live="polite">
-        <div class="box" role="button" tabindex="0">
-          <h3>Reference implementation</h3>
-          <p class="muted">Works with the ONE-OF-US.NET phone app</p>
-          <template class="box-detail">
-            <h3>
-              Reference implementation, works with the ONE-OF-US.NET phone app.
-            </h3>
-            <ul>
-              <li>
-                Identify yourself using your public key to use trusted content
-                from your Point of View.
-              </li>
-              <li>
-                Sign in with a delegate key to publish your contributions as
-                yourself.
-              </li>
-            </ul>
-            <h3>Get the ONE-OF-US.NET phone app and use it</h3>
-            <p>
-              Vouch for others' humanity and identity; have them vouch for
-              yours.
-            </p>
-            <h3>Enter the Nerdster, as yourself</h3>
-            <ul>
-              <li>
-                Click "QR sign in" on the Nerdster menu (embedded below or
-                directly at
-                <a href="https://nerdster.org">https://nerdster.org</a>) to
-                display its sign-in parameters.
-              </li>
-              <li>Click the QR sign-in icon on your phone app.</li>
-              <li>
-                Scan the QR code shown on the Nerdster using your phone app.
-              </li>
-              <li>Approve "create a delegate key" on your phone app.</li>
-              <li>
-                You're in! You have no ONE-OF-US.NET account, no Nerdster
-                account, yet you can post content your network will know came
-                from you.
-              </li>
-            </ul>
-            <h3>Use the Nerdster, as yourself</h3>
-            <ul>
-              <li>Like, rate, comment, ...</li>
-              <li>
-                Check out who said what, consider following (or blocking) them
-                for specific follow contexts.
-              </li>
-              <li>Share your PoV from the Share menu.</li>
-            </ul>
-          </template>
-        </div>
-        <div class="box" role="button" tabindex="0">
-          <h3>Demonstrate the crypto usage</h3>
-          <p class="muted">
-            Shows off the cryptographically signed statements, signatures...
+  <div id="overlay" class="overlay" hidden></div>
+
+  <main class="container">
+    <section class="boxes" aria-live="polite">
+      <div class="box" role="button" tabindex="0">
+        <h3>Reference implementation</h3>
+        <p class="muted">Works with the ONE-OF-US.NET phone app</p>
+        <template class="box-detail">
+          <h3>
+            Reference implementation, works with the ONE-OF-US.NET phone app.
+          </h3>
+          <ul>
+            <li>
+              Identify yourself using your public key to use trusted content
+              from your Point of View.
+            </li>
+            <li>
+              Sign in with a delegate key to publish your contributions as
+              yourself.
+            </li>
+          </ul>
+          <h3>Get the ONE-OF-US.NET phone app and use it</h3>
+          <p>
+            Vouch for others' humanity and identity; have them vouch for
+            yours.
+          </p>
+          <h3>Enter the Nerdster, as yourself</h3>
+          <ul>
+            <li>
+              If no-one is signed in in the embedded Nerdster below, options to sign in should be displayed.
+              <br />If one of the demo identities is signed in, click the key
+              icon in the top right to sign in differently.
+            </li>
+          </ul>
+          <h3>Use the Nerdster, as yourself</h3>
+          <ul>
+            <li>Like, rate, comment, ...</li>
+            <li>
+              Check out who said what, consider following (or blocking) them
+              for specific follow contexts.
+            </li>
+            <li>Share your Point of View (PoV) using the Share menu (reveal the menu by clicking the three horizontal
+              bars in the top right).</li>
+          </ul>
+        </template>
+      </div>
+      <div class="box" role="button" tabindex="0">
+        <h3>Demonstrate the crypto usage</h3>
+        <p class="muted">
+          Shows off the cryptographically signed statements, signatures...
+          <br />
+          Use the /etc menu ⇒ "Show Crypto" to see.
+        </p>
+        <template class="box-detail">
+          <p>
+            Shows off the cryptographically signed statements, signatures,
+            identity keys, delegate keys, identity conflicts, auditing tools,
+            etc.
+          </p>
+          <p>
+            Use the /etc menu ⇒ "Show Crypto" to see.
+          </p>
+          <ul>
+            <li>
+              View signed statements, their signatures, and the public keys
+              that signed them.
+            </li>
+            <li>
+              View your identity key and delegate key (used to sign your
+              statements).
+            </li>
+            <li>View others' identity keys as you interact with them.</li>
+            <li>
+              Audit statements to verify they were signed by the expected
+              keys.
+            </li>
+          </ul>
+          <p>
+            Check out Bart's view to see conflicts in the made up Simpsons Bot
+            Farm demo (Sideshow Mel was acting in bad faith; Marge blocked
+            him, Milhouse trusted him, conflict!).
+          </p>
+        </template>
+      </div>
+      <div class="box" role="button" tabindex="0">
+        <h3>Fully Transparent</h3>
+        <p class="muted">
+          Not all apps that embrace the ONE-OF-US.NET paradigm are expected to
+          do this.
+        </p>
+        <template class="box-detail">
+          <h3>Purist: naked, fully open</h3>
+          <p>
+            Everything you do on the Nerdster leads to publishing a statement
+            signed by your delegate key (which is you).
+          </p>
+          <p>
+            Viewing from anyone else's PoV is also fully transparent
+            respecting their follows, blocks, likes, and disses... Wouldn't it
+            be nice to know what other real people read, like, believe? Might
+            that help us all?
+          </p>
+          <p>
+            Not all apps that embrace the ONE-OF-US.NET paradigm are expected
+            to do this. For example, Yelp could let people author reviews
+            without revealing their identities and still leverage the
+            ONE-OF-US.NET network to only show you recommendations made by
+            folks that either you or they believe are humans (one-of-us).
+            (Even Tinder could do this.)
             <br />
-            Use menu Settings ⇒ "Show/don't show" / "Crypto (JSON, keys, and
-            statements)" to see.
+            You'd have to trust them not to cheat, but for services like the
+            Nerdster, auditing is supported: the signed content is fully
+            portable and can be verified by anyone or anything.
           </p>
-          <template class="box-detail">
-            <p>
-              Shows off the cryptographically signed statements, signatures,
-              identity keys, delegate keys, identity conflicts, auditing tools,
-              etc.
-            </p>
-            <p>
-              Use menu Settings => "Show/don't show" / "Crypto (JSON, keys, and
-              statements)" to see.
-            </p>
-            <ul>
-              <li>
-                View signed statements, their signatures, and the public keys
-                that signed them.
-              </li>
-              <li>
-                View your identity key and delegate key (used to sign your
-                statements).
-              </li>
-              <li>View others' identity keys as you interact with them.</li>
-              <li>
-                Audit statements to verify they were signed by the expected
-                keys.
-              </li>
-            </ul>
-            <p>
-              Check out Bart's view to see conflicts in the made up Simpsons Bot
-              Farm demo (Sideshow Mel was acting in bad faith; Marge blocked
-              him, Milhouse trusted him, conflict!).
-            </p>
-          </template>
-        </div>
-        <div class="box" role="button" tabindex="0">
-          <h3>Fully Transparent</h3>
-          <p class="muted">
-            Not all apps that embrace the ONE-OF-US.NET paradigm are expected to
-            do this.
+          <p>
+            Open data (signed and portable). My own statements, for example:
+            <a
+              href="https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b">https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b</a>
           </p>
-          <template class="box-detail">
-            <h3>Purist: naked, fully open</h3>
-            <p>
-              Everything you do on the Nerdster leads to publishing a statement
-              signed by your delegate key (which is you).
-            </p>
-            <p>
-              Viewing from anyone else's PoV is also fully transparent
-              respecting their follows, blocks, likes, and disses... Wouldn't it
-              be nice to know what other real people read, like, believe? Might
-              that help us all?
-            </p>
-            <p>
-              Not all apps that embrace the ONE-OF-US.NET paradigm are expected
-              to do this. For example, Yelp could let people author reviews
-              without revealing their identities and still leverage the
-              ONE-OF-US.NET network to only show you recommendations made by
-              folks that either you or they believe are humans (one-of-us).
-              (Even Tinder could do this.)
+        </template>
+      </div>
+      <div class="box" role="button" tabindex="0">
+        <h3>Forum-like web app, but different</h3>
+        <p class="muted">
+          All of your contributions signed by your delegate key,
+          <strong>which is you!</strong>
+        </p>
+        <template class="box-detail">
+          <h3>Dime-a-dozen forum-like web app</h3>
+          <ul>
+            <li>
+              Submit links, like, comment, ... All the stuff we could do 30
+              years ago, but different -
+              <em>all signed by your delegate key,
+                <strong>which is you!</strong></em>
+              All of your contributions are portable, verifiable, and
+              auditable by other services.
+            </li>
+            <li>
+              <strong>Follow / block, for specific contexts</strong> (news,
+              music, local, family, ...) (One day in the future, maybe your
+              Pandora likes will make my Spotify better.)
+            </li>
+            <li>
+              Experimental <strong>censor</strong> feature - allow your
+              network to filter what you see. Like everything else, censorship
+              is transparent; turn it off (checkbox); check again; block folks
+              who censored inappropriately. View from others' PoV to see what
+              they censored, what's censored in their PoV.
               <br />
-              You'd have to trust them not to cheat, but for services like the
-              Nerdster, auditing is supported: the signed content is fully
-              portable and can be verified by anyone or anything.
-            </p>
-            <p>
-              Open data (signed and portable). My own statements, for example:
-              <a
-                href="https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b"
-                >https://export.nerdster.org/?spec=f4e45451dd663b6c9caf90276e366f57e573841b</a
-              >
-            </p>
-          </template>
-        </div>
-        <div class="box" role="button" tabindex="0">
-          <h3>Forum-like web app, but different</h3>
-          <p class="muted">
-            All of your contributions signed by your delegate key,
-            <strong>which is you!</strong>
-          </p>
-          <template class="box-detail">
-            <h3>Dime-a-dozen forum-like web app</h3>
-            <ul>
-              <li>
-                Submit links, like, comment, ... All the stuff we could do 30
-                years ago, but different -
-                <em
-                  >all signed by your delegate key,
-                  <strong>which is you!</strong></em
-                >
-                All of your contributions are portable, verifiable, and
-                auditable by other services.
-              </li>
-              <li>
-                <strong>Follow / block, for specific contexts</strong> (news,
-                music, local, family, ...) (One day in the future, maybe your
-                Pandora likes will make my Spotify better.)
-              </li>
-              <li>
-                Experimental <strong>censor</strong> feature - allow your
-                network to filter what you see. Like everything else, censorship
-                is transparent; turn it off (checkbox); check again; block folks
-                who censored inappropriately. View from others' PoV to see what
-                they censored, what's censored in their PoV.
-                <br />
-                Use Lisa's PoV, for example, and check what Marge censored for
-                her.
-              </li>
-              <li>
-                Puny and weak, won't handle content from thousands around you
-                (but you can shift PoV to see any content).
-              </li>
-              <li>
-                Generate a link for your Nerdster using your PoV and settings
-                using the menu: "Share" ⇒ "Generate link for this view". Check
-                out my own embedded usage at
-                <a href="https://aviv.net">https://aviv.net</a> or load that
-                view here using the button below.
-              </li>
-              <li>(not the killer app ;)</li>
-            </ul>
-          </template>
-        </div>
-      </section>
+              Use Lisa's PoV, for example, and check what Marge censored for
+              her.
+            </li>
+            <li>
+              Puny and weak, won't handle content from thousands around you
+              (but you can shift PoV to see any content).
+            </li>
+            <li>
+              Generate a link for your Nerdster using your PoV and settings
+              using the menu: "Share" ⇒ "Generate link for this view". Check
+              out my own embedded usage at
+              <a href="https://aviv.net">https://aviv.net</a> or load that
+              view here using the button below.
+            </li>
+            <li>(not the killer app ;)</li>
+          </ul>
+        </template>
+      </div>
+    </section>
 
-      <!-- single replaceable detail block appears here -->
-      <section
-        id="detail-container"
-        class="detail-container"
-        aria-live="polite"
-      ></section>
+    <!-- single replaceable detail block appears here -->
+    <section id="detail-container" class="detail-container" aria-live="polite"></section>
 
-      <section style="margin-top: 18px">
-        <div class="embed-area">
-          <iframe id="flutterApp" title="Nerdster app"></iframe>
-        </div>
+    <section style="margin-top: 18px">
+      <div class="embed-area">
+        <iframe id="flutterApp" title="Nerdster app"></iframe>
+      </div>
 
-        <div class="demo-controls below">
-          <button id="load-lisa" class="btn">Lisa's view</button>
-          <button id="load-bart" class="btn">Bart's view</button>
-          <button id="load-milhouse" class="btn">Milhouse's view</button>
-          <button id="load-aviv" class="btn btn-primary">My view</button>
-        </div>
-      </section>
+      <div class="demo-controls below">
+        <button id="load-lisa" class="btn">Lisa's view</button>
+        <button id="load-bart" class="btn">Bart's view</button>
+        <button id="load-milhouse" class="btn">Milhouse's view</button>
+        <button id="load-aviv" class="btn btn-primary">My view</button>
+      </div>
+    </section>
 
-      <section class="regular-text">
-        <!-- 
+    <section class="regular-text">
+      <!-- 
 TODO: Dismiss credentials when showing Verify.
 BUG: I've witnessed the arrows for left/right content/network being off.
 DEFER: Sign out upon loading so that folks don't like Simpsons content too easily. 
 -->
-        <details>
-          <summary>The Simpsons Bot Farm</summary>
-          <div class="muted scrollable-content">
-            <p class="muted">
-              The Simpsons Bot Farm accessible from Lisa's or Bart's point of
-              view is for demo and test purposes. It includes bad actors,
-              fraudulent characters, blocks, censorship, identity conflicts,
-              follow relationships, and both legitimate and bogus ratings and
-              comments.
-            </p>
-            <ul>
-              <li>
-                <a id="marge-censor-superbad" href="#">Marge censors</a> what
-                Bart recommends. (conservative, uptight)
-              </li>
-              <li>
-                Homer loses and
-                <a id="homer-replace-key" href="#">replaces his key</a>, but not
-                everyone has caught up on that. (careless)
-              </li>
-              <li>Milhouse trusts clowns. (reckless)</li>
-              <li>
-                <a id="sideshow-trust-amanda" href="#">Sideshow Bob cheats</a>
-                by inventing bogus characters to get fraudulent likes.
-                (reprehensible, and only trusted when viewing as Milhouse or one
-                of the clowns)
-              </li>
-            </ul>
+      <details>
+        <summary>The Simpsons Bot Farm</summary>
+        <div class="muted scrollable-content">
+          <p class="muted">
+            The Simpsons Bot Farm accessible from Lisa's or Bart's point of
+            view is for demo and test purposes. It includes bad actors,
+            fraudulent characters, blocks, censorship, identity conflicts,
+            follow relationships, and both legitimate and bogus ratings and
+            comments.
+          </p>
+          <ul>
+            <li>
+              <a id="marge-censor-superbad" href="#">Marge censors</a> what
+              Bart recommends. (conservative, uptight)
+            </li>
+            <li>
+              Homer loses and
+              <a id="homer-replace-key" href="#">replaces his key</a>, but not
+              everyone has caught up on that. (careless)
+            </li>
+            <li>Milhouse trusts clowns. (reckless)</li>
+            <li>
+              <a id="sideshow-trust-amanda" href="#">Sideshow Bob cheats</a>
+              by inventing bogus characters to get fraudulent likes.
+              (reprehensible, and only trusted when viewing as Milhouse or one
+              of the clowns)
+            </li>
+          </ul>
 
-            <p>From Lisa's PoV, things look harmless and agreeable:</p>
-            <ul>
-              <li>No notifications</li>
-              <li>
-                Content: horses (Lisa),
-                <a id="marge-banana-rate" href="#">recipes (Marge)</a>, bowling
-                (Homer), skateboarding (boys), alt movies (employees)
-              </li>
-            </ul>
+          <p>From Lisa's PoV, things look harmless and agreeable:</p>
+          <ul>
+            <li>No notifications</li>
+            <li>
+              Content: horses (Lisa),
+              <a id="marge-banana-rate" href="#">recipes (Marge)</a>, bowling
+              (Homer), skateboarding (boys), alt movies (employees)
+            </li>
+          </ul>
 
-            <p>Try these:</p>
-            <ul>
-              <li>
-                Toggle censorship to see what Marge has censored:
-                <a id="censor-on" href="#">on</a>,
-                <a id="censor-off" href="#">off</a>
-              </li>
-              <li>
-                Change Settings to show Crypto (JSON, keys, and statements):
-                <a id="crypto-on" href="#">on</a>,
-                <a id="crypto-off" href="#">off</a>
-              </li>
-              <li>
-                Load my PoV, click on any Simpsons statement, and notice that
-                they're all unknown to me (<span class="code"
-                  >"I": "&lt;unknown&gt;"</span
-                >). And they'll remain that way as they're not human, not in my
-                network, and in case you bring them into my network by vouching
-                for them, I'll block you. That's how this works.
-              </li>
-              <li>
-                Notice that many statements' authors look different when
-                different PoVs are used. For example, as Bart has made sure to
-                not have his mom in his network, Marge's statements' author
-                ("I") is "&lt;unknown&gt;".
-              </li>
-            </ul>
+          <p>Try these:</p>
+          <ul>
+            <li>
+              Toggle censorship to see what Marge has censored:
+              <a id="censor-on" href="#">on</a>,
+              <a id="censor-off" href="#">off</a>
+            </li>
+            <li>
+              Change Settings to show Crypto (JSON, keys, and statements):
+              <a id="crypto-on" href="#">on</a>,
+              <a id="crypto-off" href="#">off</a>
+            </li>
+            <li>
+              Load my PoV, click on any Simpsons statement, and notice that
+              they're all unknown to me (<span class="code">"I": "&lt;unknown&gt;"</span>). And they'll remain that way
+              as they're not human, not in my
+              network, and in case you bring them into my network by vouching
+              for them, I'll block you. That's how this works.
+            </li>
+            <li>
+              Notice that many statements' authors look different when
+              different PoVs are used. For example, as Bart has made sure to
+              not have his mom in his network, Marge's statements' author
+              ("I") is "&lt;unknown&gt;".
+            </li>
+          </ul>
 
-            <p>
-              Change your Point of View (PoV) to Bart's and notice how things
-              are messier:
-            </p>
-            <ul>
-              <li>
-                Notifications because Bart hasn't reacted yet to Homer's
-                replaced key notification.
-              </li>
-              <li>
-                Milhouse trusts clowns who are bad actors, various block
-                conflicts show up.
-              </li>
-              <li>
-                Content is cruder as Bart has specifically blocked Lisa and
-                Marge from his default follow context.
-              </li>
-            </ul>
+          <p>
+            Change your Point of View (PoV) to Bart's and notice how things
+            are messier:
+          </p>
+          <ul>
+            <li>
+              Notifications because Bart hasn't reacted yet to Homer's
+              replaced key notification.
+            </li>
+            <li>
+              Milhouse trusts clowns who are bad actors, various block
+              conflicts show up.
+            </li>
+            <li>
+              Content is cruder as Bart has specifically blocked Lisa and
+              Marge from his default follow context.
+            </li>
+          </ul>
 
-            <p>Using Milhouse's PoV, things seem downright fraudulent:</p>
-            <ul>
-              <li>
-                His trust in clowns brings in bogus people that Sideshow Bob is
-                trying to use to manipulate clown movie ratings.
-              </li>
-              <li>
-                Even his name is shown as "4-Eyes" as Sideshow Bob mocks him.
-              </li>
-            </ul>
+          <p>Using Milhouse's PoV, things seem downright fraudulent:</p>
+          <ul>
+            <li>
+              His trust in clowns brings in bogus people that Sideshow Bob is
+              trying to use to manipulate clown movie ratings.
+            </li>
+            <li>
+              Even his name is shown as "4-Eyes" as Sideshow Bob mocks him.
+            </li>
+          </ul>
 
-            <p>
-              Use differnt follow contexts.
-            </p>
-            <ul>
-              <li>
-                <a id="social" href="#">"social"</a>
-              </li>
-              <li>
-                <a id="identity" href="#">"&lt;identity&gt; (all humans)"</a>
-              </li>
-              <li>
-                <a id="nerdster" href="#">"&lt;nerdster&gt; (the default where you follow everyone you've vouched for unless you've overridden)"</a>
-              </li>
-              <li>
-                <a id="family" href="#">"family (a default that can be overriden)"</a>
-              </li>
-            </ul>
+          <p>
+            Use differnt follow contexts.
+          </p>
+          <ul>
+            <li>
+              <a id="social" href="#">"social"</a>
+            </li>
+            <li>
+              <a id="identity" href="#">"&lt;identity&gt; (all humans)"</a>
+            </li>
+            <li>
+              <a id="nerdster" href="#">"&lt;nerdster&gt; (the default where you follow everyone you've vouched for
+                unless you've overridden)"</a>
+            </li>
+            <li>
+              <a id="family" href="#">"family (a default that can be overriden)"</a>
+            </li>
+          </ul>
 
-            <p>
-              Much fraud can be removed by viewing the network more strictly, by
-              requiring 2 paths of trust. But with such a small network,
-              Milhouse ends up seeing almost nothing. This setting is accessible
-              from Settings ⇒ "Identity Network" ⇒
-              <a id="standard" href="#">"standard"</a> (the default is
-              <a id="permissive" href="#">"permissive"</a>).
-            </p>
-          </div>
-        </details>
-      </section>
+          <p>
+            Much fraud can be removed by viewing the network more strictly, by
+            requiring 2 paths of trust. But with such a small network,
+            Milhouse ends up seeing almost nothing. This setting is accessible
+            from Settings ⇒ "Identity Network" ⇒
+            <a id="standard" href="#">"standard"</a> (the default is
+            <a id="permissive" href="#">"permissive"</a>).
+          </p>
+        </div>
+      </details>
+    </section>
 
-      <section class="lead">
-        <p>
-          The bigger picture is at
-          <a href="https://one-of-us.net">https://one-of-us.net</a>
-        </p>
-      </section>
-    </main>
+    <section class="lead">
+      <p>
+        The bigger picture is at
+        <a href="https://one-of-us.net">https://one-of-us.net</a>
+      </p>
+    </section>
+  </main>
 
-    <div id="modal" class="modal" role="dialog" aria-modal="true" hidden>
-      <div class="modal-inner">
-        <button id="modalClose" class="modal-close" aria-label="Close">
-          ✕
-        </button>
-        <div id="modalContent"></div>
-      </div>
+  <div id="modal" class="modal" role="dialog" aria-modal="true" hidden>
+    <div class="modal-inner">
+      <button id="modalClose" class="modal-close" aria-label="Close">
+        ✕
+      </button>
+      <div id="modalContent"></div>
     </div>
+  </div>
 
-    <footer class="site-footer">
-      <div class="container">
-        <p>
-          <a href="mailto:contact@nerdster.org">contact@nerdster.org</a>,
-          <a href="https://github.com/YotamAviv/nerdster" target="_blank"
-            >source</a
-          >
-        </p>
-      </div>
-    </footer>
+  <footer class="site-footer">
+    <div class="container">
+      <p>
+        <a href="mailto:contact@nerdster.org">contact@nerdster.org</a>,
+        <a href="https://github.com/YotamAviv/nerdster" target="_blank">source</a>,
+        <a href="#" id="memoir-link">deleting a deletion</a>
+      </p>
+    </div>
+  </footer>
 
-    <script src="guard.js" defer></script>
-    <script src="iframe_helper.js" defer></script>
-    <script src="boxes.js" defer></script>
-    <script src="data/demoData.js" defer></script>
-    <script src="verify_helper.js" defer></script>
-    <script src="home.js" defer></script>
-  </body>
+  <template id="memoir-content">
+    <h3>Deleting a Deletion.. A Memoir</h3>
+    <p>"You should write a book", friends have told me. They don't even read my emails.
+      And so instead of writing a book no one will read, I've chosen to write an app no one will use, to start a
+      movement
+      I expect no one will join..</p>
+    <p>I've been a hacker, a poser, a midnight toker, but always, consistently nerd.
+      As I was developing the Nerdster and started diving into the details, the purpose of allowing anyone to state
+      anything about anything (authentically (cryptographically securely, that is) as themselves to their trusted
+      network) as well as to delete (censor) anything publicly, openly, to protect their network that relies on them for
+      this, I stumbled: what if someone censors (deletes) someone else's deletion? Deleting a deletion.. I've been
+      enjoying the struggle, and it's what I've been doing all along. This is me.</p>
+    <blockquote>
+      There was as little need to do this as there was use.<br />
+      — W. S. Maugham
+    </blockquote>
+  </template>
+
+  <script src="guard.js" defer></script>
+  <script src="iframe_helper.js" defer></script>
+  <script src="boxes.js" defer></script>
+  <script src="data/demoData.js" defer></script>
+  <script src="verify_helper.js" defer></script>
+  <script src="home.js" defer></script>
+  <script>
+    const testingDialog = document.getElementById('testing-dialog');
+    document.getElementById('ios-app-btn').addEventListener('click', () => testingDialog.showModal());
+    document.getElementById('android-app-btn').addEventListener('click', () => testingDialog.showModal());
+    document.getElementById('close-testing-dialog').addEventListener('click', () => testingDialog.close());
+    testingDialog.addEventListener('click', (e) => { if (e.target === testingDialog) testingDialog.close(); });
+
+    document.getElementById('memoir-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      const modal = document.getElementById('modal');
+      const content = document.getElementById('modalContent');
+      const tmpl = document.getElementById('memoir-content');
+      content.innerHTML = '';
+      content.appendChild(tmpl.content.cloneNode(true));
+      modal.removeAttribute('hidden');
+      document.getElementById('overlay').removeAttribute('hidden');
+    });
+  </script>
+</body>
+
 </html>
