@@ -8,21 +8,19 @@ import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util/ok_cancel.dart';
 import 'package:nerdster/ui/util/alert.dart';
-import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/ui/util_ui.dart';
 
 const String kIdentity = "identity";
 
-Future<void> pasteSignIn(BuildContext context) async {
-  final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(false);
+Future<void> pasteSignIn(BuildContext context, {required ValueNotifier<bool> storeKeys}) async {
   Json? credentials = await showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) => Dialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            child: PasteSignInWidget(storeKeys),
+            child: PasteSignInWidget(),
           ));
   if (credentials == null) return;
   Json identityJson = credentials[kIdentity]!;
@@ -38,8 +36,7 @@ Future<void> pasteSignIn(BuildContext context) async {
 }
 
 class PasteSignInWidget extends StatefulWidget {
-  final ValueNotifier<bool> storeKeys;
-  const PasteSignInWidget(this.storeKeys, {super.key});
+  const PasteSignInWidget({super.key});
 
   @override
   State<PasteSignInWidget> createState() => _PasteSignInWidgetState();
@@ -126,18 +123,7 @@ Or just the identity key, like this:
                 maxLines: 25,
                 controller: _controller),
             const SizedBox(height: 10),
-            Row(children: [
-              // left filler
-              const Spacer(),
-              // center OkCancel
-              OkCancel(_okHandler, 'Sign in', showCancel: false),
-              // right side
-              Expanded(
-                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                  MyCheckbox(widget.storeKeys, 'Store keys'),
-                ]),
-              )
-            ])
+            OkCancel(_okHandler, 'Sign in', showCancel: false),
           ]),
         ),
       ),

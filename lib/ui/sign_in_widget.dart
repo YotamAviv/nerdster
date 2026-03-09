@@ -133,6 +133,8 @@ class SignInDialog extends StatefulWidget {
 
 class _SignInDialogState extends State<SignInDialog> {
   final ValueNotifier<bool> _storeKeys = ValueNotifier(true);
+  int _headingTapCount = 0;
+  bool _showPaste = false;
 
   // We pre-create the session so we can generate a valid Link widget immediately.
   late Future<SignInSession> _sessionFuture;
@@ -271,12 +273,12 @@ class _SignInDialogState extends State<SignInDialog> {
         buildUniversalBtn(false),
       ];
     }
-    if (isDev) {
+    if (isDev || _showPaste) {
       buttons.add(_buildListButton(
         icon: Icons.content_paste,
         label: 'Paste Keys',
         subtitle: 'Paste JSON keys directly',
-        onPressed: () => pasteSignIn(context),
+        onPressed: () => pasteSignIn(context, storeKeys: _storeKeys),
         recommended: false,
       ));
     }
@@ -305,10 +307,18 @@ class _SignInDialogState extends State<SignInDialog> {
                 const SizedBox(height: 12),
 
                 // Sign-in method heading
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
-                  child:
-                      Text('Sign in using:', style: TextStyle(fontSize: 13, color: Colors.black54)),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _headingTapCount++;
+                        if (_headingTapCount >= 7) _showPaste = true;
+                      });
+                    },
+                    child: const Text('Sign in using:',
+                        style: TextStyle(fontSize: 13, color: Colors.black54)),
+                  ),
                 ),
 
                 // Actions - Flat List
