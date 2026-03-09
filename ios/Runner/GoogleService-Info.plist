@@ -13,7 +13,7 @@
 	<key>PROJECT_ID</key>
 	<string>nerdster</string>
 	<key>STORAGE_BUCKET</key>
-	<string>nerdster.appspot.com</string>
+	<string>nerdster.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,7 +25,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:210894467329:ios:e3c1379380ddd36fca2b00</string>
+	<string>1:210894467329:ios:1709f1dc7ab33329ca2b00</string>
 	<key>DATABASE_URL</key>
 	<string>https://nerdster-default-rtdb.firebaseio.com</string>
 </dict>
