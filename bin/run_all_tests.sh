@@ -46,6 +46,8 @@ echo "=== Running Integration Tests (Chrome, timeout=${TIMEOUT_SECS}s each) ==="
 shopt -s nullglob
 for test_file in integration_test/*.dart; do
     test_name=$(basename "$test_file")
+    # screenshot_test.dart is an iOS-only App Store screenshot tool, not a test.
+    if [[ "$test_name" == *screenshot* ]]; then continue; fi
     echo "Running: $test_name"
     if timeout "$TIMEOUT_SECS" flutter drive \
         --driver=test_driver/integration_test.dart \
@@ -68,6 +70,8 @@ if [ -n "$ANDROID_DEVICE" ]; then
     echo "=== Running Integration Tests (Android emulator: $ANDROID_DEVICE, timeout=${TIMEOUT_SECS}s each) ==="
     for test_file in integration_test/*.dart; do
         test_name=$(basename "$test_file")
+        # screenshot_test.dart is an iOS-only App Store screenshot tool, not a test.
+        if [[ "$test_name" == *screenshot* ]]; then continue; fi
         echo "Running: $test_name"
         if timeout "$TIMEOUT_SECS" flutter test "$test_file" -d "$ANDROID_DEVICE"; then
             PASSED_TESTS+=("$test_name (android)")
