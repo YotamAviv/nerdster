@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/io/source_factory.dart';
+import 'package:nerdster/bootstrap_sign_in.dart';
 import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/content_pipeline.dart';
 import 'package:nerdster/logic/delegates.dart';
@@ -361,7 +362,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
           debugPrint('Error parsing identityPathsReq: $e');
         }
 
-        final trustPipeline = TrustPipeline(trustSource, pathRequirement: pathReq);
+        final trustPipeline = TrustPipeline(
+          trustSource,
+          pathRequirement: pathReq,
+          localStatements: bootstrapLocalStatements.value,
+        );
         final graph = await trustPipeline.build(currentPovIdentity);
         final delegateResolver = DelegateResolver(graph);
 
