@@ -1,44 +1,54 @@
-Thank you for reviewing my app.
+Thank you for the follow-up and for giving me an opportunity to resubmit.
 
-Re: Please revise the app to ensure that users can use it upon launch. If the app requires authentication before use, please use methods that can authenticate users from within the app.
+Re: "It displays a blank white screen at launch and lacks independent immediate functionality.
+It requires another third-party app to function."
 
-The ONE-OF-US.NET effort promotes a different paradigm - an open, decentralized identity network usable by any service (The Nerdster obviously, but also, say, Reddit, Lyft, Airbnb, eBay, X, etc..). It's described at https://one-of-us.net and includes a video tour, but briefly:
-- People use an identity app (ie. ONE-OF-US.NET phone app) and their private identity key to sign other people's public identity keys. This builds the network, can't be forged, and distributes the knowledge of whose keys are whose.
-- People use their identity app to sign delegate keys for services and give those keys to those services so that anyone that recognizes an identity can recognize that the activity on a service was made by that same identity.
-- People's identity keys stay on their identity apps; they're not given to the delegate services. The services need:
-  - the public identity key of the person
-  - a private delegate key to use to sign created content
+I have addressed this directly. The Nerdster now includes a "Bootstrap Quick Start" sign-in
+option that lets a user try the app immediately — no other app required.
 
-It doesn't make sense to use the Nerdster without an identity app.
-If a person didn't use an identity and didn't know which people he/she believed were real people, then the Nerdster would be fairly useless - you wouldn't see other folks' content and no-one would see yours.
+---
 
-I added the "developer" feature of signing in to the Nerdster by copy/pasting keys directly and included instructions and the keys to use in my submission in the "App Review Information" under "Notes". 
-This is to allow you at Apple to use the Nerdster without building a network or using the ONE-OF-US.NET app. 
-The keys I provided use a fake/test/demo network (The Simpsons Bot Farm where you trust Lisa Simpson and can see content from family and townspeople).
+### What's new: Bootstrap Quick Start
 
-The Nerdster supports these ways of signing in:
-- Desktop: Nerdster desktop sign-in at https://nerdster.org (not the Nerdster iPhone app): Show the identity app (ie. ONE-OF-US.NET) a QR code with Sign In Parameters. The identity app then transmits keys to the provided URL matching the domain.
-- Phone: When the Nerdster is run on the same device as the ONE-OF-US.NET phone app (either as a web app or phone app), it can use the URL Scheme keymeid:// or the App Link https://one-of-us.net to transmit the Sign In Parameters to the identity app on the same device.
-- Developer mode (requires 7 clicks on the text "Sign in using:"): The user can directly copy/paste the required keys.
+The sign-in dialog now has a 4th option:
 
-If it would help, I can make Copy/Paste Sign In always available (without having to tap "Sign in using:" 7 times).
+    ○  App Link          [Recommended]
+    ○  URL scheme
+    ○  QR Code
+    ○  Bootstrap Quick Start         ← new
 
-Below are keys you can use to sign in using a fake/test/demo identity that trusts the demo Lisa Simpson.
-As this fake/test/demo identity is not trusted by anyone, you should feel invited to freely rate, comment, follow or block other identities, etc..
+Tapping "Bootstrap Quick Start":
 
-{
-    "nerdster.org": {
-        "crv": "Ed25519",
-        "d": "aqQQ8Uemm29IuP52iofBexLZvLH4C5KKXDpXps7_45M",
-        "kty": "OKP",
-        "x": "20c1w0tGrdwZgpVOA9S9AfCs9MQBBRVuOiNxYg7vO4A"
-    },
-    "identity": {
-        "crv": "Ed25519",
-        "kty": "OKP",
-        "x": "HK8iy7bH8ccq8zXxaKCeZxoZad7_4Y-7UIJn7UfJNvE"
-    }
-}
+1. Generates a fresh identity key pair locally on the device.
+2. Generates a fresh delegate key pair locally.
+3. Signs the user in immediately — no third-party app, no network account, no blank screen.
+4. Shows a content feed right away (the developer's network, as a starting point).
 
-Thanks again!
+The user can rate, comment, follow, and block immediately. All activity is signed with their
+local delegate key. If they later install the ONE-OF-US.NET identity app and create a real
+identity, they can claim their delegate key and all their activity is preserved.
 
+The orange key icon in the top-right corner indicates bootstrap mode and, when tapped, explains
+the temporary nature of the identity and the path to graduating to a full identity.
+
+---
+
+### How to review/try the app
+
+Simply launch the app and tap "Bootstrap Quick Start". You will be signed in immediately and
+can explore the full UI — browse content, rate, comment, follow — without any other app.
+
+---
+
+### The original sign-in methods (still present)
+
+For users who already have the ONE-OF-US.NET identity app:
+
+- **App Link** (recommended on iPhone): launches the identity app directly to transmit keys.
+- **URL scheme** (keymeid://): same, via a custom URL scheme.
+- **QR Code**: scan sign-in parameters with the identity app on another device.
+
+---
+
+Thanks again for your patience. I believe this revision fully addresses the concern about
+requiring a third-party app to function at launch.

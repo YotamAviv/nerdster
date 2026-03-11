@@ -1,0 +1,14 @@
+RESOLUTION CENTER RESPONSE
+===========================
+
+Thank you for the feedback. I have addressed the issue directly.
+
+The Nerdster now includes a "Bootstrap Quick Start" option in the sign-in dialog. Tapping it
+generates a local identity and signs the user in immediately — no third-party app required,
+no blank screen.
+
+The user can browse content, rate, comment, and follow right away. If they later choose to
+create a full identity using the ONE-OF-US.NET app, they can claim their bootstrap delegate
+key and all their activity is preserved.
+
+To review the app: launch it, tap "Bootstrap Quick Start", and you are immediately signed in.
