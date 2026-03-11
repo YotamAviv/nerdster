@@ -60,7 +60,11 @@ Future<void> main() async {
     fireChoice = FireChoice.values.byName(fireParam);
   }
   if (fireChoice != FireChoice.fake) {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    try {
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    } catch (e) {
+      if (!e.toString().contains('duplicate-app')) rethrow;
+    }
     await OneofusFire.init();
     if (fireChoice == FireChoice.emulator) {
       // $ firebase --project=nerdster emulators:start
