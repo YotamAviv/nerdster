@@ -276,7 +276,7 @@ class _SignInDialogState extends State<SignInDialog> {
     Widget buildQrBtn(bool recommended) => _buildListButton(
           icon: Icons.qr_code,
           label: 'QR Code',
-          subtitle: 'Scan sign-in parameters with your phone\'s identity app',
+          subtitle: 'Scan sign-in parameters with a different device\'s identity app',
           onPressed: () => qrSignIn(context),
           recommended: recommended,
         );
