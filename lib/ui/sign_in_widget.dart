@@ -232,7 +232,7 @@ class _SignInDialogState extends State<SignInDialog> {
                 icon: Icons.link,
                 label: 'App Link',
                 subtitle:
-                    'Universal Links (iOS) & App Links (Android)\nIdentity app must be available on same device.',
+                    'Universal Links\nIdentity app must be available on same device.',
                 onPressed: () {},
                 recommended: recommended,
               );
@@ -250,7 +250,7 @@ class _SignInDialogState extends State<SignInDialog> {
                   icon: Icons.link,
                   label: 'App Link',
                   subtitle:
-                      'Universal Links (iOS) & App Links (Android)\nIdentity app must be available on same device.',
+                      'Universal Links\nIdentity app must be available on same device.',
                   onPressed: () {
                     _magicLinkSignIn(context,
                         useUniversalLink: true,
