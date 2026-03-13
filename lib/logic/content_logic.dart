@@ -288,12 +288,14 @@ ContentAggregation reduceContentAggregation(
         isQualifiedActivity = true;
         hasPositiveSignal = true;
       } else if (s.verb == ContentVerb.rate) {
-        if (s.censor == true || s.like == false || s.dismiss != null) {
+        if (s.censor == true || s.dismiss != null) {
           isQualifiedActivity = false;
-        } else if (s.like == true || (s.comment != null && s.comment!.isNotEmpty)) {
+        } else if (s.like != null || (s.comment != null && s.comment!.isNotEmpty)) {
+          // thumbs-up, thumbs-down, or comment all count as activity.
+          // Only censor and dismiss are suppressed.
           isQualifiedActivity = true;
         }
-        // hasPositiveSignal: like=true OR non-empty comment, even when dismiss is also set.
+        // hasPositiveSignal: like=true OR non-empty comment (unchanged).
         if (s.like == true || (s.comment != null && s.comment!.isNotEmpty)) {
           hasPositiveSignal = true;
         }
