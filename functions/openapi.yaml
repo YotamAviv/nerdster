@@ -1,0 +1,173 @@
+# This file lives in functions/ so it deploys with the Cloud Functions bundle.
+# TODO: serve it live at /openapi.yaml by adding a GET /openapi.yaml route to index.js
+#   that reads __dirname/openapi.yaml and responds with Content-Type: application/yaml.
+#   It would then be accessible at https://export.one-of-us.net/openapi.yaml
+#   and https://export.nerdster.org/openapi.yaml (similar to how vouch.html is served
+#   as a static file from the Nerdster's Firebase Hosting).
+openapi: 3.1.0
+info:
+  title: ONE-OF-US.NET Export API
+  version: "1.0"
+  description: >
+    Streams signed identity statements for one or more keys from Firestore.
+    Responses are newline-delimited JSON (one object per line).
+
+
+    **Dual deployment:** This same codebase (`nerdster14/functions/index.js`) is deployed
+    to two Firebase projects and served at two custom domains (listed below). Both hosts
+    run identical code.
+
+servers:
+  - url: https://export.one-of-us.net
+    description: ONE-OF-US.NET project (Firebase project "one-of-us-net")
+  - url: https://export.nerdster.org
+    description: Nerdster project (Firebase project "nerdster")
+
+paths:
+  /:
+    get:
+      summary: Export statements for one or more identity keys
+      parameters:
+        - name: spec
+          in: query
+          required: true
+          description: >
+            Key token(s) to fetch. Three formats accepted:
+
+            1. **Single token** (string): `abc123`
+
+            2. **Multiple tokens** (JSON array): `["abc123","def456"]`
+
+            3. **With revocation** (JSON object, token → revokeAt document ID):
+               `{"abc123":"<revokeAt id>"}` — fetches only statements up to and
+               including the statement with that document ID.
+          schema:
+            oneOf:
+              - type: string
+                description: Single key token
+              - type: array
+                items:
+                  type: string
+                description: Array of key tokens
+              - type: object
+                additionalProperties:
+                  type: string
+                description: Map of token → revokeAt document ID
+
+        - name: distinct
+          in: query
+          required: false
+          description: >
+            If present, deduplicate statements: for each verb+subject pair,
+            keep only the most recent.
+          schema:
+            type: boolean
+
+        - name: orderStatements
+          in: query
+          required: false
+          description: >
+            Default true. If false, skip canonical key ordering within each
+            statement JSON object.
+          schema:
+            type: boolean
+            default: true
+
+        - name: includeId
+          in: query
+          required: false
+          description: >
+            If present, include the statement token as an `id` field on each
+            statement. Required when using `checkPrevious`.
+          schema:
+            type: boolean
+
+        - name: checkPrevious
+          in: query
+          required: false
+          description: >
+            If present, verify the notarization chain: each statement's
+            `previous` field must match the next statement's token, and
+            timestamps must be strictly descending. Requires `includeId`.
+            A chain violation emits a per-key error object rather than
+            terminating the stream.
+          schema:
+            type: boolean
+
+        - name: after
+          in: query
+          required: false
+          description: >
+            ISO 8601 timestamp. Only return statements with `time > after`.
+            Cannot be combined with `revokeAt`.
+          schema:
+            type: string
+            format: date-time
+            example: "2024-01-01T00:00:00Z"
+
+        - name: omit
+          in: query
+          required: false
+          description: >
+            Field name(s) to strip from every statement before returning.
+            Repeatable: `omit=I&omit=signature`.
+          schema:
+            oneOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+          style: form
+          explode: true
+
+      responses:
+        "200":
+          description: >
+            Newline-delimited JSON stream. Each line is one of:
+
+            **Success** — object keyed by token, value is an array of statements
+            in descending time order:
+            ```
+            {"<token>": [{...}, ...]}
+            ```
+
+            **Per-key error** — if one key fails (e.g. notarization violation),
+            the stream continues for remaining keys:
+            ```
+            {"<token>": {"error": "Error message"}}
+            ```
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                    - type: array
+                      items:
+                        type: object
+                        description: A signed statement
+                    - type: object
+                      properties:
+                        error:
+                          type: string
+
+        "400":
+          description: >
+            Missing or invalid `spec` parameter. Response body is plain text
+            with usage information.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                ONE-OF-US.NET Export API
+
+                Required parameter: spec — key token or JSON array/object of tokens.
+                ...
+
+        "500":
+          description: Unexpected server error.
+          content:
+            text/plain:
+              schema:
+                type: string

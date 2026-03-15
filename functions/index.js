@@ -6,6 +6,13 @@
  * It is organized into:
  * 1. Callable Functions (v2 onCall) - Used by the Flutter app.
  * 2. HTTP Functions (v2 onRequest) - Used for external integrations and streaming.
+ * 
+ * DUAL DEPLOYMENT NOTE:
+ * This same functions codebase is deployed to two separate Firebase projects:
+ *   - Firebase project "nerdster"     → custom domain: export.nerdster.org
+ *   - Firebase project "one-of-us-net"→ custom domain: export.one-of-us.net
+ * Deploy with: firebase deploy --only functions --project <projectId>
+ * This is intentional but kludgey — both hosts serve identical code.
  */
 
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
@@ -200,7 +207,22 @@ exports.export = onRequest({ cors: true, minInstances: 1 }, async (req, res) => 
 
   try {
     const specParam = req.query.spec;
-    if (!specParam) throw new Error('Query parameter "spec" is required');
+    if (!specParam) {
+      res.status(400).type('text').send(
+        'ONE-OF-US.NET Export API\n\n' +
+        'Required parameter: spec — key token or JSON array/object of tokens.\n\n' +
+        'Optional parameters:\n' +
+        '  distinct          — deduplicate by verb+subject (keep most recent)\n' +
+        '  orderStatements   — default true; set false to skip key ordering\n' +
+        '  includeId         — include the statement token as "id" field on each statement\n' +
+        '  checkPrevious     — verify notarization chain (requires includeId)\n' +
+        '  after=<ISO time>  — only return statements newer than this time\n' +
+        '  omit=<field>      — strip field from each statement (repeatable)\n\n' +
+        'Example:\n' +
+        '  https://export.one-of-us.net/?spec=<token>&distinct=true&omit=I&omit=signature\n'
+      );
+      return;
+    }
 
     const specString = decodeURIComponent(specParam);
     let specs = /^\s*[\[{"]/.test(specString) ? JSON.parse(specString) : specString;
