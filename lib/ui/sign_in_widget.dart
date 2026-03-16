@@ -26,7 +26,7 @@ import 'package:url_launcher/link.dart';
 
 /// Sign-in rep-invariants:
 /// 1. No identity → sign-in dialog is showing and cannot be dismissed.
-/// 2. No re-entrant showDialog: _onSignInChanged uses addPostFrameCallback.
+/// 2. At most one sign-in dialog is open at any time.
 /// 3. Bootstrap identity is cleared when bootstrap mode ends (see clearBootstrap).
 /// 4. Sign Out always calls clearBootstrap, which enforces #3.
 class SignInWidget extends StatefulWidget {
