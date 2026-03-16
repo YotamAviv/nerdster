@@ -121,17 +121,24 @@ class _AppHomeState extends State<_AppHome> {
   }
 
   void _onSignInChanged() {
+    // Post-frame to avoid re-entrant showDialog (see sign_in_widget.dart invariants).
     if (!signInState.isSignedIn) {
-      _maybeShowDialog();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !signInState.isSignedIn) {
+          _maybeShowDialog();
+        }
+      });
     }
   }
 
   void _maybeShowDialog() {
     if (_dialogShowing || !mounted) return;
+    final nav = navigatorKey.currentState;
+    if (nav != null && nav.canPop()) return;
     _dialogShowing = true;
     showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false,
       builder: (_) => const Dialog(
         backgroundColor: Colors.transparent,
         child: SignInDialog(),

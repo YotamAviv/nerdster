@@ -24,6 +24,11 @@ import 'package:oneofus_common/keys.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/link.dart';
 
+/// Sign-in rep-invariants:
+/// 1. No identity → sign-in dialog is showing and cannot be dismissed.
+/// 2. No re-entrant showDialog: _onSignInChanged uses addPostFrameCallback.
+/// 3. Bootstrap identity is cleared when bootstrap mode ends (see clearBootstrap).
+/// 4. Sign Out always calls clearBootstrap, which enforces #3.
 class SignInWidget extends StatefulWidget {
   const SignInWidget({super.key});
 
@@ -384,9 +389,8 @@ class _SignInDialogState extends State<SignInDialog> {
                         ),
                         onPressed: () async {
                           await KeyStore.wipeKeys();
-                          await clearBootstrap(); // clear bootstrap flag and local statements
-                          // Drop delegate only — keep identity so user can see it
-                          signInState.signOut(clearIdentity: false);
+                          // clearBootstrap() also calls signOut(clearIdentity: true).
+                          await clearBootstrap();
                         },
                       ),
                     MyCheckbox(_storeKeys, 'Store keys'),

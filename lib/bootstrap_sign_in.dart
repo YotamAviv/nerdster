@@ -130,10 +130,13 @@ final ValueNotifier<Map<IdentityKey, List<TrustStatement>>> bootstrapLocalStatem
 /// Causes the sign-in dialog to show the "Bootstrap Quick Start" button.
 bool forceIphone = false;
 
-/// Call when the user signs in normally (graduating from bootstrap).
+/// Clears bootstrap mode. Also signs out — bootstrap identity is meaningless without local statements.
 Future<void> clearBootstrap() async {
   bootstrapLocalStatements.value = const {};
   await KeyStore.clearBootstrapKeys();
+  if (signInState.isSignedIn) {
+    signInState.signOut(clearIdentity: true);
+  }
 }
 
 /// A fixed-time Clock used to stamp two bootstrap statements with distinct timestamps.
