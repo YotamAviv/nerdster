@@ -33,6 +33,13 @@
             font-size: 22px;
         }
 
+        ol {
+            color: #555;
+            margin: 0 0 14px;
+            padding-left: 22px;
+            line-height: 1.6;
+        }
+
         p {
             color: #555;
             margin: 0 0 14px;
@@ -111,8 +118,7 @@
 <body>
 
     <div class="card">
-        <h2>Vouch for Identity | ONE-OF-US.NET</h2>
-
+        <h1>Vouch for Identity | ONE-OF-US.NET</h1>
         <ol>
             <li>Make sure you know who sent you this invitation.
             </li>
@@ -201,10 +207,16 @@
         function copyKey() {
             const keyDisplay = document.getElementById('key-display');
             keyDisplay.style.display = 'block';
-            const textarea = document.getElementById('key-text');
-            textarea.select();
-            document.execCommand('copy');
-            alert("Key copied to clipboard!");
+            const text = document.getElementById('key-text').value;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Key copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textarea = document.getElementById('key-text');
+                textarea.select();
+                document.execCommand('copy');
+                alert('Key copied to clipboard!');
+            });
         }
 
         window.onload = init;
