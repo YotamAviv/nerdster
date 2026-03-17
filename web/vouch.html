@@ -8,79 +8,85 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background: #fdfdfd;
             color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
             margin: 0;
-            padding: 20px;
-            text-align: center;
+            padding: 24px 16px;
         }
 
         .card {
             background: white;
-            padding: 40px;
+            padding: 32px;
             border-radius: 16px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
+            max-width: 520px;
         }
 
         h1 {
             margin-top: 0;
-            font-size: 24px;
+            font-size: 22px;
         }
 
         p {
-            color: #666;
-            margin-bottom: 24px;
+            color: #555;
+            margin: 0 0 14px;
+            line-height: 1.5;
+        }
+
+        .scenario {
+            margin: 18px 0 6px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .app-links {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 12px 0 20px;
+        }
+
+        .app-links a {
+            color: #0066cc;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .app-links a:hover {
+            text-decoration: underline;
         }
 
         #qr-container {
-            margin: 0 auto;
-            display: flex;
-            justify-content: center;
-        }
-
-        .actions {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 30px;
+            margin: 16px 0 8px;
         }
 
         .btn {
             display: inline-block;
-            background: #000;
-            color: white;
-            padding: 14px 24px;
+            background: #f0f0f0;
+            color: #333;
+            padding: 10px 18px;
             text-decoration: none;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             border: none;
-            font-size: 16px;
-            transition: opacity 0.2s;
+            font-size: 14px;
+            margin-top: 8px;
         }
 
         .btn:hover {
-            opacity: 0.8;
-        }
-
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
+            background: #e0e0e0;
         }
 
         #key-display {
             display: none;
-            margin-top: 20px;
-            text-align: left;
+            margin-top: 14px;
         }
 
         textarea {
@@ -97,6 +103,7 @@
         .error {
             color: #d32f2f;
             display: none;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -104,20 +111,33 @@
 <body>
 
     <div class="card">
-        <h1>Vouch for This Person</h1>
-        <p>Scan this QR code with your ONE-OF-US.NET phone app to vouch for their identity as:
-            <br />
-            Human, capable, and acting in good faith.
-        </p>
+        <h2>Vouch for Identity | ONE-OF-US.NET</h2>
+
+        <ol>
+            <li>Make sure you know who sent you this invitation.
+            </li>
+            <li>Install the ONE-OF-US.NET phone app if you don't already have it, links at: <a
+                    href="https://one-of-us.net">https://one-of-us.net</a>.
+            </li>
+        </ol>
+
+        <p class="scenario">On your phone with the app installed?</p>
+        <p>The link you clicked on should have opened up the ONE-OF-US.NET app, but deep links can be finicky; try these
+            alternate links:</p>
+
+        <div class="app-links">
+            <a id="keymeid-link" href="#">→ keymeid://...</a>
+            <a id="universal-link" href="#">→ https://one-of-us.net/...</a>
+        </div>
+
+        <p class="scenario">On your computer?</p>
+        <p>Scan the QR code below with the ONE-OF-US.NET app on your phone (Scan button, bottom center).</p>
 
         <div id="qr-container"></div>
         <div class="error" id="error-msg">Invalid or missing key data.</div>
 
-        <div class="actions">
-            <a href="https://one-of-us.net" class="btn">Get the App</a>
-            <a id="keymeid-link" href="#" class="btn btn-secondary">Open with Associated keymeid:// App</a>
-            <button class="btn btn-secondary" onclick="copyKey()">Copy Key Text</button>
-        </div>
+        <p class="scenario">Last resort</p>
+        <button class="btn" onclick="copyKey()">Copy Key Text</button>
 
         <div id="key-display">
             <textarea readonly id="key-text"></textarea>
@@ -132,11 +152,13 @@
                 if (!hash) {
                     document.getElementById('qr-container').style.display = 'none';
                     document.getElementById('keymeid-link').style.display = 'none';
+                    document.getElementById('universal-link').style.display = 'none';
                     return;
                 }
 
-                // Set keymeid:// link for associated apps
+                // Set keymeid:// and universal links
                 document.getElementById('keymeid-link').href = 'keymeid://vouch#' + hash;
+                document.getElementById('universal-link').href = 'https://one-of-us.net/vouch.html#' + hash;
 
                 // Decode URL-Safe Base64
                 let base64 = hash.replace(/-/g, '+').replace(/_/g, '/');

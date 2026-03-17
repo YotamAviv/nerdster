@@ -1,8 +1,8 @@
-# This file lives in functions/ alongside the code it describes.
-# To serve it publicly, the simplest option is to copy it to nerdster14/web/
-# so Firebase Hosting serves it as a static file at nerdster.org/openapi.yaml
-# (same mechanism as vouch.html). No Cloud Function route needed.
-# It would not be at export.one-of-us.net/openapi.yaml, but that's cosmetic.
+# This file lives in functions/ so it deploys with the Cloud Functions bundle.
+# TODO: serve it live at /openapi.yaml by adding a GET /openapi.yaml route to index.js
+#   that reads __dirname/openapi.yaml and responds with Content-Type: application/yaml.
+#   It would then be accessible at https://export.one-of-us.net/openapi.yaml
+#   and https://export.nerdster.org/openapi.yaml
 openapi: 3.1.0
 info:
   title: ONE-OF-US.NET Export API
