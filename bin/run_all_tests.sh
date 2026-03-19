@@ -49,18 +49,40 @@ for test_file in integration_test/*.dart; do
     # screenshot_test.dart is an iOS-only App Store screenshot tool, not a test.
     if [[ "$test_name" == *screenshot* ]]; then continue; fi
     echo "Running: $test_name"
-    if timeout "$TIMEOUT_SECS" flutter drive \
+    tmpout=$(mktemp)
+    flutter drive \
         --driver=test_driver/integration_test.dart \
         --target="$test_file" \
-        -d chrome; then
+        -d chrome >"$tmpout" 2>&1 &
+    drive_pid=$!
+    elapsed=0
+    drive_result="timeout"
+    while [ $elapsed -lt "$TIMEOUT_SECS" ]; do
+        if ! kill -0 "$drive_pid" 2>/dev/null; then
+            wait "$drive_pid" && drive_result="exited_0" || drive_result="exited_1"
+            break
+        fi
+        if grep -q "All tests passed" "$tmpout" 2>/dev/null; then
+            drive_result="passed"
+            kill "$drive_pid" 2>/dev/null; wait "$drive_pid" 2>/dev/null
+            break
+        elif grep -q "Some tests failed" "$tmpout" 2>/dev/null; then
+            drive_result="failed"
+            kill "$drive_pid" 2>/dev/null; wait "$drive_pid" 2>/dev/null
+            break
+        fi
+        sleep 1; ((elapsed++))
+    done
+    [ "$drive_result" = "timeout" ] && { kill "$drive_pid" 2>/dev/null; wait "$drive_pid" 2>/dev/null; echo "TIMEOUT: $test_name exceeded ${TIMEOUT_SECS}s"; }
+    cat "$tmpout"
+    rm -f "$tmpout"
+    pkill -f -- "--remote-debugging-port" 2>/dev/null || true
+    if [[ "$drive_result" == "passed" || "$drive_result" == "exited_0" ]]; then
         PASSED_TESTS+=("$test_name (chrome)")
     else
-        exit_code=$?
-        if [ "$exit_code" -eq 124 ]; then
-            echo "TIMEOUT: $test_name exceeded ${TIMEOUT_SECS}s"
-        fi
         FAILED_TESTS+=("$test_name (chrome)")
     fi
+
     echo ""
 done
 
