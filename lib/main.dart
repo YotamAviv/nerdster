@@ -137,10 +137,9 @@ Future<void> defaultSignIn({BuildContext? context}) async {
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
   String? identityParam = params['identity'];
-  String? oneofusParam = params['oneofus']; // alias, deprecated.
   String? pov;
-  if (identityParam != null || oneofusParam != null) {
-    Json povJson = json.decode(identityParam != null ? identityParam : oneofusParam!);
+  if (identityParam != null) {
+    Json povJson = json.decode(identityParam);
     pov = getToken(povJson);
   }
 

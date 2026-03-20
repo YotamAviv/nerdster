@@ -10,7 +10,6 @@ String generateLink() {
   assert(fireChoice != FireChoice.fake, "Doesn't work with fake");
   if (fireChoice.name != FireChoice.prod.name) params['fire'] = fireChoice.name;
 
-  // TODO: pov instead
   params['identity'] = JsonEncoder().convert(Jsonish.find(signInState.pov)!.json);
 
   Prefs.setParams(params);

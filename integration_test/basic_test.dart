@@ -109,8 +109,6 @@ void main() {
     } catch (e, stack) {
       debugPrint('TEST FAILED WITH ERROR: $e');
       debugPrint('STACK TRACE: $stack');
-      debugPrint('Waiting 5 minutes for debugging...');
-      await Future.delayed(const Duration(minutes: 5));
       rethrow;
     }
   });

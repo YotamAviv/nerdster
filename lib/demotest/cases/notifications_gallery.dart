@@ -4,8 +4,6 @@ import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/io/source_factory.dart';
 
-// TODO: Use proper DemoKey
-
 /// A gallery of all possible Trust and Follow notifications.
 ///
 /// This demo sets up a scenario where every type of notification defined in the

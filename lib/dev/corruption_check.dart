@@ -11,8 +11,9 @@ import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
 /// BUG: Totally broken.
-/// DirectFirestoreSource does not expose a way to fetch all statements for a given identity token.
-/// Futhermore, it skips past problems.
+/// DirectFirestoreSource applies distinct() before returning, dropping superseded statements;
+/// a corruption checker needs the full raw chain.
+/// Furthermore, DirectFirestoreSource swallows per-token errors rather than surfacing them.
 /// This could/should use CloudFunctionsSource.
 ///
 class CorruptionCheck {

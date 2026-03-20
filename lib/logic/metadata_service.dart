@@ -209,7 +209,6 @@ Future<void> fetchImages({
 //
 // Sources covered: YouTube thumbnails, HTML og:image scraping, OpenLibrary (books), Wikipedia.
 // OMDB and TMDB are intentionally omitted — they require API keys not configured in this project.
-// See TODO.md.
 //
 // Keep in sync with the JS counterparts when changing fetch logic.
 // ---------------------------------------------------------------------------
