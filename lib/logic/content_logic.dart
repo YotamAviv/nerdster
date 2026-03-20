@@ -399,12 +399,30 @@ ContentAggregation reduceContentAggregation(
   final Map<ContentKey, List<ContentStatement>> myLiteralStatements = {};
   final Map<ContentKey, List<ContentStatement>> myCanonicalDisses = {};
 
+  // Track which statement tokens have been added to each key's list so we
+  // can skip duplicates. An equate(X, Y) statement would otherwise appear in
+  // myLiteralStatements[X] twice: once for its literal involvedToken X and
+  // again when Y's canonical resolves to X.
+  // mergedMyStatements is already in descending time order (from Merger.merge),
+  // so appending in iteration order preserves that order — no sort needed.
+  final Map<ContentKey, Set<String>> seenTokens = {};
+
   for (final ContentStatement s in mergedMyStatements) {
     for (final String token in s.involvedTokens) {
       final ContentKey literalKey = ContentKey(token);
-      myLiteralStatements.putIfAbsent(literalKey, () => []).add(s);
+      if (seenTokens.putIfAbsent(literalKey, () => {}).add(s.token)) {
+        myLiteralStatements.putIfAbsent(literalKey, () => []).add(s);
+      }
 
+      // Also index under the canonical key so that a canonical feed card
+      // can still find statements originally filed under any equivalent literal.
       final ContentKey canonicalKey = subjectEquivalence[literalKey] ?? literalKey;
+      if (canonicalKey != literalKey) {
+        if (seenTokens.putIfAbsent(canonicalKey, () => {}).add(s.token)) {
+          myLiteralStatements.putIfAbsent(canonicalKey, () => []).add(s);
+        }
+      }
+
       if (s.verb == ContentVerb.rate) {
         myCanonicalDisses.putIfAbsent(canonicalKey, () => []).add(s);
       }

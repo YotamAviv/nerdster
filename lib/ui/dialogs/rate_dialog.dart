@@ -80,7 +80,11 @@ class _RateDialogState extends State<RateDialog> {
 
     Statement.validateOrderTypes(myLiteralStatements);
 
-    priorStatement = myLiteralStatements.isEmpty ? null : myLiteralStatements.first;
+    // Ignore non-rate statements (e.g. equate) which may appear more recent
+    // and would otherwise be picked as the prior statement.
+    final myRateStatements =
+        myLiteralStatements.where((s) => s.verb == ContentVerb.rate).toList();
+    priorStatement = myRateStatements.isEmpty ? null : myRateStatements.first;
 
     like = ValueNotifier(widget.initialLike ?? priorStatement?.like);
     dis = ValueNotifier(widget.initialDismiss ?? priorStatement?.dismiss);
