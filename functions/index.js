@@ -201,6 +201,15 @@ exports.signin = onRequest({ cors: true, minInstances: 1 }, async (req, res) => 
  * content for the valid ones.
  */
 exports.export = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
+  if (req.path === '/openapi.yaml') {
+    const fs = require('fs');
+    const path = require('path');
+    const yaml = fs.readFileSync(path.join(__dirname, 'openapi.yaml'), 'utf8');
+    res.setHeader('Content-Type', 'application/yaml');
+    res.send(yaml);
+    return;
+  }
+
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -219,7 +228,8 @@ exports.export = onRequest({ cors: true, minInstances: 1 }, async (req, res) => 
         '  after=<ISO time>  — only return statements newer than this time\n' +
         '  omit=<field>      — strip field from each statement (repeatable)\n\n' +
         'Example:\n' +
-        '  https://export.one-of-us.net/?spec=<token>&distinct=true&omit=I&omit=signature\n'
+        '  https://export.one-of-us.net/?spec=<token>&distinct=true&omit=I&omit=signature\n\n' +
+        'See /openapi.yaml for full API documentation.\n'
       );
       return;
     }
