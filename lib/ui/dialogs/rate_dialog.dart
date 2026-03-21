@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/logic/feed_controller.dart';
@@ -82,9 +83,7 @@ class _RateDialogState extends State<RateDialog> {
 
     // Ignore non-rate statements (e.g. equate) which may appear more recent
     // and would otherwise be picked as the prior statement.
-    final myRateStatements =
-        myLiteralStatements.where((s) => s.verb == ContentVerb.rate).toList();
-    priorStatement = myRateStatements.isEmpty ? null : myRateStatements.first;
+    priorStatement = myLiteralStatements.firstWhereOrNull((s) => s.verb == ContentVerb.rate);
 
     like = ValueNotifier(widget.initialLike ?? priorStatement?.like);
     dis = ValueNotifier(widget.initialDismiss ?? priorStatement?.dismiss);
