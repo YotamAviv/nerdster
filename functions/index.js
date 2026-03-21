@@ -38,6 +38,9 @@ if (admin.apps.length === 0) {
   admin.initializeApp();
 }
 
+// DUAL DEPLOYMENT: only register nerdster-specific functions on the nerdster project.
+const isNerdster = process.env.GCLOUD_PROJECT === 'nerdster';
+
 // ----------------------------------------------------------------------------
 // 1. Callable Functions (v2 onCall)
 // ----------------------------------------------------------------------------
@@ -47,7 +50,7 @@ if (admin.apps.length === 0) {
  * This is dynamic and NOT part of the subject's identity.
  * Fail Fast: Requires a subject with a contentType.
  */
-exports.fetchImages = onCall(async (request) => {
+if (isNerdster) exports.fetchImages = onCall(async (request) => {
   try {
     // Determine maxImages from request or default to 1 (client optimized)
     const maxImages = request.data.maxImages || 1;
@@ -58,14 +61,14 @@ exports.fetchImages = onCall(async (request) => {
     }
     throw new HttpsError("internal", e.message);
   }
-});
+}); // isNerdster
 
 /**
  * "Magic Paste" - Smart URL Parser.
  * Fetches the URL and extracts metadata (Title, Year, Author, Image, ContentType)
  * using Schema.org (JSON-LD), OpenGraph, or standard HTML tags.
  */
-exports.magicPaste = onCall(async (request) => {
+if (isNerdster) exports.magicPaste = onCall(async (request) => {
   const url = request.data.url;
   logger.info(`[magicPaste] CALL RECEIVED for URL: ${url}`); // DEBUG
 
@@ -168,7 +171,7 @@ exports.magicPaste = onCall(async (request) => {
 /**
  * Handles QR sign-in by adding session data to Firestore.
  */
-exports.signin = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
+if (isNerdster) exports.signin = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
   const session = req.body.session;
   if (!session) {
     res.status(400).send("Missing session");
