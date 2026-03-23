@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/keys.dart' show HomedKey, kNativeHome;
+import 'package:oneofus_common/keys.dart' show HomedKey, kNativeEndpoint;
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -63,15 +63,15 @@ import 'package:nerdster/singletons.dart';
 
 Future<void> signInUiHelper(
     OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
-    {String home = kNativeHome}) async {
+    {Map<String, dynamic> endpoint = kNativeEndpoint}) async {
   if (store) {
-    await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair, home: home);
+    await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair, endpoint: endpoint);
   } else {
     await KeyStore.wipeKeys();
   }
 
-  final String oneofusToken = getToken(await oneofusPublicKey.json);
-  await signInState.signIn(oneofusToken, nerdsterKeyPair);
+  final homedKey = HomedKey(await oneofusPublicKey.json, endpoint);
+  await signInState.signInWithHomedKey(homedKey, nerdsterKeyPair);
 }
 
 class SignInState with ChangeNotifier {

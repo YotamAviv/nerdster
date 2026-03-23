@@ -2,7 +2,7 @@ import 'package:oneofus_common/clock.dart';
 import 'package:oneofus_common/jsonish.dart';
 export 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/keys.dart';
-export 'package:oneofus_common/keys.dart' show kNativeHome;
+export 'package:oneofus_common/keys.dart' show kNativeUrl, kNativeEndpoint;
 import 'package:oneofus_common/statement.dart';
 
 const String kOneofusDomain = 'one-of-us.net';
@@ -25,7 +25,7 @@ class TrustStatement extends Statement {
   final String? moniker;
   final String? revokeAt;
   final String? domain;
-  final String? home; // Key Federation: home of the subject key
+  final Map<String, dynamic>? endpoint; // Key Federation: endpoint of the subject key
 
   IdentityKey get iKey => IdentityKey(getToken(this.i));
   String get iToken => iKey.value;
@@ -76,7 +76,8 @@ class TrustStatement extends Statement {
     assert(subject != null);
 
     Json? withx = jsonish['with'];
-    final String? home = (withx != null) ? withx['home'] : null;
+    final Map<String, dynamic>? endpoint =
+        (withx != null) ? withx['endpoint'] as Map<String, dynamic>? : null;
     TrustStatement s = TrustStatement._internal(
       jsonish,
       subject,
@@ -85,13 +86,13 @@ class TrustStatement extends Statement {
       moniker: (withx != null) ? withx['moniker'] : null,
       revokeAt: (withx != null) ? withx['revokeAt'] : null,
       domain: (withx != null) ? withx['domain'] : null,
-      home: home,
+      endpoint: endpoint,
     );
     _cache[s.token] = s;
-    // Register HomedKey so downstream code can resolve token → home.
-    // Always register for trust/replace subjects; absent home defaults to kNativeHome.
+    // Register HomedKey so downstream code can resolve token → endpoint.
+    // Always register for trust/replace subjects; absent endpoint defaults to kNativeEndpoint.
     if ((verb == TrustVerb.trust || verb == TrustVerb.replace) && subject is Map<String, dynamic>) {
-      HomedKey(subject, home ?? kNativeHome);
+      HomedKey(subject, endpoint ?? kNativeEndpoint);
     }
     return s;
   }
@@ -125,7 +126,7 @@ class TrustStatement extends Statement {
     required this.moniker,
     required this.revokeAt,
     required this.domain,
-    required this.home,
+    required this.endpoint,
   }) {
     assertValid(verb, revokeAt, moniker, comment, domain);
   }
@@ -134,7 +135,11 @@ class TrustStatement extends Statement {
   // strings like 'revokeAt' all over the code, and this avoids most of it.
   // CONSIDER: A fancy StatementBuilder.
   static Json make(Json iJson, Json subject, TrustVerb verb,
-      {String? revokeAt, String? moniker, String? domain, String? comment, String? home}) {
+      {String? revokeAt,
+      String? moniker,
+      String? domain,
+      String? comment,
+      Map<String, dynamic>? endpoint}) {
     assertValid(verb, revokeAt, moniker, comment, domain);
 
     Json json = {
@@ -147,9 +152,9 @@ class TrustStatement extends Statement {
     Json withx = {};
     if (revokeAt != null) withx['revokeAt'] = revokeAt;
     if (domain != null) withx['domain'] = domain;
-    // Always include home for trust and replace statements.
+    // Always include endpoint for trust and replace statements.
     if (verb == TrustVerb.trust || verb == TrustVerb.replace) {
-      withx['home'] = home ?? kNativeHome;
+      withx['endpoint'] = endpoint ?? kNativeEndpoint;
     }
     if (moniker != null) withx['moniker'] = moniker;
     withx.removeWhere((key, value) => value == null);

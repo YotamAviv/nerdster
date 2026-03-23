@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nerdster/config.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/labeler.dart';
@@ -266,7 +267,7 @@ class _NodeDetailsState extends State<NodeDetails> {
         },
         onTap: () {
           final HomedKey homedKey = HomedKey.find(identityStr)!;
-          KeyInfoView.show(context, identityStr, homedKey.fetchUrl,
+          KeyInfoView.show(context, identityStr, homedKey.fetchUrl ?? kNativeUrl,
               details: tapDetails,
               source: widget.controller.trustSource,
               labeler: labeler,
@@ -372,7 +373,8 @@ class _NodeDetailsState extends State<NodeDetails> {
               child: InkWell(
                 onTapDown: (details) => tapDetails = details,
                 onTap: () {
-                  KeyInfoView.show(context, equivIdentityToken, kOneofusDomain,
+                  final HomedKey? hk = HomedKey.find(equivIdentityToken);
+                  KeyInfoView.show(context, equivIdentityToken, hk?.fetchUrl ?? kNativeUrl,
                       details: tapDetails,
                       source: widget.controller.trustSource,
                       labeler: labeler,
@@ -422,7 +424,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                 alignment: Alignment.centerLeft,
                 child: InkWell(
                   onTapDown: (details) => tapDetails = details,
-                  onTap: () => KeyInfoView.show(context, d, kNerdsterDomain,
+                  onTap: () => KeyInfoView.show(context, d, FirebaseConfig.contentUrl,
                       details: tapDetails,
                       source: widget.controller.contentSource,
                       labeler: labeler,

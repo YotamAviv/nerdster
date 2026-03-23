@@ -1,10 +1,10 @@
 import 'jsonish.dart';
 
-/// The native home for keys on the ONE-OF-US.NET network.
-const String kNativeHome = 'export.one-of-us.net';
+/// The base URL for the native ONE-OF-US.NET trust statement export.
+const String kNativeUrl = 'https://export.one-of-us.net';
 
-/// All known home values that map to the native network.
-const Set<String> kKnownHomes = {'one-of-us.net', kNativeHome};
+/// The endpoint object for keys natively homed at ONE-OF-US.NET.
+const Map<String, dynamic> kNativeEndpoint = {'url': kNativeUrl};
 
 /// type-safe wrappers
 extension type IdentityKey(String value) {}
@@ -20,10 +20,12 @@ extension type ContentKey(String value) {}
 bool isPubKey(Map<String, dynamic> json) =>
     json.containsKey('x') && json.containsKey('crv') && json['kty'] == 'OKP';
 
-/// A public key paired with its home identifier.
+/// A public key paired with its service endpoint metadata.
 ///
-/// Home is the hostname of the organization's trust statement export endpoint.
-/// For ONE-OF-US.NET native keys, home is [kNativeHome].
+/// [endpoint] is an arbitrary JSON object describing where this key's trust
+/// statements are published. For ONE-OF-US.NET native keys it is
+/// `{"url": "https://export.one-of-us.net"}`. Third-party keys carry whatever
+/// their QR/invitation payload contained (minus the `"key"` field itself).
 ///
 /// HomedKey maintains a static registry so that [find] can map any known
 /// identity token to its [HomedKey] (and therefore to its [fetchUrl]).
@@ -31,21 +33,22 @@ class HomedKey {
   static final Map<String, HomedKey> _registry = {};
 
   final Json pubKeyJson;
-  final String home;
+  final Map<String, dynamic> endpoint;
 
-  HomedKey(this.pubKeyJson, [this.home = kNativeHome]) {
+  HomedKey(this.pubKeyJson, [this.endpoint = kNativeEndpoint]) {
     _registry[getToken(pubKeyJson)] = this;
   }
 
   String get token => getToken(pubKeyJson);
 
-  /// The base URL for fetching this key's trust statements.
-  String get fetchUrl => 'https://$home';
+  /// The URL for fetching this key's trust statements, or null if the
+  /// endpoint format is not recognized (e.g. a third-party key with no `url`).
+  String? get fetchUrl => endpoint['url'] as String?;
 
-  bool get isNative => kKnownHomes.contains(home);
+  bool get isNative => fetchUrl == kNativeUrl;
 
-  /// Serializes to the {key, home} payload format.
-  Map<String, dynamic> toPayload() => {'key': pubKeyJson, 'home': home};
+  /// Serializes to the `{key, ...endpoint}` payload format.
+  Map<String, dynamic> toPayload() => {'key': pubKeyJson, ...endpoint};
 
   /// Looks up a [HomedKey] by identity token.
   static HomedKey? find(String token) => _registry[token];
@@ -57,22 +60,17 @@ class HomedKey {
   ///
   /// Accepts both formats:
   ///   Old: bare key JSON  {"crv":...,"kty":"OKP","x":...}
-  ///   New: {"key": {...}, "home": "..."}
+  ///   New: {"key": {...}, "url": "...", ...}  (any extra fields preserved)
   ///
-  /// Missing [home] defaults to [kNativeHome]. Unknown homes throw [UnsupportedError].
+  /// Old format defaults to [kNativeEndpoint].
   /// Returns null if the payload is not a recognized format.
   static HomedKey? fromPayload(Map<String, dynamic> json) {
-    if (isPubKey(json)) return HomedKey(json); // old format — native home
+    if (isPubKey(json)) return HomedKey(json); // old format — native endpoint
     final dynamic key = json['key'];
     if (key is Map<String, dynamic> && isPubKey(key)) {
-      final String home = (json['home'] as String?) ?? kNativeHome;
-      if (!kKnownHomes.contains(home)) {
-        throw UnsupportedError(
-          'Key Federation not yet supported (home: $home). '
-          'Update your app to vouch for keys from other organizations.',
-        );
-      }
-      return HomedKey(key, home);
+      // Everything except 'key' is the endpoint; default to native if empty.
+      final Map<String, dynamic> endpoint = Map.from(json)..remove('key');
+      return HomedKey(key, endpoint.isEmpty ? kNativeEndpoint : endpoint);
     }
     return null;
   }

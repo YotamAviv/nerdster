@@ -20,7 +20,7 @@ const crypto = require('crypto');
  * Then paste the output here.
  *
  * Last synced output:
- *   home: 25, comment: 26, contentType: 27, previous: 28, signature: 29
+ *   endpoint: 25, comment: 26, contentType: 27, previous: 28, signature: 29
  */
 const key2order = {
   "statement": 0,
@@ -48,7 +48,7 @@ const key2order = {
   "dismiss": 22,
   "censor": 23,
   "stars": 24,
-  "home": 25,
+  "endpoint": 25,
   "comment": 26,
   "contentType": 27,
   "previous": 28,

@@ -99,7 +99,7 @@ class Jsonish {
     'censor',
     'stars', // gone but may exist in old statements
 
-    'home', // Key Federation: home of the subject key
+    'endpoint', // Key Federation: endpoint of the subject key
     'comment',
 
     'contentType', // for subjects like book, movie..

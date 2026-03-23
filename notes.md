@@ -12,9 +12,9 @@ AI NOTE: This is my (the human) file with my own notes.
 ?identity={"crv": "Ed25519","kty": "OKP","x": "Sf-EQHCY94WB_4QFzEQWkO2SYFNTBgtfsc-Ic25oL84"}&skipVerify=false&dev=true
 
 # Fake egosCircle
-?fire=fake&demo=egosCircle
+?fire=fake&demo=egosCircle&showCrypto=true
 # Fake equivalenceBug
-?fire=fake&demo=equivalenceBug
+?fire=fake&demo=equivalenceBug&showCrypto=true
 
 ?fire=fake&demo=simpsonsRelateDemox 
 

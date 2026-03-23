@@ -21,6 +21,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/fire_util.dart';
+import 'package:oneofus_common/keys.dart' show HomedKey;
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/ui/json_display.dart';
 
@@ -141,16 +142,13 @@ Future<void> defaultSignIn({BuildContext? context}) async {
   if (fireChoice != FireChoice.fake) {
     OouPublicKey? identityPublicKey;
     OouKeyPair? nerdsterKeyPair;
-    (identityPublicKey, nerdsterKeyPair, _) = await KeyStore.readKeys();
+    Map<String, dynamic> endpoint;
+    (identityPublicKey, nerdsterKeyPair, endpoint) = await KeyStore.readKeys();
     if (identityPublicKey != null) {
       final Json identityJson = await identityPublicKey.json;
-      final String identity = getToken(identityJson);
-      // In prod, resolve the URL from the stored home (resolves the DEFER).
-      // In emulator mode the switch-case already set localhost URLs; don't override.
-      // HomedKey registration happens automatically in HomedKey constructor;
-      // SourceFactory.forIdentity() will look it up from the registry.
+      final homedKey = HomedKey(identityJson, endpoint);
       if (nerdsterKeyPair != null) {
-        await signInState.signIn(identity, nerdsterKeyPair);
+        await signInState.signInWithHomedKey(homedKey, nerdsterKeyPair);
         if (pov != null) signInState.pov = pov;
         return;
       }

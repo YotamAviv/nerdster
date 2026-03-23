@@ -5,7 +5,7 @@ import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/keys.dart';
+import 'package:oneofus_common/keys.dart' show kNativeEndpoint;
 import 'package:oneofus_common/trust_statement.dart';
 
 /// UI:
@@ -22,10 +22,10 @@ class KeyStore {
   static Future<void> storeKeys(
     OouPublicKey oneofusPublicKey,
     OouKeyPair? nerdsterKeyPair, {
-    String home = kNativeHome,
+    Map<String, dynamic> endpoint = kNativeEndpoint,
   }) async {
     await _storage.write(key: kOneofusDomain, value: _encoder.convert(await oneofusPublicKey.json));
-    await _storage.write(key: _kHomedKeyKey, value: home);
+    await _storage.write(key: _kHomedKeyKey, value: _encoder.convert(endpoint));
     if (nerdsterKeyPair != null) {
       await _storage.write(
           key: kNerdsterDomain, value: _encoder.convert(await nerdsterKeyPair.json));
@@ -38,7 +38,7 @@ class KeyStore {
     await _storage.delete(key: _kHomedKeyKey);
   }
 
-  static Future<(OouPublicKey? oneofusPublicKey, OouKeyPair? nerdsterKeyPair, String home)>
+  static Future<(OouPublicKey? oneofusPublicKey, OouKeyPair? nerdsterKeyPair, Map<String, dynamic> endpoint)>
       readKeys() async {
     OouPublicKey? oneofusPublicKey;
     String? oneofusString = await _storage.read(key: kOneofusDomain);
@@ -52,8 +52,19 @@ class KeyStore {
       Json json = jsonDecode(nerdsterString);
       nerdsterKeyPair = await _crypto.parseKeyPair(json);
     }
-    // Default to native home for old stored sessions that predate this field.
-    final String home = (await _storage.read(key: _kHomedKeyKey)) ?? kNativeHome;
-    return (oneofusPublicKey, nerdsterKeyPair, home);
+    // Read stored endpoint JSON. Old sessions stored a plain hostname string;
+    // convert those to {url: 'https://<host>'} for backward compat.
+    Map<String, dynamic> endpoint = kNativeEndpoint;
+    final String? stored = await _storage.read(key: _kHomedKeyKey);
+    if (stored != null) {
+      final dynamic parsed = jsonDecode(stored);
+      if (parsed is Map<String, dynamic>) {
+        endpoint = parsed;
+      } else if (parsed is String) {
+        // Legacy: plain hostname like 'export.one-of-us.net'
+        endpoint = {'url': 'https://$parsed'};
+      }
+    }
+    return (oneofusPublicKey, nerdsterKeyPair, endpoint);
   }
 }

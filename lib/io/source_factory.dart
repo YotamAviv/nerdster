@@ -6,7 +6,7 @@ import 'package:nerdster/settings/setting_type.dart';
 import 'package:oneofus_common/cloud_functions_source.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:oneofus_common/direct_firestore_writer.dart';
-import 'package:oneofus_common/keys.dart' show HomedKey, kNativeHome;
+import 'package:oneofus_common/keys.dart' show HomedKey, kNativeUrl;
 import 'package:oneofus_common/oou_verifier.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
@@ -26,7 +26,7 @@ class SourceFactory {
     }
     final HomedKey? homedKey = HomedKey.find(token);
     assert(homedKey != null, 'No HomedKey registered for token $token');
-    final String url = FirebaseConfig.resolveUrl(homedKey?.fetchUrl ?? 'https://$kNativeHome');
+    final String url = FirebaseConfig.resolveUrl(homedKey?.fetchUrl ?? kNativeUrl);
     return CloudFunctionsSource<TrustStatement>(
       baseUrl: url,
       verifier: OouVerifier(),
