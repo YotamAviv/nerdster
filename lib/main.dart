@@ -21,7 +21,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/fire_util.dart';
-import 'package:oneofus_common/keys.dart' show HomedKey;
+import 'package:oneofus_common/keys.dart' show FedKey;
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/ui/json_display.dart';
 
@@ -146,9 +146,9 @@ Future<void> defaultSignIn({BuildContext? context}) async {
     (identityPublicKey, nerdsterKeyPair, endpoint) = await KeyStore.readKeys();
     if (identityPublicKey != null) {
       final Json identityJson = await identityPublicKey.json;
-      final homedKey = HomedKey(identityJson, endpoint);
+      final fedKey = FedKey(identityJson, endpoint);
       if (nerdsterKeyPair != null) {
-        await signInState.signInWithHomedKey(homedKey, nerdsterKeyPair);
+        await signInState.signInWithFedKey(fedKey, nerdsterKeyPair);
         if (pov != null) signInState.pov = pov;
         return;
       }

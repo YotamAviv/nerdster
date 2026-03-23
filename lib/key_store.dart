@@ -17,7 +17,7 @@ class KeyStore {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
   static const _encoder = Jsonish.encoder;
   static const OouCryptoFactory _crypto = crypto;
-  static const String _kHomedKeyKey = 'oneofus_home';
+  static const String _kFedKeyKey = 'oneofus_home';
 
   static Future<void> storeKeys(
     OouPublicKey oneofusPublicKey,
@@ -25,7 +25,7 @@ class KeyStore {
     Map<String, dynamic> endpoint = kNativeEndpoint,
   }) async {
     await _storage.write(key: kOneofusDomain, value: _encoder.convert(await oneofusPublicKey.json));
-    await _storage.write(key: _kHomedKeyKey, value: _encoder.convert(endpoint));
+    await _storage.write(key: _kFedKeyKey, value: _encoder.convert(endpoint));
     if (nerdsterKeyPair != null) {
       await _storage.write(
           key: kNerdsterDomain, value: _encoder.convert(await nerdsterKeyPair.json));
@@ -35,7 +35,7 @@ class KeyStore {
   static Future<void> wipeKeys() async {
     await _storage.delete(key: kOneofusDomain);
     await _storage.delete(key: kNerdsterDomain);
-    await _storage.delete(key: _kHomedKeyKey);
+    await _storage.delete(key: _kFedKeyKey);
   }
 
   static Future<(OouPublicKey? oneofusPublicKey, OouKeyPair? nerdsterKeyPair, Map<String, dynamic> endpoint)>
@@ -55,7 +55,7 @@ class KeyStore {
     // Read stored endpoint JSON. Old sessions stored a plain hostname string;
     // convert those to {url: 'https://<host>'} for backward compat.
     Map<String, dynamic> endpoint = kNativeEndpoint;
-    final String? stored = await _storage.read(key: _kHomedKeyKey);
+    final String? stored = await _storage.read(key: _kFedKeyKey);
     if (stored != null) {
       final dynamic parsed = jsonDecode(stored);
       if (parsed is Map<String, dynamic>) {

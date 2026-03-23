@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/io/source_factory.dart';
 import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/keys.dart' show IdentityKey;
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/util_ui.dart';
@@ -60,7 +61,7 @@ class DumpAllStatements extends StatelessWidget {
 
 Future<void> dump(String domain, String token) async {
   final src = (domain == kOneofusDomain)
-      ? SourceFactory.forIdentity(token)
+      ? SourceFactory.forIdentity(IdentityKey(token))
       : SourceFactory.forContent();
   Map<String, List<Statement>> result = await src.fetch({token: null});
   Iterable<Statement> statements = result[token] ?? [];

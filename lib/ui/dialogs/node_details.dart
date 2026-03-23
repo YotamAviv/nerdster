@@ -266,8 +266,8 @@ class _NodeDetailsState extends State<NodeDetails> {
           );
         },
         onTap: () {
-          final HomedKey homedKey = HomedKey.find(identityStr)!;
-          KeyInfoView.show(context, identityStr, homedKey.fetchUrl ?? kNativeUrl,
+          final FedKey fedKey = FedKey.find(IdentityKey(identityStr))!;
+          KeyInfoView.show(context, identityStr, (fedKey.endpoint['url'] as String?) ?? kNativeUrl,
               details: tapDetails,
               source: widget.controller.trustSource,
               labeler: labeler,
@@ -373,8 +373,8 @@ class _NodeDetailsState extends State<NodeDetails> {
               child: InkWell(
                 onTapDown: (details) => tapDetails = details,
                 onTap: () {
-                  final HomedKey? hk = HomedKey.find(equivIdentityToken);
-                  KeyInfoView.show(context, equivIdentityToken, hk?.fetchUrl ?? kNativeUrl,
+                  final FedKey? hk = FedKey.find(IdentityKey(equivIdentityToken));
+                  KeyInfoView.show(context, equivIdentityToken, (hk?.endpoint['url'] as String?) ?? kNativeUrl,
                       details: tapDetails,
                       source: widget.controller.trustSource,
                       labeler: labeler,

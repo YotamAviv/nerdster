@@ -43,7 +43,7 @@ class _ContentViewState extends State<ContentView> {
   void initState() {
     super.initState();
     _controller = FeedController(
-      trustSource: SourceFactory.forIdentity(widget.pov.value),
+      trustSource: SourceFactory.forIdentity(widget.pov),
       contentSource: SourceFactory.forContent(),
       optimisticConcurrencyFunc: nerdsterOptimisticConcurrencyFunc,
     );

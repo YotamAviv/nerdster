@@ -27,31 +27,28 @@ bool isPubKey(Map<String, dynamic> json) =>
 /// `{"url": "https://export.one-of-us.net"}`. Third-party keys carry whatever
 /// their QR/invitation payload contained (minus the `"key"` field itself).
 ///
-/// HomedKey maintains a static registry so that [find] can map any known
-/// identity token to its [HomedKey] (and therefore to its [fetchUrl]).
-class HomedKey {
-  static final Map<String, HomedKey> _registry = {};
+/// FedKey maintains a static registry so that [find] can map any known
+/// identity token to its [FedKey] (and therefore to its endpoint).
+class FedKey {
+  static final Map<IdentityKey, FedKey> _registry = {};
 
   final Json pubKeyJson;
   final Map<String, dynamic> endpoint;
 
-  HomedKey(this.pubKeyJson, [this.endpoint = kNativeEndpoint]) {
-    _registry[getToken(pubKeyJson)] = this;
+  FedKey(this.pubKeyJson, [this.endpoint = kNativeEndpoint]) {
+    _registry[identityKey] = this;
   }
 
-  String get token => getToken(pubKeyJson);
+  IdentityKey get identityKey => IdentityKey(getToken(pubKeyJson));
 
-  /// The URL for fetching this key's trust statements, or null if the
-  /// endpoint format is not recognized (e.g. a third-party key with no `url`).
-  String? get fetchUrl => endpoint['url'] as String?;
-
-  bool get isNative => fetchUrl == kNativeUrl;
+  bool get isNative => (endpoint['url'] as String?) == kNativeUrl;
 
   /// Serializes to the `{key, ...endpoint}` payload format.
   Map<String, dynamic> toPayload() => {'key': pubKeyJson, ...endpoint};
 
-  /// Looks up a [HomedKey] by identity token.
-  static HomedKey? find(String token) => _registry[token];
+  // TODO: I like types. Try IdentityToken instead of String.
+  /// Looks up a [FedKey] by identity token.
+  static FedKey? find(IdentityKey key) => _registry[key];
 
   /// Clears the registry. For testing only.
   static void clearRegistry() => _registry.clear();
@@ -64,13 +61,13 @@ class HomedKey {
   ///
   /// Old format defaults to [kNativeEndpoint].
   /// Returns null if the payload is not a recognized format.
-  static HomedKey? fromPayload(Map<String, dynamic> json) {
-    if (isPubKey(json)) return HomedKey(json); // old format — native endpoint
+  static FedKey? fromPayload(Map<String, dynamic> json) {
+    if (isPubKey(json)) return FedKey(json); // old format — native endpoint
     final dynamic key = json['key'];
     if (key is Map<String, dynamic> && isPubKey(key)) {
       // Everything except 'key' is the endpoint; default to native if empty.
       final Map<String, dynamic> endpoint = Map.from(json)..remove('key');
-      return HomedKey(key, endpoint.isEmpty ? kNativeEndpoint : endpoint);
+      return FedKey(key, endpoint.isEmpty ? kNativeEndpoint : endpoint);
     }
     return null;
   }

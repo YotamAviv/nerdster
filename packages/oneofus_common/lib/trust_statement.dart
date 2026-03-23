@@ -89,10 +89,10 @@ class TrustStatement extends Statement {
       endpoint: endpoint,
     );
     _cache[s.token] = s;
-    // Register HomedKey so downstream code can resolve token → endpoint.
+    // Register FedKey so downstream code can resolve token → endpoint.
     // Always register for trust/replace subjects; absent endpoint defaults to kNativeEndpoint.
     if ((verb == TrustVerb.trust || verb == TrustVerb.replace) && subject is Map<String, dynamic>) {
-      HomedKey(subject, endpoint ?? kNativeEndpoint);
+      FedKey(subject, endpoint ?? kNativeEndpoint);
     }
     return s;
   }

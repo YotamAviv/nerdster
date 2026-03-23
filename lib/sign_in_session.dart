@@ -7,7 +7,7 @@ import 'package:nerdster/app.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
-import 'package:oneofus_common/keys.dart' show HomedKey;
+import 'package:oneofus_common/keys.dart' show FedKey;
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/sign_in_state.dart';
 
@@ -80,8 +80,8 @@ class SignInSession {
       // Unpack identity public key (supports both old bare-key and new {key, home} formats)
       final String identityKey = data.containsKey('identity') ? 'identity' : kOneofusDomain;
       final Json identityPayload = data[identityKey]!;
-      final HomedKey homedKey = HomedKey.fromPayload(identityPayload) ?? HomedKey(identityPayload);
-      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(homedKey.pubKeyJson);
+      final FedKey fedKey = FedKey.fromPayload(identityPayload) ?? FedKey(identityPayload);
+      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(fedKey.pubKeyJson);
 
       // Optionally unpack and decrypt Nerdster private key
       Json? delegateJson;
@@ -101,7 +101,7 @@ class SignInSession {
       }
 
       await signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value,
-          endpoint: homedKey.endpoint);
+          endpoint: fedKey.endpoint);
     });
   }
 
