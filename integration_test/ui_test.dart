@@ -14,6 +14,7 @@ import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/content_card.dart';
 import 'package:nerdster/ui/statement_tile.dart';
+import 'package:oneofus_common/keys.dart' show HomedKey;
 import 'package:oneofus_common/trust_statement.dart';
 
 void main() {
@@ -42,8 +43,8 @@ void main() {
     final oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
     final nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
 
-    FirebaseConfig.registerUrl(kOneofusDomain, oneofusUrl);
-    FirebaseConfig.registerUrl(kNerdsterDomain, nerdsterUrl);
+    FirebaseConfig.registerRedirect('https://export.one-of-us.net', oneofusUrl);
+    FirebaseConfig.registerRedirect('https://export.nerdster.org', nerdsterUrl);
 
     // Configure Fetcher Endpoints
     // Fetcher.initEndpoint(kOneofusDomain,
@@ -70,7 +71,7 @@ void main() {
       print('Signing in as Lisa: $lisaToken');
 
       // 2. Start the app
-      await signInState.signIn(lisaToken, null);
+      await signInState.signInWithHomedKey(HomedKey(lisaIdentity), null);
       print('Current POV: ${signInState.pov}');
 
       await tester.pumpWidget(const app.NerdsterApp());

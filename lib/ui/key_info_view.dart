@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/fire_choice.dart';
@@ -9,18 +11,18 @@ import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:nerdster/config.dart';
-
 class KeyInfoView extends StatelessWidget {
   final Jsonish jsonish;
-  final String domain;
+  /// Base URL of the pipeline that issued these statements.
+  /// Used to build the "Published Statements" link.
+  final String baseUrl;
   final StatementSource source;
   final Labeler labeler;
 
   const KeyInfoView({
     super.key,
     required this.jsonish,
-    required this.domain,
+    required this.baseUrl,
     required this.labeler,
     required this.source,
   });
@@ -40,11 +42,11 @@ class KeyInfoView extends StatelessWidget {
 
   Widget _buildStatementsLink(BuildContext context) {
     if (fireChoice != FireChoice.fake) {
-      String? revokeAt;
-      final token = jsonish.token;
-      revokeAt = labeler.graph.replacementConstraints[IdentityKey(token)];
-
-      final Uri uri = FirebaseConfig.makeSimpleUri(domain, jsonish.token, revokeAt: revokeAt);
+      final String? revokeAt =
+          labeler.graph.replacementConstraints[IdentityKey(jsonish.token)];
+      final params = <String, String>{'spec': jsonEncode(jsonish.token)};
+      if (revokeAt != null) params['revokeAt'] = revokeAt;
+      final Uri uri = Uri.parse(baseUrl).replace(queryParameters: params);
       return InkWell(
         onTap: () => launchUrl(uri),
         child: Padding(
@@ -91,7 +93,7 @@ class KeyInfoView extends StatelessWidget {
   static Future<void> show(
     BuildContext context,
     String token,
-    String domain, {
+    String baseUrl, {
     TapDownDetails? details,
     required StatementSource source,
     required Labeler labeler,
@@ -157,7 +159,7 @@ class KeyInfoView extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: KeyInfoView(
-                            jsonish: jsonish, domain: domain, source: source, labeler: labeler),
+                            jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler),
                       ),
                     ),
                   ),
@@ -177,7 +179,7 @@ class KeyInfoView extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: KeyInfoView(
-                          jsonish: jsonish, domain: domain, source: source, labeler: labeler),
+                          jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler),
                     ),
                   )));
         });

@@ -69,8 +69,9 @@ class TrustStatement extends Statement {
     dynamic subject;
     for (verb in TrustVerb.values) {
       subject = jsonish[verb.label];
-      if (subject != null)
+      if (subject != null) {
         break; // could continue to loop to assert that there isn't a second subject
+      }
     }
     assert(subject != null);
 
@@ -88,10 +89,9 @@ class TrustStatement extends Statement {
     );
     _cache[s.token] = s;
     // Register HomedKey so downstream code can resolve token → home.
-    if (home != null &&
-        (verb == TrustVerb.trust || verb == TrustVerb.replace) &&
-        subject is Map<String, dynamic>) {
-      HomedKey(subject, home);
+    // Always register for trust/replace subjects; absent home defaults to kNativeHome.
+    if ((verb == TrustVerb.trust || verb == TrustVerb.replace) && subject is Map<String, dynamic>) {
+      HomedKey(subject, home ?? kNativeHome);
     }
     return s;
   }

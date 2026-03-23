@@ -59,7 +59,10 @@ class DumpAllStatements extends StatelessWidget {
 }
 
 Future<void> dump(String domain, String token) async {
-  Map<String, List<Statement>> result = await SourceFactory.get(domain).fetch({token: null});
+  final src = (domain == kOneofusDomain)
+      ? SourceFactory.forIdentity(token)
+      : SourceFactory.forContent();
+  Map<String, List<Statement>> result = await src.fetch({token: null});
   Iterable<Statement> statements = result[token] ?? [];
   for (Statement statement in statements) {
     print('${statement.token} = ${statement.jsonish.ppJson}');

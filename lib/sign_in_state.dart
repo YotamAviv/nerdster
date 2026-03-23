@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/keys.dart' show kNativeHome;
+import 'package:oneofus_common/keys.dart' show HomedKey, kNativeHome;
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -94,9 +94,9 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signIn(String identity, OouKeyPair? delegateKeyPair) async {
-    _identity = identity;
-    povNotifier.value = identity;
+  Future<void> signInWithHomedKey(HomedKey homedKey, OouKeyPair? delegateKeyPair) async {
+    _identity = homedKey.token;
+    povNotifier.value = homedKey.token;
     if (delegateKeyPair != null) {
       OouPublicKey delegatePublicKey = await delegateKeyPair.publicKey;
       _delegatePublicKeyJson = await delegatePublicKey.json;
@@ -109,6 +109,12 @@ class SignInState with ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  @Deprecated('Use signInWithHomedKey instead')
+  Future<void> signIn(String identity, OouKeyPair? delegateKeyPair) async {
+    final homedKey = HomedKey.fromPayload(Jsonish.find(identity)!.json)!;
+    await signInWithHomedKey(homedKey, delegateKeyPair);
   }
 
   void signOut({bool? clearIdentity = false}) {

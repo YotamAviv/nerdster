@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/dev/nerdster_menu.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/settings/prefs.dart';
-import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/content_bar.dart';
@@ -45,8 +43,8 @@ class _ContentViewState extends State<ContentView> {
   void initState() {
     super.initState();
     _controller = FeedController(
-      trustSource: SourceFactory.get<TrustStatement>(kOneofusDomain),
-      contentSource: SourceFactory.get<ContentStatement>(kNerdsterDomain),
+      trustSource: SourceFactory.forIdentity(widget.pov.value),
+      contentSource: SourceFactory.forContent(),
       optimisticConcurrencyFunc: nerdsterOptimisticConcurrencyFunc,
     );
     _controller.addListener(() {

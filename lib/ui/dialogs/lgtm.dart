@@ -1,9 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/config.dart';
 import 'package:nerdster/logic/interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
-import 'package:nerdster/models/content_statement.dart';
+
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
@@ -20,7 +21,8 @@ class Lgtm {
     assert(signInState.delegate != null);
 
     var spec = signInState.delegate!;
-    Uri uri = FirebaseConfig.makeSimpleUri(kNerdsterDomain, spec);
+    Uri uri = Uri.parse(FirebaseConfig.contentUrl)
+        .replace(queryParameters: {'spec': jsonEncode(spec)});
 
     return showDialog<bool?>(
         context: context,

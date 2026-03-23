@@ -21,7 +21,6 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/fire_util.dart';
-import 'package:oneofus_common/keys.dart' show HomedKey;
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/ui/json_display.dart';
 
@@ -98,20 +97,10 @@ Future<void> main() async {
     case FireChoice.emulator:
       const oneofusUrl = 'http://127.0.0.1:5002/one-of-us-net/us-central1/export';
       const nerdsterUrl = 'http://127.0.0.1:5001/nerdster/us-central1/export';
-      FirebaseConfig.registerUrl(kOneofusDomain, oneofusUrl);
-      FirebaseConfig.registerUrl(kNerdsterDomain, nerdsterUrl);
-      // Register redirects so Phase 2 code can call FirebaseConfig.resolveUrl(homedKey.fetchUrl)
-      // without needing to know about fireChoice.
       FirebaseConfig.registerRedirect('https://export.one-of-us.net', oneofusUrl);
       FirebaseConfig.registerRedirect('https://export.nerdster.org', nerdsterUrl);
       break;
     case FireChoice.prod:
-      // Default URL for view-only mode (no identity stored). Overridden in
-      // defaultSignIn() once the stored identity's home is known.
-      const oneofusUrl = 'https://export.one-of-us.net';
-      const nerdsterUrl = 'https://export.nerdster.org';
-      FirebaseConfig.registerUrl(kOneofusDomain, oneofusUrl);
-      FirebaseConfig.registerUrl(kNerdsterDomain, nerdsterUrl);
       break;
   }
 
@@ -152,16 +141,14 @@ Future<void> defaultSignIn({BuildContext? context}) async {
   if (fireChoice != FireChoice.fake) {
     OouPublicKey? identityPublicKey;
     OouKeyPair? nerdsterKeyPair;
-    String home;
-    (identityPublicKey, nerdsterKeyPair, home) = await KeyStore.readKeys();
+    (identityPublicKey, nerdsterKeyPair, _) = await KeyStore.readKeys();
     if (identityPublicKey != null) {
       final Json identityJson = await identityPublicKey.json;
       final String identity = getToken(identityJson);
       // In prod, resolve the URL from the stored home (resolves the DEFER).
       // In emulator mode the switch-case already set localhost URLs; don't override.
-      if (fireChoice == FireChoice.prod) {
-        FirebaseConfig.registerUrl(kOneofusDomain, HomedKey(identityJson, home).fetchUrl);
-      }
+      // HomedKey registration happens automatically in HomedKey constructor;
+      // SourceFactory.forIdentity() will look it up from the registry.
       if (nerdsterKeyPair != null) {
         await signInState.signIn(identity, nerdsterKeyPair);
         if (pov != null) signInState.pov = pov;

@@ -265,7 +265,8 @@ class _NodeDetailsState extends State<NodeDetails> {
           );
         },
         onTap: () {
-          KeyInfoView.show(context, identityStr, kOneofusDomain,
+          final HomedKey homedKey = HomedKey.find(identityStr)!;
+          KeyInfoView.show(context, identityStr, homedKey.fetchUrl,
               details: tapDetails,
               source: widget.controller.trustSource,
               labeler: labeler,

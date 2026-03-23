@@ -1,5 +1,12 @@
 # TODO
 
+
+## protocol in HomedKey
+Vouch, replace include
+Key 
+All other fields in json obj
+
+
 ## Test with skipVerify=false
 
 

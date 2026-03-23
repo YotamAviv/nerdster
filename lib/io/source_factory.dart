@@ -6,23 +6,48 @@ import 'package:nerdster/settings/setting_type.dart';
 import 'package:oneofus_common/cloud_functions_source.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:oneofus_common/direct_firestore_writer.dart';
+import 'package:oneofus_common/keys.dart' show HomedKey, kNativeHome;
 import 'package:oneofus_common/oou_verifier.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/statement_writer.dart';
+import 'package:oneofus_common/trust_statement.dart';
+import 'package:nerdster/models/content_statement.dart';
 
 class SourceFactory {
-  static StatementSource<T> get<T extends Statement>(String domain) =>
-      (fireChoice == FireChoice.fake)
-          ? DirectFirestoreSource<T>(
-              FireFactory.find(domain),
-              skipVerify: Setting.get<bool>(SettingType.skipVerify),
-            )
-          : CloudFunctionsSource<T>(
-              baseUrl: FirebaseConfig.getUrl(domain)!,
-              verifier: OouVerifier(),
-              skipVerify: Setting.get<bool>(SettingType.skipVerify),
-            );
+  /// Trust pipeline: URL comes from the HomedKey registry.
+  /// Asserts if the token has no registered HomedKey (caller's bug).
+  static StatementSource<TrustStatement> forIdentity(String token) {
+    if (fireChoice == FireChoice.fake) {
+      return DirectFirestoreSource<TrustStatement>(
+        FireFactory.find(kOneofusDomain),
+        skipVerify: Setting.get<bool>(SettingType.skipVerify),
+      );
+    }
+    final HomedKey? homedKey = HomedKey.find(token);
+    assert(homedKey != null, 'No HomedKey registered for token $token');
+    final String url = FirebaseConfig.resolveUrl(homedKey?.fetchUrl ?? 'https://$kNativeHome');
+    return CloudFunctionsSource<TrustStatement>(
+      baseUrl: url,
+      verifier: OouVerifier(),
+      skipVerify: Setting.get<bool>(SettingType.skipVerify),
+    );
+  }
+
+  /// Content pipeline: always export.nerdster.org (or its emulator redirect).
+  static StatementSource<ContentStatement> forContent() {
+    if (fireChoice == FireChoice.fake) {
+      return DirectFirestoreSource<ContentStatement>(
+        FireFactory.find(kNerdsterDomain),
+        skipVerify: Setting.get<bool>(SettingType.skipVerify),
+      );
+    }
+    return CloudFunctionsSource<ContentStatement>(
+      baseUrl: FirebaseConfig.contentUrl,
+      verifier: OouVerifier(),
+      skipVerify: Setting.get<bool>(SettingType.skipVerify),
+    );
+  }
 
   static StatementWriter<T> getWriter<T extends Statement>(String domain) {
     return DirectFirestoreWriter(FireFactory.find(domain));

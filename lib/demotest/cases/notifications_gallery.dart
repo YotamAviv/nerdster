@@ -139,7 +139,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
   }
 
   // Verify
-  final src = SourceFactory.get<TrustStatement>(kOneofusDomain);
+  final src = SourceFactory.forIdentity(me.id.value);
   final pipeline = TrustPipeline(src);
   final trustGraph = await pipeline.build(me.id);
 

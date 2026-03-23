@@ -22,7 +22,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> basicScenario({
   await marge.trust(lisa, moniker: 'lisa');
   await marge.trust(bart, moniker: 'bart');
 
-  final src = source ?? SourceFactory.get<TrustStatement>(kOneofusDomain);
+  final src = source ?? SourceFactory.forIdentity(marge.id.value);
   final pipeline = TrustPipeline(src);
   final graph = await pipeline.build(marge.id);
 

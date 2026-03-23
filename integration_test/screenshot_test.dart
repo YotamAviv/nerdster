@@ -17,7 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:nerdster/app.dart' as app;
-import 'package:nerdster/config.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/io/fire_factory.dart';
@@ -57,10 +56,6 @@ void main() {
         kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
     FireFactory.register(kOneofusDomain, OneofusFire.firestore, OneofusFire.functions);
 
-    const oneofusUrl = 'https://export.one-of-us.net';
-    const nerdsterUrl = 'https://export.nerdster.org';
-    FirebaseConfig.registerUrl(kOneofusDomain, oneofusUrl);
-    FirebaseConfig.registerUrl(kNerdsterDomain, nerdsterUrl);
 
     TrustStatement.init();
     ContentStatement.init();
