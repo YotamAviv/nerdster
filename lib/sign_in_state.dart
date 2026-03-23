@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/keys.dart' show kNativeHome;
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:nerdster/singletons.dart';
 
@@ -61,9 +62,10 @@ import 'package:nerdster/singletons.dart';
 /// StatefulWidgets.
 
 Future<void> signInUiHelper(
-    OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store) async {
+    OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
+    {String home = kNativeHome}) async {
   if (store) {
-    await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair);
+    await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair, home: home);
   } else {
     await KeyStore.wipeKeys();
   }

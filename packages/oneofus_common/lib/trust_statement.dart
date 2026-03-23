@@ -2,6 +2,7 @@ import 'package:oneofus_common/clock.dart';
 import 'package:oneofus_common/jsonish.dart';
 export 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/keys.dart';
+export 'package:oneofus_common/keys.dart' show kNativeHome;
 import 'package:oneofus_common/statement.dart';
 
 const String kOneofusDomain = 'one-of-us.net';
@@ -24,6 +25,7 @@ class TrustStatement extends Statement {
   final String? moniker;
   final String? revokeAt;
   final String? domain;
+  final String? home; // Key Federation: home of the subject key
 
   IdentityKey get iKey => IdentityKey(getToken(this.i));
   String get iToken => iKey.value;
@@ -73,6 +75,7 @@ class TrustStatement extends Statement {
     assert(subject != null);
 
     Json? withx = jsonish['with'];
+    final String? home = (withx != null) ? withx['home'] : null;
     TrustStatement s = TrustStatement._internal(
       jsonish,
       subject,
@@ -81,8 +84,15 @@ class TrustStatement extends Statement {
       moniker: (withx != null) ? withx['moniker'] : null,
       revokeAt: (withx != null) ? withx['revokeAt'] : null,
       domain: (withx != null) ? withx['domain'] : null,
+      home: home,
     );
     _cache[s.token] = s;
+    // Register HomedKey so downstream code can resolve token → home.
+    if (home != null &&
+        (verb == TrustVerb.trust || verb == TrustVerb.replace) &&
+        subject is Map<String, dynamic>) {
+      HomedKey(subject, home);
+    }
     return s;
   }
 
@@ -115,6 +125,7 @@ class TrustStatement extends Statement {
     required this.moniker,
     required this.revokeAt,
     required this.domain,
+    required this.home,
   }) {
     assertValid(verb, revokeAt, moniker, comment, domain);
   }
@@ -123,11 +134,8 @@ class TrustStatement extends Statement {
   // strings like 'revokeAt' all over the code, and this avoids most of it.
   // CONSIDER: A fancy StatementBuilder.
   static Json make(Json iJson, Json subject, TrustVerb verb,
-      {String? revokeAt, String? moniker, String? domain, String? comment}) {
+      {String? revokeAt, String? moniker, String? domain, String? comment, String? home}) {
     assertValid(verb, revokeAt, moniker, comment, domain);
-    // (This below happens (iKey == subjectKey) when:
-    // I'm bart; Sideshow replaces my key; I clear his statement replacing my key.
-    // assert(Jsonish(iJson) != Jsonish(otherJson));)
 
     Json json = {
       'statement': Statement.type<TrustStatement>(),
@@ -139,6 +147,10 @@ class TrustStatement extends Statement {
     Json withx = {};
     if (revokeAt != null) withx['revokeAt'] = revokeAt;
     if (domain != null) withx['domain'] = domain;
+    // Always include home for trust and replace statements.
+    if (verb == TrustVerb.trust || verb == TrustVerb.replace) {
+      withx['home'] = home ?? kNativeHome;
+    }
     if (moniker != null) withx['moniker'] = moniker;
     withx.removeWhere((key, value) => value == null);
     if (withx.isNotEmpty) json['with'] = withx;

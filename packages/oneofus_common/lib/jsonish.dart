@@ -76,6 +76,12 @@ enum ContentVerb {
 /// - subjects
 /// - keys
 class Jsonish {
+  /// ⚠️  CRITICAL — MUST STAY IN SYNC WITH JAVASCRIPT:
+  ///   nerdster14/functions/jsonish_util.js  →  key2order
+  ///
+  /// The JS key2order integers must exactly match indexOf() positions in this list.
+  /// After any change here, run the 'print key2order' test and paste into jsonish_util.js:
+  ///   flutter test packages/oneofus_common/test/jsonish_test.dart --name "print key2order"
   static final List<String> keysInOrder = [
     'statement',
     'time',
@@ -93,6 +99,7 @@ class Jsonish {
     'censor',
     'stars', // gone but may exist in old statements
 
+    'home', // Key Federation: home of the subject key
     'comment',
 
     'contentType', // for subjects like book, movie..

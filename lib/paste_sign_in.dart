@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/keys.dart' show HomedKey, kNativeHome;
 import 'package:nerdster/ui/util/ok_cancel.dart';
 import 'package:nerdster/ui/util/alert.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
@@ -23,8 +24,10 @@ Future<void> pasteSignIn(BuildContext context, {required ValueNotifier<bool> sto
             child: PasteSignInWidget(),
           ));
   if (credentials == null) return;
-  Json identityJson = credentials[kIdentity]!;
-  OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(identityJson);
+  final Json identityPayload = credentials[kIdentity]!;
+  final HomedKey homedKey =
+      HomedKey.fromPayload(identityPayload) ?? HomedKey(identityPayload, kNativeHome);
+  OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(homedKey.pubKeyJson);
   Json? delegateJson = credentials[kNerdsterDomain];
   OouKeyPair? nerdsterKeyPair;
   if (delegateJson != null) {
@@ -32,7 +35,7 @@ Future<void> pasteSignIn(BuildContext context, {required ValueNotifier<bool> sto
   }
 
   // ignore: unawaited_futures
-  signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value);
+  signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, home: homedKey.home);
 }
 
 class PasteSignInWidget extends StatefulWidget {
@@ -45,6 +48,7 @@ class PasteSignInWidget extends StatefulWidget {
 class _PasteSignInWidgetState extends State<PasteSignInWidget> {
   final TextEditingController _controller = TextEditingController();
 
+  // TODO: Add home field to the hint text.
   static const String hintText = '''
 Copy/paste keys here.
 

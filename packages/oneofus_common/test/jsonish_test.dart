@@ -268,10 +268,8 @@ void main() {
       throw Exception('Could not find test data: $filename');
     }
 
-    final Json yotamNerdster =
-        jsonDecode(findFile('yotam-nerdster.json').readAsStringSync());
-    final Json yotamOneofus =
-        jsonDecode(findFile('yotam-oneofus.json').readAsStringSync());
+    final Json yotamNerdster = jsonDecode(findFile('yotam-nerdster.json').readAsStringSync());
+    final Json yotamOneofus = jsonDecode(findFile('yotam-oneofus.json').readAsStringSync());
     final Json other = jsonDecode(findFile('other.json').readAsStringSync());
     // DEFER: TEST: Other with unknow fields
     for (final exported in [yotamOneofus, yotamNerdster, other]) {

@@ -6,7 +6,7 @@ var statementJson = {
   "time": "2024-05-01T07:10:00.000Z",
   "I": {"crv": "Ed25519", "kty": "OKP", "x": "UYB3b66cl4JFkKy3REWI2TvBNc6q2z9-ghrFoneM9eg"},
   "trust": {"crv": "Ed25519", "kty": "OKP", "x": "aPRsLNIDmJeXOjpo30dFTsz3FiJAsLVxnqF6G1V9LQw"},
-  "with": {"moniker": "key2"}
+  "with": {"home": "export.one-of-us.net", "moniker": "key2"}
 };
 
 void main() {

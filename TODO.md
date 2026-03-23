@@ -1,5 +1,9 @@
 # TODO
 
+## Test with skipVerify=false
+
+
+
 ## Dead code in cloud functions: OMDB / TMDB fetchers
 
 `functions/metadata_fetchers.js` contains `fetchFromOMDb` and `fetchFromTMDB`, called

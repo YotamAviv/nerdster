@@ -5,6 +5,7 @@ import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
 /// UI:
@@ -16,9 +17,15 @@ class KeyStore {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
   static const _encoder = Jsonish.encoder;
   static const OouCryptoFactory _crypto = crypto;
+  static const String _kHomedKeyKey = 'oneofus_home';
 
-  static Future<void> storeKeys(OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair) async {
+  static Future<void> storeKeys(
+    OouPublicKey oneofusPublicKey,
+    OouKeyPair? nerdsterKeyPair, {
+    String home = kNativeHome,
+  }) async {
     await _storage.write(key: kOneofusDomain, value: _encoder.convert(await oneofusPublicKey.json));
+    await _storage.write(key: _kHomedKeyKey, value: home);
     if (nerdsterKeyPair != null) {
       await _storage.write(
           key: kNerdsterDomain, value: _encoder.convert(await nerdsterKeyPair.json));
@@ -28,9 +35,11 @@ class KeyStore {
   static Future<void> wipeKeys() async {
     await _storage.delete(key: kOneofusDomain);
     await _storage.delete(key: kNerdsterDomain);
+    await _storage.delete(key: _kHomedKeyKey);
   }
 
-  static Future<(OouPublicKey? oneofusPublicKey, OouKeyPair? nerdsterKeyPair)> readKeys() async {
+  static Future<(OouPublicKey? oneofusPublicKey, OouKeyPair? nerdsterKeyPair, String home)>
+      readKeys() async {
     OouPublicKey? oneofusPublicKey;
     String? oneofusString = await _storage.read(key: kOneofusDomain);
     if (oneofusString != null) {
@@ -43,6 +52,8 @@ class KeyStore {
       Json json = jsonDecode(nerdsterString);
       nerdsterKeyPair = await _crypto.parseKeyPair(json);
     }
-    return (oneofusPublicKey, nerdsterKeyPair);
+    // Default to native home for old stored sessions that predate this field.
+    final String home = (await _storage.read(key: _kHomedKeyKey)) ?? kNativeHome;
+    return (oneofusPublicKey, nerdsterKeyPair, home);
   }
 }

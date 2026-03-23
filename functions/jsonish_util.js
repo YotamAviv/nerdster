@@ -9,6 +9,18 @@ const crypto = require('crypto');
 
 /**
  * Canonical order for keys in a statement.
+ *
+ * ⚠️  CRITICAL — MUST STAY IN SYNC WITH DART:
+ *   oneofus_common/lib/jsonish.dart  →  Jsonish.keysInOrder
+ *
+ * The integers here must exactly match the indexOf() positions from the Dart list.
+ * To regenerate, enable the 'print key2order' unit test in jsonish_test.dart
+ * (change `if (false)` to `if (true)`) and run:
+ *   flutter test packages/oneofus_common/test/jsonish_test.dart --name "print key2order"
+ * Then paste the output here.
+ *
+ * Last synced output:
+ *   home: 25, comment: 26, contentType: 27, previous: 28, signature: 29
  */
 const key2order = {
   "statement": 0,
@@ -25,6 +37,7 @@ const key2order = {
   "equate": 11,
   "dontEquate": 12,
   "follow": 13,
+  // 14 is intentionally absent (matches the gap in Dart's keysInOrder)
   "with": 15,
   "other": 16,
   "moniker": 17,
@@ -35,10 +48,11 @@ const key2order = {
   "dismiss": 22,
   "censor": 23,
   "stars": 24,
-  "comment": 25,
-  "contentType": 26,
-  "previous": 27,
-  "signature": 28
+  "home": 25,
+  "comment": 26,
+  "contentType": 27,
+  "previous": 28,
+  "signature": 29
 };
 
 /**
