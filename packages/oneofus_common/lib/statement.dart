@@ -5,8 +5,8 @@ typedef Transformer = String Function(String);
 abstract class Statement {
   final Jsonish jsonish;
   final DateTime time;
-  final Json i;
-  final String iToken; // TODO: IdentityKey
+  final Json i; // identity or delegate public key
+  final String iToken; // identity or delegate key token
   // Object of verb, may be Json or a token (like, for censor) or a statement..
   final dynamic subject;
   final String? comment;
@@ -78,7 +78,7 @@ abstract class Statement {
         iToken = getToken(jsonish['I']),
         comment = jsonish['comment'];
 
-  // TODO: CONSIDER: IdentityKey, DelegateKey, or ContentKey depending on verb
+  // CONSIDER: IdentityKey, DelegateKey, or ContentKey depending on verb
   // This would have to be done differently by ContentStatement and TrustStatement.
   // The same would be needed for other subject (content statement only, depends on follow or rate)
   String get subjectToken => (subject is String) ? subject : getToken(subject);

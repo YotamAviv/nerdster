@@ -46,16 +46,18 @@ class PasteSignInWidget extends StatefulWidget {
 class _PasteSignInWidgetState extends State<PasteSignInWidget> {
   final TextEditingController _controller = TextEditingController();
 
-  // TODO: Add home field to the hint text.
   static const String hintText = '''
 Copy/paste keys here.
 
-Either both identity and delegate key, like this:
+Identity and delegate key pair:
 {
   "identity": {
-    "crv": "Ed25519",
-    "kty": "OKP",
-    "x": "bODE-9iRfmIEQZ7-T4a8fVGHDBTAUbh-SXsBQG-ijkM"
+    "key": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "bODE-9iRfmIEQZ7-T4a8fVGHDBTAUbh-SXsBQG-ijkM"
+    },
+    "url": "https://export.one-of-us.net"
   },
   "nerdster.org": {
     "crv": "Ed25519",
@@ -65,11 +67,23 @@ Either both identity and delegate key, like this:
   }
 }
 
-Or just the identity key, like this:
+Identity only:
 {
-  "crv": "Ed25519",
-  "kty": "OKP",
-  "x": "bODE-9iRfmIEQZ7-T4a8fVGHDBTAUbh-SXsBQG-ijkM"
+  "key": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "bODE-9iRfmIEQZ7-T4a8fVGHDBTAUbh-SXsBQG-ijkM"
+  },
+  "url": "https://export.one-of-us.net"
+}
+
+Legacy non-federated identity okay, too:
+{
+  "identity": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "bODE-9iRfmIEQZ7-T4a8fVGHDBTAUbh-SXsBQG-ijkM"
+  }
 }
 ''';
 
@@ -81,9 +95,10 @@ Or just the identity key, like this:
       Json credentials = jsonDecode(_controller.text);
 
       if (credentials.containsKey(kIdentity)) {
-        // Validate...
         identityJson = credentials[kIdentity]!;
-        await crypto.parsePublicKey(identityJson!);
+        final FedKey fedKey = FedKey.fromPayload(identityJson!) ?? FedKey(identityJson);
+        await crypto.parsePublicKey(fedKey.pubKeyJson);
+        identityJson = fedKey.pubKeyJson;
 
         delegateJson = credentials[kNerdsterDomain];
         if (delegateJson != null) {
@@ -93,8 +108,10 @@ Or just the identity key, like this:
           Navigator.of(context).pop({kIdentity: identityJson});
         }
       } else {
-        await crypto.parsePublicKey(credentials);
-        Navigator.of(context).pop({kIdentity: credentials});
+        // Bare key or {key, url} at top level
+        final FedKey fedKey = FedKey.fromPayload(credentials) ?? FedKey(credentials);
+        await crypto.parsePublicKey(fedKey.pubKeyJson);
+        Navigator.of(context).pop({kIdentity: fedKey.pubKeyJson});
       }
     } catch (exception) {
       alertException(context, exception);

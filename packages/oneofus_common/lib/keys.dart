@@ -46,7 +46,6 @@ class FedKey {
   /// Serializes to the `{key, ...endpoint}` payload format.
   Map<String, dynamic> toPayload() => {'key': pubKeyJson, ...endpoint};
 
-  // TODO: I like types. Try IdentityToken instead of String.
   /// Looks up a [FedKey] by identity token.
   static FedKey? find(IdentityKey key) => _registry[key];
 
