@@ -5,6 +5,9 @@
   "dart.promptToRunIfErrors": false,
   "dart.testExplorerEnabled": true,
   "dart.showTestCodeLens": true,
+  "[dart]": {
+    "editor.formatOnSave": false
+  },
   "[html]": {
     "editor.defaultFormatter": "vscode.html-language-features",
     "editor.wordWrap": "on"
