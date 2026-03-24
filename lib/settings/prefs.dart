@@ -140,14 +140,14 @@ class Prefs {
     }
   }
 
-  static Future<void> init() async {
+  static Future<void> init({Uri? startupUri}) async {
     await Future.wait(
       Setting.all
           .where((setting) => setting.persist)
           .map((setting) => setting.loadFromStorage(_storage)),
     );
 
-    Map<String, String> params = Uri.base.queryParameters;
+    Map<String, String> params = (startupUri ?? Uri.base).queryParameters;
     print('Query parameters: $params');
     print('params[dev].runtimeType=${params['dev'].runtimeType}');
     for (final setting in Setting.all) {

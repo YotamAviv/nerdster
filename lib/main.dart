@@ -27,6 +27,7 @@ import 'package:oneofus_common/ui/json_display.dart';
 
 import 'firebase_options.dart';
 import 'message_handler.dart' if (dart.library.io) 'stub_message_handler.dart';
+import 'package:app_links/app_links.dart';
 
 export 'package:nerdster/fire_choice.dart';
 
@@ -35,7 +36,16 @@ bool _fireCheckWrite = false;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Prefs.init();
+  // Resolve startup URI: on mobile, read the deep link; on web, Uri.base is already correct.
+  Uri startupUri = Uri.base;
+  if (!kIsWeb) {
+    try {
+      final initialLink = await AppLinks().getInitialLinkString();
+      if (initialLink != null) startupUri = Uri.parse(initialLink);
+    } catch (_) {} // app_links unavailable on some platforms (e.g. web)
+  }
+
+  await Prefs.init(startupUri: startupUri);
 
   JsonDisplay.highlightKeys = Set.unmodifiable({
     'I',
@@ -55,7 +65,7 @@ Future<void> main() async {
   });
 
   // ------------ Fire ------------
-  Map<String, String> params = Uri.base.queryParameters;
+  Map<String, String> params = startupUri.queryParameters;
   String? fireParam = params['fire'];
   if (fireParam != null) {
     fireChoice = FireChoice.values.byName(fireParam);
@@ -107,7 +117,7 @@ Future<void> main() async {
 
   TrustStatement.init();
   ContentStatement.init();
-  await defaultSignIn();
+  await defaultSignIn(params: params);
   await About.init();
 
   // ----
@@ -126,9 +136,9 @@ Future<void> main() async {
   ));
 }
 
-Future<void> defaultSignIn({BuildContext? context}) async {
-  // Check URL query parameters
-  Map<String, String> params = Uri.base.queryParameters;
+Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params}) async {
+  // Check URL query parameters (from deep link on mobile, Uri.base on web)
+  params ??= Uri.base.queryParameters;
   String? identityParam = params['identity'];
   String? pov;
   if (identityParam != null) {
@@ -142,8 +152,15 @@ Future<void> defaultSignIn({BuildContext? context}) async {
   if (fireChoice != FireChoice.fake) {
     OouPublicKey? identityPublicKey;
     OouKeyPair? nerdsterKeyPair;
-    Map<String, dynamic> endpoint;
-    (identityPublicKey, nerdsterKeyPair, endpoint) = await KeyStore.readKeys();
+    Map<String, dynamic> endpoint = {};
+    try {
+      (identityPublicKey, nerdsterKeyPair, endpoint) = await KeyStore.readKeys()
+          .timeout(const Duration(seconds: 5));
+    } catch (e) {
+      debugPrint('KeyStore.readKeys() failed or timed out: $e');
+      // Storage may be corrupted (e.g. Android Keystore invalidated after PIN change).
+      // Fall through to unauthenticated start — user can sign in manually.
+    }
     if (identityPublicKey != null) {
       final Json identityJson = await identityPublicKey.json;
       final fedKey = FedKey(identityJson, endpoint);

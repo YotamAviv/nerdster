@@ -9,6 +9,10 @@
       {
         "appID": "PG2Q5QYA2W.net.oneofus.app",
         "paths": ["/sign-in", "/sign-in/*", "/replace/*", "/vouch.html", "/vouch/*"]
+      },
+      {
+        "appID": "PG2Q5QYA2W.org.nerdster.app",
+        "paths": ["*"]
       }
     ]
   }
