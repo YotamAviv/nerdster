@@ -12,9 +12,12 @@ class TrustPipeline {
 
   TrustPipeline(
     this.source, {
+    this.localStatements = const {},
     this.maxDegrees = 6,
     this.pathRequirement,
   });
+
+  final Map<IdentityKey, List<TrustStatement>> localStatements;
 
   static int defaultPathRequirement(int distance) {
     if (distance <= 2) return 1;
@@ -35,6 +38,11 @@ class TrustPipeline {
     Set<IdentityKey> visited = {};
     Map<IdentityKey, List<TrustStatement>> statementsByIssuer = {};
 
+    // Inject local statements (e.g. bootstrap trust/delegate) before fetching from source.
+    if (localStatements.isNotEmpty) {
+      statementsByIssuer.addAll(localStatements);
+    }
+
     // The Loop
     for (int depth = 0; depth < maxDegrees; depth++) {
       if (frontier.isEmpty) break;
@@ -50,9 +58,19 @@ class TrustPipeline {
       final newStatementsMap = await source.fetch(fetchMap);
       visited.addAll(keysToFetch);
 
-      // Convert String keys to IdentityKey
+      // Convert String keys to IdentityKey, merging with any locally-injected statements.
       for (var entry in newStatementsMap.entries) {
-        statementsByIssuer[IdentityKey(entry.key)] = entry.value;
+        final key = IdentityKey(entry.key);
+        if (localStatements.containsKey(key)) {
+          // Prepend local statements before Firestore statements (local take precedence).
+          statementsByIssuer[key] = [...localStatements[key]!, ...entry.value];
+        } else {
+          statementsByIssuer[key] = entry.value;
+        }
+      }
+      // Ensure any local-only keys (not returned by Firestore) are still included.
+      for (var entry in localStatements.entries) {
+        statementsByIssuer.putIfAbsent(entry.key, () => entry.value);
       }
 
       // Collect notifications from source (e.g. corruption)

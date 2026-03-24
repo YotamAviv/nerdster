@@ -67,4 +67,41 @@ class KeyStore {
     }
     return (oneofusPublicKey, nerdsterKeyPair, endpoint);
   }
+
+  // ── Bootstrap ────────────────────────────────────────────────────────────
+  static const _kBootstrapFlag = 'bootstrap_mode';
+  static const _kBootstrapIdentity = 'bootstrap_identity_keypair';
+  static const _kBootstrapDelegate = 'bootstrap_delegate_keypair';
+
+  /// Persists both bootstrap key pairs and the bootstrap flag.
+  static Future<void> storeBootstrapKeys(
+      OouKeyPair identityKeyPair, OouKeyPair delegateKeyPair) async {
+    await _storage.write(key: _kBootstrapFlag, value: 'true');
+    await _storage.write(
+        key: _kBootstrapIdentity, value: _encoder.convert(await identityKeyPair.json));
+    await _storage.write(
+        key: _kBootstrapDelegate, value: _encoder.convert(await delegateKeyPair.json));
+  }
+
+  static Future<bool> isBootstrapMode() async {
+    return (await _storage.read(key: _kBootstrapFlag)) == 'true';
+  }
+
+  /// Returns null if not in bootstrap mode.
+  static Future<(OouKeyPair identityKeyPair, OouKeyPair delegateKeyPair)?> readBootstrapKeys() async {
+    final flag = await _storage.read(key: _kBootstrapFlag);
+    if (flag != 'true') return null;
+    final identityStr = await _storage.read(key: _kBootstrapIdentity);
+    final delegateStr = await _storage.read(key: _kBootstrapDelegate);
+    if (identityStr == null || delegateStr == null) return null;
+    final identityKP = await _crypto.parseKeyPair(jsonDecode(identityStr));
+    final delegateKP = await _crypto.parseKeyPair(jsonDecode(delegateStr));
+    return (identityKP, delegateKP);
+  }
+
+  static Future<void> clearBootstrapKeys() async {
+    await _storage.delete(key: _kBootstrapFlag);
+    await _storage.delete(key: _kBootstrapIdentity);
+    await _storage.delete(key: _kBootstrapDelegate);
+  }
 }

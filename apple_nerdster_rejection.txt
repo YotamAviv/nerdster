@@ -1,0 +1,54 @@
+Thank you for the follow-up and for giving me an opportunity to resubmit.
+
+Re: "It displays a blank white screen at launch and lacks independent immediate functionality.
+It requires another third-party app to function."
+
+I have addressed this directly. The Nerdster now includes a "Bootstrap Quick Start" sign-in
+option that lets a user try the app immediately — no other app required.
+
+---
+
+### What's new: Bootstrap Quick Start
+
+The sign-in dialog now has a 4th option:
+
+    ○  App Link          [Recommended]
+    ○  URL scheme
+    ○  QR Code
+    ○  Bootstrap Quick Start         ← new
+
+Tapping "Bootstrap Quick Start":
+
+1. Generates a fresh identity key pair locally on the device.
+2. Generates a fresh delegate key pair locally.
+3. Signs the user in immediately — no third-party app, no network account, no blank screen.
+4. Shows a content feed right away (the developer's network, as a starting point).
+
+The user can rate, comment, follow, and block immediately. All activity is signed with their
+local delegate key. If they later install the ONE-OF-US.NET identity app and create a real
+identity, they can claim their delegate key and all their activity is preserved.
+
+The orange key icon in the top-right corner indicates bootstrap mode and, when tapped, explains
+the temporary nature of the identity and the path to graduating to a full identity.
+
+---
+
+### How to review/try the app
+
+Simply launch the app and tap "Bootstrap Quick Start". You will be signed in immediately and
+can explore the full UI — browse content, rate, comment, follow — without any other app.
+
+---
+
+### The original sign-in methods (still present)
+
+For users who already have the ONE-OF-US.NET identity app:
+
+- **App Link** (recommended on iPhone): launches the identity app directly to transmit keys.
+- **URL scheme** (keymeid://): same, via a custom URL scheme.
+- **QR Code**: scan sign-in parameters with the identity app on another device.
+
+---
+
+Thanks again for your patience. I believe this revision fully addresses the concern about
+requiring a third-party app to function at launch.

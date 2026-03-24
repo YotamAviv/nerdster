@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:nerdster/content/content_tree.dart';
+import 'package:nerdster/bootstrap_sign_in.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/settings/setting_type.dart';
@@ -99,8 +99,18 @@ class _AppHomeState extends State<_AppHome> {
   void initState() {
     super.initState();
     signInState.addListener(_onSignInChanged);
+    // On startup, try to restore bootstrap mode before showing the sign-in dialog.
+    // ?iphone=true simulates running on iPhone: shows sign-in dialog with the Bootstrap button.
     if (!signInState.isSignedIn) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowDialog());
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (widget.params['iphone'] == 'true') {
+          forceIphone = true;
+        }
+        final restored = await restoreBootstrapIfNeeded();
+        if (!restored && mounted && !signInState.isSignedIn) {
+          _maybeShowDialog();
+        }
+      });
     }
   }
 

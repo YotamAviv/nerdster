@@ -1,0 +1,13 @@
+NOTES FOR REVIEWER
+==================
+
+To try the app without the ONE-OF-US.NET identity app:
+
+1. Launch the Nerdster.
+2. Tap "Bootstrap Quick Start" (4th option in the sign-in dialog).
+3. You are immediately signed in and can browse, rate, comment, and follow.
+
+No other app is required. No account creation. No network connection to a third-party service.
+
+The orange key icon in the top-right indicates bootstrap mode. Tapping it shows an explanation
+of what bootstrap mode is and how a user can later connect their own identity.

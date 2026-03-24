@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nerdster/bootstrap_sign_in.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/jsonish.dart';
@@ -17,6 +18,7 @@ import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster/ui/bootstrap_explanation_dialog.dart';
 import 'package:nerdster/ui/key_icon.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -52,11 +54,16 @@ class _SignInWidgetState extends State<SignInWidget> {
   Widget build(BuildContext context) {
     bool hasIdentity = signInState.isSignedIn;
     bool hasDelegate = signInState.delegate != null;
+    final bool isBootstrap = bootstrapLocalStatements.value.isNotEmpty;
 
     Widget iconWidget;
     String tooltip;
 
-    if (hasIdentity && hasDelegate) {
+    if (isBootstrap && hasDelegate) {
+      // Bootstrap mode: orange filled key
+      iconWidget = const Icon(Icons.vpn_key, color: Colors.orange);
+      tooltip = 'Bootstrap identity (temporary / untrusted)';
+    } else if (hasIdentity && hasDelegate) {
       // Logic to determine delegate status
       KeyStatus delegateStatus = KeyStatus.active;
       String statusMsg = "active";
@@ -111,14 +118,38 @@ class _SignInWidgetState extends State<SignInWidget> {
       tooltip: tooltip,
       icon: iconWidget,
       onPressed: () {
-        showDialog(
-          context: context,
-          barrierDismissible: true,
-          builder: (context) => const Dialog(
-            backgroundColor: Colors.transparent,
-            child: SignInDialog(),
-          ),
-        );
+        if (isBootstrap) {
+          showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder: (context) => Dialog(
+              backgroundColor: Colors.transparent,
+              child: BootstrapExplanationDialog(
+                identityJson: signInState.identityJson,
+                delegatePublicKeyJson: signInState.delegatePublicKeyJson,
+                onSignInPressed: () {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: true,
+                    builder: (context) => const Dialog(
+                      backgroundColor: Colors.transparent,
+                      child: SignInDialog(),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        } else {
+          showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder: (context) => const Dialog(
+              backgroundColor: Colors.transparent,
+              child: SignInDialog(),
+            ),
+          );
+        }
       },
     );
   }
@@ -189,7 +220,7 @@ class _SignInDialogState extends State<SignInDialog> {
       _prevDelegateToken = currentDelegate;
     }
 
-    final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS || forceIphone;
     final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
 
     Widget buildUniversalBtn(bool recommended) {
@@ -201,7 +232,7 @@ class _SignInDialogState extends State<SignInDialog> {
                 icon: Icons.link,
                 label: 'App Link',
                 subtitle:
-                    'Universal Links (iOS) & App Links (Android)\nIdentity app must be available on same device.',
+                    'Universal Links\nIdentity app must be available on same device.',
                 onPressed: () {},
                 recommended: recommended,
               );
@@ -219,7 +250,7 @@ class _SignInDialogState extends State<SignInDialog> {
                   icon: Icons.link,
                   label: 'App Link',
                   subtitle:
-                      'Universal Links (iOS) & App Links (Android)\nIdentity app must be available on same device.',
+                      'Universal Links\nIdentity app must be available on same device.',
                   onPressed: () {
                     _magicLinkSignIn(context,
                         useUniversalLink: true,
@@ -245,7 +276,7 @@ class _SignInDialogState extends State<SignInDialog> {
     Widget buildQrBtn(bool recommended) => _buildListButton(
           icon: Icons.qr_code,
           label: 'QR Code',
-          subtitle: 'Scan sign-in parameters with your phone\'s identity app',
+          subtitle: 'Scan sign-in parameters with a different device\'s identity app',
           onPressed: () => qrSignIn(context),
           recommended: recommended,
         );
@@ -258,6 +289,23 @@ class _SignInDialogState extends State<SignInDialog> {
         buildUniversalBtn(true),
         buildCustomBtn(false),
         buildQrBtn(false),
+        ListTile(
+          leading: const Icon(Icons.rocket_launch, color: Colors.orange),
+          title: const Row(
+            children: [
+              Text('Bootstrap Quick Start'),
+            ],
+          ),
+          subtitle: const Text(
+            'Try the app without the ONE-OF-US.NET app (temporary identity)',
+            style: TextStyle(fontSize: 11),
+          ),
+          onTap: () async {
+            await bootstrapSignIn();
+            if (context.mounted) Navigator.of(context).pop();
+          },
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
       ];
     } else if (isAndroid) {
       buttons = [
@@ -336,6 +384,7 @@ class _SignInDialogState extends State<SignInDialog> {
                         ),
                         onPressed: () async {
                           await KeyStore.wipeKeys();
+                          await clearBootstrap(); // clear bootstrap flag and local statements
                           // Drop delegate only — keep identity so user can see it
                           signInState.signOut(clearIdentity: false);
                         },

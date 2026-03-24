@@ -75,6 +75,15 @@ void main() {
     }
   }
 
+  // Helper: dismiss any open dialog/sheet/route pushed on top of root.
+  Future<void> dismissOverlay(WidgetTester tester) async {
+    final NavigatorState? nav = app.navigatorKey.currentState;
+    if (nav != null && nav.canPop()) {
+      nav.pop();
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+    }
+  }
+
   testWidgets('App Store screenshots', (WidgetTester tester) async {
     // Suppress non-fatal network image load errors (e.g. Wikipedia 429 rate-limits)
     // that would otherwise fail the test even though all screenshots are captured first.
@@ -88,7 +97,7 @@ void main() {
       originalOnError?.call(details);
     };
 
-    // ── Screenshot 1: Sign-in screen (not yet signed in) ──────────────────
+    // ── Screenshot 00: Sign-in screen (not yet signed in) ─────────────────
     await tester.pumpWidget(const app.NerdsterApp());
 
     // Let the post-frame callback for showDialog execute
@@ -99,7 +108,9 @@ void main() {
     final s0 = await binding.takeScreenshot('00_sign_in');
     await saveScreenshot(s0, '00_sign_in');
 
-    // ── Sign in programmatically ──────────────────────────────────────────
+    // ── Dismiss the sign-in dialog, then sign in programmatically ─────────
+    await dismissOverlay(tester);
+
     final identityKey = await crypto.parsePublicKey(identityJson);
     final delegateKeyPair = await crypto.parseKeyPair(delegateJson);
     final identityToken = getToken(await identityKey.json);
@@ -116,37 +127,68 @@ void main() {
       // pumpAndSettle may timeout if background listeners keep ticking — that's OK.
     }
 
-    // ── Screenshot 2: Content feed ─────────────────────────────────────────
+    // ── Screenshot 01: Content feed ────────────────────────────────────────
     final s1 = await binding.takeScreenshot('01_content_feed');
     await saveScreenshot(s1, '01_content_feed');
 
-    // ── Screenshot 3: Filter drawer open ──────────────────────────────────
-    final filterButton = find.byIcon(Icons.tune);
-    if (filterButton.evaluate().isNotEmpty) {
-      await tester.tap(filterButton.first);
+    // ── Screenshot 02: Filter drawer open ─────────────────────────────────
+    // The filter button is an InkWell containing Icons.tune.
+    // Pump with explicit duration to let AnimatedSize (200ms) finish.
+    final tuneIcon = find.byIcon(Icons.tune);
+    if (tuneIcon.evaluate().isNotEmpty) {
+      await tester.tap(tuneIcon.first, warnIfMissed: false);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle(const Duration(seconds: 2));
     }
     final s2 = await binding.takeScreenshot('02_filters_open');
     await saveScreenshot(s2, '02_filters_open');
 
-    // Close filter drawer if open (tap back or outside)
-    final NavigatorState? nav = app.navigatorKey.currentState;
-    if (nav != null && nav.canPop()) {
-      nav.pop();
+    // Close filter drawer by tapping tune icon again
+    if (tuneIcon.evaluate().isNotEmpty) {
+      await tester.tap(tuneIcon.first, warnIfMissed: false);
+      await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
     }
 
-    // ── Screenshot 4: First card "Show more" expanded ──────────────────────
-    final showMoreBtn = find.widgetWithText(TextButton, 'Show more');
-    if (showMoreBtn.evaluate().isNotEmpty) {
-      await tester.tap(showMoreBtn.first);
+    // ── Screenshot 03: Rate dialog ─────────────────────────────────────────
+    // Tap the rate_review icon on the first card's action bar.
+    final rateIcon = find.byIcon(Icons.rate_review_outlined);
+    if (rateIcon.evaluate().isNotEmpty) {
+      await tester.tap(rateIcon.first, warnIfMissed: false);
       await tester.pumpAndSettle(const Duration(seconds: 2));
     }
-    final s3 = await binding.takeScreenshot('03_card_expanded');
-    await saveScreenshot(s3, '03_card_expanded');
+    final s3 = await binding.takeScreenshot('03_rate_dialog');
+    await saveScreenshot(s3, '03_rate_dialog');
+    await dismissOverlay(tester);
+
+    // ── Screenshot 04: Graph view ──────────────────────────────────────────
+    // Tap the first blue user-label (InkWell wrapping the iToken Text) in a
+    // StatementTile to push NerdyGraphView onto the navigator.
+    // The labels are blue underlined Text widgets inside InkWells.
+    // We look for a Text with Colors.blue style that isn't a tag (#...).
+    final userLabelFinder = find.byWidgetPredicate((widget) {
+      if (widget is! Text) return false;
+      final text = widget.data ?? '';
+      if (text.startsWith('#') || text.isEmpty) return false;
+      final style = widget.style;
+      return style != null &&
+          style.color == Colors.blue &&
+          style.fontWeight == FontWeight.bold;
+    });
+
+    if (userLabelFinder.evaluate().isNotEmpty) {
+      await tester.tap(userLabelFinder.first, warnIfMissed: false);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+    }
+    final s4 = await binding.takeScreenshot('04_graph_view');
+    await saveScreenshot(s4, '04_graph_view');
+    await dismissOverlay(tester);
 
     debugPrint('All screenshots captured. Run:');
     debugPrint(
-        '  find ~/Library/Developer/CoreSimulator/Devices -name "nerdster_screenshot_*.png" -exec cp {} ~/Desktop/ \\;');
+        '  cp /private/tmp/nerdster_screenshots/*.png ~/Desktop/nerdster_screenshots_iphone/');
   });
 }
