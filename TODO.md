@@ -1,5 +1,10 @@
 # TODO
 
+I can sign out, dismiss, no identity, no content - should be impossible
+
+Clicking on https://nerdster.org opens app.
+
+Clicking on https://nerdster.org?stuff opens app, bounces to webapp app, has "OPEN" button which opens app but bounces back.
 
 ## Test with skipVerify=false
 
