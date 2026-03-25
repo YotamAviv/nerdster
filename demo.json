@@ -1,0 +1,14 @@
+{
+  "nerdster.org": {
+    "crv": "Ed25519",
+    "d": "40grND1n75kS-n_1XC9SbN2EnhcCIw7XJdXorSgvt4I",
+    "kty": "OKP",
+    "x": "HTJvX6oXL1WSJ1kxvISDB4rOHoH5JvANdLDMEXGkGp0"
+  },
+  "identity": {
+    "crv": "Ed25519",
+    "d": "WIF_yojxsmuG1BSvsHAp9CIx2r32XglYpudF9q0iOvk",
+    "kty": "OKP",
+    "x": "AUMqoPZDm-bW1pJOpE_nytOvE4oNl_Ec18_tIwayxIo"
+  }
+}

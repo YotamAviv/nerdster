@@ -157,10 +157,10 @@ packages:
     dependency: "direct overridden"
     description:
       name: cloud_firestore_platform_interface
-      sha256: c110a968cc11a83f0e2b88c335340cb21d123ab9e440aaa834eb33c20505893c
+      sha256: b82a35eb6a1bde9569df372f933fc5a01bcddef58c993d78f78c31d111fcd080
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.7"
+    version: "7.1.0"
   cloud_firestore_web:
     dependency: transitive
     description:

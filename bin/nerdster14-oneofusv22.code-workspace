@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../oneofusv22"
+		}
+	],
+	"settings": {
+		"debug.onTaskErrors": "debugAnyway",
+		"dart.promptToRunIfErrors": false,
+		"dart.showTestCodeLens": true
+	}
+}

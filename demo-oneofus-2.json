@@ -1,0 +1,40 @@
+{
+  "8219493758bb5e9c128eca05ae210f80ce6a37f1": {
+    "delegate": {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "HTJvX6oXL1WSJ1kxvISDB4rOHoH5JvANdLDMEXGkGp0"
+    },
+    "with": {
+      "domain": "nerdster.org"
+    },
+    "previous": "b573b1eb82e78dac6892e7aa17bd8b2fbe90bfed",
+    "signature": "068653a2020a4f762b95273ef14724b3a9237c4440f2c23df0235de75a471648999092ff174a36d89cd7974a1cdaae4461f67ea016f98af25eb72bb67c842b06",
+    "statement": "net.one-of-us",
+    "I": {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "AUMqoPZDm-bW1pJOpE_nytOvE4oNl_Ec18_tIwayxIo"
+    },
+    "time": "2026-03-06T17:37:25.927191Z"
+  },
+  "b573b1eb82e78dac6892e7aa17bd8b2fbe90bfed": {
+    "trust": {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo"
+    },
+    "with": {
+      "moniker": "Tom"
+    },
+    "signature": "fdc76bbbb2ac7c0aa9c1e12e498760f2794708afaab2fceccf12a6c6aa48609981d9e31204853b2b28e98e4952ad8586f418159d883680044ffb85313e495005",
+    "statement": "net.one-of-us",
+    "I": {
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "x": "AUMqoPZDm-bW1pJOpE_nytOvE4oNl_Ec18_tIwayxIo"
+    },
+    "comment": "",
+    "time": "2026-03-06T17:37:05.951589Z"
+  }
+}

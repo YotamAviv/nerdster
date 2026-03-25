@@ -1,0 +1,95 @@
+{
+  "9fc579f39132b6795d35fe3e97fc235dc062bff4": {
+    "statement": "org.nerdster",
+    "time": "2026-03-06T17:50:06.477Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "HTJvX6oXL1WSJ1kxvISDB4rOHoH5JvANdLDMEXGkGp0"
+    },
+    "rate": {
+      "contentType": "book",
+      "author": "Jared Diamond",
+      "title": "Guns, Germs, and Steel: The Fates of Human Societies"
+    },
+    "with": {
+      "recommend": true
+    },
+    "previous": "fc992db6b71a815e9c95cc62dfe2713c0f7d4089",
+    "signature": "12ed6c17afcbc877981610184dc397560968821152e5aad6a96dac590e63c5f8217313fbb1961f7f8580dfc1dd2bd7a52127dad588684a82a767250a9b420102"
+  },
+  "fc992db6b71a815e9c95cc62dfe2713c0f7d4089": {
+    "statement": "org.nerdster",
+    "time": "2026-03-06T17:47:52.324Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "HTJvX6oXL1WSJ1kxvISDB4rOHoH5JvANdLDMEXGkGp0"
+    },
+    "follow": "13a771acf0b941eeeb27f6d71ce1a429419a77a8",
+    "with": {
+      "contexts": {
+        "<nerdster>": 1
+      }
+    },
+    "comment": "",
+    "previous": "92beb8dcfc074939fa79f9122ebe4383cee8ed4b",
+    "signature": "fbb572bbb63bedf537405a834268740f70e4c756146ecc29b5b65b862495813705a11cd62140ca27c19d237514ad1fff4d502c628e8ca4d39acda8dc86270605"
+  },
+  "92beb8dcfc074939fa79f9122ebe4383cee8ed4b": {
+    "statement": "org.nerdster",
+    "time": "2026-03-06T17:46:58.548Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "HTJvX6oXL1WSJ1kxvISDB4rOHoH5JvANdLDMEXGkGp0"
+    },
+    "follow": "2c3142d16cac3c5aeb6d7d40a4ca6beb7bd92431",
+    "with": {
+      "contexts": {
+        "<nerdster>": -1
+      }
+    },
+    "comment": "",
+    "previous": "36f875733ad58f403dcc6ed38087c41322f25bdc",
+    "signature": "ce9fb2caff274a624ac235d0eb4a9684979b960dd88c2189de343429822774777fde4852cc7170ab8c32956bd24b659992f84e8364657e729873e89932f08d09"
+  },
+  "36f875733ad58f403dcc6ed38087c41322f25bdc": {
+    "statement": "org.nerdster",
+    "time": "2026-03-06T17:38:03.936Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "HTJvX6oXL1WSJ1kxvISDB4rOHoH5JvANdLDMEXGkGp0"
+    },
+    "rate": {
+      "contentType": "movie",
+      "title": "Hell or High Water",
+      "year": "2016"
+    },
+    "with": {
+      "recommend": true
+    },
+    "comment": "LIKE",
+    "previous": "9335d39c147221199914cbab1f39a2151a1d22a7",
+    "signature": "1b7e7cafb5053edb0d690bc7ad5e64b1dd41015cd67aafb8035372a5aa776109712e3688229a1c0c736b1324cdadebd30606c8410b731d18d41d7d297c27230a"
+  },
+  "9335d39c147221199914cbab1f39a2151a1d22a7": {
+    "statement": "org.nerdster",
+    "time": "2026-03-06T17:37:44.257Z",
+    "I": {
+      "crv": "Ed25519",
+      "kty": "OKP",
+      "x": "HTJvX6oXL1WSJ1kxvISDB4rOHoH5JvANdLDMEXGkGp0"
+    },
+    "rate": {
+      "contentType": "movie",
+      "title": "Memento",
+      "year": "2000"
+    },
+    "with": {
+      "recommend": true
+    },
+    "signature": "1b47e914c428507c07a573f03370f458d0136b00255e4dd02cc775bc6def5261f8acb3f9c8ac6e68297f773d7fc58346784bf73d6c931267515263087f84de03"
+  }
+}
