@@ -20,8 +20,9 @@ import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
+import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/fire_util.dart';
-import 'package:oneofus_common/keys.dart' show FedKey;
+import 'package:oneofus_common/keys.dart' show FedKey, kNativeEndpoint;
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/ui/json_display.dart';
 
@@ -130,10 +131,20 @@ Future<void> defaultSignIn({BuildContext? context}) async {
   // Check URL query parameters
   Map<String, String> params = Uri.base.queryParameters;
   String? identityParam = params['identity'];
+
+  // Parse identity JSON and register it in Jsonish cache.
+  // getToken() alone does NOT register in Jsonish, causing signIn to crash.
+  OouPublicKey? povPublicKey;
   String? pov;
   if (identityParam != null) {
-    Json povJson = json.decode(identityParam);
-    pov = getToken(povJson);
+    try {
+      final Json povJson = json.decode(identityParam);
+      final OouPublicKey pk = await crypto.parsePublicKey(povJson);
+      povPublicKey = pk;
+      pov = getToken(await pk.json);
+    } catch (e) {
+      debugPrint('Could not parse identity from URL: $e');
+    }
   }
 
   if (await tryDemoSignIn(context, pov: pov)) return;
@@ -142,22 +153,28 @@ Future<void> defaultSignIn({BuildContext? context}) async {
   if (fireChoice != FireChoice.fake) {
     OouPublicKey? identityPublicKey;
     OouKeyPair? nerdsterKeyPair;
-    Map<String, dynamic> endpoint;
-    (identityPublicKey, nerdsterKeyPair, endpoint) = await KeyStore.readKeys();
+    Map<String, dynamic> endpoint = {};
+    try {
+      (identityPublicKey, nerdsterKeyPair, endpoint) = await KeyStore.readKeys()
+          .timeout(const Duration(seconds: 5));
+    } catch (e) {
+      debugPrint('KeyStore.readKeys() failed or timed out: $e');
+    }
     if (identityPublicKey != null) {
       final Json identityJson = await identityPublicKey.json;
       final fedKey = FedKey(identityJson, endpoint);
       if (nerdsterKeyPair != null) {
         await signInState.signInWithFedKey(fedKey, nerdsterKeyPair);
-        if (pov != null) signInState.pov = pov;
+        if (pov != null) signInState.pov = pov; // now registered in Jsonish
         return;
       }
     }
   }
 
   // If we have a POV from the URL but no keys, sign in as that identity (view-only)
-  if (pov != null) {
-    await signInState.signIn(pov, null);
+  if (povPublicKey != null) {
+    final fedKey = FedKey(await povPublicKey.json, kNativeEndpoint);
+    await signInState.signInWithFedKey(fedKey, null);
     return;
   }
 }

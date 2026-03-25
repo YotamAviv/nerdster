@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/dev/just_sign.dart';
@@ -46,12 +47,19 @@ class EtcBar extends StatelessWidget {
                       icon: const Icon(Icons.share),
                       onPressed: () async {
                         String link = generateLink();
-                        await alert(
-                            'Nerd\'ster link',
-                            '''Share, bookmark, or embed with your current settings (PoV, follow context, tags, sort, type, etc...):
-$link''',
-                            ['Okay'],
+                        final result = await alert(
+                            'Nerdster link',
+                            '''Share, bookmark, or embed with your current settings (PoV, follow context, tags, sort, type, etc...):\n$link''',
+                            ['Copy', 'Okay'],
                             context);
+                        if (result == 'Copy') {
+                          await Clipboard.setData(ClipboardData(text: link));
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Link copied to clipboard')),
+                            );
+                          }
+                        }
                       },
                     ),
                   ),

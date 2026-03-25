@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.1.8+161
+version: 1.1.9+162
 
 environment:
   sdk: '>=3.3.3 <4.0.0'
@@ -46,9 +46,6 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.13.1
-
-dependency_overrides:
-  cloud_firestore_platform_interface: 7.1.0
 
 flutter_launcher_icons:
   ios: true
