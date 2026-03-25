@@ -138,6 +138,10 @@ class _AppHomeState extends State<_AppHome> {
       ),
     ).then((_) {
       _dialogShowing = false;
+      // Safety net: if dismissed without an identity (any edge case), re-show immediately.
+      if (!signInState.isSignedIn && mounted) {
+        _maybeShowDialog();
+      }
     });
   }
 

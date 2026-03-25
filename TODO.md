@@ -1,10 +1,13 @@
 # TODO
 
-I can sign out, dismiss, no identity, no content - should be impossible
+I don't recall the details, but I was able to sign out and dismiss the sign in dialog and be left in a state where there is no identity. This should be impossible; with no identity, the sign in dialog should be up.
+- **Fix applied (lib/app.dart):** Added safety net in `_AppHome._maybeShowDialog` — after the dialog closes, if `!signInState.isSignedIn`, it immediately re-shows. Root cause not fully reproduced from code review; `signOut(clearIdentity: false)` keeps identity set so the normal sign-out path shouldn't leave no identity. The safety net is defensive and covers any edge case.
+- **Status:** Code change made, not yet tested on device.
 
-Clicking on https://nerdster.org opens app.
-
-Clicking on https://nerdster.org?stuff opens app, bounces to webapp app, has "OPEN" button which opens app but bounces back.
+Clicking on https://nerdster.org opens app, but clicking on https://nerdster.org?stuff opens the phone app and almost immediately bounces to the webapp app in Safari. There, Safari shows an "OPEN" button which opens the phone again app but bounces back again.
+- **Attempted fix 1 (web/.well-known/apple-app-site-association):** Upgraded org.nerdster.app from legacy `"paths": ["*"]` to modern `"components"` format (iOS 15.4+ requirement). Deployed. Did NOT fix the issue.
+- **Attempted fix 2 (ios/Runner/Info.plist):** Removed `FlutterDeepLinkingEnabled = YES`. This flag causes Flutter to intercept Universal Links and, when using `MaterialApp` (not `MaterialApp.router`), opens unrecognized route URLs externally — creating the bounce loop. `app_links` 6.x has its own native iOS handler and should NOT need this flag.
+- **Status:** Requires new TestFlight build to test. Risk: if `getInitialLinkString()` returns null on cold start without the flag, next step is to add back `FlutterDeepLinkingEnabled` and fix routing using `MaterialApp.router`.
 
 ## Test with skipVerify=false
 

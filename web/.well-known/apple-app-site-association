@@ -11,8 +11,11 @@
         "paths": ["/sign-in", "/sign-in/*", "/replace/*", "/vouch.html", "/vouch/*"]
       },
       {
-        "appID": "PG2Q5QYA2W.org.nerdster.app",
-        "paths": ["*"]
+        "appIDs": ["PG2Q5QYA2W.org.nerdster.app"],
+        "components": [
+          { "/": "/*", "?": { "*": true }, "comment": "Match all paths with any query params" },
+          { "/": "/*", "comment": "Match all paths without query params" }
+        ]
       }
     ]
   }
