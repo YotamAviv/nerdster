@@ -140,7 +140,12 @@ Future<void> main() async {
   // Without this, iOS re-dispatches unhandled links externally, causing a bounce loop.
   if (!kIsWeb) {
     AppLinks().uriLinkStream.listen((uri) {
-      defaultSignIn(params: uri.queryParameters);
+      final params = uri.queryParameters;
+      // Apply URL-provided settings (sort, contentType, lgtm, showCrypto, etc.)
+      for (final setting in Setting.all) {
+        setting.updateFromQueryParam(params);
+      }
+      defaultSignIn(params: params);
     }, onError: (_) {});
   }
 }

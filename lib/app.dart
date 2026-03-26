@@ -123,6 +123,15 @@ class _AppHomeState extends State<_AppHome> {
   void _onSignInChanged() {
     if (!signInState.isSignedIn) {
       _maybeShowDialog();
+    } else if (_dialogShowing && mounted) {
+      // Sign-in arrived externally (e.g., deep link) while dialog was open.
+      // Delay to the next frame so any in-progress button press that also calls
+      // Navigator.pop() can complete first — avoiding a double-pop (black screen).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_dialogShowing && mounted) {
+          Navigator.of(context).pop();
+        }
+      });
     }
   }
 

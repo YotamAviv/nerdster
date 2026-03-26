@@ -1,15 +1,16 @@
 # TODO
 
-I don't recall the details, but I was able to sign out and dismiss the sign in dialog and be left in a state where there is no identity. This should be impossible; with no identity, the sign in dialog should be up.
-- **Fix applied (lib/app.dart):** Added safety net in `_AppHome._maybeShowDialog` — after the dialog closes, if `!signInState.isSignedIn`, it immediately re-shows. Root cause not fully reproduced from code review; `signOut(clearIdentity: false)` keeps identity set so the normal sign-out path shouldn't leave no identity. The safety net is defensive and covers any edge case.
-- **Status:** Code change made, not yet tested on device.
+~~I don't recall the details, but I was able to sign out and dismiss the sign in dialog and be left in a state where there is no identity.~~ **FIXED build +171.**
+- Sign-in dialog safety net re-shows via `_AppHome._maybeShowDialog` safety net.
+- Bootstrap-specific fix: `signOut(clearIdentity: wasBootstrap)` in `sign_in_widget.dart` — clears identity on bootstrap sign-out so `_onSignInChanged` → `_maybeShowDialog` fires.
+- `_onSignInChanged` auto-dismisses the sign-in dialog when sign-in arrives externally (e.g., deep link), using `addPostFrameCallback` to avoid double-pop with Bootstrap button.
 
-Clicking on https://nerdster.org opens app, but clicking on https://nerdster.org?stuff opens the phone app and almost immediately bounces to the webapp app in Safari. There, Safari shows an "OPEN" button which opens the phone again app but bounces back again.
-- **Root cause:** Two problems: (1) `FlutterDeepLinkingEnabled = true` with `MaterialApp` (no router) causes Flutter to bounce unrecognized URLs to Safari. (2) No foreground `app_links` stream listener — when the app is already running and a link is tapped, nothing handles it, causing the same bounce.
-- **Attempted fix 1 (web/.well-known/apple-app-site-association):** Upgraded org.nerdster.app from legacy `"paths": ["*"]` to modern `"components"` format. Did NOT fix the issue.
-- **Attempted fix 2 (ios/Runner/Info.plist):** Removed `FlutterDeepLinkingEnabled`. Build +165. Did NOT fix the issue (foreground stream still missing). Reverted in +166.
-- **Fix applied (lib/main.dart + ios/Runner/Info.plist):** Added `AppLinks().uriLinkStream.listen(...)` after `runWidget()` to handle foreground Universal Link taps. Removed `FlutterDeepLinkingEnabled`.
-- **Status:** Requires new TestFlight build to test. Test both cold-start and foreground taps.
+~~Clicking on https://nerdster.org/?identity=... bounced between app and Safari.~~ **FIXED build +171.** See `docs/deep_links.md` for full details.
+- `FlutterDeepLinkingEnabled = false` in `Info.plist` (absent = true, must be explicitly false).
+- `AppLinks().uriLinkStream.listen(...)` for foreground link handling (applies `Setting.updateFromQueryParam` + `defaultSignIn`).
+
+
+
 
 ## Test with skipVerify=false
 

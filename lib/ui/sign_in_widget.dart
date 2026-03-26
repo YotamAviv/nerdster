@@ -383,10 +383,14 @@ class _SignInDialogState extends State<SignInDialog> {
                           foregroundColor: Colors.red,
                         ),
                         onPressed: () async {
+                          // Capture before clearBootstrap() clears the flag.
+                          final bool wasBootstrap =
+                              bootstrapLocalStatements.value.isNotEmpty;
                           await KeyStore.wipeKeys();
-                          await clearBootstrap(); // clear bootstrap flag and local statements
-                          // Drop delegate only — keep identity so user can see it
-                          signInState.signOut(clearIdentity: false);
+                          await clearBootstrap();
+                          // For bootstrap: clear identity so the sign-in dialog re-appears.
+                          // For normal sign-out: keep identity (soft reload).
+                          signInState.signOut(clearIdentity: wasBootstrap);
                         },
                       ),
                     MyCheckbox(_storeKeys, 'Store keys'),
