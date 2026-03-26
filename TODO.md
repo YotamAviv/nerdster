@@ -5,9 +5,11 @@ I don't recall the details, but I was able to sign out and dismiss the sign in d
 - **Status:** Code change made, not yet tested on device.
 
 Clicking on https://nerdster.org opens app, but clicking on https://nerdster.org?stuff opens the phone app and almost immediately bounces to the webapp app in Safari. There, Safari shows an "OPEN" button which opens the phone again app but bounces back again.
-- **Attempted fix 1 (web/.well-known/apple-app-site-association):** Upgraded org.nerdster.app from legacy `"paths": ["*"]` to modern `"components"` format (iOS 15.4+ requirement). Deployed. Did NOT fix the issue.
-- **Attempted fix 2 (ios/Runner/Info.plist):** Removed `FlutterDeepLinkingEnabled = YES`. This flag causes Flutter to intercept Universal Links and, when using `MaterialApp` (not `MaterialApp.router`), opens unrecognized route URLs externally — creating the bounce loop. `app_links` 6.x has its own native iOS handler and should NOT need this flag.
-- **Status:** Requires new TestFlight build to test. Risk: if `getInitialLinkString()` returns null on cold start without the flag, next step is to add back `FlutterDeepLinkingEnabled` and fix routing using `MaterialApp.router`.
+- **Root cause:** Two problems: (1) `FlutterDeepLinkingEnabled = true` with `MaterialApp` (no router) causes Flutter to bounce unrecognized URLs to Safari. (2) No foreground `app_links` stream listener — when the app is already running and a link is tapped, nothing handles it, causing the same bounce.
+- **Attempted fix 1 (web/.well-known/apple-app-site-association):** Upgraded org.nerdster.app from legacy `"paths": ["*"]` to modern `"components"` format. Did NOT fix the issue.
+- **Attempted fix 2 (ios/Runner/Info.plist):** Removed `FlutterDeepLinkingEnabled`. Build +165. Did NOT fix the issue (foreground stream still missing). Reverted in +166.
+- **Fix applied (lib/main.dart + ios/Runner/Info.plist):** Added `AppLinks().uriLinkStream.listen(...)` after `runWidget()` to handle foreground Universal Link taps. Removed `FlutterDeepLinkingEnabled`.
+- **Status:** Requires new TestFlight build to test. Test both cold-start and foreground taps.
 
 ## Test with skipVerify=false
 

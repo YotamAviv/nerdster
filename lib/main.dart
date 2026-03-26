@@ -135,6 +135,14 @@ Future<void> main() async {
     view: ui.PlatformDispatcher.instance.views.first,
     child: const NerdsterApp(),
   ));
+
+  // Listen for Universal Links while the app is already running (foreground/background).
+  // Without this, iOS re-dispatches unhandled links externally, causing a bounce loop.
+  if (!kIsWeb) {
+    AppLinks().uriLinkStream.listen((uri) {
+      defaultSignIn(params: uri.queryParameters);
+    }, onError: (_) {});
+  }
 }
 
 Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params}) async {
