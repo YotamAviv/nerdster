@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/singletons.dart';
@@ -13,6 +14,9 @@ String generateLink() {
   params['identity'] = JsonEncoder().convert(Jsonish.find(signInState.pov)!.json);
 
   Prefs.setParams(params);
-  Uri uri = Uri.base.replace(queryParameters: params);
+  // On web: Uri.base preserves the current host (localhost for emulator, nerdster.org for prod).
+  // On native (iOS/Android): Uri.base is file:/// — use nerdster.org explicitly.
+  final Uri baseUri = kIsWeb ? Uri.base : Uri.parse('https://nerdster.org/');
+  Uri uri = baseUri.replace(queryParameters: params);
   return uri.toString();
 }

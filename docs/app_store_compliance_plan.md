@@ -54,3 +54,18 @@ Native apps need their own pages, separate from ONE-OF-US.NET. Options:
 
 - No centralized censorship list checked by the web app.
 - Web app can continue to mention both platforms (e.g. magic link platform hints).
+
+---
+
+## Email addresses
+
+Gmail filter tip: Settings → Filters → `From: @one-of-us.net OR @nerdster.org` → **Never send to Spam**.
+
+| Address | Purpose | Where referenced | Active? |
+|---|---|---|---|
+| `contact@nerdster.org` | Nerdster user contact | `web/terms.html`, `web/policy.html`, `lib/about.dart` | ✅ Yes |
+| `abuse@nerdster.org` | Nerdster abuse reports | compliance plan (not yet in app) | ✅ Yes (future) |
+| `conflict-help@nerdster.org` | In-app conflict notification link | `lib/ui/notifications_menu.dart` | ❓ Verify |
+| `contact@one-of-us.net` | ONE-OF-US.NET user contact | `web/terms.html`, `web/policy.html`, oneofusv2 About | ✅ Yes |
+| `abuse@one-of-us.net` | ONE-OF-US.NET abuse reports | oneofusv2 About screen | ✅ Yes |
+| `report@one-of-us.net` | Safety/report page | `web/safety.html` | ❓ Verify |
