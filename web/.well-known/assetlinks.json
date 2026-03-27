@@ -38,5 +38,15 @@
         "74:90:C6:AB:BC:78:56:B7:64:EA:CD:87:83:FB:45:9C:28:E5:F5:90:C7:60:DC:5D:D7:A6:63:30:83:AF:68:EE"
       ]
     }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "org.nerdster.app",
+      "sha256_cert_fingerprints": [
+        "7B:81:42:C6:EA:F7:AA:56:EC:40:2C:0B:F3:CA:70:9C:A6:13:32:89:A2:18:DF:19:FC:45:7C:1C:6C:ED:6C:D5"
+      ]
+    }
   }
 ]
