@@ -1,8 +1,6 @@
 # TODO
 
 
-## Test with skipVerify=false
-
 
 
 ## Dead code in cloud functions: OMDB / TMDB fetchers
