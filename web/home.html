@@ -17,7 +17,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="box-common.css" />
+  <link rel="stylesheet" href="common/box-common.css" />
   <link rel="stylesheet" href="home.css" />
 </head>
 
@@ -37,10 +37,10 @@ Reference implementation for the ONE-OF-US.NET paradigm
           </div>
           <aside class="app-links" aria-label="Get the Nerdster app">
             <button class="app-link-btn" id="ios-app-btn" aria-label="Download on the App Store">
-              <img src="img/apple.webp" alt="Download on the App Store" />
+              <img src="common/img/apple.webp" alt="Download on the App Store" />
             </button>
             <button class="app-link-btn" id="android-app-btn" aria-label="Get it on Google Play">
-              <img src="img/google.webp" alt="Get it on Google Play" />
+              <img src="common/img/google.webp" alt="Get it on Google Play" />
             </button>
             <a href="https://nerdster.org" class="web-app-link">Nerdster Web</a>
           </aside>
@@ -425,11 +425,11 @@ DEFER: Sign out upon loading so that folks don't like Simpsons content too easil
     </blockquote>
   </template>
 
-  <script src="guard.js" defer></script>
-  <script src="iframe_helper.js" defer></script>
-  <script src="boxes.js" defer></script>
-  <script src="data/demoData.js" defer></script>
-  <script src="verify_helper.js" defer></script>
+  <script src="common/guard.js" defer></script>
+  <script src="common/iframe_helper.js" defer></script>
+  <script src="common/boxes.js" defer></script>
+  <script src="common/data/demoData.js" defer></script>
+  <script src="common/verify_helper.js" defer></script>
   <script src="home.js" defer></script>
   <script>
     const testingDialog = document.getElementById('testing-dialog');

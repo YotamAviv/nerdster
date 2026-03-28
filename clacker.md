@@ -5,3 +5,7 @@
 - Don't type too much at me (it's annoying with the animation, and it makes it hard to find what I need to actually read).
 - Do exactly and only what I instruct you to.
 ---------------------------------------------------------------
+
+My notes:
+DO NOT START. DO NOT COMMIT. DO NOT PUSH OR DEPLOY.
+DO NOT DO ANYTHING OTHER THAN (possibly document) AND COMMUNICATE WITH ME.

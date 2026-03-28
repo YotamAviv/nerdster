@@ -1,60 +1,4 @@
 {
-  "flutter": {
-    "platforms": {
-      "android": {
-        "default": {
-          "projectId": "one-of-us-net",
-          "appId": "1:62898847921:android:1e47fd12766c3f9e29a290",
-          "fileOutput": "android/app/google-services.json"
-        }
-      },
-      "dart": {
-        "lib/firebase_options.dart": {
-          "projectId": "one-of-us-net",
-          "configurations": {
-            "android": "1:62898847921:android:1e47fd12766c3f9e29a290"
-          }
-        }
-      }
-    }
-  },
-  "hosting": {
-    "public": "build/web",
-    "cleanUrls": true,
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "!**/.well-known/**",
-      "**/node_modules/**"
-    ],
-    "appAssociation": "NONE",
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ],
-    "headers": [
-      {
-        "source": "/.well-known/apple-app-site-association",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ]
-      },
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          }
-        ]
-      }
-    ]
-  },
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
@@ -82,9 +26,6 @@
     "functions": {
       "host": "127.0.0.1",
       "port": "5002"
-    },
-    "hosting": {
-      "port": 5005
     },
     "hub": {
       "port": 4401

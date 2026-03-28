@@ -25,6 +25,7 @@ Duplicated into both projects — changes must be kept in sync.
 | `box-common.css` | Shared box CSS |
 | `guard.js` | JS guard/safety helper |
 | `iframe_helper.js` | Used by home.html (Nerdster) and crypto/ready iframe files (OneOfUs) |
+| `verify_helper.js` | Used by home.html (Nerdster) and vouch.html (OneOfUs) |
 | `data/demoData.js` | Demo identity data; used by home.html, crypto_identity.html, crypto_trust.html |
 | `img/apple.webp` | App Store badge; used by home.html (Nerdster) and oneofus.html, possibilities.html (OneOfUs) |
 | `img/google.webp` | Google Play badge; same as above |
@@ -59,7 +60,6 @@ Duplicated into both projects — changes must be kept in sync.
 | `index.css` | Main stylesheet; referenced by index.html + all iframes *(was `oneofus.css`)* |
 | `man.html` | Man page; all CSS inline *(was `oneofus_man.html`)* |
 | `vouch.html` | iOS universal link target (`one-of-us.net/vouch.html#<hash>`) |
-| `verify_helper.js` | `<script>` in vouch.html |
 | `crypto.html` | `<iframe>` in index.html |
 | `img/sample.png` | `<img>` in crypto.html |
 | `crypto_trust.html` | `<iframe>` in index.html |
@@ -108,19 +108,24 @@ Run these checks after the migration, before deploying to production.
 
 - [ ] `bin/start_emulators.sh` starts both emulators cleanly
 - [ ] `bin/stop_emulators.sh` stops them cleanly
-- [ ] **Nerdster site** — open `nerdster14/web/home.html` via `file://`; append `?fire=emulator` to use emulators
+- [ ] **Nerdster site** — `flutter build web && python3 -m http.server 8765 --directory build/web`, open `http://localhost:8765/home.html?fire=emulator`
   - [ ] Box demos load
-  - [ ] `man.html` loads
-- [ ] **OneOfUs site** — open `oneofusv22/web/index.html` via `file://`; append `?fire=emulator` to use emulators
+  - [ ] `http://localhost:8765/man.html` loads
+- [ ] **OneOfUs site** — `python3 -m http.server 8766 --directory web` from `oneofusv22/`, open `http://localhost:8766/index.html?fire=emulator`
   - [ ] iframes load: crypto, crypto_trust, crypto_identity, ready, possibilities
   - [ ] `vouch.html` loads
-  - [ ] `man.html` loads
+  - [ ] `http://localhost:8766/man.html` loads
 - [ ] All integration tests pass
 
 > [!NOTE]
-> Also try Firebase emulator hosting: `flutter build web && firebase emulators:start --only hosting`
-> for Nerdster (serves `build/web/` on `localhost:5000`), and `firebase emulators:start --only hosting`
-> for OneOfUs (serves `web/` on `localhost:5005`). This more closely mirrors the real hosted environment.
+> Note: `/man` (clean URL) only works with Firebase hosting. The python server requires `/man.html`.
+
+> [!NOTE]
+> Also try Firebase emulator hosting once as a pre-deploy check — it tests `cleanUrls` (`/man` works),
+> Flutter rewrite rules, and `.well-known/` headers, which python's server doesn't exercise:
+>
+> - Nerdster: `flutter build web && firebase emulators:start --only hosting` (serves `build/web/` on `localhost:5000`)
+> - OneOfUs: `firebase emulators:start --only hosting` from `oneofusv22/` (serves `web/` on `localhost:5005`)
 
 ### Post-deploy (production)
 
