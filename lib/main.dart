@@ -28,6 +28,7 @@ import 'package:oneofus_common/ui/json_display.dart';
 
 import 'firebase_options.dart';
 import 'message_handler.dart' if (dart.library.io) 'stub_message_handler.dart';
+import 'package:app_links/app_links.dart';
 
 export 'package:nerdster/fire_choice.dart';
 
@@ -36,7 +37,15 @@ bool _fireCheckWrite = false;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Prefs.init();
+  // On mobile, Uri.base is not the deep-link URI — read via app_links.
+  Uri startupUri = Uri.base;
+  if (!kIsWeb) {
+    try {
+      final initialLink = await AppLinks().getInitialLinkString();
+      if (initialLink != null) startupUri = Uri.parse(initialLink);
+    } catch (_) {}
+  }
+  await Prefs.init(startupUri: startupUri);
 
   JsonDisplay.highlightKeys = Set.unmodifiable({
     'I',
@@ -56,7 +65,7 @@ Future<void> main() async {
   });
 
   // ------------ Fire ------------
-  Map<String, String> params = Uri.base.queryParameters;
+  Map<String, String> params = startupUri.queryParameters;
   String? fireParam = params['fire'];
   if (fireParam != null) {
     fireChoice = FireChoice.values.byName(fireParam);
@@ -108,7 +117,7 @@ Future<void> main() async {
 
   TrustStatement.init();
   ContentStatement.init();
-  await defaultSignIn();
+  await defaultSignIn(params: params);
   await About.init();
 
   // ----
@@ -127,9 +136,9 @@ Future<void> main() async {
   ));
 }
 
-Future<void> defaultSignIn({BuildContext? context}) async {
-  // Check URL query parameters
-  Map<String, String> params = Uri.base.queryParameters;
+Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params}) async {
+  // Check URL query parameters (deep-link URI on mobile, Uri.base on web)
+  params ??= Uri.base.queryParameters;
   String? identityParam = params['identity'];
 
   // Parse identity JSON and register it in Jsonish cache.
