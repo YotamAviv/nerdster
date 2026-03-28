@@ -22,6 +22,9 @@ import 'package:oneofus_common/keys.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/link.dart';
 
+/// Set to true (via ?iphone=true URL param) to simulate iOS sign-in UI on non-iOS platforms.
+bool forceIphone = false;
+
 class SignInWidget extends StatefulWidget {
   const SignInWidget({super.key});
 
@@ -189,7 +192,7 @@ class _SignInDialogState extends State<SignInDialog> {
       _prevDelegateToken = currentDelegate;
     }
 
-    final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS || forceIphone;
     final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
 
     Widget buildUniversalBtn(bool recommended) {
@@ -201,7 +204,7 @@ class _SignInDialogState extends State<SignInDialog> {
                 icon: Icons.link,
                 label: 'App Link',
                 subtitle:
-                    'Universal Links (iOS) & App Links (Android)\nIdentity app must be available on same device.',
+                    'Universal Links\nIdentity app must be available on same device.',
                 onPressed: () {},
                 recommended: recommended,
               );
@@ -219,7 +222,7 @@ class _SignInDialogState extends State<SignInDialog> {
                   icon: Icons.link,
                   label: 'App Link',
                   subtitle:
-                      'Universal Links (iOS) & App Links (Android)\nIdentity app must be available on same device.',
+                      'Universal Links\nIdentity app must be available on same device.',
                   onPressed: () {
                     _magicLinkSignIn(context,
                         useUniversalLink: true,
@@ -245,7 +248,7 @@ class _SignInDialogState extends State<SignInDialog> {
     Widget buildQrBtn(bool recommended) => _buildListButton(
           icon: Icons.qr_code,
           label: 'QR Code',
-          subtitle: 'Scan sign-in parameters with your phone\'s identity app',
+          subtitle: 'Scan sign-in parameters with a different device\'s identity app',
           onPressed: () => qrSignIn(context),
           recommended: recommended,
         );

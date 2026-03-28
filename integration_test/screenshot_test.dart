@@ -63,9 +63,8 @@ void main() {
 
   Future<void> saveScreenshot(List<int> bytes, String name) async {
     try {
-      // Use /private/tmp which on the iOS simulator maps to the Mac host's /private/tmp,
-      // accessible from the Mac terminal after the test completes.
-      final dir = Directory('/private/tmp/nerdster_screenshots');
+      // Use systemTemp so this works on Mac, Linux, Android, and iOS simulator.
+      final dir = Directory('${Directory.systemTemp.path}/nerdster_screenshots');
       await dir.create(recursive: true);
       final file = File('${dir.path}/nerdster_screenshot_$name.png');
       await file.writeAsBytes(Uint8List.fromList(bytes));
@@ -145,8 +144,6 @@ void main() {
     final s3 = await binding.takeScreenshot('03_card_expanded');
     await saveScreenshot(s3, '03_card_expanded');
 
-    debugPrint('All screenshots captured. Run:');
-    debugPrint(
-        '  find ~/Library/Developer/CoreSimulator/Devices -name "nerdster_screenshot_*.png" -exec cp {} ~/Desktop/ \\;');
+    debugPrint('All screenshots captured in ${Directory.systemTemp.path}/nerdster_screenshots/');
   });
 }

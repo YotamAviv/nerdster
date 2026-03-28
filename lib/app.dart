@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:nerdster/content/content_tree.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/settings/setting_type.dart';
@@ -113,6 +112,13 @@ class _AppHomeState extends State<_AppHome> {
   void _onSignInChanged() {
     if (!signInState.isSignedIn) {
       _maybeShowDialog();
+    } else if (_dialogShowing && mounted) {
+      // Sign-in arrived externally (e.g., deep link) while dialog was open.
+      // Delay to next frame so any in-progress button press that also calls
+      // Navigator.pop() can complete first — avoiding a double-pop (black screen).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_dialogShowing && mounted) Navigator.of(context).pop();
+      });
     }
   }
 
