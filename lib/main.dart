@@ -134,6 +134,19 @@ Future<void> main() async {
     view: ui.PlatformDispatcher.instance.views.first,
     child: const NerdsterApp(),
   ));
+
+  // Handle deep links arriving while the app is already running.
+  // With singleTask launch mode, Android delivers the new intent via onNewIntent,
+  // which app_links surfaces here as a uriLinkStream event.
+  if (!kIsWeb) {
+    AppLinks().uriLinkStream.listen((uri) {
+      final p = uri.queryParameters;
+      for (final setting in Setting.all) {
+        setting.updateFromQueryParam(p);
+      }
+      defaultSignIn(params: p);
+    }, onError: (_) {});
+  }
 }
 
 Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params}) async {
