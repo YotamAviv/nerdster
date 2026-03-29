@@ -1200,7 +1200,7 @@ PODS:
     - Firebase/Firestore (= 12.9.0)
     - firebase_core
     - Flutter
-  - cloud_functions (6.1.0):
+  - cloud_functions (6.0.7):
     - Firebase/Functions (= 12.9.0)
     - firebase_core
     - Flutter
@@ -1430,7 +1430,7 @@ SPEC CHECKSUMS:
   app_links: 585674be3c6661708e6cd794ab4f39fb9d8356f9
   BoringSSL-GRPC: dded2a44897e45f28f08ae87a55ee4bcd19bc508
   cloud_firestore: 90c4f245978a00fdfba814984b699890dd140d70
-  cloud_functions: a0f62dde76c707396d7f25bbdb869589cf16ff06
+  cloud_functions: 776390f184b021fcf87c028fac5487d2dec6abfe
   Firebase: 065f2bb395062046623036d8e6dc857bc2521d56
   firebase_core: 98bcc1bd1a097bcb8b1ed6e091de3039802527c4
   FirebaseAppCheckInterop: 4bade10286cc977e516f75d2d8312cbdfa534789
