@@ -105,18 +105,19 @@ class _SignInWidgetState extends State<SignInWidget> {
         }
       }
 
-      // Delegate key is active/owned
+      // Fully signed in: delegate key is blue filled.
       iconWidget = KeyIcon(
         type: KeyType.delegate,
         status: delegateStatus,
-        isOwned: true,
+        presence: KeyPresence.owned,
       );
       tooltip = "Signed in with Identity and Delegate ($statusMsg)";
     } else if (hasIdentity) {
+      // Identity only: green outlined (Nerdster never holds the private identity key).
       iconWidget = const KeyIcon(
         type: KeyType.identity,
         status: KeyStatus.active,
-        isOwned: false,
+        presence: KeyPresence.known,
       );
       tooltip = "Signed in with Identity only";
     } else {
@@ -420,30 +421,28 @@ class _SignInDialogState extends State<SignInDialog> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildStatusColumn(
-          "Identity",
-          hasIdentity,
+          'Identity',
+          KeyType.identity,
+          hasIdentity ? KeyPresence.known : KeyPresence.absent,
           keyArrived: identityArrived,
-          color: Colors.green,
-          icon: hasIdentity ? Icons.vpn_key : Icons.vpn_key_outlined,
           json: hasIdentity ? signInState.identityJson : null,
         ),
         _buildStatusColumn(
-          "Delegate",
-          hasDelegate,
+          'Delegate',
+          KeyType.delegate,
+          hasDelegate ? KeyPresence.owned : KeyPresence.absent,
           keyArrived: delegateArrived,
-          color: Colors.blue,
-          icon: hasDelegate ? Icons.vpn_key : Icons.vpn_key_outlined,
           json: signInState.delegatePublicKeyJson,
         ),
       ],
     );
   }
 
-  Widget _buildStatusColumn(String label, bool hasKey,
+  Widget _buildStatusColumn(String label, KeyType keyType, KeyPresence presence,
       {required bool keyArrived,
-      required Color color,
-      required IconData icon,
       required Json? json}) {
+    final bool hasKey = presence != KeyPresence.absent;
+    final Color color = keyType == KeyType.identity ? Colors.green : Colors.blue;
     return InkWell(
       onTap: hasKey ? () => _showKeyDetail(label, json) : null,
       borderRadius: BorderRadius.circular(8),
@@ -453,10 +452,9 @@ class _SignInDialogState extends State<SignInDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ThrowingKeyIcon(
-              visible: hasKey,
+              presence: presence,
               animate: keyArrived,
-              icon: icon,
-              color: color,
+              keyType: keyType,
               iconSize: 28,
               onAnimationComplete: _onKeyAnimationComplete,
             ),
@@ -648,19 +646,17 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
 }
 
 class ThrowingKeyIcon extends StatefulWidget {
-  final bool visible;
+  final KeyPresence presence;
   final bool animate;
-  final IconData icon;
-  final Color color;
+  final KeyType keyType;
   final double iconSize;
   final VoidCallback? onAnimationComplete;
 
   const ThrowingKeyIcon({
     super.key,
-    required this.visible,
+    required this.presence,
     this.animate = false,
-    required this.icon,
-    required this.color,
+    required this.keyType,
     this.iconSize = 48,
     this.onAnimationComplete,
   });
@@ -709,10 +705,11 @@ class _ThrowingKeyIconState extends State<ThrowingKeyIcon> with SingleTickerProv
     super.didUpdateWidget(oldWidget);
     // Fire animation when animate flips to true (key just arrived)
     final bool shouldAnimate = widget.animate && !oldWidget.animate;
-    // Also fire if visible just became true (legacy path, for safety)
-    final bool justBecameVisible = !oldWidget.visible && widget.visible;
-    if (shouldAnimate || justBecameVisible) {
-      debugPrint("ThrowingKeyIcon: Starting animation!");
+    // Also fire when key transitions from absent to present
+    final bool justArrived = oldWidget.presence == KeyPresence.absent &&
+        widget.presence != KeyPresence.absent;
+    if (shouldAnimate || justArrived) {
+      debugPrint('ThrowingKeyIcon: Starting animation!');
       _ctrl.forward(from: 0);
     }
   }
@@ -734,7 +731,7 @@ class _ThrowingKeyIconState extends State<ThrowingKeyIcon> with SingleTickerProv
           child: child,
         ),
       ),
-      child: Icon(widget.icon, color: widget.color, size: widget.iconSize),
+      child: KeyIcon(type: widget.keyType, presence: widget.presence, size: widget.iconSize),
     );
   }
 }

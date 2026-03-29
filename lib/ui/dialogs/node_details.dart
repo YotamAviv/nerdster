@@ -388,7 +388,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                       KeyIcon(
                         type: KeyType.identity,
                         status: status,
-                        isOwned: false, // Per instructions, only delegate key is owned
+                        presence: KeyPresence.known,
                       ),
                       const SizedBox(width: 8),
                       Text('$equivIdentityLabel ${isCanonical ? "" : "(Replaced)"}',
@@ -437,7 +437,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                         KeyIcon(
                           type: KeyType.delegate,
                           status: status,
-                          isOwned: isMyDelegate,
+                          presence: isMyDelegate ? KeyPresence.owned : KeyPresence.known,
                         ),
                         const SizedBox(width: 8),
                         Text(delegateLabel,
