@@ -1,5 +1,17 @@
 import 'package:flutter/material.dart';
 
+/// Key icon display convention used across both the Nerdster and ONE-OF-US.NET apps:
+///
+/// Color:
+///   - Green  = identity key (the user's ONE-OF-US.NET identity)
+///   - Blue   = delegate key (a Nerdster-specific signing key)
+///
+/// Fill:
+///   - Filled  (Icons.vpn_key)          = we hold this key (delegate private key present)
+///   - Outlined (Icons.vpn_key_outlined) = we know about this key but don't hold its private key
+///
+/// Note: the Nerdster app never holds the user's private identity key (that lives in the
+/// ONE-OF-US.NET app). Therefore identity keys are always displayed outlined.
 enum KeyType {
   identity,
   delegate,

@@ -5,10 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Nerdster (emulator)",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--dart-define=fire=emulator"
+            ]
+        },
+        {
             "name": "nerdster (web fixed port)",
             "request": "launch",
             "type": "dart",
-            "args": ["-d", "web-server", "--web-hostname=0.0.0.0", "--web-port=40593"]
+            "args": [
+                "-d",
+                "web-server",
+                "--web-hostname=0.0.0.0",
+                "--web-port=40593"
+            ]
         },
         {
             "name": "nerdster",

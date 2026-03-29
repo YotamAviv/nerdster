@@ -106,8 +106,12 @@ Future<void> main() async {
     case FireChoice.fake:
       break;
     case FireChoice.emulator:
-      const oneofusUrl = 'http://127.0.0.1:5002/one-of-us-net/us-central1/export';
-      const nerdsterUrl = 'http://127.0.0.1:5001/nerdster/us-central1/export';
+      // On Android emulator, the host machine is 10.0.2.2, not 127.0.0.1.
+      // Firestore/Functions .useEmulator() calls are auto-remapped by the plugin,
+      // but registerRedirect URLs are plain HTTP and must be remapped manually.
+      final emulatorHost = kIsWeb ? '127.0.0.1' : '10.0.2.2';
+      final oneofusUrl = 'http://$emulatorHost:5002/one-of-us-net/us-central1/export';
+      final nerdsterUrl = 'http://$emulatorHost:5001/nerdster/us-central1/export';
       FirebaseConfig.registerRedirect('https://export.one-of-us.net', oneofusUrl);
       FirebaseConfig.registerRedirect('https://export.nerdster.org', nerdsterUrl);
       break;

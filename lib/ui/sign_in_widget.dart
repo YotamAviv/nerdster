@@ -5,6 +5,8 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:oneofus_common/crypto/crypto25519.dart';
+import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/jsonish.dart';
@@ -22,8 +24,20 @@ import 'package:oneofus_common/keys.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/link.dart';
 
+/// Key icon convention (see key_icon.dart for full details):
+///   - Green outlined  = identity key (Nerdster never holds the private identity key)
+///   - Blue filled     = delegate key, owned (private key present on device)
+///   - Blue outlined   = delegate key, not owned / missing
+///
 /// Set to true (via ?iphone=true URL param) to simulate iOS sign-in UI on non-iOS platforms.
 bool forceIphone = false;
+
+/// Hardcoded developer identity public key for "Use developer's Point of View" sign-in.
+const Map<String, dynamic> _kDevIdentityKey = {
+  'crv': 'Ed25519',
+  'kty': 'OKP',
+  'x': 'Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo',
+};
 
 class SignInWidget extends StatefulWidget {
   const SignInWidget({super.key});
@@ -202,9 +216,8 @@ class _SignInDialogState extends State<SignInDialog> {
             if (!snapshot.hasData) {
               return _buildListButton(
                 icon: Icons.link,
-                label: 'App Link',
-                subtitle:
-                    'Universal Links\nIdentity app must be available on same device.',
+                label: 'https://one-of-us.net/...',
+                subtitle: 'Tap to open ONE-OF-US.NET app',
                 onPressed: () {},
                 recommended: recommended,
               );
@@ -220,9 +233,8 @@ class _SignInDialogState extends State<SignInDialog> {
               builder: (context, followLink) {
                 return _buildListButton(
                   icon: Icons.link,
-                  label: 'App Link',
-                  subtitle:
-                      'Universal Links\nIdentity app must be available on same device.',
+                  label: 'https://one-of-us.net/...',
+                  subtitle: 'Tap to open ONE-OF-US.NET app',
                   onPressed: () {
                     _magicLinkSignIn(context,
                         useUniversalLink: true,
@@ -239,8 +251,8 @@ class _SignInDialogState extends State<SignInDialog> {
 
     Widget buildCustomBtn(bool recommended) => _buildListButton(
           icon: Icons.auto_fix_high,
-          label: 'URL scheme',
-          subtitle: 'keymeid://...\nIdentity app must be available on same device',
+          label: 'keymeid://...',
+          subtitle: 'Tap to open identity app',
           onPressed: () => _magicLinkSignIn(context),
           recommended: recommended,
         );
@@ -248,43 +260,12 @@ class _SignInDialogState extends State<SignInDialog> {
     Widget buildQrBtn(bool recommended) => _buildListButton(
           icon: Icons.qr_code,
           label: 'QR Code',
-          subtitle: 'Scan sign-in parameters with a different device\'s identity app',
+          subtitle: 'Scan with identity app to sign in',
           onPressed: () => qrSignIn(context),
           recommended: recommended,
         );
 
     final bool isDev = Setting.get<bool>(SettingType.dev).value;
-
-    List<Widget> buttons;
-    if (isIOS) {
-      buttons = [
-        buildUniversalBtn(true),
-        buildCustomBtn(false),
-        buildQrBtn(false),
-      ];
-    } else if (isAndroid) {
-      buttons = [
-        buildCustomBtn(true),
-        buildUniversalBtn(false),
-        buildQrBtn(false),
-      ];
-    } else {
-      // Desktop/Web
-      buttons = [
-        buildQrBtn(true),
-        buildCustomBtn(false),
-        buildUniversalBtn(false),
-      ];
-    }
-    if (isDev || _showPaste) {
-      buttons.add(_buildListButton(
-        icon: Icons.content_paste,
-        label: 'Paste Keys',
-        subtitle: 'Paste JSON keys directly',
-        onPressed: () => pasteSignIn(context, storeKeys: _storeKeys),
-        recommended: false,
-      ));
-    }
 
     return PopScope(
       canPop: false,
@@ -307,9 +288,24 @@ class _SignInDialogState extends State<SignInDialog> {
               children: [
                 _buildStatusTable(hasIdentity, hasDelegate,
                     identityArrived: identityArrived, delegateArrived: delegateArrived),
-                const SizedBox(height: 12),
+                if (!hasDelegate) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: const Text(
+                      'Sign in using an identity app, like the ONE-OF-US.NET phone app.',
+                      style: TextStyle(fontSize: 12, color: Colors.black87),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
 
-                // Sign-in method heading
+                // Section 1: This Device
                 Align(
                   alignment: Alignment.centerLeft,
                   child: GestureDetector(
@@ -319,13 +315,68 @@ class _SignInDialogState extends State<SignInDialog> {
                         if (_headingTapCount >= 7) _showPaste = true;
                       });
                     },
-                    child: const Text('Sign in using:',
-                        style: TextStyle(fontSize: 13, color: Colors.black54)),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 4, bottom: 8),
+                      child: Text('Identity app on this device',
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.blueGrey[700],
+                              fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ),
+                if (isIOS) ...[buildUniversalBtn(true), buildCustomBtn(false)],
+                if (isAndroid) ...[buildCustomBtn(true), buildUniversalBtn(false)],
+                if (!isIOS && !isAndroid) ...[buildCustomBtn(false), buildUniversalBtn(false)],
 
-                // Actions - Flat List
-                ...buttons,
+                const SizedBox(height: 16),
+
+                // Section 2: Different Device
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text('Identity app on different device',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blueGrey[700],
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                buildQrBtn(!isIOS && !isAndroid),
+
+                const SizedBox(height: 16),
+
+                // Section 3: No identity app
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text('No identity app',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blueGrey[700],
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                _buildListButton(
+                  icon: Icons.visibility,
+                  label: "Use developer's PoV",
+                  subtitle: 'If you\'re just checking it out',
+                  onPressed: _signInAsDev,
+                  recommended: false,
+                ),
+
+                if (isDev || _showPaste) ...[
+                  const SizedBox(height: 16),
+                  _buildListButton(
+                    icon: Icons.content_paste,
+                    label: 'Paste Keys',
+                    subtitle: 'Paste JSON keys directly',
+                    onPressed: () => pasteSignIn(context, storeKeys: _storeKeys),
+                    recommended: false,
+                  )
+                ],
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -343,7 +394,7 @@ class _SignInDialogState extends State<SignInDialog> {
                           signInState.signOut(clearIdentity: false);
                         },
                       ),
-                    MyCheckbox(_storeKeys, 'Store keys'),
+                    MyCheckbox(_storeKeys, 'Store keys', alwaysShowTitle: true),
                   ],
                 ),
               ],
@@ -356,6 +407,11 @@ class _SignInDialogState extends State<SignInDialog> {
 
   void _onKeyAnimationComplete() {
     // Dialog stays open — user must explicitly dismiss.
+  }
+
+  Future<void> _signInAsDev() async {
+    final key = await crypto.parsePublicKey(_kDevIdentityKey);
+    await signInUiHelper(key, null, false);
   }
 
   Widget _buildStatusTable(bool hasIdentity, bool hasDelegate,
