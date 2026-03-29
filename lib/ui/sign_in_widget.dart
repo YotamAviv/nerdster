@@ -380,8 +380,8 @@ class _SignInDialogState extends State<SignInDialog> {
                 _buildListButton(
                   icon: Icons.visibility,
                   leadingWidget: Image.asset('assets/images/nerd.png', width: 24, height: 24),
-                  label: "Use developer's PoV",
-                  subtitle: 'If you\'re just checking it out',
+                  label: 'Preview without an account',
+                  subtitle: 'Enter the Nerdster',
                   onPressed: _signInAsDev,
                   recommended: false,
                 ),

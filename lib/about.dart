@@ -47,6 +47,10 @@ class About extends StatelessWidget {
             Linky('Directly embed or access: https://nerdster.org'),
             Linky('Home: https://nerdster.org/home'),
             Linky('Contact: contact@nerdster.org'),
+            const SizedBox(height: 8),
+            Linky('Privacy Policy: https://nerdster.org/policy.html'),
+            Linky('Terms of Service: https://nerdster.org/terms.html'),
+            Linky('Safety & Content Policy: https://nerdster.org/safety.html'),
             const SizedBox(height: 10),
             Text('Package name: ${_packageInfo.packageName}'),
             Text('Version: ${_packageInfo.version}'),
@@ -59,7 +63,7 @@ class About extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text(message)),
                   );
-                  print(message);
+                  debugPrint(message);
                 }
               },
               child: Text('Build number: ${_packageInfo.buildNumber}'),
