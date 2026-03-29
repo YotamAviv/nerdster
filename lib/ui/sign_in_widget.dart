@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -218,7 +220,7 @@ class _SignInDialogState extends State<SignInDialog> {
               return _buildListButton(
                 icon: Icons.link,
                 label: 'https://one-of-us.net/...',
-                subtitle: 'Tap to open ONE-OF-US.NET app',
+                subtitle: 'Use the ONE-OF-US.NET identity app',
                 onPressed: () {},
                 recommended: recommended,
               );
@@ -235,7 +237,7 @@ class _SignInDialogState extends State<SignInDialog> {
                 return _buildListButton(
                   icon: Icons.link,
                   label: 'https://one-of-us.net/...',
-                  subtitle: 'Tap to open ONE-OF-US.NET app',
+                  subtitle: 'Use the ONE-OF-US.NET identity app',
                   onPressed: () {
                     _magicLinkSignIn(context,
                         useUniversalLink: true,
@@ -253,7 +255,7 @@ class _SignInDialogState extends State<SignInDialog> {
     Widget buildCustomBtn(bool recommended) => _buildListButton(
           icon: Icons.auto_fix_high,
           label: 'keymeid://...',
-          subtitle: 'Tap to open identity app',
+          subtitle: 'Use any keymeid associated identity app',
           onPressed: () => _magicLinkSignIn(context),
           recommended: recommended,
         );
@@ -261,7 +263,7 @@ class _SignInDialogState extends State<SignInDialog> {
     Widget buildQrBtn(bool recommended) => _buildListButton(
           icon: Icons.qr_code,
           label: 'QR Code',
-          subtitle: 'Scan with identity app to sign in',
+          subtitle: 'Scan with an identity app to sign in',
           onPressed: () => qrSignIn(context),
           recommended: recommended,
         );
@@ -278,7 +280,7 @@ class _SignInDialogState extends State<SignInDialog> {
           color: Colors.white,
           borderRadius: kBorderRadius,
         ),
-        padding: EdgeInsets.fromLTRB(16, 24, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 12),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400),
           child: SingleChildScrollView(
@@ -290,21 +292,36 @@ class _SignInDialogState extends State<SignInDialog> {
                 _buildStatusTable(hasIdentity, hasDelegate,
                     identityArrived: identityArrived, delegateArrived: delegateArrived),
                 if (!hasDelegate) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.blue[50],
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.blue[200]!),
                     ),
-                    child: const Text(
-                      'Sign in using an identity app, like the ONE-OF-US.NET phone app.',
-                      style: TextStyle(fontSize: 12, color: Colors.black87),
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(fontSize: 12, color: Colors.black87),
+                        children: [
+                          const TextSpan(text: 'Sign in using an identity app, like the '),
+                          TextSpan(
+                            text: 'ONE-OF-US.NET',
+                            style: const TextStyle(
+                                color: Colors.blue, decoration: TextDecoration.underline),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => launchUrl(
+                                    Uri.parse('https://one-of-us.net'),
+                                    mode: LaunchMode.externalApplication,
+                                  ),
+                          ),
+                          const TextSpan(text: ' phone app.'),
+                        ],
+                      ),
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // Section 1: This Device
                 Align(
@@ -317,7 +334,7 @@ class _SignInDialogState extends State<SignInDialog> {
                       });
                     },
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 8),
+                      padding: const EdgeInsets.only(left: 4, bottom: 4),
                       child: Text('Identity app on this device',
                           style: TextStyle(
                               fontSize: 14,
@@ -330,13 +347,13 @@ class _SignInDialogState extends State<SignInDialog> {
                 if (isAndroid) ...[buildCustomBtn(true), buildUniversalBtn(false)],
                 if (!isIOS && !isAndroid) ...[buildCustomBtn(false), buildUniversalBtn(false)],
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // Section 2: Different Device
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    padding: const EdgeInsets.only(left: 4, bottom: 4),
                     child: Text('Identity app on different device',
                         style: TextStyle(
                             fontSize: 14,
@@ -346,13 +363,13 @@ class _SignInDialogState extends State<SignInDialog> {
                 ),
                 buildQrBtn(!isIOS && !isAndroid),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
 
                 // Section 3: No identity app
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 8),
+                    padding: const EdgeInsets.only(left: 4, bottom: 4),
                     child: Text('No identity app',
                         style: TextStyle(
                             fontSize: 14,
@@ -369,7 +386,7 @@ class _SignInDialogState extends State<SignInDialog> {
                 ),
 
                 if (isDev || _showPaste) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   _buildListButton(
                     icon: Icons.content_paste,
                     label: 'Paste Keys',
@@ -378,7 +395,7 @@ class _SignInDialogState extends State<SignInDialog> {
                     recommended: false,
                   )
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -484,6 +501,8 @@ class _SignInDialogState extends State<SignInDialog> {
     required bool recommended,
   }) {
     return ListTile(
+      dense: true,
+      visualDensity: VisualDensity.compact,
       leading: Icon(icon),
       title: Row(
         children: [
