@@ -48,7 +48,6 @@ flutter run -d chrome
 ```
 Push to PROD:
 flutter build web --release; firebase --project=nerdster deploy --except functions
-flutter build web --release; firebase --project=nerdster deploy --except functions
 firebase --project=one-of-us-net deploy --only hosting
 firebase --project=nerdster deploy --only functions
 firebase --project=one-of-us-net deploy --only functions:export
