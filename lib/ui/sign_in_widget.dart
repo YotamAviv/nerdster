@@ -379,6 +379,7 @@ class _SignInDialogState extends State<SignInDialog> {
                 ),
                 _buildListButton(
                   icon: Icons.visibility,
+                  leadingWidget: Image.asset('assets/images/nerd.png', width: 24, height: 24),
                   label: "Use developer's PoV",
                   subtitle: 'If you\'re just checking it out',
                   onPressed: _signInAsDev,
@@ -495,6 +496,7 @@ class _SignInDialogState extends State<SignInDialog> {
 
   Widget _buildListButton({
     required IconData icon,
+    Widget? leadingWidget,
     required String label,
     required String subtitle,
     required VoidCallback onPressed,
@@ -503,7 +505,7 @@ class _SignInDialogState extends State<SignInDialog> {
     return ListTile(
       dense: true,
       visualDensity: VisualDensity.compact,
-      leading: Icon(icon),
+      leading: leadingWidget ?? Icon(icon),
       title: Row(
         children: [
           Text(label),
