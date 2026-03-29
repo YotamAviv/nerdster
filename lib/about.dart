@@ -42,10 +42,10 @@ class About extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Nerd\'ster!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Nerdster', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            Linky('Directly embed or access: https://nerdster.org'),
             Linky('Home: https://nerdster.org/home'),
+            Linky('Embed or access: https://nerdster.org'),
             Linky('Contact: contact@nerdster.org'),
             const SizedBox(height: 8),
             Linky('Privacy Policy: https://nerdster.org/policy.html'),
