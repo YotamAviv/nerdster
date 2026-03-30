@@ -29,6 +29,8 @@ class KeyStore {
     if (nerdsterKeyPair != null) {
       await _storage.write(
           key: kNerdsterDomain, value: _encoder.convert(await nerdsterKeyPair.json));
+    } else {
+      await _storage.delete(key: kNerdsterDomain);
     }
   }
 

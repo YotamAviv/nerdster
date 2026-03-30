@@ -182,9 +182,19 @@ class _ContentCardState extends State<ContentCard> {
                                   'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}&w=800&fit=cover',
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
-                                      Image.network(imageUrl, fit: BoxFit.cover),
+                                      Image.network(imageUrl, fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          color: Colors.grey[300],
+                                          child: const Icon(Icons.image_not_supported, size: 32),
+                                        ),
+                                      ),
                                 )
-                              : Image.network(imageUrl, fit: BoxFit.cover),
+                              : Image.network(imageUrl, fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.image_not_supported, size: 32),
+                                  ),
+                                ),
                         ),
                         Positioned.fill(
                           child: Container(

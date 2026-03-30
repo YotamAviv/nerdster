@@ -133,7 +133,7 @@ class _SignInWidgetState extends State<SignInWidget> {
       onPressed: () {
         showDialog(
           context: context,
-          barrierDismissible: true,
+          barrierDismissible: false,
           builder: (context) => const Dialog(
             backgroundColor: Colors.transparent,
             child: SignInDialog(),
@@ -151,10 +151,13 @@ class SignInDialog extends StatefulWidget {
   State<SignInDialog> createState() => _SignInDialogState();
 }
 
-class _SignInDialogState extends State<SignInDialog> {
+class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderStateMixin {
   final ValueNotifier<bool> _storeKeys = ValueNotifier(true);
   int _headingTapCount = 0;
   bool _showPaste = false;
+  bool _prevHasIdentity = false;
+  late AnimationController _xPulseController;
+  late Animation<double> _xPulseScale;
 
   // We pre-create the session so we can generate a valid Link widget immediately.
   late Future<SignInSession> _sessionFuture;
@@ -167,22 +170,50 @@ class _SignInDialogState extends State<SignInDialog> {
   @override
   void initState() {
     super.initState();
+    _prevHasIdentity = signInState.isSignedIn;
+    _xPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _xPulseScale = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.4, end: 1.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.25), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 1.25, end: 1.0), weight: 1),
+    ]).animate(CurvedAnimation(parent: _xPulseController, curve: Curves.easeInOut));
     _prevIdentityToken = signInState.isSignedIn ? signInState.identity : null;
     _prevDelegateToken = signInState.delegate;
     signInState.addListener(_update);
+    _storeKeys.addListener(_onStoreKeysChanged);
     _sessionFuture = SignInSession.create();
   }
 
   @override
   void dispose() {
     signInState.removeListener(_update);
+    _storeKeys.removeListener(_onStoreKeysChanged);
     _storeKeys.dispose();
+    _xPulseController.dispose();
     _sessionFuture.then((s) => s.cancel()).catchError((_) {});
     super.dispose();
   }
 
+  void _onStoreKeysChanged() {
+    if (_storeKeys.value) {
+      if (signInState.isSignedIn) signInState.storeCurrentKeys();
+    } else {
+      KeyStore.wipeKeys();
+    }
+  }
+
   void _update() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    final bool nowHasIdentity = signInState.isSignedIn;
+    if (!_prevHasIdentity && nowHasIdentity) {
+      _xPulseController.forward(from: 0);
+    }
+    _prevHasIdentity = nowHasIdentity;
+    setState(() {});
   }
 
   @override
@@ -276,19 +307,55 @@ class _SignInDialogState extends State<SignInDialog> {
         if (!didPop && hasIdentity) Navigator.of(context).pop();
       },
       child: Container(
+        clipBehavior: Clip.hardEdge,
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: kBorderRadius,
         ),
         padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 12),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
+          constraints: BoxConstraints(
+            maxWidth: 400,
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
           child: SingleChildScrollView(
-            clipBehavior: Clip.none,
+            clipBehavior: Clip.hardEdge,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Title row with dynamic title + X close button
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Sign in',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      ScaleTransition(
+                        scale: _xPulseScale,
+                        child: Tooltip(
+                          message: hasIdentity ? 'Close' : 'Sign in to close',
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              color: hasIdentity
+                                  ? Colors.black87
+                                  : Colors.grey.shade300,
+                            ),
+                            onPressed: hasIdentity
+                                ? () => Navigator.of(context).pop()
+                                : null,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 _buildStatusTable(hasIdentity, hasDelegate,
                     identityArrived: identityArrived, delegateArrived: delegateArrived),
                 if (!hasDelegate) ...[
@@ -304,18 +371,27 @@ class _SignInDialogState extends State<SignInDialog> {
                       text: TextSpan(
                         style: const TextStyle(fontSize: 12, color: Colors.black87),
                         children: [
-                          const TextSpan(text: 'Sign in using an identity app, like the '),
+                          const TextSpan(text: 'Use your '),
+                          const TextSpan(
+                            text: 'Identity App',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                          ),
+                          const TextSpan(text: ' ('),
                           TextSpan(
                             text: 'ONE-OF-US.NET',
                             style: const TextStyle(
                                 color: Colors.blue, decoration: TextDecoration.underline),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => launchUrl(
-                                    Uri.parse('https://one-of-us.net'),
+                                    Uri.parse(kIsWeb
+                                        ? 'https://one-of-us.net'
+                                        : defaultTargetPlatform == TargetPlatform.iOS
+                                            ? 'https://apps.apple.com/us/app/one-of-us/id6739090070'
+                                            : 'https://play.google.com/store/apps/details?id=net.oneofus.app'),
                                     mode: LaunchMode.externalApplication,
                                   ),
                           ),
-                          const TextSpan(text: ' phone app.'),
+                          const TextSpan(text: ')'),
                         ],
                       ),
                     ),
@@ -434,20 +510,31 @@ class _SignInDialogState extends State<SignInDialog> {
                     ),
                   ),
                 Row(
-
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     if (hasDelegate)
                       TextButton.icon(
                         icon: const Icon(Icons.logout),
-                        label: const Text('Sign Out'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.red,
-                        ),
+                        label: const Text('Sign out'),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        onPressed: () async {
+                          signInState.signOut(clearIdentity: false);
+                          if (_storeKeys.value) {
+                            // Store identity only (delegate cleared by signOut above)
+                            await signInState.storeCurrentKeys();
+                          } else {
+                            await KeyStore.wipeKeys();
+                          }
+                        },
+                      )
+                    else if (hasIdentity)
+                      TextButton.icon(
+                        icon: const Icon(Icons.person_remove_outlined),
+                        label: const Text('Forget identity'),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
                         onPressed: () async {
                           await KeyStore.wipeKeys();
-                          // Drop delegate only — keep identity so user can see it
-                          signInState.signOut(clearIdentity: false);
+                          signInState.signOut(clearIdentity: true);
                         },
                       ),
                     MyCheckbox(_storeKeys, 'Store keys', alwaysShowTitle: true),
