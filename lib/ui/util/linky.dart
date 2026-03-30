@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:nerdster/ui/util_ui.dart';
 
 const kManUrl = 'https://one-of-us.net/man';
 
@@ -12,18 +12,8 @@ class Linky extends StatelessWidget {
   Widget build(BuildContext context) {
     return SelectableLinkify(
       onOpen: (LinkableElement link) async {
-        Uri uri;
-        if (link.text.startsWith('manual')) {
-          uri = Uri.parse(kManUrl);
-        } else {
-          uri = Uri.parse(link.url);
-        }
-        final mode = (uri.scheme == 'http' || uri.scheme == 'https')
-            ? LaunchMode.inAppBrowserView
-            : LaunchMode.externalApplication;
-        if (!await launchUrl(uri, mode: mode)) {
-          throw Exception('Could not launch ${link.url}');
-        }
+        final String url = link.text.startsWith('manual') ? kManUrl : link.url;
+        await myLaunchUrl(url);
       },
       // DEFER: style: TextStyle(fontFamily: 'Courier'),
       text: text,

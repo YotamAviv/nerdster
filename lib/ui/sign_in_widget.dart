@@ -370,14 +370,14 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                             style: const TextStyle(
                                 color: Colors.blue, decoration: TextDecoration.underline),
                             recognizer: TapGestureRecognizer()
-                              ..onTap = () => launchUrl(
-                                    Uri.parse(kIsWeb
-                                        ? 'https://one-of-us.net'
-                                        : defaultTargetPlatform == TargetPlatform.iOS
-                                            ? 'https://apps.apple.com/us/app/one-of-us/id6739090070'
-                                            : 'https://play.google.com/store/apps/details?id=net.oneofus.app'),
-                                    mode: LaunchMode.externalApplication,
-                                  ),
+                              ..onTap = () {
+                                final String url = kIsWeb
+                                    ? 'https://one-of-us.net'
+                                    : defaultTargetPlatform == TargetPlatform.iOS
+                                        ? 'https://apps.apple.com/us/app/one-of-us/id6739090070'
+                                        : 'https://play.google.com/store/apps/details?id=net.oneofus.app';
+                                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                              },
                           ),
                           const TextSpan(text: ')'),
                         ],
@@ -476,9 +476,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                                 color: Colors.blue,
                                 decoration: TextDecoration.underline),
                             recognizer: TapGestureRecognizer()
-                              ..onTap = () => launchUrl(
-                                  Uri.parse('https://nerdster.org/terms.html'),
-                                  mode: LaunchMode.inAppBrowserView),
+                              ..onTap = () => myLaunchUrl('https://nerdster.org/terms.html'),
                           ),
                           const TextSpan(text: ' and '),
                           TextSpan(
@@ -488,9 +486,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                                 color: Colors.blue,
                                 decoration: TextDecoration.underline),
                             recognizer: TapGestureRecognizer()
-                              ..onTap = () => launchUrl(
-                                  Uri.parse('https://nerdster.org/safety.html'),
-                                  mode: LaunchMode.inAppBrowserView),
+                              ..onTap = () => myLaunchUrl('https://nerdster.org/safety.html'),
                           ),
                           const TextSpan(text: '.'),
                         ],

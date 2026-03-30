@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/singletons.dart';
@@ -44,10 +45,14 @@ Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) asy
       barrierDismissible: true,
       builder: (context) {
         final linkRecognizer = TapGestureRecognizer()
-          ..onTap = () => launchUrl(
-                Uri.parse('https://one-of-us.net'),
-                mode: LaunchMode.externalApplication,
-              );
+          ..onTap = () {
+            final String url = kIsWeb
+                ? 'https://one-of-us.net'
+                : defaultTargetPlatform == TargetPlatform.iOS
+                    ? 'https://apps.apple.com/us/app/one-of-us/id6739090070'
+                    : 'https://play.google.com/store/apps/details?id=net.oneofus.app';
+            launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+          };
 
         const WidgetSpan greenKey = WidgetSpan(
           alignment: PlaceholderAlignment.middle,
