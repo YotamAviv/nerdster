@@ -10,7 +10,7 @@ import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/logic/feed_controller.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus;
 
 class EtcBar extends StatelessWidget {
   final Widget notifications;
@@ -52,9 +52,9 @@ class EtcBar extends StatelessWidget {
                           _showWebShareDialog(context, link);
                         } else {
                           try {
-                            // shareUri() is the correct API for URLs and works
-                            // more reliably than share() on iOS (share_plus v10+).
-                            await Share.shareUri(Uri.parse(link));
+                            await SharePlus.instance.share(
+                              ShareParams(text: link, subject: 'Check this out on Nerdster'),
+                            );
                           } catch (_) {
                             // Fallback to the copy dialog if native share fails.
                             if (context.mounted) {
