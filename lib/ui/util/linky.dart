@@ -18,7 +18,10 @@ class Linky extends StatelessWidget {
         } else {
           uri = Uri.parse(link.url);
         }
-        if (!await launchUrl(uri)) {
+        final mode = (uri.scheme == 'http' || uri.scheme == 'https')
+            ? LaunchMode.inAppBrowserView
+            : LaunchMode.externalApplication;
+        if (!await launchUrl(uri, mode: mode)) {
           throw Exception('Could not launch ${link.url}');
         }
       },

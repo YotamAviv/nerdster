@@ -478,7 +478,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => launchUrl(
                                   Uri.parse('https://nerdster.org/terms.html'),
-                                  mode: LaunchMode.externalApplication),
+                                  mode: LaunchMode.inAppBrowserView),
                           ),
                           const TextSpan(text: ' and '),
                           TextSpan(
@@ -490,7 +490,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => launchUrl(
                                   Uri.parse('https://nerdster.org/safety.html'),
-                                  mode: LaunchMode.externalApplication),
+                                  mode: LaunchMode.inAppBrowserView),
                           ),
                           const TextSpan(text: '.'),
                         ],
