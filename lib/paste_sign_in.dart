@@ -15,7 +15,7 @@ import 'package:nerdster/ui/util_ui.dart';
 
 const String kIdentity = "identity";
 
-Future<void> pasteSignIn(BuildContext context, {required ValueNotifier<bool> storeKeys}) async {
+Future<void> pasteSignIn(BuildContext context) async {
   Json? credentials = await showDialog(
       context: context,
       barrierDismissible: true,
@@ -33,7 +33,7 @@ Future<void> pasteSignIn(BuildContext context, {required ValueNotifier<bool> sto
     nerdsterKeyPair = await crypto.parseKeyPair(delegateJson);
   }
 
-  signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value, endpoint: fedKey.endpoint);
+  signInUiHelper(oneofusPublicKey, nerdsterKeyPair, endpoint: fedKey.endpoint);
 }
 
 class PasteSignInWidget extends StatefulWidget {

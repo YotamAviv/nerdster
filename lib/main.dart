@@ -14,6 +14,7 @@ import 'package:nerdster/config.dart';
 import 'package:nerdster/dev/demo_setup.dart';
 import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/key_store.dart';
+import 'package:nerdster/key_storage_coordinator.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/settings/prefs.dart';
@@ -46,6 +47,7 @@ Future<void> main() async {
     } catch (_) {}
   }
   await Prefs.init(startupUri: startupUri);
+  KeyStorageCoordinator.instance.start();
 
   JsonDisplay.highlightKeys = Set.unmodifiable({
     'I',
@@ -189,11 +191,9 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
     if (identityPublicKey != null) {
       final Json identityJson = await identityPublicKey.json;
       final fedKey = FedKey(identityJson, endpoint);
-      if (nerdsterKeyPair != null) {
-        await signInState.signInWithFedKey(fedKey, nerdsterKeyPair);
-        if (pov != null) signInState.pov = pov; // now registered in Jsonish
-        return;
-      }
+      await signInState.signInWithFedKey(fedKey, nerdsterKeyPair);
+      if (pov != null) signInState.pov = pov; // now registered in Jsonish
+      return;
     }
   }
 

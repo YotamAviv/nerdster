@@ -9,6 +9,7 @@ import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util_ui.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/sign_in_session.dart';
+import 'package:nerdster/key_storage_coordinator.dart';
 
 /// Nerdster web client / phone app QR sign-in:
 /// - Create encryption key (public key token is "session").
@@ -20,14 +21,12 @@ import 'package:nerdster/sign_in_session.dart';
 final deepCollectionEquality = const DeepCollectionEquality();
 
 Future<void> qrSignIn(BuildContext context) async {
-  final ValueNotifier<bool> storeKeys = ValueNotifier<bool>(true);
   final completer = Completer<void>();
 
   final session = await SignInSession.create();
   // Start listening BEFORE showing dialog
   // ignore: unawaited_futures
   session.listen(
-    storeKeys: storeKeys,
     onDone: () {
       if (!completer.isCompleted) {
         if (context.mounted) Navigator.of(context).pop();
@@ -38,7 +37,7 @@ Future<void> qrSignIn(BuildContext context) async {
 
   await showDialog(
     context: context,
-    builder: (_) => QrSignInDialog(forPhone: session.forPhone, storeKeys: storeKeys),
+    builder: (_) => QrSignInDialog(forPhone: session.forPhone),
   ).then((_) {
     // If user dismissed the dialog manually, cancel listener and complete
     if (!completer.isCompleted) {
@@ -53,9 +52,8 @@ Future<void> qrSignIn(BuildContext context) async {
 
 class QrSignInDialog extends StatelessWidget {
   final Json forPhone;
-  final ValueNotifier<bool> storeKeys;
 
-  const QrSignInDialog({required this.forPhone, required this.storeKeys, super.key});
+  const QrSignInDialog({required this.forPhone, super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster/key_storage_coordinator.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/jsonish.dart';
@@ -152,7 +153,6 @@ class SignInDialog extends StatefulWidget {
 }
 
 class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderStateMixin {
-  final ValueNotifier<bool> _storeKeys = ValueNotifier(true);
   int _headingTapCount = 0;
   bool _showPaste = false;
   bool _prevHasIdentity = false;
@@ -184,26 +184,15 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
     _prevIdentityToken = signInState.isSignedIn ? signInState.identity : null;
     _prevDelegateToken = signInState.delegate;
     signInState.addListener(_update);
-    _storeKeys.addListener(_onStoreKeysChanged);
     _sessionFuture = SignInSession.create();
   }
 
   @override
   void dispose() {
     signInState.removeListener(_update);
-    _storeKeys.removeListener(_onStoreKeysChanged);
-    _storeKeys.dispose();
     _xPulseController.dispose();
     _sessionFuture.then((s) => s.cancel()).catchError((_) {});
     super.dispose();
-  }
-
-  void _onStoreKeysChanged() {
-    if (_storeKeys.value) {
-      if (signInState.isSignedIn) signInState.storeCurrentKeys();
-    } else {
-      KeyStore.wipeKeys();
-    }
   }
 
   void _update() {
@@ -468,7 +457,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                     icon: Icons.content_paste,
                     label: 'Paste Keys',
                     subtitle: 'Paste JSON keys directly',
-                    onPressed: () => pasteSignIn(context, storeKeys: _storeKeys),
+                    onPressed: () => pasteSignIn(context),
                     recommended: false,
                   )
                 ],
@@ -519,7 +508,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                         style: TextButton.styleFrom(foregroundColor: Colors.red),
                         onPressed: () async {
                           signInState.signOut(clearIdentity: false);
-                          if (_storeKeys.value) {
+                          if (storeKeys.value) {
                             // Store identity only (delegate cleared by signOut above)
                             await signInState.storeCurrentKeys();
                           } else {
@@ -537,7 +526,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                           signInState.signOut(clearIdentity: true);
                         },
                       ),
-                    MyCheckbox(_storeKeys, 'Store keys', alwaysShowTitle: true),
+                    MyCheckbox(storeKeys, 'Store keys', alwaysShowTitle: true),
                   ],
                 ),
               ],
@@ -554,7 +543,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
   Future<void> _signInAsDev() async {
     final key = await crypto.parsePublicKey(_kDevIdentityKey);
-    await signInUiHelper(key, null, false);
+    await signInUiHelper(key, null);
   }
 
   Widget _buildStatusTable(bool hasIdentity, bool hasDelegate,
@@ -687,7 +676,6 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
         builder: (dialogContext) {
           return MagicLinkDialog(
             sessionFuture: sessionFuture,
-            storeKeys: _storeKeys,
             useUniversalLink: useUniversalLink,
             autoLaunch: autoLaunch,
             onCancel: () {},
@@ -702,7 +690,6 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
 class MagicLinkDialog extends StatefulWidget {
   final Future<SignInSession> sessionFuture;
-  final ValueNotifier<bool> storeKeys;
   final VoidCallback onCancel;
   final VoidCallback onSuccess;
   final bool useUniversalLink;
@@ -711,7 +698,6 @@ class MagicLinkDialog extends StatefulWidget {
   const MagicLinkDialog({
     super.key,
     required this.sessionFuture,
-    required this.storeKeys,
     required this.onCancel,
     required this.onSuccess,
     this.useUniversalLink = false,
@@ -750,7 +736,6 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
 
       // Listen
       session.listen(
-        storeKeys: widget.storeKeys,
         onDone: () {
           widget.onSuccess();
         },

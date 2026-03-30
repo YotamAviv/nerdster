@@ -63,14 +63,8 @@ import 'package:nerdster/singletons.dart';
 /// StatefulWidgets.
 
 Future<void> signInUiHelper(
-    OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair, bool store,
+    OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair,
     {Map<String, dynamic> endpoint = kNativeEndpoint}) async {
-  if (store) {
-    await KeyStore.storeKeys(oneofusPublicKey, nerdsterKeyPair, endpoint: endpoint);
-  } else {
-    await KeyStore.wipeKeys();
-  }
-
   final fedKey = FedKey(await oneofusPublicKey.json, endpoint);
   await signInState.signInWithFedKey(fedKey, nerdsterKeyPair);
 }
@@ -166,4 +160,6 @@ class SignInState with ChangeNotifier {
   Json? get delegatePublicKeyJson => _delegatePublicKeyJson;
   String? get delegate => _delegate;
   StatementSigner? get signer => _signer;
+  OouKeyPair? get delegateKeyPair => _delegateKeyPair;
+  Map<String, dynamic> get endpoint => _endpoint;
 }

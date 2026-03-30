@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
@@ -46,7 +45,6 @@ class SignInSession {
   Future<void> listen({
     required Function() onDone,
     Duration? timeout,
-    required ValueNotifier<bool> storeKeys,
   }) async {
     final firestore = FirebaseFirestore.instance;
 
@@ -100,7 +98,7 @@ class SignInSession {
         nerdsterKeyPair = await crypto.parseKeyPair(delegateJson!);
       }
 
-      await signInUiHelper(oneofusPublicKey, nerdsterKeyPair, storeKeys.value,
+      await signInUiHelper(oneofusPublicKey, nerdsterKeyPair,
           endpoint: fedKey.endpoint);
     });
   }
