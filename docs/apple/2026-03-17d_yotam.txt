@@ -1,0 +1,65 @@
+1. What is the purpose of your app?
+
+The Nerdster is a demo and reference implementation of the ONE-OF-US.NET paradigm (described in Q4).
+It is a content rating and discovery app that leverages your decentralized identity network from
+your own (or others') Point of View.
+
+Available as a web app at https://nerdster.org. Docs and a demo video at https://one-of-us.net/.
+
+2. What are the primary features of your app?
+
+- Rate, submit, and comment on content (movies, articles, links, etc.).
+- Follow people for different contexts (e.g. family, social) within your identity network.
+- View content aggregated from your Point of View: only content your trusted network endorses surfaces to you.
+- Sign in via the ONE-OF-US.NET identity app, which issues a service-specific delegate key to the
+  Nerdster without ever sharing your identity key with it (see Q4).
+
+Everything you do on the Nerdster publishes a statement cryptographically signed by your delegate
+key, readable by any other service you sign in to with your public identity key.
+
+Sign-in works in two ways:
+- Different device (desktop/iPad + phone): Scan the Nerdster's QR code with the ONE-OF-US.NET app.
+  The app creates and publishes a delegate key pair linked to your identity, then sends it to the Nerdster.
+- Same device (iPhone): Tap a magic link on the sign-in screen, which opens the ONE-OF-US.NET app
+  to complete the same flow and returns you to the Nerdster.
+
+3. How does your app benefit the general public audience?
+
+Your real-world trust network already exists. ONE-OF-US.NET writes it down cryptographically,
+making it portable across services rather than locked in any silo. The Nerdster lets you leverage
+that network: you see content endorsed by people you trust, not what an algorithm wants you to see.
+No platform owns your identity or your ratings.
+
+4. What is the ONE-OF-US.NET paradigm?
+
+ONE-OF-US.NET is a decentralized identity paradigm. The phone app is your identity wallet: it
+holds your key pair and lets you sign and publish statements — vouching for others ("This key
+represents a person who is human, capable, and acting in good faith") or delegating to a service
+("this delegate key represents me on nerdster.org"). Signed statements are published to the cloud
+and verifiable by anyone. No central authority owns or controls them. The paradigm is
+heterogeneous and non-proprietary: any service can participate.
+
+---
+
+Regarding sign-in: an earlier review flagged that the app requires a separate identity app to sign
+in. I added a "bootstrap" mode to address this, but I would like to remove it — it undermines the
+paradigm. Instead, I rely on a hidden copy/paste option (tap "Sign in using:" 7 times) for
+reviewers without the ONE-OF-US.NET app. You can use it by pasting the following into the sign-in
+area:
+
+{
+    "nerdster.org": {
+        "crv": "Ed25519",
+        "d": "aqQQ8Uemm29IuP52iofBexLH4C5KKXDpXps7_45M",
+        "kty": "OKP",
+        "x": "20c1w0tGrdwZgpVOA9S9AfCs9MQBBRVuOiNxYg7vO4A"
+    },
+    "identity": {
+        "crv": "Ed25519",
+        "kty": "OKP",
+        "x": "HK8iy7bH8ccq8zXxaKCeZxoZad7_4Y-7UIJn7UfJNvE"
+    }
+}
+
+This signs you in as someone who has vouched for a demo identity (Lisa Simpson). You can then rate
+content, follow people, etc. If removing bootstrap mode is acceptable, I will ship that version.

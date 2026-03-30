@@ -1,0 +1,7 @@
+Guideline 2.1 - Information Needed
+
+We need more information to continue the review. Provide detailed answers to:
+1. What is the purpose of your app?
+2. What are the primary features of your app?
+3. How does your app benefit the general public audience?
+4. Explain what is ONE-OF-US.NET paradigm?

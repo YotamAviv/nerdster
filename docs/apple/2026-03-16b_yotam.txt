@@ -1,0 +1,2 @@
+Thank you for the review. I've fixed the bug.
+The Sign In Dialog should now always be visible unless the user is signed in with an identity using the ONE-OF-US.NET app or is in the "bootstrap" mode with an orange key displayed.

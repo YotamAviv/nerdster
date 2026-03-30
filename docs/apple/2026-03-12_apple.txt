@@ -1,0 +1,25 @@
+Hello,
+The issues we previously identified still need your attention.
+If you have any questions, we are here to help. Reply to this message in App Store Connect and let us know.
+
+Review Environment
+- Submission ID: 63d8e334-654c-4122-a5a9-2f7eb0d7d778
+- Review date: March 12, 2026
+- Review Device: iPad Air 11-inch (M3)
+- Version reviewed: 1.1.7
+
+Guideline 2.3.10 - Performance - Accurate Metadata
+
+Issue Description
+The app or metadata includes information about third-party platforms that may not be relevant for App Store users, who are focused on experiences offered by the app itself.
+
+Next Steps
+Revise the app's binary and screenshots to remove Android references. Revised screenshots should accurately reflect the app in use on the supported devices and highlight the app's main features in the majority of the screenshots. Note some screenshots may only be viewed and updated by selecting "View All Sizes in Media Manager" in the Previews and Screenshots section of App Store Connect.
+
+Guideline 4.2.3(i) - Design - Minimum Functionality
+
+Issue Description
+We were still required to install ONE-OF-US.NET before we could use the app. Apps should be able to run on launch, without requiring additional apps to be installed.
+
+Next Steps
+To resolve this issue, please revise the app to ensure that users can use it upon launch. If the app requires authentication before use, please use methods that can authenticate users from within the app.

@@ -38,6 +38,8 @@ dependencies:
   web: ^1.1.1
   float_column: ^4.0.3
   app_links: ^6.4.1
+  share_plus: ^10.0.3
+
 
 dev_dependencies:
   flutter_test:

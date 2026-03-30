@@ -380,8 +380,8 @@ class _SignInDialogState extends State<SignInDialog> {
                 _buildListButton(
                   icon: Icons.visibility,
                   leadingWidget: Image.asset('assets/images/nerd.png', width: 24, height: 24),
-                  label: 'Preview without an account',
-                  subtitle: 'Enter the Nerdster',
+                  label: 'Enter the Nerdster',
+                  subtitle: 'Preview without your own identity',
                   onPressed: _signInAsDev,
                   recommended: false,
                 ),
@@ -397,7 +397,44 @@ class _SignInDialogState extends State<SignInDialog> {
                   )
                 ],
                 const SizedBox(height: 8),
+                if (!kIsWeb)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        children: [
+                          const TextSpan(text: 'By signing in, you agree to our '),
+                          TextSpan(
+                            text: 'Terms of Service',
+                            style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => launchUrl(
+                                  Uri.parse('https://nerdster.org/terms.html'),
+                                  mode: LaunchMode.externalApplication),
+                          ),
+                          const TextSpan(text: ' and '),
+                          TextSpan(
+                            text: 'Safety Policy',
+                            style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => launchUrl(
+                                  Uri.parse('https://nerdster.org/safety.html'),
+                                  mode: LaunchMode.externalApplication),
+                          ),
+                          const TextSpan(text: '.'),
+                        ],
+                      ),
+                    ),
+                  ),
                 Row(
+
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     if (hasDelegate)

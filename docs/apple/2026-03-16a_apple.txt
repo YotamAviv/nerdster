@@ -1,0 +1,13 @@
+Hello,
+
+Guideline 2.1(a) - Performance - App Completeness
+
+Issue Description
+The app exhibited one or more bugs that would negatively impact users.
+
+Bug description: your app repeatedly exits out of login screen when we tapped on the key icon.
+
+Review device details:
+- Device type: iPad Air 11-inch (M3)
+- OS version: iPadOS 26.3
+- Internet Connection: Active

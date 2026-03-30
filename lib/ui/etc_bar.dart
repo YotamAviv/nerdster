@@ -1,15 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nerdster/about.dart';
 import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/nerdster_link.dart';
-import 'package:nerdster/ui/util/alert.dart'; // For alert dialog
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
-import 'package:nerdster/logic/feed_controller.dart'; // Add
+import 'package:nerdster/logic/feed_controller.dart';
+import 'package:share_plus/share_plus.dart';
 
 class EtcBar extends StatelessWidget {
   final Widget notifications;
@@ -46,19 +47,11 @@ class EtcBar extends StatelessWidget {
                     child: IconButton(
                       icon: const Icon(Icons.share),
                       onPressed: () async {
-                        String link = generateLink();
-                        final result = await alert(
-                            'Nerdster link',
-                            '''Share, bookmark, or embed with your current settings (PoV, follow context, tags, sort, type, etc...):\n$link''',
-                            ['Copy', 'Okay'],
-                            context);
-                        if (result == 'Copy') {
-                          await Clipboard.setData(ClipboardData(text: link));
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Link copied to clipboard')),
-                            );
-                          }
+                        final String link = generateLink();
+                        if (kIsWeb) {
+                          _showWebShareDialog(context, link);
+                        } else {
+                          await Share.share(link, subject: 'Nerdster view link');
                         }
                       },
                     ),
@@ -198,4 +191,63 @@ class EtcBar extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showWebShareDialog(BuildContext context, String link) {
+  showDialog(
+    context: context,
+    builder: (ctx) {
+      bool copied = false;
+      return StatefulBuilder(builder: (context, setState) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.link, size: 20),
+              SizedBox(width: 8),
+              Text('Share link', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Share with your current settings (PoV, tags, sort, etc.):',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(6),
+                  color: Colors.grey.shade50,
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: SelectableText(
+                  link,
+                  style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                  maxLines: 4,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+            FilledButton.icon(
+              icon: Icon(copied ? Icons.check : Icons.copy, size: 16),
+              label: Text(copied ? 'Copied!' : 'Copy link'),
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: link));
+                setState(() => copied = true);
+              },
+            ),
+          ],
+        );
+      });
+    },
+  );
 }

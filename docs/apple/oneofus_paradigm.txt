@@ -1,0 +1,6 @@
+ONE-OF-US.NET is a decentralized identity paradigm. The phone app is your identity wallet: it
+holds your key pair and lets you sign and publish statements — vouching for others ("This key
+represents a person who is human, capable, and acting in good faith") or delegating to a service
+("this delegate key represents me on nerdster.org"). Signed statements are published to the cloud
+and verifiable by anyone. No central authority owns or controls them. The paradigm is
+heterogeneous and non-proprietary: any service can participate.

@@ -1,0 +1,12 @@
+Guideline 1.2 - Safety - User-Generated Content
+
+Issue Description
+We found in our review that the app includes user-generated content but does not have all the required precautions.
+
+Next Steps
+Implement the following:
+- Require that users agree to terms (EULA) making it clear there is no tolerance for objectionable content.
+- A method for filtering objectionable content.
+- A mechanism for users to flag objectionable content.
+- A mechanism for users to block abusive users (notifying the developer and removing content instantly).
+- Developer must act within 24 hours by removing content and ejecting the offending user.

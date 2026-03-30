@@ -1,0 +1,9 @@
+Hello,
+The issues we previously identified still need your attention.
+
+Guideline 2.1(a) - Performance - App Completeness
+
+Issue Description
+The app exhibited one or more bugs that would negatively impact users.
+
+Bug description: we are unable to access the Sign in feature. When tapped on the "key icon" the app would automatically exit this feature before we could access the Sign In.

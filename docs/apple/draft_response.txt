@@ -1,0 +1,41 @@
+Thank you for the continued review. I am writing to address Guideline 1.2 — Safety — User-Generated Content.
+
+---
+
+**Terms of Use**
+
+The Nerdster now has a Terms of Service at https://nerdster.org/terms.html (linked from the in-app About dialog) that states users must not post objectionable content. A Safety & Content Policy is at https://nerdster.org/safety.html specifying prohibited content categories.
+
+---
+
+**How the Nerdster handles objectionable content — a different approach**
+
+The Nerdster is not a traditional social network. It implements what I call *decentralized moderation*, which I believe is meaningfully stronger than centralized moderation for this use case.
+
+**Decentralized censorship (content filtering)**
+
+Every piece of content in the Nerdster has a Censor button. When a user taps it, that content disappears from their view immediately and permanently. Importantly, because the Nerdster aggregates content from your *follow network*, when someone you follow censors content, it is also suppressed in your view automatically. You do not need to encounter it yourself to have it filtered. Content users censor is *gone immediately* — no delay, no moderation queue.
+
+**Blocking abusive users**
+
+Users can block any person in the Nerdster. A blocked person's content no longer appears for the user who blocked them. Because trust is propagated through the network, if people in your circle block someone, that person is likely removed from your view as well.
+
+**Identity-level blocking**
+
+This is where the ONE-OF-US.NET paradigm provides a second, stronger layer. The ONE-OF-US.NET app lets anyone in the network revoke trust for an identity — marking them as a "bot, spammer, bad actor, careless, confused." The Nerdster only surfaces content from people your network recognizes as "human, capable, acting in good faith." An identity that loses network trust loses visibility across *all* Nerdster users, not just the ones who individually blocked them.
+
+**Reporting to the developer**
+
+Users can report abuse to report@nerdster.org. I commit to reviewing reports and acting on them promptly.
+
+---
+
+**On the nature of this app's content**
+
+Unlike TikTok or Instagram, where you see content from strangers, the Nerdster only shows you content from people you, or someone you trust, has explicitly vouched for. You always know who posted what — there is a cryptographic signature chain to every piece of content. A stranger cannot post content that reaches you. This fundamentally limits the surface area for objectionable content compared to traditional platforms.
+
+---
+
+I believe the combination of immediate user-controlled censorship, network-propagated blocking, identity-level trust filtering, and a reporting contact satisfies the spirit of Guideline 1.2. I hope this explanation clarifies the design.
+
+Thank you for your time.

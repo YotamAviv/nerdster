@@ -1,0 +1,35 @@
+I apologize for the back-and-forth.
+
+Two separate issues were raised:
+
+1. References to Android and other platforms.
+
+This app has been and remains available as a web app at https://nerdster.org. It works better as a native app. My initial attempt at a native iPhone app inadvertently left in references to Android and other devices — that was my mistake. I believe I've remedied that. Please let me know if I missed something.
+
+2. The app cannot be meaningfully used without signing in via a separate identity app such as ONE-OF-US.NET.
+
+Both apps (the Nerdster and the ONE-OF-US.NET identity app) promote a new paradigm that lets people use a decentralized identity network in any service without granting that service access to the keys they use to build their identity network.
+
+This is quite different from, say:
+- TikTok, where you can just download the app and see content.
+- Websites that display content "Just for you" with no knowledge of who you are.
+
+The Nerdster is meant to show you only content you trust, from your own point of view. It cannot do this without knowing who you are. Services like the Nerdster cannot hold your private identity key or build your identity network — that is the whole point. People build segments of the identity network using an identity app that does hold their private key, and they identify themselves to the Nerdster by providing:
+- their public identity key, and
+- (optionally) a designated/disposable public-private "delegate" key pair, signed by their identity app to certify that the delegate key represents them authentically on the Nerdster.
+
+An earlier review requested that the Nerdster show content without requiring sign-in via a separate app, so I added a "bootstrap" feature. This allows a user to start out using my (Yotam Aviv's) network until they use an identity app to establish their own. I am not fond of this feature and added it solely to satisfy the review process. If you don't like it either, I am happy to remove it.
+
+I am not sure whether the concern is with the Nerdster concept as a whole, or specifically that the sign-in dialog can be dismissed by clicking outside it. I believe the app currently works as intended.
+
+You can be signed in one of three ways:
+- With your public identity key and a delegate key pair for the Nerdster — indicated by a blue key in the top left.
+- With your public identity key only — indicated by a green key in the top left.
+- Via the "bootstrap" feature, leveraging my (Yotam Aviv's) network instead of your own — indicated by an orange key in the top left. You can start with this and later "graduate" to your own identity key, keeping the Nerdster delegate key you started with. While in bootstrap mode, your content is visible only to you (because I'm temporarily in your network but you're not in anyone's network).
+
+Regarding dismissal of the sign-in dialog:
+- If you are not signed in, the dialog cannot be dismissed.
+- If you are signed in, it can be dismissed either via the dismiss button or by clicking outside it.
+
+Please advise how I should proceed as I would like to have this available as a native app on iPhones.
+Thank you!
