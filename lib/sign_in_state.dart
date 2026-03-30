@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/keys.dart' show FedKey, kNativeEndpoint;
 import 'package:oneofus_common/oou_signer.dart';
-import 'package:nerdster/singletons.dart';
 
 /// This class tracks the sign-in state of the user using 3 main variables:
 /// - identity (an identity key token)
