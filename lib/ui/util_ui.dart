@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -8,17 +7,11 @@ final Color linkColorDisabled = Colors.blue.shade200;
 const TextStyle hintStyle = TextStyle(color: Colors.black26);
 const TextStyle linkStyle = TextStyle(color: linkColor, decoration: TextDecoration.underline);
 
-/// Launch a URL in a way that is never intercepted by the app's own App Link
-/// filter (https://nerdster.org). On Android we use inAppWebView (a raw
-/// Flutter WebView) because Chrome Custom Tabs still route through Chrome's
-/// App Link logic and may redirect back to the app. iOS and web use the
-/// standard external browser.
+/// Launch a URL in the external browser. App Link interception for
+/// nerdster.org is no longer an issue since the App Link filter is
+/// restricted to /app paths only.
 Future<void> myLaunchUrl(String url) async {
-  final uri = Uri.parse(url);
-  final mode = (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
-      ? LaunchMode.inAppWebView
-      : LaunchMode.externalApplication;
-  await launchUrl(uri, mode: mode);
+  await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
 }
 
 const kPadding = EdgeInsets.all(4);

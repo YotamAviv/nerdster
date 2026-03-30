@@ -44,8 +44,12 @@
     ],
     "rewrites": [
       {
-        "source": "**",
-        "destination": "/index.html"
+        "source": "/app",
+        "destination": "/app/index.html"
+      },
+      {
+        "source": "/app/**",
+        "destination": "/app/index.html"
       }
     ]
   },

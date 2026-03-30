@@ -16,7 +16,7 @@ String generateLink() {
   Prefs.setParams(params);
   // On web: Uri.base preserves the current host (localhost for emulator, nerdster.org for prod).
   // On native (iOS/Android): Uri.base is file:/// — use nerdster.org explicitly.
-  final Uri baseUri = kIsWeb ? Uri.base : Uri.parse('https://nerdster.org/');
+  final Uri baseUri = kIsWeb ? Uri.base : Uri.parse('https://nerdster.org/app');
   Uri uri = baseUri.replace(queryParameters: params);
   return uri.toString();
 }

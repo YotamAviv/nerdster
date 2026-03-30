@@ -13,8 +13,7 @@
       {
         "appIDs": ["PG2Q5QYA2W.org.nerdster.app"],
         "components": [
-          { "/": "/*", "?": { "*": true }, "comment": "Match all paths with any query params" },
-          { "/": "/*", "comment": "Match all paths without query params" }
+          { "/": "/app*", "comment": "Match /app and /app/* only" }
         ]
       }
     ]

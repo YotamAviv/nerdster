@@ -11,14 +11,15 @@
  * Start servers from each project root:
  *
  * From the Nerdster project root:
- *   - flutter build web
+ *   - flutter build web --base-href /app/
+ *   - (restructure build output so app is under build/web/app/)
  *   - python3 -m http.server 8765 --directory build/web
  *
  * From the OneOfUs project root:
  *   - python3 -m http.server 8766 --directory web
  *
  * Then open:
- *   Nerdster:  http://localhost:8765/home.html?fire=emulator
+ *   Nerdster:  http://localhost:8765/app?fire=emulator
  *   OneOfUs:   http://localhost:8766/index.html?fire=emulator
  */
 
@@ -30,6 +31,9 @@
   const ONEOFUS_DEV_PORT = 8766;
 
   const NERDSTER_PROD_ORIGIN = "https://nerdster.org";
+
+  /** Path where the Nerdster Flutter app is served (prod and dev). */
+  const NERDSTER_APP_PATH = "/app";
 
   /**
    * Returns true if running on a local dev host (localhost or IP address).
@@ -70,7 +74,9 @@
       }
     }
 
-    let url = search ? `${base}${search}` : `${base}/`;
+    let url = search
+      ? `${base}${NERDSTER_APP_PATH}${search}`
+      : `${base}${NERDSTER_APP_PATH}`;
 
     const extra = Object.entries(params)
       .filter(([, v]) => v !== undefined && v !== null)
