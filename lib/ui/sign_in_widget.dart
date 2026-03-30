@@ -10,7 +10,6 @@ import 'package:flutter/services.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/key_storage_coordinator.dart';
-import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
@@ -506,14 +505,8 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                         icon: const Icon(Icons.logout),
                         label: const Text('Sign out'),
                         style: TextButton.styleFrom(foregroundColor: Colors.red),
-                        onPressed: () async {
+                        onPressed: () {
                           signInState.signOut(clearIdentity: false);
-                          if (storeKeys.value) {
-                            // Store identity only (delegate cleared by signOut above)
-                            await signInState.storeCurrentKeys();
-                          } else {
-                            await KeyStore.wipeKeys();
-                          }
                         },
                       )
                     else if (hasIdentity)
@@ -521,8 +514,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                         icon: const Icon(Icons.person_remove_outlined),
                         label: const Text('Forget identity'),
                         style: TextButton.styleFrom(foregroundColor: Colors.red),
-                        onPressed: () async {
-                          await KeyStore.wipeKeys();
+                        onPressed: () {
                           signInState.signOut(clearIdentity: true);
                         },
                       ),

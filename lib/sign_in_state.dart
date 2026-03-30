@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
-import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/keys.dart' show FedKey, kNativeEndpoint;
 import 'package:oneofus_common/oou_signer.dart';
@@ -127,18 +125,6 @@ class SignInState with ChangeNotifier {
     _delegateKeyPair = null;
 
     notifyListeners();
-  }
-
-  /// Stores (or wipes) persistent key storage to match the current in-memory state.
-  /// Call this when the user checks/unchecks "Store keys" after already being signed in.
-  Future<void> storeCurrentKeys() async {
-    if (!isSignedIn) {
-      await KeyStore.wipeKeys();
-      return;
-    }
-    final OouPublicKey identityPublicKey =
-        await crypto.parsePublicKey(Jsonish.find(_identity!)!.json);
-    await KeyStore.storeKeys(identityPublicKey, _delegateKeyPair, endpoint: _endpoint);
   }
 
   // inputs
