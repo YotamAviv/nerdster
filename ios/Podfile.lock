@@ -1200,7 +1200,7 @@ PODS:
     - Firebase/Firestore (= 12.9.0)
     - firebase_core
     - Flutter
-  - cloud_functions (6.1.0):
+  - cloud_functions (6.0.7):
     - Firebase/Functions (= 12.9.0)
     - firebase_core
     - Flutter
@@ -1369,6 +1369,8 @@ PODS:
   - nanopb/encode (3.30910.0)
   - package_info_plus (0.4.5):
     - Flutter
+  - share_plus (0.0.1):
+    - Flutter
   - url_launcher_ios (0.0.1):
     - Flutter
 
@@ -1381,6 +1383,7 @@ DEPENDENCIES:
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
+  - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
@@ -1422,6 +1425,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
+  share_plus:
+    :path: ".symlinks/plugins/share_plus/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
@@ -1430,7 +1435,7 @@ SPEC CHECKSUMS:
   app_links: 585674be3c6661708e6cd794ab4f39fb9d8356f9
   BoringSSL-GRPC: dded2a44897e45f28f08ae87a55ee4bcd19bc508
   cloud_firestore: 90c4f245978a00fdfba814984b699890dd140d70
-  cloud_functions: a0f62dde76c707396d7f25bbdb869589cf16ff06
+  cloud_functions: 776390f184b021fcf87c028fac5487d2dec6abfe
   Firebase: 065f2bb395062046623036d8e6dc857bc2521d56
   firebase_core: 98bcc1bd1a097bcb8b1ed6e091de3039802527c4
   FirebaseAppCheckInterop: 4bade10286cc977e516f75d2d8312cbdfa534789
@@ -1453,6 +1458,7 @@ SPEC CHECKSUMS:
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
+  share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
   url_launcher_ios: bb13df5870e8c4234ca12609d04010a21be43dfa
 
 PODFILE CHECKSUM: 9580a49fa2c095d51100c20f258df867100b916b
