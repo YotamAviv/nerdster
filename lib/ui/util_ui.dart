@@ -8,13 +8,15 @@ final Color linkColorDisabled = Colors.blue.shade200;
 const TextStyle hintStyle = TextStyle(color: Colors.black26);
 const TextStyle linkStyle = TextStyle(color: linkColor, decoration: TextDecoration.underline);
 
-/// Launch a URL using Chrome Custom Tabs on Android (to avoid App Link
-/// interception on self-verified domains like nerdster.org) and the external
-/// browser on iOS/web.
+/// Launch a URL in a way that is never intercepted by the app's own App Link
+/// filter (https://nerdster.org). On Android we use inAppWebView (a raw
+/// Flutter WebView) because Chrome Custom Tabs still route through Chrome's
+/// App Link logic and may redirect back to the app. iOS and web use the
+/// standard external browser.
 Future<void> myLaunchUrl(String url) async {
   final uri = Uri.parse(url);
   final mode = (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
-      ? LaunchMode.inAppBrowserView
+      ? LaunchMode.inAppWebView
       : LaunchMode.externalApplication;
   await launchUrl(uri, mode: mode);
 }
