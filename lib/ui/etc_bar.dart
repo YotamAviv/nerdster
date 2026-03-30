@@ -51,7 +51,16 @@ class EtcBar extends StatelessWidget {
                         if (kIsWeb) {
                           _showWebShareDialog(context, link);
                         } else {
-                          await Share.share(link, subject: 'Nerdster view link');
+                          try {
+                            // shareUri() is the correct API for URLs and works
+                            // more reliably than share() on iOS (share_plus v10+).
+                            await Share.shareUri(Uri.parse(link));
+                          } catch (_) {
+                            // Fallback to the copy dialog if native share fails.
+                            if (context.mounted) {
+                              _showWebShareDialog(context, link);
+                            }
+                          }
                         }
                       },
                     ),
@@ -241,8 +250,20 @@ void _showWebShareDialog(BuildContext context, String link) {
               icon: Icon(copied ? Icons.check : Icons.copy, size: 16),
               label: Text(copied ? 'Copied!' : 'Copy link'),
               onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: link));
-                setState(() => copied = true);
+                try {
+                  await Clipboard.setData(ClipboardData(text: link));
+                  setState(() => copied = true);
+                } catch (_) {
+                  // Clipboard write denied (common on Android Chrome).
+                  // The link text above is selectable — long-press to copy.
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      const SnackBar(
+                        content: Text('Could not copy — long-press the link to copy manually.'),
+                      ),
+                    );
+                  }
+                }
               },
             ),
           ],
