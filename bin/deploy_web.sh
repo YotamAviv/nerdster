@@ -22,7 +22,7 @@ restructure_web
 
 echo ""
 echo "=== Deploying to Firebase Hosting ==="
-firebase deploy --only hosting
+firebase deploy --only hosting --project=nerdster
 
 echo ""
 echo "=== Done ==="
