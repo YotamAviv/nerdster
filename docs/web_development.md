@@ -58,7 +58,7 @@ python3 -m http.server 8766 --directory web
 | URL | What you get |
 |-----|-------------|
 | `http://localhost:8765/app?fire=emulator` | Nerdster Flutter app |
-| `http://localhost:8765/` | Nerdster home page |
+| `http://localhost:8765/?fire=emulator` | Nerdster home page |
 | `http://localhost:8766/index.html?fire=emulator` | OneOfUs website |
 
 > **Note:** `serve_web.sh` does a full `flutter build web` each time (~30s).
