@@ -1,0 +1,39 @@
+[
+  {
+    "url": "https://www.imdb.com/title/tt0133093/",
+    "expectedContentType": "movie",
+    "expectedTitle": "The Matrix",
+    "expectedYear": "1999",
+    "expectSuccess": false,
+    "note": "IMDb blocks direct HTTP and cloud function fetches (bot detection) — unreliable"
+  },
+  {
+    "url": "https://www.goodreads.com/book/show/131791.The_Deer_Park",
+    "expectedContentType": "book",
+    "expectedTitle": "The Deer Park",
+    "expectedAuthor": "Norman Mailer",
+    "expectSuccess": true,
+    "note": "Goodreads book page"
+  },
+  {
+    "url": "https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html",
+    "expectedContentType": "article",
+    "expectedTitle": "Trump Sought Vast Budget Cuts",
+    "expectSuccess": true,
+    "note": "NYT article - known to require robust fallback"
+  },
+  {
+    "url": "https://stackoverflow.com/questions/79891300/ionic-angular-routing-url-changing-but-not-the-display",
+    "expectedContentType": "article",
+    "expectedTitle": "Ionic",
+    "expectSuccess": false,
+    "note": "Stack Overflow - known to be unreliable in test environment"
+  },
+  {
+    "url": "https://www.youtube.com/shorts/NsMKvVdEPkw",
+    "expectedContentType": "video",
+    "expectedTitle": "Kitten",
+    "expectSuccess": true,
+    "note": "YouTube Shorts - uses oEmbed API directly on native (bypasses cloud function), works from any IP"
+  }
+]
