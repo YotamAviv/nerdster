@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nerdster/main.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/dev/demo_setup.dart';
 import 'package:nerdster/demotest/demo_key.dart';
@@ -21,6 +22,7 @@ class Menus {
       String name = e.key;
       demos.add(MenuItemButton(
           onPressed: () async {
+            if (fireChoice == FireChoice.prod) throw 'not on production';
             demo = name;
             DemoKey.reset();
             DemoKey oneofus;
