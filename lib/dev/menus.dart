@@ -11,6 +11,7 @@ import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/dev/sign_in_menu.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster/dev/test_runner_screen.dart' as nerdster_test_runner;
 
 const iconSpacer = SizedBox(width: 3);
 
@@ -72,7 +73,14 @@ class Menus {
                 Jsonish(povJson);
               },
               child: const Text('Refresh Jsonish cache')),
-          SubmenuButton(menuChildren: [], child: const Text('Scenarios')),
+          SubmenuButton(menuChildren: [
+            MenuItemButton(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => const nerdster_test_runner.TestRunnerScreen()));
+              },
+              child: const Text('Run Integration Scenarios'),
+            ),
+          ], child: const Text('Scenarios')),
           SubmenuButton(menuChildren: [
             MenuItemButton(
                 onPressed: DemoKey.dumpDemoCredentials, child: const Text('dumpDemoCredentials')),

@@ -20,6 +20,8 @@ import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
+import 'package:nerdster/dev/headless_runner.dart';
+import 'package:nerdster/dev/test_runner_screen.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/fire_util.dart';
@@ -136,9 +138,12 @@ Future<void> main() async {
   // Gemini: Use runWidget with a View wrapper to support multi-view mode (e.g. embedding in iframes)
   // and avoid "Bad state: The app requested a view, but the platform did not provide one" errors.
   // This explicitly provides the view from PlatformDispatcher.
+  const bool autoRunTests = bool.fromEnvironment('AUTORUN_TESTS', defaultValue: false);
+  const bool headlessTest = bool.fromEnvironment('HEADLESS_TEST', defaultValue: false);
+  
   runWidget(View(
     view: ui.PlatformDispatcher.instance.views.first,
-    child: const NerdsterApp(),
+    child: headlessTest ? const HeadlessRunner() : (autoRunTests ? const TestRunnerScreen() : const NerdsterApp()),
   ));
 
   // Handle deep links arriving while the app is already running.
