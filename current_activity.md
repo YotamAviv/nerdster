@@ -3,22 +3,58 @@ AI Agent: Do not visit this file without invitation
 
 # Current Activity:
 
-Typical through the app:
-green / blue - identity / delegate key
-solid / outline: have private key, have public key only
 
-Sign in:
-- if we don't have identity, then the sign in dialog must be up. Dismiss should be disabled
-- sign out means drop the delegate key
-  If the user signs out, let him see that he still has an identity key and don't dismiss the dialog.
-- regardless of how we sign in (scan QR, keymeid://..., paste), behavave gthe same way. when the credentials are receieved
-  - show the "throw" key animatino for the appropriate key(s) (identity or both idenitty delegate)
-  - laeve the dialog up
 
-Clarity:
-Add text above the buttons that these are ways to sign in.
-Make the 2 keys smaller and add text describing them and whether or not we have them.
 
+I think that the associations are working fairly well now
+Android app:
+- https://one-of-us.net/ : YES
+- keymeid:// : YES
+iOS app:
+- https://one-of-us.net/ : YES
+- keymeid:// : YES
+Chrome on Android
+- https://one-of-us.net/ : YES
+- keymeid:// : YES
+Firefox on Android
+- https://one-of-us.net/ : YES
+- keymeid:// : YES
+Chrome on iOS
+- https://one-of-us.net/ : YES
+- keymeid:// : YES
+Safari on iOS
+- https://one-of-us.net/ : YES
+- keymeid:// : NO
+
+Let me know if these are known if you have any knowlege beyond this.
+
+--------------------
+From Clacker:
+Your breakdown aligns perfectly with how modern browsers handle deep linking, but there are a few important nuances worth noting beyond your list:
+
+Safari on iOS does support keymeid://, BUT only if the app is installed: If the identity app is actually installed on the iPhone, Safari will prompt "Open in [App Name]?". The reason it's a hard "NO" in practice is that if the app is NOT installed, Safari fails aggressively with a jarring error dialogue: "Safari cannot open the page because the address is invalid". There is no graceful fallback.
+Chrome/Firefox on iOS are just Safari underneath: Because Apple forces all iOS browsers to use the Safari WKWebView engine, keymeid:// usually fails in the exact same jarring way on iOS Chrome if the app isn't installed. If you saw a "YES" for Chrome on iOS, it's likely because the app was already installed on that specific test device, or Chrome intercepted the uninstalled error slightly more gracefully than Safari's terrifying popup.
+Android's graceful fallback: Chrome and Firefox on Android support custom schemes so well because Android uses intent:// URIs under the hood. If the app isn't installed, Android can smoothly redirect to the Play Store or a fallback URL without an ugly error. Apple has no equivalent mechanism for custom schemes—only for Universal Links.
+Desktop Browsers (Windows/Mac/Linux): You didn't list desktop, but it's worth noting that keymeid:// will fail completely (or do absolutely nothing) on desktop web browsers unless the user happens to have a desktop wallet installed that registered that specific OS-level protocol.
+Summary for your UI logic: Apple has essentially killed relying on custom URI schemes (keymeid://) on iOS Web specifically because of that uninstalled error popup. Universal Links (https://one-of-us.net/) are the only way to get a bulletproof, graceful fallback on iOS Safari.
+
+If you want to hide the https option to emphasize the open scheme:
+
+On Android (Native & Web) / iOS (Native): Safe to hide the https link and exclusively show keymeid://.
+On Desktop Web: You probably still need the https link, as keymeid:// will be a dead click for 99% of desktop users.
+On iOS Web (Safari/Chrome): You must use the https Universal Link to avoid the Safari error bomb if they don't have an app installed.
+
+--------------------
+
+When we know the platform and know that keymeid:// hide the https://one-of-us.net/ from the SignInDialog.
+
+
+- Hide https://one-of-us.net/ sign in option as the goal is *open* and *heterogeneous*.
+
+- If the user clicks 7 times to reveal the Paste option, then also un-hide the https://one-of-us.net/ option if it was hidden.
+
+- Add a timeout so that if we're trying to sign in and don't receive (through the Firebase collection we're listening to) a response from the app within 5 seconds, show an explanation dialog and also show the https://one-of-us.net/ option if it was previously hidden.
+- Add a web page on the https://one-of-us.net/ site if we ended up on the web site because the app wasn't installed explaining the situation, offering the keymeid:// URI to copy and paste, and offering a link to the app store.
 
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
