@@ -155,6 +155,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
   int _headingTapCount = 0;
   bool _showPaste = false;
   bool _prevHasIdentity = false;
+  bool _timeoutFired = false;
   late AnimationController _xPulseController;
   late Animation<double> _xPulseScale;
 
@@ -407,9 +408,8 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                     ),
                   ),
                 ),
-                if (isIOS) ...[buildUniversalBtn(true), buildCustomBtn(false)],
-                if (isAndroid) ...[buildCustomBtn(true), buildUniversalBtn(false)],
-                if (!isIOS && !isAndroid) ...[buildCustomBtn(false), buildUniversalBtn(false)],
+                buildCustomBtn(true),
+                if (_showPaste || _timeoutFired) buildUniversalBtn(false),
 
                 const SizedBox(height: 8),
 
@@ -667,6 +667,13 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
             useUniversalLink: useUniversalLink,
             autoLaunch: autoLaunch,
             onCancel: () {},
+            onTimeout: () {
+              if (mounted) {
+                setState(() {
+                  _timeoutFired = true;
+                });
+              }
+            },
             onSuccess: () {
               Navigator.of(dialogContext).pop();
               completer.complete();
@@ -680,6 +687,7 @@ class MagicLinkDialog extends StatefulWidget {
   final Future<SignInSession> sessionFuture;
   final VoidCallback onCancel;
   final VoidCallback onSuccess;
+  final VoidCallback? onTimeout;
   final bool useUniversalLink;
   final bool autoLaunch;
 
@@ -688,6 +696,7 @@ class MagicLinkDialog extends StatefulWidget {
     required this.sessionFuture,
     required this.onCancel,
     required this.onSuccess,
+    this.onTimeout,
     this.useUniversalLink = false,
     this.autoLaunch = true,
   });
@@ -698,11 +707,20 @@ class MagicLinkDialog extends StatefulWidget {
 
 class _MagicLinkDialogState extends State<MagicLinkDialog> {
   SignInSession? _session;
+  Timer? _timer;
+  bool _showExplanation = false;
 
   @override
   void initState() {
     super.initState();
     _initSession();
+    _timer = Timer(const Duration(seconds: 10), () {
+      if (!mounted) return;
+      setState(() {
+        _showExplanation = true;
+      });
+      widget.onTimeout?.call();
+    });
   }
 
   Future<void> _initSession() async {
@@ -735,6 +753,7 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     _session?.cancel();
     super.dispose();
   }
@@ -748,8 +767,74 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
+            if (!_showExplanation) ...[
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+            ] else ...[
+              const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                "Waiting for identity app response... If nothing is happening:",
+                textAlign: TextAlign.left,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Make sure you have the ONE-OF-US.NET identity app installed on this device",
+                textAlign: TextAlign.left,
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (defaultTargetPlatform == TargetPlatform.iOS)
+                    InkWell(
+                      onTap: () => launchUrl(Uri.parse('https://apps.apple.com/us/app/one-of-us/id6739090070'), mode: LaunchMode.externalApplication),
+                      child: Image.network('https://one-of-us.net/common/img/apple.webp', height: 40),
+                    ),
+                  if (defaultTargetPlatform == TargetPlatform.android)
+                    InkWell(
+                      onTap: () => launchUrl(Uri.parse('https://play.google.com/store/apps/details?id=net.oneofus.app'), mode: LaunchMode.externalApplication),
+                      child: Image.network('https://one-of-us.net/common/img/google.webp', height: 40),
+                    ),
+                  if (defaultTargetPlatform != TargetPlatform.iOS && defaultTargetPlatform != TargetPlatform.android) ...[
+                    InkWell(
+                      onTap: () => launchUrl(Uri.parse('https://apps.apple.com/us/app/one-of-us/id6739090070'), mode: LaunchMode.externalApplication),
+                      child: Image.network('https://one-of-us.net/common/img/apple.webp', height: 40),
+                    ),
+                    const SizedBox(width: 12),
+                    InkWell(
+                      onTap: () => launchUrl(Uri.parse('https://play.google.com/store/apps/details?id=net.oneofus.app'), mode: LaunchMode.externalApplication),
+                      child: Image.network('https://one-of-us.net/common/img/google.webp', height: 40),
+                    ),
+                  ]
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                "If you do have the app installed, app associations can be finicky; try this alternate link:",
+                textAlign: TextAlign.left,
+                style: TextStyle(fontSize: 14),
+              ),
+              if (_session != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 12),
+                  child: InkWell(
+                    onTap: () {
+                      final paramsJson = jsonEncode(_session!.forPhone);
+                      final base64Params = base64Url.encode(utf8.encode(paramsJson));
+                      final link = 'https://one-of-us.net/sign-in?parameters=$base64Params';
+                      launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
+                    },
+                    child: const Text(
+                      'https://one-of-us.net/...',
+                      style: TextStyle(fontSize: 14, color: Colors.blue, decoration: TextDecoration.underline),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 16),
+            ],
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
