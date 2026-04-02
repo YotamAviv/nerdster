@@ -144,6 +144,59 @@ class _SignInWidgetState extends State<SignInWidget> {
   }
 }
 
+/*
+Lingo:
+  - https://one-of-us.net/ (universal link)
+  - keymeid:// (custom URL scheme)
+
+Background:
+- I had universal link misconfigured on Android for a while.
+- I prefer custom URL schemes as they're open and heterogeneous.
+- I can show a fallback at https://one-of-us.net/sign-in, but I can't control what happens
+  when keymeid:// fails (other than timeout).
+- I don't want to confuse the user with too many options.
+- Apple demanded that there be a way to enter without another app. I don't want this to be *my* app, 
+  but I've succumbed; Enter the Nerdster! enters as me.
+- I used to try and "recommend" an option; ditching that for now (UI code in place, non recommened.)
+
+Settlement:
+- keep it simple: https://one-of-us.net/ (universal link).
+- add a +/- to show other options
+- show keymeid:// (custom URL scheme) on https://one-of-us.net/sign-in fallback page.
+
+So:
+Regardless of platform, show:
+Identity app on this device:
+  - https://one-of-us.net/ (universal link)
+Identity app on different device:
+  - Scan QR code
+No identity app: (* see "Restrictions for No identity app:" below) 
+  - Enter the Nerdster!
+
+A "+" / "-" toggle on the blue header box that says, "Use your identity app (ONE-OF-US.NET)"
+can be used to show more methods, specifically this:
+Identity app on this device:
+  - keymeid:// (custom scheme) [note that this is placed in 1'st place now.]
+  - https://one-of-us.net/ (universal link)
+Identity app on different device:
+  - Scan QR code
+No identity app: (* see "Restrictions for No identity app:" below) 
+  - Enter the Nerdster!
+
+A 10 second timeout when attempting keymeid:// (custom scheme) sign in
+should show an explanation dialog and alternate link
+and the https://one-of-us.net/ option if it was previously hidden [note that it wasn't hidden.].
+(https://one-of-us.net/sign-in should never fail as there's a web page there)
+
+Restrictions for showing No identity app:
+- only on mobile
+- only if there is currently no signed in identity (delegate not required).
+
+Clicking the blue header box 7 times (instead of the text, "Identity app on this device") 
+will show all options including
+Developers:
+- Paste keys
+*/
 class SignInDialog extends StatefulWidget {
   const SignInDialog({super.key});
 
@@ -154,6 +207,7 @@ class SignInDialog extends StatefulWidget {
 class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderStateMixin {
   int _headingTapCount = 0;
   bool _showPaste = false;
+  bool _expanded = false;
   bool _prevHasIdentity = false;
   bool _timeoutFired = false;
   late AnimationController _xPulseController;
@@ -231,6 +285,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
     final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS || forceIphone;
     final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final bool isMobile = isIOS || isAndroid;
 
     Widget buildUniversalBtn(bool recommended) {
       return FutureBuilder<SignInSession>(
@@ -349,38 +404,48 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                     identityArrived: identityArrived, delegateArrived: delegateArrived),
                 if (!hasDelegate) ...[
                   const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[200]!),
-                    ),
-                    child: RichText(
-                      text: TextSpan(
-                        style: const TextStyle(fontSize: 12, color: Colors.black87),
+                  // Blue header box with +/- toggle.
+                  // 7 taps reveals developer options.
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _headingTapCount++;
+                        if (_headingTapCount >= 7) {
+                          _showPaste = true;
+                        } else {
+                          _expanded = !_expanded;
+                        }
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue[200]!),
+                      ),
+                      child: Row(
                         children: [
-                          const TextSpan(text: 'Use your '),
-                          const TextSpan(
-                            text: 'Identity App',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: const TextStyle(fontSize: 12, color: Colors.black87),
+                                children: [
+                                  const TextSpan(text: 'Use your '),
+                                  const TextSpan(
+                                    text: 'Identity App',
+                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  ),
+                                  const TextSpan(text: ' (ONE-OF-US.NET)'),
+                                ],
+                              ),
+                            ),
                           ),
-                          const TextSpan(text: ' ('),
-                          TextSpan(
-                            text: 'ONE-OF-US.NET',
-                            style: const TextStyle(
-                                color: Colors.blue, decoration: TextDecoration.underline),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                final String url = kIsWeb
-                                    ? 'https://one-of-us.net'
-                                    : defaultTargetPlatform == TargetPlatform.iOS
-                                        ? 'https://apps.apple.com/us/app/one-of-us/id6739090070'
-                                        : 'https://play.google.com/store/apps/details?id=net.oneofus.app';
-                                launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                              },
+                          Icon(
+                            _expanded ? Icons.remove : Icons.add,
+                            size: 18,
+                            color: Colors.blue[700],
                           ),
-                          const TextSpan(text: ')'),
                         ],
                       ),
                     ),
@@ -389,50 +454,34 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                 const SizedBox(height: 8),
 
                 // Section 1: This Device
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _headingTapCount++;
-                        if (_headingTapCount >= 7) _showPaste = true;
-                      });
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 4),
-                      child: Text('Identity app on this device',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.blueGrey[700],
-                              fontWeight: FontWeight.bold)),
-                    ),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 4),
+                  child: Text('Identity app on this device',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.blueGrey[700],
+                          fontWeight: FontWeight.bold)),
                 ),
-                buildCustomBtn(true),
-                if (_showPaste || _timeoutFired) buildUniversalBtn(false),
+                if (_expanded) buildCustomBtn(false),
+                buildUniversalBtn(false),
 
                 const SizedBox(height: 8),
 
                 // Section 2: Different Device
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text('Identity app on different device',
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.blueGrey[700],
-                            fontWeight: FontWeight.bold)),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, bottom: 4),
+                  child: Text('Identity app on different device',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.blueGrey[700],
+                          fontWeight: FontWeight.bold)),
                 ),
-                buildQrBtn(!isIOS && !isAndroid),
+                buildQrBtn(false),
 
-                const SizedBox(height: 8),
-
-                // Section 3: No identity app
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
+                // Section 3: No identity app (mobile only, no identity)
+                if (isMobile && !hasIdentity) ...[
+                  const SizedBox(height: 8),
+                  Padding(
                     padding: const EdgeInsets.only(left: 4, bottom: 4),
                     child: Text('No identity app',
                         style: TextStyle(
@@ -440,25 +489,34 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                             color: Colors.blueGrey[700],
                             fontWeight: FontWeight.bold)),
                   ),
-                ),
-                _buildListButton(
-                  icon: Icons.visibility,
-                  leadingWidget: Image.asset('assets/images/nerd.png', width: 24, height: 24),
-                  label: 'Enter the Nerdster',
-                  subtitle: 'Preview without your own identity',
-                  onPressed: _signInAsDev,
-                  recommended: false,
-                ),
+                  _buildListButton(
+                    icon: Icons.visibility,
+                    leadingWidget: Image.asset('assets/images/nerd.png', width: 24, height: 24),
+                    label: 'Enter the Nerdster',
+                    subtitle: 'Preview without your own identity',
+                    onPressed: _signInAsDev,
+                    recommended: false,
+                  ),
+                ],
 
+                // Developers section (7-tap easter egg)
                 if (isDev || _showPaste) ...[
                   const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 4),
+                    child: Text('Developers',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blueGrey[700],
+                            fontWeight: FontWeight.bold)),
+                  ),
                   _buildListButton(
                     icon: Icons.content_paste,
                     label: 'Paste Keys',
                     subtitle: 'Paste JSON keys directly',
                     onPressed: () => pasteSignIn(context),
                     recommended: false,
-                  )
+                  ),
                 ],
                 const SizedBox(height: 8),
                 if (!kIsWeb)
