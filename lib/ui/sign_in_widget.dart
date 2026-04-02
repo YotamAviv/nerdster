@@ -189,7 +189,7 @@ and the https://one-of-us.net/ option if it was previously hidden [note that it 
 (https://one-of-us.net/sign-in should never fail as there's a web page there)
 
 Restrictions for showing No identity app:
-- only on mobile
+- only on mobile apps (not web app on mobile devices)
 - only if there is currently no signed in identity (delegate not required).
 
 Clicking the blue header box 7 times (instead of the text, "Identity app on this device") 
@@ -285,7 +285,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
     final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS || forceIphone;
     final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
-    final bool isMobile = isIOS || isAndroid;
+    final bool isMobile = !kIsWeb && (isIOS || isAndroid);
 
     Widget buildUniversalBtn(bool recommended) {
       return FutureBuilder<SignInSession>(
@@ -478,7 +478,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                 ),
                 buildQrBtn(false),
 
-                // Section 3: No identity app (mobile only, no identity)
+                // Section 3: No identity app (native mobile apps only)
                 if (isMobile && !hasIdentity) ...[
                   const SizedBox(height: 8),
                   Padding(
