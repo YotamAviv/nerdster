@@ -6,7 +6,7 @@ PASSED_TESTS=()
 
 # Per-test timeout includes cold web build (60-90s) + Chrome connection (~15s) + test execution (~60s).
 # If a test exceeds this, it is counted as failed rather than hanging forever.
-TIMEOUT_SECS=300
+TIMEOUT_SECS=90
 
 # Prerequisites:
 #   Firebase emulators: firebase --project=nerdster emulators:start
@@ -74,14 +74,23 @@ if [ -n "$ANDROID_DEVICE" ]; then
 
         test_name=$(basename "$test_file")
         echo "Running: $test_name"
-        if timeout "$TIMEOUT_SECS" flutter test "$test_file" -d "$ANDROID_DEVICE"; then
-            PASSED_TESTS+=("$test_name (android)")
-        else
-            exit_code=$?
-            if [ "$exit_code" -eq 124 ]; then
-                echo "TIMEOUT: $test_name exceeded ${TIMEOUT_SECS}s"
+
+        if [ "$test_file" = "integration_test/cloud_source_android_test.dart" ]; then
+            # This test signals pass/fail via PASS/FAIL/ERROR strings (not flutter exit code),
+            # so we use the sentinel-aware Python runner, which enforces its own timeout.
+            if python3 bin/android_test_runner.py -t "$test_file" -d "$ANDROID_DEVICE" --timeout "$TIMEOUT_SECS"; then
+                PASSED_TESTS+=("$test_name (android)")
+            else
+                FAILED_TESTS+=("$test_name (android)")
             fi
-            FAILED_TESTS+=("$test_name (android)")
+        else
+            if timeout "$TIMEOUT_SECS" flutter test "$test_file" -d "$ANDROID_DEVICE"; then
+                PASSED_TESTS+=("$test_name (android)")
+            else
+                exit_code=$?
+                [ "$exit_code" -eq 124 ] && echo "TIMEOUT: $test_name exceeded ${TIMEOUT_SECS}s"
+                FAILED_TESTS+=("$test_name (android)")
+            fi
         fi
         echo ""
     done

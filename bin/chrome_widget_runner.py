@@ -72,13 +72,10 @@ def main():
     print(f"Launching Chrome Widget Runner...")
     print(f"==============================================\n")
     
-    if not run_chrome_widget(args.target, args.headless):
-        print(f"\n❌ Widget execution failed.")
-        os.system('stty sane')
-        sys.exit(1)
-        
-    print(f"\n✅ All tests passed successfully!")
+    success = run_chrome_widget(args.target, args.headless)
     os.system('stty sane')
+    if not success:
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

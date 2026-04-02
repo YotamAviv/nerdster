@@ -28,6 +28,45 @@ Safari on iOS
 
 Let me know if these are known if you have any knowlege beyond this.
 
+-------
+Changes to SignInDialog:
+
+Keep it simple. Remove any remaining complexity where we try to guess how well a magic link
+will perform on a given device.
+
+Regardless of platform, show:
+Identity app on this device:
+  - https://one-of-us.net/ (universal link)
+Identity app on different device:
+  - Scan QR code
+
+Add a "+" / "-" toggle to the blue header box that says, "Use your identity app (ONE-OF-US.NET)".
+When "+" is shown, the following are shown:
+Identity app on this device:
+  - keymeid:// (custom scheme)
+  - https://one-of-us.net/ (universal link)
+Identity app on different device:
+  - Scan QR code
+No identity app: (Restrictions for No identity app:) 
+  - Enter the Nerdster!
+
+Restrictions for No identity app:
+- only on mobile
+- only if there is currently no signed in identity (delegate not required).
+
+
+Clicking the blue header box 7 times (instead of the text, "Identity app on this device") will show all options including
+- Paste keys
+
+
+
+
+Upates:
+- https://keymeid did not work from Safari on iOS
+- hide Enter the Nerdster if have identity, only show if don't
+- improve text on sign-in.html
+
+
 --------------------
 From Clacker:
 Your breakdown aligns perfectly with how modern browsers handle deep linking, but there are a few important nuances worth noting beyond your list:
