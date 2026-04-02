@@ -47,13 +47,11 @@ flutter run -d chrome
 
 ```
 Push to PROD:
-flutter build web --release; firebase --project=nerdster deploy --except functions
+bin/deploy_web.sh
 firebase --project=one-of-us-net deploy --only hosting
 firebase --project=nerdster deploy --only functions
 firebase --project=one-of-us-net deploy --only functions:export
 firebase --project=one-of-us-net deploy --only functions
-(flutter clean)
-firebase init hosting # Answer: build/web
 
 firebase --project=nerdster deploy --only functions:signin,functions:export
 firebase --project=one-of-us-net deploy --only functions:export
