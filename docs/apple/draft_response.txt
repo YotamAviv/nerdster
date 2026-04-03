@@ -1,65 +1,41 @@
-Thank you for the continued review. I am writing to address the two outstanding
-issues:
-- content moderation (raised in my last review)
+Thank you for the continued review. I am writing to address the two outstanding issues:
+- content moderation (raised in my most recent review)
 - show content without signing in using a different app (raised and addressed before but changed since)
 
 **Nerdster, ONE-OF-US.NET and decentralized moderation (censorship)**
 
 The ONE-OF-US.NET phone is used to build your decentralized identity network.
-Any person can vouch that another key represents someone who is "human, capable,
-acting in good faith" as well as to block any key as being controlled by a "bot,
-spammer, bad actor, careless, confused". Each person can use any service (like
-the Nerdster) from their own Point of View (PoV) by signing in with that app.
-And so on the identity level, any person can already, right away, block any bad
-actor. This immediately affects their own view as well as any other person who
-trusts their judgment.
+Any person can vouch that another key represents someone who is "human, capable, acting in 
+good faith" as well as to block any key as being controlled by a "bot, spammer, bad actor, careless, confused".
+Each person can use any service (like the Nerdster) from their own Point of View (PoV) by signing in with that app.
+And so on the identity level, any person can already, right away, block any bad actor. 
+This immediately affects their own view as well as any other person who trusts their judgment.
 
-The Nerdster is the demo / proof of concept app for the affinity and content
-layer that sits on top of the identity layer.
+The Nerdster is the demo / proof of concept app for the affinity and content layer that sits on top of the identity layer.
 Any user can
 - follow or block other users for a variety of contexts or block them completely.
 - censor any content for any reason.
-These actions immediately affect the user's view as well as other Nerdster users
-who trust that user's judgment.
+These actions immediately affect the user's view as well as other Nerdster users who trust that user's judgment.
 
-Censorship can be disabled using a toggle in the content filter bar (click the
-Filters icon to see it). This allows people to see who censored what content. I
-can remove that option if you'd like. There is no setting to ignore blocked
-identity keys at the identity level, but any person can choose to vouch for bad
-people if that is their desire. I can neither prevent that nor would I try to.
+Censorship can be disabled using a toggle in the content filter bar (click the tune icon in the top right corner to reveal it; it's the red checkbox.). This allows people to see who censored what content. I can remove that option if you'd like.
+There is no setting to ignore blocked identity keys at the identity level, but any person can choose to vouch for bad people if that is their desire. I can neither prevent that nor would I try to.
 
-I've added an implicit agreement to the Terms of Service and Safety & Policy on
-the sign in dialog.
+I've added an implicit agreement to the Terms of Service and Safety & Policy on the sign in dialog.
+
+**On the nature of this app's "whitelisted" content from specifically invited people**
+
+Unlike TikTok or Instagram, where you see content from strangers, the Nerdster only shows you content from trusted people. 
+You always know who posted what — there is a cryptographic signature chain to every piece of content. 
+A stranger cannot post content that reaches you. This fundamentally means that the Nerdster needs to know who you are (your identity key) in order to show you content.
+
+A past concern of yours was that new users who install the app can't see content immediately after installing and need a different app (the ONE-OF-US.NET app) to sign in.
+In an earlier release I included a "bootstrap" feature where you use a transient identity that implicitly trusts me and a transient delegate key so that you can contribute content (like, comment, etc..).
+I've rolled that back as it's really a stretch and doesn't fit in with how this is supposed to work.
+It'd be like trying to get driving directions without revealing your location.
+To allow folks to experience the app without first using the ONE-OF-US.NET app to join the network, I've added an "Enter the Nerdster!" option on the sign in dialog (use the "+" button on that dialog to see it).
+This allows you to see content as me but not to contribute content. 
+With the previous "bootstrap" feature, contributed content would not have been visible to anyone as the whole point is to only show folks content from people they trust. 
+There was a way to claim the transient delegate key and make it your own, but I decided that it was too complicated and that content contributed using that transient key would most likely have been lost.
 
 I hope that this is sufficient to address your concerns.
-
-**On the nature of this app's "whitelisted" and specifically invited people and content**
-
-Unlike TikTok or Instagram, where you see content from strangers, the Nerdster
-only shows you content from people you, or someone you trust, has explicitly
-vouched for. You always know who posted what — there is a cryptographic
-signature chain to every piece of content. A stranger cannot post content that
-reaches you. This fundamentally means that the Nerdster needs to know who you
-are (your identity key) in order to show you content.
-
-A past concern of yours was that new users who install the app can't see content
-immediately after installing and need a different app (the ONE-OF-US.NET app) to
-sign in. In an earlier release I included a "bootstrap" feature where you use a
-transient identity that implicitly trusts me and a transient delegate key so
-that you can contribute content (like, comment, etc..). I've rolled that back as
-it's really a stretch and doesn't fit in with how this is supposed to work. It'd
-be like trying to get driving directions without revealing your location. To
-allow folks to experience the app without first using the ONE-OF-US.NET app to
-join the network, I've added an "Enter the Nerdster!" option on the sign in
-dialog (use the "+" button on that dialog to see it). This allows you to see
-content as me but not to contribute content. With the previous "bootstrap"
-feature, contributed content would not have been visible to anyone as the whole
-point is to only show folks content from people they trust. There was a way to
-claim the transient delegate key and make it your own, but I decided that it was
-too complicated and that content contributed using that transient key would most
-likely have been lost.
-
-I hope that this is sufficient to reach the App Store as well.
-
 Thank you for your time.
-
