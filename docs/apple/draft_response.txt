@@ -37,6 +37,9 @@ This allows you to see content as me but not to contribute content.
 With the previous "bootstrap" feature, contributed content would not have been visible to anyone as the whole point is to only show folks content from people they trust.
 There was a way to claim the transient delegate key and make it your own, but I decided that it was too complicated and that content contributed using that transient key would most likely have been lost.
 
+I've also made progress and the Nerdster App now opens share links correctly. Here is a sample
+link to view content as my friend Andrew: https://nerdster.org/app?identity=%7B%22crv%22%3A%22Ed25519%22%2C%22kty%22%3A%22OKP%22%2C%22x%22%3A%22o4fdtWGHNblOhMHDYgoYX4Vi86k9AGUTpcZHfZHZEOQ%22%7D&fcontext=%3Cidentity%3E
+
 I hope that this is sufficient to address your concerns.
 
 Thank you for your time.
