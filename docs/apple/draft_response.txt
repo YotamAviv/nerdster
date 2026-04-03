@@ -1,41 +1,35 @@
 Thank you for the continued review. I am writing to address Guideline 1.2 — Safety — User-Generated Content.
 
----
+**Nerdster, ONE-OF-US.NET and decentralized moderation (censorship)**
 
-**Terms of Use**
+ONE-OF-US.NET builds your decentralized identity network. 
+Any person can vouch that another key represents  someone who is " human, capable, acting in good faith" as well
+to block any key as being controleed by a "bot, spammer, bad actor, careless, confused".
+Each person can use any service (like the Nerdster) from their own Point of View (PoV).
+And so on the identity level, any person can already, right away, block any bad actor. This
+will affect their view as well as any other person who trusts their judgment.
 
-The Nerdster now has a Terms of Service at https://nerdster.org/terms.html (linked from the in-app About dialog) that states users must not post objectionable content. A Safety & Content Policy is at https://nerdster.org/safety.html specifying prohibited content categories.
+The Nerster is the demo / proof of concept app for the affinity and content layer that sits on top of the identity layer.
+Any user can follow or block other users for a variety of contexts or block block them completely.
+Any user can censor any content for any reason.
+Both of these will immediately affect their view as well as other Nerdster users who trust their judgment.
 
----
+I've added an implicit agreement to the Terms of Service and Safety & Policy on the sign in dialog.
 
-**How the Nerdster handles objectionable content — a different approach**
+I hope that this is sufficient to address your concerns.
 
-The Nerdster is not a traditional social network. It implements what I call *decentralized moderation*, which I believe is meaningfully stronger than centralized moderation for this use case.
-
-**Decentralized censorship (content filtering)**
-
-Every piece of content in the Nerdster has a Censor button. When a user taps it, that content disappears from their view immediately and permanently. Importantly, because the Nerdster aggregates content from your *follow network*, when someone you follow censors content, it is also suppressed in your view automatically. You do not need to encounter it yourself to have it filtered. Content users censor is *gone immediately* — no delay, no moderation queue.
-
-**Blocking abusive users**
-
-Users can block any person in the Nerdster. A blocked person's content no longer appears for the user who blocked them. Because trust is propagated through the network, if people in your circle block someone, that person is likely removed from your view as well.
-
-**Identity-level blocking**
-
-This is where the ONE-OF-US.NET paradigm provides a second, stronger layer. The ONE-OF-US.NET app lets anyone in the network revoke trust for an identity — marking them as a "bot, spammer, bad actor, careless, confused." The Nerdster only surfaces content from people your network recognizes as "human, capable, acting in good faith." An identity that loses network trust loses visibility across *all* Nerdster users, not just the ones who individually blocked them.
-
-**Reporting to the developer**
-
-Users can report abuse to report@nerdster.org. I commit to reviewing reports and acting on them promptly.
-
----
-
-**On the nature of this app's content**
+**On the nature of this app's "whitelisted" and specifically invited people and content**
 
 Unlike TikTok or Instagram, where you see content from strangers, the Nerdster only shows you content from people you, or someone you trust, has explicitly vouched for. You always know who posted what — there is a cryptographic signature chain to every piece of content. A stranger cannot post content that reaches you. This fundamentally limits the surface area for objectionable content compared to traditional platforms.
 
----
-
-I believe the combination of immediate user-controlled censorship, network-propagated blocking, identity-level trust filtering, and a reporting contact satisfies the spirit of Guideline 1.2. I hope this explanation clarifies the design.
+A past concern of yours was that new users who install the app can't sign in without the ONE-OF-US.NET app, and 
+so in an earlier release I included a "bootstrap" feature where you use a transient identity that
+implicitly trusts me and a transient delegate key so that you can contribute content (like, comment, etc..).
+I've rolled that back as it's really a stretch and doesn't fit in with how this is supposed to work.
+It'd be like trying to get driving directions without revealing your location.
+To replace it, I've added an "Enter the Nerdster!" (use the "+" button on that dialog to see it) choice on the sign in screen where you do see content as me
+but can't contribute content. With the previous "bootstrap" feature, contributed content would most likely have been lost and
+would not have been visible to anyone as the whole point is to only show folks content from people they trust.
+I hope that this is sufficient to reach the App Store as well.
 
 Thank you for your time.
