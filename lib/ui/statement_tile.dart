@@ -8,6 +8,7 @@ import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/dialogs/rate_dialog.dart';
 import 'package:nerdster/ui/crypto_shield_button.dart';
+import 'package:nerdster/ui/util_ui.dart';
 
 // Question: Do ... canonical/equivalent..?
 class StatementTile extends StatelessWidget {
@@ -74,10 +75,10 @@ class StatementTile extends StatelessWidget {
     String tooltip;
 
     if (myReplies.isNotEmpty) {
-      color = Colors.blue;
+      color = linkColorAlready;
       tooltip = 'You replied to this';
     } else {
-      color = Colors.grey;
+      color = linkColor;
       tooltip = 'React';
     }
 

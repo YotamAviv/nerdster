@@ -245,11 +245,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         break;
       case SortMode.mostComments:
         subjects.sort((a, b) {
-          final commentsA =
-              a.statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;
-          final commentsB =
-              b.statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;
-          if (commentsA != commentsB) return commentsB.compareTo(commentsA);
+          if (a.comments != b.comments) return b.comments.compareTo(a.comments);
           return b.lastActivity.compareTo(a.lastActivity);
         });
         break;

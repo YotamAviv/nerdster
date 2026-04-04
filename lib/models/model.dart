@@ -287,6 +287,9 @@ class SubjectGroup {
 
   bool get isRated => povStatements.any((s) => s.verb == ContentVerb.rate);
 
+  int get comments =>
+      statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;
+
   bool get isDismissed => _checkIsDismissed(povStatements);
 
   bool _checkIsDismissed(List<ContentStatement> dispositionStatements) {
@@ -428,6 +431,7 @@ class SubjectAggregation {
 
   // Proxy getters for disposition
   bool get isRated => activeGroup.isRated;
+  int get comments => activeGroup.comments;
   bool get isDismissed => activeGroup.isDismissed;
   DateTime? get povDismissalTimestamp => activeGroup.povDismissalTimestamp;
 

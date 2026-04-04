@@ -10,6 +10,7 @@ import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/dialogs/rate_dialog.dart';
 import 'package:nerdster/ui/statement_tile.dart';
 import 'package:nerdster/logic/feed_controller.dart';
+import 'package:nerdster/ui/util_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ContentCard extends StatefulWidget {
@@ -413,19 +414,26 @@ class _ContentCardState extends State<ContentCard> {
   Widget _buildTrustSummary() {
     final likes = widget.aggregation.likes;
     final dislikes = widget.aggregation.dislikes;
-    if (likes == 0 && dislikes == 0) return const SizedBox.shrink();
+    final comments = widget.aggregation.comments;
+    if (likes == 0 && dislikes == 0 && comments == 0) return const SizedBox.shrink();
     return Row(
       children: [
         if (likes > 0) ...[
-          const Icon(Icons.thumb_up, size: 16, color: Colors.green),
-          const SizedBox(width: 4),
-          Text('$likes', style: const TextStyle(fontWeight: FontWeight.bold)),
+          const Icon(Icons.thumb_up, size: 19, color: Colors.green),
+          const SizedBox(width: 5),
+          Text('$likes', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
         ],
-        if (likes > 0 && dislikes > 0) const SizedBox(width: 8),
+        if (likes > 0 && dislikes > 0) const SizedBox(width: 10),
         if (dislikes > 0) ...[
-          const Icon(Icons.thumb_down, size: 16, color: Colors.red),
-          const SizedBox(width: 4),
-          Text('$dislikes', style: const TextStyle(fontWeight: FontWeight.bold)),
+          const Icon(Icons.thumb_down, size: 19, color: Colors.red),
+          const SizedBox(width: 5),
+          Text('$dislikes', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+        ],
+        if ((likes > 0 || dislikes > 0) && comments > 0) const SizedBox(width: 10),
+        if (comments > 0) ...[
+          const Icon(Icons.chat_bubble_outline, size: 19, color: Colors.grey),
+          const SizedBox(width: 5),
+          Text('$comments', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
         ],
       ],
     );
@@ -656,66 +664,69 @@ class _ContentCardState extends State<ContentCard> {
     String tooltip;
 
     if (hasPrior) {
-      color = Colors.blue;
+      color = linkColorAlready;
       tooltip = 'You reacted to this';
     } else {
-      color = Colors.grey;
+      color = linkColor;
       tooltip = 'React';
     }
 
     final likes = widget.aggregation.likes;
     final dislikes = widget.aggregation.dislikes;
-    final hasTrustInfo = likes > 0 || dislikes > 0;
+    final hasTrustInfo = likes > 0 || dislikes > 0 || widget.aggregation.comments > 0;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (widget.onMark != null)
-            ValueListenableBuilder<ContentKey?>(
-              valueListenable: widget.markedSubjectToken ?? ValueNotifier(null),
-              builder: (context, marked, _) {
-                final isMarked = marked == widget.aggregation.token;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12.0),
-                  child: IconButton(
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: Icon(
-                      Icons.link,
-                      color: isMarked ? Colors.orange : Colors.grey,
-                      size: 20,
+      child: IntrinsicHeight(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Left: counters
+            if (hasTrustInfo) _buildTrustSummary(),
+            // Divider
+            if (hasTrustInfo) const VerticalDivider(width: 19, thickness: 1),
+            // Right: controls
+            if (widget.onMark != null)
+              ValueListenableBuilder<ContentKey?>(
+                valueListenable: widget.markedSubjectToken ?? ValueNotifier(null),
+                builder: (context, marked, _) {
+                  final isMarked = marked == widget.aggregation.token;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 4.0),
+                    child: IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: Icon(
+                        Icons.link,
+                        color: isMarked ? Colors.orange : Colors.grey,
+                        size: 24,
+                      ),
+                      tooltip: isMarked ? 'Unmark' : 'Mark to Relate/Equate',
+                      onPressed: () async {
+                        if ((await checkSignedIn(context, trustGraph: widget.model.trustGraph)) ==
+                            true) {
+                          widget.onMark!(widget.aggregation.token);
+                        }
+                      },
                     ),
-                    tooltip: isMarked ? 'Unmark' : 'Mark to Relate/Equate',
-                    onPressed: () async {
-                      if ((await checkSignedIn(context, trustGraph: widget.model.trustGraph)) ==
-                          true) {
-                        widget.onMark!(widget.aggregation.token);
-                      }
-                    },
-                  ),
-                );
-              },
+                  );
+                },
+              ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: Icon(icon, color: color, size: 24),
+              tooltip: tooltip,
+              onPressed: _react,
             ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            icon: Icon(icon, color: color, size: 20),
-            tooltip: tooltip,
-            onPressed: _react,
-          ),
-          if (hasTrustInfo) ...[
-            const SizedBox(width: 12),
-            _buildTrustSummary(),
           ],
-        ],
+        ),
       ),
     );
   }
