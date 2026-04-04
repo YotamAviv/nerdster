@@ -3,6 +3,30 @@ AI Agent: Do not visit this file without invitation
 
 # Current Activity:
 
+SigninDialog:
+- Require clicking only the +/- to toggle to show other sign in options.
+  - These are keymeid:// and "Enter the Nerdster!", I believe. Correct me if I'm wrong.
+  
+- Require clicking the blue area (not the +/-) to show the Paste Keys option.
+
+
+Users have been getting confused between rating a subject and rating a rating.
+
+In the subject area of the rate or relate dialog:
+1) Confirm that these 2 different dialogs show the same text for their subject(s) in the subject box (based on the actual 
+subject JSON)
+
+2) Replace the text "contribution by" with "x's reaction" in the subject area of the rate or relate dialog.
+
+3) The icons that users click on to rate currently use 2 different colors I believe: 1 color if you haven't rated this yet, a different
+color if you have.
+- Confirm that this is the case
+- Check where else in the Nerdster UI have things to click on and report back what colors they use.
+After confirmation
+- Change the colors to be like a web link that hasn't been visited (light blue) and a web link that has (darker blue)
+
+
+
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 
 Check: TODO, SUSPECT, BUG ..

@@ -25,7 +25,7 @@ class SubjectView extends StatelessWidget {
       String labeledContributor = labeler?.getLabel(getToken(contributor)) ?? getToken(contributor);
       rows.add(
         Text(
-          'contribution by $labeledContributor',
+          "$labeledContributor's reaction",
           style: TextStyle(
             fontSize: 16,
             decoration: strikethrough ? TextDecoration.lineThrough : null,

@@ -285,26 +285,60 @@ class _RateDialogState extends State<RateDialog> {
                     ),
                     maxLines: 4,
                   ),
-                  if (isStatement) ...[
-                    const SizedBox(height: 12),
-                    const Tooltip(
-                      message:
-                          'A user can have only one disposition on a subject, so any newer rating will overwrite his earlier one.',
-                      child: Text(
-                        'rating a rating?',
-                        style: TextStyle(
-                            color: Colors.blue, decoration: TextDecoration.underline, fontSize: 12),
-                      ),
-                    ),
-                  ],
+
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.end, // or center/spaceAround
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              if (isStatement)
+                Flexible(
+                  child: GestureDetector(
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Reacting to a reaction?'),
+                        content: const Text(
+                          '''The subject here is someone's reaction to content, not the content itself.\n\n'''
+                          'People can update their reactions at any time — and they can only have one reaction per subject. '
+                          'If the author updates theirs, their old reaction (the one you are reacting to) will be gone, '
+                          'and your reaction to it will disappear along with it.'
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.error_outline, color: Colors.red, size: 16),
+                          SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Reacting to a reaction?',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              softWrap: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              const Spacer(),
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Cancel'),
