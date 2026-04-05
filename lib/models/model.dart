@@ -505,6 +505,7 @@ class FeedModel {
   final List<SubjectAggregation> effectiveSubjects; // Filtered and sorted
   final List<SourceError> sourceErrors;
   final List<SystemNotification> systemNotifications;
+  final Map<IdentityKey, TrustStatement> myTrustStatements;
 
   FeedModel({
     required this.trustGraph,
@@ -524,6 +525,7 @@ class FeedModel {
     this.effectiveSubjects = const [],
     this.sourceErrors = const [],
     this.systemNotifications = const [],
+    this.myTrustStatements = const {},
   });
 }
 

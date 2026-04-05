@@ -83,10 +83,69 @@ https://one-of-us.net/clear?key=<identityToken>   # Option B
 
 - Add red `Icons.delete_outline` `IconButton` to `_buildActions()`.
 - Only show when the viewed identity is not the current user's own identity.
-- Determine at open time (from `tg.edges[myIdentity]`):
+- Determine at open time:
   - Does the user directly vouch for this key? → show Option B
   - Has the user already trust-layer-blocked this key? → show a visual indicator on the button
-  - *Implementation note: when browsing from a different PoV where the current user is not in that PoV's trust network, `tg.edges[myIdentity]` may not be populated. May need to load the current user's own trust statements separately, similar to how `myLiteralStatements` works for content.*
+  - *Implementation note: `tg.edges[myIdentity]` is wrong for two reasons: (1) it's only populated if the current user is reachable from the active PoV's BFS; (2) even when populated, it reflects the PoV's filtered view — e.g. if I vouch for Bart but the PoV blocked Bart, that vouch won't appear. Need a `myTrustStatements` map loaded directly from the current user's identity-key statements, independent of any PoV (analogous to `myLiteralStatements` for content).*
+
+##
+
+
+Add UI to NodeDetails to simply see my own (signed in user (signInState.identity), not PoV) existing block or trust.
+This is the new myLiteralStatements for trust referred to above - the identity's own trust statements.
+Show a shield icon at the bottom left of the NodeDetails card if I have a block or trust statement for this identity;
+clicking on it shows the Json of that statement in one of our standard widgets to that I can toggle interpreted or not.
+
+## Implementation plan: myTrustStatements
+
+Goal: make the signed-in user's own trust statements available on `FeedModel`, independent of the active PoV — analogous to `myLiteralStatements` for content.
+
+### 1. `TrustPipeline.build()` — add optional `signerIdentity` parameter
+
+```dart
+Future<TrustGraph> build(IdentityKey povIdentity, {IdentityKey? signerIdentity}) async {
+```
+
+At depth=0, if `signerIdentity != null && signerIdentity != povIdentity`, add it to the initial `fetchMap` alongside the PoV key. Since `source.fetch(fetchMap)` is a single batched call, this is no extra round trip.
+
+After the first `source.fetch()`, extract raw statements for `signerIdentity` from `newStatementsMap`. Filter out `clear` statements (clear = invisible). Store as a field on the returned `TrustGraph`.
+
+```dart
+// TODO: replace chains are not chased for myTrustStatements.
+// If the signer's identity has been replaced, only statements from the
+// current signInState.identity key are included, not from prior keys.
+```
+
+### 2. `TrustGraph` — add `myTrustStatements` field
+
+```dart
+final List<TrustStatement> myTrustStatements; // statements from signerIdentity, clear-filtered
+```
+
+### 3. `FeedController` — pass `signerIdentity`
+
+When building the trust pipeline, pass `IdentityKey(signInState.identity)` as `signerIdentity` when it differs from the PoV.
+
+Also: the existing fallback at lines 372–380 (`mePipeline.build(currentMeIdentity)`) is related but not the same thing — it builds a full BFS from Me to find delegate keys (`TrustVerb.delegate`). `myTrustStatements` is simpler: just Me's raw first-degree `trust`/`block` statements, taken directly from `statementsByIssuer[signerIdentity]` after the first depth=0 fetch — no BFS from Me needed. Pre-fetching Me at depth=0 means the `mePipeline` source call would also be a cache hit, which is a nice side effect.
+
+### 4. `FeedModel` — expose `myTrustStatements`
+
+Store the list from `graph.myTrustStatements` on `FeedModel`, keyed by subject for fast lookup:
+
+```dart
+final Map<IdentityKey, TrustStatement> myTrustStatements; // latest effective statement per subject
+```
+
+Singular Disposition applies: if multiple statements exist for the same subject, keep only the latest.
+
+### 5. NodeDetails — consume it
+
+```dart
+final myStmt = model.myTrustStatements[canonicalIdentity];
+// myStmt?.verb == TrustVerb.trust  → show Option B
+// myStmt?.verb == TrustVerb.block  → show visual indicator on delete button
+// myStmt == null                   → no indicator
+```
 
 ---
 

@@ -323,10 +323,12 @@ class FeedController extends ValueNotifier<FeedModel?> {
         }
 
         final IdentityKey currentPovIdentity = IdentityKey(signInState.pov);
-        final IdentityKey? currentMeIdentity =
+        final IdentityKey? myIdentity =
             signInState.isSignedIn ? IdentityKey(signInState.identity) : null;
 
-        List<DelegateKey>? meDelegateKeys;
+        List<DelegateKey>? myDelegateKeys;
+        Map<IdentityKey, TrustStatement> myTrustStatements = {};
+        TrustGraph? myGraph;
 
         _error = null;
         loadingMessage.value = 'Initializing...';
@@ -357,35 +359,38 @@ class FeedController extends ValueNotifier<FeedModel?> {
           debugPrint('Error parsing identityPathsReq: $e');
         }
 
-        final trustPipeline = TrustPipeline(trustSource, pathRequirement: pathReq);
-        final graph = await trustPipeline.build(currentPovIdentity);
-        final delegateResolver = DelegateResolver(graph);
+        final TrustPipeline trustPipeline = TrustPipeline(trustSource, pathRequirement: pathReq);
+        final TrustGraph povGraph = await trustPipeline.build(currentPovIdentity);
+        final DelegateResolver delegateResolver = DelegateResolver(povGraph);
 
-        // Fix for view-only mode where signInState.delegate is null but the identity has delegates in the graph
-        if (currentMeIdentity != null && currentMeIdentity.value == signInState.identity) {
-          final Set<DelegateKey> delegates = {};
+        if (myIdentity != null) {
+          // Build my identity's trust graph (depth 1 only) to get:
+          // 1. myTrustStatements: my literal trust/block statements, independent of PoV.
+          // 2. myDelegateKeys: my delegate keys, even when not in the PoV's network.
+          // trustSource is cached, so this involves no additional cloud fetch.
+          // Note: replace chains for myIdentity are not chased.
+          final TrustPipeline myPipeline =
+              TrustPipeline(trustSource, pathRequirement: (_) => 0, maxDegrees: 1);
+          myGraph = await myPipeline.build(myIdentity);
+          final DelegateResolver myResolver = DelegateResolver(myGraph);
 
-          // 1. Try to find delegates in the current PoV graph
-          delegates.addAll(delegateResolver.getDelegatesForIdentity(currentMeIdentity));
-
-          // 2. If Me is not in the graph, we need to fetch Me's trust statements to find delegates.
-          if (!graph.distances.containsKey(currentMeIdentity)) {
-            // Use a separate pipeline to fetch Me's graph (depth 0)
-            // We reuse the same trustSource (which is cached)
-            final mePipeline = TrustPipeline(trustSource, pathRequirement: (_) => 0);
-            final meGraph = await mePipeline.build(currentMeIdentity);
-            final meResolver = DelegateResolver(meGraph);
-            final fetchedDelegates = meResolver.getDelegatesForIdentity(currentMeIdentity);
-            delegates.addAll(fetchedDelegates);
+          // myTrustStatements: singular disposition (latest trust/block per subject).
+          // clear statements are already filtered out by TrustPipeline.
+          for (final TrustStatement s in myGraph.edges[myIdentity] ?? <TrustStatement>[]) {
+            if (s.verb != TrustVerb.trust && s.verb != TrustVerb.block) continue;
+            final IdentityKey subject = s.subjectAsIdentity;
+            final TrustStatement? existing = myTrustStatements[subject];
+            if (existing == null || s.time.isAfter(existing.time)) {
+              myTrustStatements[subject] = s;
+            }
           }
 
-          // Ensure the currently signed-in delegate is included, even if not in the graph
-          // We convert the string delegate to a DelegateKey to check/add
-          if (currentMeIdentity.value == signInState.identity && signInState.delegate != null) {
-            delegates.add(DelegateKey(signInState.delegate!));
-          }
-
-          meDelegateKeys = delegates.toList();
+          // Delegates: combine what's in the PoV graph and myGraph.
+          myDelegateKeys = <DelegateKey>{
+            ...delegateResolver.getDelegatesForIdentity(myIdentity),
+            ...myResolver.getDelegatesForIdentity(myIdentity),
+            if (signInState.delegate != null) DelegateKey(signInState.delegate!),
+          }.toList();
         }
 
         progress.value = 0.3;
@@ -399,20 +404,19 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
         // Identify delegates for all trusted identities (to find follows and ratings)
         final Set<DelegateKey> delegateKeysToFetch = {};
-        for (final identity in graph.orderedKeys) {
-          final delegates = delegateResolver.getDelegatesForIdentity(identity);
-          delegateKeysToFetch.addAll(delegates);
+        for (final IdentityKey trustedIdentity in povGraph.orderedKeys) {
+          delegateKeysToFetch.addAll(delegateResolver.getDelegatesForIdentity(trustedIdentity));
         }
 
         // Add my delegates
-        if (meDelegateKeys != null) {
-          delegateKeysToFetch.addAll(meDelegateKeys);
+        if (myDelegateKeys != null) {
+          delegateKeysToFetch.addAll(myDelegateKeys);
         }
 
         final delegateContent = await contentPipeline.fetchDelegateContent(
           delegateKeysToFetch,
           delegateResolver: delegateResolver,
-          graph: graph,
+          graph: povGraph,
         );
 
         final contentResult = ContentResult(
@@ -424,7 +428,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         progress.value = 0.7;
 
         final followNetwork = reduceFollowNetwork(
-          graph,
+          povGraph,
           delegateResolver,
           contentResult,
           fcontext,
@@ -437,16 +441,16 @@ class FeedController extends ValueNotifier<FeedModel?> {
         progress.value = 0.9;
 
         // 6. Labeling
-        final labeler =
-            Labeler(graph, delegateResolver: delegateResolver, meIdentity: currentMeIdentity);
+        final Labeler labeler =
+            Labeler(povGraph, delegateResolver: delegateResolver, meIdentity: myIdentity);
 
         final aggregation = reduceContentAggregation(
           followNetwork,
-          graph,
+          povGraph,
           delegateResolver,
           contentResult,
           enableCensorship: enableCensorship,
-          meDelegateKeys: meDelegateKeys,
+          meDelegateKeys: myDelegateKeys,
           labeler: labeler,
         );
         progress.value = 0.95;
@@ -466,9 +470,8 @@ class FeedController extends ValueNotifier<FeedModel?> {
         final availableContexts = mostContexts.most().toList();
 
         final activeContexts = <String>{};
-        final povIdentity = graph.pov;
 
-        for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(povIdentity)) {
+        for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(currentPovIdentity)) {
           final statements = contentResult.delegateContent[key];
           if (statements != null) {
             for (final s in statements) {
@@ -481,7 +484,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         }
 
         if (currentPovIdentity.value == signInState.pov &&
-            currentMeIdentity?.value == (signInState.isSignedIn ? signInState.identity : null)) {
+            myIdentity?.value == (signInState.isSignedIn ? signInState.identity : null)) {
           final allErrors = [
             ...trustSource.errors,
             ...contentSource.errors,
@@ -491,9 +494,9 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
           // 1. Invisibility / Unnamed
           // Note: We use the identity from the start of the refresh loop to ensure consistency
-          if (currentMeIdentity != null) {
-            final isVisible =
-                followNetwork.identities.any((k) => k.value == currentMeIdentity.value);
+          if (myIdentity != null) {
+            final bool isVisible =
+                followNetwork.identities.any((k) => k.value == myIdentity!.value);
 
             if (!isVisible) {
               systemNotifications.add(SystemNotification(
@@ -502,13 +505,13 @@ class FeedController extends ValueNotifier<FeedModel?> {
               ));
             }
 
-            final canonicalMe = graph.resolveIdentity(currentMeIdentity);
+            final IdentityKey canonicalMe = povGraph.resolveIdentity(myIdentity!);
             bool isNamed = false;
 
-            for (final edges in graph.edges.values) {
-              for (final edge in edges) {
+            for (final List<TrustStatement> edges in povGraph.edges.values) {
+              for (final TrustStatement edge in edges) {
                 if (edge.moniker != null) {
-                  if (graph.resolveIdentity(IdentityKey(edge.subjectToken)) == canonicalMe) {
+                  if (povGraph.resolveIdentity(IdentityKey(edge.subjectToken)) == canonicalMe) {
                     isNamed = true;
                     break;
                   }
@@ -526,11 +529,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
           }
 
           // 2. Delegate Issues
-          if (currentMeIdentity != null && signInState.delegate != null) {
-            final myDelegate = signInState.delegate!;
+          if (myIdentity != null && signInState.delegate != null) {
+            final String myDelegate = signInState.delegate!;
 
             // Revoked
-            if (graph.replacements.containsKey(IdentityKey(myDelegate))) {
+            if (povGraph.replacements.containsKey(IdentityKey(myDelegate))) {
               systemNotifications.add(SystemNotification(
                 title: "Your delegate key is revoked",
                 description:
@@ -541,15 +544,14 @@ class FeedController extends ValueNotifier<FeedModel?> {
             }
 
             // Not associated
-            if (graph.isTrusted(currentMeIdentity)) {
+            if (povGraph.isTrusted(myIdentity!)) {
               bool isAssociated = false;
-              final statements = graph.edges[currentMeIdentity];
-              if (statements != null) {
-                for (final s in statements) {
-                  if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
-                    isAssociated = true;
-                    break;
-                  }
+              // Use myGraph for unfiltered delegate statements (independent of PoV's blocks).
+              final List<TrustStatement> statements = myGraph?.edges[myIdentity!] ?? [];
+              for (final TrustStatement s in statements) {
+                if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
+                  isAssociated = true;
+                  break;
                 }
               }
               if (!isAssociated) {
@@ -571,7 +573,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           );
 
           value = FeedModel(
-            trustGraph: graph,
+            trustGraph: povGraph,
             followNetwork: followNetwork,
             delegateResolver: delegateResolver,
             labeler: labeler,
@@ -588,6 +590,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
             effectiveSubjects: effectiveSubjects,
             sourceErrors: allErrors,
             systemNotifications: systemNotifications,
+            myTrustStatements: myTrustStatements,
           );
           progress.value = 1.0;
           break;

@@ -171,7 +171,12 @@ class _NodeDetailsState extends State<NodeDetails> {
     final String fcontext = model.fcontext;
 
     // Resolve identity to ensure we lookup correctly in graphs
-    final canonicalIdentity = _resolveIdentity(widget.identity, model);
+    final IdentityKey canonicalIdentity = _resolveIdentity(widget.identity, model);
+
+    // My own (identity-layer) trust or block statement for this identity, independent of PoV.
+    final TrustStatement? myTrustStatement = signInState.isSignedIn
+        ? (model.myTrustStatements[canonicalIdentity] ?? model.myTrustStatements[widget.identity])
+        : null;
 
     return Container(
       decoration: const BoxDecoration(
@@ -211,8 +216,17 @@ class _NodeDetailsState extends State<NodeDetails> {
           ),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: _buildActions(context),
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (myTrustStatement != null)
+                CryptoShieldButton(json: myTrustStatement.json, labeler: labeler)
+              else
+                const SizedBox.shrink(),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: _buildActions(context),
+              ),
+            ],
           ),
         ],
       ),
