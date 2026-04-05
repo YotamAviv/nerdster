@@ -10,7 +10,7 @@ import 'package:nerdster/settings/setting_type.dart';
 /// Shield icon that shows a JsonDisplay popup on tap and a JsonQrDisplay popup
 /// on double-tap. Hidden when showCrypto is false.
 class CryptoShieldButton extends StatelessWidget {
-  final Json json;
+  final Json? json;
   final Labeler labeler;
 
   const CryptoShieldButton({super.key, required this.json, required this.labeler});
@@ -21,6 +21,15 @@ class CryptoShieldButton extends StatelessWidget {
       valueListenable: Setting.get<bool>(SettingType.showCrypto),
       builder: (context, showCrypto, _) {
         if (!showCrypto) return const SizedBox.shrink();
+        if (json == null) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.0),
+            child: Tooltip(
+              message: 'nothing to show',
+              child: Icon(Icons.verified_user_outlined, size: 16, color: Colors.grey),
+            ),
+          );
+        }
         return Builder(builder: (ctx) {
           Offset tapPosition = Offset.zero;
           return GestureDetector(

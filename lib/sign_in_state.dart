@@ -67,7 +67,7 @@ enum SignInMethod {
   oneOfUsNet, // https://one-of-us.net button in the sign-in widget
   qrScan,     // QR code scanned by the ONE-OF-US phone app
   paste,      // JSON credentials pasted
-  stored,     // keys restored from secure storage (KeyStore)
+  url,        // Sign in via ?identity=... URL parameter
 }
 
 Future<void> signInUiHelper(
@@ -85,7 +85,7 @@ class SignInState with ChangeNotifier {
   StatementSigner? _signer;
   OouKeyPair? _delegateKeyPair;
   Map<String, dynamic> _endpoint = kNativeEndpoint;
-  SignInMethod? _signInMethod; // TODO: store the actual method instead and remove "stored". TODO: Add url. Maybe lump those in as "dev"
+  SignInMethod? _signInMethod;
 
   static final SignInState _singleton = SignInState._internal();
 

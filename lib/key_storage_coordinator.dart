@@ -37,7 +37,7 @@ class KeyStorageCoordinator {
       final idKey =
           await crypto.parsePublicKey(Jsonish.find(signInState.identity)!.json);
       await KeyStore.storeKeys(idKey, signInState.delegateKeyPair,
-          endpoint: signInState.endpoint);
+          endpoint: signInState.endpoint, method: signInState.signInMethod);
     } else {
       await KeyStore.wipeKeys();
     }

@@ -223,52 +223,71 @@ class _NodeDetailsState extends State<NodeDetails> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (myTrustStatement != null)
-                    CryptoShieldButton(json: myTrustStatement.json, labeler: labeler)
-                  else
-                    const SizedBox.shrink(),
-                  // Trust / Block / Clear actions — only for other identities.
-                  if (signInState.isSignedIn &&
-                      signInState.identity != widget.identity.value) ...[  
-                    IconButton(
-                      onPressed: () => _onTrustPressed(context, widget.identity),
-                      icon: Icon(
-                        myTrustStatement?.verb == TrustVerb.trust
-                            ? Icons.check_circle
-                            : Icons.check_circle_outline,
-                        color: Colors.green,
-                      ),
-                      iconSize: 22,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      tooltip: 'Vouch for this identity',
-                    ),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      onPressed: () => _passIntention(context, 'block', widget.identity),
-                      icon: Icon(
-                        myTrustStatement?.verb == TrustVerb.block
-                            ? Icons.delete
-                            : Icons.delete_outline,
-                        color: Colors.red,
-                      ),
-                      iconSize: 22,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      tooltip: 'Block this identity',
-                    ),
-                    if (myTrustStatement != null) ...[  
-                      const SizedBox(width: 4),
-                      IconButton(
-                        onPressed: () => _passIntention(context, 'clear', widget.identity),
-                        icon: const Icon(Icons.cancel_outlined, color: Colors.grey),
-                        iconSize: 22,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        tooltip: 'Clear my trust/block for this identity',
-                      ),
-                    ],
-                  ],
+                  CryptoShieldButton(json: myTrustStatement?.json, labeler: labeler),
+                  const SizedBox(width: 4),
+                  
+                  Builder(builder: (context) {
+                    final bool canAct = signInState.isSignedIn && signInState.identity != widget.identity.value;
+                    
+                    final bool canTrust = canAct && myTrustStatement?.verb != TrustVerb.trust;
+                    final String trustTip = !canAct ? 'Must be signed in as a different identity' 
+                                          : (!canTrust ? 'You already vouch for this identity' : 'Vouch for this identity');
+
+                    final bool canBlock = canAct && myTrustStatement?.verb != TrustVerb.block;
+                    final String blockTip = !canAct ? 'Must be signed in as a different identity'
+                                          : (!canBlock ? 'You already block this identity' : 'Block this identity');
+
+                    final bool canClear = canAct && myTrustStatement != null;
+                    final String clearTip = !canAct ? 'Must be signed in as a different identity'
+                                          : (!canClear ? 'No statement exists to clear' : 'Clear your trust/block for this identity');
+
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Tooltip(
+                          message: trustTip,
+                          child: IconButton(
+                            onPressed: canTrust ? () => _onTrustPressed(context, widget.identity) : null,
+                            icon: Icon(
+                              myTrustStatement?.verb == TrustVerb.trust ? Icons.check_circle : Icons.check_circle_outline,
+                              color: canTrust ? Colors.green : Colors.grey,
+                            ),
+                            iconSize: 22,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Tooltip(
+                          message: blockTip,
+                          child: IconButton(
+                            onPressed: canBlock ? () => _passIntention(context, 'block', widget.identity) : null,
+                            icon: Icon(
+                              myTrustStatement?.verb == TrustVerb.block ? Icons.delete : Icons.delete_outline,
+                              color: canBlock ? Colors.red : Colors.grey,
+                            ),
+                            iconSize: 22,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Tooltip(
+                          message: clearTip,
+                          child: IconButton(
+                            onPressed: canClear ? () => _passIntention(context, 'clear', widget.identity) : null,
+                            icon: Icon(
+                              Icons.cancel_outlined,
+                              color: canClear ? Colors.redAccent : Colors.grey.withOpacity(0.5),
+                            ),
+                            iconSize: 22,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
                 ],
               ),
               Row(

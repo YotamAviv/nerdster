@@ -18,6 +18,7 @@ import 'package:nerdster/key_storage_coordinator.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/settings/prefs.dart';
+import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
 
@@ -184,7 +185,7 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
   // If we have a POV from the URL, sign in as that identity (view-only) and ignore stored keys
   if (povPublicKey != null) {
     final fedKey = FedKey(await povPublicKey.json, kNativeEndpoint);
-    await signInState.signInWithFedKey(fedKey, null);
+    await signInState.signInWithFedKey(fedKey, null, method: SignInMethod.url);
     return;
   }
 
@@ -193,8 +194,9 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
     OouPublicKey? identityPublicKey;
     OouKeyPair? nerdsterKeyPair;
     Map<String, dynamic> endpoint = {};
+    SignInMethod? storedMethod;
     try {
-      (identityPublicKey, nerdsterKeyPair, endpoint) = await KeyStore.readKeys()
+      (identityPublicKey, nerdsterKeyPair, endpoint, storedMethod) = await KeyStore.readKeys()
           .timeout(const Duration(seconds: 5));
     } catch (e) {
       debugPrint('KeyStore.readKeys() failed or timed out: $e');
@@ -202,7 +204,7 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
     if (identityPublicKey != null) {
       final Json identityJson = await identityPublicKey.json;
       final fedKey = FedKey(identityJson, endpoint);
-      await signInState.signInWithFedKey(fedKey, nerdsterKeyPair);
+      await signInState.signInWithFedKey(fedKey, nerdsterKeyPair, method: storedMethod);
       if (pov != null) signInState.pov = pov; // now registered in Jsonish
       return;
     }

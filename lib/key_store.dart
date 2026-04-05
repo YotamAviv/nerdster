@@ -2,10 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/sign_in_state.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
-import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/keys.dart' show kNativeEndpoint;
 import 'package:oneofus_common/trust_statement.dart';
 
 /// UI:
@@ -18,14 +17,22 @@ class KeyStore {
   static const _encoder = Jsonish.encoder;
   static const OouCryptoFactory _crypto = crypto;
   static const String _kFedKeyKey = 'oneofus_home';
+  static const String _kSignInMethod = 'signInMethod';
 
   static Future<void> storeKeys(
     OouPublicKey oneofusPublicKey,
     OouKeyPair? nerdsterKeyPair, {
     Map<String, dynamic> endpoint = kNativeEndpoint,
+    SignInMethod? method,
   }) async {
     await _storage.write(key: kOneofusDomain, value: _encoder.convert(await oneofusPublicKey.json));
     await _storage.write(key: _kFedKeyKey, value: _encoder.convert(endpoint));
+    
+    if (method != null) {
+      await _storage.write(key: _kSignInMethod, value: method.name);
+    } else {
+      await _storage.delete(key: _kSignInMethod);
+    }
     if (nerdsterKeyPair != null) {
       await _storage.write(
           key: kNerdsterDomain, value: _encoder.convert(await nerdsterKeyPair.json));
@@ -38,9 +45,10 @@ class KeyStore {
     await _storage.delete(key: kOneofusDomain);
     await _storage.delete(key: kNerdsterDomain);
     await _storage.delete(key: _kFedKeyKey);
+    await _storage.delete(key: _kSignInMethod);
   }
 
-  static Future<(OouPublicKey? oneofusPublicKey, OouKeyPair? nerdsterKeyPair, Map<String, dynamic> endpoint)>
+  static Future<(OouPublicKey? oneofusPublicKey, OouKeyPair? nerdsterKeyPair, Map<String, dynamic> endpoint, SignInMethod? method)>
       readKeys() async {
     OouPublicKey? oneofusPublicKey;
     String? oneofusString = await _storage.read(key: kOneofusDomain);
@@ -67,6 +75,17 @@ class KeyStore {
         endpoint = {'url': 'https://$parsed'};
       }
     }
-    return (oneofusPublicKey, nerdsterKeyPair, endpoint);
+
+    SignInMethod? method;
+    final String? methodString = await _storage.read(key: _kSignInMethod);
+    if (methodString != null) {
+      try {
+        method = SignInMethod.values.byName(methodString);
+      } catch (e) {
+        // Fallback gracefully if the stored enum name is invalid or obsolete
+      }
+    }
+
+    return (oneofusPublicKey, nerdsterKeyPair, endpoint, method);
   }
 }
