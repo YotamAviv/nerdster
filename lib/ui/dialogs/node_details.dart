@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:math';
+import 'dart:convert';
 import 'package:nerdster/config.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/models/model.dart';
@@ -1078,6 +1079,12 @@ class _PassIntentionDialog extends StatelessWidget {
 
   const _PassIntentionDialog({required this.verb, required this.identityKey, required this.identityJson, this.method});
 
+  /// Encode pubKeyJson as a URL-safe base64 fragment, same format as vouch links.
+  String _fragment() {
+    final jsonStr = jsonEncode(identityJson);
+    return base64Url.encode(utf8.encode(jsonStr));
+  }
+
   @override
   Widget build(BuildContext context) {
     final Size availableSize = MediaQuery.of(context).size;
@@ -1089,9 +1096,11 @@ class _PassIntentionDialog extends StatelessWidget {
 
     Widget content;
     final String title = '${verb[0].toUpperCase()}${verb.substring(1)} identity';
+    final String fragment = _fragment();
 
     if (method == SignInMethod.oneOfUsNet || (method == null && isMobileDevice)) {
-       final Uri uri = Uri.parse('https://one-of-us.net/$verb?key=$identityKey');
+       // Use https:// universal link with fragment payload — server never sees the key.
+       final Uri uri = Uri.parse('https://one-of-us.net/$verb#$fragment');
        content = ListTile(
          leading: const Icon(Icons.link),
          title: const Text('https://one-of-us.net/...'),
@@ -1099,7 +1108,8 @@ class _PassIntentionDialog extends StatelessWidget {
          onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
        );
     } else if (method == SignInMethod.keymeid) {
-       final Uri uri = Uri.parse('keymeid://$verb?key=$identityKey');
+       // Use keymeid:// custom scheme with fragment payload.
+       final Uri uri = Uri.parse('keymeid://$verb#$fragment');
        content = ListTile(
          leading: const Icon(Icons.link),
          title: const Text('keymeid://...'),
@@ -1107,6 +1117,7 @@ class _PassIntentionDialog extends StatelessWidget {
          onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
        );
     } else {
+       // Desktop / unknown — show QR of the raw key JSON for scanning.
        content = Column(
          mainAxisSize: MainAxisSize.min,
          children: [

@@ -7,9 +7,6 @@ AI NOTE: This is my (the human) file with my own notes.
 
 # Misc...
 ?fire=emulator
-?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22NOqGmF9lMMWEUL9lMWs0mZZM9BSybVplqvawUkLbwOs%22%20}
-
-?identity={"crv": "Ed25519","kty": "OKP","x": "Sf-EQHCY94WB_4QFzEQWkO2SYFNTBgtfsc-Ic25oL84"}&skipVerify=false&dev=true
 
 # Fake egosCircle
 ?fire=fake&demo=egosCircle&showCrypto=true
