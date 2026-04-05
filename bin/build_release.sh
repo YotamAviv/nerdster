@@ -8,6 +8,11 @@ grep "^version:" pubspec.yaml
 # Extract build number (the part after '+')
 build=$(grep "^version:" pubspec.yaml | sed 's/.*+//')
 
+if [ -d "builds/$build" ]; then
+  echo "ERROR: builds/$build already exists. Did you forget to increment the build number?" >&2
+  exit 1
+fi
+
 echo ""
 echo "=== Building appbundle (build $build) ==="
 flutter build appbundle
