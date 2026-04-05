@@ -164,6 +164,7 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
   // Check URL query parameters (deep-link URI on mobile, Uri.base on web)
   params ??= Uri.base.queryParameters;
   String? identityParam = params['identity'];
+  String? methodParam = params['method'];
 
   // Parse identity JSON and register it in Jsonish cache.
   // getToken() alone does NOT register in Jsonish, causing signIn to crash.
@@ -180,12 +181,21 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
     }
   }
 
+  SignInMethod? overrideMethod;
+  if (methodParam != null) {
+    try {
+      overrideMethod = SignInMethod.values.byName(methodParam);
+    } catch (e) {
+      debugPrint('Invalid method override passed via URL: $methodParam');
+    }
+  }
+
   if (await tryDemoSignIn(context, pov: pov)) return;
 
   // If we have a POV from the URL, sign in as that identity (view-only) and ignore stored keys
   if (povPublicKey != null) {
     final fedKey = FedKey(await povPublicKey.json, kNativeEndpoint);
-    await signInState.signInWithFedKey(fedKey, null, method: SignInMethod.url);
+    await signInState.signInWithFedKey(fedKey, null, method: overrideMethod ?? SignInMethod.url);
     return;
   }
 
@@ -201,6 +211,11 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
     } catch (e) {
       debugPrint('KeyStore.readKeys() failed or timed out: $e');
     }
+
+    if (overrideMethod != null) {
+      storedMethod = overrideMethod;
+    }
+
     if (identityPublicKey != null) {
       final Json identityJson = await identityPublicKey.json;
       final fedKey = FedKey(identityJson, endpoint);

@@ -145,6 +145,56 @@ class _SignInWidgetState extends State<SignInWidget> {
 }
 
 /*
+Current state:
+
+There are devices out there with old versions of the identity app, and so
+these must be maintained working.
+I do plan to transition to something clearer, and so for a while
+we'll have two ways of doing things.
+
+The fallback web pages hosted at https://one-of-us.net/ need to be maintained
+as well.
+
+- Vouch (used in invitation links to share an identity for vouching):
+  - keymeid://vouch#<base64Url_json_payload>
+  - https://one-of-us.net/vouch#<base64Url_json_payload>
+  Note: The payload is passed in the URI fragment (`#`), not as a query parameter. 
+  The identity app parses this on cold-starts and deep-link streams.
+
+- Sign-in:
+  - Nerdster generates: keymeid://signin?parameters=<base64Url_session_payload>
+  - Nerdster generates: https://one-of-us.net/sign-in?parameters=<base64Url_session_payload>
+  Note: The identity app currently routes any `keymeid://` request where host != 'vouch' 
+  as a sign-in attempt, grabbing `?parameters=`. For HTTP, it looks for paths containing 
+  `sign-in` and grabs `?data=` or `?parameters=`.
+
+
+Future state:
+
+Don't invite trouble: hyphens, underscores, capital letters...
+(Cloud functions cause issues with camel case.)
+
+Verbs: signin, vouch, block, clear
+
+- Vouch:
+  - keymeid://vouch#<base64Url_json_payload>
+  - https://one-of-us.net/vouch#<base64Url_json_payload>
+
+- Sign-in:
+  - keymeid://signin#<base64Url_session_payload>
+  - https://one-of-us.net/signin#<base64Url_session_payload>
+
+- Block:
+  - keymeid://block#<base64Url_json_payload>
+  - https://one-of-us.net/block#<base64Url_json_payload>
+
+- Clear:
+  - keymeid://clear#<base64Url_json_payload>
+  - https://one-of-us.net/clear#<base64Url_json_payload>
+*/
+
+
+/*
 Lingo:
   - https://one-of-us.net/ (universal link)
   - keymeid:// (custom URL scheme)

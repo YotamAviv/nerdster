@@ -105,6 +105,38 @@ The 4 icons on the bottom left of NodeDetails are:
   - if enabled, then show the appropriate UI to clear
   - otherwise, just a tooltip
 
+Add a queryParameter to override the sign in method for testing purposes.
+
+Fix this:
+The appropriate UI to block or clear is to show a dialog
+Depending on how we signed in, show a link https://one-of-us.net/<block or clear>, or a keymeid:// link, or a QR code to scan.
+If we don't know how we signed in then for mobile devices default to https://one-of-us.net/, otherwise the QR code.
+This is similar to SignInDialog
+
+The appropriate UI for trust (already implemented) is to explain that we won't.
+
+
+  
+
+  
+
+
+
+
+The 4 icons on the bottom left of NodeDetails are:
+- shield: always there, enabled only if we have a statement
+  - if enabled (we have a trust or block statement), then show the statement (like we currently do)
+  - otherwise, just a tooltip
+- trust: always there, enabled if we don't currently trust
+  - if enabled, then show the appropriate UI to trust
+  - otherwise, just a tooltip
+- block: always there, enabled if we don't currently block
+  - if enabled, then show the appropriate UI to block
+  - otherwise, just a tooltip
+- clear: always there, enabled only if we have a statement (trust or block, obviously)
+  - if enabled, then show the appropriate UI to clear
+  - otherwise, just a tooltip
+
 The appropriate UI to block or clear is to show a dialog
 Depending on how we signed in, show a link https://one-of-us.net/<block or clear>, or a keymeid:// link, or a QR code to scan. 
 If we don't know how we signed in then for mobile devices default to https://one-of-us.net/, otherwise the QR code.

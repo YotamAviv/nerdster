@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:math';
 import 'package:nerdster/config.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/models/model.dart';
@@ -384,27 +386,23 @@ class _NodeDetailsState extends State<NodeDetails> {
   /// For keymeid/oneOfUsNet sign-ins the app is known to be available; open the universal link.
   Future<void> _passIntention(BuildContext context, String verb, IdentityKey identity) async {
     final String key = identity.value;
-    final bool canOpenLink = signInState.signInMethod == SignInMethod.keymeid ||
-        signInState.signInMethod == SignInMethod.oneOfUsNet;
-    if (canOpenLink) {
-      final Uri uri = Uri.parse('https://one-of-us.net/$verb?key=$key');
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (!context.mounted) return;
-      final String title = '${verb[0].toUpperCase()}${verb.substring(1)} identity';
-      await showDialog<void>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(title),
-          content: Text(
-            'In your identity app, $verb the following identity key:\n\n$key',
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
-          ],
-        ),
-      );
+    final Json? identityJson = FedKey.find(identity)?.pubKeyJson;
+    if (identityJson == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot load identity details')));
+      }
+      return;
     }
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => _PassIntentionDialog(
+        verb: verb,
+        identityKey: key,
+        identityJson: identityJson,
+        method: signInState.signInMethod,
+      ),
+    );
   }
 
   /// Trust shows an informational dialog explaining that vouching is an in-person action.
@@ -1069,5 +1067,75 @@ class _NodeDetailsState extends State<NodeDetails> {
         ],
       ),
     );
+  }
+}
+
+class _PassIntentionDialog extends StatelessWidget {
+  final String verb;
+  final String identityKey;
+  final Json identityJson;
+  final SignInMethod? method;
+
+  const _PassIntentionDialog({required this.verb, required this.identityKey, required this.identityJson, this.method});
+
+  @override
+  Widget build(BuildContext context) {
+    final Size availableSize = MediaQuery.of(context).size;
+    final double width = min(availableSize.width * 0.9, 400);
+
+    final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final bool isMobileDevice = isIOS || isAndroid;
+
+    Widget content;
+    final String title = '${verb[0].toUpperCase()}${verb.substring(1)} identity';
+
+    if (method == SignInMethod.oneOfUsNet || (method == null && isMobileDevice)) {
+       final Uri uri = Uri.parse('https://one-of-us.net/$verb?key=$identityKey');
+       content = ListTile(
+         leading: const Icon(Icons.link),
+         title: const Text('https://one-of-us.net/...'),
+         subtitle: const Text('Use your identity app'),
+         onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
+       );
+    } else if (method == SignInMethod.keymeid) {
+       final Uri uri = Uri.parse('keymeid://$verb?key=$identityKey');
+       content = ListTile(
+         leading: const Icon(Icons.link),
+         title: const Text('keymeid://...'),
+         subtitle: const Text('Use your identity app'),
+         onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
+       );
+    } else {
+       content = Column(
+         mainAxisSize: MainAxisSize.min,
+         children: [
+            const Text('Scan this code with your identity app.', textAlign: TextAlign.center),
+            const SizedBox(height: 16),
+            JsonQrDisplay(identityJson, interpret: ValueNotifier(false)),
+         ]
+       );
+    }
+
+    return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: SingleChildScrollView(
+            child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: SizedBox(
+                    width: width,
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text(title,
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                      const SizedBox(height: 24),
+                      content,
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+                        ]
+                      )
+                    ])))));
   }
 }
