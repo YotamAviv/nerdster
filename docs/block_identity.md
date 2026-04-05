@@ -12,7 +12,8 @@ As I was planning this feature, it became apparent that:
 The Nerdster is philosophically unfit for the Apple App Store.
 
 Possible remdial measures (Store Apps only):
-- Restrict PoV's identity network to an intersection with your own.
+- Restrict PoV's identity network to an intersection with your own
+  (combione that with permissiveness, distance, and we get quagmire)
 - Don't allow ignoring censorship.
 - (Can't censor censorship when you can't even see it)
 
