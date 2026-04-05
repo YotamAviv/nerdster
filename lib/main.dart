@@ -181,6 +181,13 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
 
   if (await tryDemoSignIn(context, pov: pov)) return;
 
+  // If we have a POV from the URL, sign in as that identity (view-only) and ignore stored keys
+  if (povPublicKey != null) {
+    final fedKey = FedKey(await povPublicKey.json, kNativeEndpoint);
+    await signInState.signInWithFedKey(fedKey, null);
+    return;
+  }
+
   // Check secure browser storage
   if (fireChoice != FireChoice.fake) {
     OouPublicKey? identityPublicKey;
@@ -201,10 +208,4 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
     }
   }
 
-  // If we have a POV from the URL but no keys, sign in as that identity (view-only)
-  if (povPublicKey != null) {
-    final fedKey = FedKey(await povPublicKey.json, kNativeEndpoint);
-    await signInState.signInWithFedKey(fedKey, null);
-    return;
-  }
 }

@@ -96,6 +96,25 @@ This is the new myLiteralStatements for trust referred to above - the identity's
 Show a shield icon at the bottom left of the NodeDetails card if I have a block or trust statement for this identity;
 clicking on it shows the Json of that statement in one of our standard widgets to that I can toggle interpreted or not.
 
+
+Add UI to block, clear.
+- Track how the user signed in (keymeid://, https://one-of-us.net, scan QR, or paste)
+At the bottom left of NodeDetails to the right of the shied icon, add these:
+- check icon (to trust). Make it filled in solid green if I trust this key, outlined otherwise.
+- trash can icon (to block) like the censor icon on RateDialog. Make it filled in solid red if I block this key, outlined otherwise.
+- X icon (to clear my trust or block) similar to clear on Rate dialog. Show only if I have a trust or block statement for this key.
+Clicking block or clear (when filled in and enabled) "pass the intention" to to the ONE-OF-US.NET app.
+Clicking trust (when filled in and enabled) should show an alert dialog explaing that you vouch in person or through another means of secure communication, not because you believe that it's them on the Nerdster.
+* pass the intention
+If signed in by scanning QR or paste, then show the key in a dialog and explain what to do.
+If signed in using keymeid://, https://one-of-us.net then create the new link discussed for the user to click on.
+
+
+
+If we don't have a
+- On the NodeDetails add a block icon if the key represented 
+
+
 ## Implementation plan: myTrustStatements
 
 Goal: make the signed-in user's own trust statements available on `FeedModel`, independent of the active PoV — analogous to `myLiteralStatements` for content.

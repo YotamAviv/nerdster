@@ -15,6 +15,8 @@ import 'package:nerdster/logic/follow_logic.dart';
 import 'package:collection/collection.dart';
 import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:nerdster/ui/crypto_shield_button.dart';
+import 'package:nerdster/sign_in_state.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NodeDetails extends StatefulWidget {
   final IdentityKey identity;
@@ -218,10 +220,57 @@ class _NodeDetailsState extends State<NodeDetails> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (myTrustStatement != null)
-                CryptoShieldButton(json: myTrustStatement.json, labeler: labeler)
-              else
-                const SizedBox.shrink(),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (myTrustStatement != null)
+                    CryptoShieldButton(json: myTrustStatement.json, labeler: labeler)
+                  else
+                    const SizedBox.shrink(),
+                  // Trust / Block / Clear actions — only for other identities.
+                  if (signInState.isSignedIn &&
+                      signInState.identity != widget.identity.value) ...[  
+                    IconButton(
+                      onPressed: () => _onTrustPressed(context, widget.identity),
+                      icon: Icon(
+                        myTrustStatement?.verb == TrustVerb.trust
+                            ? Icons.check_circle
+                            : Icons.check_circle_outline,
+                        color: Colors.green,
+                      ),
+                      iconSize: 22,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      tooltip: 'Vouch for this identity',
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      onPressed: () => _passIntention(context, 'block', widget.identity),
+                      icon: Icon(
+                        myTrustStatement?.verb == TrustVerb.block
+                            ? Icons.delete
+                            : Icons.delete_outline,
+                        color: Colors.red,
+                      ),
+                      iconSize: 22,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      tooltip: 'Block this identity',
+                    ),
+                    if (myTrustStatement != null) ...[  
+                      const SizedBox(width: 4),
+                      IconButton(
+                        onPressed: () => _passIntention(context, 'clear', widget.identity),
+                        icon: const Icon(Icons.cancel_outlined, color: Colors.grey),
+                        iconSize: 22,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Clear my trust/block for this identity',
+                      ),
+                    ],
+                  ],
+                ],
+              ),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: _buildActions(context),
@@ -310,6 +359,52 @@ class _NodeDetailsState extends State<NodeDetails> {
         ),
       );
     });
+  }
+
+  /// Passes a trust/block/clear intention to your identity app.
+  /// For keymeid/oneOfUsNet sign-ins the app is known to be available; open the universal link.
+  Future<void> _passIntention(BuildContext context, String verb, IdentityKey identity) async {
+    final String key = identity.value;
+    final bool canOpenLink = signInState.signInMethod == SignInMethod.keymeid ||
+        signInState.signInMethod == SignInMethod.oneOfUsNet;
+    if (canOpenLink) {
+      final Uri uri = Uri.parse('https://one-of-us.net/$verb?key=$key');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (!context.mounted) return;
+      final String title = '${verb[0].toUpperCase()}${verb.substring(1)} identity';
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(title),
+          content: Text(
+            'In your identity app, $verb the following identity key:\n\n$key',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
+          ],
+        ),
+      );
+    }
+  }
+
+  /// Trust shows an informational dialog explaining that vouching is an in-person action.
+  /// There is no proceed path — vouching cannot be initiated from here.
+  Future<void> _onTrustPressed(BuildContext context, IdentityKey identity) async {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Vouch for this identity'),
+        content: const Text(
+          'Vouching means you personally know this person and that you carried out the vouch through an in-person meeting '
+          'or another secure channel, NOT because of what you see on the Nerdster.\n\n'
+          'Vouch using your identity app instead.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
+        ],
+      ),
+    );
   }
 
   List<Widget> _buildActions(BuildContext context) {

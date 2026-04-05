@@ -589,7 +589,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
   Future<void> _signInAsDev() async {
     final key = await crypto.parsePublicKey(_kDevIdentityKey);
-    await signInUiHelper(key, null);
+    await signInUiHelper(key, null, method: SignInMethod.paste);
   }
 
   Widget _buildStatusTable(bool hasIdentity, bool hasDelegate,
@@ -803,6 +803,7 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
         onDone: () {
           widget.onSuccess();
         },
+        method: widget.useUniversalLink ? SignInMethod.oneOfUsNet : SignInMethod.keymeid,
       );
     } catch (e) {
       debugPrint("Error in magic link session: $e");

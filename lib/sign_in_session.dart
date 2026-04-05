@@ -45,6 +45,7 @@ class SignInSession {
   Future<void> listen({
     required Function() onDone,
     Duration? timeout,
+    SignInMethod method = SignInMethod.qrScan,
   }) async {
     final firestore = FirebaseFirestore.instance;
 
@@ -99,7 +100,7 @@ class SignInSession {
       }
 
       await signInUiHelper(oneofusPublicKey, nerdsterKeyPair,
-          endpoint: fedKey.endpoint);
+          endpoint: fedKey.endpoint, method: method);
     });
   }
 

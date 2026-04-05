@@ -33,7 +33,7 @@ Future<void> pasteSignIn(BuildContext context) async {
     nerdsterKeyPair = await crypto.parseKeyPair(delegateJson);
   }
 
-  signInUiHelper(oneofusPublicKey, nerdsterKeyPair, endpoint: fedKey.endpoint);
+  signInUiHelper(oneofusPublicKey, nerdsterKeyPair, endpoint: fedKey.endpoint, method: SignInMethod.paste);
 }
 
 class PasteSignInWidget extends StatefulWidget {

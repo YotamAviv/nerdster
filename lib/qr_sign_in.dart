@@ -9,6 +9,7 @@ import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util_ui.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
 import 'package:nerdster/sign_in_session.dart';
+import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/key_storage_coordinator.dart';
 
 /// Nerdster web client / phone app QR sign-in:
@@ -33,6 +34,7 @@ Future<void> qrSignIn(BuildContext context) async {
         completer.complete();
       }
     },
+    method: SignInMethod.qrScan,
   );
 
   await showDialog(

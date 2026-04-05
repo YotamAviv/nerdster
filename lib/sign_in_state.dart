@@ -60,11 +60,21 @@ import 'package:oneofus_common/oou_signer.dart';
 /// nice to have Progress. One way to achieve that would be to have the UI watch those notifiers in
 /// StatefulWidgets.
 
+/// How the user signed into Nerdster. Determines the "pass the intention" handoff
+/// strategy for identity-layer actions (trust/block/clear).
+enum SignInMethod {
+  keymeid,    // keymeid:// button in the sign-in widget
+  oneOfUsNet, // https://one-of-us.net button in the sign-in widget
+  qrScan,     // QR code scanned by the ONE-OF-US phone app
+  paste,      // JSON credentials pasted
+  stored,     // keys restored from secure storage (KeyStore)
+}
+
 Future<void> signInUiHelper(
     OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair,
-    {Map<String, dynamic> endpoint = kNativeEndpoint}) async {
+    {Map<String, dynamic> endpoint = kNativeEndpoint, SignInMethod? method}) async {
   final fedKey = FedKey(await oneofusPublicKey.json, endpoint);
-  await signInState.signInWithFedKey(fedKey, nerdsterKeyPair);
+  await signInState.signInWithFedKey(fedKey, nerdsterKeyPair, method: method);
 }
 
 class SignInState with ChangeNotifier {
@@ -75,6 +85,7 @@ class SignInState with ChangeNotifier {
   StatementSigner? _signer;
   OouKeyPair? _delegateKeyPair;
   Map<String, dynamic> _endpoint = kNativeEndpoint;
+  SignInMethod? _signInMethod; // TODO: store the actual method instead and remove "stored". TODO: Add url. Maybe lump those in as "dev"
 
   static final SignInState _singleton = SignInState._internal();
 
@@ -89,9 +100,11 @@ class SignInState with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signInWithFedKey(FedKey fedKey, OouKeyPair? delegateKeyPair) async {
+  Future<void> signInWithFedKey(FedKey fedKey, OouKeyPair? delegateKeyPair,
+      {SignInMethod? method}) async {
     _identity = fedKey.identityKey.value;
     _endpoint = fedKey.endpoint;
+    _signInMethod = method;
     povNotifier.value = fedKey.identityKey.value;
     _delegateKeyPair = delegateKeyPair;
     if (delegateKeyPair != null) {
@@ -123,6 +136,7 @@ class SignInState with ChangeNotifier {
     _delegate = null;
     _signer = null;
     _delegateKeyPair = null;
+    _signInMethod = null;
 
     notifyListeners();
   }
@@ -148,4 +162,5 @@ class SignInState with ChangeNotifier {
   StatementSigner? get signer => _signer;
   OouKeyPair? get delegateKeyPair => _delegateKeyPair;
   Map<String, dynamic> get endpoint => _endpoint;
+  SignInMethod? get signInMethod => _signInMethod;
 }
