@@ -249,46 +249,52 @@ class _NodeDetailsState extends State<NodeDetails> {
                       children: [
                         Tooltip(
                           message: trustTip,
-                          child: IconButton(
-                            onPressed: canTrust ? () => _onTrustPressed(context, widget.identity) : null,
-                            icon: Icon(
-                              // Solid = currently vouching. Outline = available action.
-                              myTrustStatement?.verb == TrustVerb.trust ? Icons.check_circle : Icons.check_circle_outline,
-                              color: Colors.green,  // always green; IconButton dims interaction but we keep color.
+                          child: InkWell(
+                            onTap: canTrust ? () => _onTrustPressed(context, widget.identity) : null,
+                            borderRadius: BorderRadius.circular(4),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(
+                                // Solid = currently vouching. Outline = available action.
+                                myTrustStatement?.verb == TrustVerb.trust ? Icons.check_circle : Icons.check_circle_outline,
+                                color: Colors.green,
+                                size: 22,
+                              ),
                             ),
-                            iconSize: 22,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
                           ),
                         ),
                         const SizedBox(width: 4),
                         Tooltip(
                           message: blockTip,
-                          child: IconButton(
-                            onPressed: canBlock ? () => _passIntention(context, 'block', widget.identity) : null,
-                            icon: Icon(
-                              // Solid = currently blocking. Outline = available action.
-                              myTrustStatement?.verb == TrustVerb.block ? Icons.delete : Icons.delete_outline,
-                              color: Colors.red,  // always red.
+                          child: InkWell(
+                            onTap: canBlock ? () => _passIntention(context, 'block', widget.identity) : null,
+                            borderRadius: BorderRadius.circular(4),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(
+                                // Solid = currently blocking. Outline = available action.
+                                myTrustStatement?.verb == TrustVerb.block ? Icons.delete : Icons.delete_outline,
+                                color: Colors.red,
+                                size: 22,
+                              ),
                             ),
-                            iconSize: 22,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
                           ),
                         ),
                         const SizedBox(width: 4),
                         Tooltip(
                           message: clearTip,
-                          child: IconButton(
-                            onPressed: canClear ? () => _passIntention(context, 'clear', widget.identity) : null,
-                            icon: Icon(
-                              // Outline = has statement to clear (enabled). Solid = nothing to clear (disabled).
-                              canClear ? Icons.cancel_outlined : Icons.cancel,
-                              color: canClear ? Colors.black : Colors.grey,
+                          child: InkWell(
+                            onTap: canClear ? () => _passIntention(context, 'clear', widget.identity) : null,
+                            borderRadius: BorderRadius.circular(4),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(
+                                // Outline = has statement to clear (enabled). Solid = nothing to clear (disabled).
+                                canClear ? Icons.cancel_outlined : Icons.cancel,
+                                color: canClear ? Colors.black : Colors.grey,
+                                size: 22,
+                              ),
                             ),
-                            iconSize: 22,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
                           ),
                         ),
                       ],
