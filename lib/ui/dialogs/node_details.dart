@@ -461,11 +461,10 @@ class _NodeDetailsState extends State<NodeDetails> {
     await showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Vouch for this identity'),
+        title: const Text('Vouch using your identity app instead'),
         content: const Text(
           'Vouching means you personally know this person and that you carried out the vouch through an in-person meeting '
-          'or another secure channel, NOT because of what you see on the Nerdster.\n\n'
-          'Vouch using your identity app instead.',
+          'or another secure channel, NOT because of what you see on the Nerdster.\n\n',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
