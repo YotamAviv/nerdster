@@ -252,8 +252,9 @@ class _NodeDetailsState extends State<NodeDetails> {
                           child: IconButton(
                             onPressed: canTrust ? () => _onTrustPressed(context, widget.identity) : null,
                             icon: Icon(
+                              // Solid = currently vouching. Outline = available action.
                               myTrustStatement?.verb == TrustVerb.trust ? Icons.check_circle : Icons.check_circle_outline,
-                              color: canTrust ? Colors.green : Colors.grey,
+                              color: Colors.green,  // always green; IconButton dims interaction but we keep color.
                             ),
                             iconSize: 22,
                             padding: EdgeInsets.zero,
@@ -266,8 +267,9 @@ class _NodeDetailsState extends State<NodeDetails> {
                           child: IconButton(
                             onPressed: canBlock ? () => _passIntention(context, 'block', widget.identity) : null,
                             icon: Icon(
+                              // Solid = currently blocking. Outline = available action.
                               myTrustStatement?.verb == TrustVerb.block ? Icons.delete : Icons.delete_outline,
-                              color: canBlock ? Colors.red : Colors.grey,
+                              color: Colors.red,  // always red.
                             ),
                             iconSize: 22,
                             padding: EdgeInsets.zero,
@@ -280,8 +282,9 @@ class _NodeDetailsState extends State<NodeDetails> {
                           child: IconButton(
                             onPressed: canClear ? () => _passIntention(context, 'clear', widget.identity) : null,
                             icon: Icon(
-                              Icons.cancel_outlined,
-                              color: canClear ? Colors.redAccent : Colors.grey.withOpacity(0.5),
+                              // Outline = has statement to clear (enabled). Solid = nothing to clear (disabled).
+                              canClear ? Icons.cancel_outlined : Icons.cancel,
+                              color: canClear ? Colors.black : Colors.grey,
                             ),
                             iconSize: 22,
                             padding: EdgeInsets.zero,
