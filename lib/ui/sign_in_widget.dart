@@ -242,8 +242,7 @@ Restrictions for showing No identity app:
 - only on mobile apps (not web app on mobile devices)
 - only if there is currently no signed in identity (delegate not required).
 
-Clicking the blue header box 7 times (instead of the text, "Identity app on this device") 
-will show all options including
+Clicking the text, "Identity app on this device" 7 times will show all options including
 Developers:
 - Paste keys
 */
@@ -454,50 +453,40 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                     identityArrived: identityArrived, delegateArrived: delegateArrived),
                 if (!hasDelegate) ...[
                   const SizedBox(height: 8),
-                  // Blue header box with +/- toggle.
-                  // 7 taps reveals developer options.
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _headingTapCount++;
-                        if (_headingTapCount >= 7) {
-                          _showPaste = true;
-                        } else {
-                          _expanded = !_expanded;
-                        }
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue[200]!),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: RichText(
-                              text: TextSpan(
-                                style: const TextStyle(fontSize: 12, color: Colors.black87),
-                                children: [
-                                  const TextSpan(text: 'Use your '),
-                                  const TextSpan(
-                                    text: 'Identity App',
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
-                                  ),
-                                  const TextSpan(text: ' (ONE-OF-US.NET)'),
-                                ],
-                              ),
+                  // Blue header box — tap the +/- icon to expand/collapse.
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              style: const TextStyle(fontSize: 12, color: Colors.black87),
+                              children: [
+                                const TextSpan(text: 'Use your '),
+                                const TextSpan(
+                                  text: 'Identity App',
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                                ),
+                                const TextSpan(text: ' (ONE-OF-US.NET)'),
+                              ],
                             ),
                           ),
-                          Icon(
+                        ),
+                        GestureDetector(
+                          onTap: () => setState(() => _expanded = !_expanded),
+                          child: Icon(
                             _expanded ? Icons.remove : Icons.add,
                             size: 18,
                             color: Colors.blue[700],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -506,11 +495,21 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                 // Section 1: This Device
                 Padding(
                   padding: const EdgeInsets.only(left: 4, bottom: 4),
-                  child: Text('Identity app on this device',
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.blueGrey[700],
-                          fontWeight: FontWeight.bold)),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _headingTapCount++;
+                        if (_headingTapCount >= 7) {
+                          _showPaste = true;
+                        }
+                      });
+                    },
+                    child: Text('Identity app on this device',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blueGrey[700],
+                            fontWeight: FontWeight.bold)),
+                  ),
                 ),
                 if (_expanded) buildCustomBtn(false),
                 buildUniversalBtn(false),
