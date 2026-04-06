@@ -389,6 +389,52 @@ class _NodeDetailsState extends State<NodeDetails> {
   /// Passes a trust/block/clear intention to your identity app.
   /// For keymeid/oneOfUsNet sign-ins the app is known to be available; open the universal link.
   Future<void> _passIntention(BuildContext context, String verb, IdentityKey identity) async {
+    // Show a warning before proceeding with blocking.
+    if (verb == 'block') {
+      final IdentityKey canonical = _resolveIdentity(identity, model);
+      final TrustStatement? myStatement = signInState.isSignedIn
+          ? (model.myTrustStatements[canonical] ?? model.myTrustStatements[identity])
+          : null;
+      final bool alreadyVouched = myStatement?.verb == TrustVerb.trust;
+
+      if (!context.mounted) return;
+      final bool? proceed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('⚠️ Blocking is Harsh!'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'You\'d be removing this identity from existing.',
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'If this is a person whose content you don\'t appreciate, '
+                'use the follow/block settings to block him for <nerdster> context.',
+              ),
+              if (alreadyVouched) ...[
+                const SizedBox(height: 12),
+                const Text(
+                  'You\'ve vouched for this person. Consider just clearing your vouch instead.',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Block anyway', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+      if (proceed != true) return;
+    }
+
     final String key = identity.value;
     final Json? identityJson = FedKey.find(identity)?.pubKeyJson;
     if (identityJson == null) {
