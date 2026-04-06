@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/fire_choice.dart';
@@ -113,17 +114,20 @@ class KeyInfoView extends StatelessWidget {
           }
           const double height = 400;
 
-          if (details != null) {
+          // Use positioned popup on web/desktop only; on mobile use a centered Dialog
+          // to avoid clipping by system gesture bars and navigation bars.
+          if (details != null && kIsWeb) {
             final screenSize = MediaQuery.of(context).size;
             double left = details.globalPosition.dx;
             double top = details.globalPosition.dy;
 
-            // Adjust to keep on screen
+            // Adjust to keep on screen, accounting for system bars (e.g. Android nav bar).
+            final double bottomInset = MediaQuery.of(context).viewPadding.bottom;
             if (left + width > screenSize.width) {
               left = screenSize.width - width - 10;
             }
-            if (top + height > screenSize.height) {
-              top = screenSize.height - height - 10;
+            if (top + height > screenSize.height - bottomInset) {
+              top = screenSize.height - bottomInset - height - 10;
             }
 
             // Also constrain to passed constraints if details were provided (popup)
