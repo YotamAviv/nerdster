@@ -110,7 +110,7 @@ class _NodeDetailsState extends State<NodeDetails> {
   Future<void> _initData() async {
     if (!mounted) return;
 
-    if (!signInState.isSignedIn) return;
+    if (!signInState.hasIdentity) return;
 
     final canonical = model.trustGraph.resolveIdentity(widget.identity);
 
@@ -179,7 +179,7 @@ class _NodeDetailsState extends State<NodeDetails> {
     final IdentityKey canonicalIdentity = _resolveIdentity(widget.identity, model);
 
     // My own (identity-layer) trust or block statement for this identity, independent of PoV.
-    final TrustStatement? myTrustStatement = signInState.isSignedIn
+    final TrustStatement? myTrustStatement = signInState.hasIdentity
         ? (model.myTrustStatements[canonicalIdentity] ?? model.myTrustStatements[widget.identity])
         : null;
 
@@ -230,7 +230,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                   const SizedBox(width: 4),
                   
                   Builder(builder: (context) {
-                    final bool canAct = signInState.isSignedIn && signInState.identity != widget.identity.value;
+                    final bool canAct = signInState.hasIdentity && signInState.identity != widget.identity.value;
                     
                     final bool canTrust = canAct && myTrustStatement?.verb != TrustVerb.trust;
                     final String trustTip = !canAct ? 'Must be signed in as a different identity' 
@@ -398,7 +398,7 @@ class _NodeDetailsState extends State<NodeDetails> {
     // Show a warning before proceeding with blocking.
     if (verb == 'block') {
       final IdentityKey canonical = _resolveIdentity(identity, model);
-      final TrustStatement? myStatement = signInState.isSignedIn
+      final TrustStatement? myStatement = signInState.hasIdentity
           ? (model.myTrustStatements[canonical] ?? model.myTrustStatements[identity])
           : null;
       final bool alreadyVouched = myStatement?.verb == TrustVerb.trust;
@@ -642,7 +642,7 @@ class _NodeDetailsState extends State<NodeDetails> {
   }
 
   Widget _buildFollowContextsSection() {
-    if (signInState.isSignedIn && signInState.identity == widget.identity.value) {
+    if (signInState.hasIdentity && signInState.identity == widget.identity.value) {
       return const Text("This is you.", style: TextStyle(fontStyle: FontStyle.italic));
     }
 

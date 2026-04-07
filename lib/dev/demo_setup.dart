@@ -6,7 +6,7 @@ import 'package:nerdster/singletons.dart';
 
 String? demo;
 
-Future<bool> tryDemoSignIn(BuildContext? context, {String? pov}) async {
+Future<bool> tryDemoSignIn(BuildContext? context) async {
   Map<String, String> params = Uri.base.queryParameters;
   if (params['demo'] != null) {
     if (fireChoice == FireChoice.prod) throw 'not on production';
@@ -16,7 +16,6 @@ Future<bool> tryDemoSignIn(BuildContext? context, {String? pov}) async {
     OouKeyPair? nerdsterKeyPair = (delegateDemoKey != null) ? delegateDemoKey.keyPair : null;
     DemoKey.dumpDemoCredentials();
     await signInState.signIn(identity, nerdsterKeyPair);
-    if (pov != null) signInState.pov = pov;
     return true;
   }
   return false;

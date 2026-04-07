@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/keys.dart' show FedKey, kNativeEndpoint;
+import 'package:oneofus_common/keys.dart' show FedKey, IdentityKey, kNativeEndpoint;
 import 'package:oneofus_common/oou_signer.dart';
 
 /// This class tracks the sign-in state of the user using 3 main variables:
@@ -79,7 +79,7 @@ Future<void> signInUiHelper(
 
 class SignInState with ChangeNotifier {
   final ValueNotifier<String?> povNotifier = ValueNotifier<String?>(null);
-  String? _identity;
+  IdentityKey? _identity;
   Json? _delegatePublicKeyJson;
   String? _delegate;
   StatementSigner? _signer;
@@ -96,13 +96,12 @@ class SignInState with ChangeNotifier {
     assert(Jsonish.find(oneofusToken) != null);
     povNotifier.value = oneofusToken;
     // CONSIDER: show [pov, identity, delegate] in credentials display
-    if (_identity == null) _identity = povNotifier.value;
     notifyListeners();
   }
 
   Future<void> signInWithFedKey(FedKey fedKey, OouKeyPair? delegateKeyPair,
       {SignInMethod? method}) async {
-    _identity = fedKey.identityKey.value;
+    _identity = fedKey.identityKey;
     _endpoint = fedKey.endpoint;
     _signInMethod = method;
     povNotifier.value = fedKey.identityKey.value;
@@ -129,7 +128,7 @@ class SignInState with ChangeNotifier {
 
   void signOut({bool? clearIdentity = false}) {
     if (clearIdentity == true) {
-      if (povNotifier.value == _identity) povNotifier.value = null;
+      if (povNotifier.value == _identity?.value) povNotifier.value = null;
       _identity = null;
     }
     _delegatePublicKeyJson = null;
@@ -145,14 +144,21 @@ class SignInState with ChangeNotifier {
   String get pov {
     if (povNotifier.value != null) return povNotifier.value!;
     if (_identity == null) throw StateError("Accessed pov before sign in");
-    return _identity!;
+    return _identity!.value;
   }
 
-  Json get identityJson => Jsonish.find(identity)!.json;
+  Json get identityJson => Jsonish.find(identity.value)!.json;
 
   // derived
-  bool get isSignedIn => _identity != null;
-  String get identity {
+  /// True when the user has a PoV — sufficient to view content.
+  /// Identity may still be null (e.g. arrived via a shared Nerdster link).
+  bool get hasPov => povNotifier.value != null;
+
+  /// True when the user has actively identified themselves.
+  /// Required for write operations and self-reflection (e.g. "this is you").
+  bool get hasIdentity => _identity != null;
+
+  IdentityKey get identity {
     if (_identity == null) throw StateError("Accessed identity before sign in");
     return _identity!;
   }

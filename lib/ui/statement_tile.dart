@@ -62,8 +62,8 @@ class StatementTile extends StatelessWidget {
 
     // Determine current user's reaction to this statement
     final myReplies = uniqueStatements.where((r) {
-      if (!signInState.isSignedIn) return false;
-      final myIdentityKey = IdentityKey(signInState.identity);
+      if (!signInState.hasIdentity) return false;
+      final myIdentityKey = signInState.identity;
       if (model.trustGraph.isTrusted(IdentityKey(r.iKey.value))) {
         return model.trustGraph.resolveIdentity(IdentityKey(r.iKey.value)) == myIdentityKey;
       }

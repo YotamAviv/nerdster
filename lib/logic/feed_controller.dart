@@ -59,7 +59,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         contentSource = CachedSource(
             contentSource, SourceFactory.getWriter(kNerdsterDomain), optimisticConcurrencyFunc),
         super(null) {
-    _lastIdentity = signInState.isSignedIn ? signInState.identity : null;
+    _lastIdentity = signInState.hasIdentity ? signInState.identity : null;
     _lastPov = signInState.povNotifier.value;
     _lastDelegate = signInState.delegate;
     Setting.get(SettingType.identityPathsReq).notifier.addListener(_onSettingChanged);
@@ -73,12 +73,12 @@ class FeedController extends ValueNotifier<FeedModel?> {
     Setting.get(SettingType.censor).notifier.addListener(_onSettingChanged);
   }
 
-  String? _lastIdentity;
+  IdentityKey? _lastIdentity;
   String? _lastPov;
   String? _lastDelegate;
 
   void _onSignInStateChanged() {
-    final currentIdentity = signInState.isSignedIn ? signInState.identity : null;
+    final currentIdentity = signInState.hasIdentity ? signInState.identity : null;
     final currentPov = signInState.povNotifier.value;
     final currentDelegate = signInState.delegate;
 
@@ -317,14 +317,14 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
     try {
       while (true) {
-        if (!signInState.isSignedIn && signInState.povNotifier.value == null) {
+        if (signInState.povNotifier.value == null) {
           value = null;
           break;
         }
 
         final IdentityKey currentPovIdentity = IdentityKey(signInState.pov);
         final IdentityKey? myIdentity =
-            signInState.isSignedIn ? IdentityKey(signInState.identity) : null;
+            signInState.hasIdentity ? signInState.identity : null;
 
         List<DelegateKey>? myDelegateKeys;
         Map<IdentityKey, TrustStatement> myTrustStatements = {};
@@ -484,7 +484,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         }
 
         if (currentPovIdentity.value == signInState.pov &&
-            myIdentity?.value == (signInState.isSignedIn ? signInState.identity : null)) {
+            myIdentity == (signInState.hasIdentity ? signInState.identity : null)) {
           final allErrors = [
             ...trustSource.errors,
             ...contentSource.errors,

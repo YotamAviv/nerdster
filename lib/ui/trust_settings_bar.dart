@@ -43,6 +43,8 @@ class TrustSettingsBar extends StatelessWidget {
                   child: ValueListenableBuilder<String?>(
                     valueListenable: signInState.povNotifier,
                     builder: (context, currentPov, _) {
+                      assert(currentPov != null);
+                      final String pov = currentPov!;
                       var items = [
                         ...availableIdentities.map((k) {
                           return DropdownMenuItem<String>(
@@ -50,26 +52,35 @@ class TrustSettingsBar extends StatelessWidget {
                             child: Text(
                               labeler.getIdentityLabel(k),
                               overflow: TextOverflow.ellipsis,
-                              style: signInState.identity == k.value
+                              style: signInState.hasIdentity && signInState.identity == k
                                   ? const TextStyle(color: Colors.green)
                                   : null,
                             ),
                           );
                         }),
-                        if (currentPov != null &&
-                            availableIdentities.every((k) => k.value != signInState.identity))
+                        if (signInState.hasIdentity &&
+                            availableIdentities.every((k) => k != signInState.identity))
                           DropdownMenuItem<String>(
-                            value: signInState.identity,
+                            value: signInState.identity.value,
                             child: Text(
                               '<identity>',
                               style: const TextStyle(color: Colors.green),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                        if (availableIdentities.every((k) => k.value != pov) &&
+                            (!signInState.hasIdentity || signInState.identity.value != pov))
+                          DropdownMenuItem<String>(
+                            value: pov,
+                            child: Text(
+                              labeler.getIdentityLabel(IdentityKey(pov)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                       ];
                       return DropdownButton<String>(
                         isExpanded: true,
-                        value: currentPov ?? signInState.pov,
+                        value: pov,
                         hint: const Text('Select PoV', overflow: TextOverflow.ellipsis),
                         items: items,
                         isDense: true,

@@ -11,7 +11,7 @@ String generateLink() {
   assert(fireChoice != FireChoice.fake, "Doesn't work with fake");
   if (fireChoice.name != FireChoice.prod.name) params['fire'] = fireChoice.name;
 
-  params['identity'] = JsonEncoder().convert(Jsonish.find(signInState.pov)!.json);
+  params['pov'] = JsonEncoder().convert(Jsonish.find(signInState.pov)!.json);
 
   Prefs.setParams(params);
   // On web: Uri.base preserves the current host (localhost for emulator, nerdster.org for prod).

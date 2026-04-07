@@ -22,9 +22,9 @@ import 'submit.dart';
 
 class ContentView extends StatefulWidget {
   final IdentityKey pov;
-  final IdentityKey meIdentity;
+  final IdentityKey? identity;
 
-  const ContentView({super.key, required this.pov, required this.meIdentity});
+  const ContentView({super.key, required this.pov, this.identity});
 
   @override
   State<ContentView> createState() => _ContentViewState();

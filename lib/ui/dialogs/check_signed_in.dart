@@ -11,7 +11,9 @@ import 'package:url_launcher/url_launcher.dart';
 Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) async {
   String? issue;
 
-  if (signInState.delegate == null) {
+  if (!signInState.hasIdentity) {
+    issue = 'You are not signed in';
+  } else if (signInState.delegate == null) {
     issue = 'You are not fully signed in';
   } else if (trustGraph != null) {
     final myDelegate = signInState.delegate;
@@ -19,10 +21,10 @@ Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) asy
 
     if (trustGraph.replacements.containsKey(IdentityKey(myDelegate!))) {
       issue = 'Your delegate key is revoked';
-    } else if (trustGraph.isTrusted(IdentityKey(myIdentity))) {
+    } else if (trustGraph.isTrusted(myIdentity)) {
       // Check association
       bool isAssociated = false;
-      final statements = trustGraph.edges[IdentityKey(myIdentity)];
+      final statements = trustGraph.edges[myIdentity];
       if (statements != null) {
         for (final s in statements) {
           if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
@@ -77,9 +79,32 @@ Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) asy
                       Align(
                         alignment: Alignment.center,
                         child: Text(issue!,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       ),
+                      if (issue == 'You are not signed in') ...[
+                        const SizedBox(height: 12),
+                        RichText(
+                          text: TextSpan(style: style, children: [
+                            const TextSpan(
+                                text:
+                                    'You are viewing in read-only mode (PoV only).\n\n'),
+                            const TextSpan(text: 'To rate or interact with content, sign in. Tap '),
+                            greenKey,
+                            const TextSpan(
+                                text:
+                                    ' in the top left and sign in using an identity app, like '),
+                            TextSpan(
+                              text: 'ONE-OF-US.NET',
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline),
+                              recognizer: linkRecognizer,
+                            ),
+                            const TextSpan(text: '.'),
+                          ]),
+                        ),
+                      ],
                       if (issue == 'You are not fully signed in') ...[
                         const SizedBox(height: 12),
                         RichText(
@@ -94,7 +119,8 @@ Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) asy
                             const TextSpan(text: 'Tap '),
                             greenKey,
                             const TextSpan(
-                                text: ' in the top left and sign in again using an identity app, like '),
+                                text:
+                                    ' in the top left and sign in again using an identity app, like '),
                             TextSpan(
                               text: 'ONE-OF-US.NET',
                               style: const TextStyle(

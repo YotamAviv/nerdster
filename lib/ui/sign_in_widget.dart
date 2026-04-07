@@ -31,8 +31,8 @@ import 'package:url_launcher/link.dart';
 ///   - Blue filled     = delegate key, owned (private key present on device)
 ///   - Blue outlined   = delegate key, not owned / missing
 ///
-/// Set to true (via ?iphone=true URL param) to simulate iOS sign-in UI on non-iOS platforms.
-bool forceIphone = false;
+/// Set to true (via ?forceIphone=true URL param) to simulate iOS sign-in UI on non-iOS platforms.
+final bool forceIphone = kIsWeb && Uri.base.queryParameters['forceIphone'] == 'true';
 
 /// Hardcoded developer identity public key for "Use developer's Point of View" sign-in.
 const Map<String, dynamic> _kDevIdentityKey = {
@@ -69,7 +69,7 @@ class _SignInWidgetState extends State<SignInWidget> {
 
   @override
   Widget build(BuildContext context) {
-    bool hasIdentity = signInState.isSignedIn;
+    bool hasIdentity = signInState.hasIdentity;
     bool hasDelegate = signInState.delegate != null;
 
     Widget iconWidget;
@@ -85,22 +85,23 @@ class _SignInWidgetState extends State<SignInWidget> {
 
       if (resolver != null) {
         final dKey = DelegateKey(signInState.delegate!);
-        final iKey = IdentityKey(signInState.identity);
+        final iKey = signInState.identity;
 
         final IdentityKey? resolvedIdentity = resolver.getIdentityForDelegate(dKey);
         final String? revokeConstraint = resolver.getConstraintForDelegate(dKey);
 
         final resolvedMyIdentity = labeler.graph.resolveIdentity(iKey);
-
-        // 1. Check Association: Is this delegate mapped to our current canonical identity?
-        bool isAssociated = resolvedIdentity != null && resolvedIdentity == resolvedMyIdentity;
-
-        // 2. Check Revocation: Is there a revocation constraint?
-        bool isRevoked = revokeConstraint != null;
+        final bool isAssociated = resolvedIdentity != null && resolvedIdentity == resolvedMyIdentity;
+        final bool isRevoked = revokeConstraint != null;
+        final bool povIsMyIdentity = signInState.pov == signInState.identity.value;
 
         if (!isAssociated) {
           delegateStatus = KeyStatus.revoked;
-          statusMsg = "not associated with identity";
+          // When viewing a different PoV the user may simply not be in that network—
+          // qualify the message so it reads as informational rather than alarming.
+          statusMsg = povIsMyIdentity
+              ? "not associated with identity"
+              : "not associated with identity (from this PoV)";
         } else if (isRevoked) {
           delegateStatus = KeyStatus.revoked;
           statusMsg = "revoked";
@@ -267,13 +268,13 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
   // Track previous key tokens so we can fire animations on any key change
   // (including paste sign-in which may replace an already-present key).
-  String? _prevIdentityToken;
+  IdentityKey? _prevIdentityToken;
   String? _prevDelegateToken;
 
   @override
   void initState() {
     super.initState();
-    _prevHasIdentity = signInState.isSignedIn;
+    _prevHasIdentity = signInState.hasIdentity;
     _xPulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -284,7 +285,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.25), weight: 1),
       TweenSequenceItem(tween: Tween(begin: 1.25, end: 1.0), weight: 1),
     ]).animate(CurvedAnimation(parent: _xPulseController, curve: Curves.easeInOut));
-    _prevIdentityToken = signInState.isSignedIn ? signInState.identity : null;
+    _prevIdentityToken = signInState.hasIdentity ? signInState.identity : null;
     _prevDelegateToken = signInState.delegate;
     signInState.addListener(_update);
     _sessionFuture = SignInSession.create();
@@ -300,7 +301,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
   void _update() {
     if (!mounted) return;
-    final bool nowHasIdentity = signInState.isSignedIn;
+    final bool nowHasIdentity = signInState.hasIdentity;
     if (!_prevHasIdentity && nowHasIdentity) {
       _xPulseController.forward(from: 0);
     }
@@ -310,9 +311,9 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final bool hasIdentity = signInState.isSignedIn;
+    final bool hasIdentity = signInState.hasIdentity;
     final bool hasDelegate = signInState.delegate != null;
-    final String? currentIdentity = hasIdentity ? signInState.identity : null;
+    final IdentityKey? currentIdentity = hasIdentity ? signInState.identity : null;
     final String? currentDelegate = signInState.delegate;
 
     // Animate when the key token is new or changed (covers paste re-sign-in).
@@ -334,7 +335,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
     final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS || forceIphone;
     final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
-    final bool isMobile = !kIsWeb && (isIOS || isAndroid);
+    final bool isMobile = forceIphone || (!kIsWeb && (isIOS || isAndroid));
 
     Widget buildUniversalBtn(bool recommended) {
       return FutureBuilder<SignInSession>(

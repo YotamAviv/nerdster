@@ -33,9 +33,9 @@ class KeyStorageCoordinator {
   }
 
   Future<void> _enforceAsync() async {
-    if (storeKeys.value && signInState.isSignedIn) {
+    if (storeKeys.value && signInState.hasIdentity) {
       final idKey =
-          await crypto.parsePublicKey(Jsonish.find(signInState.identity)!.json);
+          await crypto.parsePublicKey(Jsonish.find(signInState.identity.value)!.json);
       await KeyStore.storeKeys(idKey, signInState.delegateKeyPair,
           endpoint: signInState.endpoint, method: signInState.signInMethod);
     } else {

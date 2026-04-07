@@ -163,25 +163,27 @@ Future<void> main() async {
 Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params}) async {
   // Check URL query parameters (deep-link URI on mobile, Uri.base on web)
   params ??= Uri.base.queryParameters;
-  String? identityParam = params['identity'];
-  String? methodParam = params['method'];
 
-  // Parse identity JSON and register it in Jsonish cache.
-  // getToken() alone does NOT register in Jsonish, causing signIn to crash.
+  // Parse pov JSON and register it in Jsonish cache.
+  // getToken() alone does NOT register in Jsonish, causing the pov setter assertion to fail.
+  // Accept both ?pov= (new) and ?identity= (legacy, for old shared links).
   OouPublicKey? povPublicKey;
   String? pov;
-  if (identityParam != null) {
+  final String? povParam = params['pov'] ?? params['identity'];
+  if (povParam != null) {
     try {
-      final Json povJson = json.decode(identityParam);
+      final Json povJson = json.decode(povParam);
       final OouPublicKey pk = await crypto.parsePublicKey(povJson);
       povPublicKey = pk;
       pov = getToken(await pk.json);
+      FedKey(await povPublicKey.json, kNativeEndpoint); // side-effect: Jsonish registration
     } catch (e) {
-      debugPrint('Could not parse identity from URL: $e');
+      debugPrint('Could not parse pov from URL: $e');
     }
   }
 
   SignInMethod? overrideMethod;
+  String? methodParam = params['method'];
   if (methodParam != null) {
     try {
       overrideMethod = SignInMethod.values.byName(methodParam);
@@ -190,14 +192,7 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
     }
   }
 
-  if (await tryDemoSignIn(context, pov: pov)) return;
-
-  // If we have a POV from the URL, sign in as that identity (view-only) and ignore stored keys
-  if (povPublicKey != null) {
-    final fedKey = FedKey(await povPublicKey.json, kNativeEndpoint);
-    await signInState.signInWithFedKey(fedKey, null, method: overrideMethod ?? SignInMethod.url);
-    return;
-  }
+  if (await tryDemoSignIn(context)) return;
 
   // Check secure browser storage
   if (fireChoice != FireChoice.fake) {
@@ -220,9 +215,8 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
       final Json identityJson = await identityPublicKey.json;
       final fedKey = FedKey(identityJson, endpoint);
       await signInState.signInWithFedKey(fedKey, nerdsterKeyPair, method: storedMethod);
-      if (pov != null) signInState.pov = pov; // now registered in Jsonish
-      return;
     }
   }
 
+  if (pov != null) signInState.pov = pov; // override PoV from URL param
 }

@@ -8,6 +8,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:nerdster/ui/subject_view.dart';
 import 'package:nerdster/ui/util/on_off_icon.dart';
+import 'package:oneofus_common/keys.dart' show IdentityKey;
 import 'package:nerdster/ui/util/on_off_icons.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -191,14 +192,14 @@ class _RateDialogState extends State<RateDialog> {
     final isStatement = isMap && rawSubject.containsKey('statement');
 
     bool subjectIsMyStatement = false;
-    if (isStatement) {
+    if (isStatement && signInState.hasIdentity) {
       final stmt = Statement.make(Jsonish(Map<String, dynamic>.from(rawSubject)));
-      final String myIdentity = signInState.identity;
+      final IdentityKey myIdentity = signInState.identity;
       if (stmt is TrustStatement) {
-        subjectIsMyStatement = (stmt.iKey.value == myIdentity);
+        subjectIsMyStatement = (stmt.iKey == myIdentity);
       } else if (stmt is ContentStatement) {
         subjectIsMyStatement =
-            (widget.model.delegateResolver.getIdentityForDelegate(stmt.iKey)?.value == myIdentity);
+            (widget.model.delegateResolver.getIdentityForDelegate(stmt.iKey) == myIdentity);
       }
     }
 

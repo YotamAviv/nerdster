@@ -38,7 +38,7 @@ VoidCallback nerdsterOptimisticConcurrencyFunc = () {
             // break identityJson lookup, and signOut() clears the delegate from memory
             // which causes KeyStorageCoordinator to overwrite stored keys with null.
             final savedIdentityJson =
-                signInState.isSignedIn ? signInState.identityJson : null;
+                signInState.hasIdentity ? signInState.identityJson : null;
             final savedEndpoint = signInState.endpoint;
             final savedDelegateKeyPair = signInState.delegateKeyPair;
             final savedMethod = signInState.signInMethod;
@@ -120,7 +120,7 @@ class _AppHomeState extends State<_AppHome> {
   void initState() {
     super.initState();
     signInState.addListener(_onSignInChanged);
-    if (!signInState.isSignedIn) {
+    if (!signInState.hasPov) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowDialog());
     }
   }
@@ -132,7 +132,7 @@ class _AppHomeState extends State<_AppHome> {
   }
 
   void _onSignInChanged() {
-    if (!signInState.isSignedIn) {
+    if (!signInState.hasPov) {
       _maybeShowDialog();
     } else if (_dialogShowing && mounted) {
       // Sign-in arrived externally (e.g., deep link) while dialog was open.
@@ -157,7 +157,7 @@ class _AppHomeState extends State<_AppHome> {
     ).then((_) {
       _dialogShowing = false;
       // Safety net: if dismissed without an identity (any edge case), re-show immediately.
-      if (!signInState.isSignedIn && mounted) {
+      if (!signInState.hasPov && mounted) {
         _maybeShowDialog();
       }
     });
@@ -168,7 +168,7 @@ class _AppHomeState extends State<_AppHome> {
     return ListenableBuilder(
       listenable: signInState,
       builder: (context, _) {
-        if (!signInState.isSignedIn) {
+        if (!signInState.hasPov) {
           // Placeholder behind the sign-in dialog overlay.
           return const Scaffold(body: SizedBox.shrink());
         }
@@ -187,7 +187,7 @@ class _AppHomeState extends State<_AppHome> {
           } else {
             return ContentView(
               pov: IdentityKey(signInState.pov),
-              meIdentity: IdentityKey(signInState.identity),
+              identity: signInState.hasIdentity ? signInState.identity : null,
             );
           }
         });
