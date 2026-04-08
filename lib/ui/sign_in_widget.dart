@@ -639,7 +639,10 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
   Future<void> _signInAsDev() async {
     final key = await crypto.parsePublicKey(_kDevIdentityKey);
-    await signInUiHelper(key, null, method: SignInMethod.paste);
+    final Json keyJson = await key.json;
+    FedKey(keyJson, kNativeEndpoint); // registers in Jsonish (required before pov setter)
+    signInState.pov = getToken(keyJson);
+    if (mounted) Navigator.pop(context);
   }
 
   Widget _buildStatusTable(bool hasIdentity, bool hasDelegate,
