@@ -18,6 +18,15 @@ import 'package:oneofus_common/statement_source.dart';
 class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final String baseUrl;
   final String statementType;
+
+  /// The stream to fetch from. Maps to the server's `subcollection` param as
+  /// `{streamId}/statements`. Default `"statements"` → `statements/statements`.
+  final String streamId;
+
+  /// All streams this key participates in. Embedded in the spec's revokeAt
+  /// object so the server knows where to search for the revokeAt token.
+  final List<String> allStreams;
+
   final http.Client client;
   final StatementVerifier verifier;
   final ValueListenable<bool>? skipVerify;
@@ -35,6 +44,8 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
 
   CloudFunctionsSource({
     required this.baseUrl,
+    this.streamId = 'statements',
+    this.allStreams = const ['statements'],
     http.Client? client,
     required this.verifier,
     this.skipVerify,
@@ -52,12 +63,15 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
 
     final List<dynamic> spec = keys.entries.map((e) {
       if (e.value == null) return e.key;
-      return {e.key: e.value};
+      return {e.key: {'revokeAt': e.value, 'streams': allStreams}};
     }).toList();
 
     final Json params = Map.of(_paramsProto);
     if (paramsOverride != null) {
       params.addAll(paramsOverride!);
+    }
+    if (streamId != 'statements') {
+      params['subcollection'] = '$streamId/statements';
     }
     params['spec'] = jsonEncode(spec);
 

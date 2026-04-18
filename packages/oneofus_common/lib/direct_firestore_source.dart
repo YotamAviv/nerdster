@@ -16,10 +16,16 @@ import 'package:oneofus_common/statement_source.dart';
 /// on the client side.
 class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
   final FirebaseFirestore _fire;
+  final String streamId;
+  final List<String> allStreams;
   final StatementVerifier verifier;
   final ValueListenable<bool>? skipVerify;
 
-  DirectFirestoreSource(this._fire, {StatementVerifier? verifier, this.skipVerify})
+  DirectFirestoreSource(this._fire,
+      {this.streamId = 'statements',
+      this.allStreams = const ['statements'],
+      StatementVerifier? verifier,
+      this.skipVerify})
       : verifier = verifier ?? OouVerifier();
 
   final List<SourceError> _errors = [];
@@ -39,15 +45,21 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
 
       try {
         final CollectionReference<Json> collectionRef =
-            _fire.collection(token).doc('statements').collection('statements');
+            _fire.collection(token).doc(streamId).collection('statements');
 
         DateTime? limitTime;
         if (limitToken != null) {
-          final DocumentSnapshot<Json> doc = await collectionRef.doc(limitToken).get();
-          if (doc.exists && doc.data() != null) {
-            limitTime = DateTime.parse(doc.data()!['time']);
-          } else {
-            // If limit token not found, return empty list
+          // Search all known streams for the revokeAt token.
+          // "<since always>" and any non-matching token result in [] (revoked since genesis).
+          for (final sid in allStreams) {
+            final ref = _fire.collection(token).doc(sid).collection('statements');
+            final doc = await ref.doc(limitToken).get();
+            if (doc.exists && doc.data() != null) {
+              limitTime = DateTime.parse(doc.data()!['time']);
+              break;
+            }
+          }
+          if (limitTime == null) {
             results[token] = [];
             return;
           }

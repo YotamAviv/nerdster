@@ -1,5 +1,23 @@
 # One Key, Multiple Streams
 
+## Known Limitation: Empty Stream at Time of Compromise
+
+If a stream for a key is **empty at the time the key is compromised**, there is no
+established notary chain to constrain what a bad actor can write to it. With the
+compromised private key, they could write statements to that stream with arbitrary
+backdated timestamps — all before the revokeAt cutoff — and the time filter would not
+exclude them. The notarization check offers no protection because any linear sequence
+of freshly-signed statements forms a valid chain.
+
+This risk is bounded by what that stream is used for. For example, if the `dis` stream
+is empty at time of compromise, a bad actor could forge dismiss statements — affecting
+content dismissal for that user — but not identity trust (which lives in the `statements`
+stream). An empty `statements` stream at compromise time would be a more serious concern,
+but in practice a key that has never made a trust statement is not trusted by anyone.
+
+**Mitigation**: encourage users to write an initial statement to each stream as soon as
+it is created, establishing a chain anchor. This is not enforced by the protocol today.
+
 ## Background
 
 Each key in the oneofus system accumulates a notary chain: a linked list of signed
