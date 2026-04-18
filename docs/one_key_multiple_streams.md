@@ -94,10 +94,22 @@ special-cases this and performs no stream lookups.
 **Performance**: server does 1–N extra Firestore point-reads per revoked key before the
 main collection query. Point-reads by document ID are cheap. Revoked keys are rare.
 
-The most common case is no revokeAt at all — the key has never been compromised and all
-its statements are valid ("since always"). In the spec this key appears as a bare string
-(`"keyToken"`) with no object wrapper and no revokeAt field. The server performs no stream
-lookups for these keys.
+Cases, in order of likelihood:
+
+1. **No revokeAt** (bare string key in spec) — key is healthy, fetch everything. No stream
+   lookups.
+
+2. **`"<since always>"`** — a sentinel string used by the ONE-OF-US.NET phone app to mean
+   "revoke this key completely from the beginning of time." It is guaranteed not to match
+   any real statement token. The server detects it up front and returns `[]` immediately,
+   skipping all stream lookups.
+
+3. **A real statement token** — the server searches the listed streams for that document,
+   extracts its timestamp, and filters the results. 1–N point-reads.
+
+4. **A mistake** — something that looks like a statement token but matches no document in
+   any stream. The server exhausts all streams, finds nothing, and returns `[]` (same
+   effect as `"<since always>"`). The current code already handles this correctly.
 
 
 ### `StatementSource.fetch` — no interface change
