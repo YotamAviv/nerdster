@@ -42,7 +42,7 @@ class KeyInfoView extends StatelessWidget {
   }
 
   Widget _buildStatementsLink(BuildContext context) {
-    if (fireChoice != FireChoice.fake) {
+    if (fireChoice == FireChoice.prod) {
       final String? revokeAt =
           labeler.graph.replacementConstraints[IdentityKey(jsonish.token)];
       final params = <String, String>{'spec': jsonEncode(jsonish.token)};
