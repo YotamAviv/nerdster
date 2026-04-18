@@ -1,6 +1,28 @@
 # TODO
 
 
+## Dis statement export (KeyInfoView)
+
+Two items deferred from the dis stream separation. Details in `docs/dis_stream_separation.md`.
+
+### Bug: emulator link opens prod
+
+`KeyInfoView._buildStatementsLink` shows the external `export.nerdster.org` link for both
+`FireChoice.emulator` and `FireChoice.prod`. In emulator mode the link queries prod Firestore.
+
+**Fix**: change the condition from `fireChoice != FireChoice.fake` to `fireChoice == FireChoice.prod`.
+
+### Feature: show signed, published dismiss statements
+
+**Server**: Update the Cloud Function at `export.nerdster.org` to accept an optional
+`subcollection` query param (default `'statements'`); serve `/{spec}/dis/statements` when
+`subcollection=dis/statements` is passed. Backward compatible.
+
+**Client**: In `node_details.dart`, add a second `KeyInfoView.show` call for the delegate using
+`SourceFactory.forDis(delegateToken)` and a `baseUrl` that appends `?subcollection=dis/statements`.
+Add a "Signed, Published Dismiss Statements" link in `KeyInfoView._buildStatementsLink`.
+
+
 
 
 ## Dead code in cloud functions: OMDB / TMDB fetchers
