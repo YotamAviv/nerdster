@@ -72,7 +72,11 @@ async function fetchStatements(token2revokeAt, params = {}, omit = []) {
   if (checkPrevious && !includeId) throw new Error('checkPrevious requires includeId');
 
   const db = admin.firestore();
-  const collectionRef = db.collection(token).doc('statements').collection('statements');
+  const subcollection = (params.subcollection || 'statements/statements');
+  const slashIdx = subcollection.indexOf('/');
+  const docSegment = slashIdx >= 0 ? subcollection.slice(0, slashIdx) : 'statements';
+  const colSegment = slashIdx >= 0 ? subcollection.slice(slashIdx + 1) : 'statements';
+  const collectionRef = db.collection(token).doc(docSegment).collection(colSegment);
 
   let revokeAtTime;
   if (revokeAt) {

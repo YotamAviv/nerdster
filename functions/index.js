@@ -224,12 +224,13 @@ exports.export = onRequest({ cors: true, minInstances: 1 }, async (req, res) => 
         'ONE-OF-US.NET Export API\n\n' +
         'Required parameter: spec — key token or JSON array/object of tokens.\n\n' +
         'Optional parameters:\n' +
-        '  distinct          — deduplicate by verb+subject (keep most recent)\n' +
-        '  orderStatements   — default true; set false to skip key ordering\n' +
-        '  includeId         — include the statement token as "id" field on each statement\n' +
-        '  checkPrevious     — verify notarization chain (requires includeId)\n' +
-        '  after=<ISO time>  — only return statements newer than this time\n' +
-        '  omit=<field>      — strip field from each statement (repeatable)\n\n' +
+        '  distinct                    — deduplicate by verb+subject (keep most recent)\n' +
+        '  orderStatements             — default true; set false to skip key ordering\n' +
+        '  includeId                   — include the statement token as "id" field on each statement\n' +
+        '  checkPrevious               — verify notarization chain (requires includeId)\n' +
+        '  after=<ISO time>            — only return statements newer than this time\n' +
+        '  omit=<field>                — strip field from each statement (repeatable)\n' +
+        '  subcollection=<doc/col>     — default "statements/statements"; use "dis/statements" for dismiss stream\n\n' +
         'Example:\n' +
         '  https://export.one-of-us.net/?spec=<token>&distinct=true&omit=I&omit=signature\n\n' +
         'See /openapi.yaml for full API documentation.\n'
