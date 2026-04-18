@@ -15,8 +15,10 @@ content dismissal for that user — but not identity trust (which lives in the `
 stream). An empty `statements` stream at compromise time would be a more serious concern,
 but in practice a key that has never made a trust statement is not trusted by anyone.
 
-**Mitigation**: encourage users to write an initial statement to each stream as soon as
-it is created, establishing a chain anchor. This is not enforced by the protocol today.
+**Mitigation**: when a user starts using any app, the app writes an initial statement to
+each stream (e.g. a `clear` statement with comment "first statement for notary chain
+grounding"). This anchors the chain immediately, closing the window for backdated forgery.
+This should be enforced at onboarding time for every stream the app uses.
 
 ## Background
 
