@@ -4,6 +4,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/content_types.dart';
 import 'package:oneofus_common/clock.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -100,7 +101,6 @@ ContentStatement makeContentStatement({
   String? comment,
   dynamic other,
   bool? recommend,
-  dynamic dismiss,
   bool? censor,
   Json? contexts,
   DateTime? time,
@@ -112,7 +112,6 @@ ContentStatement makeContentStatement({
     comment: comment,
     other: other,
     recommend: recommend,
-    dismiss: dismiss,
     censor: censor,
     contexts: contexts,
   );
@@ -159,8 +158,10 @@ void setUpTestRegistry({FakeFirebaseFirestore? firestore}) {
   FireFactory.register(kOneofusDomain, fs, null);
   FireFactory.register(kNerdsterDomain, fs, null);
   ContentStatement.init();
+  DismissStatement.init();
   TrustStatement.init();
   ContentStatement.clearCache();
+  DismissStatement.clearCache();
   TrustStatement.clearCache();
   Jsonish.wipeCache();
   useClock(TestClock());

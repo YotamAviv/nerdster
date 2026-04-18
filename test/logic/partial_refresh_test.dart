@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/feed_controller.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
@@ -71,23 +73,14 @@ void main() {
         .firstOrNull;
     expect(secretariatMyLike, isNotNull, reason: "Lisa should like Secretariat initially");
 
-    // 2. Lisa dismisses Shakes
+    // 2. Lisa dismisses Shakes via the dis stream
     final signer = await OouSigner.make(lisaDelegate.keyPair);
-    // writer removed
-
-    // Construct dismiss statement
-    final Json json = ContentStatement.make(
+    final Json json = DismissStatement.make(
       Jsonish.find(lisaDelegate.token)!.json,
-      ContentVerb.rate,
-      shakes!.subject,
-      dismiss: true,
+      shakes!.canonical.value,
+      'forever',
     );
-
-    // Write to Firestore AND Cache (Network Side Effect + Local Update)
-    // Uses spyContent -> realContentSource -> FakeFirestore
-    // Explicitly casting contentSource to CachedSource to access internal writer via interface?
-    // CachedSource implements StatementWriter now.
-    await controller.contentSource.push(json, signer);
+    await SourceFactory.getDisWriter().push(json, signer);
 
     // 4. Update controller (Local Logic Update)
     await controller.notify();

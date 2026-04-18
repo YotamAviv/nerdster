@@ -19,8 +19,12 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
   final StatementVerifier verifier;
   final ValueListenable<bool>? skipVerify;
 
-  DirectFirestoreSource(this._fire, {StatementVerifier? verifier, this.skipVerify})
-      : verifier = verifier ?? OouVerifier();
+  final String _subcollection;
+
+  DirectFirestoreSource(this._fire,
+      {StatementVerifier? verifier, this.skipVerify, String subcollection = 'statements'})
+      : verifier = verifier ?? OouVerifier(),
+        _subcollection = subcollection;
 
   final List<SourceError> _errors = [];
 
@@ -39,7 +43,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
 
       try {
         final CollectionReference<Json> collectionRef =
-            _fire.collection(token).doc('statements').collection('statements');
+            _fire.collection(token).doc(_subcollection).collection('statements');
 
         DateTime? limitTime;
         if (limitToken != null) {

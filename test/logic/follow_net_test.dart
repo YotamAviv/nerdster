@@ -6,6 +6,7 @@ import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/follow_logic.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/logic/trust_logic.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/model.dart';
 
 void main() {
@@ -218,8 +219,7 @@ void main() {
     await bartN.doRelate(ContentVerb.equate, subject: news1, other: news2);
     // Rate news1
     await bartN.doRate(subject: news1, recommend: true);
-    // Lisa rates spam (but she also censored it)
-    await lisaN.doRate(subject: spam, dismiss: true);
+    await lisaN.doRate(subject: spam);
 
     final ContentAggregation contentAgg = reduceContentAggregation(
       followNet,
@@ -635,18 +635,24 @@ void main() {
     // 2. Homer rates subject2 (token only)
     await homerN.doRate(subject: subject2, recommend: true);
 
-    // 3. Homer dismisses subject1
-    await homerN.doRate(subject: subject1, dismiss: true);
+    // 3. Homer dismisses subject1 via the dis stream (separate from content)
+    await homerN.doDismiss(subject1, 'forever');
 
-    // Rebuild map
+    // Rebuild content result (dis is separate from content statements)
     allStatementsByToken =
         buildContentResult([homer, homerN, bart, bartN].where((DemoKey k) => k.isDelegate));
+
+    // Build myDisContent from Homer's dis stream
+    final Map<DelegateKey, List<DismissStatement>> myDisContent = {
+      homerN.id: homerN.disStatements,
+    };
 
     final ContentAggregation aggregation = reduceContentAggregation(
       network,
       graph,
       delegateResolver,
       allStatementsByToken,
+      myDisContent: myDisContent,
       labeler: Labeler(graph, delegateResolver: delegateResolver),
     );
 
@@ -654,10 +660,13 @@ void main() {
     expect(network.povIdentity, homer.id);
 
     final SubjectAggregation agg = aggregation.subjects[ContentKey(sToken)]!;
-    // Homer's dismissal overwrites his previous like because they are the same subject (token vs map)
-    expect(agg.likes, equals(1));
+    // Homer's dis is separate: his like still counts in the content stream
+    expect(agg.likes, equals(2)); // Bart + Homer both liked
     expect(agg.tags, contains('#news'));
-    expect(agg.isDismissed, isTrue); // Dismissed by Homer (POV)
+    // PoV dismiss is deferred (always false); but checkIsDismissed works for "me"
+    expect(agg.isDismissed, isFalse);
+    final myDis = aggregation.myDismissStatements[agg.canonical] ?? [];
+    expect(SubjectGroup.checkIsDismissed(myDis, agg), isTrue);
     expect(agg.statements.length, equals(2));
 
     // Verify bestSubject (should be the JSON, not the token string)

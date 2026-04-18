@@ -3,7 +3,12 @@ AI Agent: Do not visit this file without invitation
 
 # Current Activity:
 
-
+Desire:
+Change dismiss (aka "dis") statements to live in their own statement stream to allw users to dis/snooze without re-issuing their reaction (which affects recent activity)
+This is a big artichtural change.
+- each stream should maintain its previous chain (notarization)
+- we'd need to fetch content as well as the dis statement stream along with the content streams, but we'd only need to fetch it for the current signed in user (or possibly PoV - There is a  hidden setting to use PoV's dises)
+- code that tried to alleviate this issue would be removed
 
 ## NOTES FOR ME, THE HUMAN - DON'T START WITHOUT ME
 

@@ -10,6 +10,7 @@ import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/content_card.dart';
@@ -55,6 +56,7 @@ void main() {
     // Initialize Statements
     TrustStatement.init();
     ContentStatement.init();
+    DismissStatement.init();
 
     // Register FireFactory
     FireFactory.register(kOneofusDomain, OneofusFire.firestore, null);

@@ -11,6 +11,7 @@ import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/demotest/cases/stress.dart';
 import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:nerdster/demotest/test_util.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/oou_signer.dart';
@@ -306,11 +307,10 @@ class DemoDelegateKey implements DemoKey {
       ContentVerb verb = ContentVerb.rate,
       String? comment,
       bool? recommend,
-      dynamic dismiss,
       bool? censor,
       dynamic other}) async {
     return ContentStatement.make(await publicKey.json, verb, subject,
-        comment: comment, recommend: recommend, dismiss: dismiss, censor: censor, other: other);
+        comment: comment, recommend: recommend, censor: censor, other: other);
   }
 
   Future<Json> makeFollow(dynamic subject, Json contexts,
@@ -335,7 +335,6 @@ class DemoDelegateKey implements DemoKey {
       String? title,
       String? comment,
       bool? recommend,
-      dynamic dismiss,
       bool? censor,
       String? export}) async {
     assert((title != null ? 1 : 0) + (subject != null ? 1 : 0) == 1);
@@ -348,12 +347,31 @@ class DemoDelegateKey implements DemoKey {
       verb: verb,
       comment: comment,
       recommend: recommend,
-      dismiss: dismiss,
       censor: censor,
     );
 
     return _pushContent(json, export);
   }
+
+  Future<DismissStatement> doDismiss(dynamic subject, String? dismiss,
+      {String? export}) async {
+    assert(dismiss == null || dismiss == 'forever' || dismiss == 'snooze');
+    final Json json = DismissStatement.make(await publicKey.json, subject, dismiss);
+    return _pushDis(json, export);
+  }
+
+  Future<DismissStatement> _pushDis(Json json, String? export) async {
+    final StatementWriter writer = SourceFactory.getDisWriter();
+    final OouSigner signer = await OouSigner.make(keyPair);
+    final Statement statement = await writer.push(json, signer);
+    final DismissStatement dis = statement as DismissStatement;
+    _localDisStatements.insert(0, dis);
+    if (export != null) DemoKey._exports[export] = dis.json;
+    return dis;
+  }
+
+  final List<DismissStatement> _localDisStatements = [];
+  List<DismissStatement> get disStatements => List.unmodifiable(_localDisStatements);
 
   Future<ContentStatement> doFollow(dynamic subject, Json contexts,
       {ContentVerb verb = ContentVerb.follow, String? export}) async {

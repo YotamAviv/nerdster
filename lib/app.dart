@@ -8,6 +8,7 @@ import 'package:nerdster/ui/sign_in_widget.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/qr_sign_in.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
 export 'package:nerdster/fire_choice.dart';
@@ -47,6 +48,7 @@ VoidCallback nerdsterOptimisticConcurrencyFunc = () {
             // Because optimistic concurrency failure implies our local history is wrong.
             Jsonish.wipeCache();
             ContentStatement.clearCache();
+            DismissStatement.clearCache();
             TrustStatement.clearCache();
 
             // signOut clears the delegate, which triggers FeedController.refresh()

@@ -179,7 +179,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
 
   await smithersN.doRate(subject: brokeback, recommend: true);
   await carlN.doRate(subject: brokeback, recommend: true);
-  await sideshowN.doRate(subject: brokeback, dismiss: true);
+  await sideshowN.doDismiss(brokeback, 'forever');
   await margeN.doRate(subject: brokeback, recommend: true, comment: '#horses');
 
   await lisaN.doRate(subject: buck, recommend: true, comment: 'instant #classic');
@@ -193,12 +193,13 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
       comment: '#nutritious and #delicious',
       export: 'marge-banana-rate');
   await homer2N.doRate(subject: kingpin, recommend: true, comment: '#rad');
-  await bartN.doRate(subject: buck, dismiss: true, recommend: false, comment: '#barf');
-  // DEFER: Dissing should use the token, not the full subject.
-  await bartN.doRate(subject: banana, dismiss: true, export: 'bart-diss-banana');
+  await bartN.doRate(subject: buck, recommend: false, comment: '#barf');
+  await bartN.doDismiss(buck, 'forever');
+  await bartN.doDismiss(banana, 'forever', export: 'bart-diss-banana');
   await lisaN.doRate(subject: secretariat, recommend: true, comment: '#poignant #horses');
   await margeN.doRate(subject: secretariat, recommend: true);
-  await carlN.doRate(subject: superbad, dismiss: true, comment: '#disgusting', recommend: false);
+  await carlN.doRate(subject: superbad, comment: '#disgusting', recommend: false);
+  await carlN.doDismiss(superbad, 'forever');
 
   await sideshowN.doRate(subject: joker, recommend: true, comment: 'instant #classic');
   await sideshowN.doRate(subject: shakes, recommend: true, comment: 'instant #classic');

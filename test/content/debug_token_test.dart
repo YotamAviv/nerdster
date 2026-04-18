@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/settings/setting_type.dart';
 
+import 'package:nerdster/models/dismiss_statement.dart';
 import '../test_utils.dart';
 
 // The rules:
@@ -12,6 +13,7 @@ import '../test_utils.dart';
 void main() {
   setUpAll(() {
     ContentStatement.init();
+    DismissStatement.init();
   });
 
   test('ContentStatement.make respects debugUseSubjectNotToken', () async {
@@ -66,12 +68,9 @@ void main() {
         expect(simpleRateJson['rate'], equals(subjectObj));
       }
 
-      Json dismissRateJson = ContentStatement.make(i, ContentVerb.rate, subjectObj, dismiss: true);
-      if (debugMode) {
-        expect(dismissRateJson['rate'], equals(subjectObj));
-      } else {
-        expect(dismissRateJson['rate'], equals(subjectObj));
-      }
+      // dismiss is now in the separate dis stream; a plain rate never tokenizes
+      Json dismissRateJson = ContentStatement.make(i, ContentVerb.rate, subjectObj);
+      expect(dismissRateJson['rate'], equals(subjectObj));
 
       Json censorRateJson = ContentStatement.make(i, ContentVerb.rate, subjectObj, censor: true);
       if (debugMode) {

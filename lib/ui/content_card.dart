@@ -1,8 +1,14 @@
+import 'dart:async' show unawaited;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
+import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
+import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/dialogs/check_signed_in.dart';
+import 'package:nerdster/ui/dialogs/lgtm.dart';
+import 'package:nerdster/ui/util/dis_toggle.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:nerdster/logic/metadata_service.dart';
@@ -37,15 +43,34 @@ class ContentCard extends StatefulWidget {
   State<ContentCard> createState() => _ContentCardState();
 }
 
-class _ContentCardState extends State<ContentCard> {
+class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin {
   MetadataResult? _metadata;
   bool _isHistoryExpanded = false;
   bool _isRelationshipsExpanded = false;
+
+  // Large-screen dismiss sweep
+  String? _committedDis;
+  String? _pendingDis;
+  late final AnimationController _sweepController;
+  final ValueNotifier<String?> _disNotifier = ValueNotifier(null);
 
   @override
   void initState() {
     super.initState();
     _fetchMetadata();
+    _sweepController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..addStatusListener(_onSweepStatus);
+    _syncDisFromModel();
+  }
+
+  void _syncDisFromModel() {
+    final stmts =
+        widget.model.aggregation.myDismissStatements[widget.aggregation.canonical] ?? [];
+    _committedDis = stmts.isEmpty ? null : stmts.first.dismiss;
+    _pendingDis = _committedDis;
+    _disNotifier.value = _committedDis;
   }
 
   @override
@@ -54,7 +79,92 @@ class _ContentCardState extends State<ContentCard> {
     if (oldWidget.aggregation.canonical != widget.aggregation.canonical) {
       _metadata = null;
       _fetchMetadata();
+      _sweepController.stop();
+      _sweepController.reset();
+      _syncDisFromModel();
+    } else {
+      // Sync committed state after a write resolves
+      final stmts =
+          widget.model.aggregation.myDismissStatements[widget.aggregation.canonical] ?? [];
+      final newCommitted = stmts.isEmpty ? null : stmts.first.dismiss;
+      if (newCommitted != _committedDis) {
+        _committedDis = newCommitted;
+        if (_pendingDis == _committedDis) {
+          _sweepController.stop();
+          _sweepController.reset();
+        }
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    _sweepController.removeStatusListener(_onSweepStatus);
+    _sweepController.dispose();
+    _disNotifier.dispose();
+    if (_pendingDis != _committedDis) {
+      unawaited(_commitDis()); // fire-and-forget on scroll-away
+    }
+    super.dispose();
+  }
+
+  void _onSweepStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      _commitDisAfterLgtm();
+    }
+  }
+
+  Future<void> _commitDisAfterLgtm() async {
+    if (!mounted) {
+      await _commitDis();
+      return;
+    }
+    final iJson = signInState.delegatePublicKeyJson;
+    if (iJson != null) {
+      final Json json =
+          DismissStatement.make(iJson, widget.aggregation.canonical.value, _pendingDis);
+      if (await Lgtm.check(json, context, labeler: widget.model.labeler) != true) {
+        if (!mounted) return;
+        setState(() {
+          _disNotifier.value = _committedDis;
+          _pendingDis = _committedDis;
+        });
+        _sweepController.reset();
+        return;
+      }
+    }
+    await _commitDis();
+  }
+
+  Future<void> _onDisToggle() async {
+    if (!mounted) return;
+    if ((await checkSignedIn(context, trustGraph: widget.model.trustGraph)) != true) {
+      _disNotifier.value = _pendingDis; // revert toggle
+      return;
+    }
+    _pendingDis = _disNotifier.value;
+    if (_pendingDis == _committedDis) {
+      _sweepController.stop();
+      _sweepController.reset();
+      setState(() {});
+    } else {
+      _sweepController.forward(from: 0);
+      setState(() {});
+    }
+  }
+
+  Future<void> _commitDis() async {
+    if (_pendingDis == _committedDis) return;
+    final iJson = signInState.delegatePublicKeyJson;
+    final signer = signInState.signer;
+    if (iJson == null || signer == null) return;
+    final String canonical = widget.aggregation.canonical.value;
+    final Json json = DismissStatement.make(iJson, canonical, _pendingDis);
+    try {
+      await SourceFactory.getDisWriter().push(json, signer);
+      _committedDis = _pendingDis;
+      await widget.controller.notify();
+    } catch (_) {}
   }
 
   Future<void> _fetchMetadata() async {
@@ -145,15 +255,19 @@ class _ContentCardState extends State<ContentCard> {
                     key: Key(widget.aggregation.canonical.value),
                     direction: DismissDirection.horizontal,
                     confirmDismiss: (direction) async {
-                      final String initialDismiss =
+                      if (!context.mounted) { return false; }
+                      if ((await checkSignedIn(context,
+                              trustGraph: widget.model.trustGraph)) !=
+                          true) { return false; }
+                      final String dis =
                           direction == DismissDirection.startToEnd ? 'snooze' : 'forever';
-                      final result = await RateDialog.show(
-                        context,
-                        widget.aggregation,
-                        widget.controller,
-                        initialDismiss: initialDismiss,
-                      );
-                      return result != null;
+                      final Json iJson = signInState.delegatePublicKeyJson!;
+                      final Json json = DismissStatement.make(
+                          iJson, widget.aggregation.canonical.value, dis);
+                      await SourceFactory.getDisWriter()
+                          .push(json, signInState.signer!);
+                      await widget.controller.notify();
+                      return true;
                     },
                     background: Container(
                       color: Colors.green,
@@ -289,12 +403,14 @@ class _ContentCardState extends State<ContentCard> {
             );
           }
 
-          return Card(
-            margin: const EdgeInsets.all(8.0),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          return Stack(
+            children: [
+              Card(
+                margin: const EdgeInsets.all(8.0),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,6 +523,48 @@ class _ContentCardState extends State<ContentCard> {
                 ],
               ),
             ),
+          ),
+              if (_pendingDis != _committedDis)
+                Positioned.fill(
+                  left: 8, top: 8, right: 8, bottom: 8,
+                  child: ClipRect(
+                    child: AnimatedBuilder(
+                      animation: _sweepController,
+                      builder: (context, _) {
+                        final Color color = _pendingDis == 'snooze'
+                            ? Colors.green
+                            : _pendingDis == 'forever'
+                                ? Colors.brown
+                                : Colors.blue;
+                        final String label = _pendingDis == 'snooze'
+                            ? 'Snooze'
+                            : _pendingDis == 'forever'
+                                ? 'Dismiss'
+                                : 'Un-dismiss';
+                        return IgnorePointer(
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: _sweepController.value,
+                            heightFactor: 1.0,
+                            child: Container(
+                              color: color.withValues(alpha: 0.8),
+                              alignment: Alignment.center,
+                              child: Text(
+                                label,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+            ],
           );
         });
   }
@@ -678,7 +836,7 @@ class _ContentCardState extends State<ContentCard> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24),
       ),
       child: IntrinsicHeight(
@@ -725,6 +883,8 @@ class _ContentCardState extends State<ContentCard> {
               tooltip: tooltip,
               onPressed: _react,
             ),
+            if (!isSmall.value)
+              DisToggle(notifier: _disNotifier, callback: _onDisToggle),
           ],
         ),
       ),
@@ -735,13 +895,14 @@ class _ContentCardState extends State<ContentCard> {
     final ContentStatement? statement = await RateDialog.show(
       context,
       widget.aggregation,
-      widget.controller, // Changed from model
+      widget.controller,
     );
     if (statement != null) {
       // Handled by controller.push
     }
   }
 }
+
 
 class SubjectDetailsView extends StatelessWidget {
   final SubjectAggregation aggregation;
@@ -841,8 +1002,8 @@ bool _shouldShowStatement(ContentStatement s, FeedModel model) {
 
   switch (model.filterMode) {
     case DisFilterMode.my:
-      final myStmts = model.aggregation.myCanonicalDisses[subjectAgg.canonical] ?? [];
-      return !SubjectGroup.checkIsDismissed(myStmts, subjectAgg);
+      final myDis = model.aggregation.myDismissStatements[subjectAgg.canonical] ?? [];
+      return !SubjectGroup.checkIsDismissed(myDis, subjectAgg);
     case DisFilterMode.pov:
       return !subjectAgg.isDismissed;
     case DisFilterMode.ignore:

@@ -1,5 +1,6 @@
 import 'package:nerdster/utils/most_strings.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/utils/tag.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/merger.dart';
@@ -32,6 +33,7 @@ ContentAggregation reduceContentAggregation(
   ContentResult contentResult, {
   bool enableCensorship = true,
   List<DelegateKey>? meDelegateKeys,
+  Map<DelegateKey, List<DismissStatement>> myDisContent = const {},
   required Labeler labeler,
 }) {
   final Set<String> censored = {};
@@ -283,21 +285,13 @@ ContentAggregation reduceContentAggregation(
       if (!isCanonical && !recognizedLiteralSubjects.contains(key)) return;
 
       bool isQualifiedActivity = false;
-      bool hasPositiveSignal = false;
       if (s.verb == ContentVerb.relate || s.verb == ContentVerb.equate) {
         isQualifiedActivity = true;
-        hasPositiveSignal = true;
       } else if (s.verb == ContentVerb.rate) {
-        if (s.censor == true || s.dismiss != null) {
+        if (s.censor == true) {
           isQualifiedActivity = false;
         } else if (s.like != null || (s.comment != null && s.comment!.isNotEmpty)) {
-          // thumbs-up, thumbs-down, or comment all count as activity.
-          // Only censor and dismiss are suppressed.
           isQualifiedActivity = true;
-        }
-        // hasPositiveSignal: like=true OR non-empty comment (unchanged).
-        if (s.like == true || (s.comment != null && s.comment!.isNotEmpty)) {
-          hasPositiveSignal = true;
         }
       }
 
@@ -306,7 +300,6 @@ ContentAggregation reduceContentAggregation(
           SubjectGroup(
             canonical: isCanonical ? key : canonicalSubject,
             lastActivity: isQualifiedActivity ? s.time : epoch,
-            lastSignalActivity: hasPositiveSignal ? s.time : epoch,
           );
 
       // Update stats: ONLY if this subject is a primary target of the rating
@@ -347,11 +340,6 @@ ContentAggregation reduceContentAggregation(
       final DateTime lastActivity =
           (isQualifiedActivity && s.time.isAfter(group.lastActivity)) ? s.time : group.lastActivity;
 
-      final DateTime lastSignalActivity =
-          (hasPositiveSignal && s.time.isAfter(group.lastSignalActivity))
-              ? s.time
-              : group.lastSignalActivity;
-
       map[key] = SubjectGroup(
         canonical: isCanonical ? key : canonicalSubject,
         statements: [...group.statements, s],
@@ -359,7 +347,6 @@ ContentAggregation reduceContentAggregation(
         likes: likes,
         dislikes: dislikes,
         lastActivity: lastActivity,
-        lastSignalActivity: lastSignalActivity,
         related: relatedSet,
         povStatements: newPovStatements,
         isCensored: group.isCensored ||
@@ -397,7 +384,6 @@ ContentAggregation reduceContentAggregation(
   ).cast<ContentStatement>().toList();
 
   final Map<ContentKey, List<ContentStatement>> myLiteralStatements = {};
-  final Map<ContentKey, List<ContentStatement>> myCanonicalDisses = {};
 
   // Track which statement tokens have been added to each key's list so we
   // can skip duplicates. An equate(X, Y) statement would otherwise appear in
@@ -422,10 +408,23 @@ ContentAggregation reduceContentAggregation(
           myLiteralStatements.putIfAbsent(canonicalKey, () => []).add(s);
         }
       }
+    }
+  }
 
-      if (s.verb == ContentVerb.rate) {
-        myCanonicalDisses.putIfAbsent(canonicalKey, () => []).add(s);
-      }
+  // Build myDismissStatements: merge DismissStatements from all my delegate keys,
+  // deduplicate (one per delegate per subject), then index by canonical subject key.
+  final Map<ContentKey, List<DismissStatement>> myDismissStatements = {};
+  if (myDisContent.isNotEmpty) {
+    final List<Iterable<DismissStatement>> disSources = myDisContent.values.toList();
+    final List<DismissStatement> mergedDis = distinct(
+      Merger.merge(disSources),
+      iTransformer: (_) => 'me',
+    ).cast<DismissStatement>().toList();
+
+    for (final DismissStatement d in mergedDis) {
+      final ContentKey literalKey = ContentKey(d.subjectToken);
+      final ContentKey canonicalKey = subjectEquivalence[literalKey] ?? literalKey;
+      myDismissStatements.putIfAbsent(canonicalKey, () => []).add(d);
     }
   }
 
@@ -481,7 +480,6 @@ ContentAggregation reduceContentAggregation(
       narrowGroup ??= SubjectGroup(
         canonical: canonical,
         lastActivity: group.lastActivity,
-        lastSignalActivity: group.lastSignalActivity,
       );
 
       subjects[token] = SubjectAggregation(
@@ -506,7 +504,7 @@ ContentAggregation reduceContentAggregation(
     tagEquivalence: tagEquivalence,
     mostTags: mostTags,
     subjects: subjects,
-    myCanonicalDisses: myCanonicalDisses,
+    myDismissStatements: myDismissStatements,
     myLiteralStatements: myLiteralStatements,
   );
 }

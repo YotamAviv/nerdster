@@ -21,6 +21,7 @@ import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
@@ -59,6 +60,7 @@ void main() {
 
     TrustStatement.init();
     ContentStatement.init();
+    DismissStatement.init();
   });
 
   Future<void> saveScreenshot(List<int> bytes, String name) async {

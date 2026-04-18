@@ -17,14 +17,12 @@ class RateDialog extends StatefulWidget {
   final SubjectAggregation aggregation;
   final FeedModel model;
   final bool? initialLike;
-  final String? initialDismiss;
 
   const RateDialog({
     super.key,
     required this.aggregation,
     required this.model,
     this.initialLike,
-    this.initialDismiss,
   });
 
   static Future<ContentStatement?> show(
@@ -32,7 +30,6 @@ class RateDialog extends StatefulWidget {
     SubjectAggregation aggregation,
     FeedController controller, {
     bool? initialLike,
-    String? initialDismiss,
   }) async {
     final model = controller.value;
     if (model == null) return null;
@@ -48,7 +45,6 @@ class RateDialog extends StatefulWidget {
         aggregation: aggregation,
         model: model,
         initialLike: initialLike,
-        initialDismiss: initialDismiss,
       ),
     );
 
@@ -64,7 +60,6 @@ class RateDialog extends StatefulWidget {
 
 class _RateDialogState extends State<RateDialog> {
   late ValueNotifier<bool?> like;
-  late ValueNotifier<String?> dis;
   late ValueNotifier<bool> censor;
   late ValueNotifier<bool> erase;
   late ValueNotifier<bool> okEnabled;
@@ -87,7 +82,6 @@ class _RateDialogState extends State<RateDialog> {
     priorStatement = myLiteralStatements.firstWhereOrNull((s) => s.verb == ContentVerb.rate);
 
     like = ValueNotifier(widget.initialLike ?? priorStatement?.like);
-    dis = ValueNotifier(widget.initialDismiss ?? priorStatement?.dismiss);
     censor = ValueNotifier(priorStatement?.censor ?? false);
     erase = ValueNotifier(false);
     okEnabled = ValueNotifier(false);
@@ -102,7 +96,6 @@ class _RateDialogState extends State<RateDialog> {
     commentController.removeListener(listener);
     commentController.dispose();
     like.dispose();
-    dis.dispose();
     censor.dispose();
     erase.dispose();
     okEnabled.dispose();
@@ -110,9 +103,7 @@ class _RateDialogState extends State<RateDialog> {
   }
 
   void listener() {
-    // Allow re-submit if it's a snooze (to re-snooze woken items)
-    bool isReSnooze = dis.value == 'snooze' && priorStatement?.dismiss == 'snooze';
-    okEnabled.value = !compareToPrior || censor.value || isReSnooze;
+    okEnabled.value = !compareToPrior || censor.value;
 
     if (priorStatement != null) {
       erase.value = bAllFieldsClear;
@@ -132,7 +123,6 @@ class _RateDialogState extends State<RateDialog> {
   void setToPrior() {
     if (priorStatement != null) {
       like.value = priorStatement!.like;
-      dis.value = priorStatement!.dismiss;
       censor.value = priorStatement!.censor != null;
       commentController.text = priorStatement!.comment ?? '';
     }
@@ -141,7 +131,6 @@ class _RateDialogState extends State<RateDialog> {
   bool get compareToPrior {
     if (priorStatement != null) {
       return like.value == priorStatement!.like &&
-          dis.value == priorStatement!.dismiss &&
           censor.value == (priorStatement!.censor != null) &&
           commentController.text == (priorStatement!.comment ?? '');
     } else {
@@ -151,13 +140,12 @@ class _RateDialogState extends State<RateDialog> {
 
   void clearFields() {
     like.value = null;
-    dis.value = null;
     censor.value = false;
     commentController.text = '';
   }
 
   bool get bAllFieldsClear =>
-      like.value == null && dis.value == null && !censor.value && commentController.text.isEmpty;
+      like.value == null && !censor.value && commentController.text.isEmpty;
 
   bool? trueOrNull(bool b) => b ? true : null;
 
@@ -178,7 +166,6 @@ class _RateDialogState extends State<RateDialog> {
       verb,
       widget.aggregation.subject,
       recommend: like.value,
-      dismiss: dis.value,
       censor: trueOrNull(censor.value),
       comment: comment,
     );
@@ -214,11 +201,6 @@ class _RateDialogState extends State<RateDialog> {
         color: Colors.green,
         key2colors: const {true: Colors.green, false: Colors.red},
         callback: listener);
-
-    Widget disButton = _DismissToggle(
-      notifier: dis,
-      callback: listener,
-    );
 
     String censorTooltip;
     if (subjectIsMyStatement) {
@@ -273,7 +255,7 @@ class _RateDialogState extends State<RateDialog> {
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [likeButton, disButton, censorButton, eraseButton],
+                    children: [likeButton, censorButton, eraseButton],
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -360,64 +342,3 @@ class _RateDialogState extends State<RateDialog> {
   }
 }
 
-class _DismissToggle extends StatelessWidget {
-  final ValueNotifier<String?> notifier;
-  final VoidCallback? callback;
-
-  const _DismissToggle({
-    required this.notifier,
-    this.callback,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<String?>(
-      valueListenable: notifier,
-      builder: (context, value, _) {
-        IconData icon;
-        Color? color;
-        String tooltip;
-
-        if (value == 'snooze') {
-          icon = Icons.snooze;
-          color = Colors.brown;
-          tooltip = 'Snoozed (hidden until new activity)';
-        } else if (value == 'forever') {
-          icon = Icons.swipe_left;
-          color = Colors.brown;
-          tooltip = 'Dismissed forever';
-        } else {
-          icon = Icons.swipe_left_outlined;
-          color = null; // Default icon color (usually grey/black)
-          tooltip = 'Dismiss';
-        }
-
-        TextStyle? textStyle;
-
-        return Tooltip(
-          message: tooltip,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!isSmall.value) Text('Dismiss', style: textStyle),
-              IconButton(
-                icon: Icon(icon),
-                color: color,
-                onPressed: () {
-                  if (value == null) {
-                    notifier.value = 'snooze';
-                  } else if (value == 'snooze') {
-                    notifier.value = 'forever';
-                  } else {
-                    notifier.value = null;
-                  }
-                  callback?.call();
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}

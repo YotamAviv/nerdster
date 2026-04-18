@@ -16,6 +16,7 @@ import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/key_storage_coordinator.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/sign_in_state.dart';
@@ -126,6 +127,7 @@ Future<void> main() async {
 
   TrustStatement.init();
   ContentStatement.init();
+  DismissStatement.init();
   await defaultSignIn(params: params);
   await About.init();
 

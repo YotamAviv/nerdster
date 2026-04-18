@@ -17,7 +17,6 @@ class ContentStatement extends Statement {
   // with
   final dynamic other;
   final bool? like;
-  final String? dismiss;
   final bool? censor;
   final Json? contexts; // (verb == follow)
 
@@ -93,14 +92,6 @@ class ContentStatement extends Statement {
 
     Json? withx = jsonish['with'];
 
-    dynamic rawDismiss = withx?['dismiss'];
-    String? dismissVal;
-    if (rawDismiss is bool && rawDismiss == true) {
-      dismissVal = 'forever';
-    } else if (rawDismiss is String) {
-      dismissVal = rawDismiss;
-    }
-
     ContentStatement s = ContentStatement._internal(
       jsonish,
       subject,
@@ -108,7 +99,6 @@ class ContentStatement extends Statement {
       // with (would be nice if Dart would let me pass the Map as the args)
       other: withx?['otherSubject'],
       like: withx?['recommend'],
-      dismiss: dismissVal,
       censor: withx?['censor'],
       contexts: withx?['contexts'],
     );
@@ -124,7 +114,6 @@ class ContentStatement extends Statement {
     required this.verb,
     required this.other,
     required this.like,
-    required this.dismiss,
     required this.censor,
     required this.contexts,
   });
@@ -135,19 +124,10 @@ class ContentStatement extends Statement {
       {String? comment,
       dynamic other,
       bool? recommend,
-      dynamic dismiss,
       bool? censor,
       Json? contexts}) {
     dynamic s = subject;
     dynamic o = other;
-
-    // Backward compatibility for dismiss: true -> 'forever'
-    String? dismissVal;
-    if (dismiss is bool && dismiss == true) {
-      dismissVal = 'forever';
-    } else if (dismiss is String) {
-      dismissVal = dismiss;
-    }
 
     final bool debugUseSubjectNotToken = Setting.get(SettingType.debugUseSubjectNotToken).value;
 
@@ -180,7 +160,6 @@ class ContentStatement extends Statement {
     Json withx = {
       'otherSubject': o,
       'recommend': recommend,
-      'dismiss': dismissVal,
       'censor': censor,
       'contexts': contexts,
     };

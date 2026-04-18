@@ -21,6 +21,7 @@ import 'package:oneofus_common/statement_writer.dart';
 
 class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
   final FirebaseFirestore _fire;
+  final String _subcollection;
 
   // A map of issuer tokens to the latest write operation for that issuer.
   // This effectively acts as a per-issuer serialization queue.
@@ -31,7 +32,8 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
   // if a later request finished signing before an earlier one.
   final Map<String, Future<void>> _writeQueues = {};
 
-  DirectFirestoreWriter(this._fire);
+  DirectFirestoreWriter(this._fire, {String subcollection = 'statements'})
+      : _subcollection = subcollection;
 
   @override
   Future<T> push(Json json, StatementSigner signer,
@@ -41,7 +43,7 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
         'optimisticConcurrencyFailed requires previous');
     final String issuerToken = getToken(json['I']);
     final CollectionReference<Map<String, dynamic>> fireStatements =
-        _fire.collection(issuerToken).doc('statements').collection('statements');
+        _fire.collection(issuerToken).doc(_subcollection).collection('statements');
 
     if (optimisticConcurrencyFailed != null) {
       // Optimistic Path: Return immediately, write in background.

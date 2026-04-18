@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -223,22 +224,16 @@ class SubjectGroup {
   final int likes;
   final int dislikes;
 
-  /// Latest timestamp of any statement whose verb/fields count as "qualified"
-  /// activity (like, non-empty comment, relate, equate — but NOT dismiss-only
-  /// or dislike-only). Used as the sort key in my/pov filter modes and for
-  /// snooze wake-up logic.
+  /// Latest timestamp of any qualified activity statement (like, non-empty
+  /// comment, relate, equate — but NOT censor-only). Used as the sort key
+  /// and for snooze wake-up logic.
   final DateTime lastActivity;
 
-  /// Latest timestamp of any statement that carries a positive signal
-  /// (like=true OR non-empty comment OR relate/equate), even if dismiss is
-  /// also set on the same statement. Used as the sort key in
-  /// DisFilterMode.ignore so that a dismissed-but-liked subject doesn't sink
-  /// to the bottom of the feed.
-  final DateTime lastSignalActivity;
   final Set<ContentKey> related; // Canonical tokens of related subjects
   final List<ContentStatement> povStatements;
   final bool isCensored;
   final ContentKey canonical;
+
   SubjectGroup({
     required this.canonical,
     List<ContentStatement> statements = const [],
@@ -246,15 +241,13 @@ class SubjectGroup {
     this.likes = 0,
     this.dislikes = 0,
     required this.lastActivity,
-    DateTime? lastSignalActivity,
     this.related = const {},
     List<ContentStatement> povStatements = const [],
     this.isCensored = false,
-  })  : lastSignalActivity = lastSignalActivity ?? lastActivity,
-        statements = List.unmodifiable(statements),
+  })  : statements = List.unmodifiable(statements),
         povStatements = List.unmodifiable(povStatements) {
-    Statement.validateOrderTypes(this.statements);
-    Statement.validateOrderTypes(this.povStatements);
+    Statement.validateOrderTypes(statements);
+    Statement.validateOrderTypes(povStatements);
   }
 
   SubjectGroup copyWith({
@@ -263,7 +256,6 @@ class SubjectGroup {
     int? likes,
     int? dislikes,
     DateTime? lastActivity,
-    DateTime? lastSignalActivity,
     Set<ContentKey>? related,
     List<ContentStatement>? povStatements,
     bool? isCensored,
@@ -276,93 +268,38 @@ class SubjectGroup {
       likes: likes ?? this.likes,
       dislikes: dislikes ?? this.dislikes,
       lastActivity: lastActivity ?? this.lastActivity,
-      lastSignalActivity: lastSignalActivity ?? this.lastSignalActivity,
       related: related ?? this.related,
       povStatements: povStatements ?? this.povStatements,
       isCensored: isCensored ?? this.isCensored,
     );
   }
 
-  DateTime? get povDismissalTimestamp => _getDismissalTimestamp(povStatements);
-
   bool get isRated => povStatements.any((s) => s.verb == ContentVerb.rate);
 
   int get comments =>
       statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;
 
-  bool get isDismissed => _checkIsDismissed(povStatements);
+  // TODO(deferred): PoV dismiss — once the PoV's dis stream is fetched, wire it
+  // in here via a povDismissStatements field and delegate to checkIsDismissed.
+  bool get isDismissed => false;
+  DateTime? get povDismissalTimestamp => null;
 
-  bool _checkIsDismissed(List<ContentStatement> dispositionStatements) {
-    Statement.validateOrderTypes(dispositionStatements);
-    final DateTime? dismissalTimestamp = _getDismissalTimestamp(dispositionStatements);
-    if (dismissalTimestamp == null) return false;
-
-    // If dismissed forever (timestamp is far future), it's dismissed regardless of activity
-    if (dismissalTimestamp.year >= 3000) return true;
-
-    // If snoozed (timestamp is the time of snooze), check for qualified new activity
-    if (lastActivity.isAfter(dismissalTimestamp)) {
-      // Find the statement that caused the last activity
-      // We assume statements are sorted or we just find the one matching lastActivity
-      // Since lastActivity is the max time, we can just look for it.
-      // Note: There could be multiple statements with the same time, but they would be from different
-      // identities or about different things.
-      // We need to check if *any* statement at lastActivity is a "Qualified New Activity".
-      final Iterable<ContentStatement> activityStatements =
-          statements.where((ContentStatement s) => s.time.isAtSameMomentAs(lastActivity));
-      for (final ContentStatement activityStatement in activityStatements) {
-        // Qualified New Activity:
-        // - Rate with comment or recommend (true/false)
-        // - Relate
-        if (activityStatement.verb == ContentVerb.relate) return false; // Wakes up
-        if (activityStatement.verb == ContentVerb.rate) {
-          // Disqualified: censor or dismiss
-          if (activityStatement.censor == true || activityStatement.dismiss != null)
-            continue; // Does not wake up
-
-          // Qualified: comment or recommend
-          if (activityStatement.comment != null || activityStatement.like != null)
-            return false; // Wakes up
-        }
-        // Equate/DontEquate/DontRelate are disqualified (they don't wake up)
-      }
-      // If we found no qualified activity among the statements at lastActivity, it remains dismissed.
-      return true;
-    }
-    return true;
-  }
-
-  DateTime? _getDismissalTimestamp(List<ContentStatement> stmts) {
-    Statement.validateOrderTypes(stmts);
-    // The user's disposition is singular. The first rate statement encountered
-    // is the effective one.
-    for (final ContentStatement s in stmts) {
-      if (s.verb == ContentVerb.rate) {
-        if (s.dismiss == 'forever') {
-          return DateTime(3000);
-        } else if (s.dismiss == 'snooze') {
-          return s.time;
-        }
-        return null; // A rate statement without dismissal ends the search and returns null
-      }
-    }
-    return null;
-  }
-
-  static bool checkIsDismissed(List<ContentStatement> myStmts, SubjectAggregation agg) {
-    Statement.validateOrderTypes(myStmts);
-    final DateTime? dismissalTimestamp = getDismissalTimestamp(myStmts);
+  /// Returns whether the signed-in user has dismissed the subject.
+  /// [myDis] is the list of DismissStatements for this canonical subject from
+  /// the user's own dis stream (descending time order, one per delegate).
+  static bool checkIsDismissed(List<DismissStatement> myDis, SubjectAggregation agg) {
+    final DateTime? dismissalTimestamp = getDismissalTimestamp(myDis);
     if (dismissalTimestamp == null) return false;
     if (dismissalTimestamp.year >= 3000) return true;
 
     if (agg.lastActivity.isAfter(dismissalTimestamp)) {
       final Iterable<ContentStatement> activityStatements =
-          agg.statements.where((ContentStatement s) => s.time.isAtSameMomentAs(agg.lastActivity));
-      for (final ContentStatement activityStatement in activityStatements) {
-        if (activityStatement.verb == ContentVerb.relate) return false;
-        if (activityStatement.verb == ContentVerb.rate) {
-          if (activityStatement.censor == true || activityStatement.dismiss != null) continue;
-          if (activityStatement.comment != null || activityStatement.like != null) return false;
+          agg.statements.where((s) => s.time.isAtSameMomentAs(agg.lastActivity));
+      for (final ContentStatement s in activityStatements) {
+        if (s.verb == ContentVerb.relate) return false;
+        if (s.verb == ContentVerb.rate) {
+          if (s.censor == true) continue;
+          if (s.comment != null || s.like != null) return false;
         }
       }
       return true;
@@ -370,18 +307,14 @@ class SubjectGroup {
     return true;
   }
 
-  static DateTime? getDismissalTimestamp(List<ContentStatement> stmts) {
-    Statement.validateOrderTypes(stmts);
-    for (final ContentStatement s in stmts) {
-      if (s.verb == ContentVerb.rate) {
-        if (s.dismiss == 'forever') {
-          return DateTime(3000);
-        } else if (s.dismiss == 'snooze') {
-          return s.time;
-        }
-        return null;
-      }
-    }
+  /// Returns the effective dismissal timestamp from a list of DismissStatements.
+  /// The most recent statement wins. Returns null if not dismissed.
+  static DateTime? getDismissalTimestamp(List<DismissStatement> stmts) {
+    if (stmts.isEmpty) return null;
+    final DismissStatement latest = stmts.first; // descending time order
+    if (latest.isClear) return null;
+    if (latest.dismiss == 'forever') return DateTime(3000);
+    if (latest.dismiss == 'snooze') return latest.time;
     return null;
   }
 }
@@ -424,7 +357,6 @@ class SubjectAggregation {
   int get likes => activeGroup.likes;
   int get dislikes => activeGroup.dislikes;
   DateTime get lastActivity => activeGroup.lastActivity;
-  DateTime get lastSignalActivity => activeGroup.lastSignalActivity;
   Set<ContentKey> get related => activeGroup.related;
   List<ContentStatement> get povStatements => activeGroup.povStatements;
   bool get isCensored => activeGroup.isCensored;
@@ -459,10 +391,9 @@ class ContentAggregation {
   /// Map of every known literal subject token to its flavored Aggregation.
   final Map<ContentKey, SubjectAggregation> subjects;
 
-  /// Map of canonical subject tokens to the list of my own merged rate statements.
-  /// Used for dismissal logic so that a dismissal of any token in an
-  /// equivalence group applies to the whole group.
-  final Map<ContentKey, List<ContentStatement>> myCanonicalDisses;
+  /// Map of canonical subject tokens to the signed-in user's DismissStatements.
+  /// Used for DisFilterMode.my and the card dismiss toggle.
+  final Map<ContentKey, List<DismissStatement>> myDismissStatements;
 
   /// Map of literal subject tokens to the list of my own merged statements.
   /// Used for UI hydration (RateDialog, etc) regardless of canonicalization.
@@ -476,12 +407,12 @@ class ContentAggregation {
     this.tagEquivalence = const {},
     List<String> mostTags = const [],
     this.subjects = const {},
-    Map<ContentKey, List<ContentStatement>> myCanonicalDisses = const {},
+    Map<ContentKey, List<DismissStatement>> myDismissStatements = const {},
     Map<ContentKey, List<ContentStatement>> myLiteralStatements = const {},
   })  : statements = List<ContentStatement>.unmodifiable(statements),
         mostTags = List<String>.unmodifiable(mostTags),
-        myCanonicalDisses = Map<ContentKey, List<ContentStatement>>.unmodifiable(
-            myCanonicalDisses.map((k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v)))),
+        myDismissStatements = Map<ContentKey, List<DismissStatement>>.unmodifiable(
+            myDismissStatements.map((k, v) => MapEntry(k, List<DismissStatement>.unmodifiable(v)))),
         myLiteralStatements = Map<ContentKey, List<ContentStatement>>.unmodifiable(
             myLiteralStatements.map((k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v))));
 }

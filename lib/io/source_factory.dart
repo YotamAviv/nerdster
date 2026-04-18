@@ -13,6 +13,7 @@ import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/statement_writer.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 
 class SourceFactory {
   /// Trust pipeline: URL comes from the FedKey registry.
@@ -46,6 +47,25 @@ class SourceFactory {
       baseUrl: FirebaseConfig.contentUrl,
       verifier: OouVerifier(),
       skipVerify: Setting.get<bool>(SettingType.skipVerify),
+    );
+  }
+
+  /// Dis stream: always DirectFirestoreSource (no cloud function for this collection).
+  /// Only fetched for the signed-in user's own delegates (and optionally PoV's).
+  // TODO(deferred): exporting dis statements and true-PoV-dis will need this source
+  // to be fetchable for arbitrary delegate keys, not just the signed-in user.
+  static StatementSource<DismissStatement> forDis() {
+    return DirectFirestoreSource<DismissStatement>(
+      FireFactory.find(kNerdsterDomain),
+      subcollection: 'dis',
+      skipVerify: Setting.get<bool>(SettingType.skipVerify),
+    );
+  }
+
+  static StatementWriter<DismissStatement> getDisWriter() {
+    return DirectFirestoreWriter<DismissStatement>(
+      FireFactory.find(kNerdsterDomain),
+      subcollection: 'dis',
     );
   }
 

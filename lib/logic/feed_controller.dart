@@ -8,6 +8,7 @@ import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/logic/trust_logic.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
@@ -230,9 +231,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
       case SortMode.recentActivity:
         // CONSIDER: Might be already sorted by lastActivity descending via the aggregation subjects map.
         subjects.sort((a, b) {
-          final timeA = filterMode == DisFilterMode.ignore ? a.lastSignalActivity : a.lastActivity;
-          final timeB = filterMode == DisFilterMode.ignore ? b.lastSignalActivity : b.lastActivity;
-          return timeB.compareTo(timeA);
+          return b.lastActivity.compareTo(a.lastActivity);
         });
         break;
       case SortMode.netLikes:
@@ -286,8 +285,8 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
     switch (mode) {
       case DisFilterMode.my:
-        final myStmts = aggregation.myCanonicalDisses[subject.canonical] ?? [];
-        return !SubjectGroup.checkIsDismissed(myStmts, subject);
+        final myDis = aggregation.myDismissStatements[subject.canonical] ?? [];
+        return !SubjectGroup.checkIsDismissed(myDis, subject);
       case DisFilterMode.pov:
         return !subject.isDismissed;
       case DisFilterMode.ignore:
@@ -413,11 +412,24 @@ class FeedController extends ValueNotifier<FeedModel?> {
           delegateKeysToFetch.addAll(myDelegateKeys);
         }
 
+        // Start dis fetch in parallel — it should complete before content pipeline finishes.
+        final Map<String, String?> myDisFetchMap = {
+          for (final k in myDelegateKeys ?? <DelegateKey>[]) k.value: null
+        };
+        final Future<Map<String, List<DismissStatement>>> disFuture = myDisFetchMap.isNotEmpty
+            ? SourceFactory.forDis().fetch(myDisFetchMap)
+            : Future.value(const <String, List<DismissStatement>>{});
+
         final delegateContent = await contentPipeline.fetchDelegateContent(
           delegateKeysToFetch,
           delegateResolver: delegateResolver,
           graph: povGraph,
         );
+
+        final rawDisContent = await disFuture;
+        final Map<DelegateKey, List<DismissStatement>> myDisContent = {
+          for (final entry in rawDisContent.entries) DelegateKey(entry.key): entry.value,
+        };
 
         final contentResult = ContentResult(
           delegateContent: delegateContent,
@@ -451,6 +463,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           contentResult,
           enableCensorship: enableCensorship,
           meDelegateKeys: myDelegateKeys,
+          myDisContent: myDisContent,
           labeler: labeler,
         );
         progress.value = 0.95;

@@ -4,6 +4,7 @@ import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/feed_controller.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
@@ -48,18 +49,15 @@ void main() {
     expect(shakes, isNotNull, reason: "Shakes should be in feed initially (via Homer)");
     final shakesToken = shakes!.token;
 
-    // 2. Lisa dismisses Shakes (simulating RateDialog action)
-    // Create a dismiss statement from Lisa's Delegate
-    final dismissStmt = ContentStatement.make(
-      Jsonish.find(lisaDelegate.token)!.json, // Issuer is Lisa's Delegate
-      ContentVerb.rate,
-      shakes.subject, // FULL SUBJECT needed
-      dismiss: true,
+    // 2. Lisa dismisses Shakes via the dis stream
+    final dismissStmt = DismissStatement.make(
+      Jsonish.find(lisaDelegate.token)!.json,
+      shakes.canonical.value,
+      'forever',
     );
 
-    // Write to Firestore using Writer (to ensure correct path /<ID>/statements/statements)
-    final writer = SourceFactory.getWriter(kNerdsterDomain);
-    final signer = await OouSigner.make(lisaDelegate.keyPair); // Sign with Delegate Key!
+    final writer = SourceFactory.getDisWriter();
+    final signer = await OouSigner.make(lisaDelegate.keyPair);
     await writer.push(dismissStmt, signer);
 
     // 3. Refresh the feed (First time - "Minor Refresh" simulation)
