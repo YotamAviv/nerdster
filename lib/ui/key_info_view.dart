@@ -47,7 +47,7 @@ class KeyInfoView extends StatelessWidget {
   }
 
   Widget _buildStatementsLink(BuildContext context) {
-    if (fireChoice == FireChoice.prod) {
+    if (fireChoice != FireChoice.fake) {
       final String? revokeAt =
           labeler.graph.replacementConstraints[IdentityKey(jsonish.token)];
       final params = <String, String>{'spec': jsonEncode(jsonish.token)};
@@ -77,7 +77,7 @@ class KeyInfoView extends StatelessWidget {
   }
 
   Widget _buildDisStatementsLink(BuildContext context) {
-    if (fireChoice == FireChoice.prod) {
+    if (fireChoice != FireChoice.fake) {
       final params = <String, String>{
         'spec': jsonEncode(jsonish.token),
         'subcollection': 'dis/statements',
@@ -112,6 +112,7 @@ class KeyInfoView extends StatelessWidget {
     List<dynamic> jsons = List.from(statements.map((s) => s.json));
     Map<String, dynamic> j = {jsonish.token: jsons};
 
+    if (!context.mounted) return;
     await showDialog(
       context: context,
       builder: (BuildContext context) {

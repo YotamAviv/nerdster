@@ -76,7 +76,10 @@ the dis collection path regular and addressable. Plan:
 - **Bug to fix first**: `KeyInfoView._buildStatementsLink` shows the external link for both
   `FireChoice.emulator` and `FireChoice.prod`. In emulator mode the link opens
   `export.nerdster.org` which queries prod Firestore. Fix: only show the external link for
-  `FireChoice.prod`; fall through to inline display for emulator (same path as `FireChoice.fake`).
+  `FireChoice.prod`; for emulator, show a clickable link to the local export endpoint
+  (e.g. `http://localhost:5001/nerdster/us-central1/export?spec=...`) so the signed statements
+  served by the emulator Cloud Function are visible, just as `export.nerdster.org` shows them
+  in production. Only `FireChoice.fake` uses the inline display.
 
 **Deferred — true PoV dis**: the ability to view from another's PoV including their dis stream is
 desirable and the architecture supports it (PoV's delegate keys → PoV's dis stream). Deferred
@@ -195,16 +198,10 @@ Strategy:
 - `simpsons_demo.dart`: replace all `doRate(dismiss: true, ...)` with `doDismiss(...)`. Any call
   that combined `dismiss` with `recommend`/`comment` in one statement must be split into a
   `doRate(recommend: ..., comment: ...)` and a separate `doDismiss(...)`.
-- Dismiss-specific tests (`dismiss_logic_unit_test.dart`, `dismiss_bug_test.dart`,
-  `signal_sort_unit_test.dart`, `partial_refresh_test.dart`): update to write `DismissStatement`s
-  to the `dis/statements` sub-collection in `FakeFirebaseFirestore`, and read from
-  `myDismissStatements` instead of `myCanonicalDisses`.
 
 ---
 
 ## Deferred Items (TODO.md)
 
-- **Exporting dis statements**: add published dis statement links on delegate key pages (alongside
-  published content statements). Collection path is designed to support this.
 - **True PoV dis**: fetch and apply PoV's dis stream when the hidden setting is enabled. The fetch
   path is the same as `myDelegateKeys` — just swap in PoV's delegate keys.
