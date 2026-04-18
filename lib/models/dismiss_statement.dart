@@ -31,7 +31,7 @@ class DismissStatement extends Statement {
     final dynamic rawSubject = jsonish['rate'];
     assert(rawSubject != null, 'DismissStatement missing rate subject');
 
-    final String? dis = jsonish['dismiss'] as String?;
+    final String? dis = (jsonish['with'] as Map?)?['dismiss'] as String?;
     assert(dis == null || dis == 'forever' || dis == 'snooze',
         'DismissStatement invalid dismiss value: $dis');
 
@@ -56,7 +56,7 @@ class DismissStatement extends Statement {
       'rate': s,
     };
     if (dismiss != null) {
-      json['dismiss'] = dismiss;
+      json['with'] = {'dismiss': dismiss};
     }
     return json;
   }

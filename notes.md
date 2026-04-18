@@ -6,7 +6,7 @@ AI NOTE: This is my (the human) file with my own notes.
   - modifying any value in it.
 
 # Misc...
-?fire=emulator
+?fire=emulator&showCrypto=true&lgtm=true
 
 # Fake egosCircle
 ?fire=fake&demo=egosCircle&showCrypto=true
