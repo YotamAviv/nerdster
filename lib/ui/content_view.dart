@@ -428,8 +428,14 @@ class _ContentViewState extends State<ContentView> {
     return ListView.builder(
       controller: _scrollController,
       itemCount: subjects.length,
+      findChildIndexCallback: (key) {
+        final canonical = (key as ValueKey<String>).value;
+        final index = subjects.indexWhere((s) => s.canonical.value == canonical);
+        return index == -1 ? null : index;
+      },
       itemBuilder: (context, index) {
         return ContentCard(
+          key: Key(subjects[index].canonical.value),
           aggregation: subjects[index],
           model: model,
           controller: _controller,

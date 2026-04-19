@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/content_logic.dart';
@@ -123,6 +125,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
   }
 
   bool _loading = false;
+  bool _reloadPending = false;
   bool get loading => _loading;
 
   final ValueNotifier<double> progress = ValueNotifier(0);
@@ -306,6 +309,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
   Future<void> _load({bool showLoading = true}) async {
     if (_loading) {
+      _reloadPending = true;
       return;
     }
 
@@ -617,6 +621,10 @@ class FeedController extends ValueNotifier<FeedModel?> {
       _loading = false;
       loadingMessage.value = null;
       notifyListeners();
+      if (_reloadPending) {
+        _reloadPending = false;
+        unawaited(_load(showLoading: false));
+      }
     }
   }
 }
