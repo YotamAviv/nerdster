@@ -220,7 +220,7 @@ class KeyInfoView extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: KeyInfoView(
-                          jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler),
+                          jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler, disSource: disSource),
                     ),
                   )));
         });
