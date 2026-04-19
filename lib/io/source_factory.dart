@@ -40,11 +40,14 @@ class SourceFactory {
     if (fireChoice == FireChoice.fake) {
       return DirectFirestoreSource<ContentStatement>(
         FireFactory.find(kNerdsterDomain),
+        allStreams: ['statements', 'dis'],
         skipVerify: Setting.get<bool>(SettingType.skipVerify),
       );
     }
     return CloudFunctionsSource<ContentStatement>(
       baseUrl: FirebaseConfig.contentUrl,
+      streamId: 'statements',
+      allStreams: ['statements', 'dis'],
       verifier: OouVerifier(),
       skipVerify: Setting.get<bool>(SettingType.skipVerify),
     );
@@ -58,6 +61,7 @@ class SourceFactory {
     return DirectFirestoreSource<DismissStatement>(
       FireFactory.find(kNerdsterDomain),
       streamId: 'dis',
+      allStreams: ['statements', 'dis'],
       skipVerify: Setting.get<bool>(SettingType.skipVerify),
     );
   }
