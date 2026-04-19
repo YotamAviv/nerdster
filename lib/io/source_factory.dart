@@ -57,7 +57,7 @@ class SourceFactory {
   static StatementSource<DismissStatement> forDis() {
     return DirectFirestoreSource<DismissStatement>(
       FireFactory.find(kNerdsterDomain),
-      subcollection: 'dis',
+      streamId: 'dis',
       skipVerify: Setting.get<bool>(SettingType.skipVerify),
     );
   }
@@ -65,7 +65,7 @@ class SourceFactory {
   static StatementWriter<DismissStatement> getDisWriter() {
     return DirectFirestoreWriter<DismissStatement>(
       FireFactory.find(kNerdsterDomain),
-      subcollection: 'dis',
+      streamId: 'dis',
     );
   }
 

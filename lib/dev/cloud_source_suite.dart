@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
+import 'package:nerdster/demotest/cases/multi_stream_scenario.dart';
 import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:oneofus_common/cloud_functions_source.dart';
 import 'package:oneofus_common/oou_verifier.dart';
@@ -44,6 +45,10 @@ Future<void> runCloudSourceVerification() async {
       }
     }
     
+    debugPrint('--- Testing Multi-Stream Scenario ---');
+    await multiStreamScenario(url: url);
+    debugPrint('Multi-Stream Scenario Verified!');
+
     debugPrint('PASS');
   } catch (e, stack) {
     debugPrint('ERROR: $e');
