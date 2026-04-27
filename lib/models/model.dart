@@ -7,6 +7,8 @@ import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:oneofus_common/source_error.dart';
+import 'package:nerdster_common/trust_graph.dart';
+export 'package:nerdster_common/trust_graph.dart';
 
 enum SortMode {
   recentActivity,
@@ -43,146 +45,7 @@ class SystemNotification {
   });
 }
 
-/// Represents a notification or conflict discovered during graph construction.
-class TrustNotification {
-  final String reason;
-  final TrustStatement rejectedStatement;
-  final bool isConflict;
-
-  TrustNotification({
-    required this.reason,
-    required this.rejectedStatement,
-    this.isConflict = false,
-  });
-
-  IdentityKey get subject => IdentityKey(rejectedStatement.subjectToken);
-
-  IdentityKey get issuer => IdentityKey(getToken(rejectedStatement.i));
-
-  @override
-  String toString() => '${isConflict ? "Conflict" : "Notification"}(${subject.value}): $reason';
-}
-
-/// The immutable result of the Trust Algorithm.
-class TrustGraph {
-  final IdentityKey pov;
-  final Map<IdentityKey, int> distances; // Token -> Distance
-  final List<IdentityKey> orderedKeys; // Tokens in discovery order (BFS)
-  final Map<IdentityKey, IdentityKey> replacements; // OldToken -> NewToken
-  final Set<IdentityKey> blocked; // Tokens blocked by the graph
-  final Map<IdentityKey, List<List<IdentityKey>>>
-      paths; // Target -> List of node-disjoint paths from pov
-  /// Notifications: key rotation issues, attempt to claim a delegate that's already been claimed.
-  final List<TrustNotification> notifications;
-  final Map<IdentityKey, List<TrustStatement>>
-      edges; // Adjacency list: Issuer -> List<TrustStatement> (Valid statements)
-
-  TrustGraph({
-    required this.pov,
-    this.distances = const {},
-    List<IdentityKey> orderedKeys = const [],
-    this.replacements = const {},
-    this.blocked = const {},
-    Map<IdentityKey, List<List<IdentityKey>>> paths = const {},
-    List<TrustNotification> notifications = const [],
-    Map<IdentityKey, List<TrustStatement>> edges = const {},
-  })  : orderedKeys = List.unmodifiable(orderedKeys),
-        paths = Map<IdentityKey, List<List<IdentityKey>>>.unmodifiable(paths.map((k, v) => MapEntry(
-            k,
-            List<List<IdentityKey>>.unmodifiable(
-                v.map((p) => List<IdentityKey>.unmodifiable(p)))))),
-        notifications = List<TrustNotification>.unmodifiable(notifications),
-        edges = Map<IdentityKey, List<TrustStatement>>.unmodifiable(
-            edges.map((k, v) => MapEntry(k, List<TrustStatement>.unmodifiable(v))));
-
-  bool isTrusted(IdentityKey token) => distances.containsKey(token);
-
-  List<TrustNotification> get conflicts => notifications.where((n) => n.isConflict).toList();
-
-  TrustGraph copyWith({
-    IdentityKey? pov,
-    Map<IdentityKey, int>? distances,
-    List<IdentityKey>? orderedKeys,
-    Map<IdentityKey, IdentityKey>? replacements,
-    Set<IdentityKey>? blocked,
-    Map<IdentityKey, List<List<IdentityKey>>>? paths,
-    List<TrustNotification>? notifications,
-    Map<IdentityKey, List<TrustStatement>>? edges,
-  }) {
-    return TrustGraph(
-      pov: pov ?? this.pov,
-      distances: distances ?? this.distances,
-      orderedKeys: orderedKeys ?? this.orderedKeys,
-      replacements: replacements ?? this.replacements,
-      blocked: blocked ?? this.blocked,
-      paths: paths ?? this.paths,
-      notifications: notifications ?? this.notifications,
-      edges: edges ?? this.edges,
-    );
-  }
-
-  /// Returns the active identity token for a given key.
-  /// If the key is replaced, returns the replacement (recursively).
-  IdentityKey resolveIdentity(IdentityKey token) {
-    IdentityKey current = token;
-    final Set<IdentityKey> seen = {token};
-    while (replacements.containsKey(current)) {
-      current = replacements[current]!;
-      if (seen.contains(current)) break;
-      seen.add(current);
-    }
-    return current;
-  }
-
-  /// Groups all trusted tokens by their canonical identity.
-  Map<IdentityKey, List<IdentityKey>> getEquivalenceGroups() {
-    final Map<IdentityKey, List<IdentityKey>> groups = {};
-    for (final IdentityKey token in distances.keys) {
-      final IdentityKey canonical = resolveIdentity(token);
-      groups.putIfAbsent(canonical, () => []).add(token);
-    }
-    // Sort tokens within each group by distance (canonical first usually)
-    for (final List<IdentityKey> group in groups.values) {
-      group.sort((a, b) => distances[a]!.compareTo(distances[b]!));
-    }
-    return groups;
-  }
-
-  /// Returns all trusted tokens that belong to the given canonical identity.
-  List<IdentityKey> getEquivalenceGroup(IdentityKey canonical) {
-    return distances.keys.where((token) => resolveIdentity(token) == canonical).toList()
-      ..sort((a, b) => distances[a]!.compareTo(distances[b]!));
-  }
-
-  /// Returns all shortest paths from pov to [target].
-  List<List<IdentityKey>> getPathsTo(IdentityKey target) {
-    if (target == pov)
-      return [
-        [pov]
-      ];
-    if (!distances.containsKey(target)) return [];
-
-    final targetDist = distances[target]!;
-    final List<List<IdentityKey>> results = [];
-
-    // Find all issuers that trust this target at distance targetDist - 1
-    // We look at all edges in the graph.
-    for (final IdentityKey issuer in edges.keys) {
-      if ((distances[issuer] ?? -1) == targetDist - 1) {
-        for (final TrustStatement s in edges[issuer]!) {
-          // Only trust/replace edges constitute a path in the identity graph.
-          if (s.verb == TrustVerb.trust && s.subjectAsIdentity == target) {
-            final List<List<IdentityKey>> subPaths = getPathsTo(issuer);
-            for (final List<IdentityKey> p in subPaths) {
-              results.add([...p, target]);
-            }
-          }
-        }
-      }
-    }
-    return results;
-  }
-}
+// TrustNotification and TrustGraph live in nerdster_common (exported above).
 
 /// The result of building a Follow Network for a specific context.
 class FollowNetwork {

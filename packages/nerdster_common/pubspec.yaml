@@ -1,0 +1,13 @@
+name: nerdster_common
+description: Trust graph algorithm shared between Nerdster and Hablo.
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.3.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  oneofus_common:
+    path: ../oneofus_common
