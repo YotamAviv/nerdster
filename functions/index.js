@@ -7,12 +7,15 @@
  * 1. Callable Functions (v2 onCall) - Used by the Flutter app.
  * 2. HTTP Functions (v2 onRequest) - Used for external integrations and streaming.
  * 
- * DUAL DEPLOYMENT NOTE:
- * This same functions codebase is deployed to two separate Firebase projects:
- *   - Firebase project "nerdster"     → custom domain: export.nerdster.org
- *   - Firebase project "one-of-us-net"→ custom domain: export.one-of-us.net
- * Deploy with: firebase deploy --only functions --project <projectId>
- * This is intentional but kludgey — both hosts serve identical code.
+ * Deploy:
+ *   firebase --project=nerdster deploy --only functions
+ *
+ * ONE-OF-US.NET functions live in oneofusv22/functions/ and are deployed from there:
+ *   firebase --project=one-of-us-net deploy --only functions:export
+ *
+ * Code duplication: statement_fetcher.js and jsonish_util.js are copied across
+ * nerdster14/, oneofusv22/, and hablotengo/functions/. Changes must be applied
+ * to all three manually until a shared library is introduced.
  */
 
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
@@ -38,9 +41,6 @@ if (admin.apps.length === 0) {
   admin.initializeApp();
 }
 
-// DUAL DEPLOYMENT: only register nerdster-specific functions on the nerdster project.
-const isNerdster = process.env.GCLOUD_PROJECT === 'nerdster';
-
 // ----------------------------------------------------------------------------
 // 1. Callable Functions (v2 onCall)
 // ----------------------------------------------------------------------------
@@ -50,7 +50,7 @@ const isNerdster = process.env.GCLOUD_PROJECT === 'nerdster';
  * This is dynamic and NOT part of the subject's identity.
  * Fail Fast: Requires a subject with a contentType.
  */
-if (isNerdster) exports.fetchImages = onCall(async (request) => {
+exports.fetchImages = onCall(async (request) => {
   try {
     // Determine maxImages from request or default to 1 (client optimized)
     const maxImages = request.data.maxImages || 1;
@@ -61,14 +61,14 @@ if (isNerdster) exports.fetchImages = onCall(async (request) => {
     }
     throw new HttpsError("internal", e.message);
   }
-}); // isNerdster
+});
 
 /**
  * "Magic Paste" - Smart URL Parser.
  * Fetches the URL and extracts metadata (Title, Year, Author, Image, ContentType)
  * using Schema.org (JSON-LD), OpenGraph, or standard HTML tags.
  */
-if (isNerdster) exports.magicPaste = onCall(async (request) => {
+exports.magicPaste = onCall(async (request) => {
   const url = request.data.url;
   logger.info(`[magicPaste] CALL RECEIVED for URL: ${url}`); // DEBUG
 
@@ -176,7 +176,7 @@ if (isNerdster) exports.magicPaste = onCall(async (request) => {
  * session write structure is identical. When Nerdster migrates to CloudFunctionsWriter,
  * consider unifying into a shared library.
  */
-if (isNerdster) exports.signin = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
+exports.signin = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
   const session = req.body.session;
   if (!session) {
     res.status(400).send("Missing session");

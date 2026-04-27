@@ -43,14 +43,7 @@ flutter run -d chrome
 ```
 Push to PROD:
 bin/deploy_web.sh
-firebase --project=one-of-us-net deploy --only hosting
 firebase --project=nerdster deploy --only functions
-firebase --project=one-of-us-net deploy --only functions:export
-firebase --project=one-of-us-net deploy --only functions
-
-firebase --project=nerdster deploy --only functions:signin,functions:export
-firebase --project=one-of-us-net deploy --only functions:export
-
 
 add to .bashrc:
 export PATH="$PATH":"$HOME/.pub-cache/bin"
