@@ -1,6 +1,5 @@
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
-import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/clock.dart';
 import 'package:nerdster/logic/follow_logic.dart';
@@ -34,18 +33,18 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsons() async {
 
   // most simpsons state trust in each other.
   await homer.doTrust(TrustVerb.trust, marge, moniker: 'wife');
-  Statement s2 = await homer.doTrust(TrustVerb.trust, bart, moniker: 'boy');
+  await homer.doTrust(TrustVerb.trust, bart, moniker: 'boy');
   await marge.doTrust(TrustVerb.trust, maggie, moniker: 'baby');
   await marge.doTrust(TrustVerb.trust, bart, moniker: 'son');
   await marge.doTrust(TrustVerb.trust, lisa, moniker: 'daughter');
   await homer2.doTrust(TrustVerb.replace, homer,
-      comment: 'lost phone', revokeAt: s2.token); // homer replaces key
+      comment: 'lost phone', revokeAt: kSinceAlways); // homer replaces key
   await marge.doTrust(TrustVerb.trust, homer, moniker: 'hubby');
   await bart.doTrust(TrustVerb.trust, marge, moniker: 'moms');
-  Statement s3 = await bart.doTrust(TrustVerb.trust, homer, moniker: 'homer');
+  await bart.doTrust(TrustVerb.trust, homer, moniker: 'homer');
 
   // Sideshow tries to thieve bart's key
-  await sideshow.doTrust(TrustVerb.replace, bart, revokeAt: s3.token);
+  await sideshow.doTrust(TrustVerb.replace, bart, revokeAt: kSinceAlways);
 
   await bart.doTrust(TrustVerb.trust, homer2, moniker: 'homer2'); // bart trusts homer2
   await bart.doTrust(TrustVerb.trust, lisa, moniker: 'sis');

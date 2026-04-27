@@ -49,17 +49,15 @@ The V2 algorithm generates `TrustNotification` objects when it encounters confli
 | `Attempt to block trusted key.` | ✅ Tested | "Attempt to block trusted key by [Issuer]" |
 | `Attempt to trust blocked key.` | ✅ Tested | "Attempt to trust blocked key by [Issuer]" |
 | `Attempt to replace a replaced key.` | ✅ Tested | "Key [Old] replaced by both [New1] and [New2]" |
-| `Attempt to replace trusted key.` | ✅ Tested | "Trusted key [Old] is being replaced by [Issuer] (Revocation ignored due to distance)" |
+| `Attempt to replace trusted key.` | ✅ Tested | "Trusted key [Old] is being replaced by [Issuer] (Replacement constraint ignored due to distance)" |
 | `You trust a non-canonical key directly.` | ✅ Implemented | "You trust a non-canonical key directly (replaced by [New])" |
 | `Replaced key not in network.` | ✅ Resolved | In V2, "Backward Discovery" ensures that if you trust a new key, the old key is automatically pulled into the network at $dist + 1$. |
 | `Attempt to replace a blocked key.` | ✅ Tested | "Blocked key [Old] is being replaced by [Issuer]" |
 
 ## Implementation Details
 
-### `resolveRevokeAt`
-Handles the `revokeAt` token in `replace` statements.
-*   If the token is missing or is the sentinel `"<since always>"`, it returns `date0` (epoch 0), revoking the entire history of the old key.
-*   If the token is valid, it revokes all statements issued *after* that token's timestamp.
+### Replace Revocation
+Any `replace` statement revokes the old key since always. `revokeAt` must be `"<since always>"`; any other value throws `UnimplementedError`.
 
 ### `reduceTrustGraph`
 A pure function that takes a `Map<String, List<TrustStatement>>` and returns a `TrustGraph`. It is deterministic and synchronous.

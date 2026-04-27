@@ -4,6 +4,9 @@ import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
+import 'package:oneofus_common/source_error.dart';
+import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/statement_source.dart';
 
 void main() {
   setUp(() async {
@@ -30,15 +33,20 @@ void main() {
   });
 
   test('Key Rotation (Replace)', () async {
+    // Simplification: replace always revokes the old key since always — per-token revokeAt
+    // is no longer supported. The ONE-OF-US.NET app compensates by letting the user re-sign
+    // with the new key any statements they want to keep. The result is the same.
     final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
     final DemoIdentityKey bobNew = await DemoIdentityKey.create('bobNew');
     final DemoIdentityKey charlie = await DemoIdentityKey.create('charlie');
 
     await alice.trust(bobNew, moniker: 'bobNew'); // Alice only trusts the NEW key
-    final TrustStatement sCharlie =
-        await bob.trust(charlie, moniker: 'charlie'); // Charlie was trusted by the OLD key
-    await bobNew.replace(bob, lastGoodToken: sCharlie); // bobNew replaces bob, valid up to sCharlie
+    // final TrustStatement sCharlie =
+    await bob.trust(charlie, moniker: 'charlie'); // Charlie was trusted by the OLD key
+    // await bobNew.replace(bob, lastGoodToken: sCharlie); // no longer supported, see simplification above
+    await bobNew.replace(bob);
+    await bobNew.trust(charlie, moniker: 'charlie'); // bobNew re-states the trust in charlie
 
     final DirectFirestoreSource<TrustStatement> source =
         DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
@@ -215,27 +223,6 @@ void main() {
     expect(graph.isTrusted(bobOld.id), isTrue, reason: 'bobOld is still part of the identity');
     expect(graph.isTrusted(charlie.id), isFalse,
         reason: 'bobOld statements should be ignored due to constraint');
-  });
-
-  test('Replace with Garbage Constraint (Since Always)', () async {
-    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
-    final DemoIdentityKey bobOld = await DemoIdentityKey.create('bobOld');
-    final DemoIdentityKey bobNew = await DemoIdentityKey.create('bobNew');
-    final DemoIdentityKey charlie = await DemoIdentityKey.create('charlie');
-
-    await alice.trust(bobNew, moniker: 'bobNew');
-    // bobNew replaces bobOld, but uses a garbage revokeAt token
-    await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: 'garbage-token');
-    await bobOld.trust(charlie, moniker: 'charlie'); // This statement should be ignored
-
-    final DirectFirestoreSource<TrustStatement> source =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
-    final TrustPipeline pipeline = TrustPipeline(source);
-    final TrustGraph graph = await pipeline.build(alice.id);
-
-    expect(graph.isTrusted(bobNew.id), isTrue);
-    expect(graph.isTrusted(charlie.id), isFalse,
-        reason: 'bobOld statements should be ignored due to invalid constraint token');
   });
 
   test('Replacement Race Condition (Requires 2 passes)', () async {
@@ -499,7 +486,7 @@ void main() {
         ]));
   });
 
-  test('Replacement: Far to Close (Identity Link vs Replacement Constraint)', () async {
+  test('Replacement: Far to Close (Identity Link accepted, old key unaffected)', () async {
     final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
     final DemoIdentityKey bobOld = await DemoIdentityKey.create('bobOld');
     final DemoIdentityKey bobNew = await DemoIdentityKey.create('bobNew');
@@ -512,29 +499,68 @@ void main() {
     await bobOld.trust(bobNew, moniker: 'bobNew');
 
     // 3. bobOld trusts Dave (dist 2)
-    final TrustStatement sDave = await bobOld.trust(dave, moniker: 'dave');
+    await bobOld.trust(dave, moniker: 'dave');
 
-    // 4. bobNew (dist 2) replaces bobOld (dist 1) with a constraint
-    // This is "Far to Close" because bobNew is further than Alice.
-    await bobNew.replace(bobOld, lastGoodToken: sDave);
+    // 4. bobNew (dist 2) replaces bobOld (dist 1).
+    await bobNew.replace(bobOld);
 
     final DirectFirestoreSource<TrustStatement> source =
         DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
-    // Identity Link should be accepted
     expect(graph.resolveIdentity(bobOld.id), bobNew.id,
         reason: 'Identity link should be accepted even from a further node');
 
-    // Replacement constraint should be ignored
     expect(graph.isTrusted(dave.id), isTrue,
-        reason:
-            'Dave should still be trusted because the replacement constraint from a further node was ignored');
+        reason: 'Dave trusted via bobOld which was already processed before the replacement');
 
     expect(
         graph.notifications.any((TrustNotification n) =>
             n.reason.contains('Replacement constraint ignored due to distance')),
         isTrue);
   });
+
+  test('Replaced key is not fetched after replacement is known', () async {
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
+    final DemoIdentityKey bobNew = await DemoIdentityKey.create('bobNew');
+
+    await alice.trust(bob, moniker: 'bob');
+    await bobNew.replace(bob);
+
+    final Set<String> fetchedKeys = {};
+    final DirectFirestoreSource<TrustStatement> inner =
+        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+
+    final StatementSource<TrustStatement> trackingSource =
+        _TrackingSource(inner, fetchedKeys);
+
+    final TrustPipeline pipeline = TrustPipeline(trackingSource, maxDegrees: 6,
+        pathRequirement: (int d) => 1);
+    await pipeline.build(alice.id);
+
+    // bob is replaced — it should be fetched at most once (to discover the replacement),
+    // never again after that.
+    final bobFetchCount =
+        fetchedKeys.where((k) => k == bob.id.value).length;
+    expect(bobFetchCount, lessThanOrEqualTo(1),
+        reason: 'Replaced key bob should not be fetched after replacement is known');
+  });
+}
+
+class _TrackingSource<T extends Statement> implements StatementSource<T> {
+  final StatementSource<T> _inner;
+  final Set<String> _fetched;
+
+  _TrackingSource(this._inner, this._fetched);
+
+  @override
+  Future<Map<String, List<T>>> fetch(Map<String, String?> keys) async {
+    _fetched.addAll(keys.keys);
+    return _inner.fetch(keys);
+  }
+
+  @override
+  List<SourceError> get errors => _inner.errors;
 }

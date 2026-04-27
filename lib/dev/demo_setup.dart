@@ -6,6 +6,12 @@ import 'package:nerdster/singletons.dart';
 
 String? demo;
 
+// To run SimpsonsDemo on PROD:
+// - Comment out the line that prohibits it ('not on production') in menus.dart
+// - http://localhost:43649/?dev=true
+// - Use the DEV menu to run simpsonsDemo
+// - Copy the text that pops up and save that to web/common/data/demoData.js, probably in all 3 projects.
+
 Future<bool> tryDemoSignIn(BuildContext? context) async {
   Map<String, String> params = Uri.base.queryParameters;
   if (params['demo'] != null) {

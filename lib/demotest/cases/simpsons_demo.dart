@@ -2,7 +2,6 @@ import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/clock.dart';
 import 'package:nerdster/logic/follow_logic.dart';
@@ -80,12 +79,12 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   // - homer replaces his key
   // - keep Lisa to bart path long for no notifications
   await homer.doTrust(TrustVerb.trust, marge, moniker: 'Wife');
-  Statement s2 = await homer.doTrust(TrustVerb.trust, bart, moniker: 'Boy');
+  await homer.doTrust(TrustVerb.trust, bart, moniker: 'Boy');
   await marge.doTrust(TrustVerb.trust, maggie, moniker: 'Maggie');
   await marge.doTrust(TrustVerb.trust, bart, moniker: 'Bart');
   await marge.doTrust(TrustVerb.trust, lisa, moniker: 'Lisa');
   await homer2.doTrust(TrustVerb.replace, homer,
-      comment: 'lost phone', revokeAt: s2.token, export: 'homer-replace-key'); // homer replaces key
+      comment: 'lost phone', revokeAt: kSinceAlways, export: 'homer-replace-key'); // homer replaces key
   await marge.doTrust(TrustVerb.trust, homer, moniker: 'Hubby');
   // await bart.doTrust(TrustVerb.trust, marge, moniker: 'Moms');
   await bart.doTrust(TrustVerb.trust, homer, moniker: 'Homer');

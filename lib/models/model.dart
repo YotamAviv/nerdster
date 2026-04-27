@@ -69,8 +69,6 @@ class TrustGraph {
   final Map<IdentityKey, int> distances; // Token -> Distance
   final List<IdentityKey> orderedKeys; // Tokens in discovery order (BFS)
   final Map<IdentityKey, IdentityKey> replacements; // OldToken -> NewToken
-  final Map<IdentityKey, String>
-      replacementConstraints; // Token -> RevokeAtToken (Time constraint works on Token string)
   final Set<IdentityKey> blocked; // Tokens blocked by the graph
   final Map<IdentityKey, List<List<IdentityKey>>>
       paths; // Target -> List of node-disjoint paths from pov
@@ -84,7 +82,6 @@ class TrustGraph {
     this.distances = const {},
     List<IdentityKey> orderedKeys = const [],
     this.replacements = const {},
-    this.replacementConstraints = const {},
     this.blocked = const {},
     Map<IdentityKey, List<List<IdentityKey>>> paths = const {},
     List<TrustNotification> notifications = const [],
@@ -107,7 +104,6 @@ class TrustGraph {
     Map<IdentityKey, int>? distances,
     List<IdentityKey>? orderedKeys,
     Map<IdentityKey, IdentityKey>? replacements,
-    Map<IdentityKey, String>? replacementConstraints,
     Set<IdentityKey>? blocked,
     Map<IdentityKey, List<List<IdentityKey>>>? paths,
     List<TrustNotification>? notifications,
@@ -118,7 +114,6 @@ class TrustGraph {
       distances: distances ?? this.distances,
       orderedKeys: orderedKeys ?? this.orderedKeys,
       replacements: replacements ?? this.replacements,
-      replacementConstraints: replacementConstraints ?? this.replacementConstraints,
       blocked: blocked ?? this.blocked,
       paths: paths ?? this.paths,
       notifications: notifications ?? this.notifications,

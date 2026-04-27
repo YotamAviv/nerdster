@@ -41,11 +41,12 @@ class TrustPipeline {
 
       // 1. FETCH (Side Effect)
       // We only fetch keys we haven't visited yet to avoid redundant network calls.
-      final keysToFetch = frontier.difference(visited).toList();
+      final keysToFetch = frontier.difference(visited)
+          .where((k) => !graph.replacements.containsKey(k))
+          .toList();
       if (keysToFetch.isEmpty) break;
 
-      // Map keys to their replacement constraints if known.
-      final fetchMap = {for (var k in keysToFetch) k.value: graph.replacementConstraints[k]};
+      final Map<String, String?> fetchMap = {for (var k in keysToFetch) k.value: null};
 
       final newStatementsMap = await source.fetch(fetchMap);
       visited.addAll(keysToFetch);

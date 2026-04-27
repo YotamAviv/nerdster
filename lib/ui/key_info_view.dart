@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/ui/json_display.dart';
@@ -48,10 +47,7 @@ class KeyInfoView extends StatelessWidget {
 
   Widget _buildStatementsLink(BuildContext context) {
     if (fireChoice != FireChoice.fake) {
-      final String? revokeAt =
-          labeler.graph.replacementConstraints[IdentityKey(jsonish.token)];
       final params = <String, String>{'spec': jsonEncode(jsonish.token)};
-      if (revokeAt != null) params['revokeAt'] = revokeAt;
       final Uri uri = Uri.parse(baseUrl).replace(queryParameters: params);
       return InkWell(
         onTap: () => launchUrl(uri),

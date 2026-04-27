@@ -1,26 +1,56 @@
 # TODO
 
+# Simpsons demo for both Hablotengo and Nerdster using the same Oneofus identities.
 
-## Dis statement export (KeyInfoView)
+## Goals:
 
-Two items deferred from the dis stream separation. Details in `docs/dis_stream_separation.md`.
+- The Nerdster is the naked app that demonstrates the crypto.
+In NodeDetails, also show HabloTengo delegate keys if they exist.
+This should allow running the demo startup code for both the Nerdster and HabloTengo and see
+from the Nerdster that some folks also use HabloTengo, which fortifies the open, heterogeneous claim.
 
-### Bug: emulator link opens prod
+- The embedded Nerdster demo at https://nerdster.org/ where you can view as Lisa, etc.. would
+also show that.
 
-`KeyInfoView._buildStatementsLink` shows the external `export.nerdster.org` link for both
-`FireChoice.emulator` and `FireChoice.prod`. In emulator mode the link queries prod Firestore.
+### Probably do these first:
 
-**Fix**: change the condition from `fireChoice != FireChoice.fake` to `fireChoice == FireChoice.prod`.
+- Clean up the ./bin/ start/stop emulators and have each project start and stop its own.
+I think this is a good idea, but there may be pitfalls I haven't considered.
 
-### Feature: show signed, published dismiss statements
+- Move Nerdster and Oneofus to New security model - cloud functions handle the writes and verify signatures.
+This is done in Hablotengo. Oneofus and Nerdster should use similar tech.
 
-**Server**: Update the Cloud Function at `export.nerdster.org` to accept an optional
-`subcollection` query param (default `'statements'`); serve `/{spec}/dis/statements` when
-`subcollection=dis/statements` is passed. Backward compatible.
+The Nerdster has oneofus Firebase credentials, and it shouldn't.
+It uses those to state the identity layer stuff in SimposonsDemo.
+Once the upgrade to using the new security model:
+- remove Firebase Oneofus related stuff from the Nerdster
+- I think that having it still execute SimpsonsDemo is okay.
 
-**Client**: In `node_details.dart`, add a second `KeyInfoView.show` call for the delegate using
-`SourceFactory.forDis(delegateToken)` and a `baseUrl` that appends `?subcollection=dis/statements`.
-Add a "Signed, Published Dismiss Statements" link in `KeyInfoView._buildStatementsLink`.
+### Generate compatible SimpsonsDemo for both the Nerdster and HabloTengo.
+
+It think that it's acceptable for the Nerdster to still be the project that runs SimpsonsDemo
+to create the identity keys and state the identity layer stuff.
+(A cleaner approach might have the Oneofus project create the basic vouch/block stuff, but 
+the Nerdster and HabloTengo still need delegate keys which are identity layer.)
+
+The nerdster should then make some kind of simpsonsData.json file available to HabloTengo so that
+it can create the HabloTengo delegate key data (homer's contact info, etc...)
+
+Some script should push out the Nerdster home page - one already exists.
+This script does push out something, I lose track of the detailsm see nerdster14/web/common/data/demoData.js
+
+When running the HabloTengo SimpsonsDemo thing, give it that file so that
+it uses those identities to create HabloTengo demo data for the same identities.
+This will let the embedded Nerdster demo at https://nerdster.org show that Homer and others also use HabloTengo.
+
+Probably Serve HabloTengo similarly to the Nerdster, at https://hablotengo.com/app instead of at the root.
+This will require a similar deploy script.
+
+If possible, on the HabloTengo home page, embed HabloTengo where you can view as Homer, Lisa, etc..
+This requires having them fully sign in and revealing their delegate keys, which isn't great.
+
+
+
 
 
 

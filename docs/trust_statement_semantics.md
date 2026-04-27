@@ -17,9 +17,9 @@ For these verbs, the Subject represents an **Identity** (a person or entity).
     - *Implication:* I am willing to introduce this person to my network.
 - **`block`**: "I assert that Key X does not represent a human, or that the person holding Key X is a bad actor (spammer, malicious)."
     - *Implication:* This key should be excluded from the network.
-- **`replace`**: "I (New Key) am replacing Old Key X. X still represents me, but is invalid for new statements after the time of replacement."
+- **`replace`**: "I (New Key) am replacing Old Key X. X still represents me, but all its statements are revoked."
     - *Implication:* All trust and reputation associated with Old Key X should transfer to New Key.
-    - revokeAt is required for replace. If it's missing, <since always> is assumed.
+    - The old key is always revoked since always. The user restates what they want to preserve using the new key.
 
 ### 2. Delegation Verbs (`delegate`)
 
@@ -31,8 +31,10 @@ For this verb, the Subject represents a **Service Key** (a delegate).
 
 ## Revocation Semantics (`revokeAt`)
 
-The `revokeAt` field is a modifier that can be attached to statements (`replace` and `delegate`).
+The `revokeAt` field is a modifier that can be attached to `delegate` statements.
 
-- **Meaning:** "This statement (and the key it refers to) is only valid for statements issued *up to and including* the token specified in `revokeAt`."
-- **Use Case:** If a key is compromised, a `replace` statement with `revokeAt` ensures that any malicious statements made by the attacker (after the compromise time) are ignored.
-- **Invalid Tokens & "<since always>":** If the `revokeAt` token does not match any known statement by the **revoked key** (the subject of the statement), the key is considered revoked **since always** (i.e., all its statements are ignored). The special string `"<since always>"` can be used explicitly to achieve this effect as it's guaranteed to not match any valid statement token.
+- **Meaning:** "The delegated key is only valid for statements issued *up to and including* the token specified in `revokeAt`."
+- **Use Case:** Revoking a specific delegate key at a point in time, while leaving others intact.
+- **`"<since always>"`:** The special sentinel string that revokes all statements from the delegate.
+
+Note: `revokeAt` on `replace` statements must be `"<since always>"`; any other value throws `UnimplementedError`.

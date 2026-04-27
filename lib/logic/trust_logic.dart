@@ -84,7 +84,6 @@ TrustGraph reduceTrustGraph(
   final Map<IdentityKey, int> distances = {current.pov: 0};
   final List<IdentityKey> orderedKeys = [current.pov];
   final Map<IdentityKey, IdentityKey> replacements = {};
-  final Map<IdentityKey, String> replacementConstraints = {};
   final Set<IdentityKey> blocked = {};
   final Map<IdentityKey, List<List<IdentityKey>>> paths = {};
   final List<TrustNotification> notifications = [];
@@ -102,24 +101,6 @@ TrustGraph reduceTrustGraph(
       seen.add(currentKey);
     }
     return currentKey;
-  }
-
-  // --- 1. Index by Token (for replacement limit resolution) ---
-  final Map<String, TrustStatement> byToken = {};
-  for (final List<TrustStatement> list in byIssuer.values) {
-    for (final TrustStatement s in list) {
-      byToken[s.token] = s;
-    }
-  }
-
-  DateTime? resolveReplacementLimit(String? limitToken, IdentityKey expectedIssuer) {
-    if (limitToken == null) return null;
-    if (limitToken == kSinceAlways) return DateTime.fromMicrosecondsSinceEpoch(0);
-    final TrustStatement? s = byToken[limitToken];
-    if (s != null && s.iKey == expectedIssuer) {
-      return s.time;
-    }
-    return DateTime.fromMicrosecondsSinceEpoch(0);
   }
 
   final PathRequirement req = pathRequirement ?? (d) => 1;
@@ -166,17 +147,11 @@ TrustGraph reduceTrustGraph(
     // --- STAGE 2: REPLACES & TRUSTS ---
     // These discover nodes for the NEXT layer.
 
-    // 1. First pass: Process all REPLACES in this layer to establish identity links and constraints.
+    // 1. First pass: Process all REPLACES in this layer to establish identity links.
     for (final IdentityKey issuer in currentLayer) {
       List<TrustStatement> statements = byIssuer[issuer] ?? [];
 
-      // Apply constraints discovered in previous layers
-      if (replacementConstraints.containsKey(issuer)) {
-        final DateTime? limitTime = resolveReplacementLimit(replacementConstraints[issuer], issuer);
-        if (limitTime != null) {
-          statements = statements.where((TrustStatement s) => !s.time.isAfter(limitTime)).toList();
-        }
-      }
+      if (replacements.containsKey(issuer)) { statements = []; }
 
       // Filter out revocations and clear statements from the resulting edges.
       // These are used by the algorithm to "decide" a subject (preventing older statements from applying),
@@ -192,6 +167,10 @@ TrustGraph reduceTrustGraph(
       final Set<IdentityKey> decided = <IdentityKey>{};
       for (final TrustStatement s
           in statements.where((TrustStatement s) => s.verb == TrustVerb.replace)) {
+        if (s.revokeAt != kSinceAlways) {
+          throw UnimplementedError(
+              'replace statement with revokeAt other than <since always> is not supported: ${s.revokeAt}');
+        }
         final IdentityKey oldKey = s.subjectAsIdentity;
         if (decided.contains(oldKey)) continue;
         decided.add(oldKey);
@@ -252,9 +231,6 @@ TrustGraph reduceTrustGraph(
         replacements[oldKey] = issuer;
         graphForPathfinding.putIfAbsent(issuer, () => {}).add(oldKey);
 
-        // Default to kSinceAlways if revokeAt is missing, as per docs.
-        replacementConstraints[oldKey] = s.revokeAt ?? kSinceAlways;
-
         if (!visited.contains(oldKey)) {
           visited.add(oldKey);
           distances[oldKey] = dist + 1;
@@ -268,13 +244,8 @@ TrustGraph reduceTrustGraph(
     for (final IdentityKey issuer in currentLayer) {
       List<TrustStatement> statements = edges[issuer] ?? [];
 
-      // Re-filter statements if a replacement was found in THIS layer
-      if (replacementConstraints.containsKey(issuer)) {
-        final DateTime? limitTime = resolveReplacementLimit(replacementConstraints[issuer], issuer);
-        if (limitTime != null) {
-          statements = statements.where((TrustStatement s) => !s.time.isAfter(limitTime)).toList();
-        }
-      }
+      // Re-filter if a replacement was discovered in THIS layer (race condition).
+      if (replacements.containsKey(issuer)) { statements = []; }
 
       final Set<IdentityKey> decided = <IdentityKey>{};
       for (final TrustStatement s
@@ -347,7 +318,6 @@ TrustGraph reduceTrustGraph(
     distances: distances,
     orderedKeys: orderedKeys,
     replacements: replacements,
-    replacementConstraints: replacementConstraints,
     blocked: blocked,
     paths: paths,
     notifications: uniqueNotifications.values.toList(),

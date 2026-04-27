@@ -19,11 +19,10 @@ Within each layer, statements from all issuers in that layer are processed in th
 *   Handles key rotations (Identity management).
 *   **Next Degree Replacement**: A `replace` statement increments the distance ($dist + 1$). This treats a key rotation as a trust hop, matching legacy behavior and preventing "distance gaming."
 *   **Backward Discovery**: If a trusted key `New` replaces `Old`, `Old` is automatically added to the *next* layer so its history can be discovered.
-*   **Distance Authority**: 
+*   **Distance Authority**:
     *   Identity links (replacements) are always accepted to maintain the graph's integrity.
-    *   Revocations (`revokeAt`) are only honored if the issuer is at least as close to the root as the `Old` key's existing trust path.
-*   **Revocation**: If a `replace` statement includes a `revokeAt` token, all statements by the `Old` key issued after that token are ignored.
-*   **Sentinel**: A `revokeAt` value of `"<since always>"` (or an invalid token) revokes the entire history of the `Old` key.
+    *   Revocations are only honored if the issuer is at least as close to the root as the `Old` key's existing trust path.
+*   **Revocation**: Any `replace` statement revokes the `Old` key **since always** — all of its statements are ignored. `revokeAt` must be `"<since always>"`; any other value throws `UnimplementedError`.
 
 #### Stage 3: Trusts (Lowest Priority)
 *   Discovers new nodes for the next layer ($dist + 1$).
@@ -43,7 +42,7 @@ The algorithm generates `TrustNotification` objects to explain why certain state
 | `Attempt to block trusted key by [Issuer]` | Conflict | Issuer tried to block someone already trusted at a shallower/equal level. |
 | `Attempt to trust blocked key by [Issuer]` | Conflict | Issuer tried to trust someone already blocked. |
 | `Key [Old] replaced by both [New1] and [New2]` | Conflict | Multiple keys claim to replace the same old key. |
-| `Trusted key [Old] is being replaced by [Issuer] (Revocation ignored due to distance)` | Info | A distant node tried to revoke a closer node. We link them but ignore the revocation. |
+| `Trusted key [Old] is being replaced by [Issuer] (Replacement constraint ignored due to distance)` | Info | A distant node tried to replace a closer node. The identity link is accepted but the revocation is ignored. |
 | `Trusted key [Old] is being replaced by [Issuer]` | Info | A key already in the graph is being replaced (Identity discovery). |
 | `Blocked key [Old] is being replaced by [Issuer]` | Info | A blocked key is being replaced; the identity link is accepted but the block remains. |
 | `You trust a non-canonical key directly` | Info | An issuer trusts an old key that has already been replaced. |
@@ -64,3 +63,4 @@ Due to the layer-by-layer coordination in `reduceTrustGraph`, the entire reachab
 *   **Strict Greediness**: Formalized the rule that deep nodes cannot affect shallow nodes.
 *   **Next Degree Replacement**: Aligned with legacy behavior where key rotations cost 1 degree of distance.
 *   **Revocation Sentinels**: Added explicit support for `"<since always>"` to handle full-history key revocations.
+*   **Simplified Replace Revocation**: Removed per-token `revokeAt` logic for `replace` statements. Any replace now revokes the old key since always. `revokeAt` must be `"<since always>"`; any other value throws `UnimplementedError`.
