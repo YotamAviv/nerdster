@@ -1,112 +1,46 @@
-import 'dart:async';
+// App-specific sign-in wiring for Nerdster. Parallel to hablotengo/lib/sign_in_session.dart.
+// Shared session mechanics live in nerdster_common/lib/sign_in_session.dart.
+
 import 'dart:convert';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/sign_in_state.dart';
+import 'package:nerdster_common/sign_in_session.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/keys.dart' show FedKey;
-import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/sign_in_state.dart';
+import 'package:oneofus_common/trust_statement.dart' show kOneofusDomain;
 
-class SignInSession {
-  final PkeKeyPair pkeKeyPair;
-  final String session;
-  final Json forPhone;
-  StreamSubscription? _subscription;
-  Timer? _timeoutTimer;
+export 'package:nerdster_common/sign_in_session.dart';
 
-  SignInSession({required this.forPhone, required this.session, required this.pkeKeyPair});
+Future<SignInSession> createNerdsterSignInSession() {
+  final url = fireChoice == FireChoice.emulator
+      ? 'http://10.0.2.2:5001/nerdster/us-central1/signin'
+      : 'https://signin.nerdster.org/signin';
+  return SignInSession.create(domain: kNerdsterDomain, signInUrl: url);
+}
 
-  static Future<SignInSession> create() async {
-    Json forPhone = {};
-    forPhone['domain'] = kNerdsterDomain;
+Future<void> nerdsterOnSessionData(Json data, PkeKeyPair pkeKeyPair,
+    {SignInMethod method = SignInMethod.qrScan}) async {
+  final String identityKey = data.containsKey('identity') ? 'identity' : kOneofusDomain;
+  final Json identityPayload = data[identityKey]!;
+  final FedKey fedKey = FedKey.fromPayload(identityPayload) ?? FedKey(identityPayload);
+  final OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(fedKey.pubKeyJson);
 
-    forPhone['url'] = 'https://signin.nerdster.org/signin';
-    if (fireChoice == FireChoice.emulator) {
-      // Use 10.0.2.2 (not 127.0.0.1) for Android Emulator to access host machine localhost
-      forPhone['url'] = 'http://10.0.2.2:5001/nerdster/us-central1/signin';
+  OouKeyPair? nerdsterKeyPair;
+  if (data['delegateCiphertext'] != null || data['delegateCleartext'] != null) {
+    final String ephemeralPKKey = data.containsKey('ephemeralPK') ? 'ephemeralPK' : 'publicKey';
+    final PkePublicKey phonePkePublicKey = await crypto.parsePkePublicKey(data[ephemeralPKKey]);
+
+    String? delegateCleartext = data['delegateCleartext'];
+    if (data['delegateCiphertext'] != null) {
+      delegateCleartext = await pkeKeyPair.decrypt(data['delegateCiphertext'], phonePkePublicKey);
     }
-
-    final PkeKeyPair pkeKeyPair = await crypto.createPke();
-    final PkePublicKey pkePK = await pkeKeyPair.publicKey;
-    var pkePKJson = await pkePK.json;
-    final String session = getToken(pkePKJson);
-    forPhone['encryptionPk'] = pkePKJson;
-
-    return SignInSession(
-      forPhone: forPhone,
-      session: session,
-      pkeKeyPair: pkeKeyPair,
-    );
+    final Json delegateJson = jsonDecode(delegateCleartext!);
+    nerdsterKeyPair = await crypto.parseKeyPair(delegateJson);
   }
 
-  Future<void> listen({
-    required Function() onDone,
-    Duration? timeout,
-    SignInMethod method = SignInMethod.qrScan,
-  }) async {
-    final firestore = FirebaseFirestore.instance;
-
-    if (timeout != null) {
-      _timeoutTimer = Timer(timeout, () {
-        cancel();
-        onDone();
-      });
-    }
-
-    _subscription = firestore
-        .collection('sessions')
-        .doc('doc')
-        .collection(session)
-        .snapshots()
-        .listen((QuerySnapshot<Json> docSnapshots) async {
-      if (docSnapshots.docs.isEmpty) return;
-
-      // Found data, stop listening and timeout
-      _timeoutTimer?.cancel();
-      await cancel();
-
-      // Notify UI to close dialogs first, so animation is visible on the underlying screen
-      onDone();
-
-      // Wait for dialog close animation
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      Json? data = docSnapshots.docs.first.data();
-
-      // Unpack identity public key (supports both old bare-key and new {key, home} formats)
-      final String identityKey = data.containsKey('identity') ? 'identity' : kOneofusDomain;
-      final Json identityPayload = data[identityKey]!;
-      final FedKey fedKey = FedKey.fromPayload(identityPayload) ?? FedKey(identityPayload);
-      OouPublicKey oneofusPublicKey = await crypto.parsePublicKey(fedKey.pubKeyJson);
-
-      // Optionally unpack and decrypt Nerdster private key
-      Json? delegateJson;
-      OouKeyPair? nerdsterKeyPair;
-      if (data['delegateCiphertext'] != null || data['delegateCleartext'] != null) {
-        final String ephemeralPKKey = data.containsKey('ephemeralPK') ? 'ephemeralPK' : 'publicKey';
-        PkePublicKey phonePkePublicKey = await crypto.parsePkePublicKey(data[ephemeralPKKey]);
-
-        String? delegateCiphertext = data['delegateCiphertext'];
-        String? delegateCleartext = data['delegateCleartext'];
-        assert(!(delegateCiphertext != null && delegateCleartext != null));
-        if (delegateCiphertext != null) {
-          delegateCleartext = await pkeKeyPair.decrypt(delegateCiphertext, phonePkePublicKey);
-        }
-        delegateJson = jsonDecode(delegateCleartext!);
-        nerdsterKeyPair = await crypto.parseKeyPair(delegateJson!);
-      }
-
-      await signInUiHelper(oneofusPublicKey, nerdsterKeyPair,
-          endpoint: fedKey.endpoint, method: method);
-    });
-  }
-
-  Future<void> cancel() async {
-    _timeoutTimer?.cancel();
-    await _subscription?.cancel();
-    _subscription = null;
-  }
+  await signInUiHelper(oneofusPublicKey, nerdsterKeyPair,
+      endpoint: fedKey.endpoint, method: method);
 }

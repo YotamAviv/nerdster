@@ -170,6 +170,11 @@ if (isNerdster) exports.magicPaste = onCall(async (request) => {
 
 /**
  * Handles QR sign-in by adding session data to Firestore.
+ *
+ * TODO: Keep in sync with hablotengo/functions/sign_in.js. The two implementations
+ * should stay parallel — Hablo's adds identity key signature verification, but the
+ * session write structure is identical. When Nerdster migrates to CloudFunctionsWriter,
+ * consider unifying into a shared library.
  */
 if (isNerdster) exports.signin = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
   const session = req.body.session;

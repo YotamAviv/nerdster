@@ -7,6 +7,7 @@ import 'package:nerdster/ui/content_view.dart';
 import 'package:nerdster/ui/sign_in_widget.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/qr_sign_in.dart';
+import 'package:nerdster_common/ui/sign_in_dialog.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -152,9 +153,9 @@ class _AppHomeState extends State<_AppHome> {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (_) => const Dialog(
+      builder: (_) => Dialog(
         backgroundColor: Colors.transparent,
-        child: SignInDialog(),
+        child: SignInDialog(config: buildNerdsterSignInConfig()),
       ),
     ).then((_) {
       _dialogShowing = false;

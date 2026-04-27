@@ -9,6 +9,8 @@ import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
+import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/dev/split_menu_button.dart';
@@ -85,9 +87,11 @@ class _SignInMenuState extends State<SignInMenu> {
             MenuItemButton(
               leadingIcon: const Icon(Icons.auto_fix_high),
               onPressed: () async {
-                final session = await SignInSession.create();
+                final session = await createNerdsterSignInSession();
                 // ignore: unawaited_futures
                 session.listen(
+                  firestore: FireFactory.find(kNerdsterDomain),
+                  onData: nerdsterOnSessionData,
                   timeout: const Duration(minutes: 10),
                   onDone: () {
                     print('Magic sign-in session ended');

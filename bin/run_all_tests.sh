@@ -9,8 +9,8 @@ PASSED_TESTS=()
 TIMEOUT_SECS=90
 
 # Prerequisites:
-#   Firebase emulators: firebase --project=nerdster emulators:start
-#                       firebase --project=one-of-us-net --config=oneofus.firebase.json emulators:start
+#   Firebase emulators: ./bin/start_emulator.sh (nerdster)
+#                       oneofusv22/bin/start_emulator.sh (one-of-us-net)
 echo "Checking prerequisites..."
 curl -s --max-time 3 http://localhost:8080/ > /dev/null \
     || { echo "ERROR: Firebase emulator not responding on port 8080."; exit 1; }

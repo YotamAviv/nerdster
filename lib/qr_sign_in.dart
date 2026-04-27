@@ -8,8 +8,9 @@ import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util_ui.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
+import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/sign_in_session.dart';
-import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/key_storage_coordinator.dart';
 
 /// Nerdster web client / phone app QR sign-in:
@@ -24,17 +25,18 @@ final deepCollectionEquality = const DeepCollectionEquality();
 Future<void> qrSignIn(BuildContext context) async {
   final completer = Completer<void>();
 
-  final session = await SignInSession.create();
+  final session = await createNerdsterSignInSession();
   // Start listening BEFORE showing dialog
   // ignore: unawaited_futures
   session.listen(
+    firestore: FireFactory.find(kNerdsterDomain),
+    onData: nerdsterOnSessionData,
     onDone: () {
       if (!completer.isCompleted) {
         if (context.mounted) Navigator.of(context).pop();
         completer.complete();
       }
     },
-    method: SignInMethod.qrScan,
   );
 
   await showDialog(

@@ -24,3 +24,4 @@ DEMO.json
 # Build artifacts
 builds/
 flutter_*.log
+*.log
