@@ -17,14 +17,15 @@ import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/dialogs/lgtm.dart';
 import 'package:nerdster/utils/most_strings.dart';
-import 'package:oneofus_common/cached_source.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
 class FeedController extends ValueNotifier<FeedModel?> {
-  final CachedSource<TrustStatement> trustSource;
-  final CachedSource<ContentStatement> contentSource;
+  final StatementChannel<TrustStatement> trustSource;
+  final StatementChannel<ContentStatement> contentSource;
+  final StatementChannel<DismissStatement> disSource;
+  final VoidCallback? _optimisticConcurrencyFunc;
 
   /// Pushes a new content statement through the write-through cache.
   /// Handles LGTM check, Writing, Caching, and UI Update (Partial Refresh).
@@ -41,7 +42,8 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
     // 2. Write & Cache
     try {
-      final ContentStatement statement = await contentSource.push(json, signer);
+      final ContentStatement statement = await contentSource.push(json, signer,
+          optimisticConcurrencyFailed: _optimisticConcurrencyFunc);
       // 3. Update UI (Partial Refresh)
       notify();
       return statement;
@@ -54,13 +56,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
   }
 
   FeedController({
-    required StatementSource<TrustStatement> trustSource,
-    required StatementSource<ContentStatement> contentSource,
     VoidCallback? optimisticConcurrencyFunc,
-  })  : trustSource = CachedSource(
-            trustSource, SourceFactory.getWriter(kOneofusDomain), optimisticConcurrencyFunc),
-        contentSource = CachedSource(
-            contentSource, SourceFactory.getWriter(kNerdsterDomain), optimisticConcurrencyFunc),
+  })  : trustSource = SourceFactory.forTrust(),
+        contentSource = SourceFactory.forContent(),
+        disSource = SourceFactory.forDis(),
+        _optimisticConcurrencyFunc = optimisticConcurrencyFunc,
         super(null) {
     _lastIdentity = signInState.hasIdentity ? signInState.identity : null;
     _lastPov = signInState.povNotifier.value;
@@ -421,7 +421,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           for (final k in myDelegateKeys ?? <DelegateKey>[]) k.value: null
         };
         final Future<Map<String, List<DismissStatement>>> disFuture = myDisFetchMap.isNotEmpty
-            ? SourceFactory.forDis().fetch(myDisFetchMap)
+            ? disSource.fetch(myDisFetchMap)
             : Future.value(const <String, List<DismissStatement>>{});
 
         final delegateContent = await contentPipeline.fetchDelegateContent(

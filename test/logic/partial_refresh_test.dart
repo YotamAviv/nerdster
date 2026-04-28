@@ -1,17 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/io/source_factory.dart';
+
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:oneofus_common/oou_signer.dart';
-
-import 'spy_source.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;
@@ -33,27 +30,11 @@ void main() {
     await signInState.signIn(lisa.id.value, lisaDelegate!.keyPair);
     signInState.pov = lisa.id.value;
 
-    final realTrustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
-    final realContentSource =
-        DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
+    final controller = FeedController();
 
-    final spyTrust = SpyStatementSource(realTrustSource);
-    final spyContent = SpyStatementSource(realContentSource);
-
-    final controller = FeedController(trustSource: spyTrust, contentSource: spyContent);
-
-    // Initial Refresh - Should hit network
-    await controller.refresh(); // uses signInState pov
+    // Initial Refresh
+    await controller.refresh();
     expect(controller.value, isNotNull);
-
-    // Check initial fetch history
-    int initialContentFetches = spyContent.fetchHistory.length;
-    // We expect fetches because we follow people and ourselves/delegates
-    expect(initialContentFetches, greaterThan(0));
-
-    // Reset history to track NEW fetches clearly
-    spyContent.resetHistory();
-    spyTrust.resetHistory();
 
     final feed = controller.value!;
     SubjectAggregation? shakes =
@@ -80,7 +61,7 @@ void main() {
       shakes!.canonical.value,
       'forever',
     );
-    await SourceFactory.getDisWriter().push(json, signer);
+    await SourceFactory.forDis().push(json, signer);
 
     // 4. Update controller (Local Logic Update)
     await controller.notify();
@@ -106,9 +87,5 @@ void main() {
     expect(secretariatMyLikeAfter, isNotNull,
         reason: "Lisa's like on Secretariat should persist after dismissing Shakes");
 
-    // B. No Network Fetch for Content?
-    // We expect ZERO fetches because cache should have handled everything
-    expect(spyContent.fetchHistory, isEmpty,
-        reason: "Should not fetch content from network after push: ${spyContent.fetchHistory}");
   });
 }

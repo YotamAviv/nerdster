@@ -41,6 +41,16 @@ if (admin.apps.length === 0) {
   admin.initializeApp();
 }
 
+const { handleWrite } = require('./write');
+
+exports.write = onCall(async (request) => {
+  try {
+    return await handleWrite(request.data);
+  } catch (e) {
+    throw new HttpsError('internal', e.message);
+  }
+});
+
 // ----------------------------------------------------------------------------
 // 1. Callable Functions (v2 onCall)
 // ----------------------------------------------------------------------------

@@ -17,7 +17,7 @@ import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:nerdster/io/source_factory.dart';
-import 'package:oneofus_common/statement_writer.dart';
+import 'package:oneofus_common/statement_source.dart';
 
 /// For testing, development, and maybe demo.
 const OouCryptoFactory _crypto = crypto;
@@ -211,7 +211,7 @@ class DemoIdentityKey implements DemoKey {
       {required String domain, String? comment, String? revokeAt, String? export}) async {
     // Construct trust statement for delegate
     // TrustStatement.make expects 'other' json.
-    final Json json = await TrustStatement.make(
+    final Json json = TrustStatement.make(
       await publicKey.json,
       await other.publicKey.json,
       TrustVerb.delegate,
@@ -223,10 +223,10 @@ class DemoIdentityKey implements DemoKey {
   }
 
   Future<TrustStatement> _signAndPush(Json json, String? export) async {
-    final StatementWriter writer = SourceFactory.getWriter(kOneofusDomain);
+    final StatementChannel<TrustStatement> source = SourceFactory.forTrust();
     final OouSigner signer = await OouSigner.make(keyPair);
-    final Statement statement = await writer.push(json, signer);
-    final TrustStatement trust = statement as TrustStatement;
+    await source.fetch({Jsonish(json['I']).token: null});
+    final TrustStatement trust = await source.push(json, signer);
     _localStatements.insert(0, trust);
     if (export != null) DemoKey._exports[export] = trust.json;
     return trust;
@@ -300,6 +300,9 @@ class DemoDelegateKey implements DemoKey {
   final List<ContentStatement> _localStatements = [];
   List<ContentStatement> get contentStatements => List.unmodifiable(_localStatements);
 
+  final List<DismissStatement> _localDisStatements = [];
+  List<DismissStatement> get disStatements => List.unmodifiable(_localDisStatements);
+
   // --- Content Operations ---
 
   Future<Json> makeRate(
@@ -353,25 +356,21 @@ class DemoDelegateKey implements DemoKey {
     return _pushContent(json, export);
   }
 
-  Future<DismissStatement> doDismiss(dynamic subject, String? dismiss,
-      {String? export}) async {
+  Future<DismissStatement> doDismiss(dynamic subject, String? dismiss, {String? export}) async {
     assert(dismiss == null || dismiss == 'forever' || dismiss == 'snooze');
     final Json json = DismissStatement.make(await publicKey.json, subject, dismiss);
     return _pushDis(json, export);
   }
 
   Future<DismissStatement> _pushDis(Json json, String? export) async {
-    final StatementWriter writer = SourceFactory.getDisWriter();
-    final OouSigner signer = await OouSigner.make(keyPair);
-    final Statement statement = await writer.push(json, signer);
-    final DismissStatement dis = statement as DismissStatement;
+    final source = SourceFactory.forDis();
+    final signer = await OouSigner.make(keyPair);
+    await source.fetch({Jsonish(json['I']).token: null});
+    final dis = await source.push(json, signer);
     _localDisStatements.insert(0, dis);
     if (export != null) DemoKey._exports[export] = dis.json;
     return dis;
   }
-
-  final List<DismissStatement> _localDisStatements = [];
-  List<DismissStatement> get disStatements => List.unmodifiable(_localDisStatements);
 
   Future<ContentStatement> doFollow(dynamic subject, Json contexts,
       {ContentVerb verb = ContentVerb.follow, String? export}) async {
@@ -401,10 +400,10 @@ class DemoDelegateKey implements DemoKey {
   }
 
   Future<ContentStatement> _pushContent(Json json, String? export) async {
-    final StatementWriter writer = SourceFactory.getWriter(kNerdsterDomain);
-    final OouSigner signer = await OouSigner.make(keyPair);
-    final Statement statement = await writer.push(json, signer);
-    final ContentStatement content = statement as ContentStatement;
+    final source = SourceFactory.forContent();
+    final signer = await OouSigner.make(keyPair);
+    await source.fetch({Jsonish(json['I']).token: null});
+    final content = await source.push(json, signer);
     _localStatements.insert(0, content);
     if (export != null) DemoKey._exports[export] = content.json;
     return content;

@@ -2,7 +2,6 @@ import 'dart:async' show unawaited;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/singletons.dart';
@@ -161,7 +160,7 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
     final String canonical = widget.aggregation.canonical.value;
     final Json json = DismissStatement.make(iJson, canonical, _pendingDis);
     try {
-      await SourceFactory.getDisWriter().push(json, signer);
+      await widget.controller.disSource.push(json, signer);
       _committedDis = _pendingDis;
       await widget.controller.notify();
     } catch (_) {}
@@ -264,8 +263,7 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                       final Json iJson = signInState.delegatePublicKeyJson!;
                       final Json json = DismissStatement.make(
                           iJson, widget.aggregation.canonical.value, dis);
-                      await SourceFactory.getDisWriter()
-                          .push(json, signInState.signer!);
+                      await widget.controller.disSource.push(json, signInState.signer!);
                       await widget.controller.notify();
                       return true;
                     },

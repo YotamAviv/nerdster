@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:oneofus_common/statement.dart';
 import 'package:flutter/foundation.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/source_error.dart';
 import 'package:oneofus_common/statement_source.dart';
-import 'package:oneofus_common/statement_writer.dart';
 
 /// A caching decorator for [StatementSource].
 /// Stores fetched statements in memory to avoid redundant network calls.
@@ -13,8 +14,8 @@ import 'package:oneofus_common/statement_writer.dart';
 /// It does not cache different 'revokeAt' views separately, as the trust algorithm
 /// is greedy and deterministic; once a key is fetched, its statements are filtered
 /// in memory by the logic layer.
-class CachedSource<T extends Statement> implements StatementSource<T>, StatementWriter<T> {
-  final StatementSource<T> _delegate;
+class CachedSource<T extends Statement> implements StatementChannel<T> {
+  final StatementSource<T> _source;
   final StatementWriter<T>? _writer;
 
   // Full histories: Map<Token, List<Statement>>
@@ -25,13 +26,17 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
 
   final Map<String, SourceError> _errorCache = {};
 
+  // Serializes concurrent pushes per issuer so each reads the correct cache head.
+  final Map<String, Future<void>> _pushQueues = {};
+
   final VoidCallback? optimisticConcurrencyFunc;
 
-  CachedSource(this._delegate, [this._writer, this.optimisticConcurrencyFunc]);
+  CachedSource(this._source, [this._writer, this.optimisticConcurrencyFunc]);
 
   @override
   List<SourceError> get errors => List.unmodifiable(_errorCache.values);
 
+  @override
   void clear() {
     _fullCache.clear();
     _partialCache.clear();
@@ -50,31 +55,29 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
   /// Verifies that `statement.previous` matches the current head of the history (if any).
   @override
   Future<T> push(Json json, StatementSigner signer,
-      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed}) async {
+      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed}) {
     if (_writer == null) throw UnimplementedError('No writer');
     if (previous != null) throw StateError('CachedSource.push, no previous parameter');
 
     final String issuerId = getToken(json['I']);
-
-    if (_fullCache.containsKey(issuerId)) {
-      if (_fullCache[issuerId]!.isEmpty) {
-        previous = const ExpectedPrevious(null);
-      } else {
-        previous = ExpectedPrevious(_fullCache[issuerId]!.first.token);
+    final completer = Completer<T>();
+    final Future<void> prev = _pushQueues[issuerId] ?? Future.value();
+    _pushQueues[issuerId] = prev.catchError((_) {}).then((_) async {
+      try {
+        assert(_fullCache.containsKey(issuerId), 'fetch before push');
+        final ExpectedPrevious head = _fullCache[issuerId]!.isEmpty
+            ? const ExpectedPrevious(null)
+            : ExpectedPrevious(_fullCache[issuerId]!.first.token);
+        final T statement = await _writer.push(json, signer,
+            previous: head,
+            optimisticConcurrencyFailed: optimisticConcurrencyFailed ?? optimisticConcurrencyFunc);
+        _inject(statement);
+        completer.complete(statement);
+      } catch (e, stack) {
+        completer.completeError(e, stack);
       }
-    }
-
-    // 1. Write through to persistence
-    // If a previous token is provided (from the cache head), pass it to the writer
-    // to enforce optimistic concurrency control.
-    final T statement = await _writer.push(json, signer,
-        previous: previous,
-        optimisticConcurrencyFailed: optimisticConcurrencyFailed ?? this.optimisticConcurrencyFunc);
-
-    // 2. Update cache
-    _inject(statement);
-
-    return statement;
+    });
+    return completer.future;
   }
 
   void _inject(T statement) {
@@ -142,13 +145,13 @@ class CachedSource<T extends Statement> implements StatementSource<T>, Statement
 
     // 2. Fetch missing
     if (missing.isNotEmpty) {
-      final Map<String, List<T>> fetched = await _delegate.fetch(missing);
+      final Map<String, List<T>> fetched = await _source.fetch(missing);
 
       // 3. Update cache and results
       for (final String token in missing.keys) {
         // If delegate reported an error for this token, cache it
         final SourceError? error =
-            _delegate.errors.where((SourceError e) => e.token == token).firstOrNull;
+            _source.errors.where((SourceError e) => e.token == token).firstOrNull;
         if (error != null) {
           _errorCache[token] = error;
           continue; // Do not process statements for this token

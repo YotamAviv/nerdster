@@ -120,6 +120,14 @@ Future<void> main() async {
       final nerdsterUrl = 'http://$emulatorHost:5001/nerdster/us-central1/export';
       FirebaseConfig.registerRedirect('https://export.one-of-us.net', oneofusUrl);
       FirebaseConfig.registerRedirect('https://export.nerdster.org', nerdsterUrl);
+      FirebaseConfig.registerRedirect(
+        'https://us-central1-nerdster.cloudfunctions.net',
+        'http://$emulatorHost:5001/nerdster/us-central1',
+      );
+      FirebaseConfig.registerRedirect(
+        'https://us-central1-one-of-us-net.cloudfunctions.net',
+        'http://$emulatorHost:5002/one-of-us-net/us-central1',
+      );
       break;
     case FireChoice.prod:
       break;

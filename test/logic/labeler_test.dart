@@ -7,7 +7,6 @@ import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:oneofus_common/oou_signer.dart';
-import 'package:oneofus_common/statement_writer.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;
@@ -80,9 +79,8 @@ void main() {
     final Map<String, dynamic> json = TrustStatement.make(
         await (await alice.keyPair.publicKey).json, await (bob2.publicKey).json, TrustVerb.trust,
         domain: null, moniker: null);
-    final StatementWriter writer = SourceFactory.getWriter(kOneofusDomain);
     final OouSigner signer = await OouSigner.make(alice.keyPair);
-    await writer.push(json, signer);
+    await SourceFactory.forTrust().push(json, signer);
 
     // Bob2 replaces Bob1
     await bob2.replace(bob1);

@@ -30,7 +30,7 @@ echo ""
 
 # 2. Unit Tests
 echo "=== Running Flutter Unit Tests ==="
-if flutter test; then
+if flutter test --no-pub; then
     PASSED_TESTS+=("Flutter unit tests")
 else
     FAILED_TESTS+=("Flutter unit tests")
@@ -38,7 +38,7 @@ fi
 echo ""
 
 echo "=== Running oneofus_common Package Tests ==="
-if flutter test packages/oneofus_common/; then
+if flutter test --no-pub packages/oneofus_common/; then
     PASSED_TESTS+=("oneofus_common tests")
 else
     FAILED_TESTS+=("oneofus_common tests")
@@ -74,6 +74,7 @@ if [ -n "$ANDROID_DEVICE" ]; then
 
         test_name=$(basename "$test_file")
         echo "Running: $test_name"
+        adb shell pm uninstall org.nerdster.app > /dev/null 2>&1 || true
 
         if [ "$test_file" = "integration_test/cloud_source_android_test.dart" ]; then
             # This test signals pass/fail via PASS/FAIL/ERROR strings (not flutter exit code),

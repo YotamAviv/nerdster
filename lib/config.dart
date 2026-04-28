@@ -13,4 +13,10 @@ class FirebaseConfig {
   /// The base URL for fetching Nerdster content statements.
   /// Always export.nerdster.org in production; emulator redirect applied if registered.
   static String get contentUrl => resolveUrl('https://export.nerdster.org');
+
+  /// Base URL for Nerdster callable functions (writeStatement, etc.).
+  static String get nerdsterFunctionsUrl => resolveUrl('https://us-central1-nerdster.cloudfunctions.net');
+
+  /// Base URL for ONE-OF-US.NET callable functions (writeStatement, etc.).
+  static String get oneofusFunctionsUrl => resolveUrl('https://us-central1-one-of-us-net.cloudfunctions.net');
 }

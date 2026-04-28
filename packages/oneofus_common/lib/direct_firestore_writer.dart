@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/statement.dart';
-import 'package:oneofus_common/statement_writer.dart';
+import 'package:oneofus_common/statement_source.dart';
 
 /// A brief history of how we got here
 ///

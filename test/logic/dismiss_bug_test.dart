@@ -1,14 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:oneofus_common/oou_signer.dart';
 
 void main() {
@@ -32,10 +30,7 @@ void main() {
     await signInState.signIn(lisa.id.value, lisaDelegate.keyPair);
     signInState.pov = lisa.id.value;
 
-    final trustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
-    final contentSource =
-        DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
-    final controller = FeedController(trustSource: trustSource, contentSource: contentSource);
+    final controller = FeedController();
 
     // Initial Refresh
     await controller.refresh();
@@ -56,9 +51,8 @@ void main() {
       'forever',
     );
 
-    final writer = SourceFactory.getDisWriter();
     final signer = await OouSigner.make(lisaDelegate.keyPair);
-    await writer.push(dismissStmt, signer);
+    await SourceFactory.forDis().push(dismissStmt, signer);
 
     // 3. Refresh the feed (First time - "Minor Refresh" simulation)
     await controller.refresh();

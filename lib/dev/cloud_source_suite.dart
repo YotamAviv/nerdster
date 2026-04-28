@@ -2,17 +2,22 @@ import 'package:flutter/foundation.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/demotest/cases/multi_stream_scenario.dart';
+import 'package:nerdster/demotest/cases/concurrent_write_scenario.dart';
 import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:oneofus_common/cloud_functions_source.dart';
 import 'package:oneofus_common/oou_verifier.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/config.dart';
+import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 
 /// Evaluates the basic graph verification logic across the core trust
 /// permutations securely decoupled from any UI binding context.
 Future<void> runCloudSourceVerification() async {
   debugPrint("Starting Cloud Source Verification...");
   TrustStatement.init();
+  ContentStatement.init();
+  DismissStatement.init();
   
   final url = FirebaseConfig.resolveUrl('https://export.one-of-us.net');
   
@@ -48,6 +53,10 @@ Future<void> runCloudSourceVerification() async {
     debugPrint('--- Testing Multi-Stream Scenario ---');
     await multiStreamScenario(url: url);
     debugPrint('Multi-Stream Scenario Verified!');
+
+    debugPrint('--- Testing Concurrent Write Scenario ---');
+    await concurrentWriteScenario();
+    debugPrint('Concurrent Write Scenario Verified!');
 
     debugPrint('PASS');
   } catch (e, stack) {

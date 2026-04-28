@@ -1,5 +1,6 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/app.dart';
+import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/io/fire_factory.dart';
@@ -154,6 +155,7 @@ TrustStatement makeTrustStatement({
 /// Helper to initialize the statement registry for tests.
 void setUpTestRegistry({FakeFirebaseFirestore? firestore}) {
   fireChoice = FireChoice.fake;
+  SourceFactory.reset();
   final FakeFirebaseFirestore fs = firestore ?? FakeFirebaseFirestore();
   FireFactory.register(kOneofusDomain, fs, null);
   FireFactory.register(kNerdsterDomain, fs, null);

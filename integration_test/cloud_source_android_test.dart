@@ -38,8 +38,16 @@ void main() {
       'http://$host:5002/one-of-us-net/us-central1/export'
     );
     FirebaseConfig.registerRedirect(
-      'https://export.nerdster.org', 
+      'https://export.nerdster.org',
       'http://$host:5001/nerdster/us-central1/export'
+    );
+    FirebaseConfig.registerRedirect(
+      'https://us-central1-nerdster.cloudfunctions.net',
+      'http://$host:5001/nerdster/us-central1',
+    );
+    FirebaseConfig.registerRedirect(
+      'https://us-central1-one-of-us-net.cloudfunctions.net',
+      'http://$host:5002/one-of-us-net/us-central1',
     );
   });
 

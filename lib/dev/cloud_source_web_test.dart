@@ -39,8 +39,16 @@ void main() async {
     'http://127.0.0.1:5002/one-of-us-net/us-central1/export'
   );
   FirebaseConfig.registerRedirect(
-    'https://export.nerdster.org', 
+    'https://export.nerdster.org',
     'http://127.0.0.1:5001/nerdster/us-central1/export'
+  );
+  FirebaseConfig.registerRedirect(
+    'https://us-central1-nerdster.cloudfunctions.net',
+    'http://127.0.0.1:5001/nerdster/us-central1',
+  );
+  FirebaseConfig.registerRedirect(
+    'https://us-central1-one-of-us-net.cloudfunctions.net',
+    'http://127.0.0.1:5002/one-of-us-net/us-central1',
   );
 
   runApp(WidgetRunner(

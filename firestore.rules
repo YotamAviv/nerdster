@@ -8,7 +8,7 @@ service cloud.firestore {
     // - sweep the data and delete statements deleted by its authors
     // - sweep the data and delete data from authors not my in one-of-us.net network.
     match /{document=**} {
-      allow read, create: if request.time < timestamp.date(2027, 6, 10);
+      allow read, write: if false;
     }
   }
 }

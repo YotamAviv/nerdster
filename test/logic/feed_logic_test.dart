@@ -7,7 +7,6 @@ import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
 
 import 'simpsons_data_helper.dart';
 
@@ -42,10 +41,7 @@ void main() {
 
     Setting.get<String>(SettingType.fcontext).value = 'family';
 
-    controller = FeedController(
-      trustSource: DirectFirestoreSource<TrustStatement>(oneofusFire),
-      contentSource: DirectFirestoreSource<ContentStatement>(nerdsterFire),
-    );
+    controller = FeedController();
   });
 
   tearDown(() {

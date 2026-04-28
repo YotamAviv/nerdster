@@ -14,7 +14,6 @@ import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/notifications_menu.dart';
 import 'package:nerdster/ui/dialogs/relate_dialog.dart';
-import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/ui/trust_settings_bar.dart';
 import 'package:nerdster/verify.dart';
 
@@ -43,8 +42,6 @@ class _ContentViewState extends State<ContentView> {
   void initState() {
     super.initState();
     _controller = FeedController(
-      trustSource: SourceFactory.forIdentity(widget.pov),
-      contentSource: SourceFactory.forContent(),
       optimisticConcurrencyFunc: nerdsterOptimisticConcurrencyFunc,
     );
     _controller.addListener(() {
