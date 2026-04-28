@@ -68,7 +68,7 @@ abstract class DemoKey {
 const demoData = ${encoder.convert(_exports)};''';
   }
 
-  static void dumpDemoCredentials() async {
+  static Future<String> getPrivateKeysString() async {
     Json x = {};
     for (MapEntry e in DemoIdentityKey._name2key.entries) {
       x[e.key] = await e.value.toJson();
@@ -76,8 +76,11 @@ const demoData = ${encoder.convert(_exports)};''';
     for (MapEntry e in DemoDelegateKey._name2key.entries) {
       x[e.key] = await e.value.toJson();
     }
-    var z = encoder.convert(x);
-    print(z);
+    return 'const demoPrivateKeys = ${encoder.convert(x)};';
+  }
+
+  static void dumpDemoCredentials() async {
+    print(await getPrivateKeysString());
   }
 }
 

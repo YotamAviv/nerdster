@@ -21,6 +21,7 @@ oneofus_emulators.log
 demo-nerdster.json
 demo-oneofus.json
 DEMO.json
+web/common/data/demoPrivateKeys.js
 # Build artifacts
 builds/
 flutter_*.log

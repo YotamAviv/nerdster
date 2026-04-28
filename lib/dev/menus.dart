@@ -41,12 +41,21 @@ class Menus {
                                 onPressed: () async {
                                   await Clipboard.setData(ClipboardData(text: exportDataJs));
                                   if (context.mounted) {
-                                    Navigator.pop(context);
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Copied to clipboard')));
+                                        const SnackBar(content: Text('demoData.js copied')));
                                   }
                                 },
-                                child: const Text('Copy')),
+                                child: const Text('Copy demoData.js')),
+                            TextButton(
+                                onPressed: () async {
+                                  final privateKeysJs = await DemoKey.getPrivateKeysString();
+                                  await Clipboard.setData(ClipboardData(text: privateKeysJs));
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('demoPrivateKeys.js copied')));
+                                  }
+                                },
+                                child: const Text('Copy demoPrivateKeys.js')),
                             TextButton(
                                 onPressed: () => Navigator.pop(context), child: const Text('Close'))
                           ]));
