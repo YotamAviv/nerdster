@@ -6,7 +6,6 @@ import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/oneofus_fire.dart';
-import 'package:nerdster/config.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
@@ -26,29 +25,10 @@ void main() async {
   }
   await OneofusFire.init();
 
-  // TO RUN ON PROD: change FireChoice.emulator → FireChoice.prod, then delete
-  // the 4 useFirestoreEmulator/useFunctionsEmulator lines and the 4 registerRedirect
-  // lines below (9 lines total). Keep FireFactory.register lines — they're needed for prod too.
-  fireChoice = FireChoice.emulator;
-
-  // EMULATOR ONLY — delete these 4 lines for prod:
-  FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
-  FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
-  OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
-  OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
+  fireChoice = FireChoice.prod;
 
   FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
   FireFactory.register(kOneofusDomain, OneofusFire.firestore, OneofusFire.functions);
-
-  // EMULATOR ONLY — delete these 4 registerRedirect calls for prod:
-  FirebaseConfig.registerRedirect(
-      'https://export.one-of-us.net', 'http://127.0.0.1:5002/one-of-us-net/us-central1/export');
-  FirebaseConfig.registerRedirect(
-      'https://export.nerdster.org', 'http://127.0.0.1:5001/nerdster/us-central1/export');
-  FirebaseConfig.registerRedirect(
-      'https://us-central1-nerdster.cloudfunctions.net', 'http://127.0.0.1:5001/nerdster/us-central1');
-  FirebaseConfig.registerRedirect(
-      'https://us-central1-one-of-us-net.cloudfunctions.net', 'http://127.0.0.1:5002/one-of-us-net/us-central1');
 
   runApp(WidgetRunner(scenario: _generateDemoData));
 }

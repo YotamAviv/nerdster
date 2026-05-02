@@ -39,7 +39,6 @@ class CloudFunctionsWriter<T extends Statement> implements StatementWriter<T> {
     }
 
     // Serialized path: sign and send inside the queue so 'previous' is always accurate.
-    // On a previous-mismatch the server returns the correct head token; retry once with it.
     final completer = Completer<T>();
     final Future<void> prev = _writeQueues[issuerToken] ?? Future.value();
     _writeQueues[issuerToken] = prev.catchError((_) {}).then((_) async {

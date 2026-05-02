@@ -2,7 +2,6 @@ import 'package:nerdster/models/model.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/logic/delegates.dart';
-import 'package:oneofus_common/jsonish.dart';
 
 /// A utility to resolve monikers for keys in a [TrustGraph] using a greedy,
 /// distance-authoritative approach.
@@ -217,7 +216,9 @@ class Labeler {
   bool hasLabel(String token) {
     if (_identityToName.containsKey(IdentityKey(token))) return true;
     if (delegateResolver != null &&
-        delegateResolver!.getIdentityForDelegate(DelegateKey(token)) != null) return true;
+        delegateResolver!.getIdentityForDelegate(DelegateKey(token)) != null) {
+      return true;
+    }
     return false;
   }
 

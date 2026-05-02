@@ -7,9 +7,11 @@ REPO_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$REPO_DIR"
 
 EXPORT=false
+EMPTY=false
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --export) EXPORT=true ;;
+        --empty) EMPTY=true ;;
     esac
     shift
 done
@@ -23,6 +25,8 @@ if [ "$EXPORT" = true ]; then
     gcloud firestore export gs://nerdster/nerdster-$NOW
     gsutil -m cp -r gs://nerdster/nerdster-$NOW exports/
     IMPORT="exports/nerdster-$NOW"
+elif [ "$EMPTY" = true ]; then
+    IMPORT=""
 else
     IMPORT=$(ls -td exports/nerdster-* 2>/dev/null | head -1 || true)
 fi

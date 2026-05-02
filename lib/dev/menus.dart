@@ -30,7 +30,7 @@ class Menus {
             DemoKey? delegate;
             (oneofus, delegate) = await e.value();
             if (DemoKey.getExports().isNotEmpty) {
-              String exportDataJs = DemoKey.getExportsString();
+              String exportDataJs = DemoKey.getExportsJson();
               await showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -48,7 +48,7 @@ class Menus {
                                 child: const Text('Copy demoData.js')),
                             TextButton(
                                 onPressed: () async {
-                                  final privateKeysJs = await DemoKey.getPrivateKeysString();
+                                  final privateKeysJs = await DemoKey.getPrivateKeysJson();
                                   await Clipboard.setData(ClipboardData(text: privateKeysJs));
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
