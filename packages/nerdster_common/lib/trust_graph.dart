@@ -23,8 +23,7 @@ class TrustGraph {
   final IdentityKey pov;
   final Map<IdentityKey, int> distances;
   final List<IdentityKey> orderedKeys;
-  final Map<IdentityKey, IdentityKey> replacements;
-  final Map<IdentityKey, String> replacementConstraints;
+  final Map<IdentityKey, IdentityKey> equivalent2canonical;
   final Set<IdentityKey> blocked;
   final Map<IdentityKey, List<List<IdentityKey>>> paths;
   final List<TrustNotification> notifications;
@@ -34,8 +33,7 @@ class TrustGraph {
     required this.pov,
     this.distances = const {},
     List<IdentityKey> orderedKeys = const [],
-    this.replacements = const {},
-    this.replacementConstraints = const {},
+    this.equivalent2canonical = const {},
     this.blocked = const {},
     Map<IdentityKey, List<List<IdentityKey>>> paths = const {},
     List<TrustNotification> notifications = const [],
@@ -56,8 +54,8 @@ class TrustGraph {
   IdentityKey resolveIdentity(IdentityKey token) {
     IdentityKey current = token;
     final Set<IdentityKey> seen = {token};
-    while (replacements.containsKey(current)) {
-      current = replacements[current]!;
+    while (equivalent2canonical.containsKey(current)) {
+      current = equivalent2canonical[current]!;
       if (seen.contains(current)) break;
       seen.add(current);
     }
@@ -107,8 +105,7 @@ class TrustGraph {
     IdentityKey? pov,
     Map<IdentityKey, int>? distances,
     List<IdentityKey>? orderedKeys,
-    Map<IdentityKey, IdentityKey>? replacements,
-    Map<IdentityKey, String>? replacementConstraints,
+    Map<IdentityKey, IdentityKey>? equivalent2canonical,
     Set<IdentityKey>? blocked,
     Map<IdentityKey, List<List<IdentityKey>>>? paths,
     List<TrustNotification>? notifications,
@@ -118,8 +115,7 @@ class TrustGraph {
       pov: pov ?? this.pov,
       distances: distances ?? this.distances,
       orderedKeys: orderedKeys ?? this.orderedKeys,
-      replacements: replacements ?? this.replacements,
-      replacementConstraints: replacementConstraints ?? this.replacementConstraints,
+      equivalent2canonical: equivalent2canonical ?? this.equivalent2canonical,
       blocked: blocked ?? this.blocked,
       paths: paths ?? this.paths,
       notifications: notifications ?? this.notifications,

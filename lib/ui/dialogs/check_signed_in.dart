@@ -19,7 +19,7 @@ Future<bool?> checkSignedIn(BuildContext? context, {TrustGraph? trustGraph}) asy
     final myDelegate = signInState.delegate;
     final myIdentity = signInState.identity;
 
-    if (trustGraph.replacements.containsKey(IdentityKey(myDelegate!))) {
+    if (trustGraph.equivalent2canonical.containsKey(IdentityKey(myDelegate!))) {
       issue = 'Your delegate key is revoked';
     } else if (trustGraph.isTrusted(myIdentity)) {
       // Check association

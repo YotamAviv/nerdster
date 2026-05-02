@@ -170,7 +170,7 @@ class GraphController {
             s.verb == TrustVerb.delegate) {
           final String subjectIdentity =
               feedModel.trustGraph.resolveIdentity(IdentityKey(s.subjectToken)).value;
-          final bool isNonCanonical = tg.replacements.containsKey(IdentityKey(s.subjectToken));
+          final bool isNonCanonical = tg.equivalent2canonical.containsKey(IdentityKey(s.subjectToken));
 
           final bool isConflict =
               tg.notifications.any((n) => n.isConflict && n.rejectedStatement.token == s.token);

@@ -71,8 +71,7 @@ TrustGraph reduceTrustGraph(
 
   final Map<IdentityKey, int> distances = {current.pov: 0};
   final List<IdentityKey> orderedKeys = [current.pov];
-  final Map<IdentityKey, IdentityKey> replacements = {};
-  final Map<IdentityKey, String> replacementConstraints = {};
+  final Map<IdentityKey, IdentityKey> equivalent2canonical = {};
   final Set<IdentityKey> blocked = {};
   final Map<IdentityKey, List<List<IdentityKey>>> paths = {};
   final List<TrustNotification> notifications = [];
@@ -84,29 +83,12 @@ TrustGraph reduceTrustGraph(
   IdentityKey resolveCanonical(IdentityKey token) {
     IdentityKey currentKey = token;
     final Set<IdentityKey> seen = {token};
-    while (replacements.containsKey(currentKey)) {
-      currentKey = replacements[currentKey]!;
+    while (equivalent2canonical.containsKey(currentKey)) {
+      currentKey = equivalent2canonical[currentKey]!;
       if (seen.contains(currentKey)) break;
       seen.add(currentKey);
     }
     return currentKey;
-  }
-
-  final Map<String, TrustStatement> byToken = {};
-  for (final List<TrustStatement> list in byIssuer.values) {
-    for (final TrustStatement s in list) {
-      byToken[s.token] = s;
-    }
-  }
-
-  DateTime? resolveReplacementLimit(String? limitToken, IdentityKey expectedIssuer) {
-    if (limitToken == null) return null;
-    if (limitToken == kSinceAlways) return DateTime.fromMicrosecondsSinceEpoch(0);
-    final TrustStatement? s = byToken[limitToken];
-    if (s != null && s.iKey == expectedIssuer) {
-      return s.time;
-    }
-    return DateTime.fromMicrosecondsSinceEpoch(0);
   }
 
   final PathRequirement req = pathRequirement ?? (d) => 1;
@@ -148,14 +130,8 @@ TrustGraph reduceTrustGraph(
     }
 
     for (final IdentityKey issuer in currentLayer) {
-      List<TrustStatement> statements = byIssuer[issuer] ?? [];
-
-      if (replacementConstraints.containsKey(issuer)) {
-        final DateTime? limitTime = resolveReplacementLimit(replacementConstraints[issuer], issuer);
-        if (limitTime != null) {
-          statements = statements.where((TrustStatement s) => !s.time.isAfter(limitTime)).toList();
-        }
-      }
+      List<TrustStatement> statements =
+          equivalent2canonical.containsKey(issuer) ? [] : (byIssuer[issuer] ?? []);
 
       edges[issuer] = statements.where((TrustStatement s) {
         if (s.verb == TrustVerb.clear) return false;
@@ -170,6 +146,8 @@ TrustGraph reduceTrustGraph(
         final IdentityKey oldKey = s.subjectAsIdentity;
         if (decided.contains(oldKey)) continue;
         decided.add(oldKey);
+        assert(s.revokeAt == kSinceAlways || s.revokeAt == null,
+            'replace with revokeAt other than <since always> is not supported: ${s.revokeAt}');
 
         if (oldKey == current.pov) {
           notifications.add(TrustNotification(
@@ -190,8 +168,8 @@ TrustGraph reduceTrustGraph(
         }
 
         if (distances.containsKey(oldKey) && distances[oldKey]! < dist) {
-          if (!replacements.containsKey(oldKey)) {
-            replacements[oldKey] = issuer;
+          if (!equivalent2canonical.containsKey(oldKey)) {
+            equivalent2canonical[oldKey] = issuer;
           }
           notifications.add(TrustNotification(
             reason:
@@ -202,8 +180,8 @@ TrustGraph reduceTrustGraph(
           continue;
         }
 
-        if (replacements.containsKey(oldKey)) {
-          final IdentityKey? existingNewKey = replacements[oldKey];
+        if (equivalent2canonical.containsKey(oldKey)) {
+          final IdentityKey? existingNewKey = equivalent2canonical[oldKey];
           if (existingNewKey != issuer) {
             notifications.add(TrustNotification(
               reason:
@@ -223,9 +201,8 @@ TrustGraph reduceTrustGraph(
           ));
         }
 
-        replacements[oldKey] = issuer;
+        equivalent2canonical[oldKey] = issuer;
         graphForPathfinding.putIfAbsent(issuer, () => {}).add(oldKey);
-        replacementConstraints[oldKey] = s.revokeAt ?? kSinceAlways;
 
         if (!visited.contains(oldKey)) {
           visited.add(oldKey);
@@ -237,14 +214,8 @@ TrustGraph reduceTrustGraph(
     }
 
     for (final IdentityKey issuer in currentLayer) {
-      List<TrustStatement> statements = edges[issuer] ?? [];
-
-      if (replacementConstraints.containsKey(issuer)) {
-        final DateTime? limitTime = resolveReplacementLimit(replacementConstraints[issuer], issuer);
-        if (limitTime != null) {
-          statements = statements.where((TrustStatement s) => !s.time.isAfter(limitTime)).toList();
-        }
-      }
+      final List<TrustStatement> statements =
+          equivalent2canonical.containsKey(issuer) ? [] : (edges[issuer] ?? []);
 
       final Set<IdentityKey> decided = <IdentityKey>{};
       for (final TrustStatement s
@@ -311,8 +282,7 @@ TrustGraph reduceTrustGraph(
     pov: current.pov,
     distances: distances,
     orderedKeys: orderedKeys,
-    replacements: replacements,
-    replacementConstraints: replacementConstraints,
+    equivalent2canonical: equivalent2canonical,
     blocked: blocked,
     paths: paths,
     notifications: uniqueNotifications.values.toList(),

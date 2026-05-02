@@ -41,7 +41,7 @@ class TrustPipeline {
       final keysToFetch = frontier.difference(visited).toList();
       if (keysToFetch.isEmpty) break;
 
-      final fetchMap = {for (var k in keysToFetch) k.value: graph.replacementConstraints[k]};
+      final fetchMap = {for (var k in keysToFetch) k.value: null};
 
       final newStatementsMap = await source.fetch(fetchMap);
       visited.addAll(keysToFetch);

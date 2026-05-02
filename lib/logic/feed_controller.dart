@@ -550,7 +550,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
             final String myDelegate = signInState.delegate!;
 
             // Revoked
-            if (povGraph.replacements.containsKey(IdentityKey(myDelegate))) {
+            if (povGraph.equivalent2canonical.containsKey(IdentityKey(myDelegate))) {
               systemNotifications.add(SystemNotification(
                 title: "Your delegate key is revoked",
                 description:

@@ -61,7 +61,53 @@ void main() {
     expect(graph.isTrusted(bobNew.id), isTrue, reason: 'BobNew should be trusted');
     expect(graph.isTrusted(bob.id), isTrue, reason: 'Bob should be trusted via BobNew');
     expect(graph.isTrusted(charlie.id), isTrue, reason: 'Charlie should be trusted via Bob');
-    expect(graph.replacements[bob.id], bobNew.id);
+    expect(graph.equivalent2canonical[bob.id], bobNew.id);
+  });
+
+  test('Replacement Chain (A→B→C): equivalent2canonical maps each old key directly to canonical', () async {
+    // Our user has three successive identity keys: keyA (oldest), keyB, keyC (canonical).
+    // keyA does something (blocks x) to establish its history.
+    // keyC (canonical) explicitly replaces both keyB and keyA.
+    // keyB also replaces keyA (the standard intermediate link).
+    // Alice trusts keyC.
+    //
+    // NOTE: a simple linear chain (keyC replaces keyB, keyB replaces keyA) does NOT produce
+    // a 3-key equivalence group. When keyC replaces keyB with kSinceAlways, all of keyB's
+    // statements are revoked — including keyB's replace-of-keyA — so keyA is never discovered.
+    // The canonical key must explicitly replace all predecessors.
+    //
+    // With Distance Authority, keyC (dist 1) processes its replace statements before keyB (dist 2).
+    // So keyC's replace-of-keyA wins over keyB's: equivalent2canonical[keyA] = keyC (not keyB).
+    // Result: equivalent2canonical = { keyA: keyC, keyB: keyC } — each old key maps to the canonical.
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final DemoIdentityKey keyA = await DemoIdentityKey.create('keyA');
+    final DemoIdentityKey keyB = await DemoIdentityKey.create('keyB');
+    final DemoIdentityKey keyC = await DemoIdentityKey.create('keyC');
+    final DemoIdentityKey x = await DemoIdentityKey.create('x');
+
+    await keyA.block(x);
+    await keyB.replace(keyA);
+    await keyC.replace(keyB);
+    await keyC.replace(keyA);
+    await alice.trust(keyC, moniker: 'keyC');
+
+    final DirectFirestoreSource<TrustStatement> source =
+        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
+    final TrustGraph graph = await pipeline.build(alice.id);
+
+    expect(graph.isTrusted(keyC.id), isTrue);
+    expect(graph.isTrusted(keyB.id), isTrue);
+    expect(graph.isTrusted(keyA.id), isTrue);
+
+    // Each old key maps directly to the canonical (keyC), not to the intermediate (keyB):
+    expect(graph.equivalent2canonical[keyA.id], keyC.id);
+    expect(graph.equivalent2canonical[keyB.id], keyC.id);
+    expect(graph.equivalent2canonical.containsKey(keyC.id), isFalse);
+
+    // resolveIdentity reaches keyC from both old keys in one hop (no chain walking needed):
+    expect(graph.resolveIdentity(keyA.id), keyC.id);
+    expect(graph.resolveIdentity(keyB.id), keyC.id);
   });
 
   test('Confidence Levels (Multiple Paths)', () async {
