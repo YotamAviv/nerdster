@@ -18,3 +18,12 @@ if [ -f "$PIDFILE" ]; then
 else
     echo "No PID file found. Is the emulator running?"
 fi
+
+# Kill any stale processes holding emulator ports
+for PORT in 5001 8080 9150; do
+    PID=$(lsof -ti :"$PORT" 2>/dev/null)
+    if [ -n "$PID" ]; then
+        echo "Killing stale process on port $PORT (PID $PID)..."
+        kill "$PID" 2>/dev/null
+    fi
+done

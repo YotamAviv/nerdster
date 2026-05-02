@@ -6,7 +6,7 @@ echo "=== Generating Simpsons Demo Data ==="
 echo "Requires: both emulators running (nerdster on 8080/5001, oneofus on 8081/5002)"
 echo ""
 
-OUTPUT=$(python3 bin/chrome_widget_runner.py --headless -t lib/dev/simpsons_demo_generator.dart 2>&1)
+OUTPUT=$(python3 bin/chrome_widget_runner.py --headless -t lib/dev/simpsons_demo_generator.dart 2>&1 | grep -v '^stty: ')
 echo "$OUTPUT"
 
 PUBLIC_KEYS_JSON=$(echo "$OUTPUT" | awk '/===PUBLIC_KEYS_JSON_START===/{flag=1; next} /===PUBLIC_KEYS_JSON_END===/{flag=0} flag')
