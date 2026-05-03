@@ -26,7 +26,7 @@ AI NOTE: This is my (the human) file with my own notes.
 
 # Emulator simpsonsDemo from PROD
 # Lisa
-?fire=emulator&identity={"crv": "Ed25519", "kty": "OKP", "x": "hxIxFAXsg66Nx6kfcqOeh_oCOZSLJrOsc1TobCwKpWY"}&showCrypto=true
+http://localhost:8765/?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22fZ2PYolFRYPO95U5Y3ASXmWGF5AMreVxcdziTrH1pp0%22%20}
 
 # Emulator yotam
 ?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}

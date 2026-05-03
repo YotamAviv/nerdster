@@ -49,12 +49,29 @@ class _ContentViewState extends State<ContentView> {
         globalLabeler.value = _controller.value!.labeler;
       }
     });
+    _controller.addListener(_maybeOpenStartupGraph);
     _controller.refresh();
 
     _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       verifyInit(navigatorKey);
+    });
+  }
+
+  bool _startupGraphOpened = false;
+
+  void _maybeOpenStartupGraph() {
+    if (_startupGraphOpened || _controller.value == null || startupTarget == null) return;
+    _startupGraphOpened = true;
+    final target = startupTarget!;
+    startupTarget = null;
+    _controller.removeListener(_maybeOpenStartupGraph);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      Navigator.push(context, MaterialPageRoute(
+        builder: (_) => NerdyGraphView(controller: _controller, initialFocus: target),
+      ));
     });
   }
 

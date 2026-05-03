@@ -25,9 +25,8 @@ import 'package:nerdster/verify.dart';
 
 import 'package:nerdster/dev/test_runner_screen.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
-import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/fire_util.dart';
-import 'package:oneofus_common/keys.dart' show FedKey, kNativeEndpoint;
+import 'package:oneofus_common/keys.dart' show FedKey;
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/ui/json_display.dart';
 
@@ -174,21 +173,29 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
   // Check URL query parameters (deep-link URI on mobile, Uri.base on web)
   params ??= Uri.base.queryParameters;
 
-  // Parse pov JSON and register it in Jsonish cache.
-  // getToken() alone does NOT register in Jsonish, causing the pov setter assertion to fail.
+  // Parse pov/target FedKey payloads. FedKey.fromPayload handles both old (bare JWK)
+  // and new ({key, url}) formats; its constructor registers in Jsonish as a side-effect.
   // Accept both ?pov= (new) and ?identity= (legacy, for old shared links).
-  OouPublicKey? povPublicKey;
   String? pov;
   final String? povParam = params['pov'] ?? params['identity'];
   if (povParam != null) {
     try {
       final Json povJson = json.decode(povParam);
-      final OouPublicKey pk = await crypto.parsePublicKey(povJson);
-      povPublicKey = pk;
-      pov = getToken(await pk.json);
-      FedKey(await povPublicKey.json, kNativeEndpoint); // side-effect: Jsonish registration
+      final FedKey? fedKey = FedKey.fromPayload(povJson);
+      if (fedKey != null) pov = fedKey.identityKey.value;
     } catch (e) {
       debugPrint('Could not parse pov from URL: $e');
+    }
+  }
+
+  final String? targetParam = params['target'];
+  if (targetParam != null) {
+    try {
+      final Json targetJson = json.decode(targetParam);
+      final FedKey? fedKey = FedKey.fromPayload(targetJson);
+      if (fedKey != null) startupTarget = fedKey.identityKey.value;
+    } catch (e) {
+      debugPrint('Could not parse target from URL: $e');
     }
   }
 

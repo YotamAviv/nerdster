@@ -19,6 +19,9 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 final ValueNotifier<bool> isSmall = ValueNotifier<bool>(false);
 
+/// Token of the identity to focus in the graph view on startup (from ?target= URL param).
+String? startupTarget;
+
 VoidCallback nerdsterOptimisticConcurrencyFunc = () {
   final context = navigatorKey.currentContext;
   if (context == null) return;
@@ -95,6 +98,7 @@ class NerdsterApp extends StatelessWidget {
 
     return MaterialApp(
         navigatorKey: navigatorKey,
+        title: 'Nerdster',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
