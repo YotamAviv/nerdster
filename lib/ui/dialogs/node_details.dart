@@ -19,6 +19,7 @@ import 'package:collection/collection.dart';
 import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:nerdster/ui/crypto_shield_button.dart';
 import 'package:nerdster/io/source_factory.dart';
+import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -628,8 +629,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                                 fontSize: 12,
                                 color: isRevoked ? Colors.grey : Colors.blue,
                                 decoration: TextDecoration.underline,
-                                decorationColor: Colors
-                                    .blue)), // Keep link underline color if possible, or grey? Blue usually implies link.
+                                decorationColor: Colors.blue)),
                       ],
                     ),
                   ),
@@ -637,6 +637,26 @@ class _NodeDetailsState extends State<NodeDetails> {
               );
             });
           }),
+          if (delegates.any((d) =>
+              labeler.delegateResolver?.getDomainForDelegate(DelegateKey(d)) ==
+              'hablotengo.com'))
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                icon: const Icon(Icons.contact_page, size: 16),
+                label: const Text('Contact info on HabloTengo'),
+                style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                onPressed: () {
+                  final bool emulator = fireChoice == FireChoice.emulator;
+                  final base = emulator ? 'http://localhost:8770/' : 'https://hablotengo.com/app';
+                  final uri = Uri.parse(base).replace(queryParameters: {
+                    if (emulator) 'fire': 'emulator',
+                    'target': widget.identity.value,
+                  });
+                  launchUrl(uri, mode: LaunchMode.externalApplication);
+                },
+              ),
+            ),
         ],
         const SizedBox(height: 10),
       ],
