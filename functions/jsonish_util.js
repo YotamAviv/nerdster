@@ -20,7 +20,7 @@ const crypto = require('crypto');
  * Then paste the output here.
  *
  * Last synced output:
- *   endpoint: 25, comment: 26, contentType: 27, previous: 28, signature: 29
+ *   endpoint: 27, comment: 28, contentType: 29, previous: 30, signature: 31
  */
 const key2order = {
   "statement": 0,
@@ -37,22 +37,23 @@ const key2order = {
   "equate": 11,
   "dontEquate": 12,
   "follow": 13,
-  // 14 is intentionally absent (matches the gap in Dart's keysInOrder)
-  "with": 15,
-  "other": 16,
-  "moniker": 17,
-  "revokeAt": 18,
-  "domain": 19,
-  "tags": 20,
-  "recommend": 21,
-  "dismiss": 22,
-  "censor": 23,
-  "stars": 24,
-  "endpoint": 25,
-  "comment": 26,
-  "contentType": 27,
-  "previous": 28,
-  "signature": 29
+  "enter": 15, // hablotengo: contact entry verb (not used here, kept in sync)
+  "set": 16, // hablotengo: set named field verb (not used here, kept in sync)
+  "with": 17,
+  "other": 18,
+  "moniker": 19,
+  "revokeAt": 20,
+  "domain": 21,
+  "tags": 22,
+  "recommend": 23,
+  "dismiss": 24,
+  "censor": 25,
+  "stars": 26,
+  "endpoint": 27,
+  "comment": 28,
+  "contentType": 29,
+  "previous": 30,
+  "signature": 31
 };
 
 /**

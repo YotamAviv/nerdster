@@ -363,7 +363,7 @@ class _NodeDetailsState extends State<NodeDetails> {
         },
         onTap: () {
           final FedKey fedKey = FedKey.find(IdentityKey(identityStr))!;
-          KeyInfoView.show(context, identityStr, (fedKey.endpoint['url'] as String?) ?? kNativeUrl,
+          KeyInfoView.show(context, identityStr, FirebaseConfig.resolveUrl((fedKey.endpoint['url'] as String?) ?? kNativeUrl),
               details: tapDetails,
               source: widget.controller.trustSource,
               labeler: labeler,
@@ -557,7 +557,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                 onTapDown: (details) => tapDetails = details,
                 onTap: () {
                   final FedKey? hk = FedKey.find(IdentityKey(equivIdentityToken));
-                  KeyInfoView.show(context, equivIdentityToken, (hk?.endpoint['url'] as String?) ?? kNativeUrl,
+                  KeyInfoView.show(context, equivIdentityToken, FirebaseConfig.resolveUrl((hk?.endpoint['url'] as String?) ?? kNativeUrl),
                       details: tapDetails,
                       source: widget.controller.trustSource,
                       labeler: labeler,

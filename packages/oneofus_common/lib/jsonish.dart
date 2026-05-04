@@ -88,6 +88,7 @@ class Jsonish {
     'I',
     ...TrustVerb.values.map((e) => e.label),
     ...ContentVerb.values.map((e) => e.label),
+    'set', // hablotengo: set entry or field (not used here, kept in sync)
     'with',
     'other',
     'moniker',

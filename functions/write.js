@@ -1,6 +1,13 @@
 /**
  * write — HTTP POST endpoint
  *
+ * TODO: Transition to Hablo's write approach (hablotengo/functions/hablo_write.js):
+ * use a Firestore transaction + head field instead of the non-transactional
+ * orderBy query. The current approach has a TOCTOU race: two concurrent writers
+ * can both read the same latestToken and both succeed, forking the chain.
+ * CloudFunctionsWriter's client-side queue prevents this in practice for a single
+ * client, but not across multiple devices or sessions.
+ *
  * Appends a signed statement to an issuer's statement stream in Firestore.
  *
  * ─────────────────────────────────────────────────────────────────────────────

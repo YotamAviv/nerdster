@@ -130,13 +130,13 @@ TrustGraph reduceTrustGraph(
     }
 
     for (final IdentityKey issuer in currentLayer) {
-      List<TrustStatement> statements =
-          equivalent2canonical.containsKey(issuer) ? [] : (byIssuer[issuer] ?? []);
+      List<TrustStatement> statements = byIssuer[issuer] ?? [];
 
       edges[issuer] = statements.where((TrustStatement s) {
         if (s.verb == TrustVerb.clear) return false;
-        if (s.verb != TrustVerb.replace && s.verb != TrustVerb.delegate && s.revokeAt != null)
+        if (s.verb != TrustVerb.replace && s.verb != TrustVerb.delegate && s.revokeAt != null) {
           return false;
+        }
         return true;
       }).toList();
 
