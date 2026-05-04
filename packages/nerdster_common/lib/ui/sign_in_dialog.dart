@@ -532,7 +532,7 @@ class QrSignInDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Size availableSize = MediaQuery.of(context).size;
-    final double width = min(availableSize.width * 0.5, availableSize.height * 0.8);
+    final double width = min(min(availableSize.width * 0.5, availableSize.height * 0.8), 300.0);
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: SingleChildScrollView(
