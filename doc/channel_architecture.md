@@ -210,6 +210,28 @@ follow-up deploy. This is the recommended approach.
 
 ## Open Questions
 
+- **`FireFactory` and channel should probably merge into one thing.** Currently
+  `FireFactory` registers backends (Firestore, Functions) and `SourceFactory`
+  uses them to build channels — two classes, two caches, split responsibility.
+  A single class that both accepts backend registration and vends channels would
+  be cleaner and harder to misuse. Tests would register a fake backend and get
+  fake channels from the same object; `main()` would register real backends and
+  get real channels.
+
+  The symptom of the split is code like this (from a test):
+
+  ```dart
+  final trustSource =
+      DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+  final graph = await TrustPipeline(trustSource).build(pov.id);
+  ```
+
+  This bypasses `SourceFactory` entirely, constructs a raw source directly from
+  the factory, and hands it to `TrustPipeline` — no channel, no writer coupling,
+  no cache sharing. It works for read-only pipeline tests but is exactly the
+  anti-pattern the architecture should make impossible. If channels were the only
+  thing the factory vended, this code couldn't be written this way.
+
 - **Migration path**: `StatementChannel` exists but making implementations
   package-private is a Dart package boundary decision. Does this move into
   `oneofus_common`, or does each app/repo get its own factory that hides things?
@@ -221,9 +243,41 @@ follow-up deploy. This is the recommended approach.
   a model for a shared `TransactionalChannel` in `nerdster_common`, or stay
   app-specific?
 
-- **Testing**: `FireChoice.fake` + `DirectFirestoreWriter` is the test seam.
-  If concrete classes go private, how do tests construct fake channels?
-  The factory itself could have a `registerFake(...)` path.
+- **Testing / backend registration**: The right model: whoever initializes the
+  app — `main()` or a test harness — registers the appropriate backend with the
+  factory. The factory is the only place that decision is made; nothing else in
+  the codebase knows which backend is in use.
+
+  ```dart
+  // Fake run (?fire=fake) or test harness:
+  FireFactory.register(domain, FakeFirebaseFirestore(), null);
+  // Emulator or prod run:
+  FireFactory.register(domain, FirebaseFirestore.instance, FirebaseFunctions.instance);
+  ```
+
+  This matters for Nerdster in particular: the web app can be run against a fake
+  backend via URL params (`?fire=fake&demo=simpsonsDemo`, etc.), which is useful
+  for development without a phone or emulator. `main()` reads the params and
+  registers accordingly — it is not always registering real backends.
+
+  The factory creates channels from whatever was registered. `FireChoice` as an
+  enum collapses into the factory itself — no `if (fireChoice == fake)` anywhere
+  else. Concrete writer/source classes become private to the factory.
+
+  Per-project recommendations:
+
+  - **Nerdster14**: Worth investing in. Fake mode is actively used both for web
+    development (`?fire=fake&demo=...`) and for the test suite. The current
+    `FireFactory` + `SourceFactory` + `FireChoice` is close — clean it up rather
+    than replace it. Keep the fake path.
+
+  - **ONE-OF-US.NET**: Don't invest in fake mode now. Phone-only, likely broken,
+    no test suite that uses it. Hardcode emulator vs. prod in `main()` and revisit
+    only if a proper test suite is added.
+
+  - **HabloTengo**: Web-only; fake mode is not practical. Almost all logic lives
+    in JavaScript Cloud Functions — there is nothing meaningful to fake on the
+    Flutter side. Testing is always against prod or the emulator.
 
 - **409 handling**: The transactional CF makes detection of chain races reliable,
   but a 409 should still surface via the `optimisticConcurrencyFailed` callback —
