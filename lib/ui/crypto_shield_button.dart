@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oneofus_common/jsonish.dart' show Json, getToken;
 import 'package:oneofus_common/ui/json_display.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
-import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster_common/ui/json_interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
@@ -98,7 +98,7 @@ class CryptoShieldButton extends StatelessWidget {
                           child: SizedBox(
                             width: dialogW,
                             height: dialogH,
-                            child: JsonDisplay(json, interpreter: NerdsterInterpreter(labeler)),
+                            child: JsonDisplay(json, interpreter: JsonInterpreter(labeler)),
                           ),
                         ),
                       ),

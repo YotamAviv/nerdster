@@ -3,7 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/feed_controller.dart';
-import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster_common/ui/json_interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/graph_view.dart';
@@ -276,7 +276,7 @@ class _StatementNotification extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SingleChildScrollView(
-                      child: JsonDisplay(jsonish.json, interpreter: NerdsterInterpreter(labeler)),
+                      child: JsonDisplay(jsonish.json, interpreter: JsonInterpreter(labeler)),
                     ),
                   ),
                 ),

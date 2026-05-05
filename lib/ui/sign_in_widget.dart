@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/key_storage_coordinator.dart';
 import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster_common/ui/json_interpreter.dart';
 import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
@@ -70,7 +70,7 @@ SignInConfig buildNerdsterSignInConfig() {
               width: width * 0.8 > 300 ? 300 : width * 0.8,
               child: JsonQrDisplay(json,
                   interpret: ValueNotifier(true),
-                  interpreter: NerdsterInterpreter(globalLabeler.value)),
+                  interpreter: JsonInterpreter(globalLabeler.value)),
             ),
           ),
           actions: [

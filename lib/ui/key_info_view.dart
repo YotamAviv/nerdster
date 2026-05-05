@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/ui/json_display.dart';
-import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster_common/ui/json_interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -37,7 +37,7 @@ class KeyInfoView extends StatelessWidget {
       children: [
         Expanded(
           child: JsonQrDisplay(jsonish.json,
-              interpret: ValueNotifier(true), interpreter: NerdsterInterpreter(labeler)),
+              interpret: ValueNotifier(true), interpreter: JsonInterpreter(labeler)),
         ),
         _buildStatementsLink(context),
         if (disSource != null) _buildDisStatementsLink(context),
@@ -115,7 +115,7 @@ class KeyInfoView extends StatelessWidget {
         return AlertDialog(
             title: const Text('Signed by this key'),
             content:
-                SingleChildScrollView(child: JsonDisplay(j, interpreter: NerdsterInterpreter(labeler))),
+                SingleChildScrollView(child: JsonDisplay(j, interpreter: JsonInterpreter(labeler))),
             actions: [
               TextButton(child: const Text('Okay'), onPressed: () => Navigator.of(context).pop())
             ]);

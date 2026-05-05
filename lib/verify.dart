@@ -11,7 +11,7 @@ import 'package:oneofus_common/oou_verifier.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster_common/ui/json_interpreter.dart';
 
 /// This Verify feature is for:
 /// - The ONE-OF-US.NET home page, where the Nerdster is embedded in a frame.
@@ -432,7 +432,7 @@ class _ProcessedPanelState extends State<ProcessedPanel> {
       _notifyStatus('Not signed', Colors.grey[700]!);
     }
 
-    NerdsterInterpreter interpreter = NerdsterInterpreter(globalLabeler.value);
+    final interpreter = JsonInterpreter(globalLabeler.value);
     final String interpreted = encoder.convert(interpreter.interpret(json));
     children.addAll([
       _space,

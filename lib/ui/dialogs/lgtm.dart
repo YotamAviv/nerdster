@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/config.dart';
-import 'package:nerdster/logic/interpreter.dart';
+import 'package:nerdster_common/ui/json_interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
 
 import 'package:nerdster/settings/prefs.dart';
@@ -45,7 +45,7 @@ class Lgtm {
                             height: 300,
                             child: JsonDisplay(json,
                                 interpret: ValueNotifier(true),
-                                interpreter: NerdsterInterpreter(labeler))),
+                                interpreter: JsonInterpreter(labeler))),
                         const SizedBox(height: 10),
                         Row(
                           children: [
