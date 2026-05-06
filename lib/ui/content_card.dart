@@ -271,14 +271,7 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                       color: Colors.green,
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.only(left: 20.0),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.thumb_up, color: Colors.white, size: 32),
-                          SizedBox(width: 8),
-                          Icon(Icons.snooze, color: Colors.white, size: 32),
-                        ],
-                      ),
+                      child: const Icon(Icons.snooze, color: Colors.white, size: 32),
                     ),
                     secondaryBackground: Container(
                       color: Colors.brown,

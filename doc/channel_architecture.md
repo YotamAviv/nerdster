@@ -285,3 +285,58 @@ follow-up deploy. This is the recommended approach.
   writers raced, hiding a real conflict from the app and user. The callback path
   exists so the app can decide what to do (reload, warn the user). That contract
   should not change.
+
+
+# Plan
+
+Share the same factories and implementations across all 3.
+Do it once, test thoroughly, not bit by bit.
+
+Must be backward compatible with existing data for all 3 projects.
+
+## Factory
+
+Must be initialized with:
+- fire choice
+
+Can then provide a channel given:
+- endpoint
+- stream key
+
+Caches these to keep callers safe.
+The internal source, writer classes are private to the channel
+
+Contain endpoint mapping of endpoint to emulator details (port and such)
+DEFER: Something fancier in case other developers join.
+
+## Work
+
+Fake channel that acts like the CF backed channels.
+
+### Cloud functions side
+
+Use the lazy approach suggested above for adding "head".
+
+### Client side
+
+Fix bug with doubly cached writer mentioned above.
+
+### Nerdster Dart unit tests
+
+Initialize factor with fireChoice = FireChoice.fake.
+
+### Nerdster Dart client 
+
+Initialize factory with any fireChoice.
+
+### Oneofus Dart client
+
+Initialize factory with any fireChoice.
+
+### Hablo Dart client
+
+Intialize factory with emulator or prod only (depends on cloud CF implementations impossible to fake)
+
+### Hablo Dart unit tests
+
+TODO: Investigate
