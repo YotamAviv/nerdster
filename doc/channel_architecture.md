@@ -303,20 +303,23 @@ Hablo read/write is different than the others requiring auth. How different does
 
 ## Factory
 
-Find a good name for this new factory that might consume more than one factory things we already have.
+Find a good name for this new factory that might consume more than one factory things (FireFactory and SourceFactory) we already have.
 
 Must be initialized with:
 - fire choice
 
 Can then provide a channel given:
 - endpoint
-- stream key
+- String streamKey
+  For Oneofus and Nerster, this is a key token
+  For Habloe this is token1_token2.
+  Just call it a string. It shouldn't matter for the abstraction here.
 - functions (unless Fake)
 
 Keeps callers out of trouble:
 - Caches the channels
 - Has a global clearCache
-- Has a global clearData (Fake only)
+- Has a global clearData (Fake only. this is what makes tests hermetic (reset between test cases))
 - Internal source/writer classes are private
 
 Impl:
@@ -353,6 +356,19 @@ Intialize factory with emulator or prod only (depends on cloud CF implementation
 
 ### Hablo Dart unit tests
 
-AI: Verify: I don't think Hablo only has JavaScript unit tests and Dart integration tests.
+N/A: Not Dart unit tests (only JavaScript unit tests and Dart integration tests against emulators)*.
 
 AI: Comments below here: -------------------------
+
+**Hablo auth vs Nerdster/ONE-OF-US auth:**
+Nerdster and ONE-OF-US authorize writes via the Ed25519 signature on the statement itself — the CF verifies the signature, no separate session token.
+Hablo requires a session auth payload (identity + sessionTime + sessionSignature) on every CF call (reads and writes) because contact data is private.
+The shared channel interface can stay the same (push(json, signer)), but the factory needs a way to accept a session-credential provider for Hablo — absent for Nerdster/ONE-OF-US. How should the factory be initialized differently for Hablo?
+
+**CF change ordering:**
+The lazy-head CF deploy is a prerequisite for the Nerdster client migration — it must go live before the updated Dart client does.
+
+**Fake channel seed:**
+`clearData` resets state between tests. Does the fake also need a `seed`/`populate` affordance for loading demo data (Simpsons, etc.) before a test run, or does each test write its own data from scratch?
+
+Answer: no seed / populate required.
