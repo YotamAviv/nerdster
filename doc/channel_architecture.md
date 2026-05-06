@@ -289,12 +289,21 @@ follow-up deploy. This is the recommended approach.
 
 # Plan
 
-Share the same factories and implementations across all 3.
-Do it once, test thoroughly, not bit by bit.
+Share the same factories and implementations across all 3 projects.
+Do it once, not bit by bit, but one project at a time (Nerdster first). 
+Test thoroughly.
 
 Must be backward compatible with existing data for all 3 projects.
 
+Code to go in oneofus_common
+
+## Open questions:
+
+Hablo read/write is different than the others requiring auth. How different does this make this? Factor or duplicate functionality.
+
 ## Factory
+
+Find a good name for this new factory that might consume more than one factory things we already have.
 
 Must be initialized with:
 - fire choice
@@ -302,16 +311,21 @@ Must be initialized with:
 Can then provide a channel given:
 - endpoint
 - stream key
+- functions (unless Fake)
 
-Caches these to keep callers safe.
-The internal source, writer classes are private to the channel
+Keeps callers out of trouble:
+- Caches the channels
+- Has a global clearCache
+- Has a global clearData (Fake only)
+- Internal source/writer classes are private
 
-Contain endpoint mapping of endpoint to emulator details (port and such)
+Impl:
+- Contains endpoint mapping of prod endpoints to emulator details (port and such)
 DEFER: Something fancier in case other developers join.
 
 ## Work
 
-Fake channel that acts like the CF backed channels.
+Fake channel (like direct source/writer) that acts like the CF backed channels.
 
 ### Cloud functions side
 
@@ -339,4 +353,6 @@ Intialize factory with emulator or prod only (depends on cloud CF implementation
 
 ### Hablo Dart unit tests
 
-TODO: Investigate
+AI: Verify: I don't think Hablo only has JavaScript unit tests and Dart integration tests.
+
+AI: Comments below here: -------------------------
