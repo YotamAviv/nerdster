@@ -377,6 +377,12 @@ At the server side along with read and write include an abstract function called
   bool auth(String streamKey)
 Oneofus, Nerdster will always return true; Hablo will use its own complicated auth.
 
+AI: The server-side `auth(req, streamKey)` abstraction is clean — shared write.js calls it, each project supplies its own implementation. Note: the signature will need `req` (not just streamKey) so the Hablo implementation can read the session credential from the request body.
+
+On the client side this simplifies things: `HabloChannel` already attaches the auth payload to every request. The factory just needs to construct `HabloChannel` with a `SignInState` (or equivalent credentials object). Nerdster/ONE-OF-US channels need no credentials at construction. So the factory init doesn't need a special Hablo-specific parameter — it just constructs the right concrete channel type based on fireChoice, passing credentials only where needed.
+
+Resolved: constructor parameter. Makes the dependency explicit and the factory testable without touching global state.
+
 
 **CF change ordering:**
 The lazy-head CF deploy is a prerequisite for the Nerdster client migration — it must go live before the updated Dart client does.
@@ -387,8 +393,12 @@ None of these projects gets a lot of traffic, especially write traffic, and so:
 2) Run backfil of "head" data per stream
 3) Switch to the correct Write CF
 
+AI: Simpler and cleaner than the lazy two-phase approach given low write traffic. Make the disabled CF return 503 with a clear message so clients surface a real error rather than silently misbehaving during the window.
+
 **Fake channel seed:**
 `clearData` resets state between tests. Does the fake also need a `seed`/`populate` affordance for loading demo data (Simpsons, etc.) before a test run, or does each test write its own data from scratch?
 
 Answer: 
 No seed / populate required.
+
+AI: Resolved.
