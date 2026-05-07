@@ -1,6 +1,5 @@
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/content_pipeline.dart';
 import 'package:nerdster/logic/delegates.dart';
@@ -9,7 +8,6 @@ import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
 
 // Scenario:
 // 1. Run simpsonsDemo
@@ -41,14 +39,14 @@ Future<(DemoIdentityKey, DemoDelegateKey)> followNotInNetwork() async {
     required DelegateKey meDelegate,
     required String context,
   }) async {
-    final trustSource = DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final trustPipeline = TrustPipeline(trustSource);
 
     // Build Trust Graph
     final graph = await trustPipeline.build(pov);
     final delegateResolver = DelegateResolver(graph);
 
-    final appSource = DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
     final contentPipeline = ContentPipeline(
       delegateSource: appSource,
     );

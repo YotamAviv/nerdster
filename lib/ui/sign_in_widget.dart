@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/key_storage_coordinator.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster_common/ui/json_interpreter.dart';
@@ -45,7 +45,7 @@ Future<void> _signInAsDev(BuildContext context) async {
 SignInConfig buildNerdsterSignInConfig() {
   return SignInConfig(
     sessionFactory: createNerdsterSignInSession,
-    firestore: FireFactory.find(kNerdsterDomain),
+    firestore: channelFactory.firestoreFor(kNerdsterDomain)!,
     onData: nerdsterOnSessionData,
     stateNotifier: signInState,
     hasIdentity: () => signInState.hasIdentity,

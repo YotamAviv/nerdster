@@ -1,14 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/demotest/cases/test_utils.dart';
-import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
-import 'package:oneofus_common/cached_source.dart';
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:oneofus_common/statement.dart';
 
 /// Fires multiple writes concurrently from the same issuer.
 ///
-/// Uses the shared CachedSource instances from SourceFactory, matching real app behavior.
+/// Uses the shared CachedSource instances from channelFactory, matching real app behavior.
 /// Some writes may fail due to optimistic concurrency conflicts (server-side previous mismatch);
 /// the scenario only requires that at least one write succeeds per stream.
 Future<void> concurrentWriteScenario() async {
@@ -24,7 +22,7 @@ Future<void> concurrentWriteScenario() async {
   final subjectC = createTestSubject(title: 'Article C');
 
   // --- Concurrent dis writes (simulates 3 simultaneous thumbs-down swipes) ---
-  final disSource = SourceFactory.forDis();
+  final disSource = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']);
   await disSource.fetch({issuerToken: null});
   await disSource.push(DismissStatement.make(iJson, createTestSubject(title: 'Prime'), 'forever'), signer);
   final disResults = (await Future.wait([
@@ -36,7 +34,7 @@ Future<void> concurrentWriteScenario() async {
   debugPrint('concurrent dis: ok ($disResults/3 writes succeeded)');
 
   // --- Concurrent content writes (thumbs up, comment, censor) ---
-  final contentSource = SourceFactory.forContent();
+  final contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
   await contentSource.fetch({issuerToken: null});
   await contentSource.push(
       ContentStatement.make(iJson, ContentVerb.rate, createTestSubject(title: 'Prime'), recommend: true), signer);

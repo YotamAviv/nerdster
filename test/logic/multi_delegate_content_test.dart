@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/labeler.dart';
@@ -11,11 +10,8 @@ void main() {
   late FakeFirebaseFirestore firestore;
 
   setUp(() {
-    setUpTestRegistry();
-
     firestore = FakeFirebaseFirestore();
-    FireFactory.register(kOneofusDomain, firestore, null);
-    FireFactory.register(kNerdsterDomain, firestore, null);
+    setUpTestRegistry(firestore: firestore);
   });
 
   test('Content from multiple delegates of same identity should be merged and distincted',

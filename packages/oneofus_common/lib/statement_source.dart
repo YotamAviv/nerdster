@@ -52,4 +52,5 @@ abstract class StatementWriter<T extends Statement> {
 abstract class StatementChannel<T extends Statement>
     implements StatementSource<T>, StatementWriter<T> {
   void clear();
+  void resetRevokeAt();
 }

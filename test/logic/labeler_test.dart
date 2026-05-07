@@ -1,11 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/fire_factory.dart';
-import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/models/model.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:oneofus_common/oou_signer.dart';
 
 void main() {
@@ -33,8 +30,7 @@ void main() {
     // Bob -> Dave ("David")
     await bob.doTrust(TrustVerb.trust, dave, moniker: 'David');
 
-    final DirectFirestoreSource<TrustStatement> source =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -55,8 +51,7 @@ void main() {
     // Bob trusts Alice back as "Lisa"
     await bob.doTrust(TrustVerb.trust, alice, moniker: 'Lisa');
 
-    final DirectFirestoreSource<TrustStatement> source =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -80,13 +75,12 @@ void main() {
         await (await alice.keyPair.publicKey).json, await (bob2.publicKey).json, TrustVerb.trust,
         domain: null, moniker: null);
     final OouSigner signer = await OouSigner.make(alice.keyPair);
-    await SourceFactory.forTrust().push(json, signer);
+    await channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements').push(json, signer);
 
     // Bob2 replaces Bob1
     await bob2.replace(bob1);
 
-    final DirectFirestoreSource<TrustStatement> source =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -108,8 +102,7 @@ void main() {
     // Alice -> Bob2 ("Bob") - Different identity
     await alice.doTrust(TrustVerb.trust, bob2, moniker: 'Bob');
 
-    final DirectFirestoreSource<TrustStatement> source =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -142,8 +135,7 @@ void main() {
     // Charlie2 replaces Charlie1
     await charlie2.replace(charlie1);
 
-    final DirectFirestoreSource<TrustStatement> source =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 

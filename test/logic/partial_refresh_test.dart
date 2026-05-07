@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/source_factory.dart';
 
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
@@ -61,7 +60,7 @@ void main() {
       shakes!.canonical.value,
       'forever',
     );
-    await SourceFactory.forDis().push(json, signer);
+    await channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']).push(json, signer);
 
     // 4. Update controller (Local Logic Update)
     await controller.notify();

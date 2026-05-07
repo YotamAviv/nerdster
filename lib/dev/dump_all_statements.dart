@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/io/source_factory.dart';
+import 'package:nerdster/fire_choice.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
@@ -60,8 +60,8 @@ class DumpAllStatements extends StatelessWidget {
 
 Future<void> dump(String domain, String token) async {
   final src = (domain == kOneofusDomain)
-      ? SourceFactory.forTrust()
-      : SourceFactory.forContent();
+      ? channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements')
+      : channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
   Map<String, List<Statement>> result = await src.fetch({token: null});
   Iterable<Statement> statements = result[token] ?? [];
   for (Statement statement in statements) {

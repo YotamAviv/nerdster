@@ -2,7 +2,6 @@ import 'package:nerdster/demotest/cases/test_utils.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
-import 'package:nerdster/io/source_factory.dart';
 
 /// A gallery of all possible Trust and Follow notifications.
 ///
@@ -139,7 +138,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
   }
 
   // Verify
-  final src = SourceFactory.forTrust();
+  final src = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
   final pipeline = TrustPipeline(src);
   final trustGraph = await pipeline.build(me.id);
 

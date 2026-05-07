@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
@@ -33,9 +32,7 @@ void main() {
     oneofusFire = FakeFirebaseFirestore();
     nerdsterFire = FakeFirebaseFirestore();
 
-    setUpTestRegistry(firestore: oneofusFire); // This registers oneofusFire for both by default
-    // We override kNerdsterDomain to use nerdsterFire specifically for tests that care.
-    FireFactory.register(kNerdsterDomain, nerdsterFire, null);
+    setUpTestRegistry(firestore: oneofusFire);
 
     await SimpsonsDataHelper.populate(nerdsterFire, oneofusFire);
 

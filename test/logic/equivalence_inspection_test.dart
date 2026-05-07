@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/cases/simpsons_relate_demo.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/content_pipeline.dart';
 import 'package:nerdster/logic/delegates.dart';
@@ -10,7 +9,6 @@ import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/setting_type.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
 
 void main() {
   setUp(() async {
@@ -24,16 +22,14 @@ void main() {
     final (DemoIdentityKey lisa, DemoDelegateKey? lisaD) = await simpsonsRelateDemo();
 
     // 2. Build the model
-    final DirectFirestoreSource<TrustStatement> trustSource =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final TrustPipeline trustPipeline = TrustPipeline(trustSource);
     final TrustGraph graph = await trustPipeline.build(lisa.id);
     final DelegateResolver delegateResolver = DelegateResolver(graph);
     final FollowNetwork followNetwork =
         reduceFollowNetwork(graph, delegateResolver, ContentResult(), kFollowContextNerdster);
 
-    final DirectFirestoreSource<ContentStatement> appSource =
-        DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
     final ContentPipeline contentPipeline = ContentPipeline(
       delegateSource: appSource,
     );

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
-import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
@@ -38,7 +38,7 @@ class CorruptionCheck {
     Setting.get<bool>(SettingType.skipVerify).value = true;
 
     try {
-      final fire = FireFactory.find(domain);
+      final fire = channelFactory.firestoreFor(domain)!;
       final source = DirectFirestoreSource<T>(fire);
 
       final Map<String, List<T>> results = await source.fetch({token: null});

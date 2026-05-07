@@ -9,7 +9,6 @@ import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:nerdster/paste_sign_in.dart';
 import 'package:nerdster/qr_sign_in.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
@@ -90,7 +89,7 @@ class _SignInMenuState extends State<SignInMenu> {
                 final session = await createNerdsterSignInSession();
                 // ignore: unawaited_futures
                 session.listen(
-                  firestore: FireFactory.find(kNerdsterDomain),
+                  firestore: channelFactory.firestoreFor(kNerdsterDomain)!,
                   onData: nerdsterOnSessionData,
                   timeout: const Duration(minutes: 10),
                   onDone: () {

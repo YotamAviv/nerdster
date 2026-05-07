@@ -12,14 +12,13 @@ import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/content_statement.dart';
-import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:nerdster/logic/follow_logic.dart';
 import 'package:collection/collection.dart';
 import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:nerdster/ui/crypto_shield_button.dart';
-import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/fire_choice.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -612,7 +611,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                       source: widget.controller.contentSource,
                       labeler: labeler,
                       constraints: const BoxConstraints(maxWidth: 600),
-                      disSource: SourceFactory.forDis()),
+                      disSource: channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis'])),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Row(

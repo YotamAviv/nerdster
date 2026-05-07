@@ -1,11 +1,7 @@
-enum FireChoice {
-  fake,
-  emulator,
-  prod;
-}
+import 'package:oneofus_common/channel_factory.dart';
 
-// Default set from --dart-define=fire=emulator (mobile equivalent of ?fire=emulator on web).
-// May be further overwritten by query parameters on web.
-FireChoice fireChoice = const String.fromEnvironment('fire') == 'emulator'
-    ? FireChoice.emulator
-    : FireChoice.prod;
+export 'package:oneofus_common/channel_factory.dart' show ChannelFactory, channelFactory, FireChoice;
+
+// Convenience getter so existing call sites that read fireChoice still compile.
+// Write sites (fireChoice = ...) must be migrated to create a new ChannelFactory.
+FireChoice get fireChoice => channelFactory.fireChoice;

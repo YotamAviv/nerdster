@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:nerdster/io/source_factory.dart';
+import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/content_pipeline.dart';
 import 'package:nerdster/logic/delegates.dart';
@@ -57,9 +57,9 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
   FeedController({
     VoidCallback? optimisticConcurrencyFunc,
-  })  : trustSource = SourceFactory.forTrust(),
-        contentSource = SourceFactory.forContent(),
-        disSource = SourceFactory.forDis(),
+  })  : trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements'),
+        contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']),
+        disSource = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']),
         _optimisticConcurrencyFunc = optimisticConcurrencyFunc,
         super(null) {
     _lastIdentity = signInState.hasIdentity ? signInState.identity : null;

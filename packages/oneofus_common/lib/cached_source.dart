@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:oneofus_common/distincter.dart' as d;
 import 'package:oneofus_common/statement.dart';
 import 'package:flutter/foundation.dart';
 import 'package:oneofus_common/jsonish.dart';
@@ -43,8 +44,7 @@ class CachedSource<T extends Statement> implements StatementChannel<T> {
     _errorCache.clear();
   }
 
-  /// Clears all cached partial histories.
-  /// Full histories remain valid across PoV changes.
+  @override
   void resetRevokeAt() {
     _partialCache.clear();
   }
@@ -101,7 +101,7 @@ class CachedSource<T extends Statement> implements StatementChannel<T> {
     }
 
     history.insert(0, statement);
-    _fullCache[token] = history;
+    _fullCache[token] = d.distinct(history).toList();
   }
 
   @override
@@ -123,8 +123,22 @@ class CachedSource<T extends Statement> implements StatementChannel<T> {
       }
 
       if (_fullCache.containsKey(token)) {
-        // Full history is always safe to use; logic layer will filter if needed.
-        results[token] = List.unmodifiable(_fullCache[token]!);
+        if (revokeAt == null) {
+          results[token] = List.unmodifiable(_fullCache[token]!);
+        } else {
+          // Apply revokeAt filter in-memory when the revokeAt token is present in this
+          // stream's cache. Statements are newest-first, so sublist(idx) returns
+          // everything at and before the revokeAt position.
+          // If the token is not found (e.g. it lives in a different stream like 'dis'),
+          // fall through to the underlying source which searches allStreams by time.
+          final List<T> full = _fullCache[token]!;
+          final int idx = full.indexWhere((T s) => s.token == revokeAt);
+          if (idx >= 0) {
+            results[token] = List.unmodifiable(full.sublist(idx));
+          } else {
+            missing[token] = revokeAt;
+          }
+        }
       } else if (revokeAt != null &&
           _partialCache.containsKey(token) &&
           _partialCache[token]!.$1 == revokeAt) {

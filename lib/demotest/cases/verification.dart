@@ -1,11 +1,10 @@
 import 'package:nerdster/demotest/cases/test_utils.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
-import 'package:nerdster/io/source_factory.dart';
 import 'package:oneofus_common/statement_source.dart';
 
 /// Executes the pipeline and verifies the graph state for the Basic Scenario.
 ///
-/// [source] - The source to use. Defaults to [SourceFactory.get(kOneofusDomain)].
+/// [source] - The source to use. Defaults to the trust channel for kOneofusDomain.
 /// [description] - Optional description for error messages (useful for permutations).
 Future<(DemoIdentityKey, DemoDelegateKey?)> basicScenario({
   StatementSource<TrustStatement>? source,
@@ -22,7 +21,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> basicScenario({
   await marge.trust(lisa, moniker: 'lisa');
   await marge.trust(bart, moniker: 'bart');
 
-  final src = source ?? SourceFactory.forTrust();
+  final src = source ?? channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
   final pipeline = TrustPipeline(src);
   final graph = await pipeline.build(marge.id);
 

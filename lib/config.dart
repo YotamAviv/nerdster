@@ -5,7 +5,7 @@ class FirebaseConfig {
   ///
   /// In emulator mode, call [registerRedirect] during startup to map prod URLs
   /// to local equivalents. The trust pipeline calls [resolveUrl] on
-  /// [HomedKey.fetchUrl]; the content pipeline uses [contentUrl].
+  /// [HomedKey.fetchUrl]; node_details uses it for fedKey endpoint URLs.
   static final Map<String, String> _redirects = {};
   static void registerRedirect(String from, String to) => _redirects[from] = to;
   static String resolveUrl(String url) => _redirects[url] ?? url;
@@ -13,10 +13,4 @@ class FirebaseConfig {
   /// The base URL for fetching Nerdster content statements.
   /// Always export.nerdster.org in production; emulator redirect applied if registered.
   static String get contentUrl => resolveUrl('https://export.nerdster.org');
-
-  /// Base URL for Nerdster callable functions (writeStatement, etc.).
-  static String get nerdsterFunctionsUrl => resolveUrl('https://us-central1-nerdster.cloudfunctions.net');
-
-  /// Base URL for ONE-OF-US.NET callable functions (writeStatement, etc.).
-  static String get oneofusFunctionsUrl => resolveUrl('https://us-central1-one-of-us-net.cloudfunctions.net');
 }

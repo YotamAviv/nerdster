@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/io/fire_factory.dart';
+import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:oneofus_common/jsonish.dart';
@@ -73,7 +73,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> egosCorrupt() async {
   Statement s = await delegate.doRate(title: 'b');
   await delegate.doRate(title: 'c');
 
-  FirebaseFirestore fire = FireFactory.find(kNerdsterDomain);
+  FirebaseFirestore fire = channelFactory.firestoreFor(kNerdsterDomain)!;
 
   final CollectionReference<Json> fireStatements =
       fire.collection(delegate.token).doc('statements').collection('statements');

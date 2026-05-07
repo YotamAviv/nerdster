@@ -8,7 +8,6 @@ import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/ui/util_ui.dart';
 import 'package:nerdster/ui/util/my_checkbox.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/key_storage_coordinator.dart';
@@ -29,7 +28,7 @@ Future<void> qrSignIn(BuildContext context) async {
   // Start listening BEFORE showing dialog
   // ignore: unawaited_futures
   session.listen(
-    firestore: FireFactory.find(kNerdsterDomain),
+    firestore: channelFactory.firestoreFor(kNerdsterDomain)!,
     onData: nerdsterOnSessionData,
     onDone: () {
       if (!completer.isCompleted) {

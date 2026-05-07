@@ -1,25 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/logic/content_pipeline.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/follow_logic.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:oneofus_common/statement.dart';
+import 'package:oneofus_common/statement_source.dart';
 
 void main() {
   late FakeFirebaseFirestore fire;
-  late DirectFirestoreSource<ContentStatement> contentSource;
+  late StatementSource<ContentStatement> contentSource;
 
   setUp(() {
-    setUpTestRegistry();
-    fireChoice = FireChoice.fake;
     fire = FakeFirebaseFirestore();
-    FireFactory.register(kOneofusDomain, fire, null);
-    FireFactory.register(kNerdsterDomain, fire, null);
-    contentSource = DirectFirestoreSource<ContentStatement>(fire);
+    setUpTestRegistry(firestore: fire);
+    contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
   });
 
   Future<void> upload(String token, Statement s) async {
@@ -320,6 +317,56 @@ void main() {
     expect(fn.edges[bo.id]!.any((s) => IdentityKey(s.subjectToken) == luke.id), isTrue,
         reason:
             'Bo should still follow Luke because the delegate was revoked AT the follow statement');
+  });
+
+  test('Delegate Revocation: revokeAt from dis stream correctly truncates content stream', () async {
+    final DemoIdentityKey alice = await DemoIdentityKey.create('alice');
+    final delegate = await DemoDelegateKey.create('delegate_dis');
+
+    // C1: content before the dis statement
+    final ContentStatement c1 = await delegate.doRate(title: 'Content Before Dis');
+    await Future.delayed(const Duration(milliseconds: 10));
+
+    // D1: dismiss statement — this is the revocation point
+    final DismissStatement d1 = await delegate.doDismiss(
+        createTestSubject(title: 'Dismissed Item'), 'forever');
+    await Future.delayed(const Duration(milliseconds: 10));
+
+    // C2: content after the dis statement — should be excluded
+    final ContentStatement c2 = await delegate.doRate(title: 'Content After Dis');
+
+    // Alice delegates to delegate, then revokes at D1 (a dis stream token)
+    final TrustStatement trust = await alice.delegate(delegate, domain: 'nerdster.org');
+    final TrustStatement revoke =
+        await alice.delegate(delegate, domain: 'nerdster.org', revokeAt: d1.token);
+
+    final TrustGraph tg = TrustGraph(
+      pov: alice.id,
+      distances: {alice.id: 0},
+      edges: {
+        alice.id: [revoke, trust],
+      },
+      notifications: [],
+    );
+
+    final DelegateResolver resolver = DelegateResolver(tg);
+    resolver.resolveForIdentity(alice.id);
+
+    expect(resolver.getConstraintForDelegate(delegate.id), equals(d1.token));
+
+    final pipeline = ContentPipeline(delegateSource: contentSource);
+    final delegateContent = await pipeline.fetchDelegateContent(
+      {delegate.id},
+      delegateResolver: resolver,
+      graph: tg,
+    );
+
+    final statements = delegateContent[delegate.id] ?? [];
+    expect(statements.any((s) => s.token == c1.token), isTrue,
+        reason: 'C1 (before revokeAt) should be present');
+    expect(statements.any((s) => s.token == c2.token), isFalse,
+        reason: 'C2 (after revokeAt) should be excluded');
+    expect(statements.length, equals(1));
   });
 
   test('Labeler: Should number multiple delegates for same identity and domain', () async {

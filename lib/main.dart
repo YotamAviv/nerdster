@@ -12,13 +12,13 @@ import 'package:nerdster/about.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/config.dart';
 import 'package:nerdster/dev/demo_setup.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:nerdster/key_storage_coordinator.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/settings/prefs.dart';
+import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/verify.dart';
@@ -71,65 +71,69 @@ Future<void> main() async {
 
   // ------------ Fire ------------
   Map<String, String> params = startupUri.queryParameters;
-  String? fireParam = params['fire'];
-  if (fireParam != null) {
-    fireChoice = FireChoice.values.byName(fireParam);
-  }
-  if (fireChoice != FireChoice.fake) {
+  final String? fireParam = params['fire'];
+  final FireChoice resolvedFireChoice = fireParam != null
+      ? FireChoice.values.byName(fireParam)
+      : (const String.fromEnvironment('fire') == 'emulator'
+          ? FireChoice.emulator
+          : FireChoice.prod);
+
+  // On Android emulator, 10.0.2.2 reaches the host machine; web uses 127.0.0.1.
+  final emulatorHost = kIsWeb ? '127.0.0.1' : '10.0.2.2';
+
+  FirebaseFirestore nerdsterFirestore;
+  FirebaseFirestore oneofusFirestore;
+  if (resolvedFireChoice != FireChoice.fake) {
     try {
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     } catch (e) {
       if (!e.toString().contains('duplicate-app')) rethrow;
     }
     await OneofusFire.init();
-    if (fireChoice == FireChoice.emulator) {
+    if (resolvedFireChoice == FireChoice.emulator) {
       // $ firebase --project=nerdster emulators:start
       FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
       FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
       // $ firebase --project=one-of-us-net -config=oneofus.firebase.json emulators:start
       OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
       OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
+      // registerRedirect for FirebaseConfig.resolveUrl() used by lgtm.dart and node_details.dart.
+      FirebaseConfig.registerRedirect('https://export.nerdster.org',
+          'http://$emulatorHost:5001/nerdster/us-central1/export');
+      FirebaseConfig.registerRedirect('https://export.one-of-us.net',
+          'http://$emulatorHost:5002/one-of-us-net/us-central1/export');
     }
-    FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
-    FireFactory.register(kOneofusDomain, OneofusFire.firestore, OneofusFire.functions);
+    nerdsterFirestore = FirebaseFirestore.instance;
+    oneofusFirestore = OneofusFire.firestore;
   } else {
-    FireFactory.register(kOneofusDomain, FakeFirebaseFirestore(), null);
-    FireFactory.register(kNerdsterDomain, FakeFirebaseFirestore(), null);
+    nerdsterFirestore = FakeFirebaseFirestore();
+    oneofusFirestore = FakeFirebaseFirestore();
   }
+
+  channelFactory = ChannelFactory(resolvedFireChoice,
+      skipVerify: Setting.get<bool>(SettingType.skipVerify));
+  channelFactory.register(kNerdsterDomain,
+      exportUrl: 'https://export.nerdster.org',
+      functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
+      emulatorExportUrl: 'http://$emulatorHost:5001/nerdster/us-central1/export',
+      emulatorFunctionsUrl: 'http://$emulatorHost:5001/nerdster/us-central1',
+      firestore: nerdsterFirestore);
+  channelFactory.register(kOneofusDomain,
+      exportUrl: 'https://export.one-of-us.net',
+      functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
+      emulatorExportUrl: 'http://$emulatorHost:5002/one-of-us-net/us-central1/export',
+      emulatorFunctionsUrl: 'http://$emulatorHost:5002/one-of-us-net/us-central1',
+      firestore: oneofusFirestore);
+
   _fireCheckRead = params.containsKey('fireCheckRead');
   _fireCheckWrite = params.containsKey('fireCheckWrite');
   if (_fireCheckWrite) {
-    await checkWrite(FireFactory.find(kNerdsterDomain), 'firecheck: web:nerdster');
-    await checkWrite(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
+    await checkWrite(nerdsterFirestore, 'firecheck: web:nerdster');
+    await checkWrite(oneofusFirestore, 'firecheck: web:oneofus');
   }
   if (_fireCheckRead) {
-    await checkRead(FireFactory.find(kNerdsterDomain), 'firecheck: web:nerdster');
-    await checkRead(FireFactory.find(kOneofusDomain), 'firecheck: web:oneofus');
-  }
-
-  switch (fireChoice) {
-    case FireChoice.fake:
-      break;
-    case FireChoice.emulator:
-      // On Android emulator, the host machine is 10.0.2.2, not 127.0.0.1.
-      // Firestore/Functions .useEmulator() calls are auto-remapped by the plugin,
-      // but registerRedirect URLs are plain HTTP and must be remapped manually.
-      final emulatorHost = kIsWeb ? '127.0.0.1' : '10.0.2.2';
-      final oneofusUrl = 'http://$emulatorHost:5002/one-of-us-net/us-central1/export';
-      final nerdsterUrl = 'http://$emulatorHost:5001/nerdster/us-central1/export';
-      FirebaseConfig.registerRedirect('https://export.one-of-us.net', oneofusUrl);
-      FirebaseConfig.registerRedirect('https://export.nerdster.org', nerdsterUrl);
-      FirebaseConfig.registerRedirect(
-        'https://us-central1-nerdster.cloudfunctions.net',
-        'http://$emulatorHost:5001/nerdster/us-central1',
-      );
-      FirebaseConfig.registerRedirect(
-        'https://us-central1-one-of-us-net.cloudfunctions.net',
-        'http://$emulatorHost:5002/one-of-us-net/us-central1',
-      );
-      break;
-    case FireChoice.prod:
-      break;
+    await checkRead(nerdsterFirestore, 'firecheck: web:nerdster');
+    await checkRead(oneofusFirestore, 'firecheck: web:oneofus');
   }
 
   TrustStatement.init();

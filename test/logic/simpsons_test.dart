@@ -1,14 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
-import 'package:nerdster/io/fire_factory.dart';
-import 'package:nerdster/app.dart';
-import 'package:oneofus_common/trust_statement.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;
@@ -22,8 +17,7 @@ void main() {
     await simpsonsDemo();
 
     final DemoIdentityKey milhouse = DemoIdentityKey.findByName('milhouse')!;
-    final DirectFirestoreSource<TrustStatement> source =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(milhouse.id);
 
@@ -47,8 +41,7 @@ void main() {
     await simpsonsDemo();
 
     final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
-    final DirectFirestoreSource<TrustStatement> source =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(lisa.id);
     final Labeler labeler = Labeler(graph);
@@ -64,8 +57,7 @@ void main() {
     await simpsonsDemo();
 
     final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
-    final DirectFirestoreSource<TrustStatement> source =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(bart.id);
     final Labeler labeler = Labeler(graph);

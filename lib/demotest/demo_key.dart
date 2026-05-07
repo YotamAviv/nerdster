@@ -16,7 +16,6 @@ import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:oneofus_common/statement.dart';
-import 'package:nerdster/io/source_factory.dart';
 import 'package:oneofus_common/statement_source.dart';
 
 /// For testing, development, and maybe demo.
@@ -222,7 +221,7 @@ class DemoIdentityKey implements DemoKey {
   }
 
   Future<TrustStatement> _signAndPush(Json json, String? export) async {
-    final StatementChannel<TrustStatement> source = SourceFactory.forTrust();
+    final StatementChannel<TrustStatement> source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final OouSigner signer = await OouSigner.make(keyPair);
     await source.fetch({Jsonish(json['I']).token: null});
     final TrustStatement trust = await source.push(json, signer);
@@ -362,7 +361,7 @@ class DemoDelegateKey implements DemoKey {
   }
 
   Future<DismissStatement> _pushDis(Json json, String? export) async {
-    final source = SourceFactory.forDis();
+    final source = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']);
     final signer = await OouSigner.make(keyPair);
     await source.fetch({Jsonish(json['I']).token: null});
     final dis = await source.push(json, signer);
@@ -399,7 +398,7 @@ class DemoDelegateKey implements DemoKey {
   }
 
   Future<ContentStatement> _pushContent(Json json, String? export) async {
-    final source = SourceFactory.forContent();
+    final source = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
     final signer = await OouSigner.make(keyPair);
     await source.fetch({Jsonish(json['I']).token: null});
     final content = await source.push(json, signer);

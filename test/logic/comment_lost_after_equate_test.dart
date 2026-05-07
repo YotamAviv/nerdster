@@ -17,7 +17,6 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/content_pipeline.dart';
@@ -26,7 +25,6 @@ import 'package:nerdster/logic/follow_logic.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/models/model.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
 
 void main() {
   setUp(() {
@@ -69,12 +67,12 @@ void main() {
       required DemoDelegateKey meDelegate,
     }) async {
       final trustSource =
-          DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+          channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
       final graph = await TrustPipeline(trustSource).build(pov.id);
       final delegateResolver = DelegateResolver(graph);
 
       final appSource =
-          DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
+          channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
       final contentPipeline = ContentPipeline(delegateSource: appSource);
 
       final Set<DelegateKey> keysToFetch = {};
@@ -174,13 +172,11 @@ void main() {
     await delegateB2.doRelate(ContentVerb.equate, subject: subjectX, other: subjectY);
 
     // ----- Run pipeline for B's PoV, providing BOTH of B's delegates -----
-    final trustSource =
-        DirectFirestoreSource<TrustStatement>(FireFactory.find(kOneofusDomain));
+    final trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
     final graph = await TrustPipeline(trustSource).build(userB.id);
     final delegateResolver = DelegateResolver(graph);
 
-    final appSource =
-        DirectFirestoreSource<ContentStatement>(FireFactory.find(kNerdsterDomain));
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
     final contentPipeline = ContentPipeline(delegateSource: appSource);
 
     final Set<DelegateKey> keysToFetch = {};

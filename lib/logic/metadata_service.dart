@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:http/http.dart' as http;
-import 'package:nerdster/io/fire_factory.dart';
-import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/content_types.dart';
 
 class MetadataResult {
@@ -80,7 +78,7 @@ String? _extractYoutubeId(String url) {
   return null;
 }
 
-FirebaseFunctions? get _functions => FireFactory.findFunctions(kNerdsterDomain);
+FirebaseFunctions get _functions => FirebaseFunctions.instance;
 
 // Simple in-memory cache to prevent redundant fetches on scroll
 final Map<String, MetadataResult> _metadataCache = {};
@@ -103,11 +101,10 @@ Future<Map<String, dynamic>?> magicPaste(String url) async {
   }
 
   // Web: use cloud function (CORS requires server-side fetch).
-  if (_functions == null) return null;
   try {
     debugPrint('magicPaste calling cloud function...');
     try {
-      final retval = await _functions!.httpsCallable('magicPaste').call({
+      final retval = await _functions.httpsCallable('magicPaste').call({
         "url": url,
       });
       debugPrint('magicPaste raw data: ${retval.data}');
@@ -156,15 +153,10 @@ Future<void> fetchImages({
   }
 
   // Cloud function path (web always, native as fallback).
-  if (_functions == null) {
-    debugPrint('MetadataService: Firebase Functions not initialized');
-    return;
-  }
-
   try {
     debugPrint(
         'MetadataService: Calling fetchImages cloud function for ${subject['url'] ?? subject['title']}');
-    final retval = await _functions!.httpsCallable('fetchImages').call({
+    final retval = await _functions.httpsCallable('fetchImages').call({
       "subject": subject,
     });
 

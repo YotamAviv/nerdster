@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/io/source_factory.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/model.dart';
@@ -52,7 +51,7 @@ void main() {
     );
 
     final signer = await OouSigner.make(lisaDelegate.keyPair);
-    await SourceFactory.forDis().push(dismissStmt, signer);
+    await channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']).push(dismissStmt, signer);
 
     // 3. Refresh the feed (First time - "Minor Refresh" simulation)
     await controller.refresh();

@@ -1,5 +1,4 @@
 import 'package:nerdster/demotest/cases/test_utils.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:oneofus_common/cloud_functions_source.dart';
 import 'package:oneofus_common/direct_firestore_writer.dart';
 import 'package:oneofus_common/oou_signer.dart';
@@ -22,7 +21,7 @@ Future<void> multiStreamScenario({required String url}) async {
 
   // D1: alice trusts charlie → dis stream (time T2, T2 > T1)
   final disWriter = DirectFirestoreWriter<TrustStatement>(
-    FireFactory.find(kOneofusDomain),
+    channelFactory.firestoreFor(kOneofusDomain)!,
     streamId: 'dis',
   );
   final d1Json = TrustStatement.make(
