@@ -1,14 +1,13 @@
 /**
- * write — HTTP POST endpoint
+ * write — shared HTTP POST endpoint (onRequest)
  *
- * TODO: Transition to Hablo's write approach (hablotengo/functions/hablo_write.js):
- * use a Firestore transaction + head field instead of the non-transactional
- * orderBy query. The current approach has a TOCTOU race: two concurrent writers
- * can both read the same latestToken and both succeed, forking the chain.
- * CloudFunctionsWriter's client-side queue prevents this in practice for a single
- * client, but not across multiple devices or sessions.
+ * Appends a signed statement to an issuer's statement stream in Firestore
+ * using an atomic transaction on the stream's `head` field, eliminating the
+ * TOCTOU race of the previous orderBy-based approach.
  *
- * Appends a signed statement to an issuer's statement stream in Firestore.
+ * Auth is delegated to the project-supplied function:
+ *   auth(req, res) → truthy on success, or sends error response and returns null.
+ * For Nerdster, Ed25519 signature verification is the only auth needed (see auth_nerdster.js).
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * REQUEST
@@ -16,114 +15,113 @@
  * POST {baseUrl}/write
  * Content-Type: application/json
  *
- * Body (Firebase callable envelope):
+ * Body:
  * {
- *   "data": {
- *     "statement": <Statement>,   // required — the signed statement object
- *     "collection": <string>      // required — stream name, e.g. "statements" or "dis"
- *   }
+ *   "statement":  <Statement>,   // required
+ *   "collection": <string>       // required — stream name, e.g. "statements" or "dis"
  * }
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * STATEMENT FORMAT
- * ─────────────────────────────────────────────────────────────────────────────
- * A statement is a JSON object with the following fields:
- *
- * {
- *   "I":         <PublicKey>,   // issuer's public key (JSON object, canonically ordered)
- *   "time":      <ISO 8601>,    // statement timestamp
- *   "previous":  <token>,       // optional — token of the previous statement in this stream
- *                               //            omit (or null) for the first statement
- *   ...                         // verb-specific fields (verb, subject, object, etc.)
- *   "signature": <base64>       // Ed25519 signature over the canonically ordered statement
- *                               //   (excluding the "signature" field itself)
- * }
- *
- * The token of a statement is the SHA-1 of its canonical JSON representation
- * (all fields including signature, keys ordered deterministically).
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * CHAIN INTEGRITY (previous + time)
- * ─────────────────────────────────────────────────────────────────────────────
- * Each issuer maintains an append-only chain per collection.
- * The server enforces:
- *   - First write: "previous" must be absent or null.
- *   - Subsequent writes: "previous" must equal the token of the latest statement
- *     currently in the stream (ordered by "time" desc).
- *   - "time" must be strictly greater than the latest statement's time, so the
- *     stream can always be fetched in strict descending order.
- * Concurrent writes by the same issuer are serialized by the client-side write
- * queue in CloudFunctionsWriter.
- *
- * ─────────────────────────────────────────────────────────────────────────────
- * SECURITY
- * ─────────────────────────────────────────────────────────────────────────────
- * No Firebase Auth or App Check is required — the endpoint is publicly callable.
- * Authorization is provided entirely by the Ed25519 signature: the server verifies
- * the signature before writing, so only the holder of the private key can append
- * to a given issuer's stream.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * FIRESTORE PATH
  * ─────────────────────────────────────────────────────────────────────────────
  * {token(I)} / {collection} / statements / {token(statement)}
  *
- * The issuer token scopes each write to the issuer's own subtree.
+ * The stream doc {token(I)}/{collection} carries a `head` field (token of the
+ * most recent statement) and `headTime` field (its ISO-8601 time), used by the
+ * transaction to enforce chain integrity without an extra document read.
+ *
+ * Run bin/backfill_head.js once before deploying to seed `head`/`headTime` on
+ * all existing streams.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * RESPONSE
  * ─────────────────────────────────────────────────────────────────────────────
- * 200 OK: { "result": { "token": <statementToken> } }
- * Error: HTTP 500, body contains error message (previous mismatch, bad signature, etc.)
+ * 200: { "token": <statementToken> }
+ * 400: bad request (missing fields, invalid signature, time ordering violation)
+ * 409: chain race — client should fetch latest head and retry
+ * 500: unexpected server error
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * EMULATOR BASE URLs
+ * SHARED FILES (keep identical across nerdster14, oneofusv22)
  * ─────────────────────────────────────────────────────────────────────────────
- * Nerdster:    http://127.0.0.1:5001/nerdster/us-central1
- * ONE-OF-US:  http://127.0.0.1:5002/one-of-us-net/us-central1
+ * write.js, verify_util.js, jsonish_util.js, statement_fetcher.js, export.js
  */
 
 const admin = require('firebase-admin');
 const { verifyStatementSignature, statementToken, keyToken } = require('./verify_util');
 
-async function handleWrite(data, context) {
-  const { statement, collection } = data ?? {};
+/**
+ * Returns an HTTP request handler for the write endpoint.
+ * @param {Function} auth - async (req, res) => truthy | null
+ */
+function makeWriteHandler(auth) {
+  return async function handleWrite(req, res) {
+    res.setHeader('Content-Type', 'application/json');
 
-  if (!statement || typeof statement !== 'object') {
-    throw new Error('missing statement');
-  }
-  if (!verifyStatementSignature(statement)) {
-    throw new Error('invalid statement signature');
-  }
+    const authResult = await auth(req, res);
+    if (!authResult) return;
 
-  const iToken = await keyToken(statement['I']);
-  const token = await statementToken(statement);
-  const db = admin.firestore();
+    const { statement, collection } = req.body ?? {};
 
-  const statementsRef = db
-    .collection(iToken)
-    .doc(collection)
-    .collection('statements');
+    if (!statement || typeof statement !== 'object') {
+      res.status(400).json({ error: 'missing statement' });
+      return;
+    }
+    if (!collection || typeof collection !== 'string') {
+      res.status(400).json({ error: 'missing collection' });
+      return;
+    }
+    if (!verifyStatementSignature(statement)) {
+      res.status(400).json({ error: 'invalid statement signature' });
+      return;
+    }
 
-  const latestSnap = await statementsRef.orderBy('time', 'desc').limit(1).get();
-  const latestToken = latestSnap.empty ? null : latestSnap.docs[0].id;
-  const latestTime = latestSnap.empty ? null : latestSnap.docs[0].data()['time'];
-  const clientPrevious = statement['previous'] ?? null;
-  const clientTime = statement['time'] ?? null;
+    const iToken = await keyToken(statement['I']);
+    const token = await statementToken(statement);
+    const clientPrevious = statement['previous'] ?? null;
+    const clientTime = statement['time'] ?? null;
 
-  if (latestToken === null && clientPrevious !== null) {
-    throw new Error('genesis check failed: statement.previous must not be set for first write');
-  }
-  if (latestToken !== null && clientPrevious !== latestToken) {
-    throw new Error(`previous mismatch: expected ${latestToken}, got ${clientPrevious}`);
-  }
-  if (latestTime !== null && clientTime !== null && clientTime <= latestTime) {
-    throw new Error(`time ordering violation: ${clientTime} must be > ${latestTime}`);
-  }
+    const db = admin.firestore();
+    const streamRef = db.collection(iToken).doc(collection);
+    const statementsRef = streamRef.collection('statements');
 
-  await statementsRef.doc(token).set(statement);
+    try {
+      await db.runTransaction(async (tx) => {
+        const streamDoc = await tx.get(streamRef);
+        const currentHead = streamDoc.exists ? (streamDoc.data().head ?? null) : null;
+        const currentHeadTime = streamDoc.exists ? (streamDoc.data().headTime ?? null) : null;
 
-  return { token };
+        if (clientPrevious !== currentHead) {
+          const err = new Error(`chain race: expected ${currentHead}, got ${clientPrevious}`);
+          err.code = 409;
+          throw err;
+        }
+        if (currentHeadTime !== null && clientTime !== null && clientTime <= currentHeadTime) {
+          const err = new Error(`time ordering violation: ${clientTime} must be > ${currentHeadTime}`);
+          err.code = 400;
+          throw err;
+        }
+
+        tx.set(statementsRef.doc(token), statement);
+        tx.set(streamRef, { head: token, headTime: clientTime }, { merge: true });
+      });
+    } catch (e) {
+      if (e.code === 409) {
+        res.status(409).json({ error: e.message });
+        return;
+      }
+      if (e.code === 400) {
+        res.status(400).json({ error: e.message });
+        return;
+      }
+      console.error('[write] transaction error:', e.message);
+      res.status(500).json({ error: e.message });
+      return;
+    }
+
+    console.log(`[write] token=${token} issuer=${iToken} stream=${collection}`);
+    res.status(200).json({ token });
+  };
 }
 
-module.exports = { handleWrite };
+module.exports = { makeWriteHandler };

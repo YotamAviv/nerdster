@@ -16,7 +16,7 @@
  *   metadata_fetchers.js, url_metadata_parser.js
  */
 
-const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");  // onCall used by fetchImages, magicPaste
 const { logger } = require("firebase-functions");
 const admin = require('firebase-admin');
 
@@ -24,18 +24,16 @@ if (admin.apps.length === 0) {
   admin.initializeApp();
 }
 
-const { handleWrite } = require('./write');
+const { makeWriteHandler } = require('./write');
+const { auth: nerdsterAuth } = require('./auth_nerdster');
+const handleWrite = makeWriteHandler(nerdsterAuth);
 const { handleSignIn } = require('./sign_in');
 const { handleExport } = require('./export');
 const { handleFetchImages } = require('./fetch_images');
 const { handleMagicPaste } = require('./magic_paste');
 
-exports.write = onCall(async (request) => {
-  try {
-    return await handleWrite(request.data);
-  } catch (e) {
-    throw new HttpsError('internal', e.message);
-  }
+exports.write2 = onRequest({ cors: true }, async (req, res) => {
+  await handleWrite(req, res);
 });
 
 exports.fetchImages = onCall(async (request) => {

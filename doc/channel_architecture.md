@@ -402,3 +402,107 @@ Answer:
 No seed / populate required.
 
 AI: Resolved.
+
+---
+
+# Implementation Progress (branch: channels-refactor, as of 2026-05-07)
+
+## What is done
+
+### Client side (nerdster14 + oneofus_common)
+
+- **`ChannelFactory` / `channelFactory`** — single entry point for all statement channels,
+  in `oneofus_common/lib/channel_factory.dart`. Replaces `SourceFactory` and `FireFactory`
+  in nerdster14. Initialized once in `main()` and in test `setUp`; all fireChoice branching
+  lives here. `FireChoice` enum lives here too (not in a separate file).
+- **`CachedSource`** — two bugs fixed:
+  - `_inject` now applies `distinct()` so a clear-then-trust doesn't leave the old trust
+    statement in cache.
+  - `fetch()` with `revokeAt` now correctly filters in-memory when the token is in the
+    full cache; falls through to the underlying source when the revokeAt token lives in a
+    different stream (e.g. `dis`).
+- **`CloudFunctionsWriter`** — `baseUrl` field renamed to `writeUrl`; now takes the full
+  write URL directly (no `/write` appended inside). `ChannelFactory` constructs the URL as
+  `${functionsUrl}/${writeEndpoint}`.
+- `writeEndpoint` defaults to `'write2'` in `ChannelFactory.register()`.
+- `nerdster14/lib/fire_choice.dart` re-exports `ChannelFactory`, `channelFactory`,
+  `FireChoice` from oneofus_common so existing call sites compile unchanged.
+
+### Server side (nerdster14/functions)
+
+- **`write.js`** — rewrote to use Firestore transaction on `head`/`headTime` stream field,
+  eliminating the TOCTOU race. `makeWriteHandler(auth)` pattern: shared handler, project
+  auth injected. Registered as `exports.write2` (`onRequest`, CORS enabled).
+  **Not lazy**: requires `head` to be present on every stream doc before deployment —
+  missing `head` is treated as genesis, which would corrupt existing streams. Backfill is
+  a hard prerequisite.
+- **`auth_nerdster.js`** — new file; trivial auth (signature verification in write.js is
+  sufficient for Nerdster).
+- `functions/index.js` updated accordingly.
+
+### Server side (oneofusv22/functions)
+
+- `write.js` — reverted / kept as original `onCall` handler. Old clients continue to work.
+  The async `keyToken`/`statementToken` calls are now properly `await`-ed (bug fix).
+- **`write2.js`** — new file; same `makeWrite2Handler(auth)` transactional pattern as
+  nerdster14's write.js. Registered as `exports.write2` (`onRequest`, CORS enabled)
+  alongside the old `exports.write`.
+- **`auth_oneofus.js`** — new file; trivial auth (same as auth_nerdster.js).
+
+### Migration tooling
+
+- **`bin/backfill_head.js`** (nerdster14) — seeds `head`/`headTime` on all existing
+  Firestore streams. Supports `--emulator` and `--dry-run`. Run once against each project
+  before `write2` receives real traffic. Already run against the nerdster emulator
+  (1028 streams scanned, 553 updated).
+
+### Tests
+
+All tests pass:
+- 113 Flutter unit tests (includes delegate_revocation_test with new cross-stream revokeAt
+  test case)
+- 22 oneofus_common package tests
+- 18 backend (Node.js) tests
+- Chrome widget test (cloud_source_web_test) — all permutations including concurrent write
+
+---
+
+## What is NOT done / next steps
+
+### Deployment sequence (nerdster14 only for now)
+
+Oneofus and Hablo are out of scope until nerdster is validated end-to-end.
+
+1. **Transition branch** — create a branch with:
+   - CF code from this branch (`write.js` as transactional `onCall` — same external
+     interface as today, new internals). This does not exist yet; the current `write.js` in
+     this branch is `onRequest` (`write2`), not `onCall`.
+   - Client code from `main` (old callable format).
+   - This represents the production state during the window after CF deploy and before all
+     clients have refreshed.
+
+2. **Test transition branch on emulators** — run full test suite using main-branch client
+   against new CF code. This validates that existing clients keep working.
+
+3. **Backfill** — run `bin/backfill_head.js --dry-run` against prod nerdster, then run for
+   real. Must happen before the new CF goes live.
+
+4. **Deploy nerdster CFs** — deploy `write2` (+ `auth_nerdster.js`) to production.
+   Old `write` endpoint is unused by new clients but can be left or removed — nerdster14
+   is web-only so client refresh is near-instant.
+
+5. **Deploy oneofusv22 CFs** — deploy `write2` alongside old `write`. No backfill needed
+   yet (nerdster demo writes to fresh streams; existing Oneofus streams used by real users
+   continue using old `write`).
+
+### Key open question
+
+The current branch's nerdster `write.js` is `onRequest`-only (`makeWriteHandler` + HTTP
+req/res). The transition branch needs a version that uses the same transaction logic but
+inside an `onCall` handler. The cleanest approach: extract transaction core into a shared
+function callable from both onCall and onRequest wrappers.
+
+### Oneofus and Hablo
+
+Not upgrading yet. Oneofus phone app clients take time to refresh. Hablo has its own auth
+complexity. Both are deferred until nerdster is validated.

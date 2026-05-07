@@ -14,10 +14,12 @@ enum FireChoice { fake, emulator, prod }
 class _Registration {
   final String exportUrl;
   final String functionsUrl;
+  final String writeEndpoint;
   final FirebaseFirestore? firestore;
   const _Registration(
       {required this.exportUrl,
       required this.functionsUrl,
+      this.writeEndpoint = 'write2',
       this.firestore});
 }
 
@@ -48,6 +50,7 @@ class ChannelFactory {
     required String functionsUrl,
     String? emulatorExportUrl,
     String? emulatorFunctionsUrl,
+    String writeEndpoint = 'write2',
     FirebaseFirestore? firestore,
   }) {
     final resolvedExport =
@@ -61,6 +64,7 @@ class ChannelFactory {
     _registrations[domain] = _Registration(
       exportUrl: resolvedExport,
       functionsUrl: resolvedFunctions,
+      writeEndpoint: writeEndpoint,
       firestore: firestore,
     );
   }
@@ -102,7 +106,7 @@ class ChannelFactory {
         verifier: OouVerifier(),
         skipVerify: skipVerify,
       );
-      final writer = CloudFunctionsWriter<T>(reg.functionsUrl, streamKey);
+      final writer = CloudFunctionsWriter<T>('${reg.functionsUrl}/${reg.writeEndpoint}', streamKey);
       return CachedSource<T>(source, writer);
     }
   }

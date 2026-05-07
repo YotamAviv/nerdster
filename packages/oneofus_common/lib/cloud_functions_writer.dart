@@ -7,12 +7,12 @@ import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
 
 class CloudFunctionsWriter<T extends Statement> implements StatementWriter<T> {
-  final String baseUrl;
+  final String writeUrl;
   final String streamId;
 
   final Map<String, Future<void>> _writeQueues = {};
 
-  CloudFunctionsWriter(this.baseUrl, this.streamId);
+  CloudFunctionsWriter(this.writeUrl, this.streamId);
 
   @override
   Future<T> push(Json json, StatementSigner signer,
@@ -57,9 +57,9 @@ class CloudFunctionsWriter<T extends Statement> implements StatementWriter<T> {
 
   Future<void> _callCF(Jsonish jsonish) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/write'),
+      Uri.parse(writeUrl),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'data': {'statement': jsonish.json, 'collection': streamId}}),
+      body: jsonEncode({'statement': jsonish.json, 'collection': streamId}),
     );
     if (response.statusCode != 200) {
       debugPrint('CloudFunctionsWriter._callCF: ${response.statusCode} ${response.body}');
