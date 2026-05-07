@@ -365,10 +365,30 @@ Nerdster and ONE-OF-US authorize writes via the Ed25519 signature on the stateme
 Hablo requires a session auth payload (identity + sessionTime + sessionSignature) on every CF call (reads and writes) because contact data is private.
 The shared channel interface can stay the same (push(json, signer)), but the factory needs a way to accept a session-credential provider for Hablo — absent for Nerdster/ONE-OF-US. How should the factory be initialized differently for Hablo?
 
+Continued discussion: 
+The Hablo Read and Write CFs necessarily need to be different files from Oneofus, Nerdster as auth needs to be enforced at the server layer.
+Hablo currently reads and assembles data at the server layer for its front end and only provides plain read functionality to export the stream. 
+There are 2 different authorizations Hablo needs
+- export stream (identity/delegate)
+- write to stream (identity/delegate)
+Both of authorizations are per identity but they're different (write to your own only, ready depending on that identities trust graph)
+Suggestion:
+At the server side along with read and write include an abstract function called the read and write CF functions:
+  bool auth(String streamKey)
+Oneofus, Nerdster will always return true; Hablo will use its own complicated auth.
+
+
 **CF change ordering:**
 The lazy-head CF deploy is a prerequisite for the Nerdster client migration — it must go live before the updated Dart client does.
+
+Answer: 
+None of these projects gets a lot of traffic, especially write traffic, and so:
+1) Deploy a disabled Write CF
+2) Run backfil of "head" data per stream
+3) Switch to the correct Write CF
 
 **Fake channel seed:**
 `clearData` resets state between tests. Does the fake also need a `seed`/`populate` affordance for loading demo data (Simpsons, etc.) before a test run, or does each test write its own data from scratch?
 
-Answer: no seed / populate required.
+Answer: 
+No seed / populate required.
