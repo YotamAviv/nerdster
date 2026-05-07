@@ -495,12 +495,23 @@ Oneofus and Hablo are out of scope until nerdster is validated end-to-end.
    yet (nerdster demo writes to fresh streams; existing Oneofus streams used by real users
    continue using old `write`).
 
-### Key open question
+### Testing the transition (two-checkout approach)
 
-The current branch's nerdster `write.js` is `onRequest`-only (`makeWriteHandler` + HTTP
-req/res). The transition branch needs a version that uses the same transaction logic but
-inside an `onCall` handler. The cleanest approach: extract transaction core into a shared
-function callable from both onCall and onRequest wrappers.
+No transition branch needed. Instead:
+
+- **Checkout A** (main branch) — run `run_all_tests.sh`. This runs the old Flutter client
+  code (onCall `write`, `{"data": {...}}` envelope). The test runner connects to whatever
+  emulators are on the standard ports.
+- **Checkout B** (channels branch) — start the emulators. They load channels-branch CF
+  code (transactional `write` onCall + `write2` onRequest).
+
+This exactly mirrors the production transition state: new CF already deployed, old clients
+still running. No branch mixing, no artificial intermediate branch.
+
+Prerequisite for this to work: nerdster's `write.js` on the channels branch must expose a
+transactional `write` (`onCall`) alongside `write2` (`onRequest`). Currently only `write2`
+exists; `write` was removed. Fix: extract the transaction core into a shared function
+callable from both wrappers, and re-register `write` as onCall in index.js.
 
 ### Oneofus and Hablo
 

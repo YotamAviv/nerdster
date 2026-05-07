@@ -24,13 +24,23 @@ if (admin.apps.length === 0) {
   admin.initializeApp();
 }
 
-const { makeWriteHandler } = require('./write');
+const { handleWriteCallable, makeWriteHandler } = require('./write');
 const { auth: nerdsterAuth } = require('./auth_nerdster');
 const handleWrite = makeWriteHandler(nerdsterAuth);
 const { handleSignIn } = require('./sign_in');
 const { handleExport } = require('./export');
 const { handleFetchImages } = require('./fetch_images');
 const { handleMagicPaste } = require('./magic_paste');
+
+exports.write = onCall(async (request) => {
+  try {
+    return await handleWriteCallable(request.data);
+  } catch (e) {
+    if (e.code === 409) throw new HttpsError('already-exists', e.message);
+    if (e.code === 400) throw new HttpsError('invalid-argument', e.message);
+    throw new HttpsError('internal', e.message);
+  }
+});
 
 exports.write2 = onRequest({ cors: true }, async (req, res) => {
   await handleWrite(req, res);
