@@ -467,56 +467,25 @@ All tests pass:
 
 ---
 
-## What is NOT done / next steps
+## Deployment log
 
-### Deployment sequence (nerdster14 only for now)
+### 2026-05-08 ~09:45 PDT
 
-Oneofus and Hablo are out of scope until nerdster is validated end-to-end.
+- **CFs deployed to production** — both nerdster14 and oneofusv22. `write` (lazy onCall)
+  and `write2` (transactional onRequest) live on both projects.
+- **Backfill run** — `bin/backfill_head.js` executed against prod for both projects.
+  All existing streams now have `head`/`headTime`.
+- **New Dart code deployed to Nerdster** — channels branch live. Clients now use `write2`.
+  `pubspec.yaml` version/build number bumped (not yet committed to repo).
+- **Full test suite passed** — `bin/run_all_tests.sh` green on both nerdster14 and
+  oneofusv22 after deployment.
 
-1. **Transition branch** — create a branch with:
-   - CF code from this branch (`write.js` as transactional `onCall` — same external
-     interface as today, new internals). This does not exist yet; the current `write.js` in
-     this branch is `onRequest` (`write2`), not `onCall`.
-   - Client code from `main` (old callable format).
-   - This represents the production state during the window after CF deploy and before all
-     clients have refreshed.
+### Next steps
 
-2. **Test transition branch on emulators** — run full test suite using main-branch client
-   against new CF code. This validates that existing clients keep working.
-
-3. **Backfill** — run `bin/backfill_head.js --dry-run` against prod nerdster, then run for
-   real. Must happen before the new CF goes live.
-
-4. **Deploy nerdster CFs** — deploy `write2` (+ `auth_nerdster.js`) to production.
-   Old `write` endpoint is unused by new clients but can be left or removed — nerdster14
-   is web-only so client refresh is near-instant.
-
-5. **Deploy oneofusv22 CFs** — deploy `write2` alongside old `write`. No backfill needed
-   yet (nerdster demo writes to fresh streams; existing Oneofus streams used by real users
-   continue using old `write`).
-
-### Testing the transition (two-checkout approach)
-
-No transition branch needed. Instead:
-
-- **Checkout A** (main branch) — run `run_all_tests.sh`. This runs the old Flutter client
-  code (onCall `write`, `{"data": {...}}` envelope). The test runner connects to whatever
-  emulators are on the standard ports.
-- **Checkout B** (channels branch) — start the emulators. They load channels-branch CF
-  code (transactional `write` onCall + `write2` onRequest).
-
-This exactly mirrors the production transition state: new CF already deployed, old clients
-still running. No branch mixing, no artificial intermediate branch.
-
-Prerequisite for this to work: nerdster's `write.js` on the channels branch must expose a
-transactional `write` (`onCall`) alongside `write2` (`onRequest`). Currently only `write2`
-exists; `write` was removed. Fix: extract the transaction core into a shared function
-callable from both wrappers, and re-register `write` as onCall in index.js.
-
-### Oneofus and Hablo
-
-Not upgrading yet. Oneofus phone app clients take time to refresh. Hablo has its own auth
-complexity. Both are deferred until nerdster is validated.
+- Commit the `pubspec.yaml` version bump to the channels branch.
+- Oneofus and Hablo Dart client upgrades — deferred. Oneofus phone clients take time to
+  refresh; Hablo has its own auth complexity. Both continue using the old `write` endpoint
+  indefinitely until upgraded.
 
 
 ## FURTHER QUESTIONS / CLARIFICATIONS
