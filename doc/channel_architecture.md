@@ -517,3 +517,89 @@ callable from both wrappers, and re-register `write` as onCall in index.js.
 
 Not upgrading yet. Oneofus phone app clients take time to refresh. Hablo has its own auth
 complexity. Both are deferred until nerdster is validated.
+
+
+## FURTHER QUESTIONS / CLARIFICATIONS
+
+Good morning,
+
+Reaquint yourself with what's going on.
+
+A couple of questions / clarifications:
+
+None of our tests against the emulator write to existing data, and that's the critical thing that needs to be tested. Correct?
+AI: Correct. The emulator tests always start fresh — demo identities (Lisa, Marge, etc.) write to brand-new streams that have no prior statements, so `head` is always null on first write, which is the genesis case. The transaction handles that correctly. The untested scenario is writing the *second* statement to a stream that already exists in Firestore but has no `head` field — i.e., exactly what every real user's stream looks like before backfill.
+
+
+I can do this by restoring an export with PROD data from my own network and making sure I can rate, diss, ... That's necessary, correct?
+AI: Yes, necessary. Restoring your own prod export to the emulator and attempting to write (rate, dis, etc.) against it is the right test. It exercises the code path where the stream doc exists, has existing statements, but `head` is null/missing — the critical pre-backfill case. The emulator's fresh-data tests don't cover this at all.
+
+
+Furthermore, it's expected that old or new Dart code running against old data that has not yet been backfilled will fail. Correct?
+I think that this is worth confirming, and so I'll plan to:
+- try and write to my own exported PROD data from both old and new code on un-backfilled data and expect both to fail.
+
+AI: Correct for the new code (write2 / transactional onCall). Missing `head` is treated as genesis (null), so a client sending `previous: <actual-last-token>` gets a 409 chain race, and a client sending `previous: null` would incorrectly succeed and fork the chain. Either way it's broken.
+
+The OLD code (un-backfilled data): works fine. It uses `orderBy time desc limit 1`, ignores `head` entirely, so missing `head` does not affect it.
+
+However there is a post-backfill problem with the old code: once backfill seeds `head` on all streams, any write through the old `write.js` (which doesn't update `head`) leaves `head` stale. The next `write2` call reads that stale `head`, gets a 409 chain race, and the transactional endpoint is broken. Every old-client write sabotages `head`.
+
+Fix applied: `oneofusv22/functions/write.js` now updates `head`/`headTime` after every successful write (while still using `orderBy` for the chain check). Both endpoints keep `head` current, so they are safe to run side by side.
+
+Confirming the failure on un-backfilled data with the new code is exactly the right test to run before backfilling prod.
+
+
+What's the difference between onRequest and onCall?
+AI: Both are Firebase Cloud Function HTTP endpoints. The difference is the protocol layer:
+
+`onCall` — Firebase callable protocol. The client uses the Firebase SDK (`FirebaseFunctions.instance.httpsCallable('write')`). The SDK automatically wraps the request body as `{"data": {...}}` and unwraps the response from `{"result": {...}}`. Errors come back as structured `HttpsError` objects. Auth tokens are attached automatically if the user is signed in to Firebase Auth.
+
+`onRequest` — plain HTTP. The client sends a raw POST with whatever body it wants and reads the raw response. No SDK envelope, no automatic auth. Our `CloudFunctionsWriter` uses this: it POSTs `{"statement": ..., "collection": ...}` and reads `{"token": ...}` directly.
+
+The callable protocol is convenient when you're already using the Firebase SDK and want structured error handling. The plain HTTP approach is simpler, more portable, and doesn't require the Firebase client SDK on the caller side.
+
+
+## FURTHER QUESTIONS / CLARIFICATIONS 2
+
+Reality:
+- we can't quickly upgrade all clients phone or webapp
+- we can quickly upgrade all CFs
+- nerdster uses the same Dart libraries to read from Oneofus and Nerdster
+- nerdster doesn't write to Oneofus
+- new clients will be broken trying to call write2 if it's not there.
+- write2 is transactional and depends on "head" being in the data.
+
+Updated plan:
+- upgrade write.js in both Nerdster and Oneofus to be lazy about "head"
+  - add it if it's missing
+  - keep it updated if it's there
+  - (not transactional)
+- push write.js (identical) to both projects
+- run the backfill without taking down either apps
+- at this point, all data streams should have correct "head" (barring unlikely transaction failures)
+- update both projects (one at a time) to use the new Dart libraries that use write2.js which:
+  - must have "head" exist on all streams
+  - is transactional.
+
+Testing:
+- in my local environment
+- export PROD data to emulators
+- run old Nerdster code from main branch and verify writes work
+- run the backfill script on the emulators
+- run old Nerdster code from main branch and verify writes work
+- run new Nerdster code from channels branch and verify writes work.  
+
+AI RESPONSE:
+
+The plan is sound. A few reactions:
+
+**The lazy init gap.** The fix to `oneofusv22/write.js` already updates `head` after every write, but it doesn't initialize `head` lazily when it's missing. The user's plan correctly identifies this gap: write.js also needs to fall back to `orderBy` when `head` is absent and seed it. Without that, the lazy write.js is only half-implemented.
+
+**Nerdster14's write.js already went the wrong direction.** The current `write` (onCall) in nerdster14 calls `writeCore`, which is fully transactional and treats missing `head` as genesis. That means it would fail for any old client writing to an un-backfilled stream. It needs to be converted to the lazy/non-transactional approach before deploying, otherwise backfill is a hard prerequisite for nerdster14's old endpoint too.
+
+**The files can and should be identical.** They were identical in main. The `makeWriteHandler` factory pattern introduced in nerdster14's channels branch caused the divergence, but that pattern only belongs in `write2`, not in the old `write` endpoint. The lazy write.js is a plain onCall handler and can be copy-identical across both projects.
+
+**Backfill is still required before write2 gets traffic.** Even with lazy init, inactive streams that never receive a write through the old endpoint will never get `head`. write2 would 409 on them. Backfill still needs to run before any client is pointed at write2 — it's just no longer a prerequisite for deploying the CF.
+
+**Testing plan is complete.** The key step is verifying that old code still works against backfilled data — it should, since orderBy doesn't use `head`. That's the regression check.

@@ -8,8 +8,8 @@
  *
  * ONE-OF-US.NET functions live in oneofusv22/functions/ and are deployed from there.
  *
- * Shared files (keep identical across nerdster14, oneofusv22, hablotengo):
- *   write.js, verify_util.js, jsonish_util.js, statement_fetcher.js, export.js
+ * Shared files (keep identical across nerdster14, oneofusv22):
+ *   write.js, write2.js, verify_util.js, jsonish_util.js, statement_fetcher.js, export.js
  *
  * Nerdster-only files:
  *   sign_in.js, fetch_images.js, magic_paste.js, core_logic.js,
@@ -24,9 +24,10 @@ if (admin.apps.length === 0) {
   admin.initializeApp();
 }
 
-const { handleWriteCallable, makeWriteHandler } = require('./write');
+const { handleWrite } = require('./write');
+const { makeWrite2Handler } = require('./write2');
 const { auth: nerdsterAuth } = require('./auth_nerdster');
-const handleWrite = makeWriteHandler(nerdsterAuth);
+const handleWrite2 = makeWrite2Handler(nerdsterAuth);
 const { handleSignIn } = require('./sign_in');
 const { handleExport } = require('./export');
 const { handleFetchImages } = require('./fetch_images');
@@ -34,16 +35,14 @@ const { handleMagicPaste } = require('./magic_paste');
 
 exports.write = onCall(async (request) => {
   try {
-    return await handleWriteCallable(request.data);
+    return await handleWrite(request.data);
   } catch (e) {
-    if (e.code === 409) throw new HttpsError('already-exists', e.message);
-    if (e.code === 400) throw new HttpsError('invalid-argument', e.message);
     throw new HttpsError('internal', e.message);
   }
 });
 
 exports.write2 = onRequest({ cors: true }, async (req, res) => {
-  await handleWrite(req, res);
+  await handleWrite2(req, res);
 });
 
 exports.fetchImages = onCall(async (request) => {
