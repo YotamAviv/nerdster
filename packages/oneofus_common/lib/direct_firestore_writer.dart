@@ -134,6 +134,11 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
         }
 
         transaction.set(docRef, jsonish.json);
+        transaction.set(
+          fireStatements.parent!,
+          {'head': jsonish.token, 'headTime': json['time']},
+          SetOptions(merge: true),
+        );
       });
 
       return statement;
@@ -173,6 +178,11 @@ class DirectFirestoreWriter<T extends Statement> implements StatementWriter<T> {
       }
 
       transaction.set(docRef, jsonish.json);
+      transaction.set(
+        fireStatements.parent!,
+        {'head': jsonish.token, 'headTime': timeString},
+        SetOptions(merge: true),
+      );
     });
   }
 }
