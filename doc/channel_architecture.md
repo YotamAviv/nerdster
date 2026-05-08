@@ -588,7 +588,10 @@ Testing:
 - run old Nerdster code from main branch and verify writes work
 - run the backfill script on the emulators
 - run old Nerdster code from main branch and verify writes work
-- run new Nerdster code from channels branch and verify writes work.  
+- run new Nerdster code from channels branch and verify writes work.
+
+PASSED (2026-05-08): manual test with exported PROD data against emulator confirmed
+all three steps work correctly.
 
 AI RESPONSE:
 
