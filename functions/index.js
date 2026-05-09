@@ -26,8 +26,8 @@ if (admin.apps.length === 0) {
 
 const { handleWrite } = require('./write');
 const { makeWrite2Handler } = require('./write2');
-const { auth: nerdsterAuth } = require('./auth_nerdster');
-const handleWrite2 = makeWrite2Handler(nerdsterAuth);
+const { auth: writeAuth } = require('./write_auth');
+const handleWrite2 = makeWrite2Handler(writeAuth);
 const { handleSignIn } = require('./sign_in');
 const { handleExport } = require('./export');
 const { handleFetchImages } = require('./fetch_images');

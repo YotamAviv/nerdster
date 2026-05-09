@@ -17,16 +17,16 @@
  * Body:
  * {
  *   "statement":  <Statement>,   // required
- *   "collection": <string>       // required — stream name, e.g. "statements" or "dis"
+ *   "streamName": <string>       // required — stream name, e.g. "statements" or "dis"
  * }
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * FIRESTORE PATH
  * ─────────────────────────────────────────────────────────────────────────────
- * {token(I)} / {collection} / statements / {token(statement)}
+ * Determined by schema.js per project.
  *
- * The stream doc {token(I)}/{collection} carries a `head` field (token of the
- * most recent statement) and `headTime` field (its ISO-8601 time).
+ * The stream doc carries a `head` field (token of the most recent statement)
+ * and `headTime` field (its ISO-8601 time).
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * RESPONSE
@@ -37,13 +37,14 @@
  * 500: unexpected server error
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * SHARED FILES (keep identical across nerdster14, oneofusv22)
+ * SHARED FILES (keep identical across nerdster, oneofus, hablotengo)
  * ─────────────────────────────────────────────────────────────────────────────
- * write2.js, verify_util.js, jsonish_util.js, statement_fetcher.js, export.js
+ * write2.js, verify_util.js
  */
 
 const admin = require('firebase-admin');
 const { verifyStatementSignature, statementToken, keyToken } = require('./verify_util');
+const { streamRef } = require('./schema');
 
 /**
  * Returns an HTTP request handler for the write2 endpoint.
@@ -56,14 +57,14 @@ function makeWrite2Handler(auth) {
     const authResult = await auth(req, res);
     if (!authResult) return;
 
-    const { statement, collection } = req.body ?? {};
+    const { statement, streamName } = req.body ?? {};
 
     if (!statement || typeof statement !== 'object') {
       res.status(400).json({ error: 'missing statement' });
       return;
     }
-    if (!collection || typeof collection !== 'string') {
-      res.status(400).json({ error: 'missing collection' });
+    if (!streamName || typeof streamName !== 'string') {
+      res.status(400).json({ error: 'missing streamName' });
       return;
     }
     if (!verifyStatementSignature(statement)) {
@@ -77,12 +78,12 @@ function makeWrite2Handler(auth) {
     const clientTime = statement['time'] ?? null;
 
     const db = admin.firestore();
-    const streamRef = db.collection(iToken).doc(collection);
-    const statementsRef = streamRef.collection('statements');
+    const ref = streamRef(db, iToken, streamName);
+    const statementsRef = ref.collection('statements');
 
     try {
       await db.runTransaction(async (tx) => {
-        const streamDoc = await tx.get(streamRef);
+        const streamDoc = await tx.get(ref);
         const currentHead = streamDoc.exists ? (streamDoc.data().head ?? null) : null;
         const currentHeadTime = streamDoc.exists ? (streamDoc.data().headTime ?? null) : null;
 
@@ -98,7 +99,7 @@ function makeWrite2Handler(auth) {
         }
 
         tx.set(statementsRef.doc(token), statement);
-        tx.set(streamRef, { head: token, headTime: clientTime }, { merge: true });
+        tx.set(ref, { head: token, headTime: clientTime }, { merge: true });
       });
     } catch (e) {
       if (e.code === 409) {
@@ -114,7 +115,7 @@ function makeWrite2Handler(auth) {
       return;
     }
 
-    console.log(`[write2] token=${token} issuer=${iToken} stream=${collection}`);
+    console.log(`[write2] token=${token} issuer=${iToken} stream=${streamName}`);
     res.status(200).json({ token });
   };
 }

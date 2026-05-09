@@ -59,7 +59,7 @@ class CloudFunctionsWriter<T extends Statement> implements StatementWriter<T> {
     final response = await http.post(
       Uri.parse(writeUrl),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'statement': jsonish.json, 'collection': streamId}),
+      body: jsonEncode({'statement': jsonish.json, 'streamName': streamId}),
     );
     if (response.statusCode != 200) {
       debugPrint('CloudFunctionsWriter._callCF: ${response.statusCode} ${response.body}');
