@@ -70,25 +70,57 @@ enum ContentVerb {
   final String pastTense;
 }
 
+enum HabloVerb {
+  enter('enter', 'entered'),
+  setField('set', 'set');
+
+  const HabloVerb(this.label, this.pastTense);
+  final String label;
+  final String pastTense;
+}
+
 /// This is used for lots of stuff, which makes it seem kludgey and problemnatic.
 /// - trust statements
 /// - content statements
 /// - subjects
 /// - keys
 class Jsonish {
-  /// ⚠️  CRITICAL — MUST STAY IN SYNC WITH JAVASCRIPT:
-  ///   nerdster14/functions/jsonish_util.js  →  key2order
+  /// Key ordering for canonical JSON serialization. Determines token identity.
   ///
-  /// The JS key2order integers must exactly match indexOf() positions in this list.
-  /// After any change here, run the 'print key2order' test and paste into jsonish_util.js:
+  /// ⚠️  CRITICAL — MUST STAY IN SYNC WITH JAVASCRIPT AND PRODUCTION:
+  ///   nerdster14/functions/jsonish_util.js  →  key2order
+  ///   oneofusv22/functions/jsonish_util.js  →  key2order
+  ///   hablotengo/functions/jsonish_util.js  →  key2order
+  ///
+  /// Reordering or removing entries breaks tokens for all existing signed statements
+  /// in production — tokens are SHA1 of the canonical JSON, so any key order change
+  /// produces a different token for the same statement.
+  ///
+  /// After any change here, run the 'print key2order' test and paste into all three jsonish_util.js:
   ///   flutter test packages/oneofus_common/test/jsonish_test.dart --name "print key2order"
+  ///
+  /// ORDERING RULES (see compareKeys):
+  ///   1. Keys in this list appear in list order.
+  ///   2. Keys NOT in this list appear alphabetically, after all known keys.
+  ///   3. 'signature' is always last (special-cased in order()).
+  ///   4. These rules apply recursively to every nested object.
+  ///
+  /// The intended "sentence" shape of a statement:
+  ///   { statement, time, I, <verb>: <subject>, with: { ... }, previous, signature }
+  /// Verbs (trust, block, replace, delegate, clear, enter, set, …) occupy positions
+  /// 3–15, so they always appear after 'I' and before 'with'.
+  /// Unknown keys inside nested objects (e.g. tech, value, preferred inside 'with')
+  /// sort alphabetically among themselves — no position assignment needed.
+  ///
+  /// DO NOT reorder or remove entries — that would change tokens for existing statements.
+  /// New verb-position entries must be added with care; see the 'enter' override below.
   static final List<String> keysInOrder = [
     'statement',
     'time',
     'I',
     ...TrustVerb.values.map((e) => e.label),
     ...ContentVerb.values.map((e) => e.label),
-    'set', // hablotengo: set entry or field (not used here, kept in sync)
+    ...HabloVerb.values.map((e) => e.label),
     'with',
     'other',
     'moniker',
@@ -109,8 +141,9 @@ class Jsonish {
     'signature',
   ];
   static const JsonEncoder encoder = JsonEncoder.withIndent('  ');
-  static final Map<String, int> key2order =
-      Map.unmodifiable({for (var e in keysInOrder) e: keysInOrder.indexOf(e)});
+  static final Map<String, int> key2order = Map.unmodifiable({
+    for (var e in keysInOrder) e: keysInOrder.indexOf(e),
+  });
 
   static int compareKeys(String key1, String key2) {
     // Keys we know have an order.
