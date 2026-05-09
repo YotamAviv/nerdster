@@ -8,7 +8,6 @@ import 'package:nerdster/app.dart' as app;
 import 'package:nerdster/config.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
@@ -33,42 +32,37 @@ void main() {
     );
     await OneofusFire.init();
 
-    // Connect to Emulators
-    fireChoice = FireChoice.emulator;
     // On Android emulator, the host machine is 10.0.2.2, not localhost.
     final host = defaultTargetPlatform == TargetPlatform.android ? '10.0.2.2' : 'localhost';
     FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
     OneofusFire.firestore.useFirestoreEmulator(host, 8081);
 
-    // Configure for Emulator
-    final oneofusUrl = 'http://$host:5002/one-of-us-net/us-central1/export';
-    final nerdsterUrl = 'http://$host:5001/nerdster/us-central1/export';
-
-    FirebaseConfig.registerRedirect('https://export.one-of-us.net', oneofusUrl);
-    FirebaseConfig.registerRedirect('https://export.nerdster.org', nerdsterUrl);
-
-    // Configure Fetcher Endpoints
-    // Fetcher.initEndpoint(kOneofusDomain,
-    //    const Endpoint('http', '127.0.0.1', 'one-of-us-net/us-central1/export', port: 5002));
-    // Fetcher.initEndpoint(kNerdsterDomain,
-    //    const Endpoint('http', '127.0.0.1', 'nerdster/us-central1/export', port: 5001));
+    FirebaseConfig.registerRedirect('https://export.one-of-us.net', 'http://$host:5002/one-of-us-net/us-central1/export');
+    FirebaseConfig.registerRedirect('https://export.nerdster.org', 'http://$host:5001/nerdster/us-central1/export');
 
     // Initialize Statements
     TrustStatement.init();
     ContentStatement.init();
     DismissStatement.init();
 
-    // Register FireFactory
-    FireFactory.register(kOneofusDomain, OneofusFire.firestore, null);
-    FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, null);
+    channelFactory = ChannelFactory(FireChoice.emulator);
+    channelFactory.register(kNerdsterDomain,
+        exportUrl: 'https://export.nerdster.org',
+        functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
+        emulatorExportUrl: 'http://$host:5001/nerdster/us-central1/export',
+        emulatorFunctionsUrl: 'http://$host:5001/nerdster/us-central1',
+        firestore: FirebaseFirestore.instance);
+    channelFactory.register(kOneofusDomain,
+        exportUrl: 'https://export.one-of-us.net',
+        functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
+        emulatorExportUrl: 'http://$host:5002/one-of-us-net/us-central1/export',
+        emulatorFunctionsUrl: 'http://$host:5002/one-of-us-net/us-central1',
+        firestore: OneofusFire.firestore);
   });
 
   group('UI Integration Tests', () {
     testWidgets('Verify ContentView loads and displays monikers', (WidgetTester tester) async {
-      // 1. Setup environment for Emulator
-      fireChoice = FireChoice.emulator;
-
-      // Lisa's Identity from demoData.js
+        // Lisa's Identity from demoData.js
       final lisaToken = getToken(lisaIdentity);
       print('Signing in as Lisa: $lisaToken');
 
@@ -79,7 +73,7 @@ void main() {
       await tester.pumpWidget(const app.NerdsterApp());
 
       // Wait for the pipeline to run and UI to settle
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+      await tester.pumpAndSettle(const Duration(seconds: 10));
 
       // 3. Verify UI Components
       final contentCards = find.byType(ContentCard);

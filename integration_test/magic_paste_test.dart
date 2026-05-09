@@ -6,9 +6,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/logic/metadata_service.dart' as metadata_service;
-import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/firebase_options.dart';
 
 /// Loads test cases from integration_test/magic_paste_cases.json.
@@ -34,7 +32,6 @@ void main() {
       FirebaseFunctions.instance.useFunctionsEmulator(host, 5001);
       FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
     }
-    FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
   });
 
   testWidgets('Magic Paste: all cases', (WidgetTester tester) async {

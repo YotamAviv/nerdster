@@ -29,8 +29,10 @@ fi
 echo ""
 
 # 2. Unit Tests
+# --verbose fixes exit-255 in non-TTY; grep strips Flutter tool internals (lines starting with '[')
 echo "=== Running Flutter Unit Tests ==="
-if flutter test --no-pub; then
+flutter test --no-pub --verbose 2>&1 | grep -v "^\["
+if [ ${PIPESTATUS[0]} -eq 0 ]; then
     PASSED_TESTS+=("Flutter unit tests")
 else
     FAILED_TESTS+=("Flutter unit tests")
@@ -38,7 +40,8 @@ fi
 echo ""
 
 echo "=== Running oneofus_common Package Tests ==="
-if flutter test --no-pub packages/oneofus_common/; then
+flutter test --no-pub --verbose packages/oneofus_common/ 2>&1 | grep -v "^\["
+if [ ${PIPESTATUS[0]} -eq 0 ]; then
     PASSED_TESTS+=("oneofus_common tests")
 else
     FAILED_TESTS+=("oneofus_common tests")

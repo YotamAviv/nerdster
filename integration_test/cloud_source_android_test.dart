@@ -3,11 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/io/fire_factory.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/config.dart';
+import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/models/content_statement.dart' show kNerdsterDomain;
 import 'package:oneofus_common/trust_statement.dart' show kOneofusDomain;
 import 'package:nerdster/dev/cloud_source_suite.dart';
@@ -26,12 +25,21 @@ void main() {
     final host = defaultTargetPlatform == TargetPlatform.android ? '10.0.2.2' : '127.0.0.1';
 
     FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
-    FirebaseFunctions.instance.useFunctionsEmulator(host, 5001);
     OneofusFire.firestore.useFirestoreEmulator(host, 8081);
-    OneofusFire.functions.useFunctionsEmulator(host, 5002);
 
-    FireFactory.register(kNerdsterDomain, FirebaseFirestore.instance, FirebaseFunctions.instance);
-    FireFactory.register(kOneofusDomain, OneofusFire.firestore, OneofusFire.functions);
+    channelFactory = ChannelFactory(FireChoice.emulator);
+    channelFactory.register(kNerdsterDomain,
+        exportUrl: 'https://export.nerdster.org',
+        functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
+        emulatorExportUrl: 'http://$host:5001/nerdster/us-central1/export',
+        emulatorFunctionsUrl: 'http://$host:5001/nerdster/us-central1',
+        firestore: FirebaseFirestore.instance);
+    channelFactory.register(kOneofusDomain,
+        exportUrl: 'https://export.one-of-us.net',
+        functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
+        emulatorExportUrl: 'http://$host:5002/one-of-us-net/us-central1/export',
+        emulatorFunctionsUrl: 'http://$host:5002/one-of-us-net/us-central1',
+        firestore: OneofusFire.firestore);
 
     FirebaseConfig.registerRedirect(
       'https://export.one-of-us.net', 
