@@ -16,11 +16,16 @@ class _Registration {
   final String functionsUrl;
   final String writeEndpoint;
   final FirebaseFirestore? firestore;
-  const _Registration(
-      {required this.exportUrl,
-      required this.functionsUrl,
-      this.writeEndpoint = 'write2',
-      this.firestore});
+  final Map<String, dynamic> Function()? writeAuthHook;
+  final Map<String, dynamic> Function()? readAuthHook;
+  const _Registration({
+    required this.exportUrl,
+    required this.functionsUrl,
+    this.writeEndpoint = 'write2',
+    this.firestore,
+    this.writeAuthHook,
+    this.readAuthHook,
+  });
 }
 
 /// The single entry point for all statement channels.
@@ -52,6 +57,8 @@ class ChannelFactory {
     String? emulatorFunctionsUrl,
     String writeEndpoint = 'write2',
     FirebaseFirestore? firestore,
+    Map<String, dynamic> Function()? writeAuthHook,
+    Map<String, dynamic> Function()? readAuthHook,
   }) {
     final resolvedExport =
         fireChoice == FireChoice.emulator && emulatorExportUrl != null
@@ -66,6 +73,8 @@ class ChannelFactory {
       functionsUrl: resolvedFunctions,
       writeEndpoint: writeEndpoint,
       firestore: firestore,
+      writeAuthHook: writeAuthHook,
+      readAuthHook: readAuthHook,
     );
   }
 
@@ -105,8 +114,13 @@ class ChannelFactory {
         allStreams: streams,
         verifier: OouVerifier(),
         skipVerify: skipVerify,
+        authHook: reg.readAuthHook,
       );
-      final writer = CloudFunctionsWriter<T>('${reg.functionsUrl}/${reg.writeEndpoint}', streamKey);
+      final writer = CloudFunctionsWriter<T>(
+        '${reg.functionsUrl}/${reg.writeEndpoint}',
+        streamKey,
+        authHook: reg.writeAuthHook,
+      );
       return CachedSource<T>(source, writer);
     }
   }

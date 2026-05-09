@@ -31,6 +31,7 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final StatementVerifier verifier;
   final ValueListenable<bool>? skipVerify;
   final Json? paramsOverride;
+  final Map<String, dynamic> Function()? authHook;
   final Map<String, SourceError> _errors = {};
 
   static const Json _paramsProto = {
@@ -50,6 +51,7 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     required this.verifier,
     this.skipVerify,
     this.paramsOverride,
+    this.authHook,
   })  : statementType = Statement.type<T>(),
         client = client ?? http.Client();
 
@@ -72,6 +74,12 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     }
     if (streamId != 'statements') {
       params['subcollection'] = '$streamId/statements';
+    }
+    if (authHook != null) {
+      for (final entry in authHook!().entries) {
+        final value = entry.value;
+        params[entry.key] = value is String ? value : jsonEncode(value);
+      }
     }
     params['spec'] = jsonEncode(spec);
 

@@ -9,10 +9,11 @@ import 'package:oneofus_common/statement_source.dart';
 class CloudFunctionsWriter<T extends Statement> implements StatementWriter<T> {
   final String writeUrl;
   final String streamId;
+  final Map<String, dynamic> Function()? authHook;
 
   final Map<String, Future<void>> _writeQueues = {};
 
-  CloudFunctionsWriter(this.writeUrl, this.streamId);
+  CloudFunctionsWriter(this.writeUrl, this.streamId, {this.authHook});
 
   @override
   Future<T> push(Json json, StatementSigner signer,
@@ -59,7 +60,11 @@ class CloudFunctionsWriter<T extends Statement> implements StatementWriter<T> {
     final response = await http.post(
       Uri.parse(writeUrl),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'statement': jsonish.json, 'streamName': streamId}),
+      body: jsonEncode({
+        'statement': jsonish.json,
+        'streamName': streamId,
+        if (authHook != null) ...authHook!(),
+      }),
     );
     if (response.statusCode != 200) {
       debugPrint('CloudFunctionsWriter._callCF: ${response.statusCode} ${response.body}');
