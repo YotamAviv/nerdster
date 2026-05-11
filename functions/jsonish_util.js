@@ -59,7 +59,7 @@ const key2order = {
 /**
  * Computes SHA1 hash of a string.
  */
-async function computeSHA1(str) {
+function computeSHA1(str) {
   return crypto.createHash('sha1').update(str).digest('hex');
 }
 
@@ -98,10 +98,10 @@ function order(thing) {
 /**
  * Generates a unique token for a thing (string or object).
  */
-async function getToken(input) {
+function getToken(input) {
   if (typeof input === 'string') return input;
   const ordered = order(input);
-  return await computeSHA1(JSON.stringify(ordered, null, 2));
+  return computeSHA1(JSON.stringify(ordered, null, 2));
 }
 
 /**
