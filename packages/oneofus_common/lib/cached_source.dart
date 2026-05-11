@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:oneofus_common/distincter.dart' as d;
 import 'package:oneofus_common/statement.dart';
 import 'package:flutter/foundation.dart';
 import 'package:oneofus_common/jsonish.dart';
@@ -101,7 +100,7 @@ class CachedSource<T extends Statement> implements StatementChannel<T> {
     }
 
     history.insert(0, statement);
-    _fullCache[token] = d.distinct(history).toList();
+    _fullCache[token] = history;
   }
 
   @override

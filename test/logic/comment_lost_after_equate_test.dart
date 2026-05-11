@@ -72,8 +72,8 @@ void main() {
       final delegateResolver = DelegateResolver(graph);
 
       final appSource =
-          channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
-      final contentPipeline = ContentPipeline(delegateSource: appSource);
+          channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
+      final contentPipeline = ContentPipeline(myDelegateSource: appSource, peerDelegateSource: appSource);
 
       final Set<DelegateKey> keysToFetch = {};
       for (final identity in graph.orderedKeys) {
@@ -82,6 +82,7 @@ void main() {
       keysToFetch.add(meDelegate.id);
 
       final delegateContent = await contentPipeline.fetchDelegateContent(
+        const [],
         keysToFetch,
         delegateResolver: delegateResolver,
         graph: graph,
@@ -176,8 +177,8 @@ void main() {
     final graph = await TrustPipeline(trustSource).build(userB.id);
     final delegateResolver = DelegateResolver(graph);
 
-    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
-    final contentPipeline = ContentPipeline(delegateSource: appSource);
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
+    final contentPipeline = ContentPipeline(myDelegateSource: appSource, peerDelegateSource: appSource);
 
     final Set<DelegateKey> keysToFetch = {};
     for (final identity in graph.orderedKeys) {
@@ -186,6 +187,7 @@ void main() {
     keysToFetch.addAll([delegateB1.id, delegateB2.id]);
 
     final delegateContent = await contentPipeline.fetchDelegateContent(
+      const [],
       keysToFetch,
       delegateResolver: delegateResolver,
       graph: graph,

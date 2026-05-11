@@ -6,35 +6,42 @@ import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/statement_source.dart';
 
 class ContentPipeline {
-  final StatementSource<ContentStatement> delegateSource;
+  /// Full stream source (content + dis) — used for the signed-in user's own delegate keys.
+  final StatementSource<ContentStatement> myDelegateSource;
+
+  /// Content-only source (excludes dis statements at the CF) — used for peer delegate keys.
+  final StatementSource<ContentStatement> peerDelegateSource;
 
   ContentPipeline({
-    required this.delegateSource,
+    required this.myDelegateSource,
+    required this.peerDelegateSource,
   });
 
-  /// Fetches delegate content for specific delegate keys.
+  /// Fetches delegate content. [myDelegateKeys] are fetched via the full stream source;
+  /// [peerDelegateKeys] are fetched via the content-only source.
   Future<Map<DelegateKey, List<ContentStatement>>> fetchDelegateContent(
-    Iterable<DelegateKey> keys, {
+    Iterable<DelegateKey> myDelegateKeys,
+    Iterable<DelegateKey> peerDelegateKeys, {
     required DelegateResolver delegateResolver,
     required TrustGraph graph,
   }) async {
-    final Map<String, String?> delegateFetchMap = {};
-    final Set<DelegateKey> knownDelegateKeys = {};
+    final allKeys = [...myDelegateKeys, ...peerDelegateKeys];
+    final Set<DelegateKey> knownDelegateKeys = allKeys.toSet();
 
-    for (final DelegateKey key in keys) {
-      // We need to find the constraint for this delegate.
-      // The DelegateResolver stores constraints by key.
-      delegateFetchMap[key.value] = delegateResolver.getConstraintForDelegate(key);
-      knownDelegateKeys.add(key);
-    }
+    Map<String, String?> fetchMap(Iterable<DelegateKey> keys) => {
+      for (final DelegateKey key in keys)
+        key.value: delegateResolver.getConstraintForDelegate(key),
+    };
 
-    // 3. Fetch Content
-    final Map<String, List<ContentStatement>> rawDelegateContent =
-        await delegateSource.fetch(delegateFetchMap);
+    final myMap = fetchMap(myDelegateKeys);
+    final peerMap = fetchMap(peerDelegateKeys);
 
-    // 4. Verify
+    final rawContent = <String, List<ContentStatement>>{};
+    if (myMap.isNotEmpty) rawContent.addAll(await myDelegateSource.fetch(myMap));
+    if (peerMap.isNotEmpty) rawContent.addAll(await peerDelegateSource.fetch(peerMap));
+
     final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
-    for (final String keyStr in rawDelegateContent.keys) {
+    for (final String keyStr in rawContent.keys) {
       if (!knownDelegateKeys.contains(DelegateKey(keyStr))) {
         throw 'Pipeline Error: Delegate Source returned content from unauthorized key: $keyStr';
       }
@@ -44,7 +51,7 @@ class ContentPipeline {
         throw 'Pipeline Error: Source returned content from blocked identity: ${identityKey.value}';
       }
 
-      delegateContent[DelegateKey(keyStr)] = UnmodifiableListView(rawDelegateContent[keyStr]!);
+      delegateContent[DelegateKey(keyStr)] = UnmodifiableListView(rawContent[keyStr]!);
     }
 
     return delegateContent;

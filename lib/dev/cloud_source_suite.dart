@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
-import 'package:nerdster/demotest/cases/multi_stream_scenario.dart';
 import 'package:nerdster/demotest/cases/concurrent_write_scenario.dart';
 import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:oneofus_common/cloud_functions_source.dart';
 import 'package:oneofus_common/oou_verifier.dart';
+import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:nerdster/config.dart';
 import 'package:nerdster/models/content_statement.dart';
@@ -41,6 +41,7 @@ Future<void> runCloudSourceVerification() async {
         
         final source = CloudFunctionsSource<TrustStatement>(
           baseUrl: url,
+          statementType: Statement.type<TrustStatement>(),
           paramsOverride: p.params,
           verifier: OouVerifier(),
         );
@@ -50,10 +51,6 @@ Future<void> runCloudSourceVerification() async {
       }
     }
     
-    debugPrint('--- Testing Multi-Stream Scenario ---');
-    await multiStreamScenario(url: url);
-    debugPrint('Multi-Stream Scenario Verified!');
-
     debugPrint('--- Testing Concurrent Write Scenario ---');
     await concurrentWriteScenario();
     debugPrint('Concurrent Write Scenario Verified!');

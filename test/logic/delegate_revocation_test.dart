@@ -16,7 +16,7 @@ void main() {
   setUp(() {
     fire = FakeFirebaseFirestore();
     setUpTestRegistry(firestore: fire);
-    contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
+    contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
   });
 
   Future<void> upload(String token, Statement s) async {
@@ -137,10 +137,12 @@ void main() {
 
     // 4. Fetch content
     final pipeline = ContentPipeline(
-      delegateSource: contentSource,
+      myDelegateSource: contentSource,
+      peerDelegateSource: contentSource,
     );
     final delegateKey = delegate.id;
     final delegateContent = await pipeline.fetchDelegateContent(
+      const [],
       {delegateKey},
       delegateResolver: resolver,
       graph: tg,
@@ -177,10 +179,12 @@ void main() {
     expect(resolver.getConstraintForDelegate(delegate.id), equals(kSinceAlways));
 
     final pipeline = ContentPipeline(
-      delegateSource: contentSource,
+      myDelegateSource: contentSource,
+      peerDelegateSource: contentSource,
     );
     final delegateKey = delegate.id;
     final delegateContent = await pipeline.fetchDelegateContent(
+      const [],
       {delegateKey},
       delegateResolver: resolver,
       graph: tg,
@@ -251,10 +255,12 @@ void main() {
 
     // Verify content filtering
     final pipeline = ContentPipeline(
-      delegateSource: contentSource,
+      myDelegateSource: contentSource,
+      peerDelegateSource: contentSource,
     );
     final delegateKey = delegate.id;
     final delegateContent = await pipeline.fetchDelegateContent(
+      const [],
       {delegateKey},
       delegateResolver: resolver,
       graph: tg,
@@ -354,8 +360,9 @@ void main() {
 
     expect(resolver.getConstraintForDelegate(delegate.id), equals(d1.token));
 
-    final pipeline = ContentPipeline(delegateSource: contentSource);
+    final pipeline = ContentPipeline(myDelegateSource: contentSource, peerDelegateSource: contentSource);
     final delegateContent = await pipeline.fetchDelegateContent(
+      const [],
       {delegate.id},
       delegateResolver: resolver,
       graph: tg,

@@ -18,7 +18,6 @@ import 'package:collection/collection.dart';
 import 'package:nerdster/ui/dialogs/check_signed_in.dart';
 import 'package:nerdster/ui/crypto_shield_button.dart';
 import 'package:nerdster/fire_choice.dart';
-import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/sign_in_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -611,7 +610,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                       source: widget.controller.contentSource,
                       labeler: labeler,
                       constraints: const BoxConstraints(maxWidth: 600),
-                      disSource: channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis'])),
+                      ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Row(

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:oneofus_common/distincter.dart' as d;
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/oou_verifier.dart';
 import 'package:oneofus_common/statement.dart';
@@ -133,9 +132,7 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
           }
         }
 
-        // Apply distinct
-        final List<T> distinctChain = d.distinct(chain).toList();
-        results[token] = List.unmodifiable(distinctChain);
+        results[token] = List.unmodifiable(chain);
       } catch (e) {
         if (e is SourceError) {
           _errors.add(e);

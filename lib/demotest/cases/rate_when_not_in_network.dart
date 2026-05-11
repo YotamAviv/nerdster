@@ -80,9 +80,10 @@ Future<(DemoIdentityKey, DemoDelegateKey)> rateWhenNotInNetwork() async {
     final graph = await trustPipeline.build(pov);
     final delegateResolver = DelegateResolver(graph);
 
-    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
     final contentPipeline = ContentPipeline(
-      delegateSource: appSource,
+      myDelegateSource: appSource,
+      peerDelegateSource: appSource,
     );
 
     // Fetch Content
@@ -96,6 +97,7 @@ Future<(DemoIdentityKey, DemoDelegateKey)> rateWhenNotInNetwork() async {
     delegateKeysToFetch.add(meDelegate);
 
     final delegateContent = await contentPipeline.fetchDelegateContent(
+      const [],
       delegateKeysToFetch,
       delegateResolver: delegateResolver,
       graph: graph,

@@ -81,3 +81,78 @@ Integration tests that use the emulator may cause confusion: if the Nerdster emu
 5. **`CloudFunctionsSource` / `allStreams`**: Remove the `allStreams: ['statements', 'dis']` multi-stream revokeAt logic — no longer needed with a single stream.
 
 6. **Testing**: Run existing tests as-is — they should all pass. This change must not alter any dis/rate behavior.
+
+## Optimistic concurrency issues
+
+- For the signed in user, we need dis and rate statements. We should fetch the entire stream, which will give us the head, no problem. We can write rate or dis statements to it and keep the head maintained correctly.
+- For other users, we don't need the disses, and we won't be writing at all. We don't need the head; that said, it wouldn't hurt to have it. Or maybe use a read-only channel.
+
+This is non-trivial. Here is the solution.
+
+### The mixed-stream head problem
+
+The naive implementation creates a `CachedSource<ContentStatement>` and a `CachedSource<DismissStatement>` for the same Firestore stream. Each instance tracks its own "head" — the token of the most-recently-seen statement of its type. After a dis statement is written, the content channel's cached head is stale (it still points to whatever content statement was last, not to the dis statement that just landed). The next content write uses that stale head as `previous`, and Firestore rejects it with an optimistic-locking failure.
+
+### FilteredChannel architecture
+
+The fix is one shared root per stream and lightweight typed facades over it.
+
+**Root channel** — `CachedSource<Statement>` (one per domain/stream-key): fetches and caches all statement types together. Its `_fullCache[issuerToken]` always reflects the true linked list, and head tracking is always correct because every write goes through this single instance.
+
+**`FilteredChannel<T>`** — a stateless facade:
+- `fetch()` delegates to the root and filters the result with `whereType<T>()`, then applies `d.distinct()` within that type.
+- `push()` delegates directly to the root. The root's push queue serializes all writes per issuer, so the head is always up to date regardless of which typed facade initiated the write.
+
+`ChannelFactory.getChannel<T>(domain, stream)` looks up (or creates) the root and wraps it in a fresh `FilteredChannel<T>`. Multiple callers for the same stream all share the same underlying root.
+
+### Distinct key collision
+
+`distinct()` keeps only the latest statement per (issuer, subject) pair. With a mixed stream, a `ContentStatement` rating subject S and a `DismissStatement` dismissing subject S both produce the same key (`iToken:subjectToken`) — so one silently clobbers the other. The fix: prefix the key with the statement type.
+
+- `ContentStatement.getDistinctSignature` → `content:iToken:subjects...`
+- `DismissStatement.getDistinctSignature` → `dis:iToken:subjectToken`
+
+This also matters on the server side. The CF's `makedistinct` function uses a subject-token-only key (no statement type) and iterates only over a hardcoded verb list that does not include `dismiss` — so DismissStatements were silently dropped when distinct was applied server-side. The root channel avoids this entirely by passing `distinct=false` to the CF. All distinct logic happens client-side in `FilteredChannel.fetch()`, where it is type-aware and correct.
+
+The CF had a secondary bug: the boolean param `distinct=false` was passed as the string `'false'`, which is truthy in JavaScript. Fixed by checking `distinct && distinct !== 'false'`.
+
+
+AI: TODO: Explain what is fetched from the server (CFs) to render the content stream on the Nerdster, specifically if we only fetch dismiss statements for some delegate keys while fetching the entire streams of content and dis statements for others/
+
+The short answer is: we fetch full streams (content + dis) for everyone, and filter client-side. There is no per-key differentiation at the server.
+
+`feed_controller.dart` creates two channels over the same stream:
+
+- `contentSource = getChannel<ContentStatement>(kNerdsterDomain, 'statements')`
+- `disSource   = getChannel<DismissStatement>  (kNerdsterDomain, 'statements')`
+
+Both are `FilteredChannel<T>` facades over the **same** `CachedSource<Statement>` root (same domain + streamKey → same entry in `_rootChannels`). The root fetches all statement types from the CF for every delegate key it is asked about.
+
+`contentSource.fetch(allDelegateKeys)` — called for every delegate of every trusted identity in the PoV graph — pulls the full mixed stream from the CF and the root caches it. `FilteredChannel<ContentStatement>` then applies `whereType<ContentStatement>()` locally; the peer's DismissStatements are fetched but silently discarded.
+
+`disSource.fetch(myDelegateKeys)` — called only for the active user's own delegate keys — goes to the same root. If those keys were already in the root's cache from the content fetch, no CF call is made at all. The FilteredChannel then applies `whereType<DismissStatement>()` to extract only the active user's dis statements.
+
+So the server always sees full-stream requests. The distinction between "only fetch dis for some keys" lives entirely client-side: `whereType` on the FilteredChannel determines which statement type each caller sees, and the shared root ensures no duplicate CF calls are made for keys that appear in both fetches.
+
+## TAKE 2
+
+The write-head problem only applies when the **same key is written through multiple channels**. Peer delegate keys are never written to. That is the unlock.
+
+Split the delegate keys into two groups and give each group its own root:
+
+**My delegate keys (signed-in user's delegates)**
+- One root — full stream, no `excludeTypes`. Writable.
+- `FilteredChannel<ContentStatement>` over this root gives content.
+- `FilteredChannel<DismissStatement>` over this root gives dis.
+- Both share the root, so head tracking is always correct for writes.
+
+**Peer delegate keys (everyone else)**
+- A separate root — passes `excludeTypes=['org.nerdster.dis']` to the CF. Read-only.
+- `FilteredChannel<ContentStatement>` over this root gives content only.
+- No dis statements are fetched or cached. No writes ever happen here, so a stale head is irrelevant.
+
+**What changes**
+
+`ChannelFactory`: include `excludeTypes` in the root cache key (e.g. `'$domain/$streamKey:excl=${excludeTypes.join(",")}'`). This naturally produces two separate roots for the same Firestore stream when called with different `excludeTypes` values. Writes always go through the root that was created without `excludeTypes` (my keys), so head tracking stays correct.
+
+`feed_controller`: split `delegateKeysToFetch` into `myDelegateKeys` and `peerDelegateKeys`. Pass both sets to `ContentPipeline.fetchDelegateContent`, which takes two sources (`myDelegateSource`, `peerDelegateSource`) and routes each key set to the appropriate source internally. There is no merge step outside the pipeline.

@@ -21,7 +21,7 @@ void main() {
 
     // 2. Find Lisa's rating of "Art"
     // We need to fetch statements authored by Lisa's delegate
-    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements');
     final Map<String, List<ContentStatement>> lisaStatementsMap =
         await appSource.fetch({lisaD!.token: null});
     final List<ContentStatement> lisaStatements = lisaStatementsMap[lisaD.token] ?? [];
@@ -89,7 +89,8 @@ void main() {
         ContentResult(), 'nerdster'); // Empty content map for follow net is fine for this test
 
     final ContentPipeline contentPipeline = ContentPipeline(
-      delegateSource: appSource,
+      myDelegateSource: appSource,
+      peerDelegateSource: appSource,
     );
 
     // Fetch content map for valid delegates
@@ -99,6 +100,7 @@ void main() {
 
     final Map<DelegateKey, List<ContentStatement>> delegateContent =
         await contentPipeline.fetchDelegateContent(
+      const [],
       allDelegateKeys,
       delegateResolver: delegateResolver,
       graph: graph,

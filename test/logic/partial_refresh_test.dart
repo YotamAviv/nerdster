@@ -60,7 +60,9 @@ void main() {
       shakes!.canonical.value,
       'forever',
     );
-    await channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']).push(json, signer);
+    final disChannel = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements');
+    await disChannel.fetch({lisaDelegate.token: null});
+    await disChannel.push(json, signer);
 
     // 4. Update controller (Local Logic Update)
     await controller.notify();

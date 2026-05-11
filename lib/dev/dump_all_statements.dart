@@ -61,7 +61,7 @@ class DumpAllStatements extends StatelessWidget {
 Future<void> dump(String domain, String token) async {
   final src = (domain == kOneofusDomain)
       ? channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements')
-      : channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
+      : channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
   Map<String, List<Statement>> result = await src.fetch({token: null});
   Iterable<Statement> statements = result[token] ?? [];
   for (Statement statement in statements) {

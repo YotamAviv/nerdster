@@ -29,13 +29,15 @@ void main() {
     final FollowNetwork followNetwork =
         reduceFollowNetwork(graph, delegateResolver, ContentResult(), kFollowContextNerdster);
 
-    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
     final ContentPipeline contentPipeline = ContentPipeline(
-      delegateSource: appSource,
+      myDelegateSource: appSource,
+      peerDelegateSource: appSource,
     );
 
     final Map<DelegateKey, List<ContentStatement>> delegateContent =
         await contentPipeline.fetchDelegateContent(
+      const [],
       <DelegateKey>{lisaD!.id},
       delegateResolver: delegateResolver,
       graph: graph,

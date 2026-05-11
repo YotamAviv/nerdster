@@ -5,6 +5,7 @@ import 'package:oneofus_common/cloud_functions_source.dart';
 import 'package:oneofus_common/cloud_functions_writer.dart';
 import 'package:oneofus_common/direct_firestore_source.dart';
 import 'package:oneofus_common/direct_firestore_writer.dart';
+import 'package:oneofus_common/filtered_channel.dart';
 import 'package:oneofus_common/oou_verifier.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
@@ -33,13 +34,30 @@ class _Registration {
 /// Initialize once at startup (main() or test setUp), then call getChannel()
 /// wherever a stream is needed. All fireChoice branching is contained here;
 /// no other code in the app should branch on fireChoice.
+///
+/// ## Architecture: FilteredChannel over a shared root
+///
+/// Each domain/streamKey has exactly one root [CachedSource<Statement>] that fetches
+/// and caches ALL statement types from that stream. [getChannel<T>] returns a
+/// [FilteredChannel<T>] that is a lightweight facade:
+///   - reads: delegates to root and filters results to type T via whereType<T>()
+///   - writes: delegates directly to root so head tracking is always correct
+///
+/// This ensures optimistic locking works correctly in mixed-type streams
+/// (e.g. both ContentStatements and DismissStatements in statements/statements),
+/// because head tracking is centralised in the single root channel.
+///
+/// The [excludeTypes] parameter is accepted for call-site compatibility but
+/// ignored: type filtering is performed locally by [FilteredChannel].
 late ChannelFactory channelFactory;
 
 class ChannelFactory {
   final FireChoice fireChoice;
   final ValueListenable<bool>? skipVerify;
   final Map<String, _Registration> _registrations = {};
-  final Map<String, StatementChannel> _cache = {};
+
+  /// One root channel per domain/streamKey; all typed FilteredChannels share these.
+  final Map<String, CachedSource<Statement>> _rootChannels = {};
 
   ChannelFactory(this.fireChoice, {this.skipVerify});
 
@@ -78,62 +96,68 @@ class ChannelFactory {
     );
   }
 
-  /// Returns the cached channel for [domain]/[streamKey], creating it if needed.
+  /// Returns a [FilteredChannel<T>] backed by a shared root for [domain]/[streamKey].
   ///
-  /// [allStreams] lists all stream collections that share the same issuer key
-  /// space — used by the export CF and DirectFirestoreSource to locate revokeAt
-  /// tokens across collections.
+  /// Roots are keyed by domain, streamKey, and excludeTypes together, so channels with
+  /// different excludeTypes get different roots and different CF fetch configurations.
+  /// Writable channels must share the same root — always use the same excludeTypes
+  /// (typically none) for channels that call push().
   StatementChannel<T> getChannel<T extends Statement>(
     String domain,
     String streamKey, {
-    List<String> allStreams = const [],
+    List<String> excludeTypes = const [],
   }) {
-    final cacheKey = '$domain/$streamKey';
-    return _cache.putIfAbsent(
-            cacheKey, () => _create<T>(domain, streamKey, allStreams))
-        as StatementChannel<T>;
+    final sorted = List.of(excludeTypes)..sort();
+    final cacheKey = sorted.isEmpty
+        ? '$domain/$streamKey'
+        : '$domain/$streamKey:excl=${sorted.join(",")}';
+    final root = _rootChannels.putIfAbsent(
+      cacheKey,
+      () => _createRoot(domain, streamKey, excludeTypes: sorted),
+    );
+    return FilteredChannel<T>(root);
   }
 
-  StatementChannel<T> _create<T extends Statement>(
-      String domain, String streamKey, List<String> allStreams) {
+  CachedSource<Statement> _createRoot(String domain, String streamKey,
+      {List<String> excludeTypes = const []}) {
     final reg = _registrations[domain];
     assert(reg != null, 'No registration for domain "$domain"');
-    final streams = allStreams.isEmpty ? [streamKey] : allStreams;
     if (fireChoice == FireChoice.fake) {
       assert(reg!.firestore != null,
           'register() must provide firestore for fireChoice.fake');
-      final source = DirectFirestoreSource<T>(reg!.firestore!,
-          streamId: streamKey, allStreams: streams, skipVerify: skipVerify);
+      final source = DirectFirestoreSource<Statement>(reg!.firestore!,
+          streamId: streamKey,
+          allStreams: const ['statements'],
+          skipVerify: skipVerify);
       final writer =
-          DirectFirestoreWriter<T>(reg.firestore!, streamId: streamKey);
-      return CachedSource<T>(source, writer);
+          DirectFirestoreWriter<Statement>(reg.firestore!, streamId: streamKey);
+      return CachedSource<Statement>(source, writer);
     } else {
-      final source = CloudFunctionsSource<T>(
+      final source = CloudFunctionsSource<Statement>(
         baseUrl: reg!.exportUrl,
-        streamId: streamKey,
-        allStreams: streams,
         verifier: OouVerifier(),
         skipVerify: skipVerify,
         authHook: reg.readAuthHook,
+        excludeTypes: excludeTypes,
+        paramsOverride: const {'omit': <String>[], 'distinct': 'false'},
       );
-      final writer = CloudFunctionsWriter<T>(
+      final writer = CloudFunctionsWriter<Statement>(
         '${reg.functionsUrl}/${reg.writeEndpoint}',
         streamKey,
         authHook: reg.writeAuthHook,
       );
-      return CachedSource<T>(source, writer);
+      return CachedSource<Statement>(source, writer);
     }
   }
 
   /// Returns the raw Firestore instance registered for [domain], or null if none.
   FirebaseFirestore? firestoreFor(String domain) => _registrations[domain]?.firestore;
 
-  /// Clears the channel cache (and each channel's statement cache).
-  /// Does not affect underlying Firestore data.
+  /// Clears all root channel caches. Does not affect underlying Firestore data.
   void clearCache() {
-    for (final ch in _cache.values) {
+    for (final ch in _rootChannels.values) {
       ch.clear();
     }
-    _cache.clear();
+    _rootChannels.clear();
   }
 }
