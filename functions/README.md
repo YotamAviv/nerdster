@@ -3,3 +3,4 @@ Exceptions (per-project customizations):
 - schema.js
 - read_auth.js
 - write_auth.js
+- index.js
