@@ -17,15 +17,12 @@ import 'package:oneofus_common/statement_source.dart';
 /// This class reconstructs the omitted fields on the client side before parsing.
 class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final String baseUrl;
-  final String statementType;
+  /// The statement type string used as fallback when the server omits the 'statement' field.
+  /// Null means the field is always present (e.g. root channel with omit:[]).
+  final String? statementType;
 
-  /// The stream to fetch from. Maps to the server's `subcollection` param as
-  /// `{streamId}/statements`. Default `"statements"` → `statements/statements`.
-  final String streamId;
-
-  /// All streams this key participates in. Embedded in the spec's revokeAt
-  /// object so the server knows where to search for the revokeAt token.
-  final List<String> allStreams;
+  /// Statement types to exclude from results (passed as excludeTypes to the server).
+  final List<String> excludeTypes;
 
   final http.Client client;
   final StatementVerifier verifier;
@@ -45,15 +42,14 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
 
   CloudFunctionsSource({
     required this.baseUrl,
-    this.streamId = 'statements',
-    this.allStreams = const ['statements'],
+    this.statementType,
+    this.excludeTypes = const [],
     http.Client? client,
     required this.verifier,
     this.skipVerify,
     this.paramsOverride,
     this.authHook,
-  })  : statementType = Statement.type<T>(),
-        client = client ?? http.Client();
+  }) : client = client ?? http.Client();
 
   @override
   List<SourceError> get errors => List.unmodifiable(_errors.values);
@@ -65,15 +61,15 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
 
     final List<dynamic> spec = keys.entries.map((e) {
       if (e.value == null) return e.key;
-      return {e.key: {'revokeAt': e.value, 'streams': allStreams}};
+      return {e.key: e.value};
     }).toList();
 
     final Json params = Map.of(_paramsProto);
     if (paramsOverride != null) {
       params.addAll(paramsOverride!);
     }
-    if (streamId != 'statements') {
-      params['subcollection'] = '$streamId/statements';
+    if (excludeTypes.isNotEmpty) {
+      params['excludeTypes'] = excludeTypes;
     }
     if (authHook != null) {
       for (final entry in authHook!().entries) {
@@ -129,7 +125,7 @@ class CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
                 json['I'] = iJson;
               }
             }
-            if (!json.containsKey('statement')) json['statement'] = statementType;
+            if (!json.containsKey('statement') && statementType != null) json['statement'] = statementType!;
 
             final String? serverToken = json['id'];
             if (serverToken != null) json.remove('id');

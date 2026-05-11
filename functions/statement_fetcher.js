@@ -59,36 +59,15 @@ async function makedistinct(input) {
 }
 
 /**
- * Resolves a revokeAt value to a timestamp string, or null if not found.
- *
- * revokeAtValue may be:
- *   - null/undefined: no revocation (caller should not call this)
- *   - string: legacy format — look up the token in the primary collectionRef only.
- *             "<since always>" and any non-matching token both return null (revoke since genesis).
- *   - {revokeAt: token, streams: [streamId, ...]}: new format — search listed streams.
- *             streamId is the Firestore doc segment; the collection is always "statements".
+ * Resolves a revokeAt token to a timestamp string, or null if not found.
+ * All statements live in statements/statements — there is only one stream per key.
+ * "<since always>" and any non-matching token both return null (revoke since genesis).
  */
-async function resolveRevokeAtTime(db, keyToken, revokeAtValue, primaryCollectionRef) {
-  if (!revokeAtValue) return undefined; // no revocation
-
-  if (typeof revokeAtValue === 'string') {
-    // Legacy: search primary stream only. "<since always>" won't match anything → returns null.
-    const snap = await primaryCollectionRef.doc(revokeAtValue).get();
-    return snap.exists ? snap.data().time : null;
-  }
-
-  if (revokeAtValue.revokeAt) {
-    // New format: search listed streams for the token.
-    const streams = revokeAtValue.streams ?? ['statements'];
-    for (const streamId of streams) {
-      const ref = db.collection(keyToken).doc(streamId).collection('statements');
-      const snap = await ref.doc(revokeAtValue.revokeAt).get();
-      if (snap.exists) return snap.data().time;
-    }
-    return null; // not found in any stream → revoke since genesis
-  }
-
-  return undefined; // unrecognized format, ignore
+async function resolveRevokeAtTime(revokeAtValue, collectionRef) {
+  if (!revokeAtValue) return undefined;
+  if (typeof revokeAtValue !== 'string') return undefined; // unrecognized format
+  const snap = await collectionRef.doc(revokeAtValue).get();
+  return snap.exists ? snap.data().time : null;
 }
 
 /**
@@ -98,7 +77,7 @@ async function resolveRevokeAtTime(db, keyToken, revokeAtValue, primaryCollectio
  * This selects which stream to serve: {keyToken}/{docSegment}/{colSegment}/{statementToken}
  */
 async function fetchStatements(token2revokeAt, params = {}, omit = []) {
-  const { checkPrevious, distinct, orderStatements = true, includeId, after, subcollection } = params;
+  const { checkPrevious, distinct, orderStatements = true, includeId, after, excludeTypes } = params;
 
   if (!token2revokeAt) throw new Error('Missing token2revokeAt');
   const token = Object.keys(token2revokeAt)[0];
@@ -109,17 +88,11 @@ async function fetchStatements(token2revokeAt, params = {}, omit = []) {
 
   const db = admin.firestore();
 
-  // Parse subcollection: "docSeg/colSeg", default "statements/statements"
-  const subPath = (typeof subcollection === 'string' ? subcollection : null) || 'statements/statements';
-  const slashIdx = subPath.indexOf('/');
-  const docSeg = slashIdx >= 0 ? subPath.slice(0, slashIdx) : 'statements';
-  const colSeg = slashIdx >= 0 ? subPath.slice(slashIdx + 1) : 'statements';
-
-  const collectionRef = db.collection(token).doc(docSeg).collection(colSeg);
+  const collectionRef = db.collection(token).doc('statements').collection('statements');
 
   let revokeAtTime;
   if (revokeAtValue) {
-    revokeAtTime = await resolveRevokeAtTime(db, token, revokeAtValue, collectionRef);
+    revokeAtTime = await resolveRevokeAtTime(revokeAtValue, collectionRef);
     if (revokeAtTime === null) return []; // revoke since genesis
   }
 
@@ -161,7 +134,13 @@ async function fetchStatements(token2revokeAt, params = {}, omit = []) {
     }
   }
 
-  if (distinct) {
+  // Exclude statement types
+  if (excludeTypes) {
+    const types = Array.isArray(excludeTypes) ? excludeTypes : [excludeTypes];
+    statements = statements.filter(s => !types.includes(s.statement));
+  }
+
+  if (distinct && distinct !== 'false') {
     statements = await makedistinct(statements);
   }
 
@@ -175,5 +154,4 @@ async function fetchStatements(token2revokeAt, params = {}, omit = []) {
 module.exports = {
   fetchStatements,
   makedistinct,
-  resolveRevokeAtTime,
 };

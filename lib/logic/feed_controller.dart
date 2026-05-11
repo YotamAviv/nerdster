@@ -25,6 +25,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
   final StatementChannel<TrustStatement> trustSource;
   final StatementChannel<ContentStatement> contentSource;
   final StatementChannel<DismissStatement> disSource;
+  final StatementChannel<ContentStatement> _peerContentChannel;
   final VoidCallback? _optimisticConcurrencyFunc;
 
   /// Pushes a new content statement through the write-through cache.
@@ -58,8 +59,9 @@ class FeedController extends ValueNotifier<FeedModel?> {
   FeedController({
     VoidCallback? optimisticConcurrencyFunc,
   })  : trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements'),
-        contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']),
-        disSource = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']),
+        contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements'),
+        disSource = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements'),
+        _peerContentChannel = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']),
         _optimisticConcurrencyFunc = optimisticConcurrencyFunc,
         super(null) {
     _lastIdentity = signInState.hasIdentity ? signInState.identity : null;
@@ -300,6 +302,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
   Future<void> refresh() {
     trustSource.clear();
     contentSource.clear();
+    _peerContentChannel.clear();
     return _load();
   }
 
@@ -402,7 +405,8 @@ class FeedController extends ValueNotifier<FeedModel?> {
         loadingMessage.value = 'Loading delegate content...';
         progress.value = 0.4;
         final contentPipeline = ContentPipeline(
-          delegateSource: contentSource,
+          myDelegateSource: contentSource,
+          peerDelegateSource: _peerContentChannel,
         );
 
         // Identify delegates for all trusted identities (to find follows and ratings)
@@ -424,8 +428,13 @@ class FeedController extends ValueNotifier<FeedModel?> {
             ? disSource.fetch(myDisFetchMap)
             : Future.value(const <String, List<DismissStatement>>{});
 
+        final Set<DelegateKey> myDelegateKeySet = myDelegateKeys?.toSet() ?? {};
+        final Iterable<DelegateKey> peerDelegateKeys =
+            delegateKeysToFetch.where((k) => !myDelegateKeySet.contains(k));
+
         final delegateContent = await contentPipeline.fetchDelegateContent(
-          delegateKeysToFetch,
+          myDelegateKeySet,
+          peerDelegateKeys,
           delegateResolver: delegateResolver,
           graph: povGraph,
         );

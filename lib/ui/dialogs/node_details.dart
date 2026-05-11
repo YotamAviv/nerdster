@@ -611,7 +611,7 @@ class _NodeDetailsState extends State<NodeDetails> {
                       source: widget.controller.contentSource,
                       labeler: labeler,
                       constraints: const BoxConstraints(maxWidth: 600),
-                      disSource: channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis'])),
+                      disSource: channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements')),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Row(

@@ -51,7 +51,9 @@ void main() {
     );
 
     final signer = await OouSigner.make(lisaDelegate.keyPair);
-    await channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']).push(dismissStmt, signer);
+    final disChannel = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster']);
+    await disChannel.fetch({lisaDelegate.token: null});
+    await disChannel.push(dismissStmt, signer);
 
     // 3. Refresh the feed (First time - "Minor Refresh" simulation)
     await controller.refresh();

@@ -361,7 +361,7 @@ class DemoDelegateKey implements DemoKey {
   }
 
   Future<DismissStatement> _pushDis(Json json, String? export) async {
-    final source = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']);
+    final source = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements');
     final signer = await OouSigner.make(keyPair);
     await source.fetch({Jsonish(json['I']).token: null});
     final dis = await source.push(json, signer);
@@ -398,7 +398,7 @@ class DemoDelegateKey implements DemoKey {
   }
 
   Future<ContentStatement> _pushContent(Json json, String? export) async {
-    final source = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
+    final source = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements');
     final signer = await OouSigner.make(keyPair);
     await source.fetch({Jsonish(json['I']).token: null});
     final content = await source.push(json, signer);

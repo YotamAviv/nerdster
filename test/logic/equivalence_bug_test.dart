@@ -29,9 +29,10 @@ void main() {
     final FollowNetwork followNetwork =
         reduceFollowNetwork(graph, delegateResolver, ContentResult(), kFollowContextNerdster);
 
-    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
     final ContentPipeline contentPipeline = ContentPipeline(
-      delegateSource: appSource,
+      myDelegateSource: appSource,
+      peerDelegateSource: appSource,
     );
 
     // We explicitly fetch content for all necessary delegates in the graph
@@ -43,6 +44,7 @@ void main() {
 
     final Map<DelegateKey, List<ContentStatement>> delegateContent =
         await contentPipeline.fetchDelegateContent(
+      const [],
       delegateKeysToFetch,
       delegateResolver: delegateResolver,
       graph: graph,
@@ -152,6 +154,7 @@ void main() {
     // 6. Refresh Pipeline
     // Fetch new content reflecting the clear operation
     final newDelegateContent = await contentPipeline.fetchDelegateContent(
+      const [],
       delegateKeysToFetch,
       delegateResolver: delegateResolver,
       graph: graph,

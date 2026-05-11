@@ -14,7 +14,7 @@
  * checkPrevious         — verify notarization chain (requires includeId)
  * after=<ISO time>      — only return statements newer than this time
  * omit=<field>          — strip field from each statement (repeatable)
- * subcollection=<doc/col> — default "statements/statements"; use "dis/statements" for dismiss stream
+ * excludeTypes=<type>   — exclude statements of this type (repeatable, e.g. excludeTypes=org.nerdster.dis)
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * RESPONSE
@@ -57,7 +57,7 @@ async function handleExport(req, res) {
         '  checkPrevious               — verify notarization chain (requires includeId)\n' +
         '  after=<ISO time>            — only return statements newer than this time\n' +
         '  omit=<field>                — strip field from each statement (repeatable)\n' +
-        '  subcollection=<doc/col>     — default "statements/statements"; use "dis/statements" for dismiss stream\n\n' +
+        '  excludeTypes=<type>         — exclude statements of this type (repeatable)\n\n' +
         'Example:\n' +
         '  https://export.one-of-us.net/?spec=<token>&distinct=true&omit=I&omit=signature\n\n' +
         'See /openapi.yaml for full API documentation.\n'

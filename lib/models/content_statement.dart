@@ -195,7 +195,7 @@ class ContentStatement extends Statement {
     // and so we sort the tokens.
     if (ts.length > 1) ts.sort();
 
-    return [tiToken, ...ts].join(':');
+    return ['content', tiToken, ...ts].join(':');
   }
 
   @override

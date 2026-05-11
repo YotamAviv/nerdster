@@ -66,7 +66,7 @@ class DismissStatement extends Statement {
   String getDistinctSignature({Transformer? iTransformer, Transformer? sTransformer}) {
     final String ti = iTransformer != null ? iTransformer(iToken) : iToken;
     final String s = sTransformer != null ? sTransformer(subjectToken) : subjectToken;
-    return '$ti:$s';
+    return 'dis:$ti:$s';
   }
 }
 

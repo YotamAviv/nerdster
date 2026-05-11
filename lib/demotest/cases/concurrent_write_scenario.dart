@@ -22,7 +22,7 @@ Future<void> concurrentWriteScenario() async {
   final subjectC = createTestSubject(title: 'Article C');
 
   // --- Concurrent dis writes (simulates 3 simultaneous thumbs-down swipes) ---
-  final disSource = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'dis', allStreams: ['statements', 'dis']);
+  final disSource = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements');
   await disSource.fetch({issuerToken: null});
   await disSource.push(DismissStatement.make(iJson, createTestSubject(title: 'Prime'), 'forever'), signer);
   final disResults = (await Future.wait([
@@ -34,7 +34,7 @@ Future<void> concurrentWriteScenario() async {
   debugPrint('concurrent dis: ok ($disResults/3 writes succeeded)');
 
   // --- Concurrent content writes (thumbs up, comment, censor) ---
-  final contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', allStreams: ['statements', 'dis']);
+  final contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements');
   await contentSource.fetch({issuerToken: null});
   await contentSource.push(
       ContentStatement.make(iJson, ContentVerb.rate, createTestSubject(title: 'Prime'), recommend: true), signer);
@@ -46,31 +46,23 @@ Future<void> concurrentWriteScenario() async {
   check(contentResults >= 1, 'concurrent content: expected at least 1 success, got $contentResults');
   debugPrint('concurrent content: ok ($contentResults/3 writes succeeded)');
 
-  // --- Verify both streams are intact on the server ---
-  final Map<String, List<DismissStatement>> cachedFetchDis = await disSource.fetch({issuerToken: null});
-  assert(cachedFetchDis.containsKey(issuerToken));
-  final int cachedDisLength = cachedFetchDis[issuerToken]!.length;
-  disSource.clear();
-  final Map<String, List<DismissStatement>> freshFetchDis = await disSource.fetch({issuerToken: null});
-  if (disSource.errors.isNotEmpty) debugPrint('disSource.errors: ${disSource.errors}');
-  assert(freshFetchDis.containsKey(issuerToken));
-  final List<DismissStatement> freshDis = freshFetchDis[issuerToken]!;
-  check(freshDis.length == cachedDisLength,
-      'dis stream length: server=${freshDis.length}, cache=$cachedDisLength');
-  _checkChain(freshDis);
+  // --- Verify the mixed stream is intact on the server ---
+  // Dis and content now share a single stream, so chain integrity must be
+  // checked on the unfiltered full stream. Filtered results have non-null
+  // 'previous' pointers where adjacent statements of the other type were
+  // skipped — that is correct behaviour, not a chain violation.
+  final fullSource = channelFactory.getChannel<Statement>(kNerdsterDomain, 'statements');
+  final int cachedTotalLength = (await fullSource.fetch({issuerToken: null}))[issuerToken]!.length;
+  fullSource.clear();
+  final Map<String, List<Statement>> freshFetch = await fullSource.fetch({issuerToken: null});
+  if (fullSource.errors.isNotEmpty) debugPrint('fullSource.errors: ${fullSource.errors}');
+  assert(freshFetch.containsKey(issuerToken));
+  final List<Statement> freshAll = freshFetch[issuerToken]!;
+  check(freshAll.length == cachedTotalLength,
+      'stream length: server=${freshAll.length}, cache=$cachedTotalLength');
+  _checkChain(freshAll);
 
-  final Map<String, List<ContentStatement>> cachedFetchContent = await contentSource.fetch({issuerToken: null});
-  assert(cachedFetchContent.containsKey(issuerToken));
-  final int cachedContentLength = cachedFetchContent[issuerToken]!.length;
-  contentSource.clear();
-  final Map<String, List<ContentStatement>> freshFetchContent = await contentSource.fetch({issuerToken: null});
-  assert(freshFetchContent.containsKey(issuerToken));
-  final List<ContentStatement> freshContent = freshFetchContent[issuerToken]!;
-  check(freshContent.length == cachedContentLength,
-      'content stream length: server=${freshContent.length}, cache=$cachedContentLength');
-  _checkChain(freshContent);
-
-  debugPrint('concurrent write: stream integrity verified');
+  debugPrint('concurrent write: stream integrity verified (${freshAll.length} statements)');
 }
 
 void _checkChain(List<Statement> statements) {
