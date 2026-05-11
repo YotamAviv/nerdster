@@ -60,16 +60,24 @@ With dis in the same stream as content, revoking the stream (e.g., on key rotati
 
 ---
 
+### Scope note
+
+The infrastructure (`oneofus_common` package, cloud functions) is shared across Nerdster, Oneofus, and Hablo. Removing multi-stream support will eventually affect all three, but do not focus on them now. Only update:
+- the `oneofus_common` package inside the **Nerdster** repo (`packages/oneofus_common/`)
+- the cloud functions inside the **Nerdster** repo (`functions/`)
+
+Integration tests that use the emulator may cause confusion: if the Nerdster emulator functions are updated but the Oneofus emulator functions are not (or vice versa), tests that cross the boundary may behave unexpectedly. Be aware of this. Updating the Oneofus emulator functions may turn out to be necessary as part of this work.
+
 ### Plan
 
-1. **`export.js` / `statement_fetcher.js`**: Add an optional `excludeTypes` query parameter (e.g. `excludeTypes=org.nerdster.dis`) that filters out statements of those types before returning. No behavioral change unless the parameter is passed.
+1. **`export.js` / `statement_fetcher.js`**: Add an optional `excludeTypes` query parameter (e.g. `excludeTypes=org.nerdster.dis`) that filters out statements of those types before returning. Remove the `subcollection` parameter entirely.
 
-2. **`CloudFunctionsSource` / channel factory (Dart)**: When fetching peer statement streams for content, pass `excludeTypes=org.nerdster.dis`. When fetching the active user's own stream, do not exclude dis.
+2. **`CloudFunctionsSource` (Dart)**: Add an optional `excludeTypes` parameter and pass it through to the export URL. The channel factory is infrastructure and stays ignorant of Nerdster specifics — the caller (`feed_controller.dart`) decides what to exclude.
 
-3. **`DismissStatement` write path**: Change the Firestore write target from `dis/statements` to `statements/statements` (wherever the channel writes in the Dart client).
+3. **`DismissStatement` write path**: Change the Firestore write target from `dis/statements` to `statements/statements`.
 
-4. **`feed_controller.dart`**: Remove the separate `disSource` channel that fetches `dis/statements`. Instead, read dis statements from the active user's main stream, filtering by type `'org.nerdster.dis'` client-side after fetch.
+4. **`feed_controller.dart`**: Re-engineer to fetch each user's stream exactly once. For peers, pass `excludeTypes=org.nerdster.dis` so dis statements are excluded. For the active user, fetch the full stream (no exclusion) and split content and dis statements by type client-side. Remove the separate `disSource` channel.
 
-5. **`CloudFunctionsSource` / `allStreams`**: Remove the `allStreams: ['statements', 'dis']` multi-stream revokeAt logic — it is no longer needed since there is only one stream.
+5. **`CloudFunctionsSource` / `allStreams`**: Remove the `allStreams: ['statements', 'dis']` multi-stream revokeAt logic — no longer needed with a single stream.
 
-6. **Testing**: Verify that dis statements no longer clobber rate statements (distincter), that peer fetches do not return dis statements, and that revocation of the main stream covers dis statements.
+6. **Testing**: Run existing tests as-is — they should all pass. This change must not alter any dis/rate behavior.
