@@ -7,6 +7,7 @@
 
 const admin = require('firebase-admin');
 const { order, getToken } = require('./jsonish_util');
+const { statementsRef } = require('./schema');
 
 const verbs = [
   'trust', 'delegate', 'clear', 'rate', 'follow', 'censor',
@@ -60,7 +61,7 @@ async function makedistinct(input) {
 
 /**
  * Resolves a revokeAt token to a timestamp string, or null if not found.
- * All statements live in statements/statements — there is only one stream per key.
+ * All statements live in the 'statements' stream (see statementsRef in schema.js) — there is only one stream per key.
  * "<since always>" and any non-matching token both return null (revoke since genesis).
  */
 async function resolveRevokeAtTime(revokeAtValue, collectionRef) {
@@ -72,9 +73,6 @@ async function resolveRevokeAtTime(revokeAtValue, collectionRef) {
 
 /**
  * Fetches statements from Firestore with various filters.
- *
- * subcollection param format: "docSegment/colSegment" (default: "statements/statements")
- * This selects which stream to serve: {keyToken}/{docSegment}/{colSegment}/{statementToken}
  */
 async function fetchStatements(token2revokeAt, params = {}, omit = []) {
   const { checkPrevious, distinct, orderStatements = true, includeId, after, excludeTypes } = params;
@@ -88,7 +86,7 @@ async function fetchStatements(token2revokeAt, params = {}, omit = []) {
 
   const db = admin.firestore();
 
-  const collectionRef = db.collection(token).doc('statements').collection('statements');
+  const collectionRef = statementsRef(db, token, 'statements');
 
   let revokeAtTime;
   if (revokeAtValue) {

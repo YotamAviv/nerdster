@@ -18,17 +18,12 @@ class KeyInfoView extends StatelessWidget {
   final String baseUrl;
   final StatementSource source;
   final Labeler labeler;
-  /// Optional dis stream source. When provided, a second "Dismiss Statements"
-  /// link/button is shown below the main one.
-  final StatementSource? disSource;
-
   const KeyInfoView({
     super.key,
     required this.jsonish,
     required this.baseUrl,
     required this.labeler,
     required this.source,
-    this.disSource,
   });
 
   @override
@@ -40,7 +35,6 @@ class KeyInfoView extends StatelessWidget {
               interpret: ValueNotifier(true), interpreter: JsonInterpreter(labeler)),
         ),
         _buildStatementsLink(context),
-        if (disSource != null) _buildDisStatementsLink(context),
       ],
     );
   }
@@ -72,35 +66,6 @@ class KeyInfoView extends StatelessWidget {
     }
   }
 
-  Widget _buildDisStatementsLink(BuildContext context) {
-    if (fireChoice != FireChoice.fake) {
-      final params = <String, String>{
-        'spec': jsonEncode(jsonish.token),
-        'subcollection': 'dis/statements',
-      };
-      final Uri uri = Uri.parse(baseUrl).replace(queryParameters: params);
-      return InkWell(
-        onTap: () => launchUrl(uri),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Signed, Published Dismiss Statements',
-            style: const TextStyle(
-              color: Colors.blue,
-              decoration: TextDecoration.underline,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      );
-    } else {
-      return ElevatedButton.icon(
-        icon: const Icon(Icons.library_books),
-        label: const Text('View Dismiss Statements (Fake)'),
-        onPressed: () => _showFakeStatements(context, disSource!),
-      );
-    }
-  }
 
   Future<void> _showFakeStatements(BuildContext context, StatementSource src) async {
     final map = await src.fetch({jsonish.token: null});
@@ -131,7 +96,6 @@ class KeyInfoView extends StatelessWidget {
     required StatementSource source,
     required Labeler labeler,
     BoxConstraints? constraints,
-    StatementSource? disSource,
   }) {
     final jsonish = Jsonish.find(token);
     if (jsonish == null) {
@@ -196,7 +160,7 @@ class KeyInfoView extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: KeyInfoView(
-                            jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler, disSource: disSource),
+                            jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler),
                       ),
                     ),
                   ),
@@ -216,7 +180,7 @@ class KeyInfoView extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: KeyInfoView(
-                          jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler, disSource: disSource),
+                          jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler),
                     ),
                   )));
         });
