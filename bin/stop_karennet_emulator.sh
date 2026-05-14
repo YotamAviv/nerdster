@@ -1,8 +1,9 @@
 #!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NERDSTER_DIR="$(dirname "$SCRIPT_DIR")"
+ONEOFUS_DIR="$(dirname "$NERDSTER_DIR")/oneofus"
 
-PIDFILE="$NERDSTER_DIR/.karennet_emulator.pid"
+PIDFILE="$ONEOFUS_DIR/.karennet_emulator.pid"
 if [ -f "$PIDFILE" ]; then
     PID=$(cat "$PIDFILE")
     if kill -0 "$PID" 2>/dev/null; then
@@ -19,7 +20,7 @@ else
     echo "No PID file found. Is the emulator running?"
 fi
 
-for PORT in 5004 8082; do
+for PORT in 5004 8083; do
     PID=$(lsof -ti :"$PORT" -s TCP:LISTEN 2>/dev/null)
     if [ -n "$PID" ]; then
         echo "Killing stale process on port $PORT (PID $PID)..."
