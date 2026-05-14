@@ -297,41 +297,43 @@ Additional changes not in original plan:
 
 ### Step 1 — Create Simpsons demo data on PROD
 
-- [ ] `cd ~/src/github/nerdster && bin/createSimpsonsDemoData_prod.sh`
+- [x] `cd ~/src/github/nerdster && bin/createSimpsonsDemoData_prod.sh`
       Writes fresh keys to PROD nerdster + oneofus + karennet.
       Produces `../simpsonsPublicKeys.json`, `../simpsonsPrivateKeys.json`, `web/common/data/demoData.js`.
 - [ ] In nerdster, update `integration_test/ui_test.dart` with the new Lisa key printed in the output.
 - [ ] In oneofus, update `integration_test/people_screen_test.dart` with the new Lisa private key.
+  *(These are updated in Step 3 with emulator keys, not prod keys, since Android tests run against emulator.)*
 
 ### Step 2 — Create Hablo contact data on PROD
 
 Follow `hablotengo/doc/simpsons_demo_setup.md` §"On production":
 
-- [ ] Temporarily comment out the demo write guard in `functions/write_auth.js` (lines 20-23).
-- [ ] `firebase deploy --only functions --project=hablotengo` (deploys with guard disabled + new simpsons_keys.json).
-- [ ] `cd ~/src/github/hablotengo && bin/createSimpsonsContactData_prod.sh`
-- [ ] Restore the guard in `write_auth.js`, then `firebase deploy --only functions:write2 --project=hablotengo`.
+- [x] Temporarily comment out the demo write guard in `functions/write_auth.js` (lines 20-23).
+- [x] `firebase deploy --only functions --project=hablotengo` (deploys with guard disabled + new simpsons_keys.json).
+      Note: had to redeploy a second time after `createSimpsonsContactData_prod.sh` regenerated
+      `functions/simpsons_keys.json` — the first deploy used old keys, causing 403 from the export CF.
+- [x] `cd ~/src/github/hablotengo && bin/createSimpsonsContactData_prod.sh`
+- [x] Restore the guard in `write_auth.js`, then `firebase deploy --only functions:write --project=hablotengo`.
+      (Function is exported as `write`, not `write2` — `write2.js` is the source filename only.)
 
 ### Step 3 — Replicate PROD to emulators and run tests
 
-- [ ] Start all 4 emulators from a PROD export (or empty + re-seed):
-      ```
-      cd ~/src/github/nerdster   && bin/start_emulator.sh --empty
-      cd ~/src/github/oneofus    && bin/start_emulator.sh --empty
-      cd ~/src/github/hablotengo && bin/start_emulator.sh --empty
-      cd ~/src/github/oneofus    && bin/start_karennet_emulator.sh
-      ```
-- [ ] Re-seed emulators with the prod keys (same scripts, emulator mode):
+- [x] Start all 4 emulators (they were already running; data seeded on top of existing data).
+- [x] Re-seed emulators (creates fresh emulator keys, different from prod):
       ```
       cd ~/src/github/nerdster && bin/createSimpsonsDemoData.sh
       cd ~/src/github/hablotengo && bin/createSimpsonsContactData.sh
+      python3 bin/gen_simpsons_public_keys_dart.py   # NOT needed — do not run this after emulator seed,
+                                                      # it overwrites the prod dart file
       ```
-      *(This uses the prod keys now in `simpsonsPublicKeys.json` / `simpsonsPrivateKeys.json`.)*
-- [ ] Update hardcoded Lisa key in `nerdster/integration_test/ui_test.dart` and
-      `oneofus/integration_test/people_screen_test.dart` if not already done in Step 1.
-- [ ] `cd ~/src/github/nerdster   && bin/run_all_tests.sh 2>&1 | tee /tmp/nerdster_tests.txt; tail -20 /tmp/nerdster_tests.txt`
-- [ ] `cd ~/src/github/oneofus    && bin/run_all_tests.sh 2>&1 | tee /tmp/oneofus_tests.txt; tail -20 /tmp/oneofus_tests.txt`
-- [ ] `cd ~/src/github/hablotengo && bin/run_all_tests.sh 2>&1 | tee /tmp/hablo_tests.txt; tail -20 /tmp/hablo_tests.txt`
+      Note: after emulator seed, restore `simpsonsPublicKeys.json` and `simpsons_public_keys.dart` to
+      prod keys (the prod seed output is saved in `/tmp/prod_seed.txt`).
+- [x] Update hardcoded Lisa key in `nerdster/integration_test/ui_test.dart` and
+      `oneofus/integration_test/people_screen_test.dart` with the new emulator Lisa key.
+      (Android emulator was not running; these files were updated but integration tests were skipped.)
+- [x] `cd ~/src/github/nerdster   && bin/run_all_tests.sh 2>&1 | tee /tmp/nerdster_tests.txt; tail -20 /tmp/nerdster_tests.txt`  PASSED (4 suites)
+- [x] `cd ~/src/github/oneofus    && bin/run_all_tests.sh 2>&1 | tee /tmp/oneofus_tests.txt; tail -20 /tmp/oneofus_tests.txt`  PASSED (1 suite; Android skipped)
+- [x] `cd ~/src/github/hablotengo && bin/run_all_tests.sh 2>&1 | tee /tmp/hablo_tests.txt; tail -20 /tmp/hablo_tests.txt`  PASSED (4 suites)
 
 ### Step 4 — Smoke-test locally against PROD
 
