@@ -346,4 +346,8 @@ Follow `hablotengo/doc/simpsons_demo_setup.md` §"On production":
 - [ ] `cd ~/src/github/hablotengo && bin/deploy_web.sh`
       (Required — `simpsons_public_keys.dart` is compiled into the web app.)
 - [ ] Deploy Nerdster web (you handle that — commit `web/common/data/demoData.js` and run deploy).
-- [ ] Optionally deploy Oneofus web: `firebase --project=one-of-us-net deploy --only hosting`.
+- [ ] Optionally deploy Oneofus web:
+      ```
+      cp ~/src/github/nerdster/web/common/data/demoData.js ~/src/github/oneofus/web/common/data/
+      cd ~/src/github/oneofus && bin/deploy_web.sh
+      ```
