@@ -47,12 +47,19 @@ void main() async {
       emulatorExportUrl: 'http://127.0.0.1:5002/one-of-us-net/us-central1/export',
       emulatorFunctionsUrl: 'http://127.0.0.1:5002/one-of-us-net/us-central1',
       firestore: OneofusFire.firestore);
+  channelFactory.register(kKarenetDomain,
+      exportUrl: 'https://export.karennet.net',
+      functionsUrl: 'https://us-central1-karennet.cloudfunctions.net',
+      emulatorExportUrl: 'http://127.0.0.1:5004/karennet/us-central1/export',
+      emulatorFunctionsUrl: 'http://127.0.0.1:5004/karennet/us-central1');
 
   if (resolvedFireChoice == FireChoice.emulator) {
     FirebaseConfig.registerRedirect('https://export.one-of-us.net',
         'http://127.0.0.1:5002/one-of-us-net/us-central1/export');
     FirebaseConfig.registerRedirect('https://export.nerdster.org',
         'http://127.0.0.1:5001/nerdster/us-central1/export');
+    FirebaseConfig.registerRedirect('https://export.karennet.net',
+        'http://127.0.0.1:5004/karennet/us-central1/export');
   }
 
   runApp(WidgetRunner(scenario: _generateDemoData));

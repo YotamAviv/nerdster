@@ -102,6 +102,8 @@ Future<void> main() async {
           'http://$emulatorHost:5001/nerdster/us-central1/export');
       FirebaseConfig.registerRedirect('https://export.one-of-us.net',
           'http://$emulatorHost:5002/one-of-us-net/us-central1/export');
+      FirebaseConfig.registerRedirect('https://export.karennet.net',
+          'http://$emulatorHost:5004/karennet/us-central1/export');
     }
     nerdsterFirestore = FirebaseFirestore.instance;
     oneofusFirestore = OneofusFire.firestore;
@@ -109,6 +111,9 @@ Future<void> main() async {
     nerdsterFirestore = FakeFirebaseFirestore();
     oneofusFirestore = FakeFirebaseFirestore();
   }
+
+  final FirebaseFirestore? karenetFirestore =
+      resolvedFireChoice == FireChoice.fake ? FakeFirebaseFirestore() : null;
 
   channelFactory = ChannelFactory(resolvedFireChoice,
       skipVerify: Setting.get<bool>(SettingType.skipVerify));
@@ -124,6 +129,12 @@ Future<void> main() async {
       emulatorExportUrl: 'http://$emulatorHost:5002/one-of-us-net/us-central1/export',
       emulatorFunctionsUrl: 'http://$emulatorHost:5002/one-of-us-net/us-central1',
       firestore: oneofusFirestore);
+  channelFactory.register(kKarenetDomain,
+      exportUrl: 'https://export.karennet.net',
+      functionsUrl: 'https://us-central1-karennet.cloudfunctions.net',
+      emulatorExportUrl: 'http://$emulatorHost:5004/karennet/us-central1/export',
+      emulatorFunctionsUrl: 'http://$emulatorHost:5004/karennet/us-central1',
+      firestore: karenetFirestore);
 
   _fireCheckRead = params.containsKey('fireCheckRead');
   _fireCheckWrite = params.containsKey('fireCheckWrite');

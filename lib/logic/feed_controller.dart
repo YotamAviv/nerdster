@@ -365,7 +365,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           debugPrint('Error parsing identityPathsReq: $e');
         }
 
-        final TrustPipeline trustPipeline = TrustPipeline(trustSource, pathRequirement: pathReq);
+        final TrustPipeline trustPipeline = TrustPipeline(trustSource, channelFactory: channelFactory, pathRequirement: pathReq);
         final TrustGraph povGraph = await trustPipeline.build(currentPovIdentity);
         final DelegateResolver delegateResolver = DelegateResolver(povGraph);
 
@@ -376,7 +376,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           // trustSource is cached, so this involves no additional cloud fetch.
           // Note: replace chains for myIdentity are not chased.
           final TrustPipeline myPipeline =
-              TrustPipeline(trustSource, pathRequirement: (_) => 0, maxDegrees: 1);
+              TrustPipeline(trustSource, channelFactory: channelFactory, pathRequirement: (_) => 0, maxDegrees: 1);
           myGraph = await myPipeline.build(myIdentity);
           final DelegateResolver myResolver = DelegateResolver(myGraph);
 
