@@ -31,6 +31,9 @@ void main() async {
       exportUrl: 'https://export.one-of-us.net',
       functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
       firestore: OneofusFire.firestore);
+  channelFactory.register(kKarenetDomain,
+      exportUrl: 'https://export.karennet.net',
+      functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net');
 
   runApp(WidgetRunner(scenario: _generateDemoData));
 }
