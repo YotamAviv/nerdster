@@ -49,7 +49,7 @@ void main() async {
       firestore: OneofusFire.firestore);
   channelFactory.register(kKarenetDomain,
       exportUrl: 'https://export.karennet.net',
-      functionsUrl: 'https://us-central1-karennet.cloudfunctions.net',
+      functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
       emulatorExportUrl: 'http://127.0.0.1:5004/karennet/us-central1/export',
       emulatorFunctionsUrl: 'http://127.0.0.1:5004/karennet/us-central1');
 

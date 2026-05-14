@@ -23,7 +23,7 @@ void main() {
   const lisaIdentity = {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "1YN5JzkEB3KHPTNxz5nhiZ2ebIN-JkiRdoCDlMWR-_Y"
+    "x": "u5RjV6Ra-rhVGF4rlVEj5kee4Z4LNMO6QcedEHVa7pU"
   };
 
   setUpAll(() async {
@@ -61,7 +61,7 @@ void main() {
         firestore: OneofusFire.firestore);
     channelFactory.register(kKarenetDomain,
         exportUrl: 'https://export.karennet.net',
-        functionsUrl: 'https://us-central1-karennet.cloudfunctions.net',
+        functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
         emulatorExportUrl: 'http://$host:5004/karennet/us-central1/export',
         emulatorFunctionsUrl: 'http://$host:5004/karennet/us-central1');
   });

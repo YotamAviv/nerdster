@@ -131,7 +131,7 @@ Future<void> main() async {
       firestore: oneofusFirestore);
   channelFactory.register(kKarenetDomain,
       exportUrl: 'https://export.karennet.net',
-      functionsUrl: 'https://us-central1-karennet.cloudfunctions.net',
+      functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
       emulatorExportUrl: 'http://$emulatorHost:5004/karennet/us-central1/export',
       emulatorFunctionsUrl: 'http://$emulatorHost:5004/karennet/us-central1',
       firestore: karenetFirestore);

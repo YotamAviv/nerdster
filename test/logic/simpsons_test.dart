@@ -33,7 +33,7 @@ void main() {
         firestore: oneofusFs);
     channelFactory.register(kKarenetDomain,
         exportUrl: 'https://export.karennet.net',
-        functionsUrl: 'https://us-central1-karennet.cloudfunctions.net',
+        functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
         firestore: karenetFs);
 
     ContentStatement.init();

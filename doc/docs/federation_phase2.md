@@ -262,9 +262,12 @@ Additional changes not in original plan:
   try/catch catches it, and the feed renders zero ContentCards. The loop should catch per-domain
   errors and skip unreachable domains rather than propagating the exception.
 
-- **Update Hablotengo CF pipeline** — `hablotengo` has a JavaScript Cloud Functions port of
-  `trust_pipeline.dart`. It needs the same domain-grouping change (§1 above) to correctly route
-  foreign-domain keys during BFS.
+- **Update Hablotengo CF pipeline** — done. `trust_pipeline.js`, `multi_target_trust_pipeline.js`,
+  and `trust_logic.js` updated to group BFS fetches by endpoint domain, matching the Dart pipeline.
+  `oneofus_source.js` gained `federatedSourceFor()` which maps production URLs to emulator ports.
+  `get_batch_contacts.js` and `export_statement.js` use a two-pass approach: build the requester's
+  graph first (to populate the fedRegistry with foreign endpoints), then build target graphs.
+  `bin/run_all_tests.sh` passed — all 4 hablotengo test suites.
 
 ### Nice-to-have
 
