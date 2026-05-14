@@ -292,16 +292,8 @@ Additional changes not in original plan:
 
 ### Prerequisites (do before step 1)
 
-- [ ] Update `simpsons_demo_generator_prod.dart` to register the karennet channel and write
-      Marge and Luann's trust statements to PROD karennet (mirrors what `simpsons_demo_generator.dart`
-      does for the emulator). Add:
-      ```dart
-      channelFactory.register(kKarenetDomain,
-          exportUrl: 'https://export.karennet.net',
-          functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
-          ...);
-      ```
-      and mark Marge and Luann as `trustDomain: kKarenetDomain` in the prod scenario.
+- [x] Update `simpsons_demo_generator_prod.dart` to register the karennet channel and write
+      Marge and Luann's trust statements to PROD karennet — done.
 
 ### Step 1 — Create Simpsons demo data on PROD
 
