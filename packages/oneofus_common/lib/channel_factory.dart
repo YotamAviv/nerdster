@@ -12,6 +12,9 @@ import 'package:oneofus_common/statement_source.dart';
 
 enum FireChoice { fake, emulator, prod }
 
+// fake: DirectFirestoreSource/Writer — bypasses CF, hits Firestore directly (unit tests only).
+// emulator: CloudFunctionsSource/Writer pointed at local emulator URLs. Does not use firestore.
+// prod: CloudFunctionsSource/Writer pointed at production URLs. Does not use firestore.
 class _Registration {
   final String exportUrl;
   final String functionsUrl;
