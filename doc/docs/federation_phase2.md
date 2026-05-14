@@ -285,3 +285,71 @@ Additional changes not in original plan:
   moniker the other person used for you. This requires reading foreign-domain trust statements
   during the Oneofus graph render — a larger change than the Nerdster feed case and lower priority
   until the demo is solid.
+
+---
+
+## Production Deployment Checklist
+
+### Prerequisites (do before step 1)
+
+- [ ] Update `simpsons_demo_generator_prod.dart` to register the karennet channel and write
+      Marge and Luann's trust statements to PROD karennet (mirrors what `simpsons_demo_generator.dart`
+      does for the emulator). Add:
+      ```dart
+      channelFactory.register(kKarenetDomain,
+          exportUrl: 'https://export.karennet.net',
+          functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
+          ...);
+      ```
+      and mark Marge and Luann as `trustDomain: kKarenetDomain` in the prod scenario.
+
+### Step 1 — Create Simpsons demo data on PROD
+
+- [ ] `cd ~/src/github/nerdster && bin/createSimpsonsDemoData_prod.sh`
+      Writes fresh keys to PROD nerdster + oneofus + karennet.
+      Produces `../simpsonsPublicKeys.json`, `../simpsonsPrivateKeys.json`, `web/common/data/demoData.js`.
+- [ ] In nerdster, update `integration_test/ui_test.dart` with the new Lisa key printed in the output.
+- [ ] In oneofus, update `integration_test/people_screen_test.dart` with the new Lisa private key.
+
+### Step 2 — Create Hablo contact data on PROD
+
+Follow `hablotengo/doc/simpsons_demo_setup.md` §"On production":
+
+- [ ] Temporarily comment out the demo write guard in `functions/write_auth.js` (lines 20-23).
+- [ ] `firebase deploy --only functions --project=hablotengo` (deploys with guard disabled + new simpsons_keys.json).
+- [ ] `cd ~/src/github/hablotengo && bin/createSimpsonsContactData_prod.sh`
+- [ ] Restore the guard in `write_auth.js`, then `firebase deploy --only functions:write2 --project=hablotengo`.
+
+### Step 3 — Replicate PROD to emulators and run tests
+
+- [ ] Start all 4 emulators from a PROD export (or empty + re-seed):
+      ```
+      cd ~/src/github/nerdster   && bin/start_emulator.sh --empty
+      cd ~/src/github/oneofus    && bin/start_emulator.sh --empty
+      cd ~/src/github/hablotengo && bin/start_emulator.sh --empty
+      cd ~/src/github/oneofus    && bin/start_karennet_emulator.sh
+      ```
+- [ ] Re-seed emulators with the prod keys (same scripts, emulator mode):
+      ```
+      cd ~/src/github/nerdster && bin/createSimpsonsDemoData.sh
+      cd ~/src/github/hablotengo && bin/createSimpsonsContactData.sh
+      ```
+      *(This uses the prod keys now in `simpsonsPublicKeys.json` / `simpsonsPrivateKeys.json`.)*
+- [ ] Update hardcoded Lisa key in `nerdster/integration_test/ui_test.dart` and
+      `oneofus/integration_test/people_screen_test.dart` if not already done in Step 1.
+- [ ] `cd ~/src/github/nerdster   && bin/run_all_tests.sh 2>&1 | tee /tmp/nerdster_tests.txt; tail -20 /tmp/nerdster_tests.txt`
+- [ ] `cd ~/src/github/oneofus    && bin/run_all_tests.sh 2>&1 | tee /tmp/oneofus_tests.txt; tail -20 /tmp/oneofus_tests.txt`
+- [ ] `cd ~/src/github/hablotengo && bin/run_all_tests.sh 2>&1 | tee /tmp/hablo_tests.txt; tail -20 /tmp/hablo_tests.txt`
+
+### Step 4 — Smoke-test locally against PROD
+
+- [ ] Run Nerdster locally (`flutter run -d chrome`) pointed at PROD — verify Simpsons feed loads,
+      Marge (on karennet) appears in Lisa's network.
+- [ ] Run Hablotengo locally pointed at PROD — verify contacts load for demo characters.
+
+### Step 5 — Deploy to PROD
+
+- [ ] `cd ~/src/github/hablotengo && bin/deploy_web.sh`
+      (Required — `simpsons_public_keys.dart` is compiled into the web app.)
+- [ ] Deploy Nerdster web (you handle that — commit `web/common/data/demoData.js` and run deploy).
+- [ ] Optionally deploy Oneofus web: `firebase --project=one-of-us-net deploy --only hosting`.
