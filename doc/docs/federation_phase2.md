@@ -262,9 +262,6 @@ Additional changes not in original plan:
   try/catch catches it, and the feed renders zero ContentCards. The loop should catch per-domain
   errors and skip unreachable domains rather than propagating the exception.
 
-- **`bin/start_karennet_emulator.sh` and `bin/stop_karennet_emulator.sh`** live in the oneofus repo
-  alongside `firebase_karennet.json` and the functions code they use.
-
 - **Update Hablotengo CF pipeline** — `hablotengo` has a JavaScript Cloud Functions port of
   `trust_pipeline.dart`. It needs the same domain-grouping change (§1 above) to correctly route
   foreign-domain keys during BFS.
