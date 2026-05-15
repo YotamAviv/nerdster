@@ -45,6 +45,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   DemoIdentityKey homer2 = await DemoIdentityKey.findOrCreate('homer2');
   DemoIdentityKey marge = await DemoIdentityKey.findOrCreate('marge', trustDomain: kKarenetDomain);
   FedKey(await marge.publicKey.json, {'url': 'https://export.karennet.net'});
+  DemoKey.export('marge-karennet-token', <String, dynamic>{'token': marge.token});
   DemoIdentityKey maggie = await DemoIdentityKey.findOrCreate('maggie');
 
   DemoIdentityKey milhouse = await DemoIdentityKey.findOrCreate('milhouse');

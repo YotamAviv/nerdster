@@ -85,11 +85,20 @@
         iframe.contentWindow.postMessage({ fcontext: 'family' }, '*');
       });
 
+      if (demoData['marge-karennet-token']) {
+        const t = demoData['marge-karennet-token'].token;
+        const base = IframeHelper.isDev()
+          ? 'http://127.0.0.1:5004/karennet/us-central1/export'
+          : 'https://export.karennet.net/';
+        document.getElementById('marge-karennet-statements').href = `${base}?spec=%22${t}%22`;
+      }
+
       VerifyHelper.setupListeners([
         "homer-replace-key",
         "marge-banana-rate",
         "marge-censor-superbad",
         "sideshow-trust-amanda",
+        "lisa-trust-mom",
       ]);
 
     } catch (e) {

@@ -57,6 +57,8 @@ abstract class DemoKey {
 
   bool get isDelegate;
 
+  static void export(String name, Json value) => _exports[name] = value;
+
   static Json getExports() => _exports;
 
   static String getExportsJson() {
