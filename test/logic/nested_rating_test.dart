@@ -21,7 +21,7 @@ void main() {
 
     // 2. Find Lisa's rating of "Art"
     // We need to fetch statements authored by Lisa's delegate
-    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements');
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements');
     final Map<String, List<ContentStatement>> lisaStatementsMap =
         await appSource.fetch({lisaD!.token: null});
     final List<ContentStatement> lisaStatements = lisaStatementsMap[lisaD.token] ?? [];
@@ -81,7 +81,7 @@ void main() {
 
     // 5. Verify via ContentPipeline (simulating FeedController logic)
     // We need a TrustGraph to resolve delegates
-    final trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final trustSource = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline trustPipeline = TrustPipeline(trustSource);
     final TrustGraph graph = await trustPipeline.build(lisa.id);
     final DelegateResolver delegateResolver = DelegateResolver(graph);

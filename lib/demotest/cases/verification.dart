@@ -21,7 +21,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> basicScenario({
   await marge.trust(lisa, moniker: 'lisa');
   await marge.trust(bart, moniker: 'bart');
 
-  final src = source ?? channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+  final src = source ?? channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
   final pipeline = TrustPipeline(src);
   final graph = await pipeline.build(marge.id);
 

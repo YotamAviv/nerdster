@@ -45,7 +45,7 @@ Future<void> _signInAsDev(BuildContext context) async {
 SignInConfig buildNerdsterSignInConfig() {
   return SignInConfig(
     sessionFactory: createNerdsterSignInSession,
-    firestore: channelFactory.firestoreFor(kNerdsterDomain)!,
+    firestore: channelFactory.firestoreFor(kNerdsterExportUrl)!,
     onData: nerdsterOnSessionData,
     stateNotifier: signInState,
     hasIdentity: () => signInState.hasIdentity,

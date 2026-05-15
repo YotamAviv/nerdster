@@ -42,11 +42,12 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   DemoIdentityKey bart = await DemoIdentityKey.findOrCreate('bart');
   DemoIdentityKey homer = await DemoIdentityKey.findOrCreate('homer');
   DemoIdentityKey homer2 = await DemoIdentityKey.findOrCreate('homer2');
-  DemoIdentityKey marge = await DemoIdentityKey.findOrCreate('marge');
+  DemoIdentityKey marge = await DemoIdentityKey.findOrCreate('marge', endpoint: {'url': kKarenetExportUrl});
+  DemoKey.export('marge-karennet-token', <String, dynamic>{'token': marge.token});
   DemoIdentityKey maggie = await DemoIdentityKey.findOrCreate('maggie');
 
   DemoIdentityKey milhouse = await DemoIdentityKey.findOrCreate('milhouse');
-  DemoIdentityKey luann = await DemoIdentityKey.findOrCreate('luann');
+  DemoIdentityKey luann = await DemoIdentityKey.findOrCreate('luann', endpoint: {'url': kKarenetExportUrl});
   DemoIdentityKey ralph = await DemoIdentityKey.findOrCreate('ralph');
   DemoIdentityKey nelson = await DemoIdentityKey.findOrCreate('nelson');
 

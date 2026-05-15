@@ -30,7 +30,7 @@ void main() {
     // Bob -> Dave ("David")
     await bob.doTrust(TrustVerb.trust, dave, moniker: 'David');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -51,7 +51,7 @@ void main() {
     // Bob trusts Alice back as "Lisa"
     await bob.doTrust(TrustVerb.trust, alice, moniker: 'Lisa');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -75,12 +75,12 @@ void main() {
         await (await alice.keyPair.publicKey).json, await (bob2.publicKey).json, TrustVerb.trust,
         domain: null, moniker: null);
     final OouSigner signer = await OouSigner.make(alice.keyPair);
-    await channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements').push(json, signer);
+    await channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements').push(json, signer);
 
     // Bob2 replaces Bob1
     await bob2.replace(bob1);
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -102,7 +102,7 @@ void main() {
     // Alice -> Bob2 ("Bob") - Different identity
     await alice.doTrust(TrustVerb.trust, bob2, moniker: 'Bob');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -135,7 +135,7 @@ void main() {
     // Charlie2 replaces Charlie1
     await charlie2.replace(charlie1);
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 

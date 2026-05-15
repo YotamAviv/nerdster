@@ -3,6 +3,7 @@ import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
+import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 
 void main() {
@@ -13,11 +14,65 @@ void main() {
     setUpTestRegistry(firestore: firestore);
   });
 
+  // Verifies that karennet.net (Marge/Luann's domain) trust statements are
+  // fetched via the correct channel and blocks are applied in Lisa's PoV.
+  // Uses separate Firestores per domain to match the production app layout.
+  test('Federation: Marge on karennet blocks sideshow in Lisa PoV', () async {
+    final FakeFirebaseFirestore nerdsterFs = FakeFirebaseFirestore();
+    final FakeFirebaseFirestore oneofusFs = FakeFirebaseFirestore();
+    final FakeFirebaseFirestore karenetFs = FakeFirebaseFirestore();
+
+    channelFactory = ChannelFactory(FireChoice.fake);
+    channelFactory.register(
+        exportUrl: 'https://export.nerdster.org',
+        functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
+        firestore: nerdsterFs);
+    channelFactory.register(
+        exportUrl: 'https://export.one-of-us.net',
+        functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
+        firestore: oneofusFs);
+    channelFactory.register(
+        exportUrl: 'https://export.karennet.net',
+        functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
+        firestore: karenetFs);
+
+    ContentStatement.init();
+    DismissStatement.init();
+    TrustStatement.init();
+    ContentStatement.clearCache();
+    DismissStatement.clearCache();
+    TrustStatement.clearCache();
+    Jsonish.wipeCache();
+    FedKey.clearRegistry();
+    useClock(TestClock());
+    DemoKey.reset();
+
+    await simpsonsDemo();
+
+    final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
+    final DemoIdentityKey marge = DemoIdentityKey.findByName('marge')!;
+    final DemoIdentityKey sideshow = DemoIdentityKey.findByName('sideshow')!;
+
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
+    final TrustPipeline pipeline = TrustPipeline(
+      source,
+      channelFactory: channelFactory,
+      maxDegrees: 6,
+      pathRequirement: (d) => 1,
+    );
+    final TrustGraph graph = await pipeline.build(lisa.id);
+
+    expect(graph.isTrusted(marge.id), isTrue,
+        reason: 'Marge (karennet) should be in Lisa\'s trust network');
+    expect(graph.isTrusted(sideshow.id), isFalse,
+        reason: 'Sideshow should be blocked by Marge\'s karennet block statement');
+  });
+
   test('Simpsons Demo: Millhouse PoV', () async {
     await simpsonsDemo();
 
     final DemoIdentityKey milhouse = DemoIdentityKey.findByName('milhouse')!;
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(milhouse.id);
 
@@ -41,7 +96,7 @@ void main() {
     await simpsonsDemo();
 
     final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(lisa.id);
     final Labeler labeler = Labeler(graph);
@@ -57,7 +112,7 @@ void main() {
     await simpsonsDemo();
 
     final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(bart.id);
     final Labeler labeler = Labeler(graph);

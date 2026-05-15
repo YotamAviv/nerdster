@@ -28,7 +28,7 @@ Future<void> qrSignIn(BuildContext context) async {
   // Start listening BEFORE showing dialog
   // ignore: unawaited_futures
   session.listen(
-    firestore: channelFactory.firestoreFor(kNerdsterDomain)!,
+    firestore: channelFactory.firestoreFor(kNerdsterExportUrl)!,
     onData: nerdsterOnSessionData,
     onDone: () {
       if (!completer.isCompleted) {

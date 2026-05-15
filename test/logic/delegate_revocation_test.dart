@@ -16,7 +16,7 @@ void main() {
   setUp(() {
     fire = FakeFirebaseFirestore();
     setUpTestRegistry(firestore: fire);
-    contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
+    contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']);
   });
 
   Future<void> upload(String token, Statement s) async {

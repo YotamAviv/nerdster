@@ -13,3 +13,4 @@ check() {
 check "nerdster"    8080 5001
 check "oneofus"     8081 5002
 check "hablotengo"  8082 5003
+check "karennet"    8083 5004

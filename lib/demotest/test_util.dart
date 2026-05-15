@@ -6,6 +6,7 @@ import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/content_types.dart';
 import 'package:oneofus_common/clock.dart';
+import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
 export 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -154,13 +155,17 @@ TrustStatement makeTrustStatement({
 void setUpTestRegistry({FakeFirebaseFirestore? firestore}) {
   final FakeFirebaseFirestore fs = firestore ?? FakeFirebaseFirestore();
   channelFactory = ChannelFactory(FireChoice.fake);
-  channelFactory.register(kNerdsterDomain,
+  channelFactory.register(
       exportUrl: 'https://export.nerdster.org',
       functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
       firestore: fs);
-  channelFactory.register(kOneofusDomain,
+  channelFactory.register(
       exportUrl: 'https://export.one-of-us.net',
       functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
+      firestore: fs);
+  channelFactory.register(
+      exportUrl: 'https://export.karennet.net',
+      functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
       firestore: fs);
   ContentStatement.init();
   DismissStatement.init();
@@ -169,6 +174,7 @@ void setUpTestRegistry({FakeFirebaseFirestore? firestore}) {
   DismissStatement.clearCache();
   TrustStatement.clearCache();
   Jsonish.wipeCache();
+  FedKey.clearRegistry();
   useClock(TestClock());
   _mockKeyCounter = 0;
   _testSubjectCount = 0;

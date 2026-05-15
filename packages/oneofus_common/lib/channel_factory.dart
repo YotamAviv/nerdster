@@ -59,7 +59,7 @@ class ChannelFactory {
   final ValueListenable<bool>? skipVerify;
   final Map<String, _Registration> _registrations = {};
 
-  /// One root channel per domain/streamKey; all typed FilteredChannels share these.
+  /// One root channel per exportUrl/streamKey; all typed FilteredChannels share these.
   final Map<String, CachedSource<Statement>> _rootChannels = {};
 
   ChannelFactory(this.fireChoice, {this.skipVerify});
@@ -70,8 +70,7 @@ class ChannelFactory {
   /// [emulatorExportUrl] and [emulatorFunctionsUrl] are used when
   /// fireChoice == emulator.
   /// [firestore] is required when fireChoice == fake.
-  void register(
-    String domain, {
+  void register({
     required String exportUrl,
     required String functionsUrl,
     String? emulatorExportUrl,
@@ -89,7 +88,7 @@ class ChannelFactory {
         fireChoice == FireChoice.emulator && emulatorFunctionsUrl != null
             ? emulatorFunctionsUrl
             : functionsUrl;
-    _registrations[domain] = _Registration(
+    _registrations[exportUrl] = _Registration(
       exportUrl: resolvedExport,
       functionsUrl: resolvedFunctions,
       writeEndpoint: writeEndpoint,
@@ -99,32 +98,32 @@ class ChannelFactory {
     );
   }
 
-  /// Returns a [FilteredChannel<T>] backed by a shared root for [domain]/[streamKey].
+  /// Returns a [FilteredChannel<T>] backed by a shared root for [exportUrl]/[streamKey].
   ///
-  /// Roots are keyed by domain, streamKey, and excludeTypes together, so channels with
+  /// Roots are keyed by exportUrl, streamKey, and excludeTypes together, so channels with
   /// different excludeTypes get different roots and different CF fetch configurations.
   /// Writable channels must share the same root — always use the same excludeTypes
   /// (typically none) for channels that call push().
   StatementChannel<T> getChannel<T extends Statement>(
-    String domain,
+    String exportUrl,
     String streamKey, {
     List<String> excludeTypes = const [],
   }) {
     final sorted = List.of(excludeTypes)..sort();
     final cacheKey = sorted.isEmpty
-        ? '$domain/$streamKey'
-        : '$domain/$streamKey:excl=${sorted.join(",")}';
+        ? '$exportUrl/$streamKey'
+        : '$exportUrl/$streamKey:excl=${sorted.join(",")}';
     final root = _rootChannels.putIfAbsent(
       cacheKey,
-      () => _createRoot(domain, streamKey, excludeTypes: sorted),
+      () => _createRoot(exportUrl, streamKey, excludeTypes: sorted),
     );
     return FilteredChannel<T>(root);
   }
 
-  CachedSource<Statement> _createRoot(String domain, String streamKey,
+  CachedSource<Statement> _createRoot(String exportUrl, String streamKey,
       {List<String> excludeTypes = const []}) {
-    final reg = _registrations[domain];
-    assert(reg != null, 'No registration for domain "$domain"');
+    final reg = _registrations[exportUrl];
+    assert(reg != null, 'No registration for "$exportUrl"');
     if (fireChoice == FireChoice.fake) {
       assert(reg!.firestore != null,
           'register() must provide firestore for fireChoice.fake');
@@ -154,7 +153,7 @@ class ChannelFactory {
   }
 
   /// Returns the raw Firestore instance registered for [domain], or null if none.
-  FirebaseFirestore? firestoreFor(String domain) => _registrations[domain]?.firestore;
+  FirebaseFirestore? firestoreFor(String exportUrl) => _registrations[exportUrl]?.firestore;
 
   /// Clears all root channel caches. Does not affect underlying Firestore data.
   void clearCache() {

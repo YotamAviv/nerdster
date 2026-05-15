@@ -89,7 +89,7 @@ class _SignInMenuState extends State<SignInMenu> {
                 final session = await createNerdsterSignInSession();
                 // ignore: unawaited_futures
                 session.listen(
-                  firestore: channelFactory.firestoreFor(kNerdsterDomain)!,
+                  firestore: channelFactory.firestoreFor(kNerdsterExportUrl)!,
                   onData: nerdsterOnSessionData,
                   timeout: const Duration(minutes: 10),
                   onDone: () {

@@ -23,7 +23,7 @@ void main() {
   const lisaIdentity = {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "yxjzOHyjBy67RtAWW70dqoc7FLOlPNsek4yPZQu7rIM"
+    "x": "RlaSqmVKIvafXNxqI3ir_4B9bf1XEaiZILE66iLbl4Y"
   };
 
   setUpAll(() async {
@@ -39,6 +39,7 @@ void main() {
 
     FirebaseConfig.registerRedirect('https://export.one-of-us.net', 'http://$host:5002/one-of-us-net/us-central1/export');
     FirebaseConfig.registerRedirect('https://export.nerdster.org', 'http://$host:5001/nerdster/us-central1/export');
+    FirebaseConfig.registerRedirect('https://export.karennet.net', 'http://$host:5004/karennet/us-central1/export');
 
     // Initialize Statements
     TrustStatement.init();
@@ -46,18 +47,23 @@ void main() {
     DismissStatement.init();
 
     channelFactory = ChannelFactory(FireChoice.emulator);
-    channelFactory.register(kNerdsterDomain,
+    channelFactory.register(
         exportUrl: 'https://export.nerdster.org',
         functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
         emulatorExportUrl: 'http://$host:5001/nerdster/us-central1/export',
         emulatorFunctionsUrl: 'http://$host:5001/nerdster/us-central1',
         firestore: FirebaseFirestore.instance);
-    channelFactory.register(kOneofusDomain,
+    channelFactory.register(
         exportUrl: 'https://export.one-of-us.net',
         functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
         emulatorExportUrl: 'http://$host:5002/one-of-us-net/us-central1/export',
         emulatorFunctionsUrl: 'http://$host:5002/one-of-us-net/us-central1',
         firestore: OneofusFire.firestore);
+    channelFactory.register(
+        exportUrl: 'https://export.karennet.net',
+        functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
+        emulatorExportUrl: 'http://$host:5004/karennet/us-central1/export',
+        emulatorFunctionsUrl: 'http://$host:5004/karennet/us-central1');
   });
 
   group('UI Integration Tests', () {
@@ -66,14 +72,14 @@ void main() {
       final lisaToken = getToken(lisaIdentity);
       print('Signing in as Lisa: $lisaToken');
 
-      // 2. Start the app
+      // 2. Start the app first so FeedController is created and listening,
+      //    then sign in — this triggers _onSignInStateChanged → refresh().
+      await tester.pumpWidget(const app.NerdsterApp());
       await signInState.signInWithFedKey(FedKey(lisaIdentity), null);
       print('Current POV: ${signInState.pov}');
 
-      await tester.pumpWidget(const app.NerdsterApp());
-
       // Wait for the pipeline to run and UI to settle
-      await tester.pumpAndSettle(const Duration(seconds: 10));
+      await tester.pumpAndSettle(const Duration(seconds: 15));
 
       // 3. Verify UI Components
       final contentCards = find.byType(ContentCard);

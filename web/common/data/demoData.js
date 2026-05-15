@@ -3,87 +3,90 @@ const demoData = {
   "lisa": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "6_v8JBYu2pGWGqjTqd6WKxSAaSzkeYnvVLgdxZ0pTNU"
+    "x": "RlaSqmVKIvafXNxqI3ir_4B9bf1XEaiZILE66iLbl4Y"
   },
   "bart": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "Ff_RJ4fPBZw4O_wN6b_XS0drJ7OvswNvNWYsqBgWQrc"
+    "x": "wovzWsD91J8uEd1RhrYzOGoEJ4Topu0opNQVbVj8I88"
   },
   "homer": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "SMmi0dN0x9HIL1bgfqtT_GlPxIk0D3p-qS64CXs9ULk"
+    "x": "gE25OCGqEFKdYc-_Q4KeMSTBmWPUoEkIaaF5ulQyS8Q"
   },
   "homer2": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "Zwd27ZWSPLZlDRXwbY-TekfboCn5NId3sDZ--uMguo8"
+    "x": "Iz9C5ygL6nRKoNv1kA4ctL6aVYL7icnSLvL64gReht4"
   },
   "marge": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "T1ovo0GeY6ec0BiOQG2CCP0ngSTmAkuw7C7BtgHw1io"
+    "x": "djPyakNiuhUBpctSlLyXCNmdB_1MufuofHiTRCXwznU"
+  },
+  "marge-karennet-token": {
+    "token": "962eca4f05ad847e4d584dff9feb642eb002e3ff"
   },
   "maggie": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "c-W4jAa7r8ViIjc4mGEZbRTGZzF4OZi28DOacDez1X0"
+    "x": "LL8vM--qDLM8VM8GCF6hK5N1T3iEYtrQqsTW5rZfy5U"
   },
   "milhouse": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "k9InOGYdBI19kgSuGXrTW8-KmG5_b7WSmzZO9fmYBX8"
+    "x": "DGusVDenZTZmhNDD-_EAtX0Rn8lgQPMIrmtvUQnn-kU"
   },
   "luann": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "FGdwp-XqPhuyfP9YovyrVjGGKS0u8AcqfnL7ysBRd8o"
+    "x": "akhWdsjdimU2DpWtbqnnVSTMb8t_FhnmEKRlBgldwHQ"
   },
   "ralph": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "gPGALI4ODf5DkiZyS-qOiHJLzK1uu2KHwpNzHSDooZM"
+    "x": "SqXv4X8T3btvkgewX3jbmRKm78yEyBWhcZCJ4iSO7tg"
   },
   "nelson": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "iXx5ZSuofaPMyqvhiW1wQusyQoweWjekKCTUTCq0ugk"
+    "x": "hGmsmyS015CwAbPwYXsXDFUqXbQN3dEhZxLvUjBXiFY"
   },
   "lenny": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "oc9ZvDwPoteFfSQ_dJ-du6oNtGqpoAeWpLqPP_CqBcI"
+    "x": "FcW7wCHT3POo-4njuFuHAj4HpbqZ7roktB2z78HWndE"
   },
   "carl": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "gTApHT-29OuIH22gPY8FOS1rMxeT8pqmUbXOX-dz-ts"
+    "x": "ZV50JULpXFEBBrnL6KJc4fXi8Fa9seuCWoXgObVv93M"
   },
   "burns": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "cFsHVfjJPK5iHGES8jojb_dzDuKCrGjLWwMCB8eEnTU"
+    "x": "gfvRVHqLRg1RX0mhtAgyLRr_uW5e2z0_UNf3KkBo70Y"
   },
   "smithers": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "-wrxDakGJ84BE5hNcFYrtA5Wl7SgK2GZKieHIO8S1Kc"
+    "x": "xTOrfirip1p0aIsUdETy_FI30tW41cMlvpQ1_0tMBjU"
   },
   "krusty": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "kqQpilBu3-KXADZ2r4HoBE7NwPCfrxUTZ3ayE54dFqc"
+    "x": "7kPSh_EG4M-mw6ILB_lJigrM4UUpuuQU97D_WSEqikw"
   },
   "sideshow": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "LR0a44CY4wMzHvykVb5Un7F5glud-k1ib3THwpMhg-Y"
+    "x": "ArcSOkyT1ZuesAgWBCNb32GzoNE4s9dmu7nlSH0VRvA"
   },
   "mel": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "9LP4ljx__rQkqrrTjfuLZ1ihsPmvV-iJp4MGDTFmPOo"
+    "x": "YhCBWna5leCHRsc7utH1gXVqTOaiWNSi3JyVDLYmAH4"
   },
   "homer-replace-key": {
     "statement": "net.one-of-us",
@@ -91,12 +94,12 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "Zwd27ZWSPLZlDRXwbY-TekfboCn5NId3sDZ--uMguo8"
+      "x": "Iz9C5ygL6nRKoNv1kA4ctL6aVYL7icnSLvL64gReht4"
     },
     "replace": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "SMmi0dN0x9HIL1bgfqtT_GlPxIk0D3p-qS64CXs9ULk"
+      "x": "gE25OCGqEFKdYc-_Q4KeMSTBmWPUoEkIaaF5ulQyS8Q"
     },
     "with": {
       "revokeAt": "<since always>",
@@ -105,8 +108,8 @@ const demoData = {
       }
     },
     "comment": "lost phone",
-    "previous": "878d3232557af2bb15bd4d1f49ef7aaaf1fe5a43",
-    "signature": "7bf0716966b4b3842feb59b47fbe5865e695f914badd49ed2d0de35652fdf97e9a5b254cf90a264a8558738ed1e96dc619c38e57837bc00b7ec22433d44d1007"
+    "previous": "d5d183ac2d6d4d8db4ec8ef1942d4ee68b76e1fb",
+    "signature": "6f578e4998662d5e5a43e325823045e72d435153a98741311f6c7b0abf7b251930baa083a7efd6cc3392f8296596cb1fa36fc9ccf5df60052ba11e75a0b4db09"
   },
   "lisa-trust-mom": {
     "statement": "net.one-of-us",
@@ -114,31 +117,31 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "6_v8JBYu2pGWGqjTqd6WKxSAaSzkeYnvVLgdxZ0pTNU"
+      "x": "RlaSqmVKIvafXNxqI3ir_4B9bf1XEaiZILE66iLbl4Y"
     },
     "trust": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "T1ovo0GeY6ec0BiOQG2CCP0ngSTmAkuw7C7BtgHw1io"
+      "x": "djPyakNiuhUBpctSlLyXCNmdB_1MufuofHiTRCXwznU"
     },
     "with": {
       "moniker": "Mom",
       "endpoint": {
-        "url": "https://export.one-of-us.net"
+        "url": "https://export.karennet.net"
       }
     },
-    "previous": "d06293e6d2e046b0b0e4648214c30f8373b650cf",
-    "signature": "91d863e5863f862dfb638085bc314e700f01f2a17a416e4f7c1647e9209e283e4f3690874a792e0b58fb4930adae8723d09238de9cb9a4eb3a0c8f4dea5daf01"
+    "previous": "c75c57737d31def8082d887cc655c9cb930ffd53",
+    "signature": "08f1832dc8679d4f4e93667fac1e6368490436a21f3b3dafc75f1dc2bad4b7888e4b37df38563857c7458cb5347d122b053a1032d178f4a3ef85da71e57a3208"
   },
   "seymore": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "qOPDrWAhvtzf6L1sUYEZKvpoCMctGv_ssEr1bAX5zmk"
+    "x": "pz1eFqQnCGt0k-GuG7gSqoNqZ0J8P3t769EeLzSwvq4"
   },
   "amanda": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "QI44THjIDAeddELSTdYDdRyhIBRjAW-aSxu8vh6zAuY"
+    "x": "o5NrfehUV3JvGTleWm7wTPvFLHRs34boepGyC1zA59I"
   },
   "sideshow-trust-amanda": {
     "statement": "net.one-of-us",
@@ -146,12 +149,12 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "LR0a44CY4wMzHvykVb5Un7F5glud-k1ib3THwpMhg-Y"
+      "x": "ArcSOkyT1ZuesAgWBCNb32GzoNE4s9dmu7nlSH0VRvA"
     },
     "trust": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "QI44THjIDAeddELSTdYDdRyhIBRjAW-aSxu8vh6zAuY"
+      "x": "o5NrfehUV3JvGTleWm7wTPvFLHRs34boepGyC1zA59I"
     },
     "with": {
       "moniker": "Amanda Hugginkiss",
@@ -159,8 +162,8 @@ const demoData = {
         "url": "https://export.one-of-us.net"
       }
     },
-    "previous": "a05eab19ab844857405bf25870607e6da99f1775",
-    "signature": "36e2b46da78fcea5f9abd126f75f06f8b74cc465dac7d39d44fe19f2fcfa0dc4dddfe4d2abda205a8bfbca9e5e08cd0d5918bfdec7bc4c25423c506f00a8bb0c"
+    "previous": "25ad6b02d077653135d642cb3b01c5812de0a2a5",
+    "signature": "d5d74c55db2468da76de3d4cdc7211fc49ad5f321edd5b7162c8931caceb5a9dfe95ba61eabbdd6f76a644796da5764352b371b03f61a47d76560850d350460d"
   },
   "marge-block-sideshow": {
     "statement": "net.one-of-us",
@@ -168,56 +171,56 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "T1ovo0GeY6ec0BiOQG2CCP0ngSTmAkuw7C7BtgHw1io"
+      "x": "djPyakNiuhUBpctSlLyXCNmdB_1MufuofHiTRCXwznU"
     },
     "block": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "LR0a44CY4wMzHvykVb5Un7F5glud-k1ib3THwpMhg-Y"
+      "x": "ArcSOkyT1ZuesAgWBCNb32GzoNE4s9dmu7nlSH0VRvA"
     },
     "comment": "Naughty! You vouched for ficticious names to rack up likes",
-    "previous": "4093efea8b5d148274e45b56434db305022e7288",
-    "signature": "4885d842640137bd41a6d8616839d15aadb2d50ea1bea0815ddf4c33bb0e4fe953ec6b53e8127d266a935f381fd39d7c100d02da6adfae1d6453161611212109"
+    "previous": "1c247337dc4641ade3f9f3b54d0b4906996f57cd",
+    "signature": "e90b4eac991dac6b3d4cc67221b31cc844b619685d71cf33ed30092092f95464dbc45572bf91b9f43533a4d319ad34008ba662a387c1a65d952bc19419625701"
   },
   "lisa-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "Fb5-ydWL_Sa9I64Dwjsh6enSOe0SMigpodzrqbPRfuM"
+    "x": "7ODcv5azWdxfEBczm7-ZsptFu-rpWvaz2dQu3A8HA9U"
   },
   "bart-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "lTVtFKSfj-UqBcYujmpgLbQ39wlSeSNnlyj60sJGesk"
+    "x": "d5zuJDOrqTA8BYPVwDc_X3PYfmGuQlZpR9rywVuThBs"
   },
   "burns-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "DzWdd-tgaQp544GT8z7UPRkkIXbKK1mOaQ_Ddc84Jn8"
+    "x": "FijJ5FTarSOztnGGRfVFHZ4u0E4TCNfYX0N0Oqzox7E"
   },
   "homer2-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "XpVW7kwnUEs2E-XJxilxNslRPrl60abn-6gzb_b-BYc"
+    "x": "AJvZXFDfq2nCZAJ9EZ_TmVuWs21cqoLDBVbKSxh9vrA"
   },
   "milhouse-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "YeWxUtGaEvqrufjb5eW6vvA7apQwFORPzogV-aIFYd0"
+    "x": "aOIq3X03YPoNEO6zAftDW_TC1UZ8_xZ7CzEt2nDww6g"
   },
   "carl-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "L0jGRxBnZWn5pWjX93izRz_XE5uDKpp6Xe1Gc9EehSE"
+    "x": "3OM1v-cxtUm2bQE-eCeqd5JDhy2fGu2tYH9fVRh2h4A"
   },
   "smithers-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "0oT1rkUyx_mZKMqO2kNR8z8gcTzEIUeP9QMSswhWaOo"
+    "x": "T5ET90ToD_Mqv5KTOqw-7oQyLjWCY5RpDFPsb02QV10"
   },
   "marge-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "h36Ylcfg9hERJx8zUIIRqwjiGPgFxjoqDz3g6lbnjoI"
+    "x": "IXDwoXbazVirGLpaF-8o1lxW93IVL3Jr0dNXdOJJyHU"
   },
   "marge-delegate": {
     "statement": "net.one-of-us",
@@ -225,38 +228,38 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "T1ovo0GeY6ec0BiOQG2CCP0ngSTmAkuw7C7BtgHw1io"
+      "x": "djPyakNiuhUBpctSlLyXCNmdB_1MufuofHiTRCXwznU"
     },
     "delegate": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "h36Ylcfg9hERJx8zUIIRqwjiGPgFxjoqDz3g6lbnjoI"
+      "x": "IXDwoXbazVirGLpaF-8o1lxW93IVL3Jr0dNXdOJJyHU"
     },
     "with": {
       "domain": "nerdster.org"
     },
-    "previous": "02e17dae90a4377324b0ecbf0ae126b83ced2036",
-    "signature": "b23e08b1930140099ed3e44eec531dd287fdeed0e706e9e0ae1e49005dbc1d325b03eb5bed9e376879fb81f03d9680eba30a3e85a4b674e86c6886019de9f500"
+    "previous": "c9de4b62aa0aae718670db89784b0ad2b8f6e8e6",
+    "signature": "c8bcb3355f3ac78b8fa516b50a9a8a575fbc9769bfcc0910a997ca09f9cfb50af8140e51a09ce366a0b51b694d5e2e8bcd2b70e67229d8d12a402291d7319b0a"
   },
   "sideshow-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "2ZBE5bvZ7M-bja0fB_FCBNABtkT84qoR3N0LezRIQug"
+    "x": "j45QohIkqC9mhVVxrDhiBxTZDkoMdSLg8XGySX0EHRE"
   },
   "mel-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "EY9jilFwg7uxkPKb-2T0W51tRYeGcV-LxJY8ZIpR0ys"
+    "x": "SoERjEX2V_zVZ1FhFj0yicxW7RPRYIDvJur65TjYRN4"
   },
   "amanda-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "AAcL3aTIAeS1rnrScfEJvuQ95sxlF5UPG13C4donBAU"
+    "x": "z3pJ4K1J5m-VG-rVsXJ2NrKC5N0nE84tiNeyPTx91hU"
   },
   "seymore-nerdster0": {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "7rx8cvpTYuuJYLIcZWhgxyanRAkGgR0XS8XT07ieLC0"
+    "x": "0DhyhjIDa6UUq-nIW5hQTRtlvlk8M7sVwcXZAsx9glk"
   },
   "sideshow-revoke-marge-delegate": {
     "statement": "net.one-of-us",
@@ -264,20 +267,20 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "LR0a44CY4wMzHvykVb5Un7F5glud-k1ib3THwpMhg-Y"
+      "x": "ArcSOkyT1ZuesAgWBCNb32GzoNE4s9dmu7nlSH0VRvA"
     },
     "delegate": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "h36Ylcfg9hERJx8zUIIRqwjiGPgFxjoqDz3g6lbnjoI"
+      "x": "IXDwoXbazVirGLpaF-8o1lxW93IVL3Jr0dNXdOJJyHU"
     },
     "with": {
       "revokeAt": "<since always>",
       "domain": "nerdster.org"
     },
     "comment": "Karen..",
-    "previous": "fc1baaf754f6e75320e78bfdb2012e69ef923291",
-    "signature": "ceceeef467fcfde61564222fc7c6a29be6c9b3a47f18b148bf9b458644ba0caca83c42f7ff1536fadf39eb5cb69e5daffd2a089766047952393282b1461c5806"
+    "previous": "71e08bce83d089b9664abac17bb73a64ca6d4792",
+    "signature": "a364a713d792a7465dd73a5ccaefaac456456fb8532ade0466775f4f31eadef5b24e0e96c2a8da597dd3cd97e6f98931d91ab823820c9df587c05ee0e4c7030c"
   },
   "marge-censor-superbad": {
     "statement": "org.nerdster",
@@ -285,14 +288,14 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "h36Ylcfg9hERJx8zUIIRqwjiGPgFxjoqDz3g6lbnjoI"
+      "x": "IXDwoXbazVirGLpaF-8o1lxW93IVL3Jr0dNXdOJJyHU"
     },
     "rate": "753c10b1268819483504a4ed1a891480ef3a259b",
     "with": {
       "censor": true
     },
-    "previous": "41046cfdfe155e18586b0eb5eb1a16ae552a9f6e",
-    "signature": "22a6376e5b5b8d45791a9f9673a5869caab168ce515118a6dae988087fca337f917e403a3d2cf15ed25a078bf49867d83deba8c754c24ccaedf2ca22beb4ac0e"
+    "previous": "e75da6259dd764531515b1b5d22db4e13887aa32",
+    "signature": "f9a557e6051c30dad4b610343357ade7bee962b8593688ded57f100703c1a008426c23de5ff119ad5747f0354de0d1bac4ad127bf53accbafd3f1e7344677504"
   },
   "marge-banana-rate": {
     "statement": "org.nerdster",
@@ -300,7 +303,7 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "h36Ylcfg9hERJx8zUIIRqwjiGPgFxjoqDz3g6lbnjoI"
+      "x": "IXDwoXbazVirGLpaF-8o1lxW93IVL3Jr0dNXdOJJyHU"
     },
     "rate": {
       "contentType": "recipe",
@@ -311,8 +314,8 @@ const demoData = {
       "recommend": true
     },
     "comment": "#nutritious and #delicious",
-    "previous": "fa18849111c047af9679cda69d1e4839e338fe51",
-    "signature": "c14c118a7636f8ddc3719dd069ba319a1983e00a60842b1b1ab6b26d3d1ced76dfe59cf7a056ff35fb6877f087734c2d9089f384ce406d4cff66dde7c1e46207"
+    "previous": "391d6bc36887883cf47aee89aeb263f5cc3696fb",
+    "signature": "bf1bdb80199ea1d7790bfe57d21da1d31ef48ece964829a3a5d41cd0c50c98ffa1f1cb9966f57414a11aa404a4281dbd2637d7cc76e3f59c1d07d338e88c2900"
   },
   "bart-diss-banana": {
     "statement": "org.nerdster.dis",
@@ -320,14 +323,14 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "lTVtFKSfj-UqBcYujmpgLbQ39wlSeSNnlyj60sJGesk"
+      "x": "d5zuJDOrqTA8BYPVwDc_X3PYfmGuQlZpR9rywVuThBs"
     },
     "rate": "b7b8ef432f68c8de13955c355612757c0d605710",
     "with": {
       "dismiss": "forever"
     },
-    "previous": "2309938c216913364ba150e2864191ff2d77f32f",
-    "signature": "91e5c8244f4c59856b45611a731b9d60d9303b2550ad83564499fd6dd4dc7d6f8bc8723ed62cde1db522cedb7ff17fbed9551dc595e2f9c047dfd41924541a01"
+    "previous": "95ef180dff36e348f70c898c5465e8e32c43b2fc",
+    "signature": "faff58ec3e9e3cd000445cf08c29bf3832f4322963914623b1996bd8f62758dfe5597d039432305a4f9c186f51675551f36eb2cb777e936b620fca5a029c8707"
   },
   "bart-follow-milhouse-social": {
     "statement": "org.nerdster",
@@ -335,15 +338,15 @@ const demoData = {
     "I": {
       "crv": "Ed25519",
       "kty": "OKP",
-      "x": "lTVtFKSfj-UqBcYujmpgLbQ39wlSeSNnlyj60sJGesk"
+      "x": "d5zuJDOrqTA8BYPVwDc_X3PYfmGuQlZpR9rywVuThBs"
     },
-    "follow": "b48390bfa615a0980de873790941073f5dc53132",
+    "follow": "832abe55bc1635c0349d9df1b95eef2d6b322b18",
     "with": {
       "contexts": {
         "social": 1
       }
     },
-    "previous": "7b1987924b90e0501cc0b59d584a042aad9c971a",
-    "signature": "5e7266c8a60c33f01e6405a2698379a5c60450c403991be4cb658988faee9a9f929cf1aad76c201b5d2bfffba37440a2f64f0aaf9521c3d4081fff5a43c9fa01"
+    "previous": "4c7ea637976efee110a163a15060c36aae781e91",
+    "signature": "021ea94dc76723faf25902043cd9a6e210aff8e927bfd466c26bbe5827308ca0b4a2526a26c7551c5f349a474abed48ca034cd5fd153290ab429aa716d3ca400"
   }
 };

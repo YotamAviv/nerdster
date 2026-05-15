@@ -138,7 +138,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> notificationsGallery() async {
   }
 
   // Verify
-  final src = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+  final src = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
   final pipeline = TrustPipeline(src);
   final trustGraph = await pipeline.build(me.id);
 

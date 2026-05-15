@@ -68,7 +68,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> lonerCorrupt() async {
   Statement s = await delegate.doRate(title: 'b');
   await delegate.doRate(title: 'c');
 
-  FirebaseFirestore fire = channelFactory.firestoreFor(kNerdsterDomain)!;
+  FirebaseFirestore fire = channelFactory.firestoreFor(kNerdsterExportUrl)!;
 
   final CollectionReference<Json> fireStatements =
       fire.collection(delegate.token).doc('statements').collection('statements');

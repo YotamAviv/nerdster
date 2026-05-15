@@ -67,12 +67,12 @@ void main() {
       required DemoDelegateKey meDelegate,
     }) async {
       final trustSource =
-          channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+          channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
       final graph = await TrustPipeline(trustSource).build(pov.id);
       final delegateResolver = DelegateResolver(graph);
 
       final appSource =
-          channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
+          channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']);
       final contentPipeline = ContentPipeline(myDelegateSource: appSource, peerDelegateSource: appSource);
 
       final Set<DelegateKey> keysToFetch = {};
@@ -173,11 +173,11 @@ void main() {
     await delegateB2.doRelate(ContentVerb.equate, subject: subjectX, other: subjectY);
 
     // ----- Run pipeline for B's PoV, providing BOTH of B's delegates -----
-    final trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final trustSource = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final graph = await TrustPipeline(trustSource).build(userB.id);
     final delegateResolver = DelegateResolver(graph);
 
-    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']);
     final contentPipeline = ContentPipeline(myDelegateSource: appSource, peerDelegateSource: appSource);
 
     final Set<DelegateKey> keysToFetch = {};

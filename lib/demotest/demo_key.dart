@@ -57,6 +57,8 @@ abstract class DemoKey {
 
   bool get isDelegate;
 
+  static void export(String name, Json value) => _exports[name] = value;
+
   static Json getExports() => _exports;
 
   static String getExportsJson() {
@@ -88,6 +90,7 @@ class DemoIdentityKey implements DemoKey {
   final OouKeyPair keyPair;
   final OouPublicKey publicKey;
   final String token;
+  final Map<String, dynamic> endpoint;
 
   bool get isDelegate => false;
 
@@ -107,13 +110,16 @@ class DemoIdentityKey implements DemoKey {
     return findOrCreate(name);
   }
 
-  static Future<DemoIdentityKey> findOrCreate(String name) async {
+  static Future<DemoIdentityKey> findOrCreate(String name,
+      {Map<String, dynamic>? endpoint}) async {
     if (!_name2key.containsKey(name)) {
       final OouKeyPair keyPair = await _crypto.createKeyPair();
       final OouPublicKey publicKey = await keyPair.publicKey;
       final Json json = await publicKey.json;
       final String token = Jsonish(json).token;
-      DemoIdentityKey out = DemoIdentityKey._internal(name, keyPair, publicKey, token);
+      final resolved = endpoint ?? kNativeEndpoint;
+      if (endpoint != null) FedKey(json, endpoint);
+      DemoIdentityKey out = DemoIdentityKey._internal(name, keyPair, publicKey, token, resolved);
       _name2key[name] = out;
       _token2key[token] = out;
       DemoKey._exports[name] = json;
@@ -121,7 +127,7 @@ class DemoIdentityKey implements DemoKey {
     return _name2key[name]!;
   }
 
-  DemoIdentityKey._internal(this.name, this.keyPair, this.publicKey, this.token);
+  DemoIdentityKey._internal(this.name, this.keyPair, this.publicKey, this.token, this.endpoint);
 
   final List<TrustStatement> _localStatements = [];
   List<TrustStatement> get trustStatements => List.unmodifiable(_localStatements);
@@ -131,6 +137,7 @@ class DemoIdentityKey implements DemoKey {
   /// Creates a generic Identity Key (User) trust statement json
   Future<Json> makeTrust(TrustVerb verb, DemoIdentityKey other,
       {String? moniker, String? comment, String? domain, String? revokeAt}) async {
+    final endpoint = FedKey.find(IdentityKey(other.token))?.endpoint;
     return TrustStatement.make(
       await publicKey.json,
       await other.publicKey.json,
@@ -139,6 +146,7 @@ class DemoIdentityKey implements DemoKey {
       moniker: moniker,
       comment: comment,
       revokeAt: revokeAt,
+      endpoint: endpoint,
     );
   }
 
@@ -221,7 +229,7 @@ class DemoIdentityKey implements DemoKey {
   }
 
   Future<TrustStatement> _signAndPush(Json json, String? export) async {
-    final StatementChannel<TrustStatement> source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final StatementChannel<TrustStatement> source = channelFactory.getChannel<TrustStatement>(endpoint['url'] as String, 'statements');
     final OouSigner signer = await OouSigner.make(keyPair);
     await source.fetch({Jsonish(json['I']).token: null});
     final TrustStatement trust = await source.push(json, signer);
@@ -361,7 +369,7 @@ class DemoDelegateKey implements DemoKey {
   }
 
   Future<DismissStatement> _pushDis(Json json, String? export) async {
-    final source = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements');
+    final source = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements');
     final signer = await OouSigner.make(keyPair);
     await source.fetch({Jsonish(json['I']).token: null});
     final dis = await source.push(json, signer);
@@ -398,7 +406,7 @@ class DemoDelegateKey implements DemoKey {
   }
 
   Future<ContentStatement> _pushContent(Json json, String? export) async {
-    final source = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements');
+    final source = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements');
     final signer = await OouSigner.make(keyPair);
     await source.fetch({Jsonish(json['I']).token: null});
     final content = await source.push(json, signer);

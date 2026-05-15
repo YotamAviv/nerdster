@@ -1,3 +1,4 @@
+import 'package:oneofus_common/channel_factory.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/keys.dart';
@@ -6,11 +7,15 @@ import 'package:nerdster_common/trust_logic.dart';
 
 class TrustPipeline {
   final StatementSource<TrustStatement> source;
+  // If provided, keys are grouped by endpoint domain and fetched from the
+  // appropriate registered channel rather than always using [source].
+  final ChannelFactory? channelFactory;
   final int maxDegrees;
   final PathRequirement? pathRequirement;
 
   TrustPipeline(
     this.source, {
+    this.channelFactory,
     this.maxDegrees = 6,
     this.pathRequirement,
   });
@@ -43,7 +48,22 @@ class TrustPipeline {
 
       final fetchMap = {for (var k in keysToFetch) k.value: null};
 
-      final newStatementsMap = await source.fetch(fetchMap);
+      Map<String, List<TrustStatement>> newStatementsMap;
+      if (channelFactory != null) {
+        newStatementsMap = {};
+        final byUrl = <String, Map<String, String?>>{};
+        for (final key in keysToFetch) {
+          final url = FedKey.find(key)?.endpoint['url'] as String? ?? kNativeUrl;
+          byUrl.putIfAbsent(url, () => {})[key.value] = null;
+        }
+        for (final entry in byUrl.entries) {
+          final ch = channelFactory!.getChannel<TrustStatement>(entry.key, 'statements');
+          final results = await ch.fetch(entry.value);
+          newStatementsMap.addAll(results);
+        }
+      } else {
+        newStatementsMap = await source.fetch(fetchMap);
+      }
       visited.addAll(keysToFetch);
 
       for (var entry in newStatementsMap.entries) {

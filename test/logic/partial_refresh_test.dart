@@ -60,7 +60,7 @@ void main() {
       shakes!.canonical.value,
       'forever',
     );
-    final disChannel = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements');
+    final disChannel = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements');
     await disChannel.fetch({lisaDelegate.token: null});
     await disChannel.push(json, signer);
 
