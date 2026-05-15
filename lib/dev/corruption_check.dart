@@ -26,8 +26,8 @@ class CorruptionCheck {
     for (String token in keysToCheck) {
       // TODO: Determine correct domain/type for each key.
       // For now, checking both domains as both types.
-      await check<TrustStatement>(token, kOneofusDomain);
-      await check<ContentStatement>(token, kNerdsterDomain);
+      await check<TrustStatement>(token, kNativeUrl);
+      await check<ContentStatement>(token, kNerdsterExportUrl);
     }
   }
 
@@ -92,11 +92,11 @@ class CorruptionCheck {
       }
 
       // Validate verb (Well, we have a Statement, and so something up the chain should have crashed with a bad verb)
-      if (domain == kOneofusDomain) {
+      if (domain == kNativeUrl) {
         if (s is! TrustStatement) {
           print('!type: Expected TrustStatement, got ${s.runtimeType}');
         }
-      } else if (domain == kNerdsterDomain) {
+      } else if (domain == kNerdsterExportUrl) {
         if (s is! ContentStatement) {
           print('!type: Expected ContentStatement, got ${s.runtimeType}');
         }

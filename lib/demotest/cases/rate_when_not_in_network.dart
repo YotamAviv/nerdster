@@ -73,14 +73,14 @@ Future<(DemoIdentityKey, DemoDelegateKey)> rateWhenNotInNetwork() async {
     required String context,
     required bool enableCensorship,
   }) async {
-    final trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final trustSource = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final trustPipeline = TrustPipeline(trustSource);
 
     // Build Trust Graph
     final graph = await trustPipeline.build(pov);
     final delegateResolver = DelegateResolver(graph);
 
-    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']);
     final contentPipeline = ContentPipeline(
       myDelegateSource: appSource,
       peerDelegateSource: appSource,

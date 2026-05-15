@@ -22,14 +22,14 @@ void main() {
         await equivalenceBugWithStatements();
 
     // 2. Fetch Data & Build Aggregation
-    final trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final trustSource = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline trustPipeline = TrustPipeline(trustSource);
     final TrustGraph graph = await trustPipeline.build(poser.id);
     final DelegateResolver delegateResolver = DelegateResolver(graph);
     final FollowNetwork followNetwork =
         reduceFollowNetwork(graph, delegateResolver, ContentResult(), kFollowContextNerdster);
 
-    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']);
+    final appSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']);
     final ContentPipeline contentPipeline = ContentPipeline(
       myDelegateSource: appSource,
       peerDelegateSource: appSource,

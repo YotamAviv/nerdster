@@ -6,8 +6,6 @@ import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/config.dart';
-import 'package:nerdster/models/content_statement.dart' show kNerdsterDomain;
-import 'package:oneofus_common/trust_statement.dart' show kOneofusDomain;
 
 import 'package:nerdster/dev/widget_runner.dart';
 import 'package:nerdster/dev/cloud_source_suite.dart';
@@ -30,13 +28,13 @@ void main() async {
   OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
 
   channelFactory = ChannelFactory(FireChoice.emulator);
-  channelFactory.register(kNerdsterDomain,
+  channelFactory.register(
       exportUrl: 'https://export.nerdster.org',
       functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
       emulatorExportUrl: 'http://127.0.0.1:5001/nerdster/us-central1/export',
       emulatorFunctionsUrl: 'http://127.0.0.1:5001/nerdster/us-central1',
       firestore: FirebaseFirestore.instance);
-  channelFactory.register(kOneofusDomain,
+  channelFactory.register(
       exportUrl: 'https://export.one-of-us.net',
       functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
       emulatorExportUrl: 'http://127.0.0.1:5002/one-of-us-net/us-central1/export',

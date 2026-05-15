@@ -19,7 +19,7 @@ void main() {
     await alice.trust(bob, moniker: 'bob');
     await bob.trust(charlie, moniker: 'charlie');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -45,7 +45,7 @@ void main() {
     await bobNew.replace(bob);
     await bobNew.trust(charlie, moniker: 'charlie'); // bobNew re-states the trust in charlie
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     // Alice (0) -> BobNew (1) -> Bob (2) -> Charlie (3)
     // So we need maxDegrees: 3 to reach Charlie.
     // We also need a pathRequirement that allows 1 path at distance 3.
@@ -87,7 +87,7 @@ void main() {
     await keyC.replace(keyA);
     await alice.trust(keyC, moniker: 'keyC');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -117,7 +117,7 @@ void main() {
     await alice.trust(charlie, moniker: 'charlie');
     await bob.trust(dave, moniker: 'dave');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
 
     // Requirement: 2 paths for distance 2
     final TrustPipeline pipeline =
@@ -151,7 +151,7 @@ void main() {
     await bob.trust(dave, moniker: 'dave');
     await charlie.trust(dave, moniker: 'dave');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
 
     // Requirement: 2 paths for distance 3
     final TrustPipeline pipeline =
@@ -189,7 +189,7 @@ void main() {
     await bob.trust(dave, moniker: 'dave');
     await charlie.block(dave);
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -209,7 +209,7 @@ void main() {
     await alice.trust(bobNew, moniker: 'bobNew');
     await bobNew.replace(bob);
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -227,7 +227,7 @@ void main() {
     await alice.trust(bob, moniker: 'bob');
     await alice.clear(bob); // This issues a 'clear' statement
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -250,7 +250,7 @@ void main() {
 
     await bobOld.trust(charlie, moniker: 'charlie'); // This statement should be ignored
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -281,7 +281,7 @@ void main() {
     // bobNew replaces bobOld and constrains his statements.
     await bobNew.doTrust(TrustVerb.replace, bobOld, revokeAt: '<since always>');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     // Set maxDegrees to 3 so that bobNew (dist 1) can constrain bobOld (dist 2)
     // and we can see the effect on Charlie (dist 3).
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 3);
@@ -310,7 +310,7 @@ void main() {
     // Since Charlie is NOT the POV (Alice), this should NOT generate a notification.
     await charlie.trust(bob, moniker: 'bob');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -358,7 +358,7 @@ void main() {
     // bobOld trusts Frank
     await bobOld.trust(frank, moniker: 'frank');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source);
 
     // --- PoV: Alice ---
@@ -399,7 +399,7 @@ void main() {
     // bobOld is NOT trusted by anyone else.
     // Without backward discovery, bobOld would be "not in network".
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     // We need maxDegrees: 3 so that bobNew (at dist 2) is processed as an issuer.
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 3);
     final TrustGraph graph = await pipeline.build(alice.id);
@@ -427,7 +427,7 @@ void main() {
     // bob2 also replaces bob1 (the standard chain)
     await bob2.replace(bob1);
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -472,7 +472,7 @@ void main() {
     // Bob -> Dave
     await bob.trust(dave, moniker: 'dave');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -500,7 +500,7 @@ void main() {
     await bob.trust(dave, moniker: 'dave');
     await charlie.trust(dave, moniker: 'dave');
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -532,7 +532,7 @@ void main() {
     // 4. bobNew (dist 2) replaces bobOld (dist 1).
     await bobNew.replace(bobOld);
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 5);
     final TrustGraph graph = await pipeline.build(alice.id);
 
@@ -557,7 +557,7 @@ void main() {
     await bobNew.replace(bob);
 
     final Set<String> fetchedKeys = {};
-    final inner = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final inner = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
 
     final StatementSource<TrustStatement> trackingSource =
         _TrackingSource(inner, fetchedKeys);

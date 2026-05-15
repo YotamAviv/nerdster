@@ -51,7 +51,7 @@ void main() {
     );
 
     final signer = await OouSigner.make(lisaDelegate.keyPair);
-    final disChannel = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster']);
+    final disChannel = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster']);
     await disChannel.fetch({lisaDelegate.token: null});
     await disChannel.push(dismissStmt, signer);
 

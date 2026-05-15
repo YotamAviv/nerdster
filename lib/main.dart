@@ -117,19 +117,19 @@ Future<void> main() async {
 
   channelFactory = ChannelFactory(resolvedFireChoice,
       skipVerify: Setting.get<bool>(SettingType.skipVerify));
-  channelFactory.register(kNerdsterDomain,
+  channelFactory.register(
       exportUrl: 'https://export.nerdster.org',
       functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
       emulatorExportUrl: 'http://$emulatorHost:5001/nerdster/us-central1/export',
       emulatorFunctionsUrl: 'http://$emulatorHost:5001/nerdster/us-central1',
       firestore: nerdsterFirestore);
-  channelFactory.register(kOneofusDomain,
+  channelFactory.register(
       exportUrl: 'https://export.one-of-us.net',
       functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
       emulatorExportUrl: 'http://$emulatorHost:5002/one-of-us-net/us-central1/export',
       emulatorFunctionsUrl: 'http://$emulatorHost:5002/one-of-us-net/us-central1',
       firestore: oneofusFirestore);
-  channelFactory.register(kKarenetDomain,
+  channelFactory.register(
       exportUrl: 'https://export.karennet.net',
       functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
       emulatorExportUrl: 'http://$emulatorHost:5004/karennet/us-central1/export',

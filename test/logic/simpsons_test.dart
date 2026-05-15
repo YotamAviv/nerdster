@@ -23,15 +23,15 @@ void main() {
     final FakeFirebaseFirestore karenetFs = FakeFirebaseFirestore();
 
     channelFactory = ChannelFactory(FireChoice.fake);
-    channelFactory.register(kNerdsterDomain,
+    channelFactory.register(
         exportUrl: 'https://export.nerdster.org',
         functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
         firestore: nerdsterFs);
-    channelFactory.register(kOneofusDomain,
+    channelFactory.register(
         exportUrl: 'https://export.one-of-us.net',
         functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
         firestore: oneofusFs);
-    channelFactory.register(kKarenetDomain,
+    channelFactory.register(
         exportUrl: 'https://export.karennet.net',
         functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
         firestore: karenetFs);
@@ -53,7 +53,7 @@ void main() {
     final DemoIdentityKey marge = DemoIdentityKey.findByName('marge')!;
     final DemoIdentityKey sideshow = DemoIdentityKey.findByName('sideshow')!;
 
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(
       source,
       channelFactory: channelFactory,
@@ -72,7 +72,7 @@ void main() {
     await simpsonsDemo();
 
     final DemoIdentityKey milhouse = DemoIdentityKey.findByName('milhouse')!;
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(milhouse.id);
 
@@ -96,7 +96,7 @@ void main() {
     await simpsonsDemo();
 
     final DemoIdentityKey lisa = DemoIdentityKey.findByName('lisa')!;
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(lisa.id);
     final Labeler labeler = Labeler(graph);
@@ -112,7 +112,7 @@ void main() {
     await simpsonsDemo();
 
     final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
-    final source = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements');
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
     final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 6, pathRequirement: (d) => 1);
     final TrustGraph graph = await pipeline.build(bart.id);
     final Labeler labeler = Labeler(graph);

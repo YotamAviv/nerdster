@@ -35,19 +35,19 @@ void main() async {
   OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
 
   channelFactory = ChannelFactory(resolvedFireChoice);
-  channelFactory.register(kNerdsterDomain,
+  channelFactory.register(
       exportUrl: 'https://export.nerdster.org',
       functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
       emulatorExportUrl: 'http://127.0.0.1:5001/nerdster/us-central1/export',
       emulatorFunctionsUrl: 'http://127.0.0.1:5001/nerdster/us-central1',
       firestore: FirebaseFirestore.instance);
-  channelFactory.register(kOneofusDomain,
+  channelFactory.register(
       exportUrl: 'https://export.one-of-us.net',
       functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
       emulatorExportUrl: 'http://127.0.0.1:5002/one-of-us-net/us-central1/export',
       emulatorFunctionsUrl: 'http://127.0.0.1:5002/one-of-us-net/us-central1',
       firestore: OneofusFire.firestore);
-  channelFactory.register(kKarenetDomain,
+  channelFactory.register(
       exportUrl: 'https://export.karennet.net',
       functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
       emulatorExportUrl: 'http://127.0.0.1:5004/karennet/us-central1/export',

@@ -22,7 +22,7 @@ Future<void> concurrentWriteScenario() async {
   final subjectC = createTestSubject(title: 'Article C');
 
   // --- Concurrent dis writes (simulates 3 simultaneous thumbs-down swipes) ---
-  final disSource = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements');
+  final disSource = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements');
   await disSource.fetch({issuerToken: null});
   await disSource.push(DismissStatement.make(iJson, createTestSubject(title: 'Prime'), 'forever'), signer);
   final disResults = (await Future.wait([
@@ -34,7 +34,7 @@ Future<void> concurrentWriteScenario() async {
   debugPrint('concurrent dis: ok ($disResults/3 writes succeeded)');
 
   // --- Concurrent content writes (thumbs up, comment, censor) ---
-  final contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements');
+  final contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements');
   await contentSource.fetch({issuerToken: null});
   await contentSource.push(
       ContentStatement.make(iJson, ContentVerb.rate, createTestSubject(title: 'Prime'), recommend: true), signer);
@@ -51,7 +51,7 @@ Future<void> concurrentWriteScenario() async {
   // checked on the unfiltered full stream. Filtered results have non-null
   // 'previous' pointers where adjacent statements of the other type were
   // skipped — that is correct behaviour, not a chain violation.
-  final fullSource = channelFactory.getChannel<Statement>(kNerdsterDomain, 'statements');
+  final fullSource = channelFactory.getChannel<Statement>(kNerdsterExportUrl, 'statements');
   final int cachedTotalLength = (await fullSource.fetch({issuerToken: null}))[issuerToken]!.length;
   fullSource.clear();
   final Map<String, List<Statement>> freshFetch = await fullSource.fetch({issuerToken: null});

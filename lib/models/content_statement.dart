@@ -7,6 +7,8 @@ import 'package:nerdster/settings/setting_type.dart';
 
 const String kNerdsterDomain = 'nerdster.org';
 const String kKarenetDomain = 'karennet.net';
+const String kNerdsterExportUrl = 'https://export.nerdster.org';
+const String kKarenetExportUrl = 'https://export.karennet.net';
 
 class ContentStatement extends Statement {
   static final Map<String, ContentStatement> _cache = <String, ContentStatement>{};

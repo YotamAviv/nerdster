@@ -51,13 +51,12 @@ class TrustPipeline {
       Map<String, List<TrustStatement>> newStatementsMap;
       if (channelFactory != null) {
         newStatementsMap = {};
-        final byDomain = <String, Map<String, String?>>{};
+        final byUrl = <String, Map<String, String?>>{};
         for (final key in keysToFetch) {
           final url = FedKey.find(key)?.endpoint['url'] as String? ?? kNativeUrl;
-          final domain = Uri.parse(url).host.replaceFirst('export.', '');
-          byDomain.putIfAbsent(domain, () => {})[key.value] = null;
+          byUrl.putIfAbsent(url, () => {})[key.value] = null;
         }
-        for (final entry in byDomain.entries) {
+        for (final entry in byUrl.entries) {
           final ch = channelFactory!.getChannel<TrustStatement>(entry.key, 'statements');
           final results = await ch.fetch(entry.value);
           newStatementsMap.addAll(results);

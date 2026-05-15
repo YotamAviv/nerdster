@@ -2,7 +2,6 @@ import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/clock.dart';
 import 'package:nerdster/logic/follow_logic.dart';
@@ -43,14 +42,12 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   DemoIdentityKey bart = await DemoIdentityKey.findOrCreate('bart');
   DemoIdentityKey homer = await DemoIdentityKey.findOrCreate('homer');
   DemoIdentityKey homer2 = await DemoIdentityKey.findOrCreate('homer2');
-  DemoIdentityKey marge = await DemoIdentityKey.findOrCreate('marge', trustDomain: kKarenetDomain);
-  FedKey(await marge.publicKey.json, {'url': 'https://export.karennet.net'});
+  DemoIdentityKey marge = await DemoIdentityKey.findOrCreate('marge', endpoint: {'url': kKarenetExportUrl});
   DemoKey.export('marge-karennet-token', <String, dynamic>{'token': marge.token});
   DemoIdentityKey maggie = await DemoIdentityKey.findOrCreate('maggie');
 
   DemoIdentityKey milhouse = await DemoIdentityKey.findOrCreate('milhouse');
-  DemoIdentityKey luann = await DemoIdentityKey.findOrCreate('luann', trustDomain: kKarenetDomain);
-  FedKey(await luann.publicKey.json, {'url': 'https://export.karennet.net'});
+  DemoIdentityKey luann = await DemoIdentityKey.findOrCreate('luann', endpoint: {'url': kKarenetExportUrl});
   DemoIdentityKey ralph = await DemoIdentityKey.findOrCreate('ralph');
   DemoIdentityKey nelson = await DemoIdentityKey.findOrCreate('nelson');
 

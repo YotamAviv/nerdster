@@ -58,10 +58,10 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
   FeedController({
     VoidCallback? optimisticConcurrencyFunc,
-  })  : trustSource = channelFactory.getChannel<TrustStatement>(kOneofusDomain, 'statements'),
-        contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements'),
-        disSource = channelFactory.getChannel<DismissStatement>(kNerdsterDomain, 'statements'),
-        _peerContentChannel = channelFactory.getChannel<ContentStatement>(kNerdsterDomain, 'statements', excludeTypes: ['org.nerdster.dis']),
+  })  : trustSource = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements'),
+        contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements'),
+        disSource = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements'),
+        _peerContentChannel = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']),
         _optimisticConcurrencyFunc = optimisticConcurrencyFunc,
         super(null) {
     _lastIdentity = signInState.hasIdentity ? signInState.identity : null;
