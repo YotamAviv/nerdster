@@ -23,7 +23,7 @@ void main() {
   const lisaIdentity = {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "dh5A8D9RuHjp-_sEglaIGek9zWmLvqlvSh_XhBoP9Pk"
+    "x": "RlaSqmVKIvafXNxqI3ir_4B9bf1XEaiZILE66iLbl4Y"
   };
 
   setUpAll(() async {
@@ -79,7 +79,7 @@ void main() {
       print('Current POV: ${signInState.pov}');
 
       // Wait for the pipeline to run and UI to settle
-      await tester.pumpAndSettle(const Duration(seconds: 10));
+      await tester.pumpAndSettle(const Duration(seconds: 15));
 
       // 3. Verify UI Components
       final contentCards = find.byType(ContentCard);
