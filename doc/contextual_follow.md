@@ -1,0 +1,181 @@
+# Contextual Follow & Tag-Based Discovery
+
+# Status
+
+Documented what we currently do (follow contexts, content tags).
+Documented what the dream is.
+Explored some ideas for data model and UI. But nothing's settled or even attractive so far.
+
+## The Dream
+
+Click "news" or "sports" or "bbq" and see content about those subjects — with the
+scope broadened by context relations in your network — rated by people whose
+opinions on those topics you should care about. That includes people you know
+directly, but also people you've never heard of who are respected in that community
+because someone you trust for that topic trusts them transitively.
+
+No central authority decides who the bbq experts are or that "bbq" and "grilling"
+are the same thing. The network self-selects and self-organizes.
+
+---
+
+## What We Already Have
+
+### Hashtags (display filter only)
+
+Tags are extracted from comment text (`#bbq`, `#news`, `#sports`). The Tags
+dropdown in the feed filters display — only subjects tagged with the selected tag
+are shown. The follow network does not change when you pick a tag.
+
+### Follow Contexts (network filter only)
+
+Follow statements have a `contexts` field — an arbitrary string → weight map.
+Example: `{"<nerdster>": 1, "bbq": 1}`. The Context selector switches which context
+is used to build your follow network. When you select "bbq", only follow statements
+with a positive "bbq" weight contribute to your network. Contextual follow is
+transitive: if you follow Ken for "bbq", you follow Ken's "bbq" network too, and
+so on. Popular context names from your network are surfaced dynamically in the
+Context selector.
+
+### The Equivalence System (for subjects today)
+
+The Equivalence system (`equivalence.dart`) is a union-find structure that groups
+tokens together. It supports:
+- `A ~ B`: A and B are equivalent (merge their groups)
+- `A !~ B`: explicit DONT — these must never be merged, even if others say they should
+- Transitive merging: if A~B and B~C then A~B~C
+- DONTs propagate when groups merge — contradictions are rejected
+
+This is computed per-PoV from the EquateStatements of people in your network.
+Currently it applies to subjects (content items). 
+
+---
+
+## The Core Weakness
+
+Context names are exact strings. If you follow Ken for "econ" and Ken follows
+someone for "economics", that person is invisible to your "econ" network — different
+namespace, no connection.
+
+---
+
+## The Idea: Apply Equivalence to Context Names
+
+Extend the Equivalence system to context name strings. Users can declare:
+
+- `"econ" ~ "economics"` — they're the same context
+- `"econ" ~ "politics"` — someone else's opinion that these are related
+- `"econ" !~ "politics"` — someone else's explicit separation
+
+These statements are aggregated from your follow network per-PoV, exactly like
+subject equivalences today. When you browse "econ", the system first resolves its
+equivalence group (which might include "economics", "finance", depending on your
+network's statements), then builds the follow network from all context names in that
+group.
+
+Ken says `econ ~ economics`: people who follow Ken see those as the same context.
+Someone says `econ !~ politics`: that DONT prevents the merge in the views of people
+who follow them. The result is decentralized and network-specific — different PoVs
+can have different context topologies.
+
+---
+
+## What's Not Connected Yet
+
+Hashtags (display filter) and follow contexts (network filter) are independent
+controls today. Clicking "#bbq" in the Tags dropdown doesn't activate the "bbq"
+follow network. Whether and how to connect these is an open design question.
+
+---
+
+## One Namespace, Two Kinds of Context
+
+The human observation: "If I follow Hillel as 'family', folks he follows for family
+are probably in my family. But I'm unlikely to tag an article as 'family' — or maybe
+I would. Sometimes I just want to see everything my family posts, even if it's not
+about family."
+
+This exposes a real distinction:
+
+**Relational contexts** (family, neighbor, kayaker, woman) — the context says something
+about your relationship with the *person*, not about the content they post. You follow
+your family because they're family, not because they're experts in "family content".
+You want to see everything they post. Filtering content by the tag `#family` would miss
+the point.
+
+**Topic contexts** (bbq, econ, #ai, surf) — the context says something about what you
+want to see. You follow Ken for "bbq" because he knows bbq. You want to see bbq content
+from people in your bbq network. The follow context and the content tag are the same
+concept.
+
+Despite this distinction, **one namespace is the right call**. Two namespaces forces
+users to understand the difference upfront, which is too much friction. In one namespace,
+relational and topic contexts coexist naturally — the difference is just how the user
+*chooses to use* a given context name, not a system-level category. The equivalence
+system handles cross-pollination per-PoV as usual.
+
+---
+
+## UI Analysis and Suggestions
+
+The current UI encodes a hidden assumption: contexts and tags are separate things.
+
+**Current state:**
+- The **Context selector** is prominent (top of feed). Selecting a context is the
+  primary act — it changes who you're listening to.
+- The **Tags dropdown** is buried in the filters menu. Clicking a `#hashtag` in a
+  comment activates the tags filter but does *not* change the follow network.
+- These two controls share no connection despite operating over what should be one namespace.
+
+**The problem:** clicking `#bbq` in a comment should ideally do what clicking "bbq" in
+the context selector does — bring in the right people AND show the right content. But
+today it only does the latter half.
+
+**Proposed direction: hashtag clicks drive the full experience**
+
+When a user taps `#bbq` in a comment, they're expressing interest in that topic. The
+system should respond fully:
+1. Switch the follow context to "bbq" (broaden the network to bbq-trusted people)
+2. Filter content to `#bbq` tagged items
+
+For **relational contexts** (family, neighbor), the content-filter half is usually
+unwanted — you want *all* content from those people, not just posts tagged `#family`.
+A simple per-context toggle — "also filter content by this tag" — lets the user
+decide.
+
+**What changes:**
+
+- `#hashtag` links in comments become the primary discovery entry point. Tapping one
+  activates the matching follow context (if one exists in the network) and sets the
+  content filter. The experience becomes: "I saw this tag, I want to go deeper."
+- The **Context selector** stays prominent but is now also reachable via hashtag taps.
+  It remains useful for switching between saved/named views (family, work, bbq) directly.
+- The **Tags filter** in the menu can be simplified or removed — it becomes a secondary
+  control for users who want to filter content within an already-active context without
+  changing the network.
+- Tags that have an associated follow context in your network could be visually
+  distinguished (e.g., a small network icon next to `#bbq` in comments), so users
+  know a tap will also shift the network, not just filter.
+
+**Summary:** make hashtag taps the unified entry point into topic-scoped browsing.
+The context selector becomes the place you *name and manage* your lenses; hashtag
+taps are how you *discover and enter* them organically from content.
+
+
+
+- What's the right UI for declaring context equivalences? Some options:
+
+  - **Link icon in the Tags dropdown**: select two (or more) tags and click a link
+    icon, bringing up a dialog like RelateDialog. Produces a signed, published
+    equivalence statement.
+
+  - **Drag to group**: drag one tag onto another to declare them equivalent.
+    Expand a grouped tag to see its members. Drag a tag out of a group to separate
+    it.
+
+  In either case, equivalences are signed statements published to the network.
+  The canonical/equivalent relationship is computed per-PoV by the Equivalence
+  system (or a reimplementation of it applied to context names). If Andrew says
+  "cycling" is canonical for "bikes" but Eric says "bikes" is unrelated to
+  "cycling" (or that "bikes" is the canonical one), each person sees the
+  aggregation from their own PoV based on who they follow.
