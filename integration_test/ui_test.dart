@@ -78,8 +78,19 @@ void main() {
       await signInState.signInWithFedKey(FedKey(lisaIdentity), null);
       print('Current POV: ${signInState.pov}');
 
-      // Wait for the pipeline to run and UI to settle
-      await tester.pumpAndSettle(const Duration(seconds: 15));
+      // Pump until ContentCards appear (pipeline + network fetches can take variable time).
+      // Polling with pump() avoids pumpAndSettle's hard timeout and works even when
+      // ongoing async work keeps the frame tree unsettled.
+      const pollInterval = Duration(milliseconds: 500);
+      const waitTimeout = Duration(seconds: 60);
+      final deadline = DateTime.now().add(waitTimeout);
+      while (find.byType(ContentCard).evaluate().isEmpty) {
+        if (DateTime.now().isAfter(deadline)) {
+          fail('Timed out after 60 s waiting for ContentCards to appear');
+        }
+        await tester.pump(pollInterval);
+      }
+      await tester.pump(const Duration(seconds: 1)); // let cards render fully
 
       // 3. Verify UI Components
       final contentCards = find.byType(ContentCard);
