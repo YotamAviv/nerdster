@@ -3,14 +3,12 @@ import 'package:nerdster/ui/util/linky.dart';
 import 'package:nerdster/ui/util_ui.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:nerdster/version.dart';
 
 // CODE: Duplicated from Oneofus
 class About extends StatelessWidget {
-  static late final About singleton;
-
-  final PackageInfo _packageInfo;
-  const About._internal(this._packageInfo);
+  static const About singleton = About._internal();
+  const About._internal();
 
   static Future<void> show(BuildContext context) async {
     return showDialog(
@@ -27,12 +25,8 @@ class About extends StatelessWidget {
         });
   }
 
-  static Future<void> init() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    singleton = About._internal(packageInfo);
-  }
+  static Future<void> init() async {}
 
-  @override
   @override
   Widget build(BuildContext context) {
     int taps = 0;
@@ -52,8 +46,6 @@ class About extends StatelessWidget {
             Linky('Terms of Service: https://nerdster.org/terms.html'),
             Linky('Safety & Content Policy: https://nerdster.org/safety.html'),
             const SizedBox(height: 10),
-            Text('Package name: ${_packageInfo.packageName}'),
-            Text('Version: ${_packageInfo.version}'),
             GestureDetector(
               onTap: () {
                 taps++;
@@ -66,7 +58,7 @@ class About extends StatelessWidget {
                   debugPrint(message);
                 }
               },
-              child: Text('Build number: ${_packageInfo.buildNumber}'),
+              child: const Text('Version: $kAppVersion'),
             ),
           ],
         ),
