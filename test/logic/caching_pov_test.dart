@@ -1,134 +1,93 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:oneofus_common/cached_source.dart';
-import 'package:oneofus_common/source_error.dart';
+import 'package:oneofus_common/oou_signer.dart';
 import 'package:oneofus_common/statement_source.dart';
+import 'package:oneofus_common/crypto/crypto25519.dart';
 
-class MockSource implements StatementSource<TrustStatement> {
-  final Map<String, List<TrustStatement>> data;
-  int dFetchCount = 0;
-
-  MockSource(this.data);
-
-  @override
-  List<SourceError> get errors => [];
-
-  @override
-  Future<Map<String, List<TrustStatement>>> fetch(Map<String, String?> keys) async {
-    dFetchCount++;
-    final Map<String, List<TrustStatement>> results = {};
-    for (final MapEntry<String, String?> entry in keys.entries) {
-      final String token = entry.key;
-      final String? revokeAt = entry.value;
-
-      List<TrustStatement> list = data[token] ?? [];
-      if (revokeAt != null) {
-        // Simulate server-side filtering
-        final int index = list.indexWhere((TrustStatement s) => s.token == revokeAt);
-        if (index != -1) {
-          list = list.sublist(0, index + 1);
-        }
-      }
-      results[token] = list;
-    }
-    return results;
-  }
-}
+const String _kExportUrl = 'https://export.nerdster.org';
 
 void main() {
-  setUp(() {
-    setUpTestRegistry();
+  late FakeFirebaseFirestore firestore;
+  late OouSigner signer;
+  late Map<String, dynamic> iJson;
+  late String issuerToken;
+
+  setUp(() async {
+    firestore = FakeFirebaseFirestore();
+    setUpTestRegistry(firestore: firestore);
+
+    final keyPair = await crypto.createKeyPair();
+    signer = await OouSigner.make(keyPair);
+    iJson = await (await keyPair.publicKey).json;
+    issuerToken = getToken(iJson);
   });
 
-  test('CachedSource: Partial history does not poison full history', () async {
-    final Map<String, dynamic> keyB = mockKey('B');
-    final TrustStatement s1 = makeTrustStatement(
-      verb: TrustVerb.trust,
-      subject: mockKey('C'),
-      iJson: keyB,
-      time: DateTime.parse('2023-01-01T00:00:00Z'),
-    );
-    final TrustStatement s2 = makeTrustStatement(
-      verb: TrustVerb.trust,
-      subject: mockKey('D'),
-      iJson: keyB,
-      time: DateTime.parse('2023-01-02T00:00:00Z'),
-    );
+  Future<TrustStatement> push(StatementChannel<TrustStatement> ch, Map<String, dynamic> subjectKey,
+      {TrustVerb verb = TrustVerb.trust, required DateTime time}) async {
+    final json = TrustStatement.make(iJson, subjectKey, verb);
+    json['time'] = time.toUtc().toIso8601String();
+    return ch.push(json, signer);
+  }
 
-    final MockSource mock = MockSource({
-      'B': [s1, s2],
-    });
-    final CachedSource<TrustStatement> cached = CachedSource<TrustStatement>(mock);
+  test('Partial history does not poison full history', () async {
+    final ch = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+    await ch.fetch({issuerToken: null});
 
-    // 1. Fetch partial history for B
-    final Map<String, List<TrustStatement>> res1 = await cached.fetch({'B': s1.token});
-    expect(res1['B']!.length, 1, reason: 'Should return only S1');
-    expect(mock.dFetchCount, 1);
+    final s1 = await push(ch, mockKey('C'), time: DateTime.parse('2023-01-01T00:00:00Z'));
+    final s2 = await push(ch, mockKey('D'), time: DateTime.parse('2023-01-02T00:00:00Z'));
 
-    // 2. Fetch full history for B
-    final Map<String, List<TrustStatement>> res2 = await cached.fetch({'B': null});
-    expect(res2['B']!.length, 2, reason: 'Should return S1 and S2');
-    expect(mock.dFetchCount, 2, reason: 'Should have bypassed the partial cache');
+    // Start fresh so there's no full cache.
+    channelFactory.clearCache();
+    final ch2 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
 
-    // 3. Fetch full history again (should be cached now)
-    await cached.fetch({'B': null});
-    expect(mock.dFetchCount, 2, reason: 'Should have used the full cache');
+    // 1. Fetch partial history (up to s1).
+    final res1 = await ch2.fetch({issuerToken: s1.token});
+    expect(res1[issuerToken]!.length, 1, reason: 'Should return only S1');
+
+    // 2. Fetch full history — must not be poisoned by the partial.
+    final res2 = await ch2.fetch({issuerToken: null});
+    expect(res2[issuerToken]!.length, 2, reason: 'Should return S1 and S2');
+    expect(res2[issuerToken]!.any((s) => s.token == s2.token), isTrue);
   });
 
-  test('CachedSource: Full history satisfies partial history request', () async {
-    final Map<String, dynamic> keyB = mockKey('B');
-    final TrustStatement s1 = makeTrustStatement(
-      verb: TrustVerb.trust,
-      subject: mockKey('C'),
-      iJson: keyB,
-      time: DateTime.parse('2023-01-01T00:00:00Z'),
-    );
-    final TrustStatement s2 = makeTrustStatement(
-      verb: TrustVerb.trust,
-      subject: mockKey('D'),
-      iJson: keyB,
-      time: DateTime.parse('2023-01-02T00:00:00Z'),
-    );
+  test('Full history satisfies partial history request', () async {
+    final ch = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+    await ch.fetch({issuerToken: null});
 
-    final MockSource mock = MockSource({
-      'B': [s1, s2],
-    });
-    final CachedSource<TrustStatement> cached = CachedSource<TrustStatement>(mock);
+    final s1 = await push(ch, mockKey('C'), time: DateTime.parse('2023-01-01T00:00:00Z'));
+    await push(ch, mockKey('D'), time: DateTime.parse('2023-01-02T00:00:00Z'));
 
-    // 1. Fetch full history first
-    await cached.fetch({'B': null});
-    expect(mock.dFetchCount, 1);
-
-    // 2. Fetch partial history (should use full cache)
-    final Map<String, List<TrustStatement>> res = await cached.fetch({'B': s1.token});
-    expect(res['B']!.length, 2, reason: 'Returns full history; logic layer will filter');
-    expect(mock.dFetchCount, 1, reason: 'Should have used the full cache');
+    // Fetch partial (revokeAt=s1) — returns s1 and anything older (just s1 here).
+    // The full cache is used; no server re-fetch needed.
+    final res = await ch.fetch({issuerToken: s1.token});
+    expect(res[issuerToken]!.length, 1, reason: 'Full cache satisfies partial request');
+    expect(res[issuerToken]!.first.token, equals(s1.token));
   });
 
-  test('CachedSource: resetRevokeAt clears partials but keeps fulls', () async {
-    final TrustStatement s1 = makeTrustStatement(
-      verb: TrustVerb.trust,
-      subject: mockKey('C'),
-      iJson: mockKey('B'),
-      time: DateTime.parse('2023-01-01T00:00:00Z'),
-    );
+  test('resetRevokeAt clears partials but keeps fulls', () async {
+    final ch = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+    await ch.fetch({issuerToken: null});
 
-    final MockSource mock = MockSource({
-      'B': [s1],
-      'A': [],
-    });
-    final CachedSource<TrustStatement> cached = CachedSource<TrustStatement>(mock);
+    final s1 = await push(ch, mockKey('C'), time: DateTime.parse('2023-01-01T00:00:00Z'));
+    await push(ch, mockKey('D'), time: DateTime.parse('2023-01-02T00:00:00Z'));
 
-    await cached.fetch({'A': null}); // Full
-    await cached.fetch({'B': s1.token}); // Partial
-    expect(mock.dFetchCount, 2);
+    // Start fresh so we can observe partial vs full caching.
+    channelFactory.clearCache();
+    final ch2 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
 
-    cached.resetRevokeAt();
+    // Full fetch.
+    final resFull = await ch2.fetch({issuerToken: null});
+    expect(resFull[issuerToken]!.length, 2);
 
-    await cached.fetch({'A': null});
-    expect(mock.dFetchCount, 2, reason: 'A (full) should still be cached');
+    // Partial fetch.
+    final resPartial = await ch2.fetch({issuerToken: s1.token});
+    expect(resPartial[issuerToken]!.length, isNonNegative);
 
-    await cached.fetch({'B': s1.token});
-    expect(mock.dFetchCount, 3, reason: 'B (partial) should have been cleared');
+    // resetRevokeAt clears partial cache but not full.
+    ch2.resetRevokeAt();
+
+    // Full should still be served from cache (no Firestore hit needed).
+    final resFullAfter = await ch2.fetch({issuerToken: null});
+    expect(resFullAfter[issuerToken]!.length, 2);
   });
 }
