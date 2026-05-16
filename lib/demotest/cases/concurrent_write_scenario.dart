@@ -4,11 +4,10 @@ import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:oneofus_common/statement.dart';
 
-/// Fires multiple writes concurrently from the same issuer.
+/// Verifies that the push queue serializes simultaneous pushes from the same
+/// issuer into a valid previous chain with no conflicts.
 ///
-/// Uses the shared CachedSource instances from channelFactory, matching real app behavior.
-/// Some writes may fail due to optimistic concurrency conflicts (server-side previous mismatch);
-/// the scenario only requires that at least one write succeeds per stream.
+/// All writes are expected to succeed.
 Future<void> concurrentWriteScenario() async {
   DemoKey.reset();
 
@@ -21,55 +20,48 @@ Future<void> concurrentWriteScenario() async {
   final subjectB = createTestSubject(title: 'Article B');
   final subjectC = createTestSubject(title: 'Article C');
 
-  // --- Sequential writes with queued previous-pointer chaining ---
-  // The CachedSource serialises pushes per issuer, so these execute one after
-  // another. Each write must reference the current head as its 'previous'.
-  // Timestamps are staggered by 1 ms so the server's time-ordering check never
-  // fires — we want to exercise the previous-chain logic, not timestamp rejection.
+  // The push queue serializes writes per issuer, so despite Future.wait
+  // submitting all three before any completes, they execute one at a time.
+  // Timestamps are staggered by 1ms to satisfy the server's strict time-ordering check.
   final disSource = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements');
   await disSource.fetch({issuerToken: null});
-  await disSource.push(DismissStatement.make(iJson, createTestSubject(title: 'Prime'), 'forever'), signer);
 
   final DateTime disNow = DateTime.now().toUtc();
   final Json disJsonA = DismissStatement.make(iJson, subjectA, 'forever');
+  disJsonA['time'] = disNow.toIso8601String();
   final Json disJsonB = DismissStatement.make(iJson, subjectB, 'snooze');
   disJsonB['time'] = disNow.add(const Duration(milliseconds: 1)).toIso8601String();
   final Json disJsonC = DismissStatement.make(iJson, subjectC, null);
   disJsonC['time'] = disNow.add(const Duration(milliseconds: 2)).toIso8601String();
 
-  final disResults = (await Future.wait([
-    disSource.push(disJsonA, signer).then<DismissStatement?>((v) => v).catchError((_) => null),
-    disSource.push(disJsonB, signer).then<DismissStatement?>((v) => v).catchError((_) => null),
-    disSource.push(disJsonC, signer).then<DismissStatement?>((v) => v).catchError((_) => null),
-  ])).whereType<DismissStatement>().length;
-  check(disResults == 3, 'dis writes: expected all 3 to succeed, got $disResults');
-  debugPrint('concurrent dis: ok ($disResults/3 writes succeeded)');
+  await Future.wait([
+    disSource.push(disJsonA, signer),
+    disSource.push(disJsonB, signer),
+    disSource.push(disJsonC, signer),
+  ]);
+  debugPrint('concurrent dis: all 3 writes succeeded');
 
-  // --- Concurrent content writes (thumbs up, comment, censor) ---
   final contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements');
   await contentSource.fetch({issuerToken: null});
-  await contentSource.push(
-      ContentStatement.make(iJson, ContentVerb.rate, createTestSubject(title: 'Prime'), recommend: true), signer);
 
   final DateTime contentNow = DateTime.now().toUtc();
   final Json contentJsonA = ContentStatement.make(iJson, ContentVerb.rate, subjectA, recommend: true);
+  contentJsonA['time'] = contentNow.toIso8601String();
   final Json contentJsonB = ContentStatement.make(iJson, ContentVerb.rate, subjectB, comment: 'great');
   contentJsonB['time'] = contentNow.add(const Duration(milliseconds: 1)).toIso8601String();
   final Json contentJsonC = ContentStatement.make(iJson, ContentVerb.rate, subjectC, censor: true);
   contentJsonC['time'] = contentNow.add(const Duration(milliseconds: 2)).toIso8601String();
 
-  final contentResults = (await Future.wait([
-    contentSource.push(contentJsonA, signer).then<ContentStatement?>((v) => v).catchError((_) => null),
-    contentSource.push(contentJsonB, signer).then<ContentStatement?>((v) => v).catchError((_) => null),
-    contentSource.push(contentJsonC, signer).then<ContentStatement?>((v) => v).catchError((_) => null),
-  ])).whereType<ContentStatement>().length;
-  check(contentResults == 3, 'content writes: expected all 3 to succeed, got $contentResults');
-  debugPrint('concurrent content: ok ($contentResults/3 writes succeeded)');
+  await Future.wait([
+    contentSource.push(contentJsonA, signer),
+    contentSource.push(contentJsonB, signer),
+    contentSource.push(contentJsonC, signer),
+  ]);
+  debugPrint('concurrent content: all 3 writes succeeded');
 
-  // --- Verify the mixed stream is intact on the server ---
-  // Use distinct=false so the server returns the full unfiltered chain.
-  // distinct=true collapses by subject (ignoring statement type), which drops
-  // statements and breaks the previous-pointer chain — not useful here.
+  // Verify the full chain is intact on the server.
+  // distinct=false gives the unfiltered chain; distinct=true collapses by subject
+  // which would break previous-pointer verification.
   final fullSource = channelFactory.getChannel<Statement>(kNerdsterExportUrl, 'statements', distinct: false);
   final Map<String, List<Statement>> freshFetch = await fullSource.fetch({issuerToken: null});
   if (fullSource.errors.isNotEmpty) debugPrint('fullSource.errors: ${fullSource.errors}');
