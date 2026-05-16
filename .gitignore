@@ -26,3 +26,4 @@ web/common/data/demoPrivateKeys.js
 builds/
 flutter_*.log
 *.log
+tmp/

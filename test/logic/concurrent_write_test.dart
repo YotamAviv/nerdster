@@ -1,9 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:oneofus_common/cached_source.dart';
-import 'package:oneofus_common/direct_firestore_source.dart';
-import 'package:oneofus_common/direct_firestore_writer.dart';
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 
@@ -13,7 +10,6 @@ void main() {
     late OouSigner signer;
     late Map<String, dynamic> iJson;
     late String issuerToken;
-    late CachedSource<DismissStatement> disSource;
 
     setUp(() async {
       firestore = FakeFirebaseFirestore();
@@ -23,13 +19,11 @@ void main() {
       signer = await OouSigner.make(keyPair);
       iJson = await (await keyPair.publicKey).json;
       issuerToken = getToken(iJson);
-
-      final source = DirectFirestoreSource<DismissStatement>(firestore, streamId: 'dis');
-      final writer = DirectFirestoreWriter<DismissStatement>(firestore, streamId: 'dis');
-      disSource = CachedSource(source, writer);
     });
 
     test('concurrent writes on empty stream all succeed without errors', () async {
+      final disSource = channelFactory.getChannel<DismissStatement>(
+          'https://export.nerdster.org', 'statements');
       await disSource.fetch({issuerToken: null});
 
       final results = await Future.wait([
@@ -44,14 +38,16 @@ void main() {
     });
 
     test('concurrent writes on existing stream all succeed without errors', () async {
-      // Write one statement to establish a chain head.
+      final disSource = channelFactory.getChannel<DismissStatement>(
+          'https://export.nerdster.org', 'statements');
       await disSource.fetch({issuerToken: null});
-      await disSource.push(DismissStatement.make(iJson, createTestSubject(title: 'Prime'), 'forever'), signer);
+      await disSource.push(
+          DismissStatement.make(iJson, createTestSubject(title: 'Prime'), 'forever'), signer);
 
-      // Simulate a new session: fresh CachedSource but same underlying Firestore data.
-      final source2 = DirectFirestoreSource<DismissStatement>(firestore, streamId: 'dis');
-      final writer2 = DirectFirestoreWriter<DismissStatement>(firestore, streamId: 'dis');
-      final disSource2 = CachedSource<DismissStatement>(source2, writer2);
+      // Simulate a new session: clear the channel cache, same underlying Firestore data.
+      channelFactory.clearCache();
+      final disSource2 = channelFactory.getChannel<DismissStatement>(
+          'https://export.nerdster.org', 'statements');
       await disSource2.fetch({issuerToken: null});
 
       final results = await Future.wait([

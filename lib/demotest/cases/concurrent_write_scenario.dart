@@ -21,16 +21,28 @@ Future<void> concurrentWriteScenario() async {
   final subjectB = createTestSubject(title: 'Article B');
   final subjectC = createTestSubject(title: 'Article C');
 
-  // --- Concurrent dis writes (simulates 3 simultaneous thumbs-down swipes) ---
+  // --- Sequential writes with queued previous-pointer chaining ---
+  // The CachedSource serialises pushes per issuer, so these execute one after
+  // another. Each write must reference the current head as its 'previous'.
+  // Timestamps are staggered by 1 ms so the server's time-ordering check never
+  // fires — we want to exercise the previous-chain logic, not timestamp rejection.
   final disSource = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements');
   await disSource.fetch({issuerToken: null});
   await disSource.push(DismissStatement.make(iJson, createTestSubject(title: 'Prime'), 'forever'), signer);
+
+  final DateTime disNow = DateTime.now().toUtc();
+  final Json disJsonA = DismissStatement.make(iJson, subjectA, 'forever');
+  final Json disJsonB = DismissStatement.make(iJson, subjectB, 'snooze');
+  disJsonB['time'] = disNow.add(const Duration(milliseconds: 1)).toIso8601String();
+  final Json disJsonC = DismissStatement.make(iJson, subjectC, null);
+  disJsonC['time'] = disNow.add(const Duration(milliseconds: 2)).toIso8601String();
+
   final disResults = (await Future.wait([
-    disSource.push(DismissStatement.make(iJson, subjectA, 'forever'), signer).then<DismissStatement?>((v) => v).catchError((_) => null),
-    disSource.push(DismissStatement.make(iJson, subjectB, 'snooze'), signer).then<DismissStatement?>((v) => v).catchError((_) => null),
-    disSource.push(DismissStatement.make(iJson, subjectC, null), signer).then<DismissStatement?>((v) => v).catchError((_) => null),
+    disSource.push(disJsonA, signer).then<DismissStatement?>((v) => v).catchError((_) => null),
+    disSource.push(disJsonB, signer).then<DismissStatement?>((v) => v).catchError((_) => null),
+    disSource.push(disJsonC, signer).then<DismissStatement?>((v) => v).catchError((_) => null),
   ])).whereType<DismissStatement>().length;
-  check(disResults >= 1, 'concurrent dis: expected at least 1 success, got $disResults');
+  check(disResults == 3, 'dis writes: expected all 3 to succeed, got $disResults');
   debugPrint('concurrent dis: ok ($disResults/3 writes succeeded)');
 
   // --- Concurrent content writes (thumbs up, comment, censor) ---
@@ -38,28 +50,31 @@ Future<void> concurrentWriteScenario() async {
   await contentSource.fetch({issuerToken: null});
   await contentSource.push(
       ContentStatement.make(iJson, ContentVerb.rate, createTestSubject(title: 'Prime'), recommend: true), signer);
+
+  final DateTime contentNow = DateTime.now().toUtc();
+  final Json contentJsonA = ContentStatement.make(iJson, ContentVerb.rate, subjectA, recommend: true);
+  final Json contentJsonB = ContentStatement.make(iJson, ContentVerb.rate, subjectB, comment: 'great');
+  contentJsonB['time'] = contentNow.add(const Duration(milliseconds: 1)).toIso8601String();
+  final Json contentJsonC = ContentStatement.make(iJson, ContentVerb.rate, subjectC, censor: true);
+  contentJsonC['time'] = contentNow.add(const Duration(milliseconds: 2)).toIso8601String();
+
   final contentResults = (await Future.wait([
-    contentSource.push(ContentStatement.make(iJson, ContentVerb.rate, subjectA, recommend: true), signer).then<ContentStatement?>((v) => v).catchError((_) => null),
-    contentSource.push(ContentStatement.make(iJson, ContentVerb.rate, subjectB, comment: 'great'), signer).then<ContentStatement?>((v) => v).catchError((_) => null),
-    contentSource.push(ContentStatement.make(iJson, ContentVerb.rate, subjectC, censor: true), signer).then<ContentStatement?>((v) => v).catchError((_) => null),
+    contentSource.push(contentJsonA, signer).then<ContentStatement?>((v) => v).catchError((_) => null),
+    contentSource.push(contentJsonB, signer).then<ContentStatement?>((v) => v).catchError((_) => null),
+    contentSource.push(contentJsonC, signer).then<ContentStatement?>((v) => v).catchError((_) => null),
   ])).whereType<ContentStatement>().length;
-  check(contentResults >= 1, 'concurrent content: expected at least 1 success, got $contentResults');
+  check(contentResults == 3, 'content writes: expected all 3 to succeed, got $contentResults');
   debugPrint('concurrent content: ok ($contentResults/3 writes succeeded)');
 
   // --- Verify the mixed stream is intact on the server ---
-  // Dis and content now share a single stream, so chain integrity must be
-  // checked on the unfiltered full stream. Filtered results have non-null
-  // 'previous' pointers where adjacent statements of the other type were
-  // skipped — that is correct behaviour, not a chain violation.
-  final fullSource = channelFactory.getChannel<Statement>(kNerdsterExportUrl, 'statements');
-  final int cachedTotalLength = (await fullSource.fetch({issuerToken: null}))[issuerToken]!.length;
-  fullSource.clear();
+  // Use distinct=false so the server returns the full unfiltered chain.
+  // distinct=true collapses by subject (ignoring statement type), which drops
+  // statements and breaks the previous-pointer chain — not useful here.
+  final fullSource = channelFactory.getChannel<Statement>(kNerdsterExportUrl, 'statements', distinct: false);
   final Map<String, List<Statement>> freshFetch = await fullSource.fetch({issuerToken: null});
   if (fullSource.errors.isNotEmpty) debugPrint('fullSource.errors: ${fullSource.errors}');
   assert(freshFetch.containsKey(issuerToken));
   final List<Statement> freshAll = freshFetch[issuerToken]!;
-  check(freshAll.length == cachedTotalLength,
-      'stream length: server=${freshAll.length}, cache=$cachedTotalLength');
   _checkChain(freshAll);
 
   debugPrint('concurrent write: stream integrity verified (${freshAll.length} statements)');

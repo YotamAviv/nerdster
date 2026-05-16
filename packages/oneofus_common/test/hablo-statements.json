@@ -1,0 +1,42 @@
+{
+  "statements": [
+    {
+      "id": "9ae4270b91060365ade37f03aebcbb7e7a9d8ea2",
+      "statement": "com.hablotengo",
+      "time": "2026-01-01T00:00:00.000Z",
+      "I": {
+        "crv": "Ed25519",
+        "kty": "OKP",
+        "x": "ZiM9U4jopOgkUHWpDdIuMcxahz1cEN5z1ZWQEqF1fng"
+      },
+      "set": {
+        "name": "Homer Simpson",
+        "entries": [
+          {
+            "tech": "email",
+            "value": "homer@example.com"
+          }
+        ]
+      },
+      "with": {
+        "verifiedIdentity": "abc123def456abc123def456abc123def456abc1"
+      }
+    },
+    {
+      "id": "0118ef256884c5c91d804b2174797fb0cda9b1af",
+      "statement": "com.hablotengo",
+      "time": "2026-01-01T00:01:00.000Z",
+      "I": {
+        "crv": "Ed25519",
+        "kty": "OKP",
+        "x": "ZiM9U4jopOgkUHWpDdIuMcxahz1cEN5z1ZWQEqF1fng"
+      },
+      "set": {
+        "showEmptyCards": true
+      },
+      "with": {
+        "verifiedIdentity": "abc123def456abc123def456abc123def456abc1"
+      }
+    }
+  ]
+}

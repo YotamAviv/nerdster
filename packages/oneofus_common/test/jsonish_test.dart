@@ -271,8 +271,9 @@ void main() {
     final Json yotamNerdster = jsonDecode(findFile('yotam-nerdster.json').readAsStringSync());
     final Json yotamOneofus = jsonDecode(findFile('yotam-oneofus.json').readAsStringSync());
     final Json other = jsonDecode(findFile('other.json').readAsStringSync());
+    final Json habloStatements = jsonDecode(findFile('hablo-statements.json').readAsStringSync());
     // DEFER: TEST: Other with unknow fields
-    for (final exported in [yotamOneofus, yotamNerdster, other]) {
+    for (final exported in [yotamOneofus, yotamNerdster, other, habloStatements]) {
       for (final Json statement in exported['statements'] as Iterable) {
         // Kludge: The server communicates token as "id" to us in the statement.
         final id = statement['id'];
