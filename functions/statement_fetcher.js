@@ -47,10 +47,12 @@ async function makedistinct(input) {
     const otherSubject = getOtherSubject(s);
     const otherToken = otherSubject ? await getToken(otherSubject) : null;
 
-    // Create a stable key for the pair
+    // Include statement type so DismissStatements (org.nerdster.dis) and ContentStatements
+    // (org.nerdster) don't collide on the same subject token.
+    const stmtType = s.statement || '';
     const key = otherToken
-      ? (subjectToken < otherToken ? subjectToken + otherToken : otherToken + subjectToken)
-      : subjectToken;
+      ? stmtType + ':' + (subjectToken < otherToken ? subjectToken + otherToken : otherToken + subjectToken)
+      : stmtType + ':' + subjectToken;
 
     if (seen.has(key)) continue;
     seen.add(key);
