@@ -49,7 +49,7 @@ async function makedistinct(input) {
 
     // Include statement type so DismissStatements (org.nerdster.dis) and ContentStatements
     // (org.nerdster) don't collide on the same subject token.
-    const stmtType = s.statement || '';
+    const stmtType = s.statement;
     const key = otherToken
       ? stmtType + ':' + (subjectToken < otherToken ? subjectToken + otherToken : otherToken + subjectToken)
       : stmtType + ':' + subjectToken;
