@@ -28,18 +28,12 @@ void main() async {
   OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
 
   channelFactory = ChannelFactory(FireChoice.emulator);
-  channelFactory.register(
-      exportUrl: 'https://export.nerdster.org',
-      functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
-      emulatorExportUrl: 'http://127.0.0.1:5001/nerdster/us-central1/export',
-      emulatorFunctionsUrl: 'http://127.0.0.1:5001/nerdster/us-central1',
-      firestore: FirebaseFirestore.instance);
-  channelFactory.register(
-      exportUrl: 'https://export.one-of-us.net',
-      functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
-      emulatorExportUrl: 'http://127.0.0.1:5002/one-of-us-net/us-central1/export',
-      emulatorFunctionsUrl: 'http://127.0.0.1:5002/one-of-us-net/us-central1',
-      firestore: OneofusFire.firestore);
+  channelFactory.register('nerdster.org', firestore: FirebaseFirestore.instance);
+  channelFactory.register('one-of-us.net', firestore: OneofusFire.firestore);
+  channelFactory.registerRedirect('https://export.nerdster.org', 'http://127.0.0.1:5001/nerdster/us-central1/export');
+  channelFactory.registerRedirect('https://write.nerdster.org', 'http://127.0.0.1:5001/nerdster/us-central1/write2');
+  channelFactory.registerRedirect('https://export.one-of-us.net', 'http://127.0.0.1:5002/one-of-us-net/us-central1/export');
+  channelFactory.registerRedirect('https://write.one-of-us.net', 'http://127.0.0.1:5002/one-of-us-net/us-central1/write2');
 
   // Manually register redirects to point to local emulators
   FirebaseConfig.registerRedirect(

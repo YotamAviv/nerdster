@@ -7,7 +7,6 @@ import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
 const String _kExportUrl = 'https://export.example.com';
-const String _kWriteUrl = 'https://write.example.com';
 
 void main() {
   late FakeFirebaseFirestore firestore;
@@ -33,11 +32,7 @@ void main() {
     subjectBKeyJson = await (await subjectBPair.publicKey).json;
 
     channelFactory = ChannelFactory(FireChoice.fake);
-    channelFactory.register(
-      exportUrl: _kExportUrl,
-      functionsUrl: _kWriteUrl,
-      firestore: firestore,
-    );
+    channelFactory.register('example.com', firestore: firestore);
   });
 
   tearDown(() {

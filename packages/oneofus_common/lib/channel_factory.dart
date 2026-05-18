@@ -18,16 +18,12 @@ enum FireChoice { fake, emulator, prod }
 // emulator: CloudFunctionsSource/Writer pointed at local emulator URLs. Does not use firestore.
 // prod: CloudFunctionsSource/Writer pointed at production URLs. Does not use firestore.
 class _Registration {
-  final String exportUrl;
-  final String functionsUrl;
-  final String writeEndpoint;
+  final String domain;
   final FirebaseFirestore? firestore;
   final Map<String, dynamic> Function()? writeAuthHook;
   final Map<String, dynamic> Function()? readAuthHook;
   const _Registration({
-    required this.exportUrl,
-    required this.functionsUrl,
-    this.writeEndpoint = 'write2',
+    required this.domain,
     this.firestore,
     this.writeAuthHook,
     this.readAuthHook,
@@ -66,39 +62,34 @@ class ChannelFactory {
 
   ChannelFactory(this.fireChoice, {this.skipVerify});
 
-  /// Register a domain's backend.
+  final Map<String, String> _redirects = {};
+
+  /// Optionally register a domain to override defaults.
   ///
-  /// [exportUrl] and [functionsUrl] are the production URLs.
-  /// [emulatorExportUrl] and [emulatorFunctionsUrl] are used when
-  /// fireChoice == emulator.
-  /// [firestore] is required when fireChoice == fake.
-  void register({
-    required String exportUrl,
-    required String functionsUrl,
-    String? emulatorExportUrl,
-    String? emulatorFunctionsUrl,
-    String writeEndpoint = 'write2',
+  /// Registration is only required when you need non-default behaviour:
+  /// auth hooks, or a [firestore] instance for fireChoice == fake.
+  /// Unregistered domains are served directly from `https://export.[domain]` /
+  /// `https://write.[domain]`, with emulator remapping applied via [registerRedirect].
+  /// For emulator write URLs, include the Cloud Function name in the redirect target.
+  void register(
+    String domain, {
     FirebaseFirestore? firestore,
     Map<String, dynamic> Function()? writeAuthHook,
     Map<String, dynamic> Function()? readAuthHook,
   }) {
-    final resolvedExport =
-        fireChoice == FireChoice.emulator && emulatorExportUrl != null
-            ? emulatorExportUrl
-            : exportUrl;
-    final resolvedFunctions =
-        fireChoice == FireChoice.emulator && emulatorFunctionsUrl != null
-            ? emulatorFunctionsUrl
-            : functionsUrl;
-    _registrations[exportUrl] = _Registration(
-      exportUrl: resolvedExport,
-      functionsUrl: resolvedFunctions,
-      writeEndpoint: writeEndpoint,
+    _registrations['https://export.$domain'] = _Registration(
+      domain: domain,
       firestore: firestore,
       writeAuthHook: writeAuthHook,
       readAuthHook: readAuthHook,
     );
   }
+
+  /// Redirect [from] to [to] when resolving URLs. Used for emulator setup.
+  void registerRedirect(String from, String to) => _redirects[from] = to;
+
+  /// Translates a canonical prod URL to the active environment's equivalent.
+  String resolveUrl(String url) => _redirects[url] ?? url;
 
   /// Returns a [FilteredChannel<T>] backed by a shared root for [exportUrl]/[streamKey].
   ///
@@ -124,13 +115,18 @@ class ChannelFactory {
     return FilteredChannel<T>(root);
   }
 
+  static String _domainOf(String exportUrl) {
+    final host = Uri.parse(exportUrl).host;
+    assert(host.startsWith('export.'), 'exportUrl host must start with "export.": $exportUrl');
+    return host.substring('export.'.length);
+  }
+
   _CachedSource<Statement> _createRoot(String exportUrl, String streamKey,
       {List<String> excludeTypes = const [], bool distinct = true}) {
     final reg = _registrations[exportUrl];
-    assert(reg != null, 'No registration for "$exportUrl"');
     if (fireChoice == FireChoice.fake) {
-      assert(reg!.firestore != null,
-          'register() must provide firestore for fireChoice.fake');
+      assert(reg?.firestore != null,
+          'register() with firestore required for "$exportUrl" in fake mode');
       final source = DirectFirestoreSource<Statement>(reg!.firestore!,
           streamId: streamKey,
           allStreams: const ['statements'],
@@ -139,18 +135,19 @@ class ChannelFactory {
           DirectFirestoreWriter<Statement>(reg.firestore!, streamId: streamKey);
       return _CachedSource<Statement>(source, writer, null, distinct);
     } else {
+      final domain = reg?.domain ?? _domainOf(exportUrl);
       final source = _CloudFunctionsSource<Statement>(
-        baseUrl: reg!.exportUrl,
+        baseUrl: resolveUrl(exportUrl),
         verifier: OouVerifier(),
         skipVerify: skipVerify,
-        authHook: reg.readAuthHook,
+        authHook: reg?.readAuthHook,
         excludeTypes: excludeTypes,
         paramsOverride: {'omit': <String>[], 'distinct': distinct ? 'true' : 'false'},
       );
       final writer = _CloudFunctionsWriter<Statement>(
-        '${reg.functionsUrl}/${reg.writeEndpoint}',
+        resolveUrl('https://write.$domain'),
         streamKey,
-        authHook: reg.writeAuthHook,
+        authHook: reg?.writeAuthHook,
       );
       return _CachedSource<Statement>(source, writer, null, distinct);
     }

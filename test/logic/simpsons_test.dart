@@ -23,18 +23,9 @@ void main() {
     final FakeFirebaseFirestore karenetFs = FakeFirebaseFirestore();
 
     channelFactory = ChannelFactory(FireChoice.fake);
-    channelFactory.register(
-        exportUrl: 'https://export.nerdster.org',
-        functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
-        firestore: nerdsterFs);
-    channelFactory.register(
-        exportUrl: 'https://export.one-of-us.net',
-        functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
-        firestore: oneofusFs);
-    channelFactory.register(
-        exportUrl: 'https://export.karennet.net',
-        functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
-        firestore: karenetFs);
+    channelFactory.register('nerdster.org', firestore: nerdsterFs);
+    channelFactory.register('one-of-us.net', firestore: oneofusFs);
+    channelFactory.register('karennet.net', firestore: karenetFs);
 
     ContentStatement.init();
     DismissStatement.init();

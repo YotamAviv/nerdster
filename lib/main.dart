@@ -112,29 +112,17 @@ Future<void> main() async {
     oneofusFirestore = FakeFirebaseFirestore();
   }
 
-  final FirebaseFirestore? karenetFirestore =
-      resolvedFireChoice == FireChoice.fake ? FakeFirebaseFirestore() : null;
-
   channelFactory = ChannelFactory(resolvedFireChoice,
       skipVerify: Setting.get<bool>(SettingType.skipVerify));
-  channelFactory.register(
-      exportUrl: 'https://export.nerdster.org',
-      functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
-      emulatorExportUrl: 'http://$emulatorHost:5001/nerdster/us-central1/export',
-      emulatorFunctionsUrl: 'http://$emulatorHost:5001/nerdster/us-central1',
-      firestore: nerdsterFirestore);
-  channelFactory.register(
-      exportUrl: 'https://export.one-of-us.net',
-      functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
-      emulatorExportUrl: 'http://$emulatorHost:5002/one-of-us-net/us-central1/export',
-      emulatorFunctionsUrl: 'http://$emulatorHost:5002/one-of-us-net/us-central1',
-      firestore: oneofusFirestore);
-  channelFactory.register(
-      exportUrl: 'https://export.karennet.net',
-      functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
-      emulatorExportUrl: 'http://$emulatorHost:5004/karennet/us-central1/export',
-      emulatorFunctionsUrl: 'http://$emulatorHost:5004/karennet/us-central1',
-      firestore: karenetFirestore);
+  channelFactory.register('nerdster.org', firestore: nerdsterFirestore);
+  channelFactory.register('one-of-us.net', firestore: oneofusFirestore);
+  if (resolvedFireChoice == FireChoice.emulator) {
+    channelFactory.registerRedirect('https://export.nerdster.org', 'http://$emulatorHost:5001/nerdster/us-central1/export');
+    channelFactory.registerRedirect('https://write.nerdster.org', 'http://$emulatorHost:5001/nerdster/us-central1/write2');
+    channelFactory.registerRedirect('https://export.one-of-us.net', 'http://$emulatorHost:5002/one-of-us-net/us-central1/export');
+    channelFactory.registerRedirect('https://write.one-of-us.net', 'http://$emulatorHost:5002/one-of-us-net/us-central1/write2');
+    channelFactory.registerRedirect('https://export.karennet.net', 'http://$emulatorHost:5004/karennet/us-central1/export');
+  }
 
   _fireCheckRead = params.containsKey('fireCheckRead');
   _fireCheckWrite = params.containsKey('fireCheckWrite');

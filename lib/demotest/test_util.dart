@@ -155,18 +155,9 @@ TrustStatement makeTrustStatement({
 void setUpTestRegistry({FakeFirebaseFirestore? firestore}) {
   final FakeFirebaseFirestore fs = firestore ?? FakeFirebaseFirestore();
   channelFactory = ChannelFactory(FireChoice.fake);
-  channelFactory.register(
-      exportUrl: 'https://export.nerdster.org',
-      functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
-      firestore: fs);
-  channelFactory.register(
-      exportUrl: 'https://export.one-of-us.net',
-      functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
-      firestore: fs);
-  channelFactory.register(
-      exportUrl: 'https://export.karennet.net',
-      functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net',
-      firestore: fs);
+  channelFactory.register('nerdster.org', firestore: fs);
+  channelFactory.register('one-of-us.net', firestore: fs);
+  channelFactory.register('karennet.net', firestore: fs);
   ContentStatement.init();
   DismissStatement.init();
   TrustStatement.init();

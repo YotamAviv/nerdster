@@ -23,17 +23,8 @@ void main() async {
   await OneofusFire.init();
 
   channelFactory = ChannelFactory(FireChoice.prod);
-  channelFactory.register(
-      exportUrl: 'https://export.nerdster.org',
-      functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
-      firestore: FirebaseFirestore.instance);
-  channelFactory.register(
-      exportUrl: 'https://export.one-of-us.net',
-      functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
-      firestore: OneofusFire.firestore);
-  channelFactory.register(
-      exportUrl: 'https://export.karennet.net',
-      functionsUrl: 'https://us-central1-karennet-e4291.cloudfunctions.net');
+  channelFactory.register('nerdster.org', firestore: FirebaseFirestore.instance);
+  channelFactory.register('one-of-us.net', firestore: OneofusFire.firestore);
 
   runApp(WidgetRunner(scenario: _generateDemoData));
 }

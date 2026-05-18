@@ -26,18 +26,12 @@ void main() {
     OneofusFire.firestore.useFirestoreEmulator(host, 8081);
 
     channelFactory = ChannelFactory(FireChoice.emulator);
-    channelFactory.register(
-        exportUrl: 'https://export.nerdster.org',
-        functionsUrl: 'https://us-central1-nerdster.cloudfunctions.net',
-        emulatorExportUrl: 'http://$host:5001/nerdster/us-central1/export',
-        emulatorFunctionsUrl: 'http://$host:5001/nerdster/us-central1',
-        firestore: FirebaseFirestore.instance);
-    channelFactory.register(
-        exportUrl: 'https://export.one-of-us.net',
-        functionsUrl: 'https://us-central1-one-of-us-net.cloudfunctions.net',
-        emulatorExportUrl: 'http://$host:5002/one-of-us-net/us-central1/export',
-        emulatorFunctionsUrl: 'http://$host:5002/one-of-us-net/us-central1',
-        firestore: OneofusFire.firestore);
+    channelFactory.register('nerdster.org', firestore: FirebaseFirestore.instance);
+    channelFactory.register('one-of-us.net', firestore: OneofusFire.firestore);
+    channelFactory.registerRedirect('https://export.nerdster.org', 'http://$host:5001/nerdster/us-central1/export');
+    channelFactory.registerRedirect('https://write.nerdster.org', 'http://$host:5001/nerdster/us-central1/write2');
+    channelFactory.registerRedirect('https://export.one-of-us.net', 'http://$host:5002/one-of-us-net/us-central1/export');
+    channelFactory.registerRedirect('https://write.one-of-us.net', 'http://$host:5002/one-of-us-net/us-central1/write2');
 
     FirebaseConfig.registerRedirect(
       'https://export.one-of-us.net', 
