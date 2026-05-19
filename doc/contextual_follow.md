@@ -41,9 +41,9 @@ Context selector.
 
 The Equivalence system (`equivalence.dart`) is a union-find structure that groups
 tokens together. It supports:
-- `A ~ B`: A and B are equivalent (merge their groups)
-- `A !~ B`: explicit DONT — these must never be merged, even if others say they should
-- Transitive merging: if A~B and B~C then A~B~C
+- `a→b`: A and B are equivalent (merge their groups)
+- `A ≠ B`: explicit DONT — these must never be merged, even if others say they should
+- Transitive merging: if a→b and b→c then a→b→c
 - DONTs propagate when groups merge — contradictions are rejected
 
 This is computed per-PoV from the EquateStatements of people in your network.
@@ -63,9 +63,9 @@ namespace, no connection.
 
 Extend the Equivalence system to context name strings. Users can declare:
 
-- `"econ" ~ "economics"` — they're the same context
-- `"econ" ~ "politics"` — someone else's opinion that these are related
-- `"econ" !~ "politics"` — someone else's explicit separation
+- `"econ"→"economics"` — they're the same context
+- `"econ"→"politics"` — someone else's opinion that these are related
+- `"econ" ≠ "politics"` — someone else's explicit separation
 
 These statements are aggregated from your follow network per-PoV, exactly like
 subject equivalences today. When you browse "econ", the system first resolves its
@@ -73,8 +73,8 @@ equivalence group (which might include "economics", "finance", depending on your
 network's statements), then builds the follow network from all context names in that
 group.
 
-Ken says `econ ~ economics`: people who follow Ken see those as the same context.
-Someone says `econ !~ politics`: that DONT prevents the merge in the views of people
+Ken says `econ→economics`: people who follow Ken see those as the same context.
+Someone says `econ ≠ politics`: that DONT prevents the merge in the views of people
 who follow them. The result is decentralized and network-specific — different PoVs
 can have different context topologies.
 
@@ -231,34 +231,81 @@ State tag relation in a new statement type.
 
 Compute tag Equivalence and use the tags filter to fitler for content matching canonical and equivalent tags.
 
-### Questions:
+### Statement type: `org.nerdster.equivalence`
 
-#### statement type
-Since we're planning for contexts and tags to live in the same namespace, equate/dontEquate isn't necessarily about tags; the plan is for contexts, too.
-Suggestion: Use statement type "org.nerdster.equivalence".
+Covers both tags and contexts — same namespace, one statement type.
 
-#### dontEquate or clear?
-If you put cycling under bikes, and now you want to remove it, you should probably clear your equate, not necessarily state a notEquate.
-Clearing your equate might still leave cycling under bikes because someone else equated them that way, and so you do also want to be able to "dontEquate".
-Suggestion: 
-- If you have an equate or dontEquate statement about this string, then show a clear "X".
-- Change the icon used for dontEquate to something like "!=".
+JSON reuses the `equate` / `with.otherSubject` field names from content equate statements but
+holds plain strings instead of content key objects. This is already precedented (dismiss/censor
+use `rate` with a token). Concern to keep in mind: tooling that assumes `equate`/`otherSubject`
+holds a content key object would misread these. Since this is a separate statement type with its
+own parser the concern is isolated.
 
-Further questions:
-- You might have more than one equate / dontEquate statement about a string. What then?
-- Where to show the shield icons for the equate statements about this thing. The Nerdster is meant to showcase that this is all stated by someone you trust and aggreggated in a decentralized way.
-Suggestions: For this particular case, have that be a rarely used dialog that shows all org.nerdster.equivalence statements about this string (either as subject or with.otherSubject). This could also be where we let you clear your own statement.
+A dontEquate statement uses `dontEquate` as the field name instead of `equate`, consistent with
+how `ContentVerb.dontEquate` already works in content statements.
 
+Uses the same `previous` chain as all other statements from that key.
 
+### Requirements
+
+- User can state A→B (A is equivalent to canonical B).
+- User can state A≠B.
+- User can clear any of their own statements.
+- User can see all statements — their own and everyone they follow — that involve a given string.
+
+### UI
+
+**Drag to state A→B**: drag A onto B's row in the dropdown. This is already in the prototype.
+
+**X on an expanded member to state A≠B**: X always means "state A≠B". One action, one meaning.
+
+**Crypto shield**: any row that has an `org.nerdster.equivalence` statement involving that string
+(as either field) from anyone in the current follow network shows a crypto shield. Tapping the
+shield opens the provenance dialog.
+
+**Provenance dialog**: shows all statements involving this string, in network order (same
+presentation as ratings on content cards — distance-ordered, signer identity visible). Clearing
+your own statements is done here.
+
+### What populates the dropdown
+
+Only strings that appear as tags in the current feed. Strings that exist only as equivalence
+targets (not tags on visible content) still appear if they are a canonical whose members do
+appear as tags.
+
+### Computation
+
+Walk `org.nerdster.equivalence` statements from the current follow network alongside the existing
+content walk. Feed them into an `Equivalence` instance using the same network/PoV as content.
+
+When the tag filter is set to a canonical string, resolve its full `EquivalenceGroup.all` and
+show content tagged with any member of that group.
+
+### Implementation sequence
+
+1. Remove old broken tag-relation code.
+2. Define `EquivalenceStatement` parser class for `org.nerdster.equivalence`.
+3. Collect and compute equivalence groups in the feed pipeline.
+4. Expand the tag filter to resolve equivalence groups.
+5. Wire `eq_dropdown` into the tags filter (read-only first — shows computed groups).
+6. Wire publishing: drag-drop and X/≠ actions issue signed statements.
+7. Crypto shield + provenance dialog.
+
+Contexts follow the same path (steps 2–7 again), same statement type, same computation.
 
 ## Contexts next
+
 TBD...
 
 ### Change and simplify NodeDetails UI especially for following
-I'm thinking about an interface where you have a Follow half on the left and Block half on hte right and you can drag n' drop contexts to either or to a Neutral area to remove in addition to dragging contexts onto each other to equate them.
+
+I'm thinking about an interface where you have a Follow half on the left and Block half on the
+right and you can drag n' drop contexts to either or to a Neutral area to remove in addition to
+dragging contexts onto each other to equate them.
 
 ## Open
 
 ### Which network to use to compute the context equivalence groups?
-The result of the computation affects the group. Probably best to keep it simple and just use the identity network (saves computing the <nerdster> network, which would be my first choice)
+The result of the computation affects the group. Probably best to keep it simple and just use the
+identity network (saves computing the <nerdster> network, which would be my first choice).
 
