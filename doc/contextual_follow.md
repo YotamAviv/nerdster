@@ -179,3 +179,35 @@ taps are how you *discover and enter* them organically from content.
   "cycling" is canonical for "bikes" but Eric says "bikes" is unrelated to
   "cycling" (or that "bikes" is the canonical one), each person sees the
   aggregation from their own PoV based on who they follow.
+
+# Plan
+
+## Do nothing to connect tags to contexts.
+The dream might be to use your science network to read about mRNA vaccinces but not to have an mRNA group.
+So, pick a follow network, and maybe narrow down your feed using a tag.
+
+## Improve the UI:
+- ContentType dropdown: as narrow as the icon only
+- Sort dropdown: See what we have and shoot for icons:
+  - calendar icon? for recent activity
+  - thumb ups icon for net likes
+  - comment icon for most comments
+
+### New drag n' drop widget for manipulating equivalence groups.
+- drag A onto / into B to state A is equivalent of canonical B.
+- expand B to see its equivalents
+  - click "x" to state that an element does not belong in this EG (A is not equivalent of canonical B).
+  - don't allow dragging canonicals inside an expanded EG.  
+To be used by:
+- tags dropdown
+- context dropdown
+Using it will issue new equate / not-equate statements for these
+
+### Change and simplify NodeDetails UI especially for following
+I'm thinking about an interface where you have a Follow half on the left and Block half on hte right and you can drag n' drop contexts to either or to a Neutral area to remove in addition to dragging contexts onto each other to equate them.
+
+## Open
+
+### Which network to use to compute the context equivalence groups?
+The result of the computation affects the group. Probably best to keep it simple and just use the identity network (saves computing the <nerdster> network, which would be my first choice)
+
