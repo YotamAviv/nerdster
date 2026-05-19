@@ -10,8 +10,6 @@ import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:nerdster/equivalence/equivalence.dart';
-import 'package:nerdster/equivalence/equate_statement.dart';
-import 'package:nerdster/equivalence/eg.dart';
 
 List<Iterable<ContentStatement>> _collectSources(
     IdentityKey identity, DelegateResolver delegateResolver, ContentResult contentResult) {
@@ -104,11 +102,10 @@ ContentAggregation reduceContentAggregation(
       // It's decided!
       // - s1 is canonical, s2 equivalent.
       // - this statement is about both.
-      eqLogic.process(EquateStatement(s1, s2, dont: s.verb == ContentVerb.dontEquate));
+      eqLogic.equate(s2, s1, not: s.verb == ContentVerb.dontEquate);
     }
   }
-  final Set<EquivalenceGroup> groups = eqLogic.createGroups();
-  for (final EquivalenceGroup group in groups) {
+  for (final EquivalenceGroup group in eqLogic.groups) {
     final ContentKey canonical = ContentKey(group.canonical);
     for (final String token in group.all) {
       subjectEquivalence[ContentKey(token)] = canonical;
