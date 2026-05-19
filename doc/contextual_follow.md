@@ -257,7 +257,7 @@ Uses the same `previous` chain as all other statements from that key.
 
 **Drag to state A→B**: drag A onto B's row in the dropdown. This is already in the prototype.
 
-**X on an expanded member to state A≠B**: X always means "state A≠B". One action, one meaning.
+**≠ on an expanded member**: tapping it states A≠B. One action, one meaning.
 
 **Crypto shield**: any row that has an `org.nerdster.equivalence` statement involving that string
 (as either field) from anyone in the current follow network shows a crypto shield. Tapping the
@@ -288,10 +288,35 @@ show content tagged with any member of that group.
 3. Collect and compute equivalence groups in the feed pipeline.
 4. Expand the tag filter to resolve equivalence groups.
 5. Wire `eq_dropdown` into the tags filter (read-only first — shows computed groups).
-6. Wire publishing: drag-drop and X/≠ actions issue signed statements.
+6. Wire publishing: drag-drop and X actions issue signed statements.
 7. Crypto shield + provenance dialog.
 
 Contexts follow the same path (steps 2–7 again), same statement type, same computation.
+
+### Statement fetching
+
+`statement_fetcher.js` uses an omit list — new types are included by default, so
+`org.nerdster.equivalence` statements are fetched alongside content statements automatically.
+Both are needed when building the feed for a PoV.
+
+On the client, the existing fetch channel is typed to `ContentStatement`. The new
+`EquivalenceStatement` needs its own parser registered so that `org.nerdster.equivalence`
+statements are routed correctly rather than ignored or failing silently.
+
+### Tests
+
+Unit tests:
+- `EquivalenceStatement` parses equate and dontEquate JSON correctly.
+- `EquivalenceStatement` with unknown fields doesn't crash.
+- Tag filter with equivalence group returns content for all members, not just the canonical.
+- Tag filter with no equivalence statements behaves as before.
+
+Integration tests:
+- Two users in a follow network: one states A→B, PoV selects A as filter, sees content tagged B.
+- One user states A→B, another states A≠B; PoV following both sees the conflict resolved correctly.
+- Clear via provenance dialog removes the statement; recomputed feed reflects the change.
+
+More tests will be added as implementation uncovers edge cases.
 
 ## Contexts next
 
