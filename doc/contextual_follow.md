@@ -8,7 +8,7 @@ Explored some ideas for data model and UI. But nothing's settled or even attract
 
 ## The Dream
 
-Click "news" or "sports" or "bbq" and see content about those subjects — with the
+Click "news" or "sports" or "econ" and see content about those subjects — with the
 scope broadened by context relations in your network — rated by people whose
 opinions on those topics you should care about. That includes people you know
 directly, but also people you've never heard of who are respected in that community
@@ -30,10 +30,10 @@ are shown. The follow network does not change when you pick a tag.
 ### Follow Contexts (network filter only)
 
 Follow statements have a `contexts` field — an arbitrary string → weight map.
-Example: `{"<nerdster>": 1, "bbq": 1}`. The Context selector switches which context
-is used to build your follow network. When you select "bbq", only follow statements
-with a positive "bbq" weight contribute to your network. Contextual follow is
-transitive: if you follow Ken for "bbq", you follow Ken's "bbq" network too, and
+Example: `{"<nerdster>": 1, "sports": 1}`. The Context selector switches which context
+is used to build your follow network. When you select "sports", only follow statements
+with a positive "sports" weight contribute to your network. Contextual follow is
+transitive: if you follow Ken for "sports", you follow Ken's "sports" network too, and
 so on. Popular context names from your network are surfaced dynamically in the
 Context selector.
 
@@ -59,7 +59,7 @@ namespace, no connection.
 
 ---
 
-## The Idea: Apply Equivalence to Context Names
+## The Idea: Apply Equivalence to Contexts, Tags
 
 Extend the Equivalence system to context name strings. Users can declare:
 
@@ -80,10 +80,10 @@ can have different context topologies.
 
 ---
 
-## What's Not Connected Yet
+## Tags and Contexts currently not related / connected
 
 Hashtags (display filter) and follow contexts (network filter) are independent
-controls today. Clicking "#bbq" in the Tags dropdown doesn't activate the "bbq"
+controls today. Clicking "#sports" in the Tags dropdown doesn't activate the "sports"
 follow network. Whether and how to connect these is an open design question.
 
 ---
@@ -103,9 +103,9 @@ your family because they're family, not because they're experts in "family conte
 You want to see everything they post. Filtering content by the tag `#family` would miss
 the point.
 
-**Topic contexts** (bbq, econ, #ai, surf) — the context says something about what you
-want to see. You follow Ken for "bbq" because he knows bbq. You want to see bbq content
-from people in your bbq network. The follow context and the content tag are the same
+**Topic contexts** (bbq, econ, ai, surf) — the context says something about what you
+want to see. You follow Ken for "econ" because he knows econ. You want to see econ content
+from people in your econ network. The follow context and the content tag are the same
 concept.
 
 Despite this distinction, **one namespace is the right call**. Two namespaces forces
@@ -127,16 +127,16 @@ The current UI encodes a hidden assumption: contexts and tags are separate thing
   comment activates the tags filter but does *not* change the follow network.
 - These two controls share no connection despite operating over what should be one namespace.
 
-**The problem:** clicking `#bbq` in a comment should ideally do what clicking "bbq" in
+**The problem:** clicking `#econ` in a comment should ideally do what clicking "econ" in
 the context selector does — bring in the right people AND show the right content. But
 today it only does the latter half.
 
 **Proposed direction: hashtag clicks drive the full experience**
 
-When a user taps `#bbq` in a comment, they're expressing interest in that topic. The
+When a user taps `#econ` in a comment, they're expressing interest in that topic. The
 system should respond fully:
-1. Switch the follow context to "bbq" (broaden the network to bbq-trusted people)
-2. Filter content to `#bbq` tagged items
+1. Switch the follow context to "econ" (broaden the network to econ-trusted people)
+2. Filter content to `#econ` tagged items
 
 For **relational contexts** (family, neighbor), the content-filter half is usually
 unwanted — you want *all* content from those people, not just posts tagged `#family`.
@@ -149,12 +149,12 @@ decide.
   activates the matching follow context (if one exists in the network) and sets the
   content filter. The experience becomes: "I saw this tag, I want to go deeper."
 - The **Context selector** stays prominent but is now also reachable via hashtag taps.
-  It remains useful for switching between saved/named views (family, work, bbq) directly.
+  It remains useful for switching between saved/named views (family, work, econ) directly.
 - The **Tags filter** in the menu can be simplified or removed — it becomes a secondary
   control for users who want to filter content within an already-active context without
   changing the network.
 - Tags that have an associated follow context in your network could be visually
-  distinguished (e.g., a small network icon next to `#bbq` in comments), so users
+  distinguished (e.g., a small network icon next to `#econ` in comments), so users
   know a tap will also shift the network, not just filter.
 
 **Summary:** make hashtag taps the unified entry point into topic-scoped browsing.
