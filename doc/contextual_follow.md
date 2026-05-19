@@ -203,6 +203,57 @@ To be used by:
 - context dropdown
 Using it will issue new equate / not-equate statements for these
 
+# Tags and Contexts can be equated
+
+## Tags first
+
+The old code trying to relate or do something fancy with tags is broken and old. I think that it based itself on that if a subject is tagged with more than one tag then those are somehow related. Remove all that first.
+
+Use the new drag and drop equivalence dropdown widget.
+
+State tag relation in a new statement type.
+{
+  "statement": "org.nerdster.equivalence",
+  "time": "2025-04-08T20:43:40.229Z",
+  "I": {
+    "crv": "Ed25519",
+    "kty": "OKP",
+    "x": "qmNE2eAuBYKAdtOJrwq9bpeps-HDsvV9mRhWT1R8xCI"
+  },
+  "equate": "cycling",
+  "with": {
+    "otherSubject": "bikes"
+    }
+  },
+  "previous": "e728467a5466fd2d41eb571aa6251b0c1fcb280f",
+  "signature": "ff16d7c564c37eb367c5c7c28562d08fd4f5ecb5805a35cc335e971447c8b0ebea8ca145db02bf5fc0a4b5017dcffe3093e67c37f7d1bad5059fc631641b2503"
+}
+
+Compute tag Equivalence and use the tags filter to fitler for content matching canonical and equivalent tags.
+
+### Questions:
+
+#### statement type
+Since we're planning for contexts and tags to live in the same namespace, equate/dontEquate isn't necessarily about tags; the plan is for contexts, too.
+Suggestion: Use statement type "org.nerdster.equivalence".
+
+#### dontEquate or clear?
+If you put cycling under bikes, and now you want to remove it, you should probably clear your equate, not necessarily state a notEquate.
+Clearing your equate might still leave cycling under bikes because someone else equated them that way, and so you do also want to be able to "dontEquate".
+Suggestion: 
+- If you have an equate or dontEquate statement about this string, then show a clear "X".
+- Change the icon used for dontEquate to something like "!=".
+
+Further questions:
+- You might have more than one equate / dontEquate statement about a string. What then?
+- Where to show the shield icons for the equate statements about this thing. The Nerdster is meant to showcase that this is all stated by someone you trust and aggreggated in a decentralized way.
+Suggestions: For this particular case, have that be a rarely used dialog that shows all org.nerdster.equivalence statements about this string (either as subject or with.otherSubject). This could also be where we let you clear your own statement.
+
+
+
+## Contexts next
+TBD...
+
 ### Change and simplify NodeDetails UI especially for following
 I'm thinking about an interface where you have a Follow half on the left and Block half on hte right and you can drag n' drop contexts to either or to a Neutral area to remove in addition to dragging contexts onto each other to equate them.
 
