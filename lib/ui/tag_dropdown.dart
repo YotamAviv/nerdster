@@ -125,7 +125,7 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
     _removeProvenanceOverlay();
     final ctx = context;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) controller.pushClearEquivalence(s.otherString, s.string, context: ctx);
+      if (mounted) controller.pushEquivalence(s.otherString, s.string, verb: EquivalenceVerb.clear, context: ctx);
     });
   }
 
@@ -186,7 +186,7 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
       widget.onFilterChanged(canonical);
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.pushEquivalence(equivalent, canonical, context: ctx);
+      controller.pushEquivalence(equivalent, canonical, verb: EquivalenceVerb.equate, context: ctx);
     });
   }
 
@@ -194,7 +194,7 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
     final controller = widget.controller;
     if (controller == null || signInState.signer == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.pushEquivalence(equivalent, canonical, not: true, context: ctx);
+      controller.pushEquivalence(equivalent, canonical, verb: EquivalenceVerb.dontEquate, context: ctx);
     });
   }
 

@@ -16,9 +16,7 @@ List<Iterable<ContentStatement>> _collectSources(
     IdentityKey identity, DelegateResolver delegateResolver, ContentResult contentResult) {
   final List<Iterable<ContentStatement>> sources = [];
   for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
-    if (contentResult.delegateContent.containsKey(key)) {
-      sources.add(contentResult.delegateContent[key]!);
-    }
+    sources.add(contentResult.delegateContent[key]!);
   }
   return sources;
 }
@@ -30,7 +28,7 @@ ContentAggregation reduceContentAggregation(
   TrustGraph trustGraph,
   DelegateResolver delegateResolver,
   ContentResult contentResult, {
-  EquivalenceResult equivalenceResult = const EquivalenceResult(),
+  EquivalenceResult? equivalenceResult,
   bool enableCensorship = true,
   List<DelegateKey>? meDelegateKeys,
   Map<DelegateKey, List<DismissStatement>> myDisContent = const {},
@@ -390,21 +388,21 @@ ContentAggregation reduceContentAggregation(
   // earlier one for the same (signer, pair) — matching how content statements are deduplicated.
   final Equivalence tagEqLogic = Equivalence();
   final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements = {};
-  for (final IdentityKey identity in followNetwork.identities) {
-    final List<EquivalenceStatement> allForIdentity = [];
-    for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
-      final List<EquivalenceStatement>? stmts = equivalenceResult.delegateContent[key];
-      if (stmts != null) allForIdentity.addAll(stmts);
-    }
-    allForIdentity.sort((a, b) => b.time.compareTo(a.time));
-    for (final EquivalenceStatement s in distinct(
-      allForIdentity,
-      iTransformer: (_) => identity.value,
-    )) {
-      if (s.isClear) continue;
-      tagEqLogic.equate(s.otherString, s.string, not: s.not);
-      tagEquivalenceStatements.putIfAbsent(s.otherString, () => []).add(s);
-      tagEquivalenceStatements.putIfAbsent(s.string, () => []).add(s);
+  if (equivalenceResult != null) {
+    for (final IdentityKey identity in followNetwork.identities) {
+      final List<List<EquivalenceStatement>> sources = [];
+      for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
+        sources.add(equivalenceResult.delegateContent[key]!);
+      }
+      for (final EquivalenceStatement s in distinct(
+        Merger.merge(sources),
+        iTransformer: (_) => identity.value,
+      )) {
+        if (s.isClear) continue;
+        tagEqLogic.equate(s.otherString, s.string, not: s.not);
+        tagEquivalenceStatements.putIfAbsent(s.otherString, () => []).add(s);
+        tagEquivalenceStatements.putIfAbsent(s.string, () => []).add(s);
+      }
     }
   }
   final Map<String, String> tagEquivalence = {};

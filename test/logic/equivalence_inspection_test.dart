@@ -35,10 +35,15 @@ void main() {
       peerDelegateSource: appSource,
     );
 
+    final Set<DelegateKey> allPeerDelegates = {
+      for (final IdentityKey identity in followNetwork.identities)
+        ...delegateResolver.getDelegatesForIdentity(identity),
+    }..remove(lisaD!.id);
+
     final Map<DelegateKey, List<ContentStatement>> delegateContent =
         await contentPipeline.fetchDelegateContent(
-      const [],
-      <DelegateKey>{lisaD!.id},
+      [lisaD.id],
+      allPeerDelegates,
       delegateResolver: delegateResolver,
       graph: graph,
     );

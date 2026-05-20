@@ -158,10 +158,10 @@ EquivalenceStatement makeEquivalenceStatement({
   required Json iJson,
   required String equivalent,
   required String canonical,
-  bool not = false,
+  EquivalenceVerb verb = EquivalenceVerb.equate,
   DateTime? time,
 }) {
-  final Json json = EquivalenceStatement.make(iJson, equivalent, canonical, not: not);
+  final Json json = EquivalenceStatement.make(iJson, equivalent, canonical, verb: verb);
   if (time != null) {
     json['time'] = time.toIso8601String();
   }

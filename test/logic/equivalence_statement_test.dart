@@ -31,7 +31,7 @@ void main() {
         iJson: iJson,
         equivalent: 'python',
         canonical: 'snake',
-        not: true,
+        verb: EquivalenceVerb.dontEquate,
       );
 
       expect(s.string, equals('snake'));
@@ -66,7 +66,7 @@ void main() {
         iJson: iJson,
         equivalent: 'world',
         canonical: 'news',
-        not: true,
+        verb: EquivalenceVerb.dontEquate,
       );
 
       expect(eq.getDistinctSignature(), equals(dont.getDistinctSignature()));
@@ -274,9 +274,11 @@ void main() {
         iJson: setup.delegateKey,
         equivalent: 'python',
         canonical: 'snake',
-        not: true,
+        verb: EquivalenceVerb.dontEquate,
       );
-      final ContentResult contentResult = ContentResult();
+      final ContentResult contentResult = ContentResult(delegateContent: {
+        DelegateKey(setup.delegateToken): [],
+      });
       final EquivalenceResult equivalenceResult = EquivalenceResult(delegateContent: {
         DelegateKey(setup.delegateToken): [dont],
       });

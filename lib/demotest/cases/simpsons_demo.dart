@@ -238,14 +238,14 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   // Lisa disagrees with Bart: classic ≠ rad (she says this after Bart equated them)
   await lisaN.doEquate('uplifting', 'inspiring');
   await lisaN.doEquate('heartwarming', 'poignant');
-  await lisaN.doEquate('classic', 'rad', not: true);
+  await lisaN.doEquate('classic', 'rad', verb: EquivalenceVerb.dontEquate);
   // Homer: bowling IS rad (he thinks his sport is just as cool as skateboarding)
   await homer2N.doEquate('bowling', 'rad');
   // Marge's kitchen and animal vocab
   // Marge disagrees with Bart: "sick" means ill, not cool
   await margeN.doEquate('wholesome', 'nutritious');
   await margeN.doEquate('equestrian', 'horses');
-  await margeN.doEquate('sick', 'rad', not: true);
+  await margeN.doEquate('sick', 'rad', verb: EquivalenceVerb.dontEquate);
   // Milhouse: hilarious = funny
   await milhouseN.doEquate('hilarious', 'funny');
 
