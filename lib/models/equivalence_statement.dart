@@ -13,12 +13,12 @@ class EquivalenceStatement extends Statement {
   static void clearCache() => _cache.clear();
 
   /// The equivalent (non-canonical) side; stored in with.otherSubject.
-  final String otherString;
+  final String equivalent;
 
   final EquivalenceVerb verb;
 
   /// The canonical side; stored in the verb field (equate/dontEquate/clear).
-  String get string => subjectToken;
+  String get canonical => subject;
 
   bool get not => verb == EquivalenceVerb.dontEquate;
 
@@ -37,25 +37,20 @@ class EquivalenceStatement extends Statement {
   factory EquivalenceStatement(Jsonish jsonish) {
     if (_cache.containsKey(jsonish.token)) return _cache[jsonish.token]!;
 
-    final dynamic equateSubject = jsonish['equate'];
-    final dynamic dontEquateSubject = jsonish['dontEquate'];
-    final dynamic clearSubject = jsonish['clear'];
-    assert(equateSubject != null || dontEquateSubject != null || clearSubject != null,
-        'EquivalenceStatement missing equate/dontEquate/clear field');
-
-    final EquivalenceVerb verb = clearSubject != null
-        ? EquivalenceVerb.clear
-        : (dontEquateSubject != null ? EquivalenceVerb.dontEquate : EquivalenceVerb.equate);
-    // The verb field holds the canonical string.
-    final dynamic rawSubject = clearSubject ?? dontEquateSubject ?? equateSubject;
-    assert(rawSubject is String, 'EquivalenceStatement subject must be a plain string');
+    EquivalenceVerb? verb;
+    String? subject;
+    for (final v in EquivalenceVerb.values) {
+      final dynamic s = jsonish[v.name];
+      if (s != null) { verb = v; subject = s as String; break; }
+    }
+    assert(verb != null && subject != null, 'EquivalenceStatement missing equate/dontEquate/clear field');
 
     // with.otherSubject holds the equivalent (non-canonical) string.
     final dynamic other = (jsonish['with'] as Map?)?['otherSubject'];
     assert(other is String, 'EquivalenceStatement with.otherSubject must be a plain string');
 
-    final EquivalenceStatement s = EquivalenceStatement._internal(jsonish, rawSubject as String,
-        otherString: other as String, verb: verb);
+    final EquivalenceStatement s = EquivalenceStatement._internal(jsonish, subject as String,
+        equivalent: other as String, verb: verb!);
     _cache[s.token] = s;
     return s;
   }
@@ -63,7 +58,7 @@ class EquivalenceStatement extends Statement {
   static EquivalenceStatement? find(String token) => _cache[token];
 
   EquivalenceStatement._internal(super.jsonish, super.subject,
-      {required this.otherString, required this.verb});
+      {required this.equivalent, required this.verb});
 
   /// [canonical] goes in the verb field; [equivalent] goes in with.otherSubject.
   static Json make(Json iJson, String equivalent, String canonical,
@@ -80,7 +75,7 @@ class EquivalenceStatement extends Statement {
   @override
   String getDistinctSignature({Transformer? iTransformer, Transformer? sTransformer}) {
     final String ti = iTransformer != null ? iTransformer(iToken) : iToken;
-    final List<String> pair = [string, otherString]..sort();
+    final List<String> pair = [canonical, equivalent]..sort();
     return 'equivalence:$ti:${pair.join(":")}';
   }
 }

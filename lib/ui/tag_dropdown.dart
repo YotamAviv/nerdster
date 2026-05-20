@@ -125,7 +125,7 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
     _removeProvenanceOverlay();
     final ctx = context;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) controller.pushEquivalence(s.otherString, s.string, verb: EquivalenceVerb.clear, context: ctx);
+      if (mounted) controller.pushEquivalence(s.equivalent, s.canonical, verb: EquivalenceVerb.clear, context: ctx);
     });
   }
 
@@ -633,7 +633,7 @@ class _TagProvenanceDialog extends StatelessWidget {
                         Expanded(
                           child: Text.rich(
                             TextSpan(children: [
-                              TextSpan(text: s.otherString),
+                              TextSpan(text: s.equivalent),
                               TextSpan(
                                 text: s.not ? '  ≠  ' : '  →  ',
                                 style: TextStyle(
@@ -641,7 +641,7 @@ class _TagProvenanceDialog extends StatelessWidget {
                                   color: s.not ? Colors.red : Colors.green,
                                 ),
                               ),
-                              TextSpan(text: s.string),
+                              TextSpan(text: s.canonical),
                             ]),
                             style: const TextStyle(fontSize: 13),
                             overflow: TextOverflow.ellipsis,

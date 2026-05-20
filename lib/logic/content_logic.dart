@@ -399,9 +399,9 @@ ContentAggregation reduceContentAggregation(
         iTransformer: (_) => identity.value,
       )) {
         if (s.isClear) continue;
-        tagEqLogic.equate(s.otherString, s.string, not: s.not);
-        tagEquivalenceStatements.putIfAbsent(s.otherString, () => []).add(s);
-        tagEquivalenceStatements.putIfAbsent(s.string, () => []).add(s);
+        tagEqLogic.equate(s.equivalent, s.canonical, not: s.not);
+        tagEquivalenceStatements.putIfAbsent(s.equivalent, () => []).add(s);
+        tagEquivalenceStatements.putIfAbsent(s.canonical, () => []).add(s);
       }
     }
   }

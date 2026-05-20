@@ -19,9 +19,9 @@ void main() {
         canonical: 'news',
       );
 
-      // string = canonical (verb field), otherString = equivalent (with.otherSubject)
-      expect(s.string, equals('news'));
-      expect(s.otherString, equals('world'));
+      // canonical = verb field value, equivalent = with.otherSubject value
+      expect(s.canonical, equals('news'));
+      expect(s.equivalent, equals('world'));
       expect(s.not, isFalse);
     });
 
@@ -34,8 +34,8 @@ void main() {
         verb: EquivalenceVerb.dontEquate,
       );
 
-      expect(s.string, equals('snake'));
-      expect(s.otherString, equals('python'));
+      expect(s.canonical, equals('snake'));
+      expect(s.equivalent, equals('python'));
       expect(s.not, isTrue);
     });
 
