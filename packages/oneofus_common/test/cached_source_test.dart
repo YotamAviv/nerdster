@@ -1,10 +1,30 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:oneofus_common/channel_factory.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/oou_signer.dart';
+import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
+
+/// A writer that blocks until [release] is called. Used to prove that push()
+/// completes (via local inject) before the network write finishes.
+class _BlockingWriter implements StatementWriter<Statement> {
+  final _gate = Completer<void>();
+  bool callStarted = false;
+
+  void release() => _gate.complete();
+
+  @override
+  Future<Statement> push(Json json, StatementSigner signer,
+      {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed}) async {
+    callStarted = true;
+    await _gate.future;
+    throw StateError('_BlockingWriter: released but no real write');
+  }
+}
 
 const String _kExportUrl = 'https://export.example.com';
 
@@ -45,6 +65,94 @@ void main() {
     json['time'] = time.toUtc().toIso8601String();
     return channel.push(json, issuerSigner);
   }
+
+  group('optimistic write semantics', () {
+    test('push() completes after inject but before network write', () async {
+      // This test would hang if completer.complete() were moved to after await _writer.push(),
+      // because the blocking writer never resolves until release() is called.
+      final writer = _BlockingWriter();
+      channelFactory.testWriterOverride = writer;
+      channelFactory.onWriteError = (_) async {}; // _BlockingWriter throws after release
+
+      final channel = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+      await channel.fetch({issuerToken: null});
+
+      final s = await push(channel, subjectAKeyJson, time: DateTime(2024, 1, 1));
+
+      // push() returned: inject happened (we got a valid statement back).
+      // The write is still blocked — the writer's gate has not been released.
+      expect(writer.callStarted, isTrue, reason: 'writer.push must have been called');
+      expect(writer._gate.isCompleted, isFalse, reason: 'write must still be in-flight when push() returns');
+      expect(s.iToken, equals(issuerToken));
+
+      // The statement is already in the cache.
+      final result = await channel.fetch({issuerToken: null});
+      expect(result[issuerToken]!.any((stmt) => stmt.token == s.token), isTrue,
+          reason: 'injected statement must be in cache while write is still in-flight');
+
+      writer.release(); // unblock so tearDown is clean
+    });
+
+    test('push result is in cache immediately — no re-fetch needed', () async {
+      final channel = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+      await channel.fetch({issuerToken: null});
+
+      final s = await push(channel, subjectAKeyJson, time: DateTime(2024, 1, 1));
+
+      // Fetch again without clearing — must be served from cache, not from source.
+      // Verify by deleting the Firestore doc and confirming fetch still returns s.
+      await firestore
+          .collection(issuerToken)
+          .doc('statements')
+          .collection('statements')
+          .doc(s.token)
+          .delete();
+
+      final result = await channel.fetch({issuerToken: null});
+      expect(result[issuerToken]!.any((stmt) => stmt.token == s.token), isTrue,
+          reason: 'pushed statement must be served from cache, not re-fetched from source');
+    });
+
+    test('clear() drains pending writes before wiping cache', () async {
+      final channel = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+      await channel.fetch({issuerToken: null});
+
+      final s = await push(channel, subjectAKeyJson, time: DateTime(2024, 1, 1));
+
+      // clear() must drain the pending write so Firestore is current when cache is gone.
+      await channel.clear();
+
+      // Re-fetch via a fresh channel (empty cache) — must find s in Firestore.
+      final freshChannel = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+      final result = await freshChannel.fetch({issuerToken: null});
+      expect(result[issuerToken]!.any((stmt) => stmt.token == s.token), isTrue,
+          reason: 'pushed statement must be in Firestore after clear()');
+    });
+
+    test('inject fans out to sibling root — visible without re-fetch', () async {
+      final ch1 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+      final ch2 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements',
+          excludeTypes: ['org.example.something']);
+
+      // Both roots must have the issuer in cache for fanout to inject.
+      await ch1.fetch({issuerToken: null});
+      await ch2.fetch({issuerToken: null});
+
+      final s = await push(ch1, subjectAKeyJson, time: DateTime(2024, 1, 1));
+
+      // Delete the Firestore doc to prove ch2 reads from cache (fanout), not from source.
+      await firestore
+          .collection(issuerToken)
+          .doc('statements')
+          .collection('statements')
+          .doc(s.token)
+          .delete();
+
+      final result = await ch2.fetch({issuerToken: null});
+      expect(result[issuerToken]!.any((stmt) => stmt.token == s.token), isTrue,
+          reason: 'inject fanned out to sibling root; visible without re-fetch');
+    });
+  });
 
   group('distinct: true (default) — cache evicts superseded statements', () {
     test('push superseding statement removes the old one', () async {

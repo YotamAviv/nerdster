@@ -26,23 +26,27 @@ Future<void> previousConflictScenario() async {
   await channelA.fetch({issuerToken: null});
   await channelB.fetch({issuerToken: null});
 
-  // channelA writes first — server head advances.
+  // Capture write rejections via the factory callback.
+  Object? capturedError;
+  final savedOnWriteError = channelFactory.onWriteError;
+  channelFactory.onWriteError = (e) async { capturedError = e; };
+
+  // channelA writes first — drain to ensure server head advances before channelB writes.
   final DateTime t0 = DateTime.now().toUtc();
   final Json jsonA = DismissStatement.make(iJson, createTestSubject(title: 'PC-A'), 'forever');
   jsonA['time'] = t0.toIso8601String();
   await channelA.push(jsonA, signer);
+  await channelA.clear(); // drain: jsonA lands in Firestore (succeeds, no error)
 
-  // channelB still holds the old head. Its push sends a stale 'previous' — server must reject.
+  // channelB still holds the old head (null/genesis). Its push sends a stale 'previous' — server must reject.
   final DateTime t1 = t0.add(const Duration(milliseconds: 1));
   final Json jsonB = DismissStatement.make(iJson, createTestSubject(title: 'PC-B'), 'forever');
   jsonB['time'] = t1.toIso8601String();
+  await channelB.push(jsonB, signer);
+  await channelB.clear(); // drain: write rejected, capturedError set, caches cleared
 
-  String? conflictError;
-  try {
-    await channelB.push(jsonB, signer);
-  } catch (e) {
-    conflictError = e.toString();
-  }
-  check(conflictError != null, 'expected previous conflict rejection, got no error');
-  debugPrint('previous conflict: stale previous rejection verified ($conflictError)');
+  channelFactory.onWriteError = savedOnWriteError;
+
+  check(capturedError != null, 'expected previous conflict rejection, got no error');
+  debugPrint('previous conflict: stale previous rejection verified ($capturedError)');
 }

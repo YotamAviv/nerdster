@@ -13,6 +13,11 @@ Future<void> timeOrderingScenario() async {
   final issuerToken = getToken(iJson);
   final signer = await OouSigner.make(alice.keyPair);
 
+  // Capture write rejections via the factory callback.
+  Object? capturedError;
+  final savedOnWriteError = channelFactory.onWriteError;
+  channelFactory.onWriteError = (e) async { capturedError = e; };
+
   final source = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements');
   await source.fetch({issuerToken: null});
 
@@ -20,30 +25,33 @@ Future<void> timeOrderingScenario() async {
   final Json json0 = DismissStatement.make(iJson, createTestSubject(title: 'TO-first'), 'forever');
   json0['time'] = t0.toIso8601String();
   await source.push(json0, signer);
+  await source.clear(); // drain: json0 lands in Firestore (write succeeds, no error)
+  await source.fetch({issuerToken: null}); // repopulate cache for next push
 
   // Same timestamp — server must reject.
+  capturedError = null;
   final Json jsonSame = DismissStatement.make(iJson, createTestSubject(title: 'TO-same'), 'forever');
   jsonSame['time'] = t0.toIso8601String();
-  String? sameError;
-  try {
-    await source.push(jsonSame, signer);
-  } catch (e) {
-    sameError = e.toString();
-  }
+  await source.push(jsonSame, signer);
+  await source.clear(); // drain: write rejected, capturedError set, caches cleared
+  final sameError = capturedError?.toString();
+  await source.fetch({issuerToken: null});
+
   check(sameError != null && sameError.contains('time ordering'),
       'expected time ordering rejection for same timestamp, got: $sameError');
   debugPrint('time ordering: same-timestamp rejection verified');
 
   // Earlier timestamp — server must reject.
+  capturedError = null;
   final DateTime tEarlier = t0.subtract(const Duration(milliseconds: 1));
   final Json jsonEarlier = DismissStatement.make(iJson, createTestSubject(title: 'TO-earlier'), 'forever');
   jsonEarlier['time'] = tEarlier.toIso8601String();
-  String? earlierError;
-  try {
-    await source.push(jsonEarlier, signer);
-  } catch (e) {
-    earlierError = e.toString();
-  }
+  await source.push(jsonEarlier, signer);
+  await source.clear();
+  final earlierError = capturedError?.toString();
+
+  channelFactory.onWriteError = savedOnWriteError;
+
   check(earlierError != null && earlierError.contains('time ordering'),
       'expected time ordering rejection for earlier timestamp, got: $earlierError');
   debugPrint('time ordering: earlier-timestamp rejection verified');

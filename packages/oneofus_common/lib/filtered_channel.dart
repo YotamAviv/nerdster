@@ -38,7 +38,7 @@ class FilteredChannel<T extends Statement> implements StatementChannel<T> {
   List<SourceError> get errors => _parent.errors;
 
   @override
-  void clear() => _parent.clear();
+  Future<void> clear() => _parent.clear();
 
   @override
   void resetRevokeAt() => _parent.resetRevokeAt();

@@ -81,6 +81,9 @@ void main() {
       }
       keysToFetch.add(meDelegate.id);
 
+      // Drain pending background writes so Firestore is current before fetching via appSource.
+      await channelFactory.clearCache();
+
       final delegateContent = await contentPipeline.fetchDelegateContent(
         const [],
         keysToFetch,
@@ -185,6 +188,9 @@ void main() {
       keysToFetch.addAll(delegateResolver.getDelegatesForIdentity(identity));
     }
     keysToFetch.addAll([delegateB1.id, delegateB2.id]);
+
+    // Drain pending background writes so Firestore is current before fetching via appSource.
+    await channelFactory.clearCache();
 
     final delegateContent = await contentPipeline.fetchDelegateContent(
       const [],

@@ -49,8 +49,18 @@ abstract class StatementWriter<T extends Statement> {
 }
 
 /// A paired source+writer for a single stream. Callers use this when they need both.
+///
+/// [push] returns after the statement is signed and injected into the local cache —
+/// the network write completes in the background. Write failures are delivered to
+/// [ChannelFactory.onWriteError]. The app layer is responsible for registering a handler
+/// and cleaning up its own state (e.g. statement caches, sign-in state) when called.
 abstract class StatementChannel<T extends Statement>
     implements StatementSource<T>, StatementWriter<T> {
-  void clear();
+  /// Drains any pending background writes, then clears all cached state so the
+  /// next [fetch] is guaranteed to come from the underlying store.
+  ///
+  /// This is the correct way to force a network re-fetch. Callers must await it.
+  Future<void> clear();
+
   void resetRevokeAt();
 }
