@@ -358,8 +358,7 @@ class _TagPanel extends StatelessWidget {
           final canon = e.key;
           final equivalents = (e.value.toList()..remove(canon)..sort());
           final isExpanded = expanded == canon;
-          // Shield only on canonical rows that have at least one equivalent.
-          final groupStmts = equivalents.isNotEmpty ? _groupStatements(e.value) : const <EquivalenceStatement>[];
+          final groupStmts = _groupStatements(e.value);
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
