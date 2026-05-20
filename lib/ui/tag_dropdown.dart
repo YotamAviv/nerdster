@@ -1,0 +1,699 @@
+import 'package:flutter/material.dart';
+import 'package:nerdster/logic/feed_controller.dart';
+import 'package:nerdster/logic/labeler.dart';
+import 'package:nerdster/models/equivalence_statement.dart';
+import 'package:nerdster/settings/setting_type.dart';
+import 'package:nerdster/settings/prefs.dart';
+import 'package:nerdster/singletons.dart';
+import 'package:nerdster_common/ui/json_interpreter.dart';
+import 'package:oneofus_common/jsonish.dart' show Json;
+import 'package:oneofus_common/ui/json_display.dart';
+
+/// Builds the display groups for the tag dropdown:
+/// canonical → Set of all equivalent tags (including itself).
+/// Order is determined by [mostTags] (frequency-descending).
+Map<String, Set<String>> buildTagGroups(
+    List<String> mostTags, Map<String, String> tagEquivalence) {
+  final Map<String, Set<String>> groups = {};
+  for (final tag in mostTags) {
+    groups.putIfAbsent(tag, () => {tag});
+  }
+  for (final entry in tagEquivalence.entries) {
+    if (entry.key != entry.value) {
+      groups.putIfAbsent(entry.value, () => {entry.value}).add(entry.key);
+    }
+  }
+  return groups;
+}
+
+class TagDropdownButton extends StatefulWidget {
+  final List<String> mostTags;
+  final Map<String, String> tagEquivalence;
+  final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements;
+  final String? activeFilter;
+  final ValueChanged<String?> onFilterChanged;
+  final FeedController? controller;
+
+  const TagDropdownButton({
+    super.key,
+    required this.mostTags,
+    required this.tagEquivalence,
+    required this.tagEquivalenceStatements,
+    required this.activeFilter,
+    required this.onFilterChanged,
+    this.controller,
+  });
+
+  @override
+  State<TagDropdownButton> createState() => _TagDropdownButtonState();
+}
+
+class _TagDropdownButtonState extends State<TagDropdownButton> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlay;
+  OverlayEntry? _provenanceOverlay;
+  OverlayEntry? _jsonOverlay;
+  String? _expanded;
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _removeJsonOverlay() {
+    _jsonOverlay?.remove();
+    _jsonOverlay = null;
+  }
+
+  void _removeProvenanceOverlay() {
+    _removeJsonOverlay();
+    _provenanceOverlay?.remove();
+    _provenanceOverlay = null;
+  }
+
+  void _removeOverlay() {
+    _removeProvenanceOverlay();
+    _overlay?.remove();
+    _overlay = null;
+  }
+
+  void _openJsonOverlay(Json? json, Labeler labeler, Offset tapPosition) {
+    if (json == null) return;
+    _removeJsonOverlay();
+    final size = MediaQuery.of(context).size;
+    final dw = (size.width - 16).clamp(0.0, 420.0);
+    final dh = (size.height - 16).clamp(0.0, 390.0);
+    double left = tapPosition.dx;
+    double top = tapPosition.dy;
+    if (left + dw > size.width) left = tapPosition.dx - dw;
+    if (top + dh > size.height) top = tapPosition.dy - dh;
+    if (left < 0) left = 0;
+    if (top < 0) top = 0;
+    _jsonOverlay = OverlayEntry(builder: (_) {
+      return Stack(children: [
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _removeJsonOverlay,
+          ),
+        ),
+        Positioned(
+          left: left,
+          top: top,
+          child: Material(
+            elevation: 12,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: SizedBox(
+                width: dw,
+                height: dh,
+                child: JsonDisplay(json, interpreter: JsonInterpreter(labeler)),
+              ),
+            ),
+          ),
+        ),
+      ]);
+    });
+    Overlay.of(context).insert(_jsonOverlay!);
+  }
+
+  void _handleClearEquivalence(EquivalenceStatement s) {
+    final controller = widget.controller;
+    if (controller == null || signInState.signer == null) return;
+    _removeProvenanceOverlay();
+    final ctx = context;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) controller.pushEquivalence(s.equivalent, s.canonical, verb: EquivalenceVerb.clear, context: ctx);
+    });
+  }
+
+  void _openProvenance(String canonical, List<EquivalenceStatement> statements) {
+    _removeProvenanceOverlay();
+    final myToken = signInState.delegate;
+    final canClear = widget.controller != null && signInState.signer != null;
+    _provenanceOverlay = OverlayEntry(builder: (_) {
+      return Stack(children: [
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _removeProvenanceOverlay,
+          ),
+        ),
+        _TagProvenanceDialog(
+          canonical: canonical,
+          statements: statements,
+          onShowJson: _openJsonOverlay,
+          myDelegateToken: canClear ? myToken : null,
+          onClear: canClear ? _handleClearEquivalence : null,
+        ),
+      ]);
+    });
+    Overlay.of(context).insert(_provenanceOverlay!);
+  }
+
+  @override
+  void didUpdateWidget(TagDropdownButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_overlay != null &&
+        (oldWidget.tagEquivalence != widget.tagEquivalence ||
+            oldWidget.mostTags != widget.mostTags ||
+            oldWidget.tagEquivalenceStatements != widget.tagEquivalenceStatements)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _overlay?.markNeedsBuild();
+      });
+    }
+  }
+
+  void _toggleOverlay() {
+    if (_overlay != null) {
+      _removeOverlay();
+      setState(() {});
+      return;
+    }
+    _overlay = _buildOverlay();
+    Overlay.of(context).insert(_overlay!);
+    setState(() {});
+  }
+
+  void _rebuild() => _overlay?.markNeedsBuild();
+
+  void _handleEquate(String equivalent, String canonical, BuildContext ctx) {
+    final controller = widget.controller;
+    if (controller == null || signInState.signer == null) return;
+    if (widget.activeFilter == equivalent) {
+      widget.onFilterChanged(canonical);
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.pushEquivalence(equivalent, canonical, verb: EquivalenceVerb.equate, context: ctx);
+    });
+  }
+
+  void _handleDontEquate(String equivalent, String canonical, BuildContext ctx) {
+    final controller = widget.controller;
+    if (controller == null || signInState.signer == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.pushEquivalence(equivalent, canonical, verb: EquivalenceVerb.dontEquate, context: ctx);
+    });
+  }
+
+  OverlayEntry _buildOverlay() {
+    return OverlayEntry(builder: (ctx) {
+      final groups = buildTagGroups(widget.mostTags, widget.tagEquivalence);
+      final canEdit = widget.controller != null && signInState.signer != null;
+      return Stack(children: [
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              _removeOverlay();
+              if (mounted) setState(() {});
+            },
+          ),
+        ),
+        CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: const Offset(0, 36),
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              elevation: 6,
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 260,
+                height: 320,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: _TagPanel(
+                    groups: groups,
+                    expanded: _expanded,
+                    activeFilter: widget.activeFilter,
+                    tagEquivalenceStatements: widget.tagEquivalenceStatements,
+                    canEdit: canEdit,
+                    onToggleExpand: (canon) {
+                      _expanded = _expanded == canon ? null : canon;
+                      _rebuild();
+                    },
+                    onSelectFilter: (canon) {
+                      widget.onFilterChanged(
+                          widget.activeFilter == canon ? null : canon);
+                      _removeOverlay();
+                      if (mounted) setState(() {});
+                    },
+                    onEquate: (eq, canon) => _handleEquate(eq, canon, ctx),
+                    onDontEquate: (eq, canon) => _handleDontEquate(eq, canon, ctx),
+                    onShield: _openProvenance,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ]);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final open = _overlay != null;
+    return CompositedTransformTarget(
+      link: _layerLink,
+      child: GestureDetector(
+        onTap: _toggleOverlay,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: widget.activeFilter != null
+                ? Colors.blue.shade100
+                : Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(
+              color: open ? Colors.blue : Colors.grey.shade400,
+              width: open ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.activeFilter ?? 'Tags',
+                style: TextStyle(
+                  fontWeight: widget.activeFilter != null
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                open ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                size: 18,
+                color: Colors.grey.shade600,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Panel ────────────────────────────────────────────────────────────────────
+
+class _TagPanel extends StatelessWidget {
+  final Map<String, Set<String>> groups;
+  final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements;
+  final String? expanded;
+  final String? activeFilter;
+  final bool canEdit;
+  final void Function(String canon) onToggleExpand;
+  final void Function(String canon) onSelectFilter;
+  final void Function(String equivalent, String canonical) onEquate;
+  final void Function(String equivalent, String canonical) onDontEquate;
+  final void Function(String canonical, List<EquivalenceStatement> statements) onShield;
+
+  const _TagPanel({
+    required this.groups,
+    required this.tagEquivalenceStatements,
+    required this.expanded,
+    required this.activeFilter,
+    required this.canEdit,
+    required this.onToggleExpand,
+    required this.onSelectFilter,
+    required this.onEquate,
+    required this.onDontEquate,
+    required this.onShield,
+  });
+
+  /// Gathers all equivalence statements for every tag in the group (deduplicated).
+  List<EquivalenceStatement> _groupStatements(Set<String> groupTags) {
+    final seen = <String>{};
+    final result = <EquivalenceStatement>[];
+    for (final tag in groupTags) {
+      for (final s in tagEquivalenceStatements[tag] ?? []) {
+        if (seen.add(s.token)) result.add(s);
+      }
+    }
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = groups.entries.toList();
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      children: [
+        // "All" row
+        _TagRow(
+          tag: '',
+          label: 'All',
+          isActive: activeFilter == null,
+          canEdit: false,
+          onTap: () => onSelectFilter(''),
+          onDrop: null,
+        ),
+        ...entries.map((e) {
+          final canon = e.key;
+          final equivalents = (e.value.toList()..remove(canon)..sort());
+          final isExpanded = expanded == canon;
+          final groupStmts = _groupStatements(e.value);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _TagRow(
+                tag: canon,
+                label: canon,
+                isActive: activeFilter == canon,
+                canEdit: canEdit,
+                onTap: () => onSelectFilter(canon),
+                hasCaret: equivalents.isNotEmpty,
+                isExpanded: isExpanded,
+                onCaret: () => onToggleExpand(canon),
+                onDrop: canEdit ? (sourceTag) => onEquate(sourceTag, canon) : null,
+                onShield: groupStmts.isNotEmpty
+                    ? () => onShield(canon, groupStmts)
+                    : null,
+              ),
+              if (isExpanded && equivalents.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(left: 24, bottom: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: equivalents.map((eq) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(eq,
+                                style: const TextStyle(
+                                    fontSize: 13, color: Colors.black54)),
+                            if (canEdit)
+                              _DontEquateButton(
+                                  onPressed: () => onDontEquate(eq, canon)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+            ],
+          );
+        }),
+      ],
+    );
+  }
+}
+
+// ─── Tag Row ──────────────────────────────────────────────────────────────────
+
+class _TagRow extends StatelessWidget {
+  final String tag;
+  final String label;
+  final bool isActive;
+  final bool canEdit;
+  final VoidCallback onTap;
+  final bool hasCaret;
+  final bool isExpanded;
+  final VoidCallback? onCaret;
+  final void Function(String sourceTag)? onDrop;
+  final VoidCallback? onShield;
+
+  const _TagRow({
+    required this.tag,
+    required this.label,
+    required this.isActive,
+    required this.canEdit,
+    required this.onTap,
+    this.hasCaret = false,
+    this.isExpanded = false,
+    this.onCaret,
+    this.onDrop,
+    this.onShield,
+  });
+
+  Widget _buildDragFeedback() => IgnorePointer(
+        child: Material(
+          elevation: 4,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(tag, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+          ),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    // The drag handle and the text tap area are intentionally separate gesture zones
+    // so that pressing the handle never triggers the filter-select tap.
+    Widget rowContent = Row(
+      children: [
+        if (canEdit && tag.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Draggable<String>(
+              data: tag,
+              feedback: _buildDragFeedback(),
+              childWhenDragging:
+                  Icon(Icons.drag_indicator, size: 14, color: Colors.grey.shade200),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {}, // absorb tap so it doesn't reach the row's InkWell
+                child: Icon(Icons.drag_indicator, size: 14, color: Colors.grey.shade400),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
+        Expanded(
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              color: isActive ? Colors.blue.shade50 : null,
+              padding: EdgeInsets.only(
+                left: (canEdit && tag.isNotEmpty) ? 4 : 12,
+                right: 4,
+                top: 8,
+                bottom: 8,
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: isActive ? Colors.blue.shade700 : Colors.black87,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (onShield != null)
+          _GroupShieldButton(onTap: onShield!),
+        if (hasCaret)
+          GestureDetector(
+            onTap: onCaret,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4, right: 8),
+              child: Icon(
+                isExpanded ? Icons.expand_less : Icons.expand_more,
+                size: 16,
+                color: Colors.grey.shade500,
+              ),
+            ),
+          ),
+      ],
+    );
+
+    if (onDrop == null) return rowContent;
+
+    return DragTarget<String>(
+      onWillAcceptWithDetails: (details) => details.data != tag,
+      onAcceptWithDetails: (details) => onDrop!(details.data),
+      builder: (ctx, candidateData, _) {
+        final hovered = candidateData.isNotEmpty;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          decoration: hovered
+              ? BoxDecoration(
+                  color: Colors.green.shade50,
+                  border: Border.all(color: Colors.green.shade300),
+                  borderRadius: BorderRadius.circular(4),
+                )
+              : null,
+          child: rowContent,
+        );
+      },
+    );
+  }
+}
+
+// ─── Shield button (on canonical row — shows all statements for the group) ────
+
+class _GroupShieldButton extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _GroupShieldButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!Setting.get<bool>(SettingType.showCrypto).value) return const SizedBox.shrink();
+    return GestureDetector(
+      onTap: onTap,
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4),
+        child: Icon(Icons.verified_user_outlined, size: 14, color: Colors.blue),
+      ),
+    );
+  }
+}
+
+// ─── Per-statement shield button (inside provenance dialog) ──────────────────
+
+class _StatementShieldButton extends StatelessWidget {
+  final Json? json;
+  final void Function(Offset tapPosition) onShowJson;
+
+  const _StatementShieldButton({required this.json, required this.onShowJson});
+
+  @override
+  Widget build(BuildContext context) {
+    if (json == null) return const SizedBox.shrink();
+    Offset tapPos = Offset.zero;
+    return GestureDetector(
+      onTapDown: (d) => tapPos = d.globalPosition,
+      onTap: () => onShowJson(tapPos),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4),
+        child: Icon(Icons.verified_user_outlined, size: 14, color: Colors.blue),
+      ),
+    );
+  }
+}
+
+// ─── Provenance dialog ────────────────────────────────────────────────────────
+
+class _TagProvenanceDialog extends StatelessWidget {
+  final String canonical;
+  final List<EquivalenceStatement> statements;
+  final void Function(Json? json, Labeler labeler, Offset tapPosition)? onShowJson;
+  final String? myDelegateToken;
+  final void Function(EquivalenceStatement s)? onClear;
+
+  const _TagProvenanceDialog({
+    required this.canonical,
+    required this.statements,
+    this.onShowJson,
+    this.myDelegateToken,
+    this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final labeler = globalLabeler.value;
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Text('"$canonical" equivalence group',
+                  style: Theme.of(context).textTheme.titleSmall),
+            ),
+            const Divider(height: 1),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: statements.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (_, i) {
+                  final s = statements[i];
+                  final label = labeler.getLabel(s.iToken);
+                  final isMyStatement =
+                      myDelegateToken != null && s.iToken == myDelegateToken;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        Text(label,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                                fontSize: 13)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text.rich(
+                            TextSpan(children: [
+                              TextSpan(text: s.equivalent),
+                              TextSpan(
+                                text: s.not ? '  ≠  ' : '  →  ',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: s.not ? Colors.red : Colors.green,
+                                ),
+                              ),
+                              TextSpan(text: s.canonical),
+                            ]),
+                            style: const TextStyle(fontSize: 13),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (onShowJson != null)
+                          _StatementShieldButton(
+                            json: s.json,
+                            onShowJson: (pos) => onShowJson!(s.json, labeler, pos),
+                          ),
+                        if (isMyStatement && onClear != null)
+                          GestureDetector(
+                            onTap: () => onClear!(s),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: Icon(Icons.close, size: 14, color: Colors.red),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── ≠ button ─────────────────────────────────────────────────────────────────
+
+class _DontEquateButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _DontEquateButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(4),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Text('≠',
+            style: TextStyle(
+                fontSize: 13,
+                color: Colors.red,
+                fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+}

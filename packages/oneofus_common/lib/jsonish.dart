@@ -119,6 +119,9 @@ class Jsonish {
     'time',
     'I',
     ...TrustVerb.values.map((e) => e.label),
+    // NOTE: EquivalenceVerb labels (equate, dontEquate, clear) are omitted here —
+    // they're already covered by ContentVerb. Adding them would require synchronized
+    // Dart+JS changes across all 3 repos for no benefit.
     ...ContentVerb.values.map((e) => e.label),
     ...HabloVerb.values.map((e) => e.label),
     'with',

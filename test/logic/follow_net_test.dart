@@ -662,7 +662,7 @@ void main() {
     final SubjectAggregation agg = aggregation.subjects[ContentKey(sToken)]!;
     // Homer's dis is separate: his like still counts in the content stream
     expect(agg.likes, equals(2)); // Bart + Homer both liked
-    expect(agg.tags, contains('#news'));
+    expect(agg.tags, contains('news'));
     // PoV dismiss is deferred (always false); but checkIsDismissed works for "me"
     expect(agg.isDismissed, isFalse);
     final myDis = aggregation.myDismissStatements[agg.canonical] ?? [];

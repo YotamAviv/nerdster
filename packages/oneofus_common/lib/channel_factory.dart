@@ -228,7 +228,8 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
     final Future<void> prev = _pushQueues[issuerId] ?? Future.value();
     _pushQueues[issuerId] = prev.catchError((_) {}).then((_) async {
       try {
-        assert(_fullCache.containsKey(issuerId), 'fetch before push');
+        assert(_fullCache.containsKey(issuerId),
+            'Channel must already be current before push — do not add a fetch() call just to satisfy this; the caller should have fetched this channel as part of normal operation');
         final ExpectedPrevious head = _fullCache[issuerId]!.isEmpty
             ? const ExpectedPrevious(null)
             : ExpectedPrevious(_fullCache[issuerId]!.first.token);

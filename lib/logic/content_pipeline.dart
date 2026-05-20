@@ -40,19 +40,20 @@ class ContentPipeline {
     if (myMap.isNotEmpty) rawContent.addAll(await myDelegateSource.fetch(myMap));
     if (peerMap.isNotEmpty) rawContent.addAll(await peerDelegateSource.fetch(peerMap));
 
-    final Map<DelegateKey, List<ContentStatement>> delegateContent = {};
     for (final String keyStr in rawContent.keys) {
       if (!knownDelegateKeys.contains(DelegateKey(keyStr))) {
         throw 'Pipeline Error: Delegate Source returned content from unauthorized key: $keyStr';
       }
-
       final IdentityKey? identityKey = delegateResolver.getIdentityForDelegate(DelegateKey(keyStr));
       if (identityKey != null && graph.blocked.contains(identityKey)) {
         throw 'Pipeline Error: Source returned content from blocked identity: ${identityKey.value}';
       }
-
-      delegateContent[DelegateKey(keyStr)] = UnmodifiableListView(rawContent[keyStr]!);
     }
+
+    final Map<DelegateKey, List<ContentStatement>> delegateContent = {
+      for (final DelegateKey key in allKeys)
+        key: UnmodifiableListView(rawContent[key.value] ?? []),
+    };
 
     return delegateContent;
   }

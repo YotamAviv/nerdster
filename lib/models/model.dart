@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
+import 'package:nerdster/models/equivalence_statement.dart';
 import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -243,8 +244,14 @@ class ContentAggregation {
   final Set<String> censored;
   final Map<ContentKey, ContentKey> equivalence; // SubjectToken -> CanonicalSubjectToken
   final Map<ContentKey, Set<ContentKey>> related; // SubjectToken -> Set of RelatedSubjectTokens
-  final Map<String, String> tagEquivalence; // Tag -> Canonical Tag
-  final List<String> mostTags; // Tags ordered by frequency
+  final List<String> mostTags; // Tags ordered by frequency (canonical only)
+  /// Tag string -> canonical tag string (from org.nerdster.equivalence statements).
+  /// Every tag maps to itself if it has no equivalence statement.
+  final Map<String, String> tagEquivalence;
+
+  /// tag -> all EquivalenceStatements in the follow network that mention it (as either field).
+  /// Used to build the provenance dialog for a whole equivalence group.
+  final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements;
 
   /// Map of every known literal subject token to its flavored Aggregation.
   final Map<ContentKey, SubjectAggregation> subjects;
@@ -262,8 +269,9 @@ class ContentAggregation {
     this.censored = const {},
     this.equivalence = const {},
     this.related = const {},
-    this.tagEquivalence = const {},
     List<String> mostTags = const [],
+    this.tagEquivalence = const {},
+    this.tagEquivalenceStatements = const <String, List<EquivalenceStatement>>{},
     this.subjects = const {},
     Map<ContentKey, List<DismissStatement>> myDismissStatements = const {},
     Map<ContentKey, List<ContentStatement>> myLiteralStatements = const {},
@@ -326,4 +334,13 @@ class ContentResult {
     Map<DelegateKey, List<ContentStatement>> delegateContent = const {},
   }) : delegateContent = Map<DelegateKey, List<ContentStatement>>.unmodifiable(
             delegateContent.map((k, v) => MapEntry(k, List<ContentStatement>.unmodifiable(v))));
+}
+
+/// The result of fetching org.nerdster.equivalence statements for specific keys.
+class EquivalenceResult {
+  final Map<DelegateKey, List<EquivalenceStatement>> delegateContent;
+
+  const EquivalenceResult({
+    this.delegateContent = const {},
+  });
 }

@@ -255,17 +255,25 @@ Uses the same `previous` chain as all other statements from that key.
 
 ### UI
 
-**Drag to state A→B**: drag A onto B's row in the dropdown. This is already in the prototype.
+**Drag to state A→B**: drag A onto B's row in the dropdown using the drag handle (⠿).
+The overlay stays open after the drop; the active filter updates only if the dragged tag
+was the active filter (it just became non-canonical, so advance to the new canonical).
 
 **≠ on an expanded member**: tapping it states A≠B. One action, one meaning.
+The overlay stays open. No filter change.
 
-**Crypto shield**: any row that has an `org.nerdster.equivalence` statement involving that string
-(as either field) from anyone in the current follow network shows a crypto shield. Tapping the
-shield opens the provenance dialog.
+**Crypto shield**: shown only on canonical rows that have at least one equivalent (i.e., the
+tag is the head of a real equivalence group, not a solo canonical). Tapping opens the provenance
+dialog for the whole group.
 
-**Provenance dialog**: shows all statements involving this string, in network order (same
-presentation as ratings on content cards — distance-ordered, signer identity visible). Clearing
-your own statements is done here.
+**Provenance dialog**: shows all `org.nerdster.equivalence` statements involving any tag in the
+equivalence group — both equate and dontEquate, from everyone in the follow network. The list
+covers the full group because transitive chains (A→B→C) require seeing multiple statements to
+understand why A appears under C. Clearing your own statements is done here (not yet implemented).
+
+Design note: the dialog shows raw JSON statements for now. The target is network-ordered display
+with signer identity visible (like statement tiles on content cards), plus a "clear my statement"
+action. That requires a `TagProvenanceDialog` widget analogous to the rating history section.
 
 ### What populates the dropdown
 
@@ -273,23 +281,32 @@ Only strings that appear as tags in the current feed. Strings that exist only as
 targets (not tags on visible content) still appear if they are a canonical whose members do
 appear as tags.
 
+Equivalence rule for the demo: every `doEquate` must reference tags that actually appear in
+comments; `dontEquate` must only counter an equate that already exists from someone in the
+network (otherwise it is vacuous and confusing).
+
 ### Computation
 
 Walk `org.nerdster.equivalence` statements from the current follow network alongside the existing
 content walk. Feed them into an `Equivalence` instance using the same network/PoV as content.
+
+`tagEquivalenceStatements: Map<String, List<EquivalenceStatement>>` — for each tag, all
+statements in the network that mention it (as either field). Used to build the provenance dialog
+for the whole group without re-walking the network.
 
 When the tag filter is set to a canonical string, resolve its full `EquivalenceGroup.all` and
 show content tagged with any member of that group.
 
 ### Implementation sequence
 
-1. Remove old broken tag-relation code.
-2. Define `EquivalenceStatement` parser class for `org.nerdster.equivalence`.
-3. Collect and compute equivalence groups in the feed pipeline.
-4. Expand the tag filter to resolve equivalence groups.
-5. Wire `eq_dropdown` into the tags filter (read-only first — shows computed groups).
-6. Wire publishing: drag-drop and X actions issue signed statements.
-7. Crypto shield + provenance dialog.
+1. Remove old broken tag-relation code. ✅
+2. Define `EquivalenceStatement` parser class for `org.nerdster.equivalence`. ✅
+3. Collect and compute equivalence groups in the feed pipeline. ✅
+4. Expand the tag filter to resolve equivalence groups. ✅
+5. Wire `eq_dropdown` into the tags filter (read-only first — shows computed groups). ✅
+6. Wire publishing: drag-drop and ≠ actions issue signed statements. ✅
+7. Crypto shield + provenance dialog. ✅ (shield on canonical; dialog shows full group statements;
+   clear action in provenance dialog. ✅)
 
 Contexts follow the same path (steps 2–7 again), same statement type, same computation.
 
@@ -321,6 +338,12 @@ More tests will be added as implementation uncovers edge cases.
 ## Contexts next
 
 TBD...
+
+### Reserved contexts
+
+`<identity>` and `<nerdster>` are special system contexts and must not appear in equivalence
+statements. The UI should reject any attempt to drag them into an equivalence group, and the
+pipeline should ignore any equivalence statement that names either of them.
 
 ### Change and simplify NodeDetails UI especially for following
 

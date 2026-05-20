@@ -4,6 +4,7 @@ import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/test_clock.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
+import 'package:nerdster/models/equivalence_statement.dart';
 import 'package:nerdster/models/content_types.dart';
 import 'package:oneofus_common/clock.dart';
 import 'package:oneofus_common/keys.dart';
@@ -14,6 +15,7 @@ export 'package:nerdster/app.dart';
 export 'package:nerdster/demotest/demo_key.dart';
 export 'package:nerdster/demotest/test_clock.dart';
 export 'package:nerdster/models/content_statement.dart';
+export 'package:nerdster/models/equivalence_statement.dart';
 export 'package:nerdster/models/content_types.dart';
 export 'package:nerdster/settings/prefs.dart';
 export 'package:oneofus_common/clock.dart';
@@ -151,6 +153,21 @@ TrustStatement makeTrustStatement({
   return TrustStatement(Jsonish(json));
 }
 
+/// Common helper for unit tests to generate an EquivalenceStatement.
+EquivalenceStatement makeEquivalenceStatement({
+  required Json iJson,
+  required String equivalent,
+  required String canonical,
+  EquivalenceVerb verb = EquivalenceVerb.equate,
+  DateTime? time,
+}) {
+  final Json json = EquivalenceStatement.make(iJson, equivalent, canonical, verb: verb);
+  if (time != null) {
+    json['time'] = time.toIso8601String();
+  }
+  return EquivalenceStatement(Jsonish(json));
+}
+
 /// Helper to initialize the statement registry for tests.
 void setUpTestRegistry({FakeFirebaseFirestore? firestore}) {
   final FakeFirebaseFirestore fs = firestore ?? FakeFirebaseFirestore();
@@ -160,9 +177,11 @@ void setUpTestRegistry({FakeFirebaseFirestore? firestore}) {
   channelFactory.register('karennet.net', firestore: fs);
   ContentStatement.init();
   DismissStatement.init();
+  EquivalenceStatement.init();
   TrustStatement.init();
   ContentStatement.clearCache();
   DismissStatement.clearCache();
+  EquivalenceStatement.clearCache();
   TrustStatement.clearCache();
   Jsonish.wipeCache();
   FedKey.clearRegistry();

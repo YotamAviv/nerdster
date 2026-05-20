@@ -123,6 +123,7 @@ class DemoIdentityKey implements DemoKey {
       _name2key[name] = out;
       _token2key[token] = out;
       DemoKey._exports[name] = json;
+      await channelFactory.getChannel<TrustStatement>(resolved['url'] as String, 'statements').fetch({token: null});
     }
     return _name2key[name]!;
   }
@@ -231,7 +232,6 @@ class DemoIdentityKey implements DemoKey {
   Future<TrustStatement> _signAndPush(Json json, String? export) async {
     final StatementChannel<TrustStatement> source = channelFactory.getChannel<TrustStatement>(endpoint['url'] as String, 'statements');
     final OouSigner signer = await OouSigner.make(keyPair);
-    await source.fetch({Jsonish(json['I']).token: null});
     final TrustStatement trust = await source.push(json, signer);
     _localStatements.insert(0, trust);
     if (export != null) DemoKey._exports[export] = trust.json;
@@ -297,6 +297,9 @@ class DemoDelegateKey implements DemoKey {
       _name2key[name] = out;
       _token2key[token] = out;
       DemoKey._exports[name] = json;
+      await channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements').fetch({token: null});
+      await channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements').fetch({token: null});
+      await channelFactory.getChannel<EquivalenceStatement>(kNerdsterExportUrl, 'statements').fetch({token: null});
     }
     return _name2key[name]!;
   }
@@ -371,7 +374,6 @@ class DemoDelegateKey implements DemoKey {
   Future<DismissStatement> _pushDis(Json json, String? export) async {
     final source = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements');
     final signer = await OouSigner.make(keyPair);
-    await source.fetch({Jsonish(json['I']).token: null});
     final dis = await source.push(json, signer);
     _localDisStatements.insert(0, dis);
     if (export != null) DemoKey._exports[export] = dis.json;
@@ -408,11 +410,20 @@ class DemoDelegateKey implements DemoKey {
   Future<ContentStatement> _pushContent(Json json, String? export) async {
     final source = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements');
     final signer = await OouSigner.make(keyPair);
-    await source.fetch({Jsonish(json['I']).token: null});
     final content = await source.push(json, signer);
     _localStatements.insert(0, content);
     if (export != null) DemoKey._exports[export] = content.json;
     return content;
+  }
+
+  Future<EquivalenceStatement> doEquate(String equivalent, String canonical,
+      {EquivalenceVerb verb = EquivalenceVerb.equate, String? export}) async {
+    final Json json = EquivalenceStatement.make(await publicKey.json, equivalent, canonical, verb: verb);
+    final source = channelFactory.getChannel<EquivalenceStatement>(kNerdsterExportUrl, 'statements');
+    final signer = await OouSigner.make(keyPair);
+    final stmt = await source.push(json, signer);
+    if (export != null) DemoKey._exports[export] = stmt.json;
+    return stmt;
   }
 
   Future<Json> toJson() async {

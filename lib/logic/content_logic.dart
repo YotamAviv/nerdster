@@ -1,6 +1,7 @@
 import 'package:nerdster/utils/most_strings.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
+import 'package:nerdster/models/equivalence_statement.dart';
 import 'package:nerdster/utils/tag.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/merger.dart';
@@ -15,9 +16,7 @@ List<Iterable<ContentStatement>> _collectSources(
     IdentityKey identity, DelegateResolver delegateResolver, ContentResult contentResult) {
   final List<Iterable<ContentStatement>> sources = [];
   for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
-    if (contentResult.delegateContent.containsKey(key)) {
-      sources.add(contentResult.delegateContent[key]!);
-    }
+    sources.add(contentResult.delegateContent[key]!);
   }
   return sources;
 }
@@ -29,6 +28,7 @@ ContentAggregation reduceContentAggregation(
   TrustGraph trustGraph,
   DelegateResolver delegateResolver,
   ContentResult contentResult, {
+  EquivalenceResult? equivalenceResult,
   bool enableCensorship = true,
   List<DelegateKey>? meDelegateKeys,
   Map<DelegateKey, List<DismissStatement>> myDisContent = const {},
@@ -122,48 +122,6 @@ ContentAggregation reduceContentAggregation(
     }
     if (statement.other != null && statement.other is Map) {
       subjectDefinitions[ContentKey(getToken(statement.other))] = statement.other as Json;
-    }
-  }
-
-  // TODO: The AI invented its own notion of tag processing. Restore my (the human's) intentions.
-  // Tag Equivalence Grouping
-  final Map<String, String> tagEquivalence = {};
-  final Map<String, Set<String>> tagEdges = {};
-  for (final s in filteredStatements) {
-    if (s.comment != null) {
-      final tags = extractTags(s.comment!).map((t) => t.toLowerCase()).toList();
-      if (tags.length > 1) {
-        for (int i = 0; i < tags.length; i++) {
-          for (int j = i + 1; j < tags.length; j++) {
-            tagEdges.putIfAbsent(tags[i], () => {}).add(tags[j]);
-            tagEdges.putIfAbsent(tags[j], () => {}).add(tags[i]);
-          }
-        }
-      }
-    }
-  }
-  final Set<String> tagVisited = {};
-  for (final tag in tagEdges.keys) {
-    if (tagVisited.contains(tag)) continue;
-
-    final Set<String> component = {};
-    final List<String> queue = [tag];
-    tagVisited.add(tag);
-    while (queue.isNotEmpty) {
-      final String current = queue.removeAt(0);
-      component.add(current);
-      for (final String neighbor in tagEdges[current] ?? <String>{}) {
-        if (!tagVisited.contains(neighbor)) {
-          tagVisited.add(neighbor);
-          queue.add(neighbor);
-        }
-      }
-    }
-    // TODO: Why are we sorting tags. I want them by most, there is no canonical tag.
-    final List<String> sorted = component.toList()..sort();
-    final String canonicalTag = sorted.first;
-    for (final String t in component) {
-      tagEquivalence[t] = canonicalTag;
     }
   }
 
@@ -425,6 +383,35 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
+  // Tag Equivalence: build map from org.nerdster.equivalence statements in the follow network.
+  // Apply distinct() per identity (newest-first) so that a later equate/dontEquate replaces an
+  // earlier one for the same (signer, pair) — matching how content statements are deduplicated.
+  final Equivalence tagEqLogic = Equivalence();
+  final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements = {};
+  if (equivalenceResult != null) {
+    for (final IdentityKey identity in followNetwork.identities) {
+      final List<List<EquivalenceStatement>> sources = [];
+      for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
+        sources.add(equivalenceResult.delegateContent[key]!);
+      }
+      for (final EquivalenceStatement s in distinct(
+        Merger.merge(sources),
+        iTransformer: (_) => identity.value,
+      )) {
+        if (s.isClear) continue;
+        tagEqLogic.equate(s.equivalent, s.canonical, not: s.not);
+        tagEquivalenceStatements.putIfAbsent(s.equivalent, () => []).add(s);
+        tagEquivalenceStatements.putIfAbsent(s.canonical, () => []).add(s);
+      }
+    }
+  }
+  final Map<String, String> tagEquivalence = {};
+  for (final EquivalenceGroup group in tagEqLogic.groups) {
+    for (final String tag in group.all) {
+      tagEquivalence[tag] = group.canonical;
+    }
+  }
+
   // Pass 3: Recursive Tag Collection and Most Frequent Tags
   final MostStrings mostStrings = MostStrings({});
 
@@ -458,7 +445,11 @@ ContentAggregation reduceContentAggregation(
       final SubjectGroup group = targetMap[key]!;
       final Set<String> recursiveTags = collectTagsRecursive(key, {}, statementsMap);
       targetMap[key] = group.copyWith(tags: recursiveTags);
-      if (updateMostStrings) mostStrings.process(recursiveTags);
+      if (updateMostStrings) {
+        // Count by canonical tag so equivalent tags are grouped together.
+        final Set<String> normalized = recursiveTags.map((t) => tagEquivalence[t] ?? t).toSet();
+        mostStrings.process(normalized);
+      }
     }
   }
 
@@ -498,8 +489,9 @@ ContentAggregation reduceContentAggregation(
     censored: censored,
     equivalence: subjectEquivalence,
     related: related,
-    tagEquivalence: tagEquivalence,
     mostTags: mostTags,
+    tagEquivalence: tagEquivalence,
+    tagEquivalenceStatements: tagEquivalenceStatements,
     subjects: subjects,
     myDismissStatements: myDismissStatements,
     myLiteralStatements: myLiteralStatements,

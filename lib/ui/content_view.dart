@@ -225,7 +225,7 @@ class _ContentViewState extends State<ContentView> {
                                 child: show
                                     ? ContentBar(
                                         controller: _controller,
-                                        tags: model?.aggregation.mostTags ?? [])
+                                        aggregation: model?.aggregation ?? ContentAggregation())
                                     : const SizedBox.shrink(),
                               );
                             },

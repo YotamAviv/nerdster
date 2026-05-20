@@ -4,12 +4,13 @@ import 'package:nerdster/models/content_types.dart';
 
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/models/model.dart';
+import 'package:nerdster/ui/tag_dropdown.dart';
 
 class ContentBar extends StatelessWidget {
   final FeedController controller;
-  final List<String> tags;
+  final ContentAggregation aggregation;
 
-  const ContentBar({super.key, required this.controller, required this.tags});
+  const ContentBar({super.key, required this.controller, required this.aggregation});
 
   @override
   Widget build(BuildContext context) {
@@ -70,24 +71,21 @@ class ContentBar extends StatelessWidget {
                 const SizedBox(width: 16),
 
                 // Tag Filter
-                Tooltip(
-                  message: 'Filter by tag',
-                  child: Row(
-                    children: [
-                      if (!small)
-                        const Text('Tag: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                      DropdownButton<String>(
-                        value: controller.tagFilter ?? '-',
-                        items: [
-                          const DropdownMenuItem(value: '-', child: Text('All')),
-                          ...tags.map((t) => DropdownMenuItem(value: t, child: Text(t))),
-                        ],
-                        onChanged: (val) {
-                          controller.tagFilter = (val == '-' ? null : val);
-                        },
-                      ),
-                    ],
-                  ),
+                Row(
+                  children: [
+                    if (!small)
+                      const Text('Tag: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    TagDropdownButton(
+                      mostTags: aggregation.mostTags,
+                      tagEquivalence: aggregation.tagEquivalence,
+                      tagEquivalenceStatements: aggregation.tagEquivalenceStatements,
+                      activeFilter: controller.tagFilter,
+                      onFilterChanged: (val) {
+                        controller.tagFilter = (val == null || val.isEmpty) ? null : val;
+                      },
+                      controller: controller,
+                    ),
+                  ],
                 ),
                 const SizedBox(width: 16),
 

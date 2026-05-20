@@ -11,6 +11,7 @@ import 'package:nerdster/logic/trust_logic.dart';
 import 'package:nerdster/logic/trust_pipeline.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
+import 'package:nerdster/models/equivalence_statement.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
@@ -25,6 +26,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
   final StatementChannel<TrustStatement> trustSource;
   final StatementChannel<ContentStatement> contentSource;
   final StatementChannel<DismissStatement> disSource;
+  final StatementChannel<EquivalenceStatement> equivSource;
   final StatementChannel<ContentStatement> _peerContentChannel;
   final VoidCallback? _optimisticConcurrencyFunc;
 
@@ -56,11 +58,29 @@ class FeedController extends ValueNotifier<FeedModel?> {
     }
   }
 
+  Future<void> pushEquivalence(String equivalent, String canonical,
+      {EquivalenceVerb verb = EquivalenceVerb.equate, required BuildContext context}) async {
+    final delegateJson = signInState.delegatePublicKeyJson;
+    final signer = signInState.signer;
+    if (delegateJson == null || signer == null) return;
+    final Json json = EquivalenceStatement.make(delegateJson, equivalent, canonical, verb: verb);
+    try {
+      await equivSource.push(json, signer);
+      unawaited(notify());
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error publishing equivalence: $e')));
+      }
+    }
+  }
+
   FeedController({
     VoidCallback? optimisticConcurrencyFunc,
   })  : trustSource = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements'),
         contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements'),
         disSource = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements'),
+        equivSource = channelFactory.getChannel<EquivalenceStatement>(kNerdsterExportUrl, 'statements'),
         _peerContentChannel = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']),
         _optimisticConcurrencyFunc = optimisticConcurrencyFunc,
         super(null) {
@@ -282,10 +302,10 @@ class FeedController extends ValueNotifier<FeedModel?> {
     }
 
     if (tagFilter != null && tagFilter != '-') {
-      final canonicalFilter = aggregation.tagEquivalence[tagFilter] ?? tagFilter;
-      if (!subject.tags.any((t) => (aggregation.tagEquivalence[t] ?? t) == canonicalFilter)) {
-        return false;
-      }
+      final String canonicalFilter = aggregation.tagEquivalence[tagFilter] ?? tagFilter;
+      final bool hasTag = subject.tags
+          .any((t) => (aggregation.tagEquivalence[t] ?? t) == canonicalFilter);
+      if (!hasTag) return false;
     }
 
     switch (mode) {
@@ -420,13 +440,19 @@ class FeedController extends ValueNotifier<FeedModel?> {
           delegateKeysToFetch.addAll(myDelegateKeys);
         }
 
-        // Start dis fetch in parallel — it should complete before content pipeline finishes.
+        // Start dis + equiv fetches in parallel — both should complete before content pipeline finishes.
         final Map<String, String?> myDisFetchMap = {
           for (final k in myDelegateKeys ?? <DelegateKey>[]) k.value: null
         };
         final Future<Map<String, List<DismissStatement>>> disFuture = myDisFetchMap.isNotEmpty
             ? disSource.fetch(myDisFetchMap)
             : Future.value(const <String, List<DismissStatement>>{});
+
+        final Map<String, String?> equivFetchMap = {
+          for (final k in delegateKeysToFetch) k.value: null
+        };
+        final Future<Map<String, List<EquivalenceStatement>>> equivFuture =
+            equivSource.fetch(equivFetchMap);
 
         final Set<DelegateKey> myDelegateKeySet = myDelegateKeys?.toSet() ?? {};
         final Iterable<DelegateKey> peerDelegateKeys =
@@ -443,6 +469,13 @@ class FeedController extends ValueNotifier<FeedModel?> {
         final Map<DelegateKey, List<DismissStatement>> myDisContent = {
           for (final entry in rawDisContent.entries) DelegateKey(entry.key): entry.value,
         };
+
+        final rawEquivContent = await equivFuture;
+        final EquivalenceResult equivalenceResult = EquivalenceResult(
+          delegateContent: {
+            for (final k in equivFetchMap.keys) DelegateKey(k): rawEquivContent[k] ?? [],
+          },
+        );
 
         final contentResult = ContentResult(
           delegateContent: delegateContent,
@@ -474,6 +507,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           povGraph,
           delegateResolver,
           contentResult,
+          equivalenceResult: equivalenceResult,
           enableCensorship: enableCensorship,
           meDelegateKeys: myDelegateKeys,
           myDisContent: myDisContent,

@@ -8,12 +8,14 @@ AI NOTE: This is my (the human) file with my own notes.
 # Misc...
 ?fire=emulator&showCrypto=true&lgtm=true
 
+http://localhost:8765/?fire=fake&demo=simpsonsDemo&showCrypto=true
+
 # Fake egosCircle
 ?fire=fake&demo=egosCircle&showCrypto=true
 # Fake equivalenceBug
 ?fire=fake&demo=equivalenceBug&showCrypto=true
 
-?fire=fake&demo=simpsonsRelateDemox 
+?fire=fake&demo=simpsonsRelateDemo
 
 ?fire=fake&demo=simpsonsDemo
 

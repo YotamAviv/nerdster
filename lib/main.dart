@@ -16,6 +16,7 @@ import 'package:nerdster/key_store.dart';
 import 'package:nerdster/key_storage_coordinator.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
+import 'package:nerdster/models/equivalence_statement.dart';
 import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
@@ -83,6 +84,7 @@ Future<void> main() async {
 
   FirebaseFirestore nerdsterFirestore;
   FirebaseFirestore oneofusFirestore;
+  FirebaseFirestore? karennetFirestore;
   if (resolvedFireChoice != FireChoice.fake) {
     try {
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -110,12 +112,16 @@ Future<void> main() async {
   } else {
     nerdsterFirestore = FakeFirebaseFirestore();
     oneofusFirestore = FakeFirebaseFirestore();
+    karennetFirestore = FakeFirebaseFirestore();
   }
 
   channelFactory = ChannelFactory(resolvedFireChoice,
       skipVerify: Setting.get<bool>(SettingType.skipVerify));
   channelFactory.register('nerdster.org', firestore: nerdsterFirestore);
   channelFactory.register('one-of-us.net', firestore: oneofusFirestore);
+  if (karennetFirestore != null) {
+    channelFactory.register('karennet.net', firestore: karennetFirestore);
+  }
   if (resolvedFireChoice == FireChoice.emulator) {
     channelFactory.registerRedirect('https://export.nerdster.org', 'http://$emulatorHost:5001/nerdster/us-central1/export');
     channelFactory.registerRedirect('https://write.nerdster.org', 'http://$emulatorHost:5001/nerdster/us-central1/write2');
@@ -138,6 +144,7 @@ Future<void> main() async {
   TrustStatement.init();
   ContentStatement.init();
   DismissStatement.init();
+  EquivalenceStatement.init();
   await defaultSignIn(params: params);
   await About.init();
 
