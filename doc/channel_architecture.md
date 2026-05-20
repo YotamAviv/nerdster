@@ -1,5 +1,23 @@
 # Channel Architecture: Statement Writers, Readers, and the Coupling Invariant
 
+## Design Principles
+
+1. **Tests use the API the way production callers do.** If production code calls `push()` and then reads from a channel, the test should do the same. Tests don't poke Firestore directly to work around something the API should handle.
+
+2. **Each piece does its own job and nothing else.** The server filters what you ask it to filter. The cache holds what you've fetched plus what you've written locally. The channel is a typed view of the cache. Nothing doubles up on someone else's job.
+
+3. **Optimistic means the caller never waits for the network.** `push()` returns with the result. The network write happens in the background. No exceptions, no callers that partially wait.
+
+4. **A channel is a view; the root is the storage.** Multiple channels for the same stream share the same underlying data. A write through any channel is immediately visible in all other channels for that same stream.
+
+5. **`excludeTypes` tells the server what to omit.** It is a server-side parameter. A local filter that achieves the same result is not the same thing.
+
+6. **Don't fix one thing by breaking another.** If fixing A requires violating an invariant in B, the design needs rethinking — not a trade-off.
+
+7. **`clear()` means "sync with the server."** It drains pending writes so the server is current, then wipes the local cache so the next read comes from the server.
+
+---
+
 ## The Core Invariant
 
 Every statement stream is a linked list. Each statement carries a `previous` field
