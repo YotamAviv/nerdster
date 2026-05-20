@@ -68,7 +68,7 @@ class _HashtagLinkifier extends Linkifier {
           }
 
           final String hashtag = match.group(0)!;
-          result.add(LinkableElement(hashtag, hashtag.toLowerCase()));
+          result.add(LinkableElement(hashtag, hashtag.substring(1).toLowerCase()));
 
           currentIndex = match.end;
         }

@@ -84,8 +84,8 @@ void main() {
 
       final SubjectAggregation? subjectAgg = aggregation.subjects[ContentKey(subject1Token)];
       expect(subjectAgg, isNotNull);
-      expect(subjectAgg!.tags, contains('#world'));
-      expect(subjectAgg.tags, contains('#tag2'));
+      expect(subjectAgg!.tags, contains('world'));
+      expect(subjectAgg.tags, contains('tag2'));
     });
 
     test('Tag Frequency Tracking', () {
@@ -142,8 +142,8 @@ void main() {
         labeler: labeler,
       );
 
-      expect(aggregation.mostTags.first, equals('#common'));
-      expect(aggregation.mostTags, contains('#rare'));
+      expect(aggregation.mostTags.first, equals('common'));
+      expect(aggregation.mostTags, contains('rare'));
     });
 
     test('Filtering by Tag (direct match)', () {
@@ -204,9 +204,9 @@ void main() {
 
       final ContentKey key1 = ContentKey(getToken(subject1));
       final ContentKey key2 = ContentKey(getToken(subject2));
-      expect(aggregation.subjects[key1]!.tags, contains('#politics'));
-      expect(aggregation.subjects[key1]!.tags, contains('#news'));
-      expect(aggregation.subjects[key2]!.tags, contains('#world'));
+      expect(aggregation.subjects[key1]!.tags, contains('politics'));
+      expect(aggregation.subjects[key1]!.tags, contains('news'));
+      expect(aggregation.subjects[key2]!.tags, contains('world'));
       expect(aggregation.subjects[key1]!.tags, isNot(contains('#world')));
     });
   });

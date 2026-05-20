@@ -192,7 +192,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   await bartN.doDismiss(buck, 'forever');
   await bartN.doDismiss(banana, 'forever', export: 'bart-diss-banana');
   await lisaN.doRate(subject: secretariat, recommend: true, comment: '#poignant #horses #inspiring');
-  await margeN.doRate(subject: secretariat, recommend: true);
+  await margeN.doRate(subject: secretariat, recommend: true, comment: '#equestrian');
   await carlN.doRate(subject: superbad, comment: '#disgusting', recommend: false);
   await carlN.doDismiss(superbad, 'forever');
 
@@ -230,21 +230,24 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   await burnsN.doFollow(homer2, {kFollowContextNerdster: -1});
 
   // Tag equivalences
-  // Bart's slang: gnarly/sick → rad
-  await bartN.doEquate('#gnarly', '#rad');
-  await bartN.doEquate('#sick', '#rad');
-  // Lisa's film vocab: uplifting → inspiring; heartwarming → poignant; rad ≠ classic
-  await lisaN.doEquate('#uplifting', '#inspiring');
-  await lisaN.doEquate('#heartwarming', '#poignant');
-  await lisaN.doEquate('#rad', '#classic', not: true);
-  // Homer: bowling IS a sport
-  await homer2N.doEquate('#bowling', '#sports');
-  // Marge's kitchen and animal vocab; disgusting ≠ delicious
-  await margeN.doEquate('#wholesome', '#nutritious');
-  await margeN.doEquate('#equestrian', '#horses');
-  await margeN.doEquate('#disgusting', '#delicious', not: true);
+  // Bart's slang: gnarly/sick/classic → rad (Bart thinks everything is rad)
+  await bartN.doEquate('gnarly', 'rad');
+  await bartN.doEquate('sick', 'rad');
+  await bartN.doEquate('classic', 'rad');
+  // Lisa's film vocab: uplifting → inspiring; heartwarming → poignant
+  // Lisa disagrees with Bart: classic ≠ rad (she says this after Bart equated them)
+  await lisaN.doEquate('uplifting', 'inspiring');
+  await lisaN.doEquate('heartwarming', 'poignant');
+  await lisaN.doEquate('classic', 'rad', not: true);
+  // Homer: bowling IS rad (he thinks his sport is just as cool as skateboarding)
+  await homer2N.doEquate('bowling', 'rad');
+  // Marge's kitchen and animal vocab
+  // Marge disagrees with Bart: "sick" means ill, not cool
+  await margeN.doEquate('wholesome', 'nutritious');
+  await margeN.doEquate('equestrian', 'horses');
+  await margeN.doEquate('sick', 'rad', not: true);
   // Milhouse: hilarious = funny
-  await milhouseN.doEquate('#hilarious', '#funny');
+  await milhouseN.doEquate('hilarious', 'funny');
 
   return (lisa, lisaN);
 }

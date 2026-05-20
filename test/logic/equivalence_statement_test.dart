@@ -15,13 +15,13 @@ void main() {
       final Json iJson = mockKey('identity1');
       final EquivalenceStatement s = makeEquivalenceStatement(
         iJson: iJson,
-        equivalent: '#world',
-        canonical: '#news',
+        equivalent: 'world',
+        canonical: 'news',
       );
 
       // string = canonical (verb field), otherString = equivalent (with.otherSubject)
-      expect(s.string, equals('#news'));
-      expect(s.otherString, equals('#world'));
+      expect(s.string, equals('news'));
+      expect(s.otherString, equals('world'));
       expect(s.not, isFalse);
     });
 
@@ -29,13 +29,13 @@ void main() {
       final Json iJson = mockKey('identity1');
       final EquivalenceStatement s = makeEquivalenceStatement(
         iJson: iJson,
-        equivalent: '#python',
-        canonical: '#snake',
+        equivalent: 'python',
+        canonical: 'snake',
         not: true,
       );
 
-      expect(s.string, equals('#snake'));
-      expect(s.otherString, equals('#python'));
+      expect(s.string, equals('snake'));
+      expect(s.otherString, equals('python'));
       expect(s.not, isTrue);
     });
 
@@ -43,33 +43,33 @@ void main() {
       final Json iJson = mockKey('identity1');
       final EquivalenceStatement s1 = makeEquivalenceStatement(
         iJson: iJson,
-        equivalent: '#world',
-        canonical: '#news',
+        equivalent: 'world',
+        canonical: 'news',
       );
       final EquivalenceStatement s2 = makeEquivalenceStatement(
         iJson: iJson,
-        equivalent: '#news',
-        canonical: '#world',
+        equivalent: 'news',
+        canonical: 'world',
       );
 
       expect(s1.getDistinctSignature(), equals(s2.getDistinctSignature()));
     });
 
-    test('getDistinctSignature differs for equate vs dontEquate', () {
+    test('getDistinctSignature same for equate vs dontEquate (latest supersedes)', () {
       final Json iJson = mockKey('identity1');
       final EquivalenceStatement eq = makeEquivalenceStatement(
         iJson: iJson,
-        equivalent: '#world',
-        canonical: '#news',
+        equivalent: 'world',
+        canonical: 'news',
       );
       final EquivalenceStatement dont = makeEquivalenceStatement(
         iJson: iJson,
-        equivalent: '#world',
-        canonical: '#news',
+        equivalent: 'world',
+        canonical: 'news',
         not: true,
       );
 
-      expect(eq.getDistinctSignature(), isNot(equals(dont.getDistinctSignature())));
+      expect(eq.getDistinctSignature(), equals(dont.getDistinctSignature()));
     });
   });
 
@@ -132,7 +132,7 @@ void main() {
       );
 
       expect(agg.tagEquivalence, isEmpty);
-      expect(agg.mostTags, contains('#world'));
+      expect(agg.mostTags, contains('world'));
     });
 
     test('tagEquivalence maps non-canonical to canonical', () {
@@ -145,8 +145,8 @@ void main() {
       );
       final EquivalenceStatement eq = makeEquivalenceStatement(
         iJson: setup.delegateKey,
-        equivalent: '#world',
-        canonical: '#news',
+        equivalent: 'world',
+        canonical: 'news',
       );
       final ContentResult contentResult = ContentResult(delegateContent: {
         DelegateKey(setup.delegateToken): [s],
@@ -164,8 +164,8 @@ void main() {
         labeler: setup.labeler,
       );
 
-      expect(agg.tagEquivalence['#world'], equals('#news'));
-      expect(agg.tagEquivalence['#news'], equals('#news'));
+      expect(agg.tagEquivalence['world'], equals('news'));
+      expect(agg.tagEquivalence['news'], equals('news'));
     });
 
     test('mostTags counts canonical, not individual equivalents', () {
@@ -186,8 +186,8 @@ void main() {
       );
       final EquivalenceStatement eq = makeEquivalenceStatement(
         iJson: setup.delegateKey,
-        equivalent: '#world',
-        canonical: '#news',
+        equivalent: 'world',
+        canonical: 'news',
       );
       final ContentResult contentResult = ContentResult(delegateContent: {
         DelegateKey(setup.delegateToken): [s2, s1], // descending time order
@@ -205,8 +205,8 @@ void main() {
         labeler: setup.labeler,
       );
 
-      expect(agg.mostTags, contains('#news'));
-      expect(agg.mostTags, isNot(contains('#world')));
+      expect(agg.mostTags, contains('news'));
+      expect(agg.mostTags, isNot(contains('world')));
     });
 
     test('tag filter by canonical matches content tagged with equivalent', () {
@@ -232,8 +232,8 @@ void main() {
       );
       final EquivalenceStatement eq = makeEquivalenceStatement(
         iJson: setup.delegateKey,
-        equivalent: '#world',
-        canonical: '#news',
+        equivalent: 'world',
+        canonical: 'news',
       );
       final ContentResult contentResult = ContentResult(delegateContent: {
         DelegateKey(setup.delegateToken): [s2, s1], // descending time order
@@ -252,7 +252,7 @@ void main() {
       );
 
       // Apply the same filter logic as shouldShow
-      final String canonicalFilter = agg.tagEquivalence['#news'] ?? '#news';
+      final String canonicalFilter = agg.tagEquivalence['news'] ?? 'news';
       bool matchesFilter(SubjectAggregation subject) =>
           subject.tags.any((t) => (agg.tagEquivalence[t] ?? t) == canonicalFilter);
 
@@ -272,8 +272,8 @@ void main() {
       // #python and #snake are explicitly NOT equivalent
       final EquivalenceStatement dont = makeEquivalenceStatement(
         iJson: setup.delegateKey,
-        equivalent: '#python',
-        canonical: '#snake',
+        equivalent: 'python',
+        canonical: 'snake',
         not: true,
       );
       final ContentResult contentResult = ContentResult();
@@ -291,8 +291,8 @@ void main() {
       );
 
       // Neither should map to the other
-      expect(agg.tagEquivalence['#python'], isNot(equals('#snake')));
-      expect(agg.tagEquivalence['#snake'], isNot(equals('#python')));
+      expect(agg.tagEquivalence['python'], isNot(equals('snake')));
+      expect(agg.tagEquivalence['snake'], isNot(equals('python')));
     });
   });
 }

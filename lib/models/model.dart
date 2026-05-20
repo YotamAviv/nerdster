@@ -249,6 +249,10 @@ class ContentAggregation {
   /// Every tag maps to itself if it has no equivalence statement.
   final Map<String, String> tagEquivalence;
 
+  /// tag -> all EquivalenceStatements in the follow network that mention it (as either field).
+  /// Used to build the provenance dialog for a whole equivalence group.
+  final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements;
+
   /// Map of every known literal subject token to its flavored Aggregation.
   final Map<ContentKey, SubjectAggregation> subjects;
 
@@ -267,6 +271,7 @@ class ContentAggregation {
     this.related = const {},
     List<String> mostTags = const [],
     this.tagEquivalence = const {},
+    this.tagEquivalenceStatements = const <String, List<EquivalenceStatement>>{},
     this.subjects = const {},
     Map<ContentKey, List<DismissStatement>> myDismissStatements = const {},
     Map<ContentKey, List<ContentStatement>> myLiteralStatements = const {},

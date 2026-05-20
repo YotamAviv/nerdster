@@ -21,19 +21,19 @@ void main() async {
     expect(extractTags('#'), <String>{});
 
     // accept
-    expect(extractTags('#Flutter'), <String>{'#flutter'});
-    expect(extractTags('#tag123'), <String>{'#tag123'});
-    expect(extractTags('#my-tag'), <String>{'#my-tag'});
-    expect(extractTags('#my_new_tag'), <String>{'#my_new_tag'});
+    expect(extractTags('#Flutter'), <String>{'flutter'});
+    expect(extractTags('#tag123'), <String>{'tag123'});
+    expect(extractTags('#my-tag'), <String>{'my-tag'});
+    expect(extractTags('#my_new_tag'), <String>{'my_new_tag'});
 
     expect(extractTags('comment #@34'), <String>{});
-    expect(extractTags('comment #word'), {'#word'});
-    expect(extractTags('comment #Word'), {'#word'});
-    expect(extractTags('comment # #Word'), {'#word'});
-    expect(extractTags('comment #Word'), {'#word'});
-    expect(extractTags('comment #Word #5'), {'#word'});
-    expect(extractTags('comment #Word123abc'), {'#word123abc'});
-    expect(extractTags('comment #Word #word'), {'#word'});
-    expect(extractTags('comment #Word stuff #otherword'), {'#word', '#otherword'});
+    expect(extractTags('comment #word'), {'word'});
+    expect(extractTags('comment #Word'), {'word'});
+    expect(extractTags('comment # #Word'), {'word'});
+    expect(extractTags('comment #Word'), {'word'});
+    expect(extractTags('comment #Word #5'), {'word'});
+    expect(extractTags('comment #Word123abc'), {'word123abc'});
+    expect(extractTags('comment #Word #word'), {'word'});
+    expect(extractTags('comment #Word stuff #otherword'), {'word', 'otherword'});
   });
 }

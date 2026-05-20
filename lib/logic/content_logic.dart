@@ -386,14 +386,24 @@ ContentAggregation reduceContentAggregation(
   }
 
   // Tag Equivalence: build map from org.nerdster.equivalence statements in the follow network.
+  // Apply distinct() per identity (newest-first) so that a later equate/dontEquate replaces an
+  // earlier one for the same (signer, pair) — matching how content statements are deduplicated.
   final Equivalence tagEqLogic = Equivalence();
+  final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements = {};
   for (final IdentityKey identity in followNetwork.identities) {
+    final List<EquivalenceStatement> allForIdentity = [];
     for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
-      final List<EquivalenceStatement>? eqStmts = equivalenceResult.delegateContent[key];
-      if (eqStmts == null) continue;
-      for (final EquivalenceStatement s in eqStmts) {
-        tagEqLogic.equate(s.otherString, s.string, not: s.not);
-      }
+      final List<EquivalenceStatement>? stmts = equivalenceResult.delegateContent[key];
+      if (stmts != null) allForIdentity.addAll(stmts);
+    }
+    allForIdentity.sort((a, b) => b.time.compareTo(a.time));
+    for (final EquivalenceStatement s in distinct(
+      allForIdentity,
+      iTransformer: (_) => identity.value,
+    )) {
+      tagEqLogic.equate(s.otherString, s.string, not: s.not);
+      tagEquivalenceStatements.putIfAbsent(s.otherString, () => []).add(s);
+      tagEquivalenceStatements.putIfAbsent(s.string, () => []).add(s);
     }
   }
   final Map<String, String> tagEquivalence = {};
@@ -482,6 +492,7 @@ ContentAggregation reduceContentAggregation(
     related: related,
     mostTags: mostTags,
     tagEquivalence: tagEquivalence,
+    tagEquivalenceStatements: tagEquivalenceStatements,
     subjects: subjects,
     myDismissStatements: myDismissStatements,
     myLiteralStatements: myLiteralStatements,

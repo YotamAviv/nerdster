@@ -77,7 +77,7 @@ class EquivalenceStatement extends Statement {
   String getDistinctSignature({Transformer? iTransformer, Transformer? sTransformer}) {
     final String ti = iTransformer != null ? iTransformer(iToken) : iToken;
     final List<String> pair = [string, otherString]..sort();
-    return 'equivalence:$ti:${not ? "not" : "eq"}:${pair.join(":")}';
+    return 'equivalence:$ti:${pair.join(":")}';
   }
 }
 

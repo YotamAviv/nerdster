@@ -58,6 +58,23 @@ class FeedController extends ValueNotifier<FeedModel?> {
     }
   }
 
+  Future<void> pushEquivalence(String equivalent, String canonical,
+      {bool not = false, required BuildContext context}) async {
+    final delegateJson = signInState.delegatePublicKeyJson;
+    final signer = signInState.signer;
+    if (delegateJson == null || signer == null) return;
+    final Json json = EquivalenceStatement.make(delegateJson, equivalent, canonical, not: not);
+    try {
+      await equivSource.push(json, signer);
+      unawaited(notify());
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error publishing equivalence: $e')));
+      }
+    }
+  }
+
   FeedController({
     VoidCallback? optimisticConcurrencyFunc,
   })  : trustSource = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements'),
