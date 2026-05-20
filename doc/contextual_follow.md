@@ -339,6 +339,12 @@ More tests will be added as implementation uncovers edge cases.
 
 TBD...
 
+### Reserved contexts
+
+`<identity>` and `<nerdster>` are special system contexts and must not appear in equivalence
+statements. The UI should reject any attempt to drag them into an equivalence group, and the
+pipeline should ignore any equivalence statement that names either of them.
+
 ### Change and simplify NodeDetails UI especially for following
 
 I'm thinking about an interface where you have a Follow half on the left and Block half on the
