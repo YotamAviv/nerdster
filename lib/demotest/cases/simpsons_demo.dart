@@ -1,10 +1,5 @@
-import 'package:nerdster/models/content_statement.dart';
-import 'package:nerdster/demotest/demo_key.dart';
-import 'package:nerdster/demotest/test_clock.dart';
-import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/trust_statement.dart';
-import 'package:oneofus_common/clock.dart';
 import 'package:nerdster/logic/follow_logic.dart';
+import 'package:nerdster/demotest/test_util.dart';
 
 /// Simpson public demo
 /// - Lisa's view clean, no porn, no notifications
@@ -180,23 +175,23 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   await smithersN.doRate(subject: brokeback, recommend: true);
   await carlN.doRate(subject: brokeback, recommend: true);
   await sideshowN.doDismiss(brokeback, 'forever');
-  await margeN.doRate(subject: brokeback, recommend: true, comment: '#horses');
+  await margeN.doRate(subject: brokeback, recommend: true, comment: '#horses #heartwarming');
 
-  await lisaN.doRate(subject: buck, recommend: true, comment: 'instant #classic');
-  await bartN.doRate(subject: dogtown, recommend: true, comment: 'instant #classic');
-  await milhouseN.doRate(subject: superbad, recommend: true, comment: 'two thumbs way up');
+  await lisaN.doRate(subject: buck, recommend: true, comment: 'instant #classic #uplifting');
+  await bartN.doRate(subject: dogtown, recommend: true, comment: 'instant #classic #gnarly');
+  await milhouseN.doRate(subject: superbad, recommend: true, comment: 'two thumbs way up #hilarious #funny');
   await bartN.doRate(subject: superbad, recommend: true, comment: '#rad #sick meisterpeace');
   await margeN.doRate(subject: getToken(superbad), censor: true, export: 'marge-censor-superbad');
   await margeN.doRate(
       subject: banana,
       recommend: true,
-      comment: '#nutritious and #delicious',
+      comment: '#wholesome #nutritious and #delicious',
       export: 'marge-banana-rate');
-  await homer2N.doRate(subject: kingpin, recommend: true, comment: '#rad');
+  await homer2N.doRate(subject: kingpin, recommend: true, comment: '#rad #bowling');
   await bartN.doRate(subject: buck, recommend: false, comment: '#barf');
   await bartN.doDismiss(buck, 'forever');
   await bartN.doDismiss(banana, 'forever', export: 'bart-diss-banana');
-  await lisaN.doRate(subject: secretariat, recommend: true, comment: '#poignant #horses');
+  await lisaN.doRate(subject: secretariat, recommend: true, comment: '#poignant #horses #inspiring');
   await margeN.doRate(subject: secretariat, recommend: true);
   await carlN.doRate(subject: superbad, comment: '#disgusting', recommend: false);
   await carlN.doDismiss(superbad, 'forever');
@@ -233,6 +228,23 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   await burnsN.doFollow(bart, {kFollowContextNerdster: -1});
   await burnsN.doFollow(marge, {kFollowContextNerdster: -1});
   await burnsN.doFollow(homer2, {kFollowContextNerdster: -1});
+
+  // Tag equivalences
+  // Bart's slang: gnarly/sick → rad
+  await bartN.doEquate('#gnarly', '#rad');
+  await bartN.doEquate('#sick', '#rad');
+  // Lisa's film vocab: uplifting → inspiring; heartwarming → poignant; rad ≠ classic
+  await lisaN.doEquate('#uplifting', '#inspiring');
+  await lisaN.doEquate('#heartwarming', '#poignant');
+  await lisaN.doEquate('#rad', '#classic', not: true);
+  // Homer: bowling IS a sport
+  await homer2N.doEquate('#bowling', '#sports');
+  // Marge's kitchen and animal vocab; disgusting ≠ delicious
+  await margeN.doEquate('#wholesome', '#nutritious');
+  await margeN.doEquate('#equestrian', '#horses');
+  await margeN.doEquate('#disgusting', '#delicious', not: true);
+  // Milhouse: hilarious = funny
+  await milhouseN.doEquate('#hilarious', '#funny');
 
   return (lisa, lisaN);
 }

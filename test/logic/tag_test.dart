@@ -10,8 +10,6 @@ import 'package:oneofus_common/jsonish.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
-import 'package:nerdster/settings/setting_type.dart';
-import 'package:nerdster/settings/prefs.dart';
 
 import 'package:oneofus_common/source_error.dart';
 import 'package:nerdster/logic/labeler.dart';
@@ -90,69 +88,6 @@ void main() {
       expect(subjectAgg.tags, contains('#tag2'));
     });
 
-    test('Tag Equivalence (Transitive)', () {
-      final Json identityKey = mockKey('identity1');
-      final String identityToken = Jsonish(identityKey).token;
-
-      final Json delegateKey = mockKey('delegate1');
-      final String delegateToken = Jsonish(delegateKey).token;
-
-      final TrustStatement delegateStatement = makeTrustStatement(
-        verb: TrustVerb.delegate,
-        subject: delegateKey,
-        iJson: identityKey,
-        domain: 'nerdster.org',
-      );
-
-      final Map<String, dynamic> subject1 = createTestSubject(title: 'Subject 1');
-      final Map<String, dynamic> subject2 = createTestSubject(title: 'Subject 2');
-
-      final ContentStatement s1 = makeContentStatement(
-        verb: ContentVerb.rate,
-        subject: subject1,
-        comment: 'Co-occurrence #news #politics',
-        iJson: delegateKey,
-      );
-      final ContentStatement s2 = makeContentStatement(
-        verb: ContentVerb.rate,
-        subject: subject2,
-        comment: 'Co-occurrence #politics #world',
-        iJson: delegateKey,
-      );
-
-      final FollowNetwork followNetwork = FollowNetwork(
-          fcontext: 'test',
-          povIdentity: IdentityKey(identityToken),
-          identities: [IdentityKey(identityToken)]);
-      final TrustGraph trustGraph = TrustGraph(pov: IdentityKey(identityToken), distances: {
-        IdentityKey(identityToken): 0
-      }, edges: {
-        IdentityKey(identityToken): [delegateStatement]
-      });
-      final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
-
-      final Map<DelegateKey, List<ContentStatement>> byToken = {
-        DelegateKey(delegateToken): [s2, s1],
-      };
-
-      final Labeler labeler = Labeler(trustGraph, delegateResolver: delegateResolver);
-      final ContentAggregation aggregation = reduceContentAggregation(
-        followNetwork,
-        trustGraph,
-        delegateResolver,
-        ContentResult(delegateContent: byToken),
-        labeler: labeler,
-      );
-
-      final String? newsCanonical = aggregation.tagEquivalence['#news'];
-      final String? politicsCanonical = aggregation.tagEquivalence['#politics'];
-      final String? worldCanonical = aggregation.tagEquivalence['#world'];
-
-      expect(newsCanonical, isNotNull);
-      expect(newsCanonical, equals(politicsCanonical));
-      expect(politicsCanonical, equals(worldCanonical));
-    });
-
     test('Tag Frequency Tracking', () {
       final Json identityKey = mockKey('identity1');
       final String identityToken = Jsonish(identityKey).token;
@@ -211,7 +146,7 @@ void main() {
       expect(aggregation.mostTags, contains('#rare'));
     });
 
-    test('Filtering by Tag (including equivalents)', () {
+    test('Filtering by Tag (direct match)', () {
       final Json identityKey = mockKey('identity1');
       final String identityToken = Jsonish(identityKey).token;
 
@@ -225,7 +160,6 @@ void main() {
         domain: 'nerdster.org',
       );
 
-      // Use valid subjects that have a contentType so they pass the filter
       final Map<String, dynamic> subject1 =
           createTestSubject(type: ContentType.article, url: 'https://sub1.com')..['id'] = 'sub1';
       final Map<String, dynamic> subject2 =
@@ -268,9 +202,12 @@ void main() {
         labeler: labeler,
       );
 
-      // Filter by #politics...
-      Setting.get<String>(SettingType.tag).value = '#politics';
-      expect(aggregation.tagEquivalence['#news'], equals(aggregation.tagEquivalence['#politics']));
+      final ContentKey key1 = ContentKey(getToken(subject1));
+      final ContentKey key2 = ContentKey(getToken(subject2));
+      expect(aggregation.subjects[key1]!.tags, contains('#politics'));
+      expect(aggregation.subjects[key1]!.tags, contains('#news'));
+      expect(aggregation.subjects[key2]!.tags, contains('#world'));
+      expect(aggregation.subjects[key1]!.tags, isNot(contains('#world')));
     });
   });
 }

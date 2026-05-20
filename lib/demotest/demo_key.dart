@@ -415,6 +415,21 @@ class DemoDelegateKey implements DemoKey {
     return content;
   }
 
+  Future<EquivalenceStatement> doEquate(String equivalent, String canonical,
+      {bool not = false, String? export}) async {
+    final Json json = EquivalenceStatement.make(await publicKey.json, equivalent, canonical, not: not);
+    return _pushEquiv(json, export);
+  }
+
+  Future<EquivalenceStatement> _pushEquiv(Json json, String? export) async {
+    final source = channelFactory.getChannel<EquivalenceStatement>(kNerdsterExportUrl, 'statements');
+    final signer = await OouSigner.make(keyPair);
+    await source.fetch({Jsonish(json['I']).token: null});
+    final stmt = await source.push(json, signer);
+    if (export != null) DemoKey._exports[export] = stmt.json;
+    return stmt;
+  }
+
   Future<Json> toJson() async {
     return {'token': token, 'keyPair': await keyPair.json};
   }
