@@ -58,6 +58,23 @@ class FeedController extends ValueNotifier<FeedModel?> {
     }
   }
 
+  Future<void> pushClearEquivalence(String equivalent, String canonical,
+      {required BuildContext context}) async {
+    final delegateJson = signInState.delegatePublicKeyJson;
+    final signer = signInState.signer;
+    if (delegateJson == null || signer == null) return;
+    final Json json = EquivalenceStatement.make(delegateJson, equivalent, canonical, clear: true);
+    try {
+      await equivSource.push(json, signer);
+      unawaited(notify());
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error clearing equivalence: $e')));
+      }
+    }
+  }
+
   Future<void> pushEquivalence(String equivalent, String canonical,
       {bool not = false, required BuildContext context}) async {
     final delegateJson = signInState.delegatePublicKeyJson;

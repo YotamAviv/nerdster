@@ -119,8 +119,20 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
     Overlay.of(context).insert(_jsonOverlay!);
   }
 
+  void _handleClearEquivalence(EquivalenceStatement s) {
+    final controller = widget.controller;
+    if (controller == null || signInState.signer == null) return;
+    _removeProvenanceOverlay();
+    final ctx = context;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) controller.pushClearEquivalence(s.otherString, s.string, context: ctx);
+    });
+  }
+
   void _openProvenance(String canonical, List<EquivalenceStatement> statements) {
     _removeProvenanceOverlay();
+    final myToken = signInState.delegate;
+    final canClear = widget.controller != null && signInState.signer != null;
     _provenanceOverlay = OverlayEntry(builder: (_) {
       return Stack(children: [
         Positioned.fill(
@@ -133,6 +145,8 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
           canonical: canonical,
           statements: statements,
           onShowJson: _openJsonOverlay,
+          myDelegateToken: canClear ? myToken : null,
+          onClear: canClear ? _handleClearEquivalence : null,
         ),
       ]);
     });
@@ -570,11 +584,15 @@ class _TagProvenanceDialog extends StatelessWidget {
   final String canonical;
   final List<EquivalenceStatement> statements;
   final void Function(Json? json, Labeler labeler, Offset tapPosition)? onShowJson;
+  final String? myDelegateToken;
+  final void Function(EquivalenceStatement s)? onClear;
 
   const _TagProvenanceDialog({
     required this.canonical,
     required this.statements,
     this.onShowJson,
+    this.myDelegateToken,
+    this.onClear,
   });
 
   @override
@@ -601,6 +619,8 @@ class _TagProvenanceDialog extends StatelessWidget {
                 itemBuilder: (_, i) {
                   final s = statements[i];
                   final label = labeler.getLabel(s.iToken);
+                  final isMyStatement =
+                      myDelegateToken != null && s.iToken == myDelegateToken;
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     child: Row(
@@ -632,6 +652,14 @@ class _TagProvenanceDialog extends StatelessWidget {
                           _StatementShieldButton(
                             json: s.json,
                             onShowJson: (pos) => onShowJson!(s.json, labeler, pos),
+                          ),
+                        if (isMyStatement && onClear != null)
+                          GestureDetector(
+                            onTap: () => onClear!(s),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4),
+                              child: Icon(Icons.close, size: 14, color: Colors.red),
+                            ),
                           ),
                       ],
                     ),

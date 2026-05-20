@@ -16,11 +16,14 @@ class EquivalenceStatement extends Statement {
   /// True if this is a dontEquate; false if equate.
   final bool not;
 
-  /// The canonical side; stored in the verb field (equate/dontEquate).
+  /// True if this is a clear statement (removes the prior equate/dontEquate).
+  final bool _clear;
+
+  /// The canonical side; stored in the verb field (equate/dontEquate/clear).
   String get string => subjectToken;
 
   @override
-  bool get isClear => false;
+  bool get isClear => _clear;
 
   DelegateKey get iKey => DelegateKey(getToken(i));
   @override
@@ -36,20 +39,22 @@ class EquivalenceStatement extends Statement {
 
     final dynamic equateSubject = jsonish['equate'];
     final dynamic dontEquateSubject = jsonish['dontEquate'];
-    assert(equateSubject != null || dontEquateSubject != null,
-        'EquivalenceStatement missing equate/dontEquate field');
+    final dynamic clearSubject = jsonish['clear'];
+    assert(equateSubject != null || dontEquateSubject != null || clearSubject != null,
+        'EquivalenceStatement missing equate/dontEquate/clear field');
 
     final bool isDont = dontEquateSubject != null;
-    // The verb field holds the canonical string (matching ContentStatement equate convention).
-    final dynamic rawSubject = isDont ? dontEquateSubject : equateSubject;
+    final bool isClearVerb = clearSubject != null;
+    // The verb field holds the canonical string.
+    final dynamic rawSubject = isClearVerb ? clearSubject : (isDont ? dontEquateSubject : equateSubject);
     assert(rawSubject is String, 'EquivalenceStatement subject must be a plain string');
 
     // with.otherSubject holds the equivalent (non-canonical) string.
     final dynamic other = (jsonish['with'] as Map?)?['otherSubject'];
     assert(other is String, 'EquivalenceStatement with.otherSubject must be a plain string');
 
-    final EquivalenceStatement s =
-        EquivalenceStatement._internal(jsonish, rawSubject as String, otherString: other as String, not: isDont);
+    final EquivalenceStatement s = EquivalenceStatement._internal(jsonish, rawSubject as String,
+        otherString: other as String, not: isDont, clear: isClearVerb);
     _cache[s.token] = s;
     return s;
   }
@@ -57,13 +62,15 @@ class EquivalenceStatement extends Statement {
   static EquivalenceStatement? find(String token) => _cache[token];
 
   EquivalenceStatement._internal(super.jsonish, super.subject,
-      {required this.otherString, required this.not});
+      {required this.otherString, required this.not, required bool clear})
+      : _clear = clear;
 
   /// Builds the JSON for an equate or dontEquate statement.
   /// [canonical] goes in the verb field; [equivalent] goes in with.otherSubject —
   /// matching the ContentStatement equate convention.
-  static Json make(Json iJson, String equivalent, String canonical, {bool not = false}) {
-    final String verb = not ? 'dontEquate' : 'equate';
+  static Json make(Json iJson, String equivalent, String canonical,
+      {bool not = false, bool clear = false}) {
+    final String verb = clear ? 'clear' : (not ? 'dontEquate' : 'equate');
     return {
       'statement': kNerdsterEquivalenceType,
       'time': clock.nowIso,
