@@ -7,17 +7,34 @@ the UI only updates after the round-trip completes. We had this working in the o
 architecture (commit `815a939`, Jan 2026) and lost it in the `ChannelFactory` refactor
 (commit `0849202`, May 7 2026).
 
-**Plan:**
-1. Add a public `inject(T statement)` method to `_CachedSource` in `channel_factory.dart`
-   that updates the local cache immediately (same logic as the private `_inject`).
-2. In `FeedController.push()`: sign the statement, inject it into the cache, call `notify()`
-   (UI updates instantly), then fire the network write. If the write fails, call `refresh()`
-   to correct the cache.
-3. The tricky part: the `previous` pointer is currently set inside the push queue. It needs
-   to be read from the cache head before injecting, and the same value passed to the writer.
-4. Apply the same pattern to `pushEquivalence`.
+**oneofus_common (`channel_factory.dart`, `statement_source.dart`):**
+1. In `_CachedSource.push()`: inject the statement into the local cache immediately, then
+   fire the network write via the existing push queue in the background. Return a future
+   that completes after injection, not after the write.
+2. The tricky part: the `previous` pointer is currently set inside the push queue. It needs
+   to be read from the cache head at inject time, and the same value passed to the writer.
+3. Write failures surface via a per-channel `ValueNotifier<Object?>` error notifier on
+   `_CachedSource` — the app layer registers once per channel rather than handling at
+   every call site.
+4. Update the contract comment on `StatementWriter.push()` in `statement_source.dart` to
+   reflect that it now returns after local injection, with the write completing in background.
 
-## merge don't sort - check everywhere!
+**nerdster/oneofus/hablotengo (app initialization, not FeedController):**
+5. `FeedController` (and equivalent read/write code) needs no change — `notify()` is
+   already called right after `push()` and will fire at the right time once the semantics
+   change.
+6. Each project's main app initialization registers a write failure handler on its channels.
+   For nerdster: show the existing "We need to reload" dialog from `app.dart` — no dismiss,
+   programmatic reload only. Oneofus and hablotengo implement their own equivalent.
+
+**Tests (both must be restored/added):**
+- **#1 No re-fetch**: After a write, verify that `fetch()` is never called on the source
+  (i.e. the cache is used as-is). Restore from `test/v2/partial_refresh_test.dart` in
+  commit `815a939`.
+- **#2 No waiting**: Verify that `notify()` is called *before* the network write returns —
+  i.e. the UI updates while the write is still in flight.
+
+## Merge don't sort - check everywhere!
 
 ## DemoKey shouldn't do "fetch before push" everywhere!
 
