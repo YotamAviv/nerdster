@@ -306,7 +306,7 @@ show content tagged with any member of that group.
 5. Wire `eq_dropdown` into the tags filter (read-only first — shows computed groups). ✅
 6. Wire publishing: drag-drop and ≠ actions issue signed statements. ✅
 7. Crypto shield + provenance dialog. ✅ (shield on canonical; dialog shows full group statements;
-   full provenance dialog with network order + clear action is still pending)
+   clear action in provenance dialog. ✅)
 
 Contexts follow the same path (steps 2–7 again), same statement type, same computation.
 
