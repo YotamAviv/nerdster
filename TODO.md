@@ -34,6 +34,17 @@ architecture (commit `815a939`, Jan 2026) and lost it in the `ChannelFactory` re
 - **#2 No waiting**: Verify that `notify()` is called *before* the network write returns —
   i.e. the UI updates while the write is still in flight.
 
+
+ISSUES:
+I feel like we're (AI and I) playing whack a mole. I want to not await and so you let us not await but add await somewhere else for a new function that should never exist: drainWrites.
+
+We do want to have a "refresh" ability. A user might step away from your Nerdster browser for a day and want to check for new content, which is obviously not in your cache, and so we need to have a refresh at the infrastructure. That call should require an await.
+
+Consider that and see if you can offer a way to remove drainWrites from the infrastructure.
+
+
+
+
 ## Merge don't sort - check everywhere!
 
 ## DemoKey shouldn't do "fetch before push" everywhere!
