@@ -21,6 +21,9 @@ architecture (commit `815a939`, Jan 2026) and lost it in the `ChannelFactory` re
 
 ## DemoKey shouldn't do "fetch before push" everywhere!
 
+## Improve SimpsonsDemo tag equate/dontEquate
+Wait for context equate/dontEquate.
+
 
 ## Dead code in cloud functions: OMDB / TMDB fetchers
 
