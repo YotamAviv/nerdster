@@ -37,7 +37,7 @@ And so we need tests that use back door methods to verify that things not only g
   - Over fetching data from the server should fail
   - Awaiting write completion should fail
 
-- Server-sde "excludeTypes" is important. That said, channels don't have to support every possible use. In our case, channels with an excludeType can be read-only. We don't need to bend over backwards to support that.
+- Server-sde "excludeTypes" is important. That said, channels don't have to support every possible use. In our case, channels with an excludeType can be read-only. We don't need to bend over backwards to support writing to an excludeType restricted channel.
 
 - The UI has a "refresh" button for a reason, and it should be async, clear the cache of any pending writes (flush) and then load. We should not refresh for no good reason.
 
