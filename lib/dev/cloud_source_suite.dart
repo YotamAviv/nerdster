@@ -3,7 +3,6 @@ import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/demotest/cases/concurrent_write_scenario.dart';
 import 'package:nerdster/demotest/cases/time_ordering_scenario.dart';
-import 'package:nerdster/demotest/cases/previous_conflict_scenario.dart';
 import 'package:nerdster/demotest/cases/verification.dart';
 import 'package:oneofus_common/channel_factory.dart';
 import 'package:oneofus_common/statement.dart';
@@ -64,10 +63,6 @@ Future<void> runCloudSourceVerification() async {
     debugPrint('--- Testing Time Ordering Scenario ---');
     await timeOrderingScenario();
     debugPrint('Time Ordering Scenario Verified!');
-
-    debugPrint('--- Testing Previous Conflict Scenario ---');
-    await previousConflictScenario();
-    debugPrint('Previous Conflict Scenario Verified!');
 
     debugPrint('PASS');
   } catch (e, stack) {

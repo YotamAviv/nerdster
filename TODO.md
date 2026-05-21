@@ -1,49 +1,42 @@
 # TODO
 
-## Optimistic writes for rate/dismiss/equivalence actions
+## Optimistic writes — MOSTLY DONE; one bug remaining
 
-Currently `FeedController.push()` awaits the network write before calling `notify()`, so
-the UI only updates after the round-trip completes. We had this working in the old `v2/`
-architecture (commit `815a939`, Jan 2026) and lost it in the `ChannelFactory` refactor
-(commit `0849202`, May 7 2026).
+`push()` now returns after local cache inject (before network write). Write failures go to
+`ChannelFactory.onWriteError`. `clear()` is async and drains pending writes. `clearCache()`
+is async. These are implemented and tested.
 
-**oneofus_common (`channel_factory.dart`, `statement_source.dart`):**
-1. In `_CachedSource.push()`: inject the statement into the local cache immediately, then
-   fire the network write via the existing push queue in the background. Return a future
-   that completes after injection, not after the write.
-2. The tricky part: the `previous` pointer is currently set inside the push queue. It needs
-   to be read from the cache head at inject time, and the same value passed to the writer.
-3. Write failures surface via a per-channel `ValueNotifier<Object?>` error notifier on
-   `_CachedSource` — the app layer registers once per channel rather than handling at
-   every call site.
-4. Update the contract comment on `StatementWriter.push()` in `statement_source.dart` to
-   reflect that it now returns after local injection, with the write completing in background.
+### Remaining bug: `excludeTypes` fanout
 
-**nerdster/oneofus/hablotengo (app initialization, not FeedController):**
-5. `FeedController` (and equivalent read/write code) needs no change — `notify()` is
-   already called right after `push()` and will fire at the right time once the semantics
-   change.
-6. Each project's main app initialization registers a write failure handler on its channels.
-   For nerdster: show the existing "We need to reload" dialog from `app.dart` — no dismiss,
-   programmatic reload only. Oneofus and hablotengo implement their own equivalent.
+**Invariant that must hold**: each unique `(exportUrl, streamKey, excludeTypes, distinct)`
+combination gets its own root (`_CachedSource`) with its own server-side fetch config.
+`excludeTypes` must reach the server — it is a bandwidth optimization, not merely a local
+filter.
 
-**Tests (both must be restored/added):**
-- **#1 No re-fetch**: After a write, verify that `fetch()` is never called on the source
-  (i.e. the cache is used as-is). Restore from `test/v2/partial_refresh_test.dart` in
-  commit `815a939`.
-- **#2 No waiting**: Verify that `notify()` is called *before* the network write returns —
-  i.e. the UI updates while the write is still in flight.
+**Problem**: for optimistic writes to be immediately visible in every channel for the same
+stream (regardless of `excludeTypes`), all such roots need the inject. Currently all channels
+share one root (excludeTypes ignored), which breaks server-side filtering.
 
+**Correct fix — inject fanout**:
+- Keep separate roots per `excludeTypes` (restore old cache key including `excludeTypes`).
+- `ChannelFactory` maintains a secondary index: `"exportUrl/streamKey" → List<_CachedSource>`.
+- When `_CachedSource._inject(statement)` runs, it also fans out to every sibling in that
+  list, subject to two guards:
+  1. The sibling's `_fullCache` must already contain the issuer (no fetch-to-satisfy).
+  2. The statement's type must not be in the sibling's `excludeTypes`.
+- Use a separate `_injectLocal` (no fanout) so siblings don't recurse back.
+- Fanout is read from the factory index at inject time (late-bound, like `_getOnWriteError`).
 
-ISSUES:
-I feel like we're (AI and I) playing whack a mole. I want to not await and so you let us not await but add await somewhere else for a new function that should never exist: drainWrites.
-
-We do want to have a "refresh" ability. A user might step away from your Nerdster browser for a day and want to check for new content, which is obviously not in your cache, and so we need to have a refresh at the infrastructure. That call should require an await.
-
-Consider that and see if you can offer a way to remove drainWrites from the infrastructure.
+**Test fix** (restore original intent, don't remove `upload()`):
+- Call `await contentSource.clear()` BEFORE `upload()` to drain the background write.
+- The background write lands in Firestore first; `upload()` then overwrites with `set()`
+  (harmless). The cache is cleared; re-fetch before any subsequent `push()` if needed.
+- Do NOT remove `upload()` — it tests that the pipeline reads from Firestore correctly.
 
 
+## Clean up the vestigial do/make split in DemoKey
 
+`makeRate`, `makeFollow`, and `makeRelate` in `DemoKey` have no external callers — they are only called by their `do*` wrappers. Inline each body directly into `doRate`, `doFollow`, and `doRelate`, then delete the `make*` methods.
 
 ## Merge don't sort - check everywhere!
 

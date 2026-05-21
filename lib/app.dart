@@ -22,6 +22,70 @@ final ValueNotifier<bool> isSmall = ValueNotifier<bool>(false);
 /// Token of the identity to focus in the graph view on startup (from ?target= URL param).
 String? startupTarget;
 
+Future<void> _nerdsterReload() async {
+  // Save credentials BEFORE wiping caches — Jsonish.wipeCache() would
+  // break identityJson lookup, and signOut() clears the delegate from memory
+  // which causes KeyStorageCoordinator to overwrite stored keys with null.
+  final savedIdentityJson = signInState.hasIdentity ? signInState.identityJson : null;
+  final savedEndpoint = signInState.endpoint;
+  final savedDelegateKeyPair = signInState.delegateKeyPair;
+  final savedMethod = signInState.signInMethod;
+
+  // Clear static caches of Statements and Jsonish
+  // Because optimistic concurrency failure implies our local history is wrong.
+  Jsonish.wipeCache();
+  ContentStatement.clearCache();
+  DismissStatement.clearCache();
+  TrustStatement.clearCache();
+
+  // signOut clears the delegate, which triggers FeedController.refresh()
+  // via its _onSignInStateChanged listener (delegate changed → refresh).
+  // The FeedController itself is NOT destroyed; it stays alive and re-fetches
+  // from Firestore now that the static caches are empty.
+  signInState.signOut(clearIdentity: false);
+
+  // Re-sign-in immediately with the saved delegate so the user remains
+  // fully signed in after the reload, rather than identity-only.
+  // Note: signInWithFedKey resets povNotifier to identity (any custom PoV is lost),
+  // and triggers a second FeedController.refresh() with the restored delegate.
+  if (savedIdentityJson != null && savedDelegateKeyPair != null) {
+    final fedKey = FedKey(savedIdentityJson, savedEndpoint);
+    await signInState.signInWithFedKey(fedKey, savedDelegateKeyPair, method: savedMethod);
+  }
+}
+
+/// Called when a background network write fails. Shows a non-dismissible reload
+/// dialog — state is inconsistent and there is no safe way to continue.
+///
+/// Passed to [ChannelFactory.onWriteError]. The infrastructure has already cleared
+/// its own caches; [_nerdsterReload] handles app-level cleanup (statement caches,
+/// sign-in state) when the user confirms.
+Future<void> Function(Object) nerdsterWriteErrorFunc = (_) async {
+  final context = navigatorKey.currentContext;
+  if (context == null) return;
+
+  await showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      title: const Text('Write Failed'),
+      content: const Text(
+        'A background write to the server failed.\n\n'
+        'The app is in an inconsistent state and must reload.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () async {
+            Navigator.of(context).pop();
+            await _nerdsterReload();
+          },
+          child: const Text('Reload'),
+        ),
+      ],
+    ),
+  );
+};
+
 VoidCallback nerdsterOptimisticConcurrencyFunc = () {
   final context = navigatorKey.currentContext;
   if (context == null) return;
@@ -38,38 +102,7 @@ VoidCallback nerdsterOptimisticConcurrencyFunc = () {
         TextButton(
           onPressed: () async {
             Navigator.of(context).pop();
-
-            // Save credentials BEFORE wiping caches — Jsonish.wipeCache() would
-            // break identityJson lookup, and signOut() clears the delegate from memory
-            // which causes KeyStorageCoordinator to overwrite stored keys with null.
-            final savedIdentityJson =
-                signInState.hasIdentity ? signInState.identityJson : null;
-            final savedEndpoint = signInState.endpoint;
-            final savedDelegateKeyPair = signInState.delegateKeyPair;
-            final savedMethod = signInState.signInMethod;
-
-            // Clear static caches of Statements and Jsonish
-            // Because optimistic concurrency failure implies our local history is wrong.
-            Jsonish.wipeCache();
-            ContentStatement.clearCache();
-            DismissStatement.clearCache();
-            TrustStatement.clearCache();
-
-            // signOut clears the delegate, which triggers FeedController.refresh()
-            // via its _onSignInStateChanged listener (delegate changed → refresh).
-            // The FeedController itself is NOT destroyed; it stays alive and re-fetches
-            // from Firestore now that the static caches are empty.
-            signInState.signOut(clearIdentity: false);
-
-            // Re-sign-in immediately with the saved delegate so the user remains
-            // fully signed in after the reload, rather than identity-only.
-            // Note: signInWithFedKey resets povNotifier to identity (any custom PoV is lost),
-            // and triggers a second FeedController.refresh() with the restored delegate.
-            if (savedIdentityJson != null && savedDelegateKeyPair != null) {
-              final fedKey = FedKey(savedIdentityJson, savedEndpoint);
-              await signInState.signInWithFedKey(fedKey, savedDelegateKeyPair,
-                  method: savedMethod);
-            }
+            await _nerdsterReload();
           },
           child: const Text('Reload'),
         ),

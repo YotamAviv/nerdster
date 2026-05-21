@@ -19,12 +19,14 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
   final List<String> allStreams;
   final StatementVerifier verifier;
   final ValueListenable<bool>? skipVerify;
+  final List<String> excludeTypes;
 
   DirectFirestoreSource(this._fire,
       {this.streamId = 'statements',
       this.allStreams = const ['statements'],
       StatementVerifier? verifier,
-      this.skipVerify})
+      this.skipVerify,
+      this.excludeTypes = const []})
       : verifier = verifier ?? OouVerifier();
 
   final List<SourceError> _errors = [];
@@ -132,6 +134,9 @@ class DirectFirestoreSource<T extends Statement> implements StatementSource<T> {
           }
         }
 
+        if (excludeTypes.isNotEmpty) {
+          chain.removeWhere((s) => excludeTypes.contains(s['statement']));
+        }
         results[token] = List.unmodifiable(chain);
       } catch (e) {
         if (e is SourceError) {

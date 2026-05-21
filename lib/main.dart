@@ -116,7 +116,8 @@ Future<void> main() async {
   }
 
   channelFactory = ChannelFactory(resolvedFireChoice,
-      skipVerify: Setting.get<bool>(SettingType.skipVerify));
+      skipVerify: Setting.get<bool>(SettingType.skipVerify),
+      onWriteError: nerdsterWriteErrorFunc);
   channelFactory.register('nerdster.org', firestore: nerdsterFirestore);
   channelFactory.register('one-of-us.net', firestore: oneofusFirestore);
   if (karennetFirestore != null) {

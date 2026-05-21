@@ -36,8 +36,8 @@ void main() {
     final s1 = await push(ch, mockKey('C'), time: DateTime.parse('2023-01-01T00:00:00Z'));
     final s2 = await push(ch, mockKey('D'), time: DateTime.parse('2023-01-02T00:00:00Z'));
 
-    // Start fresh so there's no full cache.
-    channelFactory.clearCache();
+    // clear() drains pending writes before wiping the cache — Firestore is current.
+    await channelFactory.clearCache();
     final ch2 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
 
     // 1. Fetch partial history (up to s1).
@@ -71,8 +71,8 @@ void main() {
     final s1 = await push(ch, mockKey('C'), time: DateTime.parse('2023-01-01T00:00:00Z'));
     await push(ch, mockKey('D'), time: DateTime.parse('2023-01-02T00:00:00Z'));
 
-    // Start fresh so we can observe partial vs full caching.
-    channelFactory.clearCache();
+    // clear() drains pending writes before wiping the cache.
+    await channelFactory.clearCache();
     final ch2 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
 
     // Full fetch.

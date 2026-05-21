@@ -319,10 +319,12 @@ class FeedController extends ValueNotifier<FeedModel?> {
     }
   }
 
-  Future<void> refresh() {
-    trustSource.clear();
-    contentSource.clear();
-    _peerContentChannel.clear();
+  Future<void> refresh() async {
+    await Future.wait([
+      trustSource.clear(),
+      contentSource.clear(),
+      _peerContentChannel.clear(),
+    ]);
     return _load();
   }
 

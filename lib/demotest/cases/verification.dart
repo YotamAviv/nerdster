@@ -21,6 +21,10 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> basicScenario({
   await marge.trust(lisa, moniker: 'lisa');
   await marge.trust(bart, moniker: 'bart');
 
+  // Drain pending writes so Firestore is current before the pipeline reads from it.
+  // (push() returns after local inject; the network write is still in-flight.)
+  await channelFactory.clearCache();
+
   final src = source ?? channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
   final pipeline = TrustPipeline(src);
   final graph = await pipeline.build(marge.id);

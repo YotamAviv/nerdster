@@ -6,7 +6,6 @@ import 'package:nerdster/logic/follow_logic.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
-import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
 
 void main() {
@@ -18,15 +17,6 @@ void main() {
     setUpTestRegistry(firestore: fire);
     contentSource = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']);
   });
-
-  Future<void> upload(String token, Statement s) async {
-    await fire
-        .collection(token)
-        .doc('statements')
-        .collection('statements')
-        .doc(s.token)
-        .set(s.jsonish.json);
-  }
 
   test('DelegateResolver: Revoked delegate is still claimed by revoker (Proximity wins)', () async {
     final DemoIdentityKey sideshow = await DemoIdentityKey.create('sideshow');
@@ -108,10 +98,7 @@ void main() {
 
     // 1. Delegate signs two statements
     final ContentStatement s1 = await delegate.doRate(title: 'Good');
-    final ContentStatement s2 = await delegate.doRate(title: 'Bad');
-
-    await upload(delegate.token, s1);
-    await upload(delegate.token, s2);
+    await delegate.doRate(title: 'Bad');
 
     // 2. Alice delegates to delegate
     final TrustStatement d1 = await alice.delegate(delegate, domain: 'nerdster.org');
@@ -135,7 +122,8 @@ void main() {
 
     expect(resolver.getConstraintForDelegate(delegate.id), equals(ContentKey(s1.token)));
 
-    // 4. Fetch content
+    // 4. Fetch content (drain pending writes so Firestore is current)
+    await channelFactory.clearCache();
     final pipeline = ContentPipeline(
       myDelegateSource: contentSource,
       peerDelegateSource: contentSource,
@@ -157,8 +145,7 @@ void main() {
     final DemoIdentityKey bob = await DemoIdentityKey.create('bob');
     final delegate = await DemoDelegateKey.create('delegate2');
 
-    final ContentStatement s1 = await delegate.doRate(title: 'Something');
-    await upload(delegate.token, s1);
+    await delegate.doRate(title: 'Something');
 
     final TrustStatement d1 = await bob.delegate(delegate, domain: 'nerdster.org');
     final TrustStatement d2 =
@@ -178,6 +165,7 @@ void main() {
 
     expect(resolver.getConstraintForDelegate(delegate.id), equals(kSinceAlways));
 
+    await channelFactory.clearCache();
     final pipeline = ContentPipeline(
       myDelegateSource: contentSource,
       peerDelegateSource: contentSource,
@@ -224,7 +212,6 @@ void main() {
 
     // 1. Delegate signs a statement (S1)
     final ContentStatement s1 = await delegate.doRate(title: 'Before Revocation');
-    await upload(delegate.token, s1);
 
     // 2. Bob delegates to delegate
     final TrustStatement d1 = await bob.delegate(delegate, domain: 'nerdster.org');
@@ -235,7 +222,6 @@ void main() {
 
     // 4. Delegate signs another statement (S2) AFTER revocation
     final ContentStatement s2 = await delegate.doRate(title: 'After Revocation');
-    await upload(delegate.token, s2);
 
     final TrustGraph tg = TrustGraph(
       pov: bob.id,
@@ -253,7 +239,8 @@ void main() {
     expect(resolver.getIdentityForDelegate(delegate.id), equals(bob.id));
     expect(resolver.getConstraintForDelegate(delegate.id), equals(IdentityKey(s1.token)));
 
-    // Verify content filtering
+    // Verify content filtering (drain pending writes so Firestore is current)
+    await channelFactory.clearCache();
     final pipeline = ContentPipeline(
       myDelegateSource: contentSource,
       peerDelegateSource: contentSource,

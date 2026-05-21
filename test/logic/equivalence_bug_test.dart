@@ -42,6 +42,9 @@ void main() {
       delegateKeysToFetch.addAll(delegateResolver.getDelegatesForIdentity(identity));
     }
 
+    // Drain pending background writes so Firestore is current before fetching via appSource.
+    await channelFactory.clearCache();
+
     final Map<DelegateKey, List<ContentStatement>> delegateContent =
         await contentPipeline.fetchDelegateContent(
       const [],
@@ -148,6 +151,8 @@ void main() {
     // These expects demonstrate the "Happy Path". If the bug exists, these will fail.
 
     // 5. Clear Rating for A
+    // clearCache() above wiped the write channel's cache; re-prime it from Firestore before pushing.
+    await channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements').fetch({poserN.token: null});
     final sA = statements[0];
     await poserN!.doRate(subject: sA.subject, verb: ContentVerb.clear);
 

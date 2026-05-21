@@ -36,20 +36,21 @@ class _Registration {
 /// wherever a stream is needed. All fireChoice branching is contained here;
 /// no other code in the app should branch on fireChoice.
 ///
-/// ## Architecture: FilteredChannel over a shared root
+/// ## Architecture: per-config roots with inject fanout
 ///
-/// Each domain/streamKey has exactly one root [_CachedSource<Statement>] that fetches
-/// and caches ALL statement types from that stream. [getChannel<T>] returns a
-/// [FilteredChannel<T>] that is a lightweight facade:
-///   - reads: delegates to root and filters results to type T via `whereType<T>()`
-///   - writes: delegates directly to root so head tracking is always correct
+/// Each unique (exportUrl, streamKey, excludeTypes, distinct) gets its own
+/// [_CachedSource<Statement>] root. [getChannel<T>] returns a [FilteredChannel<T>]
+/// backed by the matching root:
+///   - reads: delegates to root and filters to type T via `whereType<T>()`
+///   - writes: delegates to root so head tracking is always on the root
 ///
-/// This ensures optimistic locking works correctly in mixed-type streams
-/// (e.g. both ContentStatements and DismissStatements in statements/statements),
-/// because head tracking is centralised in the single root channel.
+/// [excludeTypes] is passed to the server (server-side filtering); [FilteredChannel]
+/// also filters locally so the typed view never sees excluded types.
 ///
-/// The [excludeTypes] parameter is accepted for call-site compatibility but
-/// ignored: type filtering is performed locally by [FilteredChannel].
+/// When a root injects an optimistic write, it fans out to every other root for the
+/// same stream so the statement is immediately visible in all channels regardless of
+/// excludeTypes. Fanout is skipped for a sibling that has not yet fetched the issuer
+/// (no fetch-to-satisfy) and for statement types that are excluded by the sibling.
 late ChannelFactory channelFactory;
 
 class ChannelFactory {
@@ -57,10 +58,29 @@ class ChannelFactory {
   final ValueListenable<bool>? skipVerify;
   final Map<String, _Registration> _registrations = {};
 
-  /// One root channel per exportUrl/streamKey; all typed FilteredChannels share these.
+  /// One root per unique (exportUrl, streamKey, excludeTypes, distinct) combination.
   final Map<String, _CachedSource<Statement>> _rootChannels = {};
 
-  ChannelFactory(this.fireChoice, {this.skipVerify});
+  /// All roots for a given exportUrl/streamKey, across all excludeTypes/distinct variants.
+  /// Used to fan out optimistic injects across all roots for the same stream.
+  final Map<String, List<_CachedSource<Statement>>> _streamRoots = {};
+
+  /// For unit tests only: substitutes this writer into every new root channel instead
+  /// of the default. Set before calling [getChannel]. Does not affect already-created roots.
+  @visibleForTesting
+  StatementWriter<Statement>? testWriterOverride;
+
+  /// Called when a background network write fails. The infrastructure has already cleared
+  /// its own caches before calling this; the app must clean up its own state
+  /// (e.g. statement caches, Jsonish cache, sign-in state) and prompt the user to reload.
+  ///
+  /// Must be [Future<void>] — the infrastructure awaits it so the UI can finish recovery
+  /// before any further operations proceed.
+  ///
+  /// If null and a write fails, [FlutterError.reportError] is called (crashes in debug).
+  Future<void> Function(Object)? onWriteError;
+
+  ChannelFactory(this.fireChoice, {this.skipVerify, this.onWriteError});
 
   final Map<String, String> _redirects = {};
 
@@ -91,12 +111,14 @@ class ChannelFactory {
   /// Translates a canonical prod URL to the active environment's equivalent.
   String resolveUrl(String url) => _redirects[url] ?? url;
 
-  /// Returns a [FilteredChannel<T>] backed by a shared root for [exportUrl]/[streamKey].
+  /// Returns a [FilteredChannel<T>] backed by a root for [exportUrl]/[streamKey].
   ///
-  /// Roots are keyed by exportUrl, streamKey, and excludeTypes together, so channels with
-  /// different excludeTypes get different roots and different CF fetch configurations.
-  /// Writable channels must share the same root — always use the same excludeTypes
-  /// (typically none) for channels that call push().
+  /// Each unique (exportUrl, streamKey, excludeTypes, distinct) gets its own root.
+  /// [excludeTypes] is passed to the server so it omits those types from responses.
+  /// Type filtering is also applied locally by [FilteredChannel] via [whereType<T>()].
+  ///
+  /// Optimistic injects are fanned out across all roots for the same stream so
+  /// that a write through any channel is immediately visible in all channels.
   StatementChannel<T> getChannel<T extends Statement>(
     String exportUrl,
     String streamKey, {
@@ -124,16 +146,22 @@ class ChannelFactory {
   _CachedSource<Statement> _createRoot(String exportUrl, String streamKey,
       {List<String> excludeTypes = const [], bool distinct = true}) {
     final reg = _registrations[exportUrl];
+    final streamKey2 = '$exportUrl/$streamKey';
+    final siblings = _streamRoots.putIfAbsent(streamKey2, () => []);
+
+    final _CachedSource<Statement> root;
     if (fireChoice == FireChoice.fake) {
       assert(reg?.firestore != null,
           'register() with firestore required for "$exportUrl" in fake mode');
       final source = DirectFirestoreSource<Statement>(reg!.firestore!,
           streamId: streamKey,
           allStreams: const ['statements'],
-          skipVerify: skipVerify);
-      final writer =
+          skipVerify: skipVerify,
+          excludeTypes: excludeTypes);
+      final writer = testWriterOverride ??
           DirectFirestoreWriter<Statement>(reg.firestore!, streamId: streamKey);
-      return _CachedSource<Statement>(source, writer, null, distinct);
+      root = _CachedSource<Statement>(source, writer, () => onWriteError, () => siblings,
+          excludeTypes: excludeTypes, distinct: distinct);
     } else {
       final domain = reg?.domain ?? _domainOf(exportUrl);
       final source = _CloudFunctionsSource<Statement>(
@@ -144,13 +172,17 @@ class ChannelFactory {
         excludeTypes: excludeTypes,
         paramsOverride: {'omit': <String>[], 'distinct': distinct ? 'true' : 'false'},
       );
-      final writer = _CloudFunctionsWriter<Statement>(
-        resolveUrl('https://write.$domain'),
-        streamKey,
-        authHook: reg?.writeAuthHook,
-      );
-      return _CachedSource<Statement>(source, writer, null, distinct);
+      final writer = testWriterOverride ??
+          _CloudFunctionsWriter<Statement>(
+            resolveUrl('https://write.$domain'),
+            streamKey,
+            authHook: reg?.writeAuthHook,
+          );
+      root = _CachedSource<Statement>(source, writer, () => onWriteError, () => siblings,
+          excludeTypes: excludeTypes, distinct: distinct);
     }
+    siblings.add(root);
+    return root;
   }
 
   /// DEV/INTEGRATION TESTING ONLY.
@@ -176,12 +208,14 @@ class ChannelFactory {
   /// Returns the raw Firestore instance registered for [domain], or null if none.
   FirebaseFirestore? firestoreFor(String exportUrl) => _registrations[exportUrl]?.firestore;
 
-  /// Clears all root channel caches. Does not affect underlying Firestore data.
-  void clearCache() {
+  /// Creates a new [ChannelFactory] with the same [fireChoice], [skipVerify],
+/// Clears all root channel caches. Does not affect underlying Firestore data.
+  Future<void> clearCache() async {
     for (final ch in _rootChannels.values) {
-      ch.clear();
+      await ch.clear();
     }
     _rootChannels.clear();
+    _streamRoots.clear();
   }
 }
 
@@ -190,6 +224,19 @@ class ChannelFactory {
 class _CachedSource<T extends Statement> implements StatementChannel<T> {
   final StatementSource<T> _source;
   final StatementWriter<T>? _writer;
+
+  /// Late-bound getter: read at error time so tests can swap [ChannelFactory.onWriteError].
+  final Future<void> Function(Object)? Function() _getOnWriteError;
+
+  /// Late-bound: returns all roots for this stream (including self). Read at inject time
+  /// so newly registered siblings are always visible.
+  final List<_CachedSource<Statement>> Function() _getSiblings;
+
+  /// Statement type strings this root does not store (server-side filtered).
+  /// Used by [_injectFromSibling] to skip statements of excluded types.
+  final List<String> _excludeTypes;
+
+  final VoidCallback? optimisticConcurrencyFunc;
   final bool _distinct;
 
   final Map<String, List<T>> _fullCache = {};
@@ -197,16 +244,21 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
   final Map<String, SourceError> _errorCache = {};
   final Map<String, Future<void>> _pushQueues = {};
 
-  final VoidCallback? optimisticConcurrencyFunc;
-
-  _CachedSource(this._source, [this._writer, this.optimisticConcurrencyFunc, bool distinct = true])
-      : _distinct = distinct;
+  _CachedSource(this._source, this._writer, this._getOnWriteError, this._getSiblings, {
+    List<String> excludeTypes = const [],
+    this.optimisticConcurrencyFunc,
+    bool distinct = true,
+  }) : _excludeTypes = excludeTypes, _distinct = distinct;
 
   @override
   List<SourceError> get errors => List.unmodifiable(_errorCache.values);
 
   @override
-  void clear() {
+  @override
+  Future<void> clear() async {
+    for (final f in List.of(_pushQueues.values)) {
+      await f.catchError((_) {});
+    }
     _fullCache.clear();
     _partialCache.clear();
     _errorCache.clear();
@@ -233,19 +285,56 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
         final ExpectedPrevious head = _fullCache[issuerId]!.isEmpty
             ? const ExpectedPrevious(null)
             : ExpectedPrevious(_fullCache[issuerId]!.first.token);
-        final T statement = await _writer.push(json, signer,
-            previous: head,
-            optimisticConcurrencyFailed: optimisticConcurrencyFailed ?? optimisticConcurrencyFunc);
+
+        // Sign locally and inject into cache so the UI can update without waiting.
+        final Json jsonWithPrevious = Map.from(json);
+        if (head.token != null) jsonWithPrevious['previous'] = head.token!;
+        final Jsonish jsonish = await Jsonish.makeSign(jsonWithPrevious, signer);
+        final T statement = Statement.make(jsonish) as T;
         _inject(statement);
         completer.complete(statement);
+
+        // Await the network write — the queue chain stays here until the write
+        // completes so that the next push reads the correct head from Firestore.
+        try {
+          await _writer.push(json, signer,
+              previous: head,
+              optimisticConcurrencyFailed: optimisticConcurrencyFailed ?? optimisticConcurrencyFunc);
+        } catch (e, stack) {
+          // Clear own state before calling the handler so clearCache() called
+          // from within the handler doesn't deadlock on these push queues.
+          _fullCache.clear();
+          _partialCache.clear();
+          _errorCache.clear();
+          _pushQueues.clear();
+          final handler = _getOnWriteError();
+          if (handler != null) {
+            await handler(e);
+          } else {
+            FlutterError.reportError(FlutterErrorDetails(
+              exception: e,
+              stack: stack,
+              library: 'oneofus_common',
+              context: ErrorDescription('background write failed with no onWriteError handler registered on ChannelFactory'),
+            ));
+          }
+        }
       } catch (e, stack) {
-        completer.completeError(e, stack);
+        if (!completer.isCompleted) completer.completeError(e, stack);
       }
     });
     return completer.future;
   }
 
   void _inject(T statement) {
+    _injectLocal(statement);
+    for (final sibling in _getSiblings()) {
+      if (sibling == this) continue;
+      sibling._injectFromSibling(statement);
+    }
+  }
+
+  void _injectLocal(T statement) {
     assert(statement.iToken.isNotEmpty);
     final String token = statement.iToken;
     if (!_fullCache.containsKey(token)) return;
@@ -269,6 +358,25 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
       history.removeWhere((s) => s != statement && s.getDistinctSignature() == sig);
     }
     _fullCache[token] = history;
+  }
+
+  /// Fanout inject from a sibling root. Does not check the `previous` chain because
+  /// sibling caches may diverge when excludeTypes differ (e.g. a sibling that omits
+  /// dismiss statements has a different chain head than the writing root). Simply
+  /// inserts at head — new statements always have the latest time.
+  void _injectFromSibling(Statement statement) {
+    if (_excludeTypes.contains(statement['statement'])) return;
+    final String iToken = statement.iToken;
+    if (!_fullCache.containsKey(iToken)) return;
+    final T? typed = statement is T ? statement : null;
+    if (typed == null) return;
+    final List<T> history = List.of(_fullCache[iToken]!);
+    history.insert(0, typed);
+    if (_distinct) {
+      final String sig = typed.getDistinctSignature();
+      history.removeWhere((s) => s != typed && s.getDistinctSignature() == sig);
+    }
+    _fullCache[iToken] = history;
   }
 
   @override

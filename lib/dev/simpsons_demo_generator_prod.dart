@@ -33,7 +33,7 @@ Future<void> _generateDemoData() async {
   TrustStatement.init();
   ContentStatement.init();
   DismissStatement.init();
-  channelFactory.clearCache();
+  await channelFactory.clearCache();
   DemoKey.reset();
 
   await simpsonsDemo();
