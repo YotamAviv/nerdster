@@ -87,7 +87,11 @@ Every write must be signed with the private key of the issuing identity or deleg
 
 ### Type exclusion — server-filtered, read-only
 
-A channel can be opened asking the server to omit certain statement types (e.g., dismissals). Filtering happens on the server — excluded types are never transferred, saving bandwidth. There is at most one channel per stream key; if type exclusion is specified, that is the channel for that stream. Channels with type exclusion are read-only; writes go through an unrestricted channel.
+A channel can be opened asking the server to omit certain statement types. Filtering happens on the server — excluded types are never transferred. This matters for bandwidth: in Nerdster, users dismiss thousands of items but rate dozens, so fetching peer content without dismiss statements saves significant data. Each token is fetched through exactly one channel — the signed-in user's stream through the full channel, peer streams through the no-dismiss channel. Channels with type exclusion are read-only; writes go through the full channel.
+
+### Two roots for the same stream
+
+A stream may be opened with two different configurations (e.g., distinct=true and distinct=false for the same token). In this case the same token appears in both roots and a write through one must fan out to the other so both stay current. The distinct=false root (full history view, e.g. for a key-replacement flow) should be read-only; writes go through the distinct=true root.
 
 ### Change of point of view
 
@@ -140,6 +144,8 @@ Tests must verify not just correct results but that the infrastructure achieves 
 | distinct=true: a new statement about the same subject(s) supersedes the previous one | covered |
 
 ### Missing
+
+- **Fanout between distinct variants**: when the same token is open in both distinct=true and distinct=false roots, a write through the distinct=true root must be immediately visible in the distinct=false root without a re-read. Not yet tested.
 
 - **No over-reading after a write**: after a write, reading from the same channel must not go back to the server. The written data is already there.
 
