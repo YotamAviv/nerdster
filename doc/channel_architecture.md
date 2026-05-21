@@ -16,6 +16,25 @@
 
 7. **`clear()` means "sync with the server."** It drains pending writes so the server is current, then wipes the local cache so the next read comes from the server.
 
+
+My (human) updates:
+
+- Test should test the infrastructure using the API the way callers do. If tests fail, fix the infrastructure, not the tests.
+
+- Optimistic concurrency means something, and it's important. A caller with a stale cache cannot be allowed to write.
+
+- Optimistic concurrency is there to make the UI responsive, like AJAX. The whole point is to succeed quickly. If we fail later, it's okay to crash.
+
+- excludeTypes is important. That said, channels don't have to support every possible use. In our case, channels with an excludeType can be read-only. We don't need to bend over backwards to support that.
+
+- The UI has a "refresh" button for a reason, and it should be async, clear the cache of any pending writes (flush) and then load. We should not refresh for no good reason.
+
+- Much of the code is old and can be removed.
+  - We should do a pass and toss out some old functionality (eg. dumpStatements)
+  - We should figure out what needs to be tested, document that as a doc and then make sure the tests exactly what we want to test. We don't need to maintain irrelevant tests.
+    - Partial identity revokeAt is gone, for example.
+    - We're done figuring out GreedyBFS. We should test it but as much as we were when we didn't understand it.
+
 ---
 
 ## The Core Invariant
