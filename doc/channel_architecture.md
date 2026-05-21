@@ -48,6 +48,10 @@ Immediate goal:
     - Partial identity revokeAt is gone, for example.
     - We're done figuring out GreedyBFS. We should test it but as much as we were when we didn't understand it.
 
+- Supported use case - changing PoV
+When we change Point of View, there may be some new channels that we need to have fetch, some that were fetched but now respect a different revokeAt statement, some that are no longer used.
+We don't want to be wasteful and fetch it all from scratch, but it's okay to not be perfect; for example, if we had a channel fetched until a revokeAt value and now we have a different revokeAt value from a new PoV, it's okay to re-fetch the whole thing, but it's not okay to re-fetch everything.
+
 ---
 
 ## The Core Invariant
