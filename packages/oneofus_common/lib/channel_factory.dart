@@ -156,7 +156,8 @@ class ChannelFactory {
       final source = DirectFirestoreSource<Statement>(reg!.firestore!,
           streamId: streamKey,
           allStreams: const ['statements'],
-          skipVerify: skipVerify);
+          skipVerify: skipVerify,
+          excludeTypes: excludeTypes);
       final writer = testWriterOverride ??
           DirectFirestoreWriter<Statement>(reg.firestore!, streamId: streamKey);
       root = _CachedSource<Statement>(source, writer, () => onWriteError, () => siblings,
@@ -208,24 +209,7 @@ class ChannelFactory {
   FirebaseFirestore? firestoreFor(String exportUrl) => _registrations[exportUrl]?.firestore;
 
   /// Creates a new [ChannelFactory] with the same [fireChoice], [skipVerify],
-  /// registrations, and redirects, but with empty root and sibling caches.
-  ///
-  /// Use this when you need a fully independent client — one whose optimistic
-  /// injects do not fan out to the original factory's channels. Typical use:
-  /// testing previous-conflict or concurrent-write scenarios where two clients
-  /// must start with divergent cached state.
-  ChannelFactory fork() {
-    final f = ChannelFactory(fireChoice, skipVerify: skipVerify);
-    for (final e in _registrations.entries) {
-      f._registrations[e.key] = e.value;
-    }
-    for (final e in _redirects.entries) {
-      f.registerRedirect(e.key, e.value);
-    }
-    return f;
-  }
-
-  /// Clears all root channel caches. Does not affect underlying Firestore data.
+/// Clears all root channel caches. Does not affect underlying Firestore data.
   Future<void> clearCache() async {
     for (final ch in _rootChannels.values) {
       await ch.clear();

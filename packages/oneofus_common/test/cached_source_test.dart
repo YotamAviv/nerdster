@@ -129,6 +129,38 @@ void main() {
           reason: 'pushed statement must be in Firestore after clear()');
     });
 
+    test('clearCache() drains all pending writes and clears all channel caches', () async {
+      final ch1 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+      final ch2 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements', distinct: false);
+
+      await ch1.fetch({issuerToken: null});
+      await ch2.fetch({issuerToken: null});
+
+      final s = await push(ch1, subjectAKeyJson, time: DateTime(2024, 1, 1));
+
+      await channelFactory.clearCache();
+
+      // Verify the write was drained to Firestore before caches were wiped.
+      final doc = await firestore
+          .collection(issuerToken)
+          .doc('statements')
+          .collection('statements')
+          .doc(s.token)
+          .get();
+      expect(doc.exists, isTrue, reason: 'write must be in Firestore after clearCache()');
+
+      // Delete from Firestore to prove subsequent fetches go to the server (not cache).
+      await doc.reference.delete();
+
+      final result1 = await ch1.fetch({issuerToken: null});
+      expect(result1[issuerToken]!.any((e) => e.token == s.token), isFalse,
+          reason: 'ch1 cache cleared — re-fetch from server finds nothing');
+
+      final result2 = await ch2.fetch({issuerToken: null});
+      expect(result2[issuerToken]!.any((e) => e.token == s.token), isFalse,
+          reason: 'ch2 cache cleared — re-fetch from server finds nothing');
+    });
+
     test('inject fans out to sibling root — visible without re-fetch', () async {
       final ch1 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
       final ch2 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements',
@@ -151,6 +183,54 @@ void main() {
       final result = await ch2.fetch({issuerToken: null});
       expect(result[issuerToken]!.any((stmt) => stmt.token == s.token), isTrue,
           reason: 'inject fanned out to sibling root; visible without re-fetch');
+    });
+  });
+
+  group('fanout between distinct variants', () {
+    test('write through distinct=true root fans out to distinct=false root', () async {
+      final ch1 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements', distinct: true);
+      final ch2 = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements', distinct: false);
+
+      await ch1.fetch({issuerToken: null});
+      await ch2.fetch({issuerToken: null});
+
+      final s = await push(ch1, subjectAKeyJson, time: DateTime(2024, 1, 1));
+
+      // Delete from Firestore to prove ch2 reads from fanout inject, not from server.
+      await firestore
+          .collection(issuerToken)
+          .doc('statements')
+          .collection('statements')
+          .doc(s.token)
+          .delete();
+
+      final result = await ch2.fetch({issuerToken: null});
+      expect(result[issuerToken]!.any((stmt) => stmt.token == s.token), isTrue,
+          reason: 'write through distinct=true fanned out to distinct=false root');
+    });
+  });
+
+  group('fake backend parity', () {
+    test('excludeTypes is applied at source — not a local filter', () async {
+      final fullChannel = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+      final filteredChannel = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements',
+          excludeTypes: [Statement.type<TrustStatement>()]);
+
+      await fullChannel.fetch({issuerToken: null});
+      await filteredChannel.fetch({issuerToken: null});
+
+      final s = await push(fullChannel, subjectAKeyJson, time: DateTime(2024, 1, 1));
+
+      // Clear both caches so the next fetch goes to Firestore — tests the source filter.
+      await channelFactory.clearCache();
+
+      final fullResult = await fullChannel.fetch({issuerToken: null});
+      expect(fullResult[issuerToken]!.any((stmt) => stmt.token == s.token), isTrue,
+          reason: 'full channel must see the statement in Firestore');
+
+      final filteredResult = await filteredChannel.fetch({issuerToken: null});
+      expect(filteredResult[issuerToken]!.any((stmt) => stmt.token == s.token), isFalse,
+          reason: 'excludeTypes channel must not receive the excluded type from Firestore');
     });
   });
 

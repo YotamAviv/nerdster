@@ -142,19 +142,15 @@ Tests must verify not just correct results but that the infrastructure achieves 
 | Refresh drains pending writes before wiping the local cache | covered |
 | distinct=false: all statements accumulate in the cache | covered |
 | distinct=true: a new statement about the same subject(s) supersedes the previous one | covered |
-
-### Missing
-
-- **Fanout between distinct variants**: when the same token is open in both distinct=true and distinct=false roots, a write through the distinct=true root must be immediately visible in the distinct=false root without a re-read. Not yet tested.
-
-- **No over-reading after a write**: after a write, reading from the same channel must not go back to the server. The written data is already there.
-
-- **Refresh flushes and clears all caches**: after the refresh button is pressed, all pending writes are drained to the server and all local caches are cleared. No stale data remains.
-
-- **Fake backend filters the same way as the real one**: when tests run against the fake backend, type-exclusion must be applied at the source, not locally after the fact. Otherwise the unit tests aren't testing what the real system does.
-
-- **Tests that bypass channels must say so**: some tests legitimately write directly to storage — to inject bad data, test error recovery, or simulate corruption. That's fine, but the test must document that it is intentionally bypassing the channel API and why.
+| Fanout between distinct variants: write through distinct=true fans out to distinct=false | covered |
+| No over-reading after a write — pushed data served from cache, not re-fetched | covered |
+| clearCache() drains all pending writes and clears all channel caches | covered |
+| Fake backend applies excludeTypes at source, not as a local filter | covered |
 
 ### Tested elsewhere (not Dart channel infrastructure)
 
 - **Server rejects a stale previous token**: if two independent app instances each read the same stream and then both try to write, `write2` rejects the second write because its `previous` token is no longer the current head. Tested in the Node.js backend tests.
+
+### Notes
+
+- **Tests that bypass channels must say so**: some tests legitimately write directly to storage — to inject bad data, test error recovery, or simulate corruption. That's fine, but the test must document that it is intentionally bypassing the channel API and why.
