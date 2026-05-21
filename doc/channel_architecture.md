@@ -19,19 +19,32 @@
 
 My (human) updates:
 
-- Test should test the infrastructure using the API the way callers do. If tests fail, fix the infrastructure, not the tests.
+- FakeFirestore is there specifically for testing.
+It should act like the cloud variants (emulator and prod) so that we can test using unit intead of integration tests.
+It is worthwhile to make the FakeFirestore act like the other so that it can be used to test as much as possible.
 
-- Optimistic concurrency means something, and it's important. A caller with a stale cache cannot be allowed to write.
+- Test should test the infrastructure using the API the way callers do. If tests fail, fix the infrastructure, not work around broken tests.
+That said, we have tests that are not trying to test the channel infrastructure at all but are trying to test the content pipeline, the delegate resolver, tag equivalence, or something else entirely. Those tests may be trying to work around the channel infrastructure, and it's okay to, if necessary, document that and let them.
 
-- Optimistic concurrency is there to make the UI responsive, like AJAX. The whole point is to succeed quickly. If we fail later, it's okay to crash.
+- Optimistic concurrency
+  - It means something, and it's important. A caller with a stale cache cannot be allowed to write. This, too, needs to be tested.
+  - It's there to make the UI responsive, like AJAX. The whole point is to succeed quickly. If we fail later, it's okay to crash.
 
-- excludeTypes is important. That said, channels don't have to support every possible use. In our case, channels with an excludeType can be read-only. We don't need to bend over backwards to support that.
+- Some tests exist or should be added to test not just correct outcomes but that we didn't cheat to get there.
+We've had situations where the AI takes a shortcut and drops important charcteristics mentioned above (responsiveness, saving bandwith, optimistic concurrency).
+And so we need tests that use back door methods to verify that things not only give the correct result but don't violate how they're supposed to work
+  - Optimistic concurrency vioations should fail
+  - Over fetching data from the server should fail
+  - Awaiting write completion should fail
+
+- Server-sde "excludeTypes" is important. That said, channels don't have to support every possible use. In our case, channels with an excludeType can be read-only. We don't need to bend over backwards to support that.
 
 - The UI has a "refresh" button for a reason, and it should be async, clear the cache of any pending writes (flush) and then load. We should not refresh for no good reason.
 
+Immediate goal:
 - Much of the code is old and can be removed.
   - We should do a pass and toss out some old functionality (eg. dumpStatements)
-  - We should figure out what needs to be tested, document that as a doc and then make sure the tests exactly what we want to test. We don't need to maintain irrelevant tests.
+  - We should figure out what needs to be tested for channel infrastructure correctness, document that as a doc, and then make sure we have tests to exactly what we want to test. We don't need to maintain irrelevant, older, existing tests.
     - Partial identity revokeAt is gone, for example.
     - We're done figuring out GreedyBFS. We should test it but as much as we were when we didn't understand it.
 
