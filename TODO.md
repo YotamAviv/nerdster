@@ -16,6 +16,12 @@ Semantically, if I relate A to B then that's symmetric; there is no canonical/eq
 In case we use an Equivalence object, then both will end up in the same EG and that's all we care about.
 
 Option A: Use the existing Equivalence computation:
+This would be done with another instance of the Equivalence object for relate statements.
+Use the same verbs that ContentStatement uses:
+        verb == ContentVerb.equate ||
+        verb == ContentVerb.dontEquate ||
+        verb == ContentVerb.relate ||
+        verb == ContentVerb.dontRelate ||
 Pros:
 - it exists
 Cons:
