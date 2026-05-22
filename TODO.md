@@ -61,6 +61,20 @@ and have a checkbox labled: "A is an equivalent of B"
 Then either state relate or equate.
 
 
+## Subject equate/relate: apply network-order priority (separate CL)
+
+Tags now use network-order priority for equate/relate conflicts (POV identity's statement wins;
+further identities fill in only unclaimed pairs, via `claimedPairs` Set and two `Equivalence`
+objects: `tagEquate` and `tagRelate`).
+
+Subject equate/relate still uses the old approach (newest timestamp wins across all identities,
+no network-order priority). It should get the same treatment. See `content_logic.dart` where
+`filteredStatements` feeds into `eqLogic.equate()` without per-identity distinct or
+`claimedPairs` gating.
+
+Note: existing subject-equate tests may fail once this is fixed correctly (they may be asserting
+the old wrong behavior). Expect to update them.
+
 ## Clean up the vestigial do/make split in DemoKey
 
 `makeRate`, `makeFollow`, and `makeRelate` in `DemoKey` have no external callers — they are only called by their `do*` wrappers. Inline each body directly into `doRate`, `doFollow`, and `doRelate`, then delete the `make*` methods.

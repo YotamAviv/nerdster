@@ -269,6 +269,13 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
   }
 
   OverlayEntry _buildOverlay() {
+    final RenderBox? buttonBox = context.findRenderObject() as RenderBox?;
+    final double buttonLeftX = buttonBox?.localToGlobal(Offset.zero).dx ?? 0;
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double panelWidth = (screenWidth - 16).clamp(200.0, 260.0);
+    final double rightEdge = buttonLeftX + panelWidth;
+    final double dx = rightEdge > screenWidth - 8 ? -(rightEdge - (screenWidth - 8)) : 0.0;
+
     return OverlayEntry(builder: (ctx) {
       final groups = buildTagGroups(widget.mostTags, widget.tagEquivalence);
       final canEdit = widget.controller != null && signInState.signer != null;
@@ -285,14 +292,14 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
         CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
-          offset: const Offset(0, 36),
+          offset: Offset(dx, 36),
           child: Align(
             alignment: Alignment.topLeft,
             child: Material(
               elevation: 6,
               borderRadius: BorderRadius.circular(8),
               child: SizedBox(
-                width: 260,
+                width: panelWidth,
                 height: 320,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
@@ -374,7 +381,7 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
 
 // ─── Panel ────────────────────────────────────────────────────────────────────
 
-class _TagPanel extends StatelessWidget {
+class _TagPanel extends StatefulWidget {
   final Map<String, Set<String>> groups;
   final Equivalence tagRelate;
   final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements;
@@ -403,12 +410,44 @@ class _TagPanel extends StatelessWidget {
     required this.onShield,
   });
 
+  @override
+  State<_TagPanel> createState() => _TagPanelState();
+}
+
+class _TagPanelState extends State<_TagPanel> {
+  final ScrollController _scrollController = ScrollController();
+  Timer? _scrollTimer;
+
+  @override
+  void dispose() {
+    _scrollTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _startScrolling(double direction) {
+    if (_scrollTimer?.isActive ?? false) return;
+    _scrollTimer = Timer.periodic(const Duration(milliseconds: 16), (_) {
+      if (!_scrollController.hasClients) return;
+      final current = _scrollController.offset;
+      final max = _scrollController.position.maxScrollExtent;
+      final next = (current + direction * 5).clamp(0.0, max);
+      if (next == current) _stopScrolling();
+      _scrollController.jumpTo(next);
+    });
+  }
+
+  void _stopScrolling() {
+    _scrollTimer?.cancel();
+    _scrollTimer = null;
+  }
+
   /// Gathers all equivalence statements for every tag in the group (deduplicated).
   List<EquivalenceStatement> _groupStatements(Set<String> groupTags) {
     final seen = <String>{};
     final result = <EquivalenceStatement>[];
     for (final tag in groupTags) {
-      for (final s in tagEquivalenceStatements[tag] ?? []) {
+      for (final s in widget.tagEquivalenceStatements[tag] ?? []) {
         if (seen.add(s.token)) result.add(s);
       }
     }
@@ -417,87 +456,117 @@ class _TagPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final entries = groups.entries.toList();
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      children: [
-        // "All" row
-        _TagRow(
-          tag: '',
-          label: 'All',
-          isActive: activeFilter == null,
-          canEdit: false,
-          onTap: () => onSelectFilter(''),
-          onDrop: null,
-        ),
-        ...entries.map((e) {
-          final canon = e.key;
-          final equivalents = (e.value.toList()..remove(canon)..sort());
-          final peers = tagRelate.peersOf(canon).toList()..sort();
-          final hasChildren = equivalents.isNotEmpty || peers.isNotEmpty;
-          final isExpanded = expanded == canon;
-          final groupStmts = _groupStatements(e.value);
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _TagRow(
-                tag: canon,
-                label: canon,
-                isActive: activeFilter == canon,
-                canEdit: canEdit,
-                onTap: () => onSelectFilter(canon),
-                hasCaret: hasChildren,
-                isExpanded: isExpanded,
-                onCaret: () => onToggleExpand(canon),
-                onDrop: canEdit ? (sourceTag) => onDrop(sourceTag, canon) : null,
-                onShield: groupStmts.isNotEmpty
-                    ? () => onShield(canon, groupStmts)
-                    : null,
-              ),
-              if (isExpanded && hasChildren)
-                Padding(
-                  padding: const EdgeInsets.only(left: 24, bottom: 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Equivalent children — light red, ≠ button
-                      ...equivalents.map((eq) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(eq,
-                                style: TextStyle(
-                                    fontSize: 13, color: Colors.red.shade700)),
-                            if (canEdit)
-                              _DontEquateButton(
-                                  onPressed: () => onDontEquate(eq, canon)),
-                          ],
-                        ),
-                      )),
-                      // Related peers — light green, !~ button
-                      ...peers.map((peer) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 2),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(peer,
-                                style: TextStyle(
-                                    fontSize: 13, color: Colors.green.shade700)),
-                            if (canEdit)
-                              _DontRelateButton(
-                                  onPressed: () => onDontRelate(canon, peer)),
-                          ],
-                        ),
-                      )),
-                    ],
-                  ),
+    final entries = widget.groups.entries.toList();
+    return Stack(children: [
+      ListView(
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        children: [
+          _TagRow(
+            tag: '',
+            label: 'All',
+            isActive: widget.activeFilter == null,
+            canEdit: false,
+            onTap: () => widget.onSelectFilter(''),
+            onDrop: null,
+          ),
+          ...entries.map((e) {
+            final canon = e.key;
+            final equivalents = (e.value.toList()..remove(canon)..sort());
+            final peers = widget.tagRelate.peersOf(canon).toList()..sort();
+            final hasChildren = equivalents.isNotEmpty || peers.isNotEmpty;
+            final isExpanded = widget.expanded == canon;
+            final groupStmts = _groupStatements(e.value);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _TagRow(
+                  tag: canon,
+                  label: canon,
+                  isActive: widget.activeFilter == canon,
+                  canEdit: widget.canEdit,
+                  onTap: () => widget.onSelectFilter(canon),
+                  hasCaret: hasChildren,
+                  isExpanded: isExpanded,
+                  onCaret: () => widget.onToggleExpand(canon),
+                  onDrop: widget.canEdit ? (sourceTag) => widget.onDrop(sourceTag, canon) : null,
+                  onShield: groupStmts.isNotEmpty
+                      ? () => widget.onShield(canon, groupStmts)
+                      : null,
                 ),
-            ],
-          );
-        }),
-      ],
-    );
+                if (isExpanded && hasChildren)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 24, bottom: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Equivalent children — light red, ≠ button, tap to filter
+                        ...equivalents.map((eq) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: InkWell(
+                                  onTap: () => widget.onSelectFilter(eq),
+                                  child: Text(eq,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(fontSize: 13, color: Colors.red.shade700)),
+                                ),
+                              ),
+                              if (widget.canEdit)
+                                _DontEquateButton(onPressed: () => widget.onDontEquate(eq, canon)),
+                            ],
+                          ),
+                        )),
+                        // Related peers — light green, !~ button, tap to filter
+                        ...peers.map((peer) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: InkWell(
+                                  onTap: () => widget.onSelectFilter(peer),
+                                  child: Text(peer,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(fontSize: 13, color: Colors.green.shade700)),
+                                ),
+                              ),
+                              if (widget.canEdit)
+                                _DontRelateButton(onPressed: () => widget.onDontRelate(canon, peer)),
+                            ],
+                          ),
+                        )),
+                      ],
+                    ),
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
+      // Scroll zones: invisible DragTarget strips at top and bottom.
+      // onWillAcceptWithDetails returns false so drops still reach the row targets below.
+      Positioned(
+        top: 0, left: 0, right: 0, height: 32,
+        child: DragTarget<String>(
+          onWillAcceptWithDetails: (_) => false,
+          onMove: (_) => _startScrolling(-1),
+          onLeave: (_) => _stopScrolling(),
+          builder: (_, __, ___) => const SizedBox.expand(),
+        ),
+      ),
+      Positioned(
+        bottom: 0, left: 0, right: 0, height: 32,
+        child: DragTarget<String>(
+          onWillAcceptWithDetails: (_) => false,
+          onMove: (_) => _startScrolling(1),
+          onLeave: (_) => _stopScrolling(),
+          builder: (_, __, ___) => const SizedBox.expand(),
+        ),
+      ),
+    ]);
   }
 }
 
@@ -700,7 +769,7 @@ class _TagProvenanceDialog extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Text('"$canonical" equivalence group',
+              child: Text('"$canonical" equate and relate statements',
                   style: Theme.of(context).textTheme.titleSmall),
             ),
             const Divider(height: 1),
@@ -840,25 +909,56 @@ class _RelateEquateDialog extends StatefulWidget {
 class _RelateEquateDialogState extends State<_RelateEquateDialog> {
   bool _equate = false;
 
+  Widget _row(bool checked, String label, VoidCallback onTap) => InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: Checkbox(
+                  value: checked,
+                  onChanged: (_) => onTap(),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Flexible(child: Text(label, style: const TextStyle(fontSize: 13))),
+            ],
+          ),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('State that "${widget.sourceTag}" is related to "${widget.targetTag}"'),
-      content: CheckboxListTile(
-        value: _equate,
-        onChanged: (v) => setState(() => _equate = v ?? false),
-        title: Text('"${widget.sourceTag}" is an equivalent of "${widget.targetTag}"'),
-        controlAffinity: ListTileControlAffinity.leading,
-        contentPadding: EdgeInsets.zero,
+      contentPadding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+      actionsPadding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _row(!_equate, '"${widget.sourceTag}" is related to "${widget.targetTag}"',
+              () => setState(() => _equate = false)),
+          _row(_equate, '"${widget.sourceTag}" is an equivalent of "${widget.targetTag}"',
+              () => setState(() => _equate = true)),
+        ],
       ),
       actions: [
         TextButton(
+          style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              textStyle: const TextStyle(fontSize: 13)),
           onPressed: () => widget.onResult(null),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              textStyle: const TextStyle(fontSize: 13)),
           onPressed: () => widget.onResult(_equate),
-          child: const Text('Confirm'),
+          child: const Text('Ok'),
         ),
       ],
     );
