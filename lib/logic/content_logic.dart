@@ -91,17 +91,28 @@ ContentAggregation reduceContentAggregation(
     return true;
   }).toList();
 
-  // 3. Equivalence Grouping
+  // 3. Equivalence Grouping (network-order priority: POV identity wins for conflicting pairs)
   final Map<ContentKey, ContentKey> subjectEquivalence = {};
   final Equivalence eqLogic = Equivalence();
-  for (final ContentStatement s in filteredStatements) {
-    if (s.verb == ContentVerb.equate || s.verb == ContentVerb.dontEquate) {
+  final Set<String> subjectEquateClaimed = {};
+  for (final IdentityKey identity in followNetwork.identities) {
+    final List<Iterable<ContentStatement>> sources =
+        _collectSources(identity, delegateResolver, contentResult);
+    for (final ContentStatement s in distinct(
+      Merger.merge(sources),
+      iTransformer: (_) => identity.value,
+    ).cast<ContentStatement>()) {
+      if (s.verb != ContentVerb.equate && s.verb != ContentVerb.dontEquate) continue;
+      if (enableCensorship) {
+        if (censored.contains(s.token)) continue;
+        if (censored.contains(s.subjectToken)) continue;
+        if (s.other != null && censored.contains(getToken(s.other))) continue;
+      }
       final String s1 = s.subjectToken;
       final String s2 = getToken(s.other);
       assert(s1 != s2);
-      // It's decided!
-      // - s1 is canonical, s2 equivalent.
-      // - this statement is about both.
+      final String pairKey = ([s1, s2]..sort()).join(':');
+      if (!subjectEquateClaimed.add(pairKey)) continue;
       eqLogic.equate(s2, s1, not: s.verb == ContentVerb.dontEquate);
     }
   }
@@ -125,18 +136,34 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  // 4. Relational Discovery (Related)
+  // 4. Relational Discovery (Related) — network-order priority
   final Map<ContentKey, Set<ContentKey>> related = {};
-  for (final ContentStatement s in filteredStatements) {
-    if (s.verb == ContentVerb.relate) {
+  final Set<String> subjectRelateClaimed = {};
+  for (final IdentityKey identity in followNetwork.identities) {
+    final List<Iterable<ContentStatement>> sources =
+        _collectSources(identity, delegateResolver, contentResult);
+    for (final ContentStatement s in distinct(
+      Merger.merge(sources),
+      iTransformer: (_) => identity.value,
+    ).cast<ContentStatement>()) {
+      if (s.verb != ContentVerb.relate && s.verb != ContentVerb.dontRelate) continue;
+      if (enableCensorship) {
+        if (censored.contains(s.token)) continue;
+        if (censored.contains(s.subjectToken)) continue;
+        if (s.other != null && censored.contains(getToken(s.other))) continue;
+      }
       final ContentKey s1 =
           subjectEquivalence[ContentKey(s.subjectToken)] ?? ContentKey(s.subjectToken);
       final ContentKey s2 =
           subjectEquivalence[ContentKey(getToken(s.other))] ?? ContentKey(getToken(s.other));
-      if (s1 != s2) {
+      if (s1 == s2) continue;
+      final String pairKey = ([s1.value, s2.value]..sort()).join(':');
+      if (!subjectRelateClaimed.add(pairKey)) continue;
+      if (s.verb == ContentVerb.relate) {
         related.putIfAbsent(s1, () => {}).add(s2);
         related.putIfAbsent(s2, () => {}).add(s1);
       }
+      // dontRelate: pair is claimed but not added — relation is blocked for less-trusted identities
     }
   }
 
