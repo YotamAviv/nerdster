@@ -314,27 +314,6 @@ class DemoDelegateKey implements DemoKey {
 
   // --- Content Operations ---
 
-  Future<Json> makeRate(
-      {required dynamic subject,
-      ContentVerb verb = ContentVerb.rate,
-      String? comment,
-      bool? recommend,
-      bool? censor,
-      dynamic other}) async {
-    return ContentStatement.make(await publicKey.json, verb, subject,
-        comment: comment, recommend: recommend, censor: censor, other: other);
-  }
-
-  Future<Json> makeFollow(dynamic subject, Json contexts,
-      {ContentVerb verb = ContentVerb.follow}) async {
-    return ContentStatement.make(await publicKey.json, verb, _resolveSubject(subject),
-        contexts: contexts);
-  }
-
-  Future<Json> makeRelate(ContentVerb verb, dynamic subject, dynamic other) async {
-    return ContentStatement.make(await publicKey.json, verb, subject, other: other);
-  }
-
   static dynamic _resolveSubject(dynamic s) {
     if (s is DemoIdentityKey) return s.token;
     if (s is DemoDelegateKey) return s.token;
@@ -354,13 +333,8 @@ class DemoDelegateKey implements DemoKey {
       subject = createTestSubject(title: title);
     }
 
-    final Json json = await makeRate(
-      subject: subject!,
-      verb: verb,
-      comment: comment,
-      recommend: recommend,
-      censor: censor,
-    );
+    final Json json = ContentStatement.make(await publicKey.json, verb, subject!,
+        comment: comment, recommend: recommend, censor: censor);
 
     return _pushContent(json, export);
   }
@@ -382,7 +356,8 @@ class DemoDelegateKey implements DemoKey {
 
   Future<ContentStatement> doFollow(dynamic subject, Json contexts,
       {ContentVerb verb = ContentVerb.follow, String? export}) async {
-    final Json json = await makeFollow(subject, contexts, verb: verb);
+    final Json json = ContentStatement.make(await publicKey.json, verb, _resolveSubject(subject),
+        contexts: contexts);
     return _pushContent(json, export);
   }
 
@@ -403,7 +378,7 @@ class DemoDelegateKey implements DemoKey {
       other = createTestSubject(title: otherTitle);
     }
 
-    final Json json = await makeRelate(verb, subject!, other!);
+    final Json json = ContentStatement.make(await publicKey.json, verb, subject!, other: other!);
     return _pushContent(json, export);
   }
 

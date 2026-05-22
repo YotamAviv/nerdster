@@ -1,16 +1,9 @@
 # TODO
 
-## Clean up the vestigial do/make split in DemoKey
-
-`makeRate`, `makeFollow`, and `makeRelate` in `DemoKey` have no external callers — they are only called by their `do*` wrappers. Inline each body directly into `doRate`, `doFollow`, and `doRelate`, then delete the `make*` methods.
-
-## DemoKey shouldn't do "fetch before push" everywhere!
-
 ## Merge don't sort - check everywhere!
 
 ## Improve SimpsonsDemo tag equate/dontEquate
 Wait for context equate/dontEquate.
-
 
 ## Dead code in cloud functions: OMDB / TMDB fetchers
 
