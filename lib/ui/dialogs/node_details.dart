@@ -24,13 +24,11 @@ import 'package:url_launcher/url_launcher.dart';
 class NodeDetails extends StatefulWidget {
   final IdentityKey identity;
   final FeedController controller;
-  final ScrollController? scrollController;
 
   const NodeDetails({
     super.key,
     required this.identity,
     required this.controller,
-    this.scrollController,
   });
 
   static Future<void> show(BuildContext context, IdentityKey identity, FeedController controller) {
@@ -65,28 +63,33 @@ class _NodeDetailsState extends State<NodeDetails> {
 
   bool _isUpdating = false;
   Map<String, int> _originalContexts = {};
-  String _originalComment = '';
   final Map<String, int> _pendingContexts = {};
   TextEditingController? _autocompleteController;
-  final TextEditingController _commentController = TextEditingController();
+  int? _followsTab;
+  int? _keysTab;
 
   final ExpansibleController _followController = ExpansibleController();
   final ExpansibleController _keysController = ExpansibleController();
-  final ExpansibleController _incomingController = ExpansibleController();
-  final ExpansibleController _outgoingController = ExpansibleController();
+  final ExpansibleController _followsVouchesController = ExpansibleController();
 
   void _onExpansionChanged(bool expanded, ExpansibleController current) {
     if (expanded) {
+      if (current == _keysController && _keysTab == null) setState(() => _keysTab = 0);
+      if (current == _followsVouchesController && _followsTab == null) setState(() => _followsTab = 0);
       if (current != _followController) {
-        try {
-          _followController.collapse();
-        } catch (_) {
-          // Controller might not be attached if showing "This is you."
-        }
+        try { _followController.collapse(); } catch (_) {}
       }
-      if (current != _keysController) _keysController.collapse();
-      if (current != _incomingController) _incomingController.collapse();
-      if (current != _outgoingController) _outgoingController.collapse();
+      if (current != _keysController) {
+        _keysController.collapse();
+        setState(() => _keysTab = null);
+      }
+      if (current != _followsVouchesController) {
+        _followsVouchesController.collapse();
+        setState(() => _followsTab = null);
+      }
+    } else {
+      if (current == _keysController) setState(() => _keysTab = null);
+      if (current == _followsVouchesController) setState(() => _followsTab = null);
     }
   }
 
@@ -96,15 +99,6 @@ class _NodeDetailsState extends State<NodeDetails> {
   void initState() {
     super.initState();
     _initData();
-    _commentController.addListener(() {
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _commentController.dispose();
-    super.dispose();
   }
 
   Future<void> _initData() async {
@@ -127,9 +121,7 @@ class _NodeDetailsState extends State<NodeDetails> {
 
     if (priorStatement != null) {
       setState(() {
-        _originalComment = priorStatement!.comment ?? '';
-        _commentController.text = _originalComment;
-        if (priorStatement.contexts != null) {
+        if (priorStatement!.contexts != null) {
           _originalContexts.clear();
           _pendingContexts.clear();
           priorStatement.contexts!.forEach((k, v) {
@@ -145,28 +137,12 @@ class _NodeDetailsState extends State<NodeDetails> {
 
   bool get _hasChanges {
     final effectivePending = Map<String, int>.from(_pendingContexts)..removeWhere((k, v) => v == 0);
-    final contextsChanged = !const MapEquality().equals(_originalContexts, effectivePending);
-    final commentChanged = _commentController.text.trim() != _originalComment.trim();
-    return contextsChanged || commentChanged;
+    return !const MapEquality().equals(_originalContexts, effectivePending);
   }
 
   @override
   Widget build(BuildContext context) {
     final Labeler labeler = model.labeler;
-    // Labeler label/getLabel takes string or key? currently string
-    // Assuming labeler has getAllLabels returning List<String> or similar?
-
-    // I didn't implement getAllLabels in new Labeler!
-    // I should implement it or remove this feature.
-    // Let's implement basic label for now.
-
-    final TrustGraph tg = model.trustGraph;
-    // getEquivalenceGroup returns List<IdentityKey> ??
-    // Let's check TrustGraph.
-    // It has getEquivalenceGroups() returning Map.
-    // We can compute it:
-    // This is expensive to scan all Replacements?
-    // Maybe just show canonical.
 
     final delegates = labeler.delegateResolver
             ?.getDelegatesForIdentity(widget.identity)
@@ -175,10 +151,8 @@ class _NodeDetailsState extends State<NodeDetails> {
         [];
     final String fcontext = model.fcontext;
 
-    // Resolve identity to ensure we lookup correctly in graphs
     final IdentityKey canonicalIdentity = _resolveIdentity(widget.identity, model);
 
-    // My own (identity-layer) trust or block statement for this identity, independent of PoV.
     final TrustStatement? myTrustStatement = signInState.hasIdentity
         ? (model.myTrustStatements[canonicalIdentity] ?? model.myTrustStatements[widget.identity])
         : null;
@@ -203,18 +177,9 @@ class _NodeDetailsState extends State<NodeDetails> {
                 children: [
                   _buildFollowContextsSection(),
                   const Divider(),
-                  _buildKeysSection(tg, labeler, delegates),
+                  _buildKeysSection(model.trustGraph, labeler, delegates),
                   const Divider(),
-                  if (fcontext == kFollowContextIdentity) ...[
-                    _buildIdentityDetails(canonicalIdentity, model),
-                    _buildIdentityOutgoing(canonicalIdentity, model),
-                  ] else if (fcontext == kFollowContextNerdster) ...[
-                    _buildNerdsterDetails(canonicalIdentity, model),
-                    _buildNerdsterOutgoing(canonicalIdentity, model),
-                  ] else ...[
-                    _buildContextDetails(canonicalIdentity, model, fcontext),
-                    _buildContextOutgoing(canonicalIdentity, model, fcontext),
-                  ],
+                  _buildFollowsVouchesSection(canonicalIdentity, model, fcontext),
                 ],
               ),
             ),
@@ -228,12 +193,11 @@ class _NodeDetailsState extends State<NodeDetails> {
                 children: [
                   CryptoShieldButton(json: myTrustStatement?.json, labeler: labeler),
                   const SizedBox(width: 4),
-                  
                   Builder(builder: (context) {
-                    final bool canAct = signInState.hasIdentity && signInState.identity != widget.identity.value;
-                    
+                    final bool canAct = signInState.hasIdentity && signInState.identity.value != widget.identity.value;
+
                     final bool canTrust = canAct && myTrustStatement?.verb != TrustVerb.trust;
-                    final String trustTip = !canAct ? 'Must be signed in as a different identity' 
+                    final String trustTip = !canAct ? 'Must be signed in as a different identity'
                                           : (!canTrust ? 'You already vouch for this identity' : 'Vouch for this identity');
 
                     final bool canBlock = canAct && myTrustStatement?.verb != TrustVerb.block;
@@ -255,7 +219,6 @@ class _NodeDetailsState extends State<NodeDetails> {
                             child: Padding(
                               padding: const EdgeInsets.all(4),
                               child: Icon(
-                                // Solid = currently vouching. Outline = available action.
                                 myTrustStatement?.verb == TrustVerb.trust ? Icons.check_circle : Icons.check_circle_outline,
                                 color: Colors.green,
                                 size: 22,
@@ -272,7 +235,6 @@ class _NodeDetailsState extends State<NodeDetails> {
                             child: Padding(
                               padding: const EdgeInsets.all(4),
                               child: Icon(
-                                // Solid = currently blocking. Outline = available action.
                                 myTrustStatement?.verb == TrustVerb.block ? Icons.delete : Icons.delete_outline,
                                 color: Colors.red,
                                 size: 22,
@@ -289,7 +251,6 @@ class _NodeDetailsState extends State<NodeDetails> {
                             child: Padding(
                               padding: const EdgeInsets.all(4),
                               child: Icon(
-                                // Outline = has statement to clear (enabled). Solid = nothing to clear (disabled).
                                 canClear ? Icons.cancel_outlined : Icons.cancel,
                                 color: canClear ? Colors.black : Colors.grey,
                                 size: 22,
@@ -318,6 +279,7 @@ class _NodeDetailsState extends State<NodeDetails> {
     final primaryLabel = labeler.getLabel(identityStr);
     final allLabels = labeler.getAllLabels(identity);
     final otherLabels = allLabels.where((l) => l != primaryLabel).toList();
+    final bool isPov = widget.identity == model.trustGraph.pov;
 
     return Builder(builder: (context) {
       TapDownDetails? tapDetails;
@@ -376,7 +338,8 @@ class _NodeDetailsState extends State<NodeDetails> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(primaryLabel),
+                  Text(primaryLabel,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                   if (otherLabels.isNotEmpty)
                     Text('(${otherLabels.join(', ')})',
                         style: const TextStyle(
@@ -384,18 +347,47 @@ class _NodeDetailsState extends State<NodeDetails> {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(Icons.qr_code, size: 24, color: Colors.blue),
+            if (!isPov) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () async {
+                  if (_hasChanges) {
+                    await showDialog<void>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Unpublished Changes'),
+                        content: const Text('Save your follow changes before setting this as PoV.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                    return;
+                  }
+                  if (context.mounted) Navigator.pop(context);
+                  signInState.pov = widget.identity.value;
+                  await widget.controller.refresh();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.blue),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text('Set as PoV', style: TextStyle(fontSize: 11, color: Colors.blue)),
+                ),
+              ),
+            ],
           ],
         ),
       );
     });
   }
 
-  /// Passes a trust/block/clear intention to your identity app.
-  /// For keymeid/oneOfUsNet sign-ins the app is known to be available; open the universal link.
   Future<void> _passIntention(BuildContext context, String verb, IdentityKey identity) async {
-    // Show a warning before proceeding with blocking.
     if (verb == 'block') {
       final IdentityKey canonical = _resolveIdentity(identity, model);
       final TrustStatement? myStatement = signInState.hasIdentity
@@ -461,8 +453,6 @@ class _NodeDetailsState extends State<NodeDetails> {
     );
   }
 
-  /// Trust shows an informational dialog explaining that vouching is an in-person action.
-  /// There is no proceed path — vouching cannot be initiated from here.
   Future<void> _onTrustPressed(BuildContext context, IdentityKey identity) async {
     await showDialog<void>(
       context: context,
@@ -481,123 +471,104 @@ class _NodeDetailsState extends State<NodeDetails> {
 
   List<Widget> _buildActions(BuildContext context) {
     return [
-      if (widget.identity != model.trustGraph.pov)
-        TextButton(
-          onPressed: () {
-            // Updating global POV
-            Navigator.pop(context); // Close sheet/dialog first
-            signInState.pov = widget.identity.value;
-            widget.controller.refresh();
-          },
-          child: const Text('Set as PoV'),
-        ),
+      TextButton(
+        onPressed: _hasChanges ? (_isUpdating ? null : _saveChanges) : null,
+        child: _isUpdating
+            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+            : const Text('Publish'),
+      ),
       TextButton(
         onPressed: () async {
           if (_hasChanges) {
             final bool? shouldClose = await showDialog<bool>(
               context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Unsaved Changes'),
-                content: const Text(
-                    'You have unsaved follow/block changes. Are you sure you want to discard them?'),
+              builder: (ctx) => AlertDialog(
+                title: const Text('Unpublished Changes'),
+                content: const Text('You have unpublished follow changes.'),
                 actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    child: const Text('Discard'),
-                  ),
+                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Discard')),
                 ],
               ),
             );
-            if (shouldClose == true) {
-              if (context.mounted) Navigator.of(context).pop();
-            }
+            if (shouldClose == true && context.mounted) Navigator.of(context).pop();
           } else {
             Navigator.of(context).pop();
           }
         },
         child: const Text('Close'),
-      )
+      ),
     ];
+  }
+
+  Widget _buildTabToggle({
+    required List<String> labels,
+    required int? selected,
+    required void Function(int) onTap,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (int i = 0; i < labels.length; i++) ...[
+          if (i > 0) const SizedBox(width: 4),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 88),
+            child: GestureDetector(
+              onTap: () => onTap(i),
+              child: Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: selected == i ? Colors.blue : Colors.transparent,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: selected == i ? Colors.blue : Colors.grey),
+                ),
+                child: Text(
+                  labels[i],
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: selected == i ? Colors.white : Colors.grey,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   Widget _buildKeysSection(TrustGraph tg, Labeler labeler, List<String> delegates) {
     return ExpansionTile(
       controller: _keysController,
       onExpansionChanged: (val) => _onExpansionChanged(val, _keysController),
-      controlAffinity: ListTileControlAffinity.leading,
-      title: const Text('Keys', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      trailing: const SizedBox.shrink(),
+      title: Row(
+        children: [
+          const Expanded(
+            child: Text('Keys', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          ),
+          _buildTabToggle(
+            labels: const ['identity', 'delegate'],
+            selected: _keysTab,
+            onTap: (i) {
+              setState(() => _keysTab = i);
+              _keysController.expand();
+            },
+          ),
+        ],
+      ),
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
       initiallyExpanded: false,
       children: [
-        const Align(
-          alignment: Alignment.centerLeft,
-          child:
-              Text('Identity Keys:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-        ),
-        ...tg.getEquivalenceGroup(widget.identity).map((IdentityKey equivKey) {
-          final equivIdentityToken = equivKey.value;
-          final bool isCanonical = equivKey == widget.identity;
-          final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
-          // Replaced keys are considered revoked for visualization
-          final status = isCanonical ? KeyStatus.active : KeyStatus.revoked;
-
-          return Builder(builder: (context) {
-            TapDownDetails? tapDetails;
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: InkWell(
-                onTapDown: (details) => tapDetails = details,
-                onTap: () {
-                  final FedKey? hk = FedKey.find(IdentityKey(equivIdentityToken));
-                  KeyInfoView.show(context, equivIdentityToken, FirebaseConfig.resolveUrl((hk?.endpoint['url'] as String?) ?? kNativeUrl),
-                      details: tapDetails,
-                      source: widget.controller.trustSource,
-                      labeler: labeler,
-                      constraints: const BoxConstraints(maxWidth: 600));
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      KeyIcon(
-                        type: KeyType.identity,
-                        status: status,
-                        presence: KeyPresence.known,
-                      ),
-                      const SizedBox(width: 8),
-                      Text('$equivIdentityLabel ${isCanonical ? "" : "(Replaced)"}',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: isCanonical ? Colors.black : Colors.grey,
-                              decoration: TextDecoration.underline)),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          });
-        }),
-        if (delegates.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child:
-                Text('Delegate Keys:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          ),
-          ...delegates.map((d) {
-            final String delegateLabel = labeler.getLabel(d);
-            final bool isMyDelegate = signInState.delegate == d;
-
-            final isRevoked =
-                labeler.delegateResolver?.getConstraintForDelegate(DelegateKey(d)) != null;
-            final status = isRevoked ? KeyStatus.revoked : KeyStatus.active;
+        if ((_keysTab ?? 0) == 0) ...[
+          ...tg.getEquivalenceGroup(widget.identity).map((IdentityKey equivKey) {
+            final equivIdentityToken = equivKey.value;
+            final bool isCanonical = equivKey == widget.identity;
+            final String equivIdentityLabel = labeler.getLabel(equivIdentityToken);
+            final status = isCanonical ? KeyStatus.active : KeyStatus.revoked;
 
             return Builder(builder: (context) {
               TapDownDetails? tapDetails;
@@ -605,29 +576,26 @@ class _NodeDetailsState extends State<NodeDetails> {
                 alignment: Alignment.centerLeft,
                 child: InkWell(
                   onTapDown: (details) => tapDetails = details,
-                  onTap: () => KeyInfoView.show(context, d, FirebaseConfig.contentUrl,
-                      details: tapDetails,
-                      source: widget.controller.contentSource,
-                      labeler: labeler,
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      ),
+                  onTap: () {
+                    final FedKey? hk = FedKey.find(IdentityKey(equivIdentityToken));
+                    KeyInfoView.show(context, equivIdentityToken, FirebaseConfig.resolveUrl((hk?.endpoint['url'] as String?) ?? kNativeUrl),
+                        details: tapDetails,
+                        source: widget.controller.trustSource,
+                        labeler: labeler,
+                        constraints: const BoxConstraints(maxWidth: 600));
+                  },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        KeyIcon(
-                          type: KeyType.delegate,
-                          status: status,
-                          presence: isMyDelegate ? KeyPresence.owned : KeyPresence.known,
-                        ),
+                        KeyIcon(type: KeyType.identity, status: status, presence: KeyPresence.known),
                         const SizedBox(width: 8),
-                        Text(delegateLabel,
+                        Text('$equivIdentityLabel ${isCanonical ? "" : "(Replaced)"}',
                             style: TextStyle(
                                 fontSize: 12,
-                                color: isRevoked ? Colors.grey : Colors.blue,
-                                decoration: TextDecoration.underline,
-                                decorationColor: Colors.blue)),
+                                color: isCanonical ? Colors.black : Colors.grey,
+                                decoration: TextDecoration.underline)),
                       ],
                     ),
                   ),
@@ -635,26 +603,72 @@ class _NodeDetailsState extends State<NodeDetails> {
               );
             });
           }),
-          if (delegates.any((d) =>
-              labeler.delegateResolver?.getDomainForDelegate(DelegateKey(d)) ==
-              'hablotengo.com'))
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                icon: const Icon(Icons.contact_page, size: 16),
-                label: const Text('Contact info on HabloTengo'),
-                style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                onPressed: () {
-                  final bool emulator = fireChoice == FireChoice.emulator;
-                  final base = emulator ? 'http://localhost:8770/' : 'https://hablotengo.com/app';
-                  final uri = Uri.parse(base).replace(queryParameters: {
-                    if (emulator) 'fire': 'emulator',
-                    'target': widget.identity.value,
-                  });
-                  launchUrl(uri, mode: LaunchMode.externalApplication);
-                },
+        ] else ...[
+          if (delegates.isEmpty)
+            const Text('None', style: TextStyle(fontSize: 12, color: Colors.grey))
+          else ...[
+            ...delegates.map((d) {
+              final String delegateLabel = labeler.getLabel(d);
+              final bool isMyDelegate = signInState.delegate == d;
+              final isRevoked =
+                  labeler.delegateResolver?.getConstraintForDelegate(DelegateKey(d)) != null;
+              final status = isRevoked ? KeyStatus.revoked : KeyStatus.active;
+
+              return Builder(builder: (context) {
+                TapDownDetails? tapDetails;
+                return Align(
+                  alignment: Alignment.centerLeft,
+                  child: InkWell(
+                    onTapDown: (details) => tapDetails = details,
+                    onTap: () => KeyInfoView.show(context, d, FirebaseConfig.contentUrl,
+                        details: tapDetails,
+                        source: widget.controller.contentSource,
+                        labeler: labeler,
+                        constraints: const BoxConstraints(maxWidth: 600)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          KeyIcon(
+                            type: KeyType.delegate,
+                            status: status,
+                            presence: isMyDelegate ? KeyPresence.owned : KeyPresence.known,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(delegateLabel,
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: isRevoked ? Colors.grey : Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: Colors.blue)),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              });
+            }),
+            if (delegates.any((d) =>
+                labeler.delegateResolver?.getDomainForDelegate(DelegateKey(d)) == 'hablotengo.com'))
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.contact_page, size: 16),
+                  label: const Text('Contact info on HabloTengo'),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
+                  onPressed: () {
+                    final bool emulator = fireChoice == FireChoice.emulator;
+                    final base = emulator ? 'http://localhost:8770/' : 'https://hablotengo.com/app';
+                    final uri = Uri.parse(base).replace(queryParameters: {
+                      if (emulator) 'fire': 'emulator',
+                      'target': widget.identity.value,
+                    });
+                    launchUrl(uri, mode: LaunchMode.externalApplication);
+                  },
+                ),
               ),
-            ),
+          ],
         ],
         const SizedBox(height: 10),
       ],
@@ -662,7 +676,7 @@ class _NodeDetailsState extends State<NodeDetails> {
   }
 
   Widget _buildFollowContextsSection() {
-    if (signInState.hasIdentity && signInState.identity == widget.identity.value) {
+    if (signInState.hasIdentity && signInState.identity.value == widget.identity.value) {
       return const Text("This is you.", style: TextStyle(fontStyle: FontStyle.italic));
     }
 
@@ -671,34 +685,16 @@ class _NodeDetailsState extends State<NodeDetails> {
     return ExpansionTile(
       controller: _followController,
       onExpansionChanged: (val) => _onExpansionChanged(val, _followController),
-      controlAffinity: ListTileControlAffinity.leading,
+      trailing: const SizedBox.shrink(),
       title: Text('How I follow/block $label',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      subtitle: _hasChanges
-          ? const Text('Unsaved changes pending...',
-              style: TextStyle(color: Colors.orange, fontSize: 11, fontStyle: FontStyle.italic))
-          : null,
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
-      initiallyExpanded: false,
+      initiallyExpanded: true,
       children: [
-        if (_hasChanges)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
-            child: ElevatedButton.icon(
-              onPressed: _isUpdating ? null : _saveChanges,
-              icon: _isUpdating
-                  ? const SizedBox(
-                      width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.publish, size: 16),
-              label: const Text('Publish Changes', style: TextStyle(fontSize: 12)),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(0, 32),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-              ),
-            ),
-          ),
+        _buildAddContextRow(),
+        const SizedBox(height: 8),
         if (_pendingContexts.isEmpty)
           const Padding(
             padding: EdgeInsets.only(bottom: 8.0),
@@ -706,23 +702,6 @@ class _NodeDetailsState extends State<NodeDetails> {
                 style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey, fontSize: 12)),
           ),
         ..._pendingContexts.entries.map((e) => _buildContextRow(e.key, e.value)),
-        const SizedBox(height: 12),
-        _buildAddContextRow(),
-        const SizedBox(height: 12),
-        const Text('Comment (Optional):',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 4),
-        TextField(
-          controller: _commentController,
-          maxLines: 2,
-          style: const TextStyle(fontSize: 13),
-          decoration: const InputDecoration(
-            hintText: 'Add a reason for following/blocking...',
-            border: OutlineInputBorder(),
-            isDense: true,
-            contentPadding: EdgeInsets.all(8),
-          ),
-        ),
         const SizedBox(height: 8),
       ],
     );
@@ -773,56 +752,48 @@ class _NodeDetailsState extends State<NodeDetails> {
       'tech'
     ].where((c) => !_pendingContexts.containsKey(c)).toList();
 
-    return Row(
-      children: [
-        const Text('Add: ', style: TextStyle(fontSize: 12)),
-        Expanded(
-          child: Autocomplete<String>(
-            optionsBuilder: (TextEditingValue textEditingValue) {
-              if (textEditingValue.text == '') {
-                return suggestions;
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text == '') {
+          return suggestions;
+        }
+        return suggestions.where((String option) {
+          return option.contains(textEditingValue.text.toLowerCase());
+        });
+      },
+      onSelected: (String selection) async {
+        if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
+        setState(() {
+          _pendingContexts[selection] = 0;
+          _autocompleteController?.clear();
+        });
+      },
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+        _autocompleteController = controller;
+        return SizedBox(
+          height: 30,
+          child: TextField(
+            controller: controller,
+            focusNode: focusNode,
+            style: const TextStyle(fontSize: 12),
+            decoration: const InputDecoration(
+              hintText: 'Add context (e.g. nerd)',
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              border: OutlineInputBorder(),
+            ),
+            onSubmitted: (String value) async {
+              if (value.isNotEmpty) {
+                if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
+                setState(() {
+                  _pendingContexts[value] = 0;
+                  controller.clear();
+                });
               }
-              return suggestions.where((String option) {
-                return option.contains(textEditingValue.text.toLowerCase());
-              });
-            },
-            onSelected: (String selection) async {
-              if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
-              setState(() {
-                _pendingContexts[selection] = 0; // Default to neutral
-                _autocompleteController?.clear();
-              });
-            },
-            fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-              _autocompleteController = controller;
-              return SizedBox(
-                height: 30,
-                child: TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  style: const TextStyle(fontSize: 12),
-                  decoration: const InputDecoration(
-                    hintText: 'Context (e.g. nerd)',
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    border: OutlineInputBorder(),
-                  ),
-                  onSubmitted: (String value) async {
-                    if (value.isNotEmpty) {
-                      if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true)
-                        return;
-                      setState(() {
-                        _pendingContexts[value] = 0; // Default to neutral
-                        controller.clear();
-                      });
-                    }
-                  },
-                ),
-              );
             },
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -840,7 +811,6 @@ class _NodeDetailsState extends State<NodeDetails> {
         ContentVerb.follow,
         widget.identity.value,
         contexts: contextsToSave,
-        comment: _commentController.text.trim(),
       );
 
       await widget.controller.push(json, signer, context: context);
@@ -853,7 +823,6 @@ class _NodeDetailsState extends State<NodeDetails> {
         setState(() {
           _pendingContexts.removeWhere((key, value) => value == 0);
           _originalContexts = Map.of(_pendingContexts);
-          _originalComment = _commentController.text.trim();
         });
       }
     } catch (e) {
@@ -865,226 +834,190 @@ class _NodeDetailsState extends State<NodeDetails> {
     }
   }
 
-  Widget _buildIdentityOutgoing(IdentityKey identity, FeedModel model) {
-    final TrustGraph tg = model.trustGraph;
-    final List<TrustStatement> allStatements = tg.edges[identity] ?? [];
-
-    final List<TrustStatement> statements =
-        allStatements.where((s) => s.verb == TrustVerb.trust).toList();
+  Widget _buildFollowsVouchesSection(IdentityKey identity, FeedModel model, String fcontext) {
+    final String sectionTitle = fcontext == kFollowContextIdentity
+        ? 'Vouches'
+        : 'Follows ($fcontext)';
 
     return ExpansionTile(
-      controller: _outgoingController,
-      onExpansionChanged: (val) => _onExpansionChanged(val, _outgoingController),
-      controlAffinity: ListTileControlAffinity.leading,
-      title: const Text('Outgoing Vouches',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      controller: _followsVouchesController,
+      onExpansionChanged: (val) => _onExpansionChanged(val, _followsVouchesController),
+      trailing: const SizedBox.shrink(),
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(sectionTitle,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+          ),
+          _buildTabToggle(
+            labels: const ['incoming', 'outgoing'],
+            selected: _followsTab,
+            onTap: (i) {
+              setState(() => _followsTab = i);
+              _followsVouchesController.expand();
+            },
+          ),
+        ],
+      ),
       tilePadding: EdgeInsets.zero,
-      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      childrenPadding: EdgeInsets.zero,
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
       initiallyExpanded: false,
       children: [
-        if (statements.isEmpty) const Text('None'),
-        ...statements.map((s) => _buildStatementTile(s, model, isOutgoing: true)),
-      ],
-    );
-  }
-
-  Widget _buildContextOutgoing(IdentityKey identity, FeedModel model, String context) {
-    final fn = model.followNetwork;
-
-    final List<ContentStatement> statements = fn.edges.values
-        .expand((l) => l)
-        .where((s) => _resolveIdentity(IdentityKey(s.iKey.value), model) == identity)
-        .where((s) => s.contexts?.containsKey(context) == true)
-        .toList();
-
-    return ExpansionTile(
-      controller: _outgoingController,
-      onExpansionChanged: (val) => _onExpansionChanged(val, _outgoingController),
-      controlAffinity: ListTileControlAffinity.leading,
-      title: Text('Outgoing Follows ($context)',
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      tilePadding: EdgeInsets.zero,
-      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-      initiallyExpanded: false,
-      children: [
-        if (statements.isEmpty) const Text('None'),
-        ...statements
-            .map((s) => _buildStatementTile(s, model, fcontext: context, isOutgoing: true)),
-      ],
-    );
-  }
-
-  Widget _buildNerdsterOutgoing(IdentityKey identity, FeedModel model) {
-    final fn = model.followNetwork;
-    final tg = model.trustGraph;
-
-    // 1. Explicit Follows (Outgoing)
-    final List<ContentStatement> explicitStatements = fn.edges.values
-        .expand((l) => l)
-        .where(
-            (s) => _resolveIdentity(IdentityKey(s.iKey.value), model) == identity) // Check issuer
-        .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
-        .toList();
-
-    // 2. Implicit Follows (Trust) (Outgoing)
-    // "Who does THIS identity trust?" -> tg.edges[identity]
-    final List<TrustStatement> trustStatements =
-        (tg.edges[identity] ?? []).where((s) => s.verb == TrustVerb.trust).toList();
-
-    // Filter implicitly trusted that are NOT explicitly followed
-    // Note: This logic is slightly different than incoming. Incoming we dedup based on issuer.
-    // Here we are the issuer. We check if we have an explicit follow for the *subject*.
-
-    final explicitSubjects =
-        explicitStatements.map((s) => _resolveIdentity(IdentityKey(s.subjectToken), model)).toSet();
-
-    final List<TrustStatement> implicitStatements = trustStatements.where((s) {
-      final subject = _resolveIdentity(IdentityKey(s.subjectToken), model);
-      return !explicitSubjects.contains(subject);
-    }).toList();
-
-    return ExpansionTile(
-      controller: _outgoingController,
-      onExpansionChanged: (val) => _onExpansionChanged(val, _outgoingController),
-      controlAffinity: ListTileControlAffinity.leading,
-      title: const Text('Outgoing Follows (<nerdster>)',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      tilePadding: EdgeInsets.zero,
-      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-      initiallyExpanded: false,
-      children: [
-        const Text(
-          'Includes explicit follows AND implicit follows derived from Trust.',
-          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: (_followsTab ?? 0) == 0
+              ? _buildIncomingContent(identity, model, fcontext)
+              : _buildOutgoingContent(identity, model, fcontext),
         ),
-        const SizedBox(height: 10),
-        const Text('Explicit:', style: TextStyle(fontWeight: FontWeight.bold)),
-        if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
-        ...explicitStatements.map((s) =>
-            _buildStatementTile(s, model, fcontext: kFollowContextNerdster, isOutgoing: true)),
-        const SizedBox(height: 10),
-        const Text('Implicit (Trust):', style: TextStyle(fontWeight: FontWeight.bold)),
-        if (implicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
-        ...implicitStatements.map((s) => _buildStatementTile(s, model, isOutgoing: true)),
       ],
     );
   }
 
-  Widget _buildIdentityDetails(IdentityKey identity, FeedModel model) {
-    final tg = model.trustGraph;
+  Widget _buildIncomingContent(IdentityKey identity, FeedModel model, String fcontext) {
+    if (fcontext == kFollowContextIdentity) {
+      final List<TrustStatement> statements = model.trustGraph.edges.values
+          .expand((l) => l)
+          .where((s) => s.verb == TrustVerb.trust)
+          .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
+          .toList();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (statements.isEmpty) const Text('None'),
+          ...statements.map((s) => _buildStatementTile(s, model)),
+        ],
+      );
+    } else if (fcontext == kFollowContextNerdster) {
+      final fn = model.followNetwork;
+      final tg = model.trustGraph;
 
-    final List<TrustStatement> statements = tg.edges.values
-        .expand((l) => l)
-        .where((s) => s.verb == TrustVerb.trust) // Only show actual vouches
-        .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
-        .toList();
+      final List<ContentStatement> explicitStatements = fn.edges.values
+          .expand((l) => l)
+          .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
+          .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
+          .toList();
 
-    return ExpansionTile(
-      controller: _incomingController,
-      onExpansionChanged: (val) => _onExpansionChanged(val, _incomingController),
-      controlAffinity: ListTileControlAffinity.leading,
-      title: const Text('Incoming Vouches',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      tilePadding: EdgeInsets.zero,
-      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-      initiallyExpanded: false,
-      children: [
-        if (statements.isEmpty) const Text('None'),
-        ...statements.map((s) => _buildStatementTile(s, model)),
-      ],
-    );
+      final explicitIssuers =
+          explicitStatements.map((s) => _resolveDelegate(DelegateKey(s.iKey.value), model)).toSet();
+
+      final List<TrustStatement> implicitStatements = tg.edges.values
+          .expand((l) => l)
+          .where((s) => s.verb == TrustVerb.trust)
+          .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
+          .where((s) {
+        final issuer = _resolveDelegate(DelegateKey(s.iKey.value), model);
+        return !explicitIssuers.contains(issuer);
+      }).toList();
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Includes explicit follows AND implicit follows derived from Trust (unless overridden).',
+            style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+          ),
+          const SizedBox(height: 8),
+          const Text('Explicit:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
+          ...explicitStatements.map((s) => _buildStatementTile(s, model, fcontext: kFollowContextNerdster)),
+          const SizedBox(height: 8),
+          const Text('Implicit (Trust):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          if (implicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
+          ...implicitStatements.map((s) => _buildStatementTile(s, model)),
+        ],
+      );
+    } else {
+      final List<ContentStatement> statements = model.followNetwork.edges.values
+          .expand((l) => l)
+          .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
+          .where((s) => s.contexts?.containsKey(fcontext) == true)
+          .toList();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (statements.isEmpty) const Text('None'),
+          ...statements.map((s) => _buildStatementTile(s, model, fcontext: fcontext)),
+        ],
+      );
+    }
   }
 
-  Widget _buildContextDetails(IdentityKey identity, FeedModel model, String context) {
-    final fn = model.followNetwork;
+  Widget _buildOutgoingContent(IdentityKey identity, FeedModel model, String fcontext) {
+    if (fcontext == kFollowContextIdentity) {
+      final List<TrustStatement> statements =
+          (model.trustGraph.edges[identity] ?? []).where((s) => s.verb == TrustVerb.trust).toList();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (statements.isEmpty) const Text('None'),
+          ...statements.map((s) => _buildStatementTile(s, model, isOutgoing: true)),
+        ],
+      );
+    } else if (fcontext == kFollowContextNerdster) {
+      final fn = model.followNetwork;
+      final tg = model.trustGraph;
 
-    final List<ContentStatement> statements = fn.edges.values
-        .expand((l) => l)
-        .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
-        .where((s) => s.contexts?.containsKey(context) == true)
-        .toList();
+      final List<ContentStatement> explicitStatements = fn.edges.values
+          .expand((l) => l)
+          .where((s) => _resolveIdentity(IdentityKey(s.iKey.value), model) == identity)
+          .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
+          .toList();
 
-    return ExpansionTile(
-      controller: _incomingController,
-      onExpansionChanged: (val) => _onExpansionChanged(val, _incomingController),
-      controlAffinity: ListTileControlAffinity.leading,
-      title: Text('Incoming Follows ($context)',
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      tilePadding: EdgeInsets.zero,
-      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-      initiallyExpanded: false,
-      children: [
-        if (statements.isEmpty) const Text('None'),
-        ...statements.map((s) => _buildStatementTile(s, model, fcontext: context)),
-      ],
-    );
-  }
+      final explicitSubjects =
+          explicitStatements.map((s) => _resolveIdentity(IdentityKey(s.subjectToken), model)).toSet();
 
-  Widget _buildNerdsterDetails(IdentityKey identity, FeedModel model) {
-    final fn = model.followNetwork;
-    final tg = model.trustGraph;
+      final List<TrustStatement> implicitStatements =
+          (tg.edges[identity] ?? []).where((s) => s.verb == TrustVerb.trust).where((s) {
+        final subject = _resolveIdentity(IdentityKey(s.subjectToken), model);
+        return !explicitSubjects.contains(subject);
+      }).toList();
 
-    // 1. Explicit Follows
-    final List<ContentStatement> explicitStatements = fn.edges.values
-        .expand((l) => l)
-        .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
-        .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
-        .toList();
-
-    final explicitIssuers =
-        explicitStatements.map((s) => _resolveDelegate(DelegateKey(s.iKey.value), model)).toSet();
-
-    // 2. Implicit Follows (Trust)
-    final List<TrustStatement> implicitStatements = tg.edges.values
-        .expand((l) => l)
-        .where((s) => s.verb == TrustVerb.trust) // Only trust implies follow
-        .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
-        .where((s) {
-      final issuer = _resolveDelegate(DelegateKey(s.iKey.value), model);
-      return !explicitIssuers.contains(issuer);
-    }).toList();
-
-    return ExpansionTile(
-      controller: _incomingController,
-      onExpansionChanged: (val) => _onExpansionChanged(val, _incomingController),
-      controlAffinity: ListTileControlAffinity.leading,
-      title: const Text('Incoming Follows (<nerdster>)',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-      tilePadding: EdgeInsets.zero,
-      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-      initiallyExpanded: false,
-      children: [
-        const Text(
-          'Includes explicit follows AND implicit follows derived from Trust (unless overridden).',
-          style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
-        ),
-        const SizedBox(height: 10),
-        const Text('Explicit:', style: TextStyle(fontWeight: FontWeight.bold)),
-        if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
-        ...explicitStatements
-            .map((s) => _buildStatementTile(s, model, fcontext: kFollowContextNerdster)),
-        const SizedBox(height: 10),
-        const Text('Implicit (Trust):', style: TextStyle(fontWeight: FontWeight.bold)),
-        if (implicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
-        ...implicitStatements.map((s) => _buildStatementTile(s, model)),
-      ],
-    );
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Includes explicit follows AND implicit follows derived from Trust.',
+            style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic),
+          ),
+          const SizedBox(height: 8),
+          const Text('Explicit:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          if (explicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
+          ...explicitStatements.map((s) => _buildStatementTile(s, model, fcontext: kFollowContextNerdster, isOutgoing: true)),
+          const SizedBox(height: 8),
+          const Text('Implicit (Trust):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          if (implicitStatements.isEmpty) const Text('None', style: TextStyle(fontSize: 12)),
+          ...implicitStatements.map((s) => _buildStatementTile(s, model, isOutgoing: true)),
+        ],
+      );
+    } else {
+      final List<ContentStatement> statements = model.followNetwork.edges.values
+          .expand((l) => l)
+          .where((s) => _resolveIdentity(IdentityKey(s.iKey.value), model) == identity)
+          .where((s) => s.contexts?.containsKey(fcontext) == true)
+          .toList();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (statements.isEmpty) const Text('None'),
+          ...statements.map((s) => _buildStatementTile(s, model, fcontext: fcontext, isOutgoing: true)),
+        ],
+      );
+    }
   }
 
   Widget _buildStatementTile(dynamic s, FeedModel model,
       {String? fcontext, bool isOutgoing = false}) {
     final labeler = model.labeler;
-    // s can be TrustStatement or ContentStatement.
 
     IdentityKey relevantKey;
     if (isOutgoing) {
-      // For outgoing, we care about the SUBJECT
       if (s is TrustStatement) {
         relevantKey = IdentityKey(s.subjectToken);
       } else if (s is ContentStatement) {
@@ -1093,7 +1026,6 @@ class _NodeDetailsState extends State<NodeDetails> {
         relevantKey = IdentityKey('?');
       }
     } else {
-      // For incoming, we care about the ISSUER
       if (s is TrustStatement) {
         relevantKey = s.iKey;
       } else if (s is ContentStatement) {
@@ -1153,7 +1085,6 @@ class _PassIntentionDialog extends StatelessWidget {
 
   const _PassIntentionDialog({required this.verb, required this.identityKey, required this.identityJson, this.method});
 
-  /// Encode pubKeyJson as a URL-safe base64 fragment, same format as vouch links.
   String _fragment() {
     final jsonStr = jsonEncode(identityJson);
     return base64Url.encode(utf8.encode(jsonStr));
@@ -1173,7 +1104,6 @@ class _PassIntentionDialog extends StatelessWidget {
     final String fragment = _fragment();
 
     if (method == SignInMethod.oneOfUsNet || (method == null && isMobileDevice)) {
-       // Use https:// universal link with fragment payload — server never sees the key.
        final Uri uri = Uri.parse('https://one-of-us.net/$verb#$fragment');
        content = ListTile(
          leading: const Icon(Icons.link),
@@ -1182,7 +1112,6 @@ class _PassIntentionDialog extends StatelessWidget {
          onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
        );
     } else if (method == SignInMethod.keymeid) {
-       // Use keymeid:// custom scheme with fragment payload.
        final Uri uri = Uri.parse('keymeid://$verb#$fragment');
        content = ListTile(
          leading: const Icon(Icons.link),
@@ -1191,7 +1120,6 @@ class _PassIntentionDialog extends StatelessWidget {
          onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
        );
     } else {
-       // Desktop / unknown — show QR of the raw key JSON for scanning.
        content = Column(
          mainAxisSize: MainAxisSize.min,
          children: [
