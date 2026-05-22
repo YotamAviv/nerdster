@@ -211,9 +211,7 @@ class ChannelFactory {
   /// Creates a new [ChannelFactory] with the same [fireChoice], [skipVerify],
 /// Clears all root channel caches. Does not affect underlying Firestore data.
   Future<void> clearCache() async {
-    for (final ch in _rootChannels.values) {
-      await ch.clear();
-    }
+    await Future.wait(_rootChannels.values.map((ch) => ch.clear()));
     _rootChannels.clear();
     _streamRoots.clear();
   }
