@@ -383,11 +383,16 @@ ContentAggregation reduceContentAggregation(
     }
   }
 
-  // Tag Equivalence: build map from org.nerdster.equivalence statements in the follow network.
-  // Apply distinct() per identity (newest-first) so that a later equate/dontEquate replaces an
-  // earlier one for the same (signer, pair) — matching how content statements are deduplicated.
-  final Equivalence tagEqLogic = Equivalence();
+  // Tag Equivalence/Relate: two levels of deduplication.
+  // Level 1 (per identity): distinct() with identity-scoped signature — newest statement per
+  //   (identity, sorted pair) wins, handling multi-delegate and statement superseding.
+  // Level 2 (cross-identity, network order): iterate identities POV-first; the first identity
+  //   to claim a sorted pair wins. A relate from POV beats an equate from anyone further out.
+  final Equivalence tagEquate = Equivalence();
+  final Equivalence tagRelate = Equivalence();
   final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements = {};
+  final Set<String> claimedPairs = {};
+
   if (equivalenceResult != null) {
     for (final IdentityKey identity in followNetwork.identities) {
       final List<List<EquivalenceStatement>> sources = [];
@@ -399,14 +404,22 @@ ContentAggregation reduceContentAggregation(
         iTransformer: (_) => identity.value,
       )) {
         if (s.isClear) continue;
-        tagEqLogic.equate(s.equivalent, s.canonical, not: s.not);
+        // Always collect for provenance display, regardless of priority.
         tagEquivalenceStatements.putIfAbsent(s.equivalent, () => []).add(s);
         tagEquivalenceStatements.putIfAbsent(s.canonical, () => []).add(s);
+        // Network-order priority: first identity (closest to POV) to claim a pair wins.
+        final String pairKey = ([s.equivalent, s.canonical]..sort()).join(':');
+        if (!claimedPairs.add(pairKey)) continue;
+        if (s.isRelate) {
+          tagRelate.equate(s.equivalent, s.canonical, not: s.isNotRelate);
+        } else {
+          tagEquate.equate(s.equivalent, s.canonical, not: s.not);
+        }
       }
     }
   }
   final Map<String, String> tagEquivalence = {};
-  for (final EquivalenceGroup group in tagEqLogic.groups) {
+  for (final EquivalenceGroup group in tagEquate.groups) {
     for (final String tag in group.all) {
       tagEquivalence[tag] = group.canonical;
     }
@@ -491,6 +504,7 @@ ContentAggregation reduceContentAggregation(
     related: related,
     mostTags: mostTags,
     tagEquivalence: tagEquivalence,
+    tagRelate: tagRelate,
     tagEquivalenceStatements: tagEquivalenceStatements,
     subjects: subjects,
     myDismissStatements: myDismissStatements,

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/equivalence_statement.dart';
@@ -249,6 +250,9 @@ class ContentAggregation {
   /// Every tag maps to itself if it has no equivalence statement.
   final Map<String, String> tagEquivalence;
 
+  /// Relate groups (from EquivalenceVerb.relate statements). Use peersOf(tag) to query.
+  final Equivalence tagRelate;
+
   /// tag -> all EquivalenceStatements in the follow network that mention it (as either field).
   /// Used to build the provenance dialog for a whole equivalence group.
   final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements;
@@ -271,11 +275,13 @@ class ContentAggregation {
     this.related = const {},
     List<String> mostTags = const [],
     this.tagEquivalence = const {},
+    Equivalence? tagRelate,
     this.tagEquivalenceStatements = const <String, List<EquivalenceStatement>>{},
     this.subjects = const {},
     Map<ContentKey, List<DismissStatement>> myDismissStatements = const {},
     Map<ContentKey, List<ContentStatement>> myLiteralStatements = const {},
-  })  : statements = List<ContentStatement>.unmodifiable(statements),
+  })  : tagRelate = tagRelate ?? Equivalence(),
+        statements = List<ContentStatement>.unmodifiable(statements),
         mostTags = List<String>.unmodifiable(mostTags),
         myDismissStatements = Map<ContentKey, List<DismissStatement>>.unmodifiable(
             myDismissStatements.map((k, v) => MapEntry(k, List<DismissStatement>.unmodifiable(v)))),

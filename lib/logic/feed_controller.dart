@@ -39,7 +39,9 @@ class FeedController extends ValueNotifier<FeedModel?> {
     if (model == null) return null; // Cannot push if feed not loaded
 
     // 1. LGTM Check
-    if (await Lgtm.check(json, context, labeler: model.labeler) != true) {
+    if (await Lgtm.check(json, context,
+            labeler: model.labeler, overlayState: Overlay.of(context)) !=
+        true) {
       return null;
     }
 
@@ -60,10 +62,15 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
   Future<void> pushEquivalence(String equivalent, String canonical,
       {EquivalenceVerb verb = EquivalenceVerb.equate, required BuildContext context}) async {
+    final FeedModel? model = value;
+    if (model == null) return;
     final delegateJson = signInState.delegatePublicKeyJson;
     final signer = signInState.signer;
     if (delegateJson == null || signer == null) return;
     final Json json = EquivalenceStatement.make(delegateJson, equivalent, canonical, verb: verb);
+    if (await Lgtm.check(json, context,
+            labeler: model.labeler, overlayState: Overlay.of(context)) !=
+        true) return;
     try {
       await equivSource.push(json, signer);
       unawaited(notify());

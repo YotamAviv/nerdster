@@ -1,65 +1,18 @@
 # TODO
 
-# Tags continuation
+## Subject equate/relate: apply network-order priority (separate CL)
 
-## UI:
-- When the screen is narrow, the dropdown and shield are off view. Get them in view.
-- When I want to drag and drop one tag to another, the target can be off view due to scrolling. Make it so that as I reach the ends the list starts to scroll to help me reach it.
+Tags now use network-order priority for equate/relate conflicts (POV identity's statement wins;
+further identities fill in only unclaimed pairs, via `claimedPairs` Set and two `Equivalence`
+objects: `tagEquate` and `tagRelate`).
 
-## BUGS
-- With &lgtm=true, I don't see the FYI dialog.
-This should be the case for all statements.
-AI: When you address this, see if it can be done in a general way, but don't force it if it's a lot of work.
+Subject equate/relate still uses the old approach (newest timestamp wins across all identities,
+no network-order priority). It should get the same treatment. See `content_logic.dart` where
+`filteredStatements` feeds into `eqLogic.equate()` without per-identity distinct or
+`claimedPairs` gating.
 
-## Relate as well as Equate
-Semantically, if I relate A to B then that's symmetric; there is no canonical/equivalent.
-In case we use an Equivalence object, then both will end up in the same EG and that's all we care about.
-
-Option A: Use the existing Equivalence computation:
-This would be done with another instance of the Equivalence object for relate statements.
-Use the same verbs that ContentStatement uses:
-        verb == ContentVerb.equate ||
-        verb == ContentVerb.dontEquate ||
-        verb == ContentVerb.relate ||
-        verb == ContentVerb.dontRelate ||
-Pros:
-- it exists
-Cons:
-- we always follow all relations until there are more (can't limit only 2 relations away)
-
-Option B: Use a new, ad-hoc, computation:
-Pros:
-- we'll be able to limit how many depth of related we follow. 
-Cons:
-- need to implement it (but seems straight forward)
-
-AI: A or B? What do you think?
-
-Relate will be expressed using an EquivalenceStatement as well (although we might rename the class and the statement), and so if a user says:
-  A is canonical of B
-and then says:
-  A is related to B (or even: B is related to A)
-then the latter statement hides former (single disposition, distincter...)
-
-When we show the dropdown choices:
-- do not show equivalent tags as top level choices in the dropdown.
-- In case A is related to B, show both A and B as top level choices in the dropdown.
-- Expanding a top level choice should show all equivalents and related choices.
-
-Display
-- related children: light green
-  - show "!~" to state that they're not related.
-- equivalent children: light red
-  - show a "!=" to state that they're not equivalent.
-
-- Do allow choosing a child choice (tag) in case I want to specifcally filter for that choice even though it might be an equivalent.
-
-Action:
-When a user drags tagA onto tagB, present a dialog
-"State that A is related B"
-and have a checkbox labled: "A is an equivalent of B"
-Then either state relate or equate.
-
+Note: existing subject-equate tests may fail once this is fixed correctly (they may be asserting
+the old wrong behavior). Expect to update them.
 
 ## Clean up the vestigial do/make split in DemoKey
 
