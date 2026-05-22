@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/equivalence_statement.dart';
@@ -29,6 +32,7 @@ Map<String, Set<String>> buildTagGroups(
 class TagDropdownButton extends StatefulWidget {
   final List<String> mostTags;
   final Map<String, String> tagEquivalence;
+  final Equivalence tagRelate;
   final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements;
   final String? activeFilter;
   final ValueChanged<String?> onFilterChanged;
@@ -38,6 +42,7 @@ class TagDropdownButton extends StatefulWidget {
     super.key,
     required this.mostTags,
     required this.tagEquivalence,
+    required this.tagRelate,
     required this.tagEquivalenceStatements,
     required this.activeFilter,
     required this.onFilterChanged,
@@ -158,6 +163,7 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
     super.didUpdateWidget(oldWidget);
     if (_overlay != null &&
         (oldWidget.tagEquivalence != widget.tagEquivalence ||
+            oldWidget.tagRelate != widget.tagRelate ||
             oldWidget.mostTags != widget.mostTags ||
             oldWidget.tagEquivalenceStatements != widget.tagEquivalenceStatements)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -198,6 +204,70 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
     });
   }
 
+  void _handleRelate(String tagA, String tagB, BuildContext ctx) {
+    final controller = widget.controller;
+    if (controller == null || signInState.signer == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.pushEquivalence(tagA, tagB, verb: EquivalenceVerb.relate, context: ctx);
+    });
+  }
+
+  void _handleDontRelate(String tagA, String tagB, BuildContext ctx) {
+    final controller = widget.controller;
+    if (controller == null || signInState.signer == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.pushEquivalence(tagA, tagB, verb: EquivalenceVerb.dontRelate, context: ctx);
+    });
+  }
+
+  Future<void> _handleDrop(String sourceTag, String targetTag) async {
+    final controller = widget.controller;
+    if (controller == null || signInState.signer == null) return;
+    final dropdownEntry = _overlay;
+    if (dropdownEntry == null) return;
+
+    final completer = Completer<bool?>();
+    late OverlayEntry dialogEntry;
+
+    void close(bool? result) {
+      dialogEntry.remove();
+      if (!completer.isCompleted) completer.complete(result);
+    }
+
+    dialogEntry = OverlayEntry(builder: (_) {
+      return Material(
+        type: MaterialType.transparency,
+        child: Stack(children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => close(null),
+              child: const SizedBox.expand(), // transparent tap-catcher; no dimming
+            ),
+          ),
+          Center(
+            child: _RelateEquateDialog(
+              sourceTag: sourceTag,
+              targetTag: targetTag,
+              onResult: close,
+            ),
+          ),
+        ]),
+      );
+    });
+
+    // Insert above the dropdown so the dialog is guaranteed to paint on top.
+    Overlay.of(context).insert(dialogEntry, above: dropdownEntry);
+
+    final bool? equate = await completer.future;
+    if (equate == null || !mounted) return;
+    if (equate) {
+      _handleEquate(sourceTag, targetTag, context);
+    } else {
+      _handleRelate(sourceTag, targetTag, context);
+    }
+  }
+
   OverlayEntry _buildOverlay() {
     return OverlayEntry(builder: (ctx) {
       final groups = buildTagGroups(widget.mostTags, widget.tagEquivalence);
@@ -228,6 +298,7 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
                   borderRadius: BorderRadius.circular(8),
                   child: _TagPanel(
                     groups: groups,
+                    tagRelate: widget.tagRelate,
                     expanded: _expanded,
                     activeFilter: widget.activeFilter,
                     tagEquivalenceStatements: widget.tagEquivalenceStatements,
@@ -242,8 +313,9 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
                       _removeOverlay();
                       if (mounted) setState(() {});
                     },
-                    onEquate: (eq, canon) => _handleEquate(eq, canon, ctx),
+                    onDrop: (source, target) => _handleDrop(source, target),
                     onDontEquate: (eq, canon) => _handleDontEquate(eq, canon, ctx),
+                    onDontRelate: (a, b) => _handleDontRelate(a, b, ctx),
                     onShield: _openProvenance,
                   ),
                 ),
@@ -304,26 +376,30 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
 
 class _TagPanel extends StatelessWidget {
   final Map<String, Set<String>> groups;
+  final Equivalence tagRelate;
   final Map<String, List<EquivalenceStatement>> tagEquivalenceStatements;
   final String? expanded;
   final String? activeFilter;
   final bool canEdit;
   final void Function(String canon) onToggleExpand;
   final void Function(String canon) onSelectFilter;
-  final void Function(String equivalent, String canonical) onEquate;
+  final void Function(String source, String target) onDrop;
   final void Function(String equivalent, String canonical) onDontEquate;
+  final void Function(String tagA, String tagB) onDontRelate;
   final void Function(String canonical, List<EquivalenceStatement> statements) onShield;
 
   const _TagPanel({
     required this.groups,
+    required this.tagRelate,
     required this.tagEquivalenceStatements,
     required this.expanded,
     required this.activeFilter,
     required this.canEdit,
     required this.onToggleExpand,
     required this.onSelectFilter,
-    required this.onEquate,
+    required this.onDrop,
     required this.onDontEquate,
+    required this.onDontRelate,
     required this.onShield,
   });
 
@@ -357,6 +433,8 @@ class _TagPanel extends StatelessWidget {
         ...entries.map((e) {
           final canon = e.key;
           final equivalents = (e.value.toList()..remove(canon)..sort());
+          final peers = tagRelate.peersOf(canon).toList()..sort();
+          final hasChildren = equivalents.isNotEmpty || peers.isNotEmpty;
           final isExpanded = expanded == canon;
           final groupStmts = _groupStatements(e.value);
           return Column(
@@ -368,35 +446,51 @@ class _TagPanel extends StatelessWidget {
                 isActive: activeFilter == canon,
                 canEdit: canEdit,
                 onTap: () => onSelectFilter(canon),
-                hasCaret: equivalents.isNotEmpty,
+                hasCaret: hasChildren,
                 isExpanded: isExpanded,
                 onCaret: () => onToggleExpand(canon),
-                onDrop: canEdit ? (sourceTag) => onEquate(sourceTag, canon) : null,
+                onDrop: canEdit ? (sourceTag) => onDrop(sourceTag, canon) : null,
                 onShield: groupStmts.isNotEmpty
                     ? () => onShield(canon, groupStmts)
                     : null,
               ),
-              if (isExpanded && equivalents.isNotEmpty)
+              if (isExpanded && hasChildren)
                 Padding(
                   padding: const EdgeInsets.only(left: 24, bottom: 4),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: equivalents.map((eq) {
-                      return Padding(
+                    children: [
+                      // Equivalent children — light red, ≠ button
+                      ...equivalents.map((eq) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(eq,
-                                style: const TextStyle(
-                                    fontSize: 13, color: Colors.black54)),
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.red.shade700)),
                             if (canEdit)
                               _DontEquateButton(
                                   onPressed: () => onDontEquate(eq, canon)),
                           ],
                         ),
-                      );
-                    }).toList(),
+                      )),
+                      // Related peers — light green, !~ button
+                      ...peers.map((peer) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(peer,
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.green.shade700)),
+                            if (canEdit)
+                              _DontRelateButton(
+                                  onPressed: () => onDontRelate(canon, peer)),
+                          ],
+                        ),
+                      )),
+                    ],
                   ),
                 ),
             ],
@@ -493,14 +587,12 @@ class _TagRow extends StatelessWidget {
             ),
           ),
         ),
-        if (onShield != null)
-          _GroupShieldButton(onTap: onShield!),
         if (hasCaret)
           GestureDetector(
             onTap: onCaret,
             behavior: HitTestBehavior.opaque,
             child: Padding(
-              padding: const EdgeInsets.only(left: 4, right: 8),
+              padding: const EdgeInsets.only(left: 4, right: 4),
               child: Icon(
                 isExpanded ? Icons.expand_less : Icons.expand_more,
                 size: 16,
@@ -508,6 +600,8 @@ class _TagRow extends StatelessWidget {
               ),
             ),
           ),
+        if (onShield != null)
+          _GroupShieldButton(onTap: onShield!),
       ],
     );
 
@@ -635,10 +729,14 @@ class _TagProvenanceDialog extends StatelessWidget {
                             TextSpan(children: [
                               TextSpan(text: s.equivalent),
                               TextSpan(
-                                text: s.not ? '  ≠  ' : '  →  ',
+                                text: s.isRelate
+                                    ? (s.isNotRelate ? '  !~  ' : '  ~  ')
+                                    : (s.not ? '  ≠  ' : '  →  '),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: s.not ? Colors.red : Colors.green,
+                                  color: s.isRelate
+                                      ? (s.isNotRelate ? Colors.red : Colors.green)
+                                      : (s.not ? Colors.red : Colors.green),
                                 ),
                               ),
                               TextSpan(text: s.canonical),
@@ -694,6 +792,75 @@ class _DontEquateButton extends StatelessWidget {
                 color: Colors.red,
                 fontWeight: FontWeight.bold)),
       ),
+    );
+  }
+}
+
+// ─── !~ button ────────────────────────────────────────────────────────────────
+
+class _DontRelateButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _DontRelateButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(4),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: Text('!~',
+            style: TextStyle(
+                fontSize: 13,
+                color: Colors.green,
+                fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+}
+
+// ─── Relate-or-equate dialog (shown on drag-drop) ─────────────────────────────
+
+class _RelateEquateDialog extends StatefulWidget {
+  final String sourceTag;
+  final String targetTag;
+  final void Function(bool?) onResult;
+
+  const _RelateEquateDialog({
+    required this.sourceTag,
+    required this.targetTag,
+    required this.onResult,
+  });
+
+  @override
+  State<_RelateEquateDialog> createState() => _RelateEquateDialogState();
+}
+
+class _RelateEquateDialogState extends State<_RelateEquateDialog> {
+  bool _equate = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('State that "${widget.sourceTag}" is related to "${widget.targetTag}"'),
+      content: CheckboxListTile(
+        value: _equate,
+        onChanged: (v) => setState(() => _equate = v ?? false),
+        title: Text('"${widget.sourceTag}" is an equivalent of "${widget.targetTag}"'),
+        controlAffinity: ListTileControlAffinity.leading,
+        contentPadding: EdgeInsets.zero,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => widget.onResult(null),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () => widget.onResult(_equate),
+          child: const Text('Confirm'),
+        ),
+      ],
     );
   }
 }

@@ -78,6 +78,7 @@ class ContentBar extends StatelessWidget {
                     TagDropdownButton(
                       mostTags: aggregation.mostTags,
                       tagEquivalence: aggregation.tagEquivalence,
+                      tagRelate: aggregation.tagRelate,
                       tagEquivalenceStatements: aggregation.tagEquivalenceStatements,
                       activeFilter: controller.tagFilter,
                       onFilterChanged: (val) {

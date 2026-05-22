@@ -71,6 +71,41 @@ void main() {
 
       expect(eq.getDistinctSignature(), equals(dont.getDistinctSignature()));
     });
+
+    test('getDistinctSignature same for relate vs equate (latest supersedes)', () {
+      final Json iJson = mockKey('identity1');
+      final EquivalenceStatement eq = makeEquivalenceStatement(
+        iJson: iJson,
+        equivalent: 'horses',
+        canonical: 'equestrian',
+      );
+      final EquivalenceStatement rel = makeEquivalenceStatement(
+        iJson: iJson,
+        equivalent: 'horses',
+        canonical: 'equestrian',
+        verb: EquivalenceVerb.relate,
+      );
+
+      expect(eq.getDistinctSignature(), equals(rel.getDistinctSignature()));
+    });
+
+    test('getDistinctSignature is symmetric for relate', () {
+      final Json iJson = mockKey('identity1');
+      final EquivalenceStatement s1 = makeEquivalenceStatement(
+        iJson: iJson,
+        equivalent: 'horses',
+        canonical: 'equestrian',
+        verb: EquivalenceVerb.relate,
+      );
+      final EquivalenceStatement s2 = makeEquivalenceStatement(
+        iJson: iJson,
+        equivalent: 'equestrian',
+        canonical: 'horses',
+        verb: EquivalenceVerb.relate,
+      );
+
+      expect(s1.getDistinctSignature(), equals(s2.getDistinctSignature()));
+    });
   });
 
   group('Tag equivalence in feed pipeline', () {
@@ -267,6 +302,90 @@ void main() {
           reason: 'subject tagged #sports should not match filter #news');
     });
 
+    test('relate supersedes earlier equate from same issuer', () {
+      final setup = buildSetup();
+      final DateTime t1 = DateTime(2025, 10, 1);
+      final DateTime t2 = DateTime(2026, 2, 1);
+
+      // Older: equate horses → equestrian
+      final EquivalenceStatement equateOld = makeEquivalenceStatement(
+        iJson: setup.delegateKey,
+        equivalent: 'horses',
+        canonical: 'equestrian',
+        verb: EquivalenceVerb.equate,
+        time: t1,
+      );
+      // Newer: relate horses ~ equestrian (supersedes the equate)
+      final EquivalenceStatement relateNew = makeEquivalenceStatement(
+        iJson: setup.delegateKey,
+        equivalent: 'horses',
+        canonical: 'equestrian',
+        verb: EquivalenceVerb.relate,
+        time: t2,
+      );
+
+      final ContentResult contentResult = ContentResult(delegateContent: {
+        DelegateKey(setup.delegateToken): [],
+      });
+      // Descending time order: newer first
+      final EquivalenceResult equivalenceResult = EquivalenceResult(delegateContent: {
+        DelegateKey(setup.delegateToken): [relateNew, equateOld],
+      });
+
+      final ContentAggregation agg = reduceContentAggregation(
+        setup.followNetwork,
+        setup.trustGraph,
+        setup.delegateResolver,
+        contentResult,
+        equivalenceResult: equivalenceResult,
+        labeler: setup.labeler,
+      );
+
+      // relate keeps both tags independent — no equivalence mapping
+      expect(agg.tagEquivalence['horses'], isNot(equals('equestrian')),
+          reason: 'equate should be superseded by relate');
+      // relate creates a symmetric peer entry
+      expect(agg.tagRelate.peersOf('horses'), contains('equestrian'));
+      expect(agg.tagRelate.peersOf('equestrian'), contains('horses'));
+    });
+
+    test('relate is transitive: A~B and B~C implies A~C', () {
+      final setup = buildSetup();
+      final EquivalenceStatement relateAB = makeEquivalenceStatement(
+        iJson: setup.delegateKey,
+        equivalent: 'horses',
+        canonical: 'classic',
+        verb: EquivalenceVerb.relate,
+      );
+      final EquivalenceStatement relateBC = makeEquivalenceStatement(
+        iJson: setup.delegateKey,
+        equivalent: 'equestrian',
+        canonical: 'horses',
+        verb: EquivalenceVerb.relate,
+      );
+
+      final ContentResult contentResult = ContentResult(delegateContent: {
+        DelegateKey(setup.delegateToken): [],
+      });
+      // relateBC stamped after relateAB by TestClock; list must be newest-first
+      final EquivalenceResult equivalenceResult = EquivalenceResult(delegateContent: {
+        DelegateKey(setup.delegateToken): [relateBC, relateAB],
+      });
+
+      final ContentAggregation agg = reduceContentAggregation(
+        setup.followNetwork,
+        setup.trustGraph,
+        setup.delegateResolver,
+        contentResult,
+        equivalenceResult: equivalenceResult,
+        labeler: setup.labeler,
+      );
+
+      expect(agg.tagRelate.peersOf('horses'), containsAll(['classic', 'equestrian']));
+      expect(agg.tagRelate.peersOf('classic'), containsAll(['horses', 'equestrian']));
+      expect(agg.tagRelate.peersOf('equestrian'), containsAll(['classic', 'horses']));
+    });
+
     test('dontEquate prevents grouping', () {
       final setup = buildSetup();
       // #python and #snake are explicitly NOT equivalent
@@ -296,6 +415,152 @@ void main() {
       expect(agg.tagEquivalence['python'], isNot(equals('snake')));
       expect(agg.tagEquivalence['snake'], isNot(equals('python')));
     });
+  });
+
+  group('Tag equivalence network-order priority', () {
+    _TwoSetup buildTwoSetup() {
+      final Json povIdentityKey = mockKey('pov_identity');
+      final String povIdentityToken = Jsonish(povIdentityKey).token;
+      final Json povDelegateKey = mockKey('pov_delegate');
+      final String povDelegateToken = Jsonish(povDelegateKey).token;
+
+      final Json peerIdentityKey = mockKey('peer_identity');
+      final String peerIdentityToken = Jsonish(peerIdentityKey).token;
+      final Json peerDelegateKey = mockKey('peer_delegate');
+      final String peerDelegateToken = Jsonish(peerDelegateKey).token;
+
+      final TrustStatement povDelegateStmt = makeTrustStatement(
+        verb: TrustVerb.delegate,
+        subject: povDelegateKey,
+        iJson: povIdentityKey,
+        domain: 'nerdster.org',
+      );
+      final TrustStatement peerDelegateStmt = makeTrustStatement(
+        verb: TrustVerb.delegate,
+        subject: peerDelegateKey,
+        iJson: peerIdentityKey,
+        domain: 'nerdster.org',
+      );
+
+      // POV is first in identities list — network order.
+      final FollowNetwork followNetwork = FollowNetwork(
+        fcontext: 'test',
+        povIdentity: IdentityKey(povIdentityToken),
+        identities: [IdentityKey(povIdentityToken), IdentityKey(peerIdentityToken)],
+      );
+      final TrustGraph trustGraph = TrustGraph(
+        pov: IdentityKey(povIdentityToken),
+        distances: {
+          IdentityKey(povIdentityToken): 0,
+          IdentityKey(peerIdentityToken): 1,
+        },
+        edges: {
+          IdentityKey(povIdentityToken): [povDelegateStmt],
+          IdentityKey(peerIdentityToken): [peerDelegateStmt],
+        },
+      );
+      final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
+      final Labeler labeler = Labeler(trustGraph, delegateResolver: delegateResolver);
+
+      return _TwoSetup(
+        povDelegateKey: povDelegateKey,
+        povDelegateToken: povDelegateToken,
+        peerDelegateKey: peerDelegateKey,
+        peerDelegateToken: peerDelegateToken,
+        followNetwork: followNetwork,
+        trustGraph: trustGraph,
+        delegateResolver: delegateResolver,
+        labeler: labeler,
+      );
+    }
+
+    ContentAggregation run(_TwoSetup s, EquivalenceResult equivalenceResult) {
+      return reduceContentAggregation(
+        s.followNetwork,
+        s.trustGraph,
+        s.delegateResolver,
+        ContentResult(delegateContent: {
+          DelegateKey(s.povDelegateToken): [],
+          DelegateKey(s.peerDelegateToken): [],
+        }),
+        equivalenceResult: equivalenceResult,
+        labeler: s.labeler,
+      );
+    }
+
+    test('POV relate beats peer equate for same pair', () {
+      final s = buildTwoSetup();
+      final EquivalenceStatement povRelate = makeEquivalenceStatement(
+        iJson: s.povDelegateKey,
+        equivalent: 'horses',
+        canonical: 'equestrian',
+        verb: EquivalenceVerb.relate,
+      );
+      final EquivalenceStatement peerEquate = makeEquivalenceStatement(
+        iJson: s.peerDelegateKey,
+        equivalent: 'horses',
+        canonical: 'equestrian',
+        verb: EquivalenceVerb.equate,
+      );
+
+      final agg = run(s, EquivalenceResult(delegateContent: {
+        DelegateKey(s.povDelegateToken): [povRelate],
+        DelegateKey(s.peerDelegateToken): [peerEquate],
+      }));
+
+      expect(agg.tagRelate.peersOf('horses'), contains('equestrian'),
+          reason: 'POV relate should win over peer equate');
+      expect(agg.tagEquivalence['horses'], isNot(equals('equestrian')),
+          reason: 'peer equate should be overridden by POV relate');
+    });
+
+    test('POV equate beats peer relate for same pair', () {
+      final s = buildTwoSetup();
+      final EquivalenceStatement povEquate = makeEquivalenceStatement(
+        iJson: s.povDelegateKey,
+        equivalent: 'horses',
+        canonical: 'equestrian',
+        verb: EquivalenceVerb.equate,
+      );
+      final EquivalenceStatement peerRelate = makeEquivalenceStatement(
+        iJson: s.peerDelegateKey,
+        equivalent: 'horses',
+        canonical: 'equestrian',
+        verb: EquivalenceVerb.relate,
+      );
+
+      final agg = run(s, EquivalenceResult(delegateContent: {
+        DelegateKey(s.povDelegateToken): [povEquate],
+        DelegateKey(s.peerDelegateToken): [peerRelate],
+      }));
+
+      expect(agg.tagEquivalence['horses'], equals('equestrian'),
+          reason: 'POV equate should win over peer relate');
+      expect(agg.tagRelate.peersOf('horses'), isNot(contains('equestrian')),
+          reason: 'peer relate should be overridden by POV equate');
+    });
+  });
+}
+
+class _TwoSetup {
+  final Json povDelegateKey;
+  final String povDelegateToken;
+  final Json peerDelegateKey;
+  final String peerDelegateToken;
+  final FollowNetwork followNetwork;
+  final TrustGraph trustGraph;
+  final DelegateResolver delegateResolver;
+  final Labeler labeler;
+
+  _TwoSetup({
+    required this.povDelegateKey,
+    required this.povDelegateToken,
+    required this.peerDelegateKey,
+    required this.peerDelegateToken,
+    required this.followNetwork,
+    required this.trustGraph,
+    required this.delegateResolver,
+    required this.labeler,
   });
 }
 

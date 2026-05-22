@@ -5,7 +5,7 @@ import 'package:oneofus_common/statement.dart';
 
 const String kNerdsterEquivalenceType = 'org.nerdster.equivalence';
 
-enum EquivalenceVerb { equate, dontEquate, clear }
+enum EquivalenceVerb { equate, dontEquate, relate, dontRelate, clear }
 
 class EquivalenceStatement extends Statement {
   static final Map<String, EquivalenceStatement> _cache = {};
@@ -21,6 +21,8 @@ class EquivalenceStatement extends Statement {
   String get canonical => subject;
 
   bool get not => verb == EquivalenceVerb.dontEquate;
+  bool get isRelate => verb == EquivalenceVerb.relate || verb == EquivalenceVerb.dontRelate;
+  bool get isNotRelate => verb == EquivalenceVerb.dontRelate;
 
   @override
   bool get isClear => verb == EquivalenceVerb.clear;

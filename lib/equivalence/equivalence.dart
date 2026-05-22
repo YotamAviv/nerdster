@@ -25,6 +25,12 @@ class Equivalence {
   Iterable<EquivalenceGroup> get groups =>
       _roots.map((r) => EquivalenceGroup._live(r));
 
+  Set<String> peersOf(String tag) {
+    final cell = _string2cell[tag];
+    if (cell == null) return const {};
+    return cell.root()._dfsTokens().where((t) => t != tag).toSet();
+  }
+
   bool equate(String equivalent, String canonical, {bool not = false}) {
     _EquivalenceCell canonicalCell = _string2cell[canonical] ?? _createCell(canonical);
     _EquivalenceCell equivalentCell = _string2cell[equivalent] ?? _createCell(equivalent);
