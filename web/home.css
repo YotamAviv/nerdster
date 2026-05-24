@@ -536,6 +536,26 @@ h3,
     height: 2.5rem;
   }
 
+  .site-header .header-band {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .tagline-pre {
+    display: none;
+  }
+
+  .app-links {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .web-app-link {
+    display: block;
+    text-align: center;
+  }
+
   main#content {
     padding: 0;
   }
@@ -587,21 +607,6 @@ h3,
 
 /* removed legacy .dark class-based theme */
 
-@media (max-width:600px) {
-  .site-header {
-    flex-direction: column;
-    align-items: flex-start
-  }
-
-  .site-header img {
-    width: 40px;
-    height: 40px
-  }
-
-  main#content {
-    padding: 0
-  }
-}
 
 @media (prefers-reduced-motion:reduce) {
   * {
@@ -665,15 +670,22 @@ a.man-link:hover {
 }
 
 .web-app-link {
-  font-size: var(--fs-sm);
-  color: var(--accent) !important;
+  display: inline-block;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--bg) !important;
+  background: var(--accent);
   text-decoration: none;
   text-align: center;
   white-space: nowrap;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius);
+  transition: opacity 0.15s;
 }
 
 .web-app-link:hover {
-  text-decoration: underline;
+  opacity: 0.85;
+  text-decoration: none;
 }
 
 /* -------------------- Testing Dialog -------------------- */
