@@ -319,8 +319,6 @@ class FeedController extends ValueNotifier<FeedModel?> {
       case DisFilterMode.my:
         final myDis = aggregation.myDismissStatements[subject.canonical] ?? [];
         return !SubjectGroup.checkIsDismissed(myDis, subject);
-      case DisFilterMode.pov:
-        return !subject.isDismissed;
       case DisFilterMode.ignore:
         return true;
     }

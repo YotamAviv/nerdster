@@ -20,7 +20,6 @@ enum SortMode {
 
 enum DisFilterMode {
   my,
-  pov,
   ignore;
 
   static DisFilterMode fromString(String val) {
@@ -139,11 +138,6 @@ class SubjectGroup {
   int get comments =>
       statements.where((s) => s.comment != null && s.comment!.isNotEmpty).length;
 
-  // TODO(deferred): PoV dismiss — once the PoV's dis stream is fetched, wire it
-  // in here via a povDismissStatements field and delegate to checkIsDismissed.
-  bool get isDismissed => false;
-  DateTime? get povDismissalTimestamp => null;
-
   /// Returns whether the signed-in user has dismissed the subject.
   /// [myDis] is the list of DismissStatements for this canonical subject from
   /// the user's own dis stream (descending time order, one per delegate).
@@ -224,8 +218,6 @@ class SubjectAggregation {
   // Proxy getters for disposition
   bool get isRated => activeGroup.isRated;
   int get comments => activeGroup.comments;
-  bool get isDismissed => activeGroup.isDismissed;
-  DateTime? get povDismissalTimestamp => activeGroup.povDismissalTimestamp;
 
   @override
   bool operator ==(Object other) =>

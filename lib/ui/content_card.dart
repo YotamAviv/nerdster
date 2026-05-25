@@ -995,8 +995,6 @@ bool _shouldShowStatement(ContentStatement s, FeedModel model) {
     case DisFilterMode.my:
       final myDis = model.aggregation.myDismissStatements[subjectAgg.canonical] ?? [];
       return !SubjectGroup.checkIsDismissed(myDis, subjectAgg);
-    case DisFilterMode.pov:
-      return !subjectAgg.isDismissed;
     case DisFilterMode.ignore:
       return true;
   }
