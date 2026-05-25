@@ -16,7 +16,7 @@ Future<void> timeOrderingScenario() async {
   // Capture write rejections via the factory callback.
   Object? capturedError;
   final savedOnWriteError = channelFactory.onWriteError;
-  channelFactory.onWriteError = (e) async { capturedError = e; };
+  channelFactory.onWriteError = (e, _) async { capturedError = e; };
 
   final source = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements');
   await source.fetch({issuerToken: null});

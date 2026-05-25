@@ -60,7 +60,7 @@ Future<void> _nerdsterReload() async {
 /// Passed to [ChannelFactory.onWriteError]. The infrastructure has already cleared
 /// its own caches; [_nerdsterReload] handles app-level cleanup (statement caches,
 /// sign-in state) when the user confirms.
-Future<void> Function(Object) nerdsterWriteErrorFunc = (_) async {
+Future<void> Function(Object, StackTrace) nerdsterWriteErrorFunc = (_, __) async {
   final context = navigatorKey.currentContext;
   if (context == null) return;
 
