@@ -2,11 +2,9 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // My plan is to (one of these days, if necessary):
-    // - sweep the data and delete data from authors not my in one-of-us.net network.
     match /{document=**} {
-      allow read, write: if false;
+      allow read: if true;
+      allow write: if false;
     }
   }
 }

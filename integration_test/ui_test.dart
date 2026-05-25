@@ -62,10 +62,10 @@ void main() {
       final lisaToken = getToken(lisaIdentity);
       print('Signing in as Lisa: $lisaToken');
 
-      // 2. Start the app first so FeedController is created and listening,
-      //    then sign in — this triggers _onSignInStateChanged → refresh().
-      await tester.pumpWidget(const app.NerdsterApp());
+      // 2. Sign in before pumping the widget so hasPov is true from the start.
+      //    This prevents the sign-in dialog from appearing during the test.
       await signInState.signInWithFedKey(FedKey(lisaIdentity), null);
+      await tester.pumpWidget(const app.NerdsterApp());
       print('Current POV: ${signInState.pov}');
 
       // Pump until ContentCards appear (pipeline + network fetches can take variable time).

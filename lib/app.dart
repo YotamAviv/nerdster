@@ -7,7 +7,6 @@ import 'package:nerdster/ui/content_view.dart';
 import 'package:nerdster/ui/sign_in_widget.dart';
 import 'package:nerdster/verify.dart';
 import 'package:nerdster/qr_sign_in.dart';
-import 'package:nerdster_common/ui/sign_in_dialog.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -154,8 +153,6 @@ class _AppHome extends StatefulWidget {
 }
 
 class _AppHomeState extends State<_AppHome> {
-  bool _dialogShowing = false;
-
   @override
   void initState() {
     super.initState();
@@ -174,33 +171,12 @@ class _AppHomeState extends State<_AppHome> {
   void _onSignInChanged() {
     if (!signInState.hasPov) {
       _maybeShowDialog();
-    } else if (_dialogShowing && mounted) {
-      // Sign-in arrived externally (e.g., deep link) while dialog was open.
-      // Delay to next frame so any in-progress button press that also calls
-      // Navigator.pop() can complete first — avoiding a double-pop (black screen).
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_dialogShowing && mounted) Navigator.of(context).pop();
-      });
     }
   }
 
   void _maybeShowDialog() {
-    if (_dialogShowing || !mounted) return;
-    _dialogShowing = true;
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: SignInDialog(config: buildNerdsterSignInConfig()),
-      ),
-    ).then((_) {
-      _dialogShowing = false;
-      // Safety net: if dismissed without an identity (any edge case), re-show immediately.
-      if (!signInState.hasPov && mounted) {
-        _maybeShowDialog();
-      }
-    });
+    if (!mounted) return;
+    showSignInDialog(context);
   }
 
   @override

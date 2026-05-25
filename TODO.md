@@ -1,5 +1,20 @@
 # TODO
 
+## Sign-in simplification and/or unification with Hablo
+
+Hablo/Nerdster differences:
+- Hablo doesn't support PoV.
+- Hablo uses verified identities.
+
+Issues:
+- I'm confused. Didn't the page at https://one-of-us.net/sign-in?parameters= used to show the QR code to scan? Should it, or has the app stopped listening already?
+
+Desires:
+- NERDSTER: DEV only paste keys
+
+Improvements:
+- bring back "Recommended" where we guess if we're on a phone or not.
+
 ## (Like Hablo just did) Move Dart initial OOU graph search and/or more to CF JavaScript.
 Should be way faster.
 From Hablo's point of view, Nerdster does it in Dart because:

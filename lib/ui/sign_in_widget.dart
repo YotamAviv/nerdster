@@ -42,6 +42,27 @@ Future<void> _signInAsDev(BuildContext context) async {
   if (context.mounted) Navigator.pop(context);
 }
 
+bool _signInDialogShowing = false;
+bool get signInDialogShowing => _signInDialogShowing;
+
+void showSignInDialog(BuildContext context, {bool force = false}) {
+  if (_signInDialogShowing && !force) return;
+  _signInDialogShowing = true;
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (_) => Dialog(
+      backgroundColor: Colors.transparent,
+      child: SignInDialog(config: buildNerdsterSignInConfig()),
+    ),
+  ).then((_) {
+    _signInDialogShowing = false;
+    if (!signInState.hasPov && context.mounted) {
+      showSignInDialog(context);
+    }
+  });
+}
+
 SignInConfig buildNerdsterSignInConfig() {
   return SignInConfig(
     sessionFactory: createNerdsterSignInSession,
@@ -50,6 +71,7 @@ SignInConfig buildNerdsterSignInConfig() {
     stateNotifier: signInState,
     hasIdentity: () => signInState.hasIdentity,
     hasDelegate: () => signInState.delegate != null,
+    hasPov: () => signInState.hasPov,
     identityJson: () => signInState.hasIdentity ? signInState.identityJson : null,
     delegatePublicKeyJson: () => signInState.delegatePublicKeyJson,
     onSignOut: () => signInState.signOut(clearIdentity: false),
@@ -146,7 +168,7 @@ class _SignInWidgetState extends State<SignInWidget> {
           // qualify the message so it reads as informational rather than alarming.
           statusMsg = povIsMyIdentity
               ? 'not associated with identity'
-              : 'not associated with identity (from this PoV)';
+              : 'not associated with this PoV';
         } else if (isRevoked) {
           delegateStatus = KeyStatus.revoked;
           statusMsg = 'revoked';
@@ -168,16 +190,7 @@ class _SignInWidgetState extends State<SignInWidget> {
     return IconButton(
       tooltip: tooltip,
       icon: iconWidget,
-      onPressed: () {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => Dialog(
-            backgroundColor: Colors.transparent,
-            child: SignInDialog(config: buildNerdsterSignInConfig()),
-          ),
-        );
-      },
+      onPressed: () => showSignInDialog(context, force: true),
     );
   }
 }

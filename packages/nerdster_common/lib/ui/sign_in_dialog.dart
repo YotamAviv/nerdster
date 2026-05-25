@@ -9,9 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:nerdster_common/sign_in_session.dart';
 import 'package:nerdster_common/ui/key_icon.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
-import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/jsonish.dart';
-import 'package:oneofus_common/keys.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -26,6 +24,7 @@ class SignInConfig {
   final ChangeNotifier stateNotifier;
   final bool Function() hasIdentity;
   final bool Function() hasDelegate;
+  final bool Function() hasPov;
   final Json? Function() identityJson;
   final Json? Function() delegatePublicKeyJson;
   final VoidCallback onSignOut;
@@ -50,6 +49,7 @@ class SignInConfig {
     required this.stateNotifier,
     required this.hasIdentity,
     required this.hasDelegate,
+    required this.hasPov,
     required this.identityJson,
     required this.delegatePublicKeyJson,
     required this.onSignOut,
@@ -75,14 +75,11 @@ class SignInDialog extends StatefulWidget {
   State<SignInDialog> createState() => _SignInDialogState();
 }
 
-class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderStateMixin {
+class _SignInDialogState extends State<SignInDialog> {
   int _headingTapCount = 0;
   bool _showPaste = false;
   bool _expanded = false;
-  bool _prevHasIdentity = false;
   bool _timeoutFired = false;
-  late AnimationController _xPulseController;
-  late Animation<double> _xPulseScale;
   late Future<SignInSession> _sessionFuture;
   String? _prevIdentityToken;
   String? _prevDelegateToken;
@@ -92,14 +89,6 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _prevHasIdentity = _c.hasIdentity();
-    _xPulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
-    _xPulseScale = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: 1.4, end: 1.0), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.25), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: 1.25, end: 1.0), weight: 1),
-    ]).animate(CurvedAnimation(parent: _xPulseController, curve: Curves.easeInOut));
     _prevIdentityToken = _c.hasIdentity() ? _tokenOf(_c.identityJson()) : null;
     _prevDelegateToken = _tokenOf(_c.delegatePublicKeyJson());
     _c.stateNotifier.addListener(_update);
@@ -109,7 +98,6 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
   @override
   void dispose() {
     _c.stateNotifier.removeListener(_update);
-    _xPulseController.dispose();
     _sessionFuture.then((s) => s.cancel()).catchError((_) {});
     super.dispose();
   }
@@ -118,9 +106,6 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
   void _update() {
     if (!mounted) return;
-    final bool nowHasIdentity = _c.hasIdentity();
-    if (!_prevHasIdentity && nowHasIdentity) _xPulseController.forward(from: 0);
-    _prevHasIdentity = nowHasIdentity;
     setState(() {});
   }
 
@@ -128,6 +113,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     final bool hasIdentity = _c.hasIdentity();
     final bool hasDelegate = _c.hasDelegate();
+    final bool canDismiss = hasIdentity || _c.hasPov();
 
     final String? currentIdentityToken = hasIdentity ? _tokenOf(_c.identityJson()) : null;
     final String? currentDelegateToken = _tokenOf(_c.delegatePublicKeyJson());
@@ -136,10 +122,12 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
 
     if (identityArrived || delegateArrived) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() {
-          _prevIdentityToken = currentIdentityToken;
-          _prevDelegateToken = currentDelegateToken;
-        });
+        if (mounted) {
+          setState(() {
+            _prevIdentityToken = currentIdentityToken;
+            _prevDelegateToken = currentDelegateToken;
+          });
+        }
       });
     } else {
       _prevIdentityToken = currentIdentityToken;
@@ -158,7 +146,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
             return _buildListButton(
               icon: Icons.link,
               label: 'https://one-of-us.net/...',
-              subtitle: 'Use the ONE-OF-US.NET identity app',
+              subtitle: 'Link to your ONE-OF-US.NET app',
               onPressed: () {},
             );
           }
@@ -169,7 +157,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
           return _buildListButton(
             icon: Icons.link,
             label: 'https://one-of-us.net/...',
-            subtitle: 'Use the ONE-OF-US.NET identity app',
+            subtitle: 'Link to your ONE-OF-US.NET app',
             onPressed: () {
               _magicLinkSignIn(context, useUniversalLink: true,
                   precreatedSessionFuture: _sessionFuture, autoLaunch: false);
@@ -183,14 +171,14 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
     Widget buildCustomBtn() => _buildListButton(
           icon: Icons.auto_fix_high,
           label: 'keymeid://...',
-          subtitle: 'Use any keymeid associated identity app',
+          subtitle: 'Link to any keymeid associated app',
           onPressed: () => _magicLinkSignIn(context),
         );
 
     Widget buildQrBtn() => _buildListButton(
           icon: Icons.qr_code,
           label: 'QR Code',
-          subtitle: 'Scan with an identity app to sign in',
+          subtitle: 'Scan with your identity app',
           onPressed: () => _qrSignIn(context),
         );
 
@@ -199,7 +187,7 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && hasIdentity) Navigator.of(context).pop();
+        if (!didPop && canDismiss) Navigator.of(context).pop();
       },
       child: Container(
         clipBehavior: Clip.hardEdge,
@@ -219,62 +207,20 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Text.rich(TextSpan(
+                    style: TextStyle(fontSize: 16, color: Colors.black87),
                     children: [
-                      const Expanded(
-                        child: Text('Sign in',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      ),
-                      ScaleTransition(
-                        scale: _xPulseScale,
-                        child: Tooltip(
-                          message: hasIdentity ? 'Close' : 'Sign in to close',
-                          child: IconButton(
-                            icon: Icon(Icons.close,
-                                color: hasIdentity ? Colors.black87 : Colors.grey.shade300),
-                            onPressed: hasIdentity ? () => Navigator.of(context).pop() : null,
-                          ),
-                        ),
-                      ),
+                      TextSpan(text: 'Sign in',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(text: ' using your '),
+                      TextSpan(text: 'Identity App',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      TextSpan(text: ' (e.g. ONE-OF-US.NET)'),
                     ],
-                  ),
+                  )),
                 ),
-                _buildStatusTable(hasIdentity, hasDelegate,
-                    identityArrived: identityArrived, delegateArrived: delegateArrived),
-                if (!hasDelegate) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Text.rich(TextSpan(
-                            style: TextStyle(fontSize: 12, color: Colors.black87),
-                            children: [
-                              TextSpan(text: 'Use your '),
-                              TextSpan(text: 'Identity App',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              TextSpan(text: ' (ONE-OF-US.NET)'),
-                            ],
-                          )),
-                        ),
-                        GestureDetector(
-                          onTap: () => setState(() => _expanded = !_expanded),
-                          child: Icon(_expanded ? Icons.remove : Icons.add,
-                              size: 18, color: Colors.blue[700]),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 8),
                 Padding(
                   padding: const EdgeInsets.only(left: 4, bottom: 4),
                   child: GestureDetector(
@@ -289,8 +235,9 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                             fontWeight: FontWeight.bold)),
                   ),
                 ),
-                if (_expanded) buildCustomBtn(),
                 buildUniversalBtn(),
+                if (_expanded) const SizedBox(height: 6),
+                if (_expanded) buildCustomBtn(),
                 const SizedBox(height: 8),
                 Padding(
                   padding: const EdgeInsets.only(left: 4, bottom: 4),
@@ -380,24 +327,44 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
                       ),
                     ),
                   ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                Padding(
+                  padding: const EdgeInsets.only(left: 4, top: 4, bottom: 4),
+                  child: Text('Sign-in status',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.blueGrey[700],
+                          fontWeight: FontWeight.bold)),
+                ),
+                _buildStatusTable(hasIdentity, hasDelegate,
+                    identityArrived: identityArrived, delegateArrived: delegateArrived),
+                OverflowBar(
+                  alignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (_c.trailingWidget != null) _c.trailingWidget!,
-                    if (hasDelegate)
-                      TextButton.icon(
-                        icon: const Icon(Icons.logout),
-                        label: const Text('Sign out'),
-                        style: TextButton.styleFrom(foregroundColor: Colors.red),
-                        onPressed: _c.onSignOut,
-                      )
-                    else if (hasIdentity)
-                      TextButton.icon(
-                        icon: const Icon(Icons.person_remove_outlined),
-                        label: const Text('Forget identity'),
-                        style: TextButton.styleFrom(foregroundColor: Colors.red),
-                        onPressed: _c.onForgetIdentity,
-                      ),
+                    IconButton(
+                      tooltip: _expanded ? 'Fewer options' : 'More options',
+                      icon: Icon(_expanded ? Icons.remove : Icons.add, size: 18),
+                      onPressed: () => setState(() => _expanded = !_expanded),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_c.trailingWidget != null) _c.trailingWidget!,
+                        if (hasDelegate)
+                          TextButton.icon(
+                            icon: const Icon(Icons.logout),
+                            label: const Text('Sign out'),
+                            style: TextButton.styleFrom(foregroundColor: Colors.red),
+                            onPressed: _c.onSignOut,
+                          )
+                        else if (hasIdentity)
+                          TextButton.icon(
+                            icon: const Icon(Icons.person_remove_outlined),
+                            label: const Text('Forget identity'),
+                            style: TextButton.styleFrom(foregroundColor: Colors.red),
+                            onPressed: _c.onForgetIdentity,
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ],
@@ -460,20 +427,44 @@ class _SignInDialogState extends State<SignInDialog> with SingleTickerProviderSt
     required String subtitle,
     required VoidCallback onPressed,
   }) {
-    return ListTile(
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      leading: leadingWidget ?? Icon(icon),
-      title: Text(label),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 11)),
-      onTap: onPressed,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          alignment: Alignment.centerLeft,
+          side: const BorderSide(color: Colors.blue, width: 1.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          foregroundColor: Colors.blue[800],
+        ),
+        child: Row(
+          children: [
+            leadingWidget ?? Icon(icon, size: 22, color: Colors.blue[700]),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue[900])),
+                Text(subtitle,
+                    style: TextStyle(fontSize: 11, color: Colors.blue[700])),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   Future<void> _qrSignIn(BuildContext context) async {
     final completer = Completer<void>();
     final session = await _c.sessionFactory();
+    if (!context.mounted) return;
     // ignore: unawaited_futures
     session.listen(
       firestore: _c.firestore,
@@ -620,11 +611,11 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
         await launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
       }
 
-      session.listen(
+      unawaited(session.listen(
         firestore: widget.firestore,
         onData: widget.onData,
         onDone: widget.onSuccess,
-      );
+      ));
     } catch (e) {
       debugPrint('MagicLinkDialog error: $e');
     }
