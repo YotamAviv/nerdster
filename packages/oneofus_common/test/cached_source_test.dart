@@ -72,7 +72,7 @@ void main() {
       // because the blocking writer never resolves until release() is called.
       final writer = _BlockingWriter();
       channelFactory.testWriterOverride = writer;
-      channelFactory.onWriteError = (_) async {}; // _BlockingWriter throws after release
+      channelFactory.onWriteError = (_, __) async {}; // _BlockingWriter throws after release
 
       final channel = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
       await channel.fetch({issuerToken: null});

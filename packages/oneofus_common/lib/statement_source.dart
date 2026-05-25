@@ -63,4 +63,11 @@ abstract class StatementChannel<T extends Statement>
   Future<void> clear();
 
   void resetRevokeAt();
+
+  /// Returns true if [issuerId] is already in the cache (from a prior fetch, push, or seed).
+  bool isCached(String issuerId);
+
+  /// Prime the cache for [issuerId] without a network fetch.
+  /// Asserts that the cache slot is not already populated.
+  void seed(String issuerId, List<T> statements);
 }

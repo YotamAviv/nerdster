@@ -79,7 +79,7 @@ function makeWrite2Handler(auth) {
 
     const db = admin.firestore();
     const ref = streamRef(db, iToken, streamName);
-    const statementsRef = ref.collection('statements');
+    const stmtsRef = ref.collection('statements');
 
     try {
       await db.runTransaction(async (tx) => {
@@ -98,7 +98,7 @@ function makeWrite2Handler(auth) {
           throw err;
         }
 
-        tx.set(statementsRef.doc(token), statement);
+        tx.set(stmtsRef.doc(token), statement);
         tx.set(ref, { head: token, headTime: clientTime }, { merge: true });
       });
     } catch (e) {

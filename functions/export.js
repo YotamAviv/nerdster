@@ -30,7 +30,7 @@ const { logger } = require("firebase-functions");
 const { fetchStatements } = require('./statement_fetcher');
 const { parseIrevoke } = require('./jsonish_util');
 
-async function handleExport(req, res) {
+async function handleExport(req, res, { authHook } = {}) {
   if (req.path === '/openapi.yaml') {
     const fs = require('fs');
     const path = require('path');
@@ -45,6 +45,11 @@ async function handleExport(req, res) {
   res.setHeader('Connection', 'keep-alive');
 
   try {
+    if (authHook) {
+      const authOk = await authHook(req, res);
+      if (!authOk) return;
+    }
+
     const specParam = req.query.spec;
     if (!specParam) {
       res.status(400).type('text').send(

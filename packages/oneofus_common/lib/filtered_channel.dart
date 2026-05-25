@@ -42,4 +42,12 @@ class FilteredChannel<T extends Statement> implements StatementChannel<T> {
 
   @override
   void resetRevokeAt() => _parent.resetRevokeAt();
+
+  @override
+  bool isCached(String issuerId) => _parent.isCached(issuerId);
+
+  @override
+  void seed(String issuerId, List<T> statements) {
+    _parent.seed(issuerId, List<Statement>.from(statements));
+  }
 }

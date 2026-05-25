@@ -12,6 +12,7 @@ const { statementsRef } = require('./schema');
 const verbs = [
   'trust', 'delegate', 'clear', 'rate', 'follow', 'censor',
   'relate', 'dontRelate', 'equate', 'dontEquate', 'replace', 'block',
+  'set',
 ];
 
 /**
@@ -68,7 +69,11 @@ async function makedistinct(input) {
  */
 async function resolveRevokeAtTime(revokeAtValue, collectionRef) {
   if (!revokeAtValue) return undefined;
-  if (typeof revokeAtValue !== 'string') return undefined; // unrecognized format
+  // short lived legacy format {revokeAt, streams} back when we tried supporing dis/statements streams.
+  // DEFER: Clean up and remove once ONE-OF-US.NET phone app is updated and in the field.
+  if (typeof revokeAtValue === 'object') revokeAtValue = revokeAtValue.revokeAt;
+  
+  if (typeof revokeAtValue !== 'string') return undefined;
   const snap = await collectionRef.doc(revokeAtValue).get();
   return snap.exists ? snap.data().time : null;
 }

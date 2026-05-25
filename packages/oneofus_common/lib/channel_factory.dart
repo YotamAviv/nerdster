@@ -78,7 +78,7 @@ class ChannelFactory {
   /// before any further operations proceed.
   ///
   /// If null and a write fails, [FlutterError.reportError] is called (crashes in debug).
-  Future<void> Function(Object)? onWriteError;
+  Future<void> Function(Object, StackTrace)? onWriteError;
 
   ChannelFactory(this.fireChoice, {this.skipVerify, this.onWriteError});
 
@@ -224,7 +224,7 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
   final StatementWriter<T>? _writer;
 
   /// Late-bound getter: read at error time so tests can swap [ChannelFactory.onWriteError].
-  final Future<void> Function(Object)? Function() _getOnWriteError;
+  final Future<void> Function(Object, StackTrace)? Function() _getOnWriteError;
 
   /// Late-bound: returns all roots for this stream (including self). Read at inject time
   /// so newly registered siblings are always visible.
@@ -268,6 +268,15 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
   }
 
   @override
+  bool isCached(String issuerId) => _fullCache.containsKey(issuerId);
+
+  @override
+  void seed(String issuerId, List<T> statements) {
+    assert(!_fullCache.containsKey(issuerId), 'seed() called but cache already populated for $issuerId');
+    _fullCache[issuerId] = List<T>.from(statements);
+  }
+
+  @override
   Future<T> push(Json json, StatementSigner signer,
       {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed}) {
     if (_writer == null) throw UnimplementedError('No writer');
@@ -307,7 +316,7 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
           _pushQueues.clear();
           final handler = _getOnWriteError();
           if (handler != null) {
-            await handler(e);
+            await handler(e, stack);
           } else {
             FlutterError.reportError(FlutterErrorDetails(
               exception: e,
@@ -490,10 +499,7 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     if (paramsOverride != null) params.addAll(paramsOverride!);
     if (excludeTypes.isNotEmpty) params['excludeTypes'] = excludeTypes;
     if (authHook != null) {
-      for (final entry in authHook!().entries) {
-        final value = entry.value;
-        params[entry.key] = value is String ? value : jsonEncode(value);
-      }
+      params['auth'] = jsonEncode(authHook!());
     }
     params['spec'] = jsonEncode(spec);
 
