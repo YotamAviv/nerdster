@@ -16,7 +16,8 @@ List<Iterable<ContentStatement>> _collectSources(
     IdentityKey identity, DelegateResolver delegateResolver, ContentResult contentResult) {
   final List<Iterable<ContentStatement>> sources = [];
   for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
-    sources.add(contentResult.delegateContent[key]!);
+    final content = contentResult.delegateContent[key];
+    if (content != null) sources.add(content);
   }
   return sources;
 }
@@ -424,7 +425,8 @@ ContentAggregation reduceContentAggregation(
     for (final IdentityKey identity in followNetwork.identities) {
       final List<List<EquivalenceStatement>> sources = [];
       for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(identity)) {
-        sources.add(equivalenceResult.delegateContent[key]!);
+        final content = equivalenceResult.delegateContent[key];
+        if (content != null) sources.add(content);
       }
       for (final EquivalenceStatement s in distinct(
         Merger.merge(sources),

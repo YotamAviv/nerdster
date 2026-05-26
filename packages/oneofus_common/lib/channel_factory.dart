@@ -84,6 +84,20 @@ class ChannelFactory {
 
   final Map<String, String> _redirects = {};
 
+  /// Pre-fetched statement bag keyed by canonical fetch URL.
+  /// Each entry is the statements list the export endpoint would return for that URL.
+  /// Entries persist; the whole bag is released via [clearSeedBag] after startup.
+  Map<String, List<dynamic>>? _seedBag;
+
+  /// Load a pre-fetched seed bag (e.g. from a seedNerdster CF response).
+  /// Keys must be canonical fetch URLs in the same format that [_CloudFunctionsSource] constructs.
+  void loadSeedBag(Map<String, dynamic> raw) {
+    _seedBag = {for (final e in raw.entries) e.key: e.value as List<dynamic>};
+  }
+
+  /// Release the seed bag after startup fetches are complete.
+  void clearSeedBag() => _seedBag = null;
+
   /// Optionally register a domain to override defaults.
   ///
   /// Registration is only required when you need non-default behaviour:
@@ -166,6 +180,8 @@ class ChannelFactory {
       final domain = reg?.domain ?? _domainOf(exportUrl);
       final source = _CloudFunctionsSource<Statement>(
         baseUrl: resolveUrl(exportUrl),
+        canonicalBaseUrl: exportUrl,
+        getSeedBag: () => _seedBag,
         verifier: OouVerifier(),
         skipVerify: skipVerify,
         authHook: reg?.readAuthHook,
@@ -214,6 +230,12 @@ class ChannelFactory {
     await Future.wait(_rootChannels.values.map((ch) => ch.clear()));
     _rootChannels.clear();
     _streamRoots.clear();
+  }
+
+  /// Clears cached data from every root without removing them from the registry.
+  /// Unlike [clearCache], existing channel references remain valid after this call.
+  Future<void> clearAllChannelData() async {
+    await Future.wait(_rootChannels.values.map((ch) => ch.clear()));
   }
 }
 
@@ -450,6 +472,12 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
 class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final String baseUrl;
 
+  /// Canonical (pre-redirect) base URL, used as the key prefix in the seed bag.
+  final String? canonicalBaseUrl;
+
+  /// Late-bound access to [ChannelFactory._seedBag]. Null in test/fake mode.
+  final Map<String, List<dynamic>>? Function()? getSeedBag;
+
   /// The statement type string used as fallback when the server omits the 'statement' field.
   final String? statementType;
 
@@ -471,6 +499,8 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
 
   _CloudFunctionsSource({
     required this.baseUrl,
+    this.canonicalBaseUrl,
+    this.getSeedBag,
     this.statementType,
     this.excludeTypes = const [],
     http.Client? client,
@@ -479,6 +509,52 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     this.paramsOverride,
     this.authHook,
   }) : client = client ?? http.Client();
+
+  /// Canonical fetch URL for a single token — used as the seed bag lookup key.
+  /// Matches what this source would construct for a full-history (revokeAt=null) fetch,
+  /// but without auth (auth is session-specific and not encoded in bag keys).
+  String _bagKey(String token) {
+    final Json params = Map.of(_paramsProto);
+    if (paramsOverride != null) params.addAll(paramsOverride!);
+    if (excludeTypes.isNotEmpty) params['excludeTypes'] = excludeTypes;
+    params['spec'] = jsonEncode([token]);
+    return Uri.parse(canonicalBaseUrl ?? baseUrl).replace(queryParameters: params).toString();
+  }
+
+  Future<List<T>> _parseStatements(String token, List<dynamic> statementsJson) async {
+    final List<T> list = [];
+    final bool skipCheck = skipVerify?.value ?? false;
+    final Map<String, String> iJson = {'I': token};
+
+    for (final dynamic jsonRaw in statementsJson) {
+      final json = Map<String, dynamic>.from(jsonRaw as Map);
+
+      if (!json.containsKey('I')) {
+        final Jsonish? cached = Jsonish.find(token);
+        json['I'] = cached != null ? cached.json : iJson;
+      }
+      if (!json.containsKey('statement') && statementType != null) {
+        json['statement'] = statementType!;
+      }
+
+      final String? serverToken = json['id'] as String?;
+      if (serverToken != null) json.remove('id');
+
+      Jsonish jsonish;
+      if (!skipCheck) {
+        try {
+          jsonish = await Jsonish.makeVerify(json, verifier);
+        } catch (e) {
+          throw SourceError('Invalid Signature: $e', token: token, originalError: e);
+        }
+      } else {
+        jsonish = Jsonish(json, serverToken);
+      }
+
+      list.add(Statement.make(jsonish) as T);
+    }
+    return list;
+  }
 
   @override
   List<SourceError> get errors => List.unmodifiable(_errors.values);
@@ -490,7 +566,44 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     }
     if (keys.isEmpty) return {};
 
-    final List<dynamic> spec = keys.entries.map((e) {
+    final Map<String, List<T>> results = {};
+    Map<String, String?> httpKeys = keys;
+
+    // Check seed bag for full-history (revokeAt=null) tokens before going to network.
+    final bag = getSeedBag?.call();
+    if (bag != null) {
+      httpKeys = {};
+      final List<String> missUrls = [];
+      for (final entry in keys.entries) {
+        if (entry.value == null) {
+          final String key = _bagKey(entry.key);
+          final List<dynamic>? bagData = bag[key];
+          if (bagData != null) {
+            try {
+              results[entry.key] = List.unmodifiable(await _parseStatements(entry.key, bagData));
+            } catch (e) {
+              _errors[entry.key] = e is SourceError
+                  ? e
+                  : SourceError('Bag parse error: $e', token: entry.key, originalError: e);
+            }
+            continue;
+          }
+          missUrls.add(key);
+        }
+        httpKeys[entry.key] = entry.value;
+      }
+      final int hits = keys.length - httpKeys.length;
+      if (hits > 0 || httpKeys.isNotEmpty) {
+        debugPrint('[bag] $baseUrl — $hits hits, ${httpKeys.length} misses');
+      }
+      for (final url in missUrls) {
+        debugPrint('[bag miss] $url');
+      }
+    }
+
+    if (httpKeys.isEmpty) return results;
+
+    final List<dynamic> spec = httpKeys.entries.map((e) {
       if (e.value == null) return e.key;
       return {e.key: e.value};
     }).toList();
@@ -511,7 +624,6 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
       throw Exception('Failed to fetch statements from $baseUrl: ${response.statusCode}');
     }
 
-    final Map<String, List<T>> results = {};
     final bool skipCheck = skipVerify?.value ?? false;
 
     await for (final String line

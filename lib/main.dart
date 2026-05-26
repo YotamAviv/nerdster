@@ -109,6 +109,9 @@ Future<void> main() async {
       FirebaseConfig.registerRedirect(
           'https://us-central1-nerdster.cloudfunctions.net/getOouCache',
           'http://$emulatorHost:5001/nerdster/us-central1/getOouCache');
+      FirebaseConfig.registerRedirect(
+          'https://us-central1-nerdster.cloudfunctions.net/seedNerdster',
+          'http://$emulatorHost:5001/nerdster/us-central1/seedNerdster');
     }
     nerdsterFirestore = FirebaseFirestore.instance;
     oneofusFirestore = OneofusFire.firestore;

@@ -12,6 +12,10 @@ import 'package:oneofus_common/statement_source.dart';
 ///
 /// Distinctness is NOT applied here — it is the responsibility of the root
 /// [_CachedSource] to maintain a distinct cache when constructed with distinct=true.
+///
+/// PERFORMANCE CRITICAL: the excludeTypes parameter on the root exists because users
+/// dismiss thousands of items but rate only dozens. Peer streams must exclude dismiss
+/// statements or the bandwidth cost becomes prohibitive.
 class FilteredChannel<T extends Statement> implements StatementChannel<T> {
   final StatementChannel<Statement> _parent;
 

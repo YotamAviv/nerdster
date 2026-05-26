@@ -17,4 +17,8 @@ class FirebaseConfig {
   /// Nerdster CF endpoint that returns the pre-built OOU statement cache.
   static String get nerdsterGetOouCacheUrl =>
       resolveUrl('https://us-central1-nerdster.cloudfunctions.net/getOouCache');
+
+  /// Nerdster CF endpoint that returns the full startup seed bag (OOU + delegate content).
+  static String get nerdsterSeedNerdsterUrl =>
+      resolveUrl('https://us-central1-nerdster.cloudfunctions.net/seedNerdster');
 }

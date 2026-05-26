@@ -102,7 +102,46 @@ The optimization would be more valuable for:
 - Larger/deeper networks (more sequential BFS round trips to eliminate)
 - CF-side caching of the result (most callers skip the BFS entirely)
 
-## Planned
+## `seedNerdster` endpoint
 
-- Try seeding the delegate content channel similarly, to reduce delegate content round trips.
-- CF-side caching of the oouCache result (TTL-based) to amortize BFS cost across callers.
+### Design: pre-fetched bag keyed by fetch URL
+
+The server returns a flat map `{ fetchUrl: statements[] }` where each key is the exact URL
+that `_CloudFunctionsSource` would construct for that token — including all query params
+(`distinct`, `orderStatements`, `includeId`, `checkPrevious`, `omit`, `excludeTypes`, `spec`).
+Each entry has a single-token `spec`.
+
+The client stores this bag in `ChannelFactory`. Before batching any HTTP fetch,
+`_CloudFunctionsSource` checks each token's URL against the bag. Hit → skip network call and
+use bag data directly; miss → fetch normally. This is pure infrastructure (`oneofus_common`)
+with no Nerdster-specific code in the channel layer.
+
+### What `seedNerdster` fetches
+
+`seedNerdster` knows Nerdster's startup fetch pattern and hard-codes it:
+
+1. **OOU trust statements** — one bag entry per trust-network token (no `excludeTypes`),
+   same data as `getOouCache`.
+2. **Delegate content, all types** — one entry per delegate token (no `excludeTypes`), for
+   the root shared by `contentSource` / `disSource` / `equivSource`.
+3. **Delegate content, no dismiss** — one entry per delegate token with
+   `excludeTypes=org.nerdster.dis`, for `_peerContentChannel`'s separate root.
+
+No auth required — delegate content is already public via the export endpoint.
+
+Entries 2 and 3 have different URL keys (the `excludeTypes` param differs), so they
+naturally route to different roots on the client without any special-case logic.
+
+### Client-side changes
+
+- `ChannelFactory.loadSeedBag(Map<String, dynamic> bag)` — stores the bag.
+- `_CloudFunctionsSource.fetch()` — before batching, checks each token URL against the bag;
+  hits are treated as pre-fetched responses and parsed through the normal code path.
+- `FeedController._seedFromCF()` — replaces `_seedTrustChannelFromCF`; calls `seedNerdster`,
+  passes result to `channelFactory.loadSeedBag()`.
+
+### Expected improvement
+
+Seeding both OOU and delegate content should eliminate essentially all startup fetches for a
+typical user. The CF fetch cost remains, but it can later be amortized with server-side TTL
+caching of the `seedNerdster` result.

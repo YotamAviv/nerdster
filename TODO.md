@@ -1,21 +1,29 @@
 # TODO
 
-## (Like Hablo just did) Move Dart initial OOU graph search and/or more to CF JavaScript.
-Should be way faster.
-From Hablo's point of view, Nerdster does it in Dart because:
-- Nerdster shows the trust statements
-- history... I developed it, debugged it, tested it, and so Dart.
+## DONE (May 2026): Seed startup channels from CF — `seedNerdster` endpoint
 
-Nerdster also allows changing PoV and how you follow others, and so during its use it may need to fetch more OOU and/or Nerdster statements incrementally whereas Hablo only does full re-fetches.
-Supporting this necessarily requires at least 1 round-trip to the server, ideally just 1, but trying to do that would be complicated (a new PoV may require fetching layers of trust).
+`seedNerdster` computes the OOU trust graph server-side and returns a flat bag
+`{ fetchUrl: statements[] }` covering OOU trust statements + delegate content (all types
+and no-dismiss). The client loads the bag into `ChannelFactory.loadSeedBag()` before
+the first `_load()`, eliminating the sequential BFS round trips. Measured improvement:
+~780ms at median on PROD (seeded ~1945ms vs. unseeded ~2725ms).
 
-For starters, I'd like to explore just reducing the round trips for the inital startup.
-Option A:
-Have the CFs compute the trust graph and respond with the graph and the cache of OOU statements for Nerdster to seed its channels. The hope would be that this could be clean enough that not much Nerdster client code is changed.
-The Nerdster will use that as 1 round trip but will still require another for delegate content at initial startup.
+## FIXED (May 2026, seed branch): Delegate domain filtering — fetch only nerdster.org delegates
 
-DEFER: Option B:
-Have the CFs compute both the trust graph and also respond with the delegate statements the Nerdster will need as well, and so startup would be reduced to 1 round trip.
+`DelegateResolver.getDelegatesForIdentity` returns delegates for all domains. Nerdster
+should only consider `nerdster.org` delegates when building `myDelegateKeys` and
+`delegateKeysToFetch` in `feed_controller.dart`. Without the filter, OOU delegates from
+other apps (hablotengo.com, etc.) are fetched and a `!`-crash occurs in `_collectSources`
+when their keys are absent from `contentResult.delegateContent`.
+
+**Already fixed in the seed branch** (May 2026). Must land on main if the seed branch is
+not merged:
+
+- `feed_controller.dart`: `.where((k) => delegateResolver.getDomainForDelegate(k) == kNerdsterDomain)`
+  on both `myDelegateKeys` and `delegateKeysToFetch`.
+- `content_logic.dart`: `contentResult.delegateContent[key]!` → null-safe check (lines ~19
+  and ~427) since not all resolver delegates are fetched after the filter.
+- `functions/seed_nerdster.js`: `collectDelegateTokens` already filters by `s.with?.domain === 'nerdster.org'`.
 
 ## Sign-in failures.. show QR?
 

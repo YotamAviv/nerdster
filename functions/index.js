@@ -74,3 +74,9 @@ const { handleGetOouCache } = require('./get_oou_cache');
 exports.getOouCache = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
   await handleGetOouCache(req, res);
 });
+
+const { handleSeedNerdster } = require('./seed_nerdster');
+
+exports.seedNerdster = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
+  await handleSeedNerdster(req, res);
+});

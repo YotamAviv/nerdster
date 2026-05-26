@@ -80,6 +80,10 @@ async function resolveRevokeAtTime(revokeAtValue, collectionRef) {
 
 /**
  * Fetches statements from Firestore with various filters.
+ *
+ * PERFORMANCE CRITICAL: the omit/excludeTypes parameter exists because users dismiss
+ * thousands of items but rate only dozens. Peer streams must omit dismiss statements
+ * or the bandwidth cost becomes prohibitive.
  */
 async function fetchStatements(token2revokeAt, params = {}, omit = []) {
   const { checkPrevious, distinct, orderStatements = true, includeId, after, excludeTypes } = params;

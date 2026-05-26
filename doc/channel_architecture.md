@@ -87,7 +87,10 @@ Every write must be signed with the private key of the issuing identity or deleg
 
 ### Type exclusion — server-filtered, read-only
 
-A channel can be opened asking the server to omit certain statement types. Filtering happens on the server — excluded types are never transferred. This matters for bandwidth: in Nerdster, users dismiss thousands of items but rate dozens, so fetching peer content without dismiss statements saves significant data. Each token is fetched through exactly one channel — the signed-in user's stream through the full channel, peer streams through the no-dismiss channel. Channels with type exclusion are read-only; writes go through the full channel.
+### This is critical for performance
+Nerdster: users dismiss thousands of items but rate dozens, so fetching peer content without dismiss statements saves significant data. 
+
+A channel can be opened asking the server to omit certain statement types. Filtering happens on the server — excluded types are never transferred. Each token is fetched through exactly one channel — the signed-in user's stream through the full channel, peer streams through the no-dismiss channel. Channels with type exclusion are read-only; writes go through the full channel.
 
 ### Two roots for the same stream
 

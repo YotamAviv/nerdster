@@ -23,8 +23,6 @@ import 'package:nerdster/ui/dialogs/lgtm.dart';
 import 'package:nerdster/utils/most_strings.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/keys.dart';
-import 'package:oneofus_common/oou_verifier.dart';
-import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
@@ -348,16 +346,16 @@ class FeedController extends ValueNotifier<FeedModel?> {
     return _load(showLoading: false);
   }
 
-  Future<void> _seedTrustChannelFromCF(String povToken, String pathRequirement) async {
+  Future<void> _seedFromCF(String povToken, String pathRequirement) async {
     if (!_seedingEnabled) return;
     if (channelFactory.fireChoice == FireChoice.fake) return;
     try {
       final sw = Stopwatch()..start();
-      final uri = Uri.parse(FirebaseConfig.nerdsterGetOouCacheUrl).replace(queryParameters: {
+      final uri = Uri.parse(FirebaseConfig.nerdsterSeedNerdsterUrl).replace(queryParameters: {
         'povToken': povToken,
         'pathRequirement': pathRequirement,
       });
-      final response = await http.get(uri).timeout(const Duration(seconds: 15));
+      final response = await http.get(uri).timeout(const Duration(seconds: 20));
       final fetchMs = sw.elapsedMilliseconds;
       _lastCfFetchMs = fetchMs;
       if (response.statusCode != 200) {
@@ -365,36 +363,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
         return;
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final rawCache = data['oouCache'] as Map<String, dynamic>?;
-      if (rawCache == null) return;
-
-      final verifier = OouVerifier();
-      int seeded = 0;
-      int stmtCount = 0;
-      for (final entry in rawCache.entries) {
-        final token = entry.key;
-        if (trustSource.isCached(token)) continue;
-        final rawStatements = entry.value as List<dynamic>;
-        final List<TrustStatement> parsed = [];
-        for (final rawJson in rawStatements) {
-          try {
-            final jsonish = await Jsonish.makeVerify(Map<String, dynamic>.from(rawJson as Map), verifier);
-            final stmt = Statement.make(jsonish);
-            if (stmt is TrustStatement) parsed.add(stmt);
-          } catch (_) {
-            // skip invalid statements — same behavior as normal fetch
-          }
-        }
-        trustSource.seed(token, parsed);
-        seeded++;
-        stmtCount += parsed.length;
-      }
-      sw.stop();
-      debugPrint('[seed] CF fetch=${fetchMs}ms  verify+seed=${sw.elapsedMilliseconds - fetchMs}ms  '
-          'total=${sw.elapsedMilliseconds}ms  tokens=$seeded  statements=$stmtCount');
+      final bag = jsonDecode(response.body) as Map<String, dynamic>;
+      channelFactory.loadSeedBag(bag);
+      debugPrint('[seed] CF fetch=${fetchMs}ms  bag=${bag.length} keys');
     } catch (e) {
-      debugPrint('[seed] failed, falling back to BFS: $e');
+      debugPrint('[seed] failed, falling back to direct fetch: $e');
     }
   }
 
@@ -413,34 +386,25 @@ class FeedController extends ValueNotifier<FeedModel?> {
   Future<void> runBenchmark(BuildContext context) async {
     final savedSeeding = _seedingEnabled;
 
-    final List<int> seededOou = [];
-    final List<int> unseededOou = [];
-    final List<int> seededDelegate = [];
-    final List<int> unseededDelegate = [];
+    final List<int> seededTotal = [];
+    final List<int> unseededTotal = [];
     final List<int> cfFetch = [];
 
     for (int i = 0; i < 10; i++) {
       _seedingEnabled = (i % 2 == 0);
       _lastCfFetchMs = 0;
 
-      await Future.wait([
-        trustSource.clear(),
-        contentSource.clear(),
-        _peerContentChannel.clear(),
-        disSource.clear(),
-        equivSource.clear(),
-      ]);
+      await channelFactory.clearAllChannelData();
       Jsonish.wipeCache();
 
       try {
         await _load(showLoading: false);
+        final total = _lastOouMs + _lastDelegateMs;
         if (_seedingEnabled) {
-          seededOou.add(_lastOouMs);
-          seededDelegate.add(_lastDelegateMs);
+          seededTotal.add(total);
           cfFetch.add(_lastCfFetchMs);
         } else {
-          unseededOou.add(_lastOouMs);
-          unseededDelegate.add(_lastDelegateMs);
+          unseededTotal.add(total);
         }
       } catch (e) {
         debugPrint('[benchmark] run $i failed: $e');
@@ -450,13 +414,9 @@ class FeedController extends ValueNotifier<FeedModel?> {
     _seedingEnabled = savedSeeding;
 
     final String report = [
-      'OOU phase (ms):',
-      '  Seeded:   median=${_median(seededOou)}  avg=${_average(seededOou)}  raw: ${seededOou.join(', ')}',
-      '  Unseeded: median=${_median(unseededOou)}  avg=${_average(unseededOou)}  raw: ${unseededOou.join(', ')}',
-      '',
-      'Delegate content (ms):',
-      '  Seeded:   median=${_median(seededDelegate)}  avg=${_average(seededDelegate)}  raw: ${seededDelegate.join(', ')}',
-      '  Unseeded: median=${_median(unseededDelegate)}  avg=${_average(unseededDelegate)}  raw: ${unseededDelegate.join(', ')}',
+      'Total startup (ms):',
+      '  Seeded:   median=${_median(seededTotal)}  avg=${_average(seededTotal)}  raw: ${seededTotal.join(', ')}',
+      '  Unseeded: median=${_median(unseededTotal)}  avg=${_average(unseededTotal)}  raw: ${unseededTotal.join(', ')}',
       '',
       'CF fetch (ms):',
       '  median=${_median(cfFetch)}  avg=${_average(cfFetch)}  raw: ${cfFetch.join(', ')}',
@@ -538,7 +498,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         final swLoad = Stopwatch()..start();
 
         if (!trustSource.isCached(currentPovIdentity.value)) {
-          await _seedTrustChannelFromCF(currentPovIdentity.value, identityPathsReq);
+          await _seedFromCF(currentPovIdentity.value, identityPathsReq);
         }
         debugPrint('[load] seed phase: ${swLoad.elapsedMilliseconds}ms');
 
@@ -572,8 +532,10 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
           // Delegates: combine what's in the PoV graph and myGraph.
           myDelegateKeys = <DelegateKey>{
-            ...delegateResolver.getDelegatesForIdentity(myIdentity),
-            ...myResolver.getDelegatesForIdentity(myIdentity),
+            ...delegateResolver.getDelegatesForIdentity(myIdentity)
+                .where((k) => delegateResolver.getDomainForDelegate(k) == kNerdsterDomain),
+            ...myResolver.getDelegatesForIdentity(myIdentity)
+                .where((k) => myResolver.getDomainForDelegate(k) == kNerdsterDomain),
             if (signInState.delegate != null) DelegateKey(signInState.delegate!),
           }.toList();
         }
@@ -589,9 +551,13 @@ class FeedController extends ValueNotifier<FeedModel?> {
         );
 
         // Identify delegates for all trusted identities (to find follows and ratings)
+        // Only nerdster.org delegates sign nerdster content statements.
         final Set<DelegateKey> delegateKeysToFetch = {};
         for (final IdentityKey trustedIdentity in povGraph.orderedKeys) {
-          delegateKeysToFetch.addAll(delegateResolver.getDelegatesForIdentity(trustedIdentity));
+          delegateKeysToFetch.addAll(
+            delegateResolver.getDelegatesForIdentity(trustedIdentity)
+                .where((k) => delegateResolver.getDomainForDelegate(k) == kNerdsterDomain),
+          );
         }
 
         // Add my delegates
@@ -624,10 +590,6 @@ class FeedController extends ValueNotifier<FeedModel?> {
           delegateResolver: delegateResolver,
           graph: povGraph,
         );
-        _lastDelegateMs = swDelegate.elapsedMilliseconds;
-        debugPrint('[load] delegate content: ${_lastDelegateMs}ms  '
-            '(my=${myDelegateKeySet.length} peer=${peerDelegateKeys.length} delegates)');
-
         final rawDisContent = await disFuture;
         final Map<DelegateKey, List<DismissStatement>> myDisContent = {
           for (final entry in rawDisContent.entries) DelegateKey(entry.key): entry.value,
@@ -639,6 +601,8 @@ class FeedController extends ValueNotifier<FeedModel?> {
             for (final k in equivFetchMap.keys) DelegateKey(k): rawEquivContent[k] ?? [],
           },
         );
+        _lastDelegateMs = swDelegate.elapsedMilliseconds;
+        debugPrint('[load] delegate content: ${_lastDelegateMs}ms (my=${myDelegateKeys?.length ?? 0} peer=${peerDelegateKeys.length} delegates)');
 
         final contentResult = ContentResult(
           delegateContent: delegateContent,
@@ -824,6 +788,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
       _error = e.toString();
       rethrow;
     } finally {
+      channelFactory.clearSeedBag();
       _loading = false;
       loadingMessage.value = null;
       notifyListeners();
