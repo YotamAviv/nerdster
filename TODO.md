@@ -1,16 +1,11 @@
 # TODO
 
-## Sign-in simplification and/or unification with Hablo
 
-Hablo/Nerdster differences:
-- Hablo doesn't support PoV.
-- Hablo uses verified identities.
+
+## Sign-in simplification and/or unification with Hablo
 
 Issues:
 - I'm confused. Didn't the page at https://one-of-us.net/sign-in?parameters= used to show the QR code to scan? Should it, or has the app stopped listening already?
-
-Desires:
-- NERDSTER: DEV only paste keys
 
 Improvements:
 - bring back "Recommended" where we guess if we're on a phone or not.
