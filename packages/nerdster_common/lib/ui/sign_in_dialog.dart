@@ -49,7 +49,7 @@ class SignInConfig {
     required this.stateNotifier,
     required this.hasIdentity,
     required this.hasDelegate,
-    required this.hasPov,
+    this.hasPov = _alwaysFalse,
     required this.identityJson,
     required this.delegatePublicKeyJson,
     required this.onSignOut,
@@ -67,6 +67,8 @@ class SignInConfig {
   });
 }
 
+bool _alwaysFalse() => false;
+
 class SignInDialog extends StatefulWidget {
   final SignInConfig config;
   const SignInDialog({super.key, required this.config});
@@ -79,7 +81,6 @@ class _SignInDialogState extends State<SignInDialog> {
   int _headingTapCount = 0;
   bool _showPaste = false;
   bool _expanded = false;
-  bool _timeoutFired = false;
   late Future<SignInSession> _sessionFuture;
   String? _prevIdentityToken;
   String? _prevDelegateToken;
@@ -504,9 +505,7 @@ class _SignInDialogState extends State<SignInDialog> {
         useUniversalLink: useUniversalLink,
         autoLaunch: autoLaunch,
         onCancel: () {},
-        onTimeout: () {
-          if (mounted) setState(() => _timeoutFired = true);
-        },
+        onTimeout: () {},
         onSuccess: () {
           Navigator.of(dialogContext).pop();
           completer.complete();
