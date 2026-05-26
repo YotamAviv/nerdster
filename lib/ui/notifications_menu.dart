@@ -173,12 +173,13 @@ class NotificationsMenu extends StatelessWidget {
 
     Color? color = Colors.red;
     return SubmenuButton(
+        style: ButtonStyle(
+          minimumSize: WidgetStatePropertyAll(Size(0, 0)),
+          padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 4)),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
         menuChildren: items,
-        child: Row(
-          children: [
-            Icon(Icons.notifications, color: color),
-          ],
-        ));
+        child: Icon(Icons.notifications, color: color, size: 22));
   }
 
   MenuItemButton _buildNotificationItem(TrustNotification notification, BuildContext context) {

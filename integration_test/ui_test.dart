@@ -111,19 +111,16 @@ void main() {
       expect(monikerFinder, findsWidgets, reason: 'Should find human-readable names (monikers)');
 
       // 5. Verify Filter Controls
-      // The filters are now inside the filter drawer, which is hidden by default.
-      // We need to open the drawer first.
-      final filterButton = find.byIcon(Icons.tune);
-      expect(filterButton, findsOneWidget);
-      await tester.tap(filterButton);
+      // Filters are in the hamburger MenuAnchor. Open it and check for "Hide dismissed".
+      final menuButton = find.byIcon(Icons.menu);
+      expect(menuButton, findsOneWidget);
+      await tester.tap(menuButton);
       await tester.pumpAndSettle();
 
-      // Verify DisFilterMode control exists (Checkbox)
-      final dismissFilterFinder = find.byTooltip("Hide content I've dismissed");
+      final dismissFilterFinder = find.text('Hide dismissed');
       expect(dismissFilterFinder, findsOneWidget);
 
       // 6. Verify History/Comments are visible
-      // The new design shows comments by default (up to 2) without an expansion tile title "History"
       expect(find.byType(StatementTile), findsWidgets,
           reason: 'Should see StatementTiles (comments/ratings) directly on the card');
     });

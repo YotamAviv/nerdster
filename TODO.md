@@ -1,15 +1,5 @@
 # TODO
 
-
-
-## Sign-in simplification and/or unification with Hablo
-
-Issues:
-- I'm confused. Didn't the page at https://one-of-us.net/sign-in?parameters= used to show the QR code to scan? Should it, or has the app stopped listening already?
-
-Improvements:
-- bring back "Recommended" where we guess if we're on a phone or not.
-
 ## (Like Hablo just did) Move Dart initial OOU graph search and/or more to CF JavaScript.
 Should be way faster.
 From Hablo's point of view, Nerdster does it in Dart because:
@@ -27,8 +17,9 @@ The Nerdster will use that as 1 round trip but will still require another for de
 DEFER: Option B:
 Have the CFs compute both the trust graph and also respond with the delegate statements the Nerdster will need as well, and so startup would be reduced to 1 round trip.
 
+## Sign-in failures.. show QR?
 
-
+- I'm confused. Didn't the page at https://one-of-us.net/sign-in?parameters= used to show the QR code to scan? Should it, or has the app stopped listening already?
 
 ## Merge don't sort - check everywhere!
 
