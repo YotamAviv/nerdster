@@ -509,6 +509,14 @@ class _ContentViewState extends State<ContentView> {
                   child: const Text('About'),
                   onPressed: () => About.show(context),
                 ),
+                if (Setting.get<bool>(SettingType.dev).value) ...[
+                  const Divider(),
+                  MenuItemButton(
+                    leadingIcon: const Icon(Icons.timer_outlined),
+                    child: const Text('Benchmark seeding'),
+                    onPressed: () => _controller.runBenchmark(context),
+                  ),
+                ],
               ],
             ),
           ],

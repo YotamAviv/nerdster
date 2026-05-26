@@ -167,7 +167,8 @@ class Jsonish {
   // The cache of all Jsonish objects
   static final Map<String, Jsonish> _cache = <String, Jsonish>{};
   static Jsonish? find(String token) => _cache[token];
-  static void wipeCache() => _cache.clear(); // probably for testing
+  static void wipeCache() => _cache.clear();
+  static void clear() => _cache.clear();
 
   final Json _json; // (unmodifiable LinkedHashMap)
   final String _token;

@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:nerdster/config.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/logic/content_logic.dart';
 import 'package:nerdster/logic/content_pipeline.dart';
@@ -18,7 +21,10 @@ import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/dialogs/lgtm.dart';
 import 'package:nerdster/utils/most_strings.dart';
+import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/keys.dart';
+import 'package:oneofus_common/oou_verifier.dart';
+import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
@@ -108,6 +114,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
   IdentityKey? _lastIdentity;
   String? _lastPov;
   String? _lastDelegate;
+
+  bool _seedingEnabled = true;
+  int _lastOouMs = 0;
+  int _lastDelegateMs = 0;
+  int _lastCfFetchMs = 0;
 
   void _onSignInStateChanged() {
     final currentIdentity = signInState.hasIdentity ? signInState.identity : null;
@@ -337,6 +348,138 @@ class FeedController extends ValueNotifier<FeedModel?> {
     return _load(showLoading: false);
   }
 
+  Future<void> _seedTrustChannelFromCF(String povToken, String pathRequirement) async {
+    if (!_seedingEnabled) return;
+    if (channelFactory.fireChoice == FireChoice.fake) return;
+    try {
+      final sw = Stopwatch()..start();
+      final uri = Uri.parse(FirebaseConfig.nerdsterGetOouCacheUrl).replace(queryParameters: {
+        'povToken': povToken,
+        'pathRequirement': pathRequirement,
+      });
+      final response = await http.get(uri).timeout(const Duration(seconds: 15));
+      final fetchMs = sw.elapsedMilliseconds;
+      _lastCfFetchMs = fetchMs;
+      if (response.statusCode != 200) {
+        debugPrint('[seed] CF returned ${response.statusCode} after ${fetchMs}ms');
+        return;
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final rawCache = data['oouCache'] as Map<String, dynamic>?;
+      if (rawCache == null) return;
+
+      final verifier = OouVerifier();
+      int seeded = 0;
+      int stmtCount = 0;
+      for (final entry in rawCache.entries) {
+        final token = entry.key;
+        if (trustSource.isCached(token)) continue;
+        final rawStatements = entry.value as List<dynamic>;
+        final List<TrustStatement> parsed = [];
+        for (final rawJson in rawStatements) {
+          try {
+            final jsonish = await Jsonish.makeVerify(Map<String, dynamic>.from(rawJson as Map), verifier);
+            final stmt = Statement.make(jsonish);
+            if (stmt is TrustStatement) parsed.add(stmt);
+          } catch (_) {
+            // skip invalid statements — same behavior as normal fetch
+          }
+        }
+        trustSource.seed(token, parsed);
+        seeded++;
+        stmtCount += parsed.length;
+      }
+      sw.stop();
+      debugPrint('[seed] CF fetch=${fetchMs}ms  verify+seed=${sw.elapsedMilliseconds - fetchMs}ms  '
+          'total=${sw.elapsedMilliseconds}ms  tokens=$seeded  statements=$stmtCount');
+    } catch (e) {
+      debugPrint('[seed] failed, falling back to BFS: $e');
+    }
+  }
+
+  static int _median(List<int> values) {
+    if (values.isEmpty) return 0;
+    final sorted = List<int>.from(values)..sort();
+    final mid = sorted.length ~/ 2;
+    return sorted.length.isOdd ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) ~/ 2;
+  }
+
+  static int _average(List<int> values) {
+    if (values.isEmpty) return 0;
+    return values.reduce((a, b) => a + b) ~/ values.length;
+  }
+
+  Future<void> runBenchmark(BuildContext context) async {
+    final savedSeeding = _seedingEnabled;
+
+    final List<int> seededOou = [];
+    final List<int> unseededOou = [];
+    final List<int> seededDelegate = [];
+    final List<int> unseededDelegate = [];
+    final List<int> cfFetch = [];
+
+    for (int i = 0; i < 10; i++) {
+      _seedingEnabled = (i % 2 == 0);
+      _lastCfFetchMs = 0;
+
+      await Future.wait([
+        trustSource.clear(),
+        contentSource.clear(),
+        _peerContentChannel.clear(),
+        disSource.clear(),
+        equivSource.clear(),
+      ]);
+      Jsonish.clear();
+
+      try {
+        await _load(showLoading: false);
+        if (_seedingEnabled) {
+          seededOou.add(_lastOouMs);
+          seededDelegate.add(_lastDelegateMs);
+          cfFetch.add(_lastCfFetchMs);
+        } else {
+          unseededOou.add(_lastOouMs);
+          unseededDelegate.add(_lastDelegateMs);
+        }
+      } catch (e) {
+        debugPrint('[benchmark] run $i failed: $e');
+      }
+    }
+
+    _seedingEnabled = savedSeeding;
+
+    final String report = [
+      'OOU phase (ms):',
+      '  Seeded:   median=${_median(seededOou)}  avg=${_average(seededOou)}  raw: ${seededOou.join(', ')}',
+      '  Unseeded: median=${_median(unseededOou)}  avg=${_average(unseededOou)}  raw: ${unseededOou.join(', ')}',
+      '',
+      'Delegate content (ms):',
+      '  Seeded:   median=${_median(seededDelegate)}  avg=${_average(seededDelegate)}  raw: ${seededDelegate.join(', ')}',
+      '  Unseeded: median=${_median(unseededDelegate)}  avg=${_average(unseededDelegate)}  raw: ${unseededDelegate.join(', ')}',
+      '',
+      'CF fetch (ms):',
+      '  median=${_median(cfFetch)}  avg=${_average(cfFetch)}  raw: ${cfFetch.join(', ')}',
+    ].join('\n');
+
+    debugPrint('[benchmark]\n$report');
+
+    if (context.mounted) {
+      unawaited(showDialog<void>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Benchmark Results'),
+          content: SingleChildScrollView(
+            child: SelectableText(report, style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+          ],
+        ),
+      ));
+    }
+  }
+
   Future<void> _load({bool showLoading = true}) async {
     if (_loading) {
       _reloadPending = true;
@@ -392,8 +535,17 @@ class FeedController extends ValueNotifier<FeedModel?> {
           debugPrint('Error parsing identityPathsReq: $e');
         }
 
+        final swLoad = Stopwatch()..start();
+
+        if (!trustSource.isCached(currentPovIdentity.value)) {
+          await _seedTrustChannelFromCF(currentPovIdentity.value, identityPathsReq);
+        }
+        debugPrint('[load] seed phase: ${swLoad.elapsedMilliseconds}ms');
+
         final TrustPipeline trustPipeline = TrustPipeline(trustSource, channelFactory: channelFactory, pathRequirement: pathReq);
         final TrustGraph povGraph = await trustPipeline.build(currentPovIdentity);
+        _lastOouMs = swLoad.elapsedMilliseconds;
+        debugPrint('[load] OOU BFS: ${_lastOouMs}ms  (trust keys=${povGraph.distances.length})');
         final DelegateResolver delegateResolver = DelegateResolver(povGraph);
 
         if (myIdentity != null) {
@@ -465,12 +617,16 @@ class FeedController extends ValueNotifier<FeedModel?> {
         final Iterable<DelegateKey> peerDelegateKeys =
             delegateKeysToFetch.where((k) => !myDelegateKeySet.contains(k));
 
+        final swDelegate = Stopwatch()..start();
         final delegateContent = await contentPipeline.fetchDelegateContent(
           myDelegateKeySet,
           peerDelegateKeys,
           delegateResolver: delegateResolver,
           graph: povGraph,
         );
+        _lastDelegateMs = swDelegate.elapsedMilliseconds;
+        debugPrint('[load] delegate content: ${_lastDelegateMs}ms  '
+            '(my=${myDelegateKeySet.length} peer=${peerDelegateKeys.length} delegates)');
 
         final rawDisContent = await disFuture;
         final Map<DelegateKey, List<DismissStatement>> myDisContent = {

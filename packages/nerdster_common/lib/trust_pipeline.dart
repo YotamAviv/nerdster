@@ -39,6 +39,9 @@ class TrustPipeline {
     Set<IdentityKey> frontier = {povIdentity};
     Set<IdentityKey> visited = {};
     Map<IdentityKey, List<TrustStatement>> statementsByIssuer = {};
+    int totalHits = 0;
+    int totalMisses = 0;
+    final sw = Stopwatch()..start();
 
     for (int depth = 0; depth < maxDegrees; depth++) {
       if (frontier.isEmpty) break;
@@ -58,6 +61,13 @@ class TrustPipeline {
         }
         for (final entry in byUrl.entries) {
           final ch = channelFactory!.getChannel<TrustStatement>(entry.key, 'statements');
+          int hits = 0, misses = 0;
+          for (final key in entry.value.keys) {
+            if (ch.isCached(key)) { hits++; } else { misses++; }
+          }
+          totalHits += hits;
+          totalMisses += misses;
+          print('[TrustPipeline] depth=$depth url=${entry.key} hits=$hits misses=$misses');
           final results = await ch.fetch(entry.value);
           newStatementsMap.addAll(results);
         }
@@ -81,6 +91,9 @@ class TrustPipeline {
       frontier = graph.distances.keys.toSet().difference(visited);
     }
 
+    sw.stop();
+    print('[TrustPipeline] done: ${sw.elapsedMilliseconds}ms  '
+        'keys=${graph.distances.length}  hits=$totalHits  misses=$totalMisses');
     return graph;
   }
 }

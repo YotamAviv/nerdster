@@ -13,4 +13,8 @@ class FirebaseConfig {
   /// The base URL for fetching Nerdster content statements.
   /// Always export.nerdster.org in production; emulator redirect applied if registered.
   static String get contentUrl => resolveUrl('https://export.nerdster.org');
+
+  /// Nerdster CF endpoint that returns the pre-built OOU statement cache.
+  static String get nerdsterGetOouCacheUrl =>
+      resolveUrl('https://us-central1-nerdster.cloudfunctions.net/getOouCache');
 }
