@@ -430,7 +430,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         disSource.clear(),
         equivSource.clear(),
       ]);
-      Jsonish.clear();
+      Jsonish.wipeCache();
 
       try {
         await _load(showLoading: false);
