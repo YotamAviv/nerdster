@@ -18,12 +18,17 @@ class KeyInfoView extends StatelessWidget {
   final String baseUrl;
   final StatementSource source;
   final Labeler labeler;
+  /// If provided, used as-is for the `spec` query param instead of
+  /// `jsonEncode(jsonish.token)`. Useful when the spec format differs
+  /// from the default (e.g. Hablo's `delegateToken_identityToken`).
+  final String? specOverride;
   const KeyInfoView({
     super.key,
     required this.jsonish,
     required this.baseUrl,
     required this.labeler,
     required this.source,
+    this.specOverride,
   });
 
   @override
@@ -41,7 +46,7 @@ class KeyInfoView extends StatelessWidget {
 
   Widget _buildStatementsLink(BuildContext context) {
     if (fireChoice != FireChoice.fake) {
-      final params = <String, String>{'spec': jsonEncode(jsonish.token)};
+      final params = <String, String>{'spec': specOverride ?? jsonEncode(jsonish.token)};
       final Uri uri = Uri.parse(baseUrl).replace(queryParameters: params);
       return InkWell(
         onTap: () => launchUrl(uri),
@@ -96,6 +101,7 @@ class KeyInfoView extends StatelessWidget {
     required StatementSource source,
     required Labeler labeler,
     BoxConstraints? constraints,
+    String? specOverride,
   }) {
     final jsonish = Jsonish.find(token);
     if (jsonish == null) {
@@ -160,7 +166,7 @@ class KeyInfoView extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: KeyInfoView(
-                            jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler),
+                            jsonish: jsonish, baseUrl: baseUrl, source: source, labeler: labeler, specOverride: specOverride),
                       ),
                     ),
                   ),

@@ -620,11 +620,22 @@ class _NodeDetailsState extends State<NodeDetails> {
                   alignment: Alignment.centerLeft,
                   child: InkWell(
                     onTapDown: (details) => tapDetails = details,
-                    onTap: () => KeyInfoView.show(context, d, FirebaseConfig.contentUrl,
-                        details: tapDetails,
-                        source: widget.controller.contentSource,
-                        labeler: labeler,
-                        constraints: const BoxConstraints(maxWidth: 600)),
+                    onTap: () {
+                      final domain = labeler.delegateResolver
+                          ?.getDomainForDelegate(DelegateKey(d));
+                      final isHablo = domain == 'hablotengo.com';
+                      final baseUrl = isHablo
+                          ? FirebaseConfig.resolveUrl('https://export.hablotengo.com')
+                          : FirebaseConfig.contentUrl;
+                      final specOverride =
+                          isHablo ? '${d}_${widget.identity.value}' : null;
+                      KeyInfoView.show(context, d, baseUrl,
+                          details: tapDetails,
+                          source: widget.controller.contentSource,
+                          labeler: labeler,
+                          specOverride: specOverride,
+                          constraints: const BoxConstraints(maxWidth: 600));
+                    },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
