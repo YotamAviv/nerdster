@@ -5,12 +5,11 @@ import 'package:nerdster/equivalence/equivalence.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/equivalence_statement.dart';
-import 'package:nerdster/settings/setting_type.dart';
-import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster_common/ui/json_interpreter.dart';
 import 'package:oneofus_common/jsonish.dart' show Json;
 import 'package:oneofus_common/ui/json_display.dart';
+import 'package:nerdster/ui/tag_util.dart';
 
 /// Builds the display groups for the tag dropdown:
 /// canonical → Set of all equivalent tags (including itself).
@@ -146,7 +145,7 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
             onTap: _removeProvenanceOverlay,
           ),
         ),
-        _TagProvenanceDialog(
+        TagProvenanceDialog(
           canonical: canonical,
           statements: statements,
           onShowJson: _openJsonOverlay,
@@ -248,7 +247,7 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
             ),
           ),
           Center(
-            child: _ConfirmDialog(message: message, onResult: close),
+            child: ConfirmDialog(message: message, onResult: close),
           ),
         ]),
       );
@@ -553,7 +552,7 @@ class _TagPanelState extends State<_TagPanel> {
                                 ),
                               ),
                               if (widget.canEdit)
-                                _DontEquateButton(onPressed: () => widget.onDontEquate(eq, canon)),
+                                DontEquateButton(onPressed: () => widget.onDontEquate(eq, canon)),
                             ],
                           ),
                         )),
@@ -572,7 +571,7 @@ class _TagPanelState extends State<_TagPanel> {
                                 ),
                               ),
                               if (widget.canEdit)
-                                _DontRelateButton(onPressed: () => widget.onDontRelate(canon, peer)),
+                                DontRelateButton(onPressed: () => widget.onDontRelate(canon, peer)),
                             ],
                           ),
                         )),
@@ -708,7 +707,7 @@ class _TagRow extends StatelessWidget {
             ),
           ),
         if (onShield != null)
-          _GroupShieldButton(onTap: onShield!),
+          GroupShieldButton(onTap: onShield!),
       ],
     );
 
@@ -731,232 +730,6 @@ class _TagRow extends StatelessWidget {
           child: rowContent,
         );
       },
-    );
-  }
-}
-
-// ─── Shield button (on canonical row — shows all statements for the group) ────
-
-class _GroupShieldButton extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _GroupShieldButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    if (!Setting.get<bool>(SettingType.showCrypto).value) return const SizedBox.shrink();
-    return GestureDetector(
-      onTap: onTap,
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4),
-        child: Icon(Icons.verified_user_outlined, size: 14, color: Colors.blue),
-      ),
-    );
-  }
-}
-
-// ─── Per-statement shield button (inside provenance dialog) ──────────────────
-
-class _StatementShieldButton extends StatelessWidget {
-  final Json? json;
-  final void Function(Offset tapPosition) onShowJson;
-
-  const _StatementShieldButton({required this.json, required this.onShowJson});
-
-  @override
-  Widget build(BuildContext context) {
-    if (json == null) return const SizedBox.shrink();
-    Offset tapPos = Offset.zero;
-    return GestureDetector(
-      onTapDown: (d) => tapPos = d.globalPosition,
-      onTap: () => onShowJson(tapPos),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4),
-        child: Icon(Icons.verified_user_outlined, size: 14, color: Colors.blue),
-      ),
-    );
-  }
-}
-
-// ─── Provenance dialog ────────────────────────────────────────────────────────
-
-class _TagProvenanceDialog extends StatelessWidget {
-  final String canonical;
-  final List<EquivalenceStatement> statements;
-  final void Function(Json? json, Labeler labeler, Offset tapPosition)? onShowJson;
-  final String? myDelegateToken;
-  final void Function(EquivalenceStatement s)? onClear;
-
-  const _TagProvenanceDialog({
-    required this.canonical,
-    required this.statements,
-    this.onShowJson,
-    this.myDelegateToken,
-    this.onClear,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final labeler = globalLabeler.value;
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: SizedBox(
-        width: 420,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Text('"$canonical" equate and relate statements',
-                  style: Theme.of(context).textTheme.titleSmall),
-            ),
-            const Divider(height: 1),
-            Flexible(
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: statements.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (_, i) {
-                  final s = statements[i];
-                  final label = labeler.getLabel(s.iToken);
-                  final isMyStatement =
-                      myDelegateToken != null && s.iToken == myDelegateToken;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
-                        Text(label,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                                fontSize: 13)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text.rich(
-                            TextSpan(children: [
-                              TextSpan(text: s.equivalent),
-                              TextSpan(
-                                text: s.isRelate
-                                    ? (s.isNotRelate ? '  !~  ' : '  ~  ')
-                                    : (s.not ? '  ≠  ' : '  →  '),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: s.isRelate
-                                      ? (s.isNotRelate ? Colors.red : Colors.green)
-                                      : (s.not ? Colors.red : Colors.green),
-                                ),
-                              ),
-                              TextSpan(text: s.canonical),
-                            ]),
-                            style: const TextStyle(fontSize: 13),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (onShowJson != null)
-                          _StatementShieldButton(
-                            json: s.json,
-                            onShowJson: (pos) => onShowJson!(s.json, labeler, pos),
-                          ),
-                        if (isMyStatement && onClear != null)
-                          GestureDetector(
-                            onTap: () => onClear!(s),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 4),
-                              child: Icon(Icons.close, size: 14, color: Colors.red),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── ≠ button ─────────────────────────────────────────────────────────────────
-
-class _DontEquateButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const _DontEquateButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(4),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: Text('≠',
-            style: TextStyle(
-                fontSize: 13,
-                color: Colors.red,
-                fontWeight: FontWeight.bold)),
-      ),
-    );
-  }
-}
-
-// ─── !~ button ────────────────────────────────────────────────────────────────
-
-class _DontRelateButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const _DontRelateButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(4),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: Text('!~',
-            style: TextStyle(
-                fontSize: 13,
-                color: Colors.green,
-                fontWeight: FontWeight.bold)),
-      ),
-    );
-  }
-}
-
-// ─── Confirm dialog (shown on ≠ / !~ buttons) ────────────────────────────────
-
-class _ConfirmDialog extends StatelessWidget {
-  final String message;
-  final void Function(bool) onResult;
-
-  const _ConfirmDialog({required this.message, required this.onResult});
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      contentPadding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
-      actionsPadding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-      content: Text(message, style: const TextStyle(fontSize: 13)),
-      actions: [
-        TextButton(
-          style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              textStyle: const TextStyle(fontSize: 13)),
-          onPressed: () => onResult(false),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              textStyle: const TextStyle(fontSize: 13)),
-          onPressed: () => onResult(true),
-          child: const Text('Ok'),
-        ),
-      ],
     );
   }
 }

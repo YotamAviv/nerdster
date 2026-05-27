@@ -15,6 +15,7 @@ import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/dialogs/rate_dialog.dart';
 import 'package:nerdster/ui/statement_tile.dart';
 import 'package:nerdster/logic/feed_controller.dart';
+import 'package:nerdster/ui/tag_chip.dart';
 import 'package:nerdster/ui/util_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -374,14 +375,12 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                             padding: const EdgeInsets.only(bottom: 8.0),
                             child: Wrap(
                               spacing: 8.0,
-                              children: widget.aggregation.tags.map((tag) {
-                                final displayTag = tag.startsWith('#') ? tag : '#$tag';
-                                return InkWell(
-                                  onTap: () => widget.onTagTap?.call(tag),
-                                  child:
-                                      Text(displayTag, style: const TextStyle(color: Colors.blue)),
-                                );
-                              }).toList(),
+                              children: widget.aggregation.tags.map((tag) => TagChip(
+                                tag: tag,
+                                aggregation: widget.model.aggregation,
+                                controller: widget.controller,
+                                onTap: () => widget.onTagTap?.call(tag),
+                              )).toList(),
                             ),
                           ),
                         _buildHistorySection(),
@@ -485,15 +484,12 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                                             padding: const EdgeInsets.only(top: 4.0),
                                             child: Wrap(
                                               spacing: 8.0,
-                                              children: widget.aggregation.tags.map((tag) {
-                                                final displayTag =
-                                                    tag.startsWith('#') ? tag : '#$tag';
-                                                return InkWell(
-                                                  onTap: () => widget.onTagTap?.call(tag),
-                                                  child: Text(displayTag,
-                                                      style: const TextStyle(color: Colors.blue)),
-                                                );
-                                              }).toList(),
+                                              children: widget.aggregation.tags.map((tag) => TagChip(
+                                                tag: tag,
+                                                aggregation: widget.model.aggregation,
+                                                controller: widget.controller,
+                                                onTap: () => widget.onTagTap?.call(tag),
+                                              )).toList(),
                                             ),
                                           )
                                         : const SizedBox.shrink(),
