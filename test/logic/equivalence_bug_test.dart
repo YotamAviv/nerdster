@@ -6,7 +6,7 @@ import 'package:nerdster/logic/content_pipeline.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/follow_logic.dart';
 import 'package:nerdster/logic/labeler.dart';
-import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster_common/trust_pipeline.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/settings/setting_type.dart';
 

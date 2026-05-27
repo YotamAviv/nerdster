@@ -46,7 +46,9 @@ class TrustPipeline {
     for (int depth = 0; depth < maxDegrees; depth++) {
       if (frontier.isEmpty) break;
 
-      final keysToFetch = frontier.difference(visited).toList();
+      final keysToFetch = frontier.difference(visited)
+          .where((k) => !graph.equivalent2canonical.containsKey(k))
+          .toList();
       if (keysToFetch.isEmpty) break;
 
       final fetchMap = {for (var k in keysToFetch) k.value: null};

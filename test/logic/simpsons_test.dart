@@ -4,7 +4,7 @@ import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
-import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster_common/trust_pipeline.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;

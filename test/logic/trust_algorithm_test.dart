@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
-import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster_common/trust_pipeline.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:oneofus_common/source_error.dart';
 import 'package:oneofus_common/statement.dart';
@@ -546,6 +546,40 @@ void main() {
         graph.notifications.any((TrustNotification n) =>
             n.reason.contains('Replacement constraint ignored due to distance')),
         isTrue);
+  });
+
+  test('Homer scenario: replaced key is in network with revokedAt kSinceAlways, old trust ignored', () async {
+    // Homer (old key) trusted Bart as "Boy". Homer replaced his key with Homer2.
+    // Lisa trusts Homer2. From Lisa's PoV, Homer should be in the network (pulled in
+    // by Homer2's replace statement) but marked revoked since always, so Homer's
+    // trust of Bart must not propagate.
+    final DemoIdentityKey lisa = await DemoIdentityKey.create('lisa');
+    final DemoIdentityKey homer = await DemoIdentityKey.create('homer');
+    final DemoIdentityKey homer2 = await DemoIdentityKey.create('homer2');
+    final DemoIdentityKey bart = await DemoIdentityKey.create('bart');
+
+    await lisa.trust(homer2, moniker: 'Homer');
+    await homer2.doTrust(TrustVerb.replace, homer, revokeAt: kSinceAlways);
+    await homer.trust(bart, moniker: 'Bart');
+
+    final source = channelFactory.getChannel<TrustStatement>(kNativeUrl, 'statements');
+    final TrustPipeline pipeline = TrustPipeline(source, maxDegrees: 4, pathRequirement: (_) => 1);
+    final TrustGraph graph = await pipeline.build(lisa.id);
+
+    expect(graph.isTrusted(homer2.id), isTrue);
+    expect(graph.isTrusted(homer.id), isTrue,
+        reason: 'homer is pulled into the network via homer2\'s replace statement');
+    expect(graph.equivalent2canonical[homer.id], homer2.id,
+        reason: 'homer is replaced by homer2 (revoked since always)');
+
+    final TrustStatement? replaceStmt = graph.edges[homer2.id]
+        ?.where((s) => s.verb == TrustVerb.replace && s.subjectAsIdentity == homer.id)
+        .firstOrNull;
+    expect(replaceStmt?.revokeAt, kSinceAlways,
+        reason: 'the replace statement must carry revokeAt: kSinceAlways');
+
+    expect(graph.isTrusted(bart.id), isFalse,
+        reason: 'homer is revoked since always — his trust of bart must not propagate');
   });
 
   test('Replaced key is not fetched after replacement is known', () async {

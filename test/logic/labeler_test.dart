@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nerdster/demotest/test_util.dart';
 import 'package:nerdster/logic/labeler.dart';
-import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster_common/trust_pipeline.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:oneofus_common/oou_signer.dart';
 

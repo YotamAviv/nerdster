@@ -75,7 +75,7 @@ TrustGraph reduceTrustGraph(
   final Set<IdentityKey> blocked = {};
   final Map<IdentityKey, List<List<IdentityKey>>> paths = {};
   final List<TrustNotification> notifications = [];
-  final Map<IdentityKey, List<TrustStatement>> edges = {};
+  final Map<IdentityKey, List<TrustStatement>> edges = {}; // all statements other than "clear"
   final Map<IdentityKey, Set<IdentityKey>> trustedBy = {};
   final Map<IdentityKey, Set<IdentityKey>> graphForPathfinding = {};
   final Set<IdentityKey> visited = {current.pov};
@@ -132,13 +132,7 @@ TrustGraph reduceTrustGraph(
     for (final IdentityKey issuer in currentLayer) {
       List<TrustStatement> statements = byIssuer[issuer] ?? [];
 
-      edges[issuer] = statements.where((TrustStatement s) {
-        if (s.verb == TrustVerb.clear) return false;
-        if (s.verb != TrustVerb.replace && s.verb != TrustVerb.delegate && s.revokeAt != null) {
-          return false;
-        }
-        return true;
-      }).toList();
+      edges[issuer] = statements.toList()..removeWhere((s) => s.verb == TrustVerb.clear);
 
       final Set<IdentityKey> decided = <IdentityKey>{};
       for (final TrustStatement s

@@ -89,10 +89,16 @@ class ChannelFactory {
   /// Entries persist; the whole bag is released via [clearSeedBag] after startup.
   Map<String, List<dynamic>>? _seedBag;
 
+  /// URLs that were looked up in the bag but not found (bag misses).
+  /// Reset on each [loadSeedBag] call. Persists after [clearSeedBag] for test inspection.
+  final List<String> _seedBagMisses = [];
+  List<String> get seedBagMisses => List.unmodifiable(_seedBagMisses);
+
   /// Load a pre-fetched seed bag (e.g. from a seedNerdster CF response).
   /// Keys must be canonical fetch URLs in the same format that [_CloudFunctionsSource] constructs.
   void loadSeedBag(Map<String, dynamic> raw) {
     _seedBag = {for (final e in raw.entries) e.key: e.value as List<dynamic>};
+    _seedBagMisses.clear();
   }
 
   /// Release the seed bag after startup fetches are complete.
@@ -182,6 +188,7 @@ class ChannelFactory {
         baseUrl: resolveUrl(exportUrl),
         canonicalBaseUrl: exportUrl,
         getSeedBag: () => _seedBag,
+        onBagMiss: (url) => _seedBagMisses.add(url),
         verifier: OouVerifier(),
         skipVerify: skipVerify,
         authHook: reg?.readAuthHook,
@@ -478,6 +485,9 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   /// Late-bound access to [ChannelFactory._seedBag]. Null in test/fake mode.
   final Map<String, List<dynamic>>? Function()? getSeedBag;
 
+  /// Called with the canonical bag key whenever a full-history fetch misses the seed bag.
+  final void Function(String)? onBagMiss;
+
   /// The statement type string used as fallback when the server omits the 'statement' field.
   final String? statementType;
 
@@ -501,6 +511,7 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     required this.baseUrl,
     this.canonicalBaseUrl,
     this.getSeedBag,
+    this.onBagMiss,
     this.statementType,
     this.excludeTypes = const [],
     http.Client? client,
@@ -598,6 +609,7 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
       }
       for (final url in missUrls) {
         debugPrint('[bag miss] $url');
+        onBagMiss?.call(url);
       }
     }
 

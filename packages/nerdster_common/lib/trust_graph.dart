@@ -23,6 +23,7 @@ class TrustGraph {
   final IdentityKey pov;
   final Map<IdentityKey, int> distances;
   final List<IdentityKey> orderedKeys;
+  // All keys in this map are revoked since always — replace only supports kSinceAlways.
   final Map<IdentityKey, IdentityKey> equivalent2canonical;
   final Set<IdentityKey> blocked;
   final Map<IdentityKey, List<List<IdentityKey>>> paths;

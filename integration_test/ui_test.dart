@@ -103,6 +103,11 @@ void main() {
         }
       }
 
+      // All startup fetches must have been served from the seed bag — no network round-trips
+      // beyond the single seedNerdster call. Any miss means the JS bag is incomplete.
+      expect(channelFactory.seedBagMisses, isEmpty,
+          reason: 'Bag misses: ${channelFactory.seedBagMisses}\nAll startup fetches must be served from the seed bag (1 round-trip goal)');
+
       // 4. Verify Monikers (Names)
       // Assuming the emulator has data where Lisa trusts someone named "Bart"
       // We can look for specific text that should be resolved by the Labeler.

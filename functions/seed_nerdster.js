@@ -7,7 +7,7 @@
  * proceeds as normal — all startup fetches hit the bag instead of the network.
  *
  * Three buckets (all using the same URL key format as the Dart client):
- *   1. OOU trust statements   — keyed under export.one-of-us.net, no excludeTypes
+ *   1. OOU trust statements   — keyed under each token's source URL (export.one-of-us.net or federated), no excludeTypes
  *   2. Delegate content (all) — keyed under export.nerdster.org, no excludeTypes
  *   3. Delegate content (no dismiss) — keyed under export.nerdster.org, excludeTypes=org.nerdster.dis
  *
@@ -86,7 +86,8 @@ async function handleSeedNerdster(req, res) {
 
     // 2. OOU trust statements — apply makedistinct to match what export?distinct=true returns
     for (const [token, statements] of oouCache) {
-      bag[bagKey(OOU_EXPORT_URL, token)] = await makedistinct(statements);
+      const url = fedRegistry.get(token) ?? OOU_EXPORT_URL;
+      bag[bagKey(url, token)] = await makedistinct(statements);
     }
 
     // 3. Delegate content — fetch from Nerdster Firestore

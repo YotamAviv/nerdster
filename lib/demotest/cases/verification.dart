@@ -1,5 +1,5 @@
 import 'package:nerdster/demotest/cases/test_utils.dart';
-import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster_common/trust_pipeline.dart';
 import 'package:oneofus_common/statement_source.dart';
 
 /// Executes the pipeline and verifies the graph state for the Basic Scenario.

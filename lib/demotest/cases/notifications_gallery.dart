@@ -1,7 +1,7 @@
 import 'package:nerdster/demotest/cases/test_utils.dart';
 import 'package:nerdster/logic/delegates.dart';
 import 'package:nerdster/logic/labeler.dart';
-import 'package:nerdster/logic/trust_pipeline.dart';
+import 'package:nerdster_common/trust_pipeline.dart';
 
 /// A gallery of all possible Trust and Follow notifications.
 ///
