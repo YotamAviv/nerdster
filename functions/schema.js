@@ -4,4 +4,5 @@ function streamRef(db, issuerToken, streamName) {
 function statementsRef(db, issuerToken, streamName) {
   return streamRef(db, issuerToken, streamName).collection('statements');
 }
-module.exports = { streamRef, statementsRef };
+const statementPrefix = 'org.nerdster';
+module.exports = { streamRef, statementsRef, statementPrefix };

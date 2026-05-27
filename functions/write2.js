@@ -44,7 +44,7 @@
 
 const admin = require('firebase-admin');
 const { verifyStatementSignature, statementToken, keyToken } = require('./verify_util');
-const { streamRef } = require('./schema');
+const { streamRef, statementPrefix } = require('./schema');
 
 /**
  * Returns an HTTP request handler for the write2 endpoint.
@@ -69,6 +69,12 @@ function makeWrite2Handler(auth) {
     }
     if (!verifyStatementSignature(statement)) {
       res.status(400).json({ error: 'invalid statement signature' });
+      return;
+    }
+    const stmtType = statement['statement'];
+    if (!stmtType || typeof stmtType !== 'string' ||
+        (stmtType !== statementPrefix && !stmtType.startsWith(statementPrefix + '.'))) {
+      res.status(400).json({ error: `invalid statement type: must be or start with '${statementPrefix}'` });
       return;
     }
 
