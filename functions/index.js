@@ -14,7 +14,7 @@
  * Nerdster-only files:
  *   sign_in.js, fetch_images.js, magic_paste.js, core_logic.js,
  *   metadata_fetchers.js, url_metadata_parser.js,
- *   get_oou_cache.js, trust_pipeline.js, trust_logic.js, oneofus_source.js
+ *   trust_pipeline.js, trust_logic.js, oneofus_source.js
  */
 
 const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");  // onCall used by fetchImages, magicPaste
@@ -69,11 +69,6 @@ exports.export = onRequest({ cors: true, minInstances: 1 }, async (req, res) => 
   return await handleExport(req, res);
 });
 
-const { handleGetOouCache } = require('./get_oou_cache');
-
-exports.getOouCache = onRequest({ cors: true, minInstances: 1 }, async (req, res) => {
-  await handleGetOouCache(req, res);
-});
 
 const { handleSeedNerdster } = require('./seed_nerdster');
 
