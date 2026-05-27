@@ -319,8 +319,13 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
     if (tagFilter != null && tagFilter != '-') {
       final String canonicalFilter = aggregation.tagEquivalence[tagFilter] ?? tagFilter;
+      final Set<String> matchCanonicals = {
+        canonicalFilter,
+        ...aggregation.tagRelate.peersOf(canonicalFilter)
+            .map((p) => aggregation.tagEquivalence[p] ?? p),
+      };
       final bool hasTag = subject.tags
-          .any((t) => (aggregation.tagEquivalence[t] ?? t) == canonicalFilter);
+          .any((t) => matchCanonicals.contains(aggregation.tagEquivalence[t] ?? t));
       if (!hasTag) return false;
     }
 
