@@ -199,8 +199,10 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
   void _handleDontEquate(String equivalent, String canonical, BuildContext ctx) {
     final controller = widget.controller;
     if (controller == null || signInState.signer == null) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.pushEquivalence(equivalent, canonical, verb: EquivalenceVerb.dontEquate, context: ctx);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await _showConfirm('"$equivalent" is not an equivalent of "$canonical"')) return;
+      if (!ctx.mounted) return;
+      await controller.pushEquivalence(equivalent, canonical, verb: EquivalenceVerb.dontEquate, context: ctx);
     });
   }
 
@@ -215,9 +217,45 @@ class _TagDropdownButtonState extends State<TagDropdownButton> {
   void _handleDontRelate(String tagA, String tagB, BuildContext ctx) {
     final controller = widget.controller;
     if (controller == null || signInState.signer == null) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.pushEquivalence(tagA, tagB, verb: EquivalenceVerb.dontRelate, context: ctx);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!await _showConfirm('"$tagA" is not related to "$tagB"')) return;
+      if (!ctx.mounted) return;
+      await controller.pushEquivalence(tagA, tagB, verb: EquivalenceVerb.dontRelate, context: ctx);
     });
+  }
+
+  Future<bool> _showConfirm(String message) async {
+    final dropdownEntry = _overlay;
+    if (dropdownEntry == null) return false;
+
+    final completer = Completer<bool>();
+    late OverlayEntry dialogEntry;
+
+    void close(bool confirmed) {
+      dialogEntry.remove();
+      if (!completer.isCompleted) completer.complete(confirmed);
+    }
+
+    dialogEntry = OverlayEntry(builder: (_) {
+      return Material(
+        type: MaterialType.transparency,
+        child: Stack(children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => close(false),
+              child: const SizedBox.expand(),
+            ),
+          ),
+          Center(
+            child: _ConfirmDialog(message: message, onResult: close),
+          ),
+        ]),
+      );
+    });
+
+    Overlay.of(context).insert(dialogEntry, above: dropdownEntry);
+    return completer.future;
   }
 
   Future<void> _handleDrop(String sourceTag, String targetTag) async {
@@ -885,6 +923,40 @@ class _DontRelateButton extends StatelessWidget {
                 color: Colors.green,
                 fontWeight: FontWeight.bold)),
       ),
+    );
+  }
+}
+
+// ─── Confirm dialog (shown on ≠ / !~ buttons) ────────────────────────────────
+
+class _ConfirmDialog extends StatelessWidget {
+  final String message;
+  final void Function(bool) onResult;
+
+  const _ConfirmDialog({required this.message, required this.onResult});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      contentPadding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+      actionsPadding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+      content: Text(message, style: const TextStyle(fontSize: 13)),
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              textStyle: const TextStyle(fontSize: 13)),
+          onPressed: () => onResult(false),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              textStyle: const TextStyle(fontSize: 13)),
+          onPressed: () => onResult(true),
+          child: const Text('Ok'),
+        ),
+      ],
     );
   }
 }
