@@ -1,5 +1,25 @@
 # TODO
 
+## Hardcoded Lisa identity key in ui_test.dart
+
+`integration_test/ui_test.dart` hardcodes Lisa's public identity key. Every time the Simpsons
+demo data is regenerated (`bin/createSimpsonsDemoData.sh`), this key must be manually updated.
+
+Fix: read Lisa's key from a generated file (e.g. `simpsonsPublicKeys.json` or a Dart equivalent)
+instead of hardcoding it. The key generation scripts already produce `lib/dev/simpsons_public_keys.dart`
+in hablotengo — a similar file could be added to nerdster, or the test could read from
+`web/common/data/demoData.js` which is already generated.
+
+## Bag miss for own delegate when signed in with identity only (no session delegate)
+
+When a user has their identity token in the URL but no session delegate loaded,
+`myDelegateKeySet` is empty, so all delegates (including the user's own) are routed
+through `_peerEquivChannel` (with `excludeTypes=org.nerdster.dis`). The seed bag has the
+own delegate stored without `excludeTypes`, causing a miss.
+
+Root cause: `myDelegateKeys` is only populated when `signInState.hasIdentity` is true,
+but the seed bag's "own" criterion is based on the POV token, not the session identity.
+
 ## Merge don't sort - check everywhere!
 
 ## Improve SimpsonsDemo tag equate/dontEquate

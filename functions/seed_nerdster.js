@@ -6,10 +6,11 @@
  * token.  The client passes the bag to ChannelFactory.loadSeedBag() and then
  * proceeds as normal — all startup fetches hit the bag instead of the network.
  *
- * Three buckets (all using the same URL key format as the Dart client):
- *   1. OOU trust statements   — keyed under each token's source URL (export.one-of-us.net or federated), no excludeTypes
- *   2. Delegate content (all) — keyed under export.nerdster.org, no excludeTypes
- *   3. Delegate content (no dismiss) — keyed under export.nerdster.org, excludeTypes=org.nerdster.dis
+ * Two buckets (all using the same URL key format as the Dart client):
+ *   1. OOU trust statements — keyed under each token's source URL (export.one-of-us.net or federated), no excludeTypes
+ *   2. Delegate content — keyed under export.nerdster.org:
+ *        own delegate(s): all statements including dismiss, no excludeTypes
+ *        peer delegates:  excludeTypes=org.nerdster.dis
  *
  * No auth required — all data is public.
  */
@@ -17,12 +18,11 @@
 const { TrustPipeline } = require('./trust_pipeline');
 const { oneofusSource, federatedSourceFor } = require('./oneofus_source');
 const { permissivePathRequirement, defaultPathRequirement, strictPathRequirement } = require('./trust_logic');
-const { fetchStatements, makedistinct } = require('./statement_fetcher');
-const { getToken } = require('./jsonish_util');
+const { fetchStatementsBatch, makedistinct } = require('./statement_fetcher');
+const { DelegateResolver } = require('./delegate_resolver');
 
 const OOU_EXPORT_URL = 'https://export.one-of-us.net';
 const NERDSTER_EXPORT_URL = 'https://export.nerdster.org';
-const NERDSTER_DOMAIN = 'nerdster.org';
 const DISMISS_TYPE = 'org.nerdster.dis';
 
 const pathRequirements = {
@@ -48,21 +48,6 @@ function bagKey(baseUrl, token, excludeTypes = []) {
   return `${baseUrl}?${parts.join('&')}`;
 }
 
-/**
- * Extracts all delegate tokens referenced in the OOU trust statements.
- */
-function collectDelegateTokens(oouCache) {
-  const tokens = new Set();
-  for (const statements of oouCache.values()) {
-    for (const s of statements) {
-      if (s.delegate != null && s.with?.domain === NERDSTER_DOMAIN) {
-        const t = getToken(s.delegate);
-        if (t) tokens.add(t);
-      }
-    }
-  }
-  return tokens;
-}
 
 async function handleSeedNerdster(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -80,7 +65,7 @@ async function handleSeedNerdster(req, res) {
     const fedRegistry = new Map();
     const oouCache = new Map();
     const pipeline = new TrustPipeline(oneofusSource, { sourceFor: federatedSourceFor, pathRequirement });
-    await pipeline.build(povToken, { fedRegistry, oouCache });
+    const graph = await pipeline.build(povToken, { fedRegistry, oouCache });
 
     const bag = {};
 
@@ -91,18 +76,34 @@ async function handleSeedNerdster(req, res) {
     }
 
     // 3. Delegate content — fetch from Nerdster Firestore
-    const delegateTokens = collectDelegateTokens(oouCache);
+    const resolver = new DelegateResolver(graph, oouCache, { maxStatements: Infinity });
+    resolver.resolveAll();
+    const delegateTokens = resolver.getAllDelegateTokens();
     const fetchParams = { distinct: true, includeId: true, orderStatements: false, checkPrevious: true };
     const fetchParamsNoDismiss = { ...fetchParams, excludeTypes: [DISMISS_TYPE] };
 
-    await Promise.all([...delegateTokens].map(async (token) => {
-      const [allStatements, noDismiss] = await Promise.all([
-        fetchStatements({ [token]: null }, fetchParams),
-        fetchStatements({ [token]: null }, fetchParamsNoDismiss),
-      ]);
-      bag[bagKey(NERDSTER_EXPORT_URL, token)] = allStatements;
-      bag[bagKey(NERDSTER_EXPORT_URL, token, [DISMISS_TYPE])] = noDismiss;
-    }));
+    const ownTokens = {};
+    const peerTokens = {};
+    for (const token of delegateTokens) {
+      if (resolver.getIdentityForDelegate(token) === povToken) {
+        ownTokens[token] = null;
+      } else {
+        peerTokens[token] = null;
+      }
+    }
+
+    const [ownResults, peerResults] = await Promise.all([
+      fetchStatementsBatch(ownTokens, fetchParams),
+      fetchStatementsBatch(peerTokens, fetchParamsNoDismiss),
+    ]);
+    for (const [token, statements] of Object.entries(ownResults)) {
+      if (!Array.isArray(statements)) throw new Error(`Failed to fetch delegate ${token}: ${statements.error}`);
+      bag[bagKey(NERDSTER_EXPORT_URL, token)] = statements;
+    }
+    for (const [token, statements] of Object.entries(peerResults)) {
+      if (!Array.isArray(statements)) throw new Error(`Failed to fetch delegate ${token}: ${statements.error}`);
+      bag[bagKey(NERDSTER_EXPORT_URL, token, [DISMISS_TYPE])] = statements;
+    }
 
     res.json(bag);
   } catch (e) {

@@ -4,6 +4,7 @@ import 'package:nerdster/demotest/cases/egos.dart';
 import 'package:nerdster/demotest/cases/equivalence_bug.dart';
 import 'package:nerdster/demotest/cases/loner.dart';
 import 'package:nerdster/demotest/cases/notifications_gallery.dart';
+import 'package:nerdster/demotest/cases/predecessor_delegate.dart';
 import 'package:nerdster/demotest/cases/rate_when_not_in_network.dart';
 import 'package:nerdster/demotest/cases/simpsons.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
@@ -46,6 +47,7 @@ abstract class DemoKey {
     'egosCircle': egosCircle,
     'equivalenceBug': equivalenceBug,
     'rateWhenNotInNetwork': rateWhenNotInNetwork,
+    'predecessorDelegate': predecessorDelegate,
     'stress': stress,
   };
 

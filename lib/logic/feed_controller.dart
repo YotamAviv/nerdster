@@ -32,6 +32,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
   final StatementChannel<DismissStatement> disSource;
   final StatementChannel<EquivalenceStatement> equivSource;
   final StatementChannel<ContentStatement> _peerContentChannel;
+  final StatementChannel<EquivalenceStatement> _peerEquivChannel;
   final VoidCallback? _optimisticConcurrencyFunc;
 
   /// Pushes a new content statement through the write-through cache.
@@ -93,6 +94,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         disSource = channelFactory.getChannel<DismissStatement>(kNerdsterExportUrl, 'statements'),
         equivSource = channelFactory.getChannel<EquivalenceStatement>(kNerdsterExportUrl, 'statements'),
         _peerContentChannel = channelFactory.getChannel<ContentStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']),
+        _peerEquivChannel = channelFactory.getChannel<EquivalenceStatement>(kNerdsterExportUrl, 'statements', excludeTypes: ['org.nerdster.dis']),
         _optimisticConcurrencyFunc = optimisticConcurrencyFunc,
         super(null) {
     _lastIdentity = signInState.hasIdentity ? signInState.identity : null;
@@ -578,15 +580,24 @@ class FeedController extends ValueNotifier<FeedModel?> {
             ? disSource.fetch(myDisFetchMap)
             : Future.value(const <String, List<DismissStatement>>{});
 
-        final Map<String, String?> equivFetchMap = {
-          for (final k in delegateKeysToFetch) k.value: null
-        };
-        final Future<Map<String, List<EquivalenceStatement>>> equivFuture =
-            equivSource.fetch(equivFetchMap);
-
         final Set<DelegateKey> myDelegateKeySet = myDelegateKeys?.toSet() ?? {};
         final Iterable<DelegateKey> peerDelegateKeys =
             delegateKeysToFetch.where((k) => !myDelegateKeySet.contains(k));
+
+        final Map<String, String?> myEquivFetchMap = {
+          for (final k in myDelegateKeySet) k.value: null
+        };
+        final Map<String, String?> peerEquivFetchMap = {
+          for (final k in peerDelegateKeys) k.value: null
+        };
+        final Future<Map<String, List<EquivalenceStatement>>> equivFuture = Future.wait([
+          myEquivFetchMap.isNotEmpty
+              ? equivSource.fetch(myEquivFetchMap)
+              : Future.value(const <String, List<EquivalenceStatement>>{}),
+          peerEquivFetchMap.isNotEmpty
+              ? _peerEquivChannel.fetch(peerEquivFetchMap)
+              : Future.value(const <String, List<EquivalenceStatement>>{}),
+        ]).then((r) => {...r[0], ...r[1]});
 
         final swDelegate = Stopwatch()..start();
         final delegateContent = await contentPipeline.fetchDelegateContent(
@@ -603,7 +614,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         final rawEquivContent = await equivFuture;
         final EquivalenceResult equivalenceResult = EquivalenceResult(
           delegateContent: {
-            for (final k in equivFetchMap.keys) DelegateKey(k): rawEquivContent[k] ?? [],
+            for (final k in delegateKeysToFetch) DelegateKey(k.value): rawEquivContent[k.value] ?? [],
           },
         );
         _lastDelegateMs = swDelegate.elapsedMilliseconds;

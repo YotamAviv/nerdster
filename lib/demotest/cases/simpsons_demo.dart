@@ -140,6 +140,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   DemoDelegateKey lisaN = await lisa.makeDelegate();
   DemoDelegateKey bartN = await bart.makeDelegate();
   DemoDelegateKey burnsN = await burns.makeDelegate();
+  DemoDelegateKey homerD = await homer.makeDelegate(export: 'homer-delegate');
   DemoDelegateKey homer2N = await homer2.makeDelegate();
   DemoDelegateKey milhouseN = await milhouse.makeDelegate();
   DemoDelegateKey carlN = await carl.makeDelegate();
@@ -171,7 +172,9 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   const Json secretariat = {'contentType': 'movie', 'title': "Secretariat", 'year': '2010'};
   const Json shakes = {'contentType': 'movie', 'title': "Shakes the Clown", 'year': '1991'};
   const Json joker = {'contentType': 'movie', 'title': "Joker", 'year': '2019'};
+  const Json beerWars = {'contentType': 'movie', 'title': "Beer Wars", 'year': '2009'};
 
+  await homerD.doRate(subject: beerWars, recommend: true, comment: '#beer #donuts');
   await smithersN.doRate(subject: brokeback, recommend: true);
   await carlN.doRate(subject: brokeback, recommend: true);
   await sideshowN.doDismiss(brokeback, 'forever');

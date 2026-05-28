@@ -6,41 +6,20 @@ AI NOTE: This is my (the human) file with my own notes.
   - modifying any value in it.
 
 # Misc...
+
+http://localhost:8765/?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22WXf0AG-EMWH8mZLXOnVY2n37jxIGNIKhpRkYs0Wfyto%22%20}
+
+
 ?fire=emulator&showCrypto=true&lgtm=true
-
-http://localhost:8765/?fire=fake&demo=simpsonsDemo&showCrypto=true&lgtm=true
-
-# Fake egosCircle
-?fire=fake&demo=egosCircle&showCrypto=true
-# Fake equivalenceBug
-?fire=fake&demo=equivalenceBug&showCrypto=true
-
-?fire=fake&demo=simpsonsRelateDemo
-
-?fire=fake&demo=simpsonsDemo
-
-?fire=fake&demo=rateWhenNotInNetwork
 
 # Notifications gallery
 ?fire=fake&demo=notificationsGallery
 
 ?fire=emulator&demo=loner
 
-# Emulator simpsonsDemo from PROD
-# Lisa
-http://localhost:8765/?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22fZ2PYolFRYPO95U5Y3ASXmWGF5AMreVxcdziTrH1pp0%22%20}
-
 # Emulator yotam
 ?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}
 
-# Nice ones:
-```
-flutter clean
-flutter pub get
-flutter pub upgrade --major-versions
-flutter test
-flutter run -d chrome
-```
 
 ```
 Push to PROD:
@@ -50,18 +29,6 @@ firebase --project=nerdster deploy --only functions
 add to .bashrc:
 export PATH="$PATH":"$HOME/.pub-cache/bin"
 ```
-
-### Export PROD Firebase for use by local emulators
-functions$ npm install
-firebase projects:list
-gcloud projects list
-gcloud auth login
-
-Run `./bin/start_emulators.sh` to start emulators in the background and log to `.log` files.
-Run `./bin/start_emulators.sh --export` to first export PROD data, and then start the emulators using the new export.
-Run `./bin/stop_emulators.sh` to stop them.
-
-
 
 ## code labels:
 These are in flux, but I've been using

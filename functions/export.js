@@ -27,7 +27,7 @@
  */
 
 const { logger } = require("firebase-functions");
-const { fetchStatements } = require('./statement_fetcher');
+const { fetchStatementsBatch } = require('./statement_fetcher');
 const { parseIrevoke } = require('./jsonish_util');
 
 async function handleExport(req, res, { authHook } = {}) {
@@ -77,17 +77,16 @@ async function handleExport(req, res, { authHook } = {}) {
     const params = req.query;
     const omit = params.omit;
 
+    const token2revoked = {};
     for (const spec of specs) {
-      let token = "unknown";
-      try {
-        const token2revoked = parseIrevoke(spec);
-        token = Object.keys(token2revoked)[0];
-        const statements = await fetchStatements(token2revoked, params, omit);
-        res.write(JSON.stringify({ [token]: statements }) + '\n');
-      } catch (e) {
-        logger.error(`[export] Error processing ${typeof spec === 'string' ? spec : JSON.stringify(spec)}: ${e.message}`);
-        res.write(JSON.stringify({ [token]: { error: e.message } }) + '\n');
-      }
+      const parsed = parseIrevoke(spec);
+      Object.assign(token2revoked, parsed);
+    }
+
+    const results = await fetchStatementsBatch(token2revoked, params, omit);
+    for (const [token, result] of Object.entries(results)) {
+      if (result?.error) logger.error(`[export] Error fetching ${token}: ${result.error}`);
+      res.write(JSON.stringify({ [token]: result }) + '\n');
     }
     res.end();
   } catch (e) {

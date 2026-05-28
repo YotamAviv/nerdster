@@ -8,6 +8,7 @@ import 'package:nerdster/config.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
+import 'package:nerdster/models/equivalence_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -43,6 +44,7 @@ void main() async {
     channelFactory.registerRedirect('https://export.one-of-us.net', 'http://127.0.0.1:5002/one-of-us-net/us-central1/export');
     channelFactory.registerRedirect('https://write.one-of-us.net', 'http://127.0.0.1:5002/one-of-us-net/us-central1/write2');
     channelFactory.registerRedirect('https://export.karennet.net', 'http://127.0.0.1:5004/karennet/us-central1/export');
+    channelFactory.registerRedirect('https://write.karennet.net', 'http://127.0.0.1:5004/karennet/us-central1/write2');
   }
 
   if (resolvedFireChoice == FireChoice.emulator) {
@@ -61,6 +63,7 @@ Future<void> _generateDemoData() async {
   TrustStatement.init();
   ContentStatement.init();
   DismissStatement.init();
+  EquivalenceStatement.init();
   await channelFactory.clearCache();
   DemoKey.reset();
 

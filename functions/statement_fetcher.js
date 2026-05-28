@@ -7,7 +7,7 @@
 
 const admin = require('firebase-admin');
 const { order, getToken } = require('./jsonish_util');
-const { statementsRef } = require('./schema');
+const { statementsRef, delegateStreamKey } = require('./schema');
 
 const verbs = [
   'trust', 'delegate', 'clear', 'rate', 'follow', 'censor',
@@ -85,8 +85,8 @@ async function resolveRevokeAtTime(revokeAtValue, collectionRef) {
  * thousands of items but rate only dozens. Peer streams must omit dismiss statements
  * or the bandwidth cost becomes prohibitive.
  */
-async function fetchStatements(token2revokeAt, params = {}, omit = []) {
-  const { checkPrevious, distinct, orderStatements = true, includeId, after, excludeTypes } = params;
+async function fetchStatements(token2revokeAt, params = {}, omit = [], db = null) {
+  const { checkPrevious, distinct, orderStatements = true, includeId, after, excludeTypes, limit } = params;
 
   if (!token2revokeAt) throw new Error('Missing token2revokeAt');
   const token = Object.keys(token2revokeAt)[0];
@@ -95,7 +95,7 @@ async function fetchStatements(token2revokeAt, params = {}, omit = []) {
   if (!token) throw new Error('Missing token');
   if (checkPrevious && !includeId) throw new Error('checkPrevious requires includeId');
 
-  const db = admin.firestore();
+  db = db || admin.firestore();
 
   const collectionRef = statementsRef(db, token, 'statements');
 
@@ -111,6 +111,7 @@ async function fetchStatements(token2revokeAt, params = {}, omit = []) {
   } else if (after) {
     query = query.where('time', ">", after);
   }
+  if (limit) query = query.limit(limit);
 
   const snapshot = await query.get();
   let statements = snapshot.docs.map(doc => {
@@ -160,7 +161,67 @@ async function fetchStatements(token2revokeAt, params = {}, omit = []) {
   return statements;
 }
 
+/**
+ * Fetches multiple streams in parallel.
+ * Returns token → statements[] on success, token → { error } on per-token failure.
+ * JS-layer equivalent of oneofusSource.fetch() — same shape, no HTTP.
+ */
+async function fetchStatementsBatch(token2revokeAt, params = {}, omit = [], db = null) {
+  const entries = Object.entries(token2revokeAt);
+  const settled = await Promise.allSettled(
+    entries.map(([token, revokeAt]) => fetchStatements({ [token]: revokeAt }, params, omit, db))
+  );
+  return Object.fromEntries(
+    entries.map(([token], i) => {
+      const r = settled[i];
+      return [token, r.status === 'fulfilled' ? r.value : { error: r.reason.message }];
+    })
+  );
+}
+
+/** Merges k pre-sorted (time descending) arrays into one. */
+function mergeDesc(arrays) {
+  const ptrs = arrays.map(() => 0);
+  const result = [];
+  for (;;) {
+    let best = -1;
+    for (let i = 0; i < arrays.length; i++) {
+      if (ptrs[i] < arrays[i].length &&
+          (best === -1 || arrays[i][ptrs[i]].time > arrays[best][ptrs[best]].time))
+        best = i;
+    }
+    if (best === -1) break;
+    result.push(arrays[best][ptrs[best]++]);
+  }
+  return result;
+}
+
+/**
+ * Fetches statements from all delegate streams for a canonical identity.
+ * Uses the resolver's public API to get delegates, equivalence group, and constraints.
+ */
+async function fetchDelegateStatements(resolver, identityToken, params = {}, db = null) {
+  const delegates = resolver.getDelegatesForIdentity(identityToken);
+  if (delegates.length === 0) return [];
+
+  const group = resolver.getEquivalenceGroup(identityToken);
+  const fetchParams = { ...params };
+  if (resolver.maxStatements !== Infinity) fetchParams.limit = resolver.maxStatements;
+
+  const arrays = await Promise.all(group.flatMap(idToken =>
+    delegates.map(async (delegateToken) => {
+      const constraint = resolver.getConstraintForDelegate(delegateToken) ?? null;
+      const key = delegateStreamKey(delegateToken, idToken);
+      return fetchStatements({ [key]: constraint }, fetchParams, [], db);
+    })
+  ));
+
+  return mergeDesc(arrays);
+}
+
 module.exports = {
   fetchStatements,
+  fetchStatementsBatch,
+  fetchDelegateStatements,
   makedistinct,
 };
