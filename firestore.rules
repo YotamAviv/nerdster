@@ -2,6 +2,13 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Sessions: phone app writes, web app reads. Session ID is an unguessable token.
+    match /sessions/doc/{session}/{document} {
+      allow read, write: if true;
+    }
+
+    // All other reads and writes go through Cloud Functions (Admin SDK bypasses these rules).
     match /{document=**} {
       allow read: if false;
       allow write: if false;
