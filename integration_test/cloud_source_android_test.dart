@@ -4,7 +4,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/config.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/dev/cloud_source_suite.dart';
@@ -18,16 +17,12 @@ void main() {
     } catch (e) {
       if (!e.toString().contains('duplicate-app')) rethrow;
     }
-    await OneofusFire.init();
-
     final host = defaultTargetPlatform == TargetPlatform.android ? '10.0.2.2' : '127.0.0.1';
 
     FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
-    OneofusFire.firestore.useFirestoreEmulator(host, 8081);
 
     channelFactory = ChannelFactory(FireChoice.emulator);
     channelFactory.register('nerdster.org', firestore: FirebaseFirestore.instance);
-    channelFactory.register('one-of-us.net', firestore: OneofusFire.firestore);
     channelFactory.registerRedirect('https://export.nerdster.org', 'http://$host:5001/nerdster/us-central1/export');
     channelFactory.registerRedirect('https://write.nerdster.org', 'http://$host:5001/nerdster/us-central1/write2');
     channelFactory.registerRedirect('https://export.one-of-us.net', 'http://$host:5002/one-of-us-net/us-central1/export');

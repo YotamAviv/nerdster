@@ -17,7 +17,6 @@ import 'package:nerdster/key_storage_coordinator.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/equivalence_statement.dart';
-import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/sign_in_state.dart';
@@ -26,7 +25,6 @@ import 'package:nerdster/verify.dart';
 
 import 'package:nerdster/dev/test_runner_screen.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
-import 'package:oneofus_common/fire_util.dart';
 import 'package:oneofus_common/keys.dart' show FedKey;
 import 'package:oneofus_common/trust_statement.dart';
 import 'package:oneofus_common/ui/json_display.dart';
@@ -36,9 +34,6 @@ import 'message_handler.dart' if (dart.library.io) 'stub_message_handler.dart';
 import 'package:app_links/app_links.dart';
 
 export 'package:nerdster/fire_choice.dart';
-
-bool _fireCheckRead = false;
-bool _fireCheckWrite = false;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,7 +78,6 @@ Future<void> main() async {
   final emulatorHost = kIsWeb ? '127.0.0.1' : '10.0.2.2';
 
   FirebaseFirestore nerdsterFirestore;
-  FirebaseFirestore oneofusFirestore;
   FirebaseFirestore? karennetFirestore;
   if (resolvedFireChoice != FireChoice.fake) {
     try {
@@ -91,14 +85,10 @@ Future<void> main() async {
     } catch (e) {
       if (!e.toString().contains('duplicate-app')) rethrow;
     }
-    await OneofusFire.init();
     if (resolvedFireChoice == FireChoice.emulator) {
       // $ firebase --project=nerdster emulators:start
       FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
       FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
-      // $ firebase --project=one-of-us-net -config=oneofus.firebase.json emulators:start
-      OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
-      OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
       // registerRedirect for FirebaseConfig.resolveUrl() used by lgtm.dart and node_details.dart.
       FirebaseConfig.registerRedirect('https://export.nerdster.org',
           'http://$emulatorHost:5001/nerdster/us-central1/export');
@@ -116,10 +106,8 @@ Future<void> main() async {
           'http://$emulatorHost:5001/nerdster/us-central1/seedNerdster');
     }
     nerdsterFirestore = FirebaseFirestore.instance;
-    oneofusFirestore = OneofusFire.firestore;
   } else {
     nerdsterFirestore = FakeFirebaseFirestore();
-    oneofusFirestore = FakeFirebaseFirestore();
     karennetFirestore = FakeFirebaseFirestore();
   }
 
@@ -127,9 +115,9 @@ Future<void> main() async {
       skipVerify: Setting.get<bool>(SettingType.skipVerify),
       onWriteError: nerdsterWriteErrorFunc);
   channelFactory.register('nerdster.org', firestore: nerdsterFirestore);
-  channelFactory.register('one-of-us.net', firestore: oneofusFirestore);
-  if (karennetFirestore != null) {
-    channelFactory.register('karennet.net', firestore: karennetFirestore);
+  if (resolvedFireChoice == FireChoice.fake) {
+    channelFactory.register('one-of-us.net', firestore: FakeFirebaseFirestore());
+    channelFactory.register('karennet.net', firestore: karennetFirestore!);
   }
   if (resolvedFireChoice == FireChoice.emulator) {
     channelFactory.registerRedirect('https://export.nerdster.org', 'http://$emulatorHost:5001/nerdster/us-central1/export');
@@ -137,17 +125,6 @@ Future<void> main() async {
     channelFactory.registerRedirect('https://export.one-of-us.net', 'http://$emulatorHost:5002/one-of-us-net/us-central1/export');
     channelFactory.registerRedirect('https://write.one-of-us.net', 'http://$emulatorHost:5002/one-of-us-net/us-central1/write2');
     channelFactory.registerRedirect('https://export.karennet.net', 'http://$emulatorHost:5004/karennet/us-central1/export');
-  }
-
-  _fireCheckRead = params.containsKey('fireCheckRead');
-  _fireCheckWrite = params.containsKey('fireCheckWrite');
-  if (_fireCheckWrite) {
-    await checkWrite(nerdsterFirestore, 'firecheck: web:nerdster');
-    await checkWrite(oneofusFirestore, 'firecheck: web:oneofus');
-  }
-  if (_fireCheckRead) {
-    await checkRead(nerdsterFirestore, 'firecheck: web:nerdster');
-    await checkRead(oneofusFirestore, 'firecheck: web:oneofus');
   }
 
   TrustStatement.init();

@@ -10,7 +10,6 @@ import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
-import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/content_card.dart';
 import 'package:nerdster/ui/statement_tile.dart';
@@ -30,12 +29,9 @@ void main() {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    await OneofusFire.init();
-
     // On Android emulator, the host machine is 10.0.2.2, not localhost.
     final host = defaultTargetPlatform == TargetPlatform.android ? '10.0.2.2' : 'localhost';
     FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
-    OneofusFire.firestore.useFirestoreEmulator(host, 8081);
 
     FirebaseConfig.registerRedirect('https://export.one-of-us.net', 'http://$host:5002/one-of-us-net/us-central1/export');
     FirebaseConfig.registerRedirect('https://export.nerdster.org', 'http://$host:5001/nerdster/us-central1/export');
@@ -49,7 +45,6 @@ void main() {
 
     channelFactory = ChannelFactory(FireChoice.emulator);
     channelFactory.register('nerdster.org', firestore: FirebaseFirestore.instance);
-    channelFactory.register('one-of-us.net', firestore: OneofusFire.firestore);
     channelFactory.registerRedirect('https://export.nerdster.org', 'http://$host:5001/nerdster/us-central1/export');
     channelFactory.registerRedirect('https://write.nerdster.org', 'http://$host:5001/nerdster/us-central1/write2');
     channelFactory.registerRedirect('https://export.one-of-us.net', 'http://$host:5002/one-of-us-net/us-central1/export');

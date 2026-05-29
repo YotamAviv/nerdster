@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
@@ -20,11 +19,8 @@ void main() async {
   } catch (e) {
     if (!e.toString().contains('duplicate-app')) rethrow;
   }
-  await OneofusFire.init();
-
   channelFactory = ChannelFactory(FireChoice.prod);
   channelFactory.register('nerdster.org', firestore: FirebaseFirestore.instance);
-  channelFactory.register('one-of-us.net', firestore: OneofusFire.firestore);
 
   runApp(WidgetRunner(scenario: _generateDemoData));
 }

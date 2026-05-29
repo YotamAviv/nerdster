@@ -3,7 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:nerdster/firebase_options.dart';
-import 'package:nerdster/oneofus_fire.dart';
 import 'package:nerdster/config.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/models/content_statement.dart';
@@ -23,21 +22,13 @@ void main() async {
   } catch (e) {
     if (!e.toString().contains('duplicate-app')) rethrow;
   }
-  await OneofusFire.init();
-
-  // TO RUN ON PROD: change FireChoice.emulator → FireChoice.prod and remove the
-  // 4 useFirestoreEmulator/useFunctionsEmulator calls and the emulator* URL args below.
   const resolvedFireChoice = FireChoice.emulator;
 
-  // EMULATOR ONLY — remove these 4 lines for prod:
   FirebaseFirestore.instance.useFirestoreEmulator('localhost', 8080);
   FirebaseFunctions.instance.useFunctionsEmulator('127.0.0.1', 5001);
-  OneofusFire.firestore.useFirestoreEmulator('localhost', 8081);
-  OneofusFire.functions.useFunctionsEmulator('127.0.0.1', 5002);
 
   channelFactory = ChannelFactory(resolvedFireChoice);
   channelFactory.register('nerdster.org', firestore: FirebaseFirestore.instance);
-  channelFactory.register('one-of-us.net', firestore: OneofusFire.firestore);
   if (resolvedFireChoice == FireChoice.emulator) {
     channelFactory.registerRedirect('https://export.nerdster.org', 'http://127.0.0.1:5001/nerdster/us-central1/export');
     channelFactory.registerRedirect('https://write.nerdster.org', 'http://127.0.0.1:5001/nerdster/us-central1/write2');
