@@ -52,7 +52,7 @@ function bagKey(baseUrl, token, excludeTypes = []) {
 async function handleSeedNerdster(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
-  const { povToken, pathRequirement: pathReqName = 'standard' } = req.query;
+  const { povToken, identityToken, pathRequirement: pathReqName = 'standard' } = req.query;
   if (!povToken || typeof povToken !== 'string') {
     res.status(400).send('Missing or invalid povToken');
     return;
@@ -85,7 +85,7 @@ async function handleSeedNerdster(req, res) {
     const ownTokens = {};
     const peerTokens = {};
     for (const token of delegateTokens) {
-      if (resolver.getIdentityForDelegate(token) === povToken) {
+      if (identityToken && resolver.getIdentityForDelegate(token) === identityToken) {
         ownTokens[token] = null;
       } else {
         peerTokens[token] = null;

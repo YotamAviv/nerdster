@@ -171,9 +171,9 @@ Future<void> defaultSignIn({BuildContext? context, Map<String, String>? params})
 
   // Parse pov/target FedKey payloads. FedKey.fromPayload handles both old (bare JWK)
   // and new ({key, url}) formats; its constructor registers in Jsonish as a side-effect.
-  // Accept both ?pov= (new) and ?identity= (legacy, for old shared links).
+  // Accept both ?pov= (legacy ?identity= gone).
   String? pov;
-  final String? povParam = params['pov'] ?? params['identity'];
+  final String? povParam = params['pov'];
   if (povParam != null) {
     try {
       final Json povJson = json.decode(povParam);

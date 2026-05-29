@@ -10,16 +10,6 @@ instead of hardcoding it. The key generation scripts already produce `lib/dev/si
 in hablotengo — a similar file could be added to nerdster, or the test could read from
 `web/common/data/demoData.js` which is already generated.
 
-## Bag miss for own delegate when signed in with identity only (no session delegate)
-
-When a user has their identity token in the URL but no session delegate loaded,
-`myDelegateKeySet` is empty, so all delegates (including the user's own) are routed
-through `_peerEquivChannel` (with `excludeTypes=org.nerdster.dis`). The seed bag has the
-own delegate stored without `excludeTypes`, causing a miss.
-
-Root cause: `myDelegateKeys` is only populated when `signInState.hasIdentity` is true,
-but the seed bag's "own" criterion is based on the POV token, not the session identity.
-
 ## Merge don't sort - check everywhere!
 
 ## Improve SimpsonsDemo tag equate/dontEquate

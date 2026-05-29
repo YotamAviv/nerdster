@@ -353,7 +353,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
     return _load(showLoading: false);
   }
 
-  Future<void> _seedFromCF(String povToken, String pathRequirement) async {
+  Future<void> _seedFromCF(String povToken, String pathRequirement, {String? identityToken}) async {
     if (!_seedingEnabled) return;
     if (channelFactory.fireChoice == FireChoice.fake) return;
     try {
@@ -361,6 +361,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
       final uri = Uri.parse(FirebaseConfig.nerdsterSeedNerdsterUrl).replace(queryParameters: {
         'povToken': povToken,
         'pathRequirement': pathRequirement,
+        if (identityToken != null) 'identityToken': identityToken,
       });
       final response = await http.get(uri).timeout(const Duration(seconds: 20));
       final fetchMs = sw.elapsedMilliseconds;
@@ -465,7 +466,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           break;
         }
 
-        final IdentityKey currentPovIdentity = IdentityKey(signInState.pov);
+        final IdentityKey currentPov = IdentityKey(signInState.pov);
         final IdentityKey? myIdentity =
             signInState.hasIdentity ? signInState.identity : null;
 
@@ -504,13 +505,13 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
         final swLoad = Stopwatch()..start();
 
-        if (!trustSource.isCached(currentPovIdentity.value)) {
-          await _seedFromCF(currentPovIdentity.value, identityPathsReq);
+        if (!trustSource.isCached(currentPov.value)) {
+          await _seedFromCF(currentPov.value, identityPathsReq, identityToken: myIdentity?.value);
         }
         debugPrint('[load] seed phase: ${swLoad.elapsedMilliseconds}ms');
 
         final TrustPipeline trustPipeline = TrustPipeline(trustSource, channelFactory: channelFactory, pathRequirement: pathReq);
-        final TrustGraph povGraph = await trustPipeline.build(currentPovIdentity);
+        final TrustGraph povGraph = await trustPipeline.build(currentPov);
         _lastOouMs = swLoad.elapsedMilliseconds;
         debugPrint('[load] OOU BFS: ${_lastOouMs}ms  (trust keys=${povGraph.distances.length})');
         final DelegateResolver delegateResolver = DelegateResolver(povGraph);
@@ -643,7 +644,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
         // 6. Labeling
         final Labeler labeler =
-            Labeler(povGraph, delegateResolver: delegateResolver, meIdentity: myIdentity);
+            Labeler(povGraph, delegateResolver: delegateResolver, meIdentity: currentPov);
 
         final aggregation = reduceContentAggregation(
           followNetwork,
@@ -674,7 +675,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
         final activeContexts = <String>{};
 
-        for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(currentPovIdentity)) {
+        for (final DelegateKey key in delegateResolver.getDelegatesForIdentity(currentPov)) {
           final statements = contentResult.delegateContent[key];
           if (statements != null) {
             for (final s in statements) {
@@ -686,7 +687,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           }
         }
 
-        if (currentPovIdentity.value == signInState.pov &&
+        if (currentPov.value == signInState.pov &&
             myIdentity == (signInState.hasIdentity ? signInState.identity : null)) {
           final allErrors = [
             ...trustSource.errors,
@@ -697,9 +698,9 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
           // 1. Invisibility / Unnamed
           // Note: We use the identity from the start of the refresh loop to ensure consistency
-          if (myIdentity != null) {
+          if (currentPov != null) {
             final bool isVisible =
-                followNetwork.identities.any((k) => k.value == myIdentity!.value);
+                followNetwork.identities.any((k) => k.value == currentPov!.value);
 
             if (!isVisible) {
               systemNotifications.add(SystemNotification(
@@ -708,7 +709,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
               ));
             }
 
-            final IdentityKey canonicalMe = povGraph.resolveIdentity(myIdentity!);
+            final IdentityKey canonicalMe = povGraph.resolveIdentity(currentPov!);
             bool isNamed = false;
 
             for (final List<TrustStatement> edges in povGraph.edges.values) {
@@ -732,7 +733,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           }
 
           // 2. Delegate Issues
-          if (myIdentity != null && signInState.delegate != null) {
+          if (currentPov != null && signInState.delegate != null) {
             final String myDelegate = signInState.delegate!;
 
             // Revoked
@@ -747,10 +748,10 @@ class FeedController extends ValueNotifier<FeedModel?> {
             }
 
             // Not associated
-            if (povGraph.isTrusted(myIdentity!)) {
+            if (povGraph.isTrusted(currentPov!)) {
               bool isAssociated = false;
               // Use myGraph for unfiltered delegate statements (independent of PoV's blocks).
-              final List<TrustStatement> statements = myGraph?.edges[myIdentity!] ?? [];
+              final List<TrustStatement> statements = myGraph?.edges[currentPov!] ?? [];
               for (final TrustStatement s in statements) {
                 if (s.verb == TrustVerb.delegate && s.subjectToken == myDelegate) {
                   isAssociated = true;
@@ -781,7 +782,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
             delegateResolver: delegateResolver,
             labeler: labeler,
             aggregation: aggregation,
-            povIdentity: currentPovIdentity,
+            povIdentity: currentPov,
             fcontext: fcontext,
             sortMode: sortMode,
             filterMode: filterMode,

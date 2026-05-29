@@ -22,7 +22,7 @@ void main() {
   const lisaIdentity = {
     "crv": "Ed25519",
     "kty": "OKP",
-    "x": "b-L2iq0eURr174i52nZx67sBrVTXXNfzQ9SFFNFbo2Q"
+    "x": "aYPcagxNBn2ajVo6BmcHBAkFQxCckYJgVlCt7vYfI_0"
   };
 
   setUpAll(() async {
