@@ -5,6 +5,7 @@ import 'package:nerdster/firebase_options.dart';
 import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
+import 'package:nerdster/models/equivalence_statement.dart';
 import 'package:nerdster/demotest/demo_key.dart';
 import 'package:nerdster/demotest/cases/simpsons_demo.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -29,6 +30,7 @@ Future<void> _generateDemoData() async {
   TrustStatement.init();
   ContentStatement.init();
   DismissStatement.init();
+  EquivalenceStatement.init();
   await channelFactory.clearCache();
   DemoKey.reset();
 
