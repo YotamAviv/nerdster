@@ -20,8 +20,8 @@ enum FireChoice { fake, emulator, prod }
 class _Registration {
   final String domain;
   final FirebaseFirestore? firestore;
-  final Map<String, dynamic> Function()? writeAuthHook;
-  final Map<String, dynamic> Function()? readAuthHook;
+  final Future<Map<String, dynamic>> Function()? writeAuthHook;
+  final Future<Map<String, dynamic>> Function()? readAuthHook;
   const _Registration({
     required this.domain,
     this.firestore,
@@ -114,8 +114,8 @@ class ChannelFactory {
   void register(
     String domain, {
     FirebaseFirestore? firestore,
-    Map<String, dynamic> Function()? writeAuthHook,
-    Map<String, dynamic> Function()? readAuthHook,
+    Future<Map<String, dynamic>> Function()? writeAuthHook,
+    Future<Map<String, dynamic>> Function()? readAuthHook,
   }) {
     _registrations['https://export.$domain'] = _Registration(
       domain: domain,
@@ -496,7 +496,7 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
   final StatementVerifier verifier;
   final ValueListenable<bool>? skipVerify;
   final Json? paramsOverride;
-  final Map<String, dynamic> Function()? authHook;
+  final Future<Map<String, dynamic>> Function()? authHook;
   final Map<String, SourceError> _errors = {};
 
   static const Json _paramsProto = {
@@ -624,7 +624,7 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
     if (paramsOverride != null) params.addAll(paramsOverride!);
     if (excludeTypes.isNotEmpty) params['excludeTypes'] = excludeTypes;
     if (authHook != null) {
-      params['auth'] = jsonEncode(authHook!());
+      params['auth'] = jsonEncode(await authHook!());
     }
     params['spec'] = jsonEncode(spec);
 
@@ -706,7 +706,7 @@ class _CloudFunctionsSource<T extends Statement> implements StatementSource<T> {
 class _CloudFunctionsWriter<T extends Statement> implements StatementWriter<T> {
   final String writeUrl;
   final String streamId;
-  final Map<String, dynamic> Function()? authHook;
+  final Future<Map<String, dynamic>> Function()? authHook;
   final Map<String, Future<void>> _writeQueues = {};
 
   _CloudFunctionsWriter(this.writeUrl, this.streamId, {this.authHook});
@@ -755,7 +755,7 @@ class _CloudFunctionsWriter<T extends Statement> implements StatementWriter<T> {
       body: jsonEncode({
         'statement': jsonish.json,
         'streamName': streamId,
-        if (authHook != null) ...authHook!(),
+        if (authHook != null) ...await authHook!(),
       }),
     );
     if (response.statusCode != 200) {

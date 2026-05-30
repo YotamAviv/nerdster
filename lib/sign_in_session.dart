@@ -21,7 +21,7 @@ Future<SignInSession> createNerdsterSignInSession() {
   return SignInSession.create(domain: kNerdsterDomain, signInUrl: url);
 }
 
-Future<void> nerdsterOnSessionData(Json data, PkeKeyPair pkeKeyPair,
+Future<void> nerdsterOnSessionData(Json data, PkeKeyPair pkeKeyPair, OouKeyPair serviceKeyPair,
     {SignInMethod method = SignInMethod.qrScan}) async {
   final String identityKey = data.containsKey('identity') ? 'identity' : kOneofusDomain;
   final Json identityPayload = data[identityKey]!;

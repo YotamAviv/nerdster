@@ -7,12 +7,13 @@ import 'package:oneofus_common/jsonish.dart';
 
 class SignInSession {
   final PkeKeyPair pkeKeyPair;
+  final OouKeyPair serviceKeyPair;
   final String session;
   final Json forPhone;
   StreamSubscription? _subscription;
   Timer? _timeoutTimer;
 
-  SignInSession._({required this.forPhone, required this.session, required this.pkeKeyPair});
+  SignInSession._({required this.forPhone, required this.session, required this.pkeKeyPair, required this.serviceKeyPair});
 
   static Future<SignInSession> create({
     required String domain,
@@ -23,13 +24,18 @@ class SignInSession {
     final Json pkePKJson = await pkePK.json;
     final String session = getToken(pkePKJson);
 
+    final OouKeyPair serviceKeyPair = await crypto.createKeyPair();
+    final OouPublicKey servicePK = await serviceKeyPair.publicKey;
+    final Json servicePKJson = await servicePK.json;
+
     final Json forPhone = {
       'domain': domain,
       'url': signInUrl,
+      'servicePk': servicePKJson,
       'encryptionPk': pkePKJson,
     };
 
-    return SignInSession._(forPhone: forPhone, session: session, pkeKeyPair: pkeKeyPair);
+    return SignInSession._(forPhone: forPhone, session: session, pkeKeyPair: pkeKeyPair, serviceKeyPair: serviceKeyPair);
   }
 
   /// Listens for the phone app's sign-in response in Firestore.
@@ -37,7 +43,7 @@ class SignInSession {
   /// Calls [onDone] when the session is received or times out.
   Future<void> listen({
     required FirebaseFirestore firestore,
-    required Future<void> Function(Json data, PkeKeyPair pkeKeyPair) onData,
+    required Future<void> Function(Json data, PkeKeyPair pkeKeyPair, OouKeyPair serviceKeyPair) onData,
     required void Function() onDone,
     Duration? timeout,
   }) async {
@@ -61,7 +67,7 @@ class SignInSession {
       onDone();
 
       await Future.delayed(const Duration(milliseconds: 300));
-      await onData(snapshots.docs.first.data(), pkeKeyPair);
+      await onData(snapshots.docs.first.data(), pkeKeyPair, serviceKeyPair);
     });
   }
 

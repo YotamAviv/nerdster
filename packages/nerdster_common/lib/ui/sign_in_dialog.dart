@@ -18,7 +18,7 @@ class SignInConfig {
   // Core auth
   final Future<SignInSession> Function() sessionFactory;
   final FirebaseFirestore firestore;
-  final Future<void> Function(Json data, PkeKeyPair pke) onData;
+  final Future<void> Function(Json data, PkeKeyPair pke, OouKeyPair serviceKeyPair) onData;
 
   // Reactive state
   final ChangeNotifier stateNotifier;
@@ -555,7 +555,7 @@ class QrSignInDialog extends StatelessWidget {
 class MagicLinkDialog extends StatefulWidget {
   final Future<SignInSession> sessionFuture;
   final FirebaseFirestore firestore;
-  final Future<void> Function(Json data, PkeKeyPair pke) onData;
+  final Future<void> Function(Json data, PkeKeyPair pke, OouKeyPair serviceKeyPair) onData;
   final VoidCallback onCancel;
   final VoidCallback onSuccess;
   final VoidCallback? onTimeout;
