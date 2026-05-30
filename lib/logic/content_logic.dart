@@ -4,6 +4,7 @@ import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/models/equivalence_statement.dart';
 import 'package:nerdster/utils/tag.dart';
 import 'package:oneofus_common/jsonish.dart';
+import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/merger.dart';
 import 'package:oneofus_common/distincter.dart';
 import 'package:nerdster/models/model.dart';
@@ -172,12 +173,11 @@ ContentAggregation reduceContentAggregation(
   // Calculate transitive involvement for nested ratings
   final Map<String, Set<String>> transitiveInvolvement = {};
 
-  // Sorting is CRITICAL: Parents MUST be processed before children for transitive closure to work in one pass.
+  // Parents MUST be processed before children for transitive closure to work in one pass.
   // In Nerdster, a child statement (reply) always has a later timestamp than its parent.
-  final sortedForTransitive = List<ContentStatement>.from(filteredStatements)
-    ..sort((a, b) => a.time.compareTo(b.time));
-
-  for (final s in sortedForTransitive) {
+  // Server returns descending; reversed gives ascending (oldest first = parents first).
+  Statement.validateOrderTypes(filteredStatements);
+  for (final s in filteredStatements.reversed) {
     final Set<String> inv = {};
     for (final t in s.involvedTokens) {
       inv.add(t);

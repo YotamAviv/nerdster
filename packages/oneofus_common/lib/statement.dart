@@ -62,7 +62,9 @@ abstract class Statement {
   }
 
   /// Helper to validate multiple collections of statements.
-  /// Uses assert, only checks in debug mode
+  /// Uses assert, only checks in debug mode.
+  /// Developers seeing this are more likely to believe it that a comment claiming:
+  /// "already time sorted".
   static void validateOrderTypess(Iterable<Iterable<Statement>> collections) {
     assert(() {
       for (final collection in collections) {
