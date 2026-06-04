@@ -48,7 +48,7 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
   bool _isHistoryExpanded = false;
   bool _isRelationshipsExpanded = false;
 
-  // Large-screen dismiss sweep
+  // Dismiss sweep animation — used on both isSmall and !isSmall
   String? _committedDis;
   String? _pendingDis;
   late final AnimationController _sweepController;
@@ -147,6 +147,10 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
       _sweepController.stop();
       _sweepController.reset();
       setState(() {});
+    } else if (_pendingDis == null) {
+      // Un-dismiss: commit immediately, no animation needed.
+      setState(() {});
+      await _commitDis();
     } else {
       _sweepController.forward(from: 0);
       setState(() {});
@@ -255,7 +259,7 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                     key: Key(widget.aggregation.canonical.value),
                     direction: DismissDirection.horizontal,
                     confirmDismiss: (direction) async {
-                      if (!context.mounted) { return false; }
+                      if (!context.mounted) return false;
                       if ((await checkSignedIn(context,
                               trustGraph: widget.model.trustGraph)) !=
                           true) { return false; }
@@ -265,8 +269,11 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                       final Json json = DismissStatement.make(
                           iJson, widget.aggregation.canonical.value, dis);
                       await widget.controller.disSource.push(json, signInState.signer!);
+                      _committedDis = dis;
+                      _pendingDis = dis;
+                      _disNotifier.value = dis;
                       await widget.controller.notify();
-                      return true;
+                      return false; // keep in tree; visibility controlled by filter
                     },
                     background: Container(
                       color: Colors.green,
@@ -310,9 +317,9 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  Colors.black.withOpacity(0.4),
+                                  Colors.black.withValues(alpha: 0.4),
                                   Colors.transparent,
-                                  Colors.black.withOpacity(0.7),
+                                  Colors.black.withValues(alpha: 0.7),
                                 ],
                               ),
                             ),
@@ -323,6 +330,8 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                           right: 8,
                           child: _buildActionBar(),
                         ),
+                        if (_pendingDis != _committedDis)
+                          Positioned.fill(child: _buildSweepOverlay()),
                         Positioned(
                           bottom: 12,
                           left: 12,
@@ -352,12 +361,18 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                                       ),
                                 ),
                               ),
-                              Text(
-                                type.toUpperCase(),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
-                                    ?.copyWith(color: Colors.white70),
+                              Row(
+                                children: [
+                                  Text(
+                                    type.toUpperCase(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(color: Colors.white70),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildTrustSummary(onDark: true),
+                                ],
                               ),
                             ],
                           ),
@@ -471,8 +486,14 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                                           ),
                                     ),
                                   ),
-                                  Text(type.toUpperCase(),
-                                      style: Theme.of(context).textTheme.labelSmall),
+                                  Row(
+                                    children: [
+                                      Text(type.toUpperCase(),
+                                          style: Theme.of(context).textTheme.labelSmall),
+                                      const SizedBox(width: 8),
+                                      _buildTrustSummary(),
+                                    ],
+                                  ),
                                 ],
                               ),
                               Row(
@@ -514,71 +535,80 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
               if (_pendingDis != _committedDis)
                 Positioned.fill(
                   left: 8, top: 8, right: 8, bottom: 8,
-                  child: ClipRect(
-                    child: AnimatedBuilder(
-                      animation: _sweepController,
-                      builder: (context, _) {
-                        final Color color = _pendingDis == 'snooze'
-                            ? Colors.green
-                            : _pendingDis == 'forever'
-                                ? Colors.brown
-                                : Colors.blue;
-                        final String label = _pendingDis == 'snooze'
-                            ? 'Snooze'
-                            : _pendingDis == 'forever'
-                                ? 'Dismiss'
-                                : 'Un-dismiss';
-                        return IgnorePointer(
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: _sweepController.value,
-                            heightFactor: 1.0,
-                            child: Container(
-                              color: color.withValues(alpha: 0.8),
-                              alignment: Alignment.center,
-                              child: Text(
-                                label,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                  child: _buildSweepOverlay(),
                 ),
             ],
           );
         });
   }
 
-  Widget _buildTrustSummary() {
+  Widget _buildSweepOverlay() {
+    return ClipRect(
+      child: AnimatedBuilder(
+        animation: _sweepController,
+        builder: (context, _) {
+          final Color color = _pendingDis == 'snooze'
+              ? Colors.green
+              : _pendingDis == 'forever'
+                  ? Colors.brown
+                  : Colors.blue;
+          final String label = _pendingDis == 'snooze'
+              ? 'Snooze'
+              : _pendingDis == 'forever'
+                  ? 'Dismiss'
+                  : 'Un-dismiss';
+          return IgnorePointer(
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: _sweepController.value,
+              heightFactor: 1.0,
+              child: Container(
+                color: color.withValues(alpha: 0.8),
+                alignment: Alignment.center,
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // Small, grey, non-interactive counters shown to the right of the content type label.
+  // onDark: white-toned icons/text for use over dark image backgrounds (isSmall).
+  Widget _buildTrustSummary({bool onDark = false}) {
     final likes = widget.aggregation.likes;
     final dislikes = widget.aggregation.dislikes;
     final comments = widget.aggregation.comments;
     if (likes == 0 && dislikes == 0 && comments == 0) return const SizedBox.shrink();
+    final Color color = onDark ? Colors.white70 : Colors.grey;
+    final TextStyle numStyle = TextStyle(fontSize: 11, color: color);
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         if (likes > 0) ...[
-          const Icon(Icons.thumb_up, size: 19, color: Colors.green),
-          const SizedBox(width: 5),
-          Text('$likes', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Icon(Icons.thumb_up, size: 13, color: color),
+          const SizedBox(width: 3),
+          Text('$likes', style: numStyle),
         ],
-        if (likes > 0 && dislikes > 0) const SizedBox(width: 10),
+        if (likes > 0 && dislikes > 0) const SizedBox(width: 8),
         if (dislikes > 0) ...[
-          const Icon(Icons.thumb_down, size: 19, color: Colors.red),
-          const SizedBox(width: 5),
-          Text('$dislikes', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Icon(Icons.thumb_down, size: 13, color: color),
+          const SizedBox(width: 3),
+          Text('$dislikes', style: numStyle),
         ],
-        if ((likes > 0 || dislikes > 0) && comments > 0) const SizedBox(width: 10),
+        if ((likes > 0 || dislikes > 0) && comments > 0) const SizedBox(width: 8),
         if (comments > 0) ...[
-          const Icon(Icons.chat_bubble_outline, size: 19, color: Colors.grey),
-          const SizedBox(width: 5),
-          Text('$comments', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Icon(Icons.chat_bubble_outline, size: 13, color: color),
+          const SizedBox(width: 3),
+          Text('$comments', style: numStyle),
         ],
       ],
     );
@@ -805,77 +835,74 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
     final hasPrior = myLiteralStatements.any((s) => s.verb == ContentVerb.rate);
 
     IconData icon = Icons.rate_review_outlined;
-    Color? color;
     String tooltip;
 
     if (hasPrior) {
-      color = linkColorAlready;
       tooltip = 'You reacted to this';
     } else {
-      color = linkColor;
       tooltip = 'React';
     }
 
-    final likes = widget.aggregation.likes;
-    final dislikes = widget.aggregation.dislikes;
-    final hasTrustInfo = likes > 0 || dislikes > 0 || widget.aggregation.comments > 0;
-
+    // Counters are below the content type label in both views — not in the action chip.
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: IntrinsicHeight(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Left: counters
-            if (hasTrustInfo) _buildTrustSummary(),
-            // Divider
-            if (hasTrustInfo) const VerticalDivider(width: 19, thickness: 1),
-            // Right: controls
-            if (widget.onMark != null)
-              ValueListenableBuilder<ContentKey?>(
-                valueListenable: widget.markedSubjectToken ?? ValueNotifier(null),
-                builder: (context, marked, _) {
-                  final isMarked = marked == widget.aggregation.token;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 4.0),
-                    child: IconButton(
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: Icon(
-                        Icons.link,
-                        color: isMarked ? Colors.orange : Colors.grey,
-                        size: 24,
-                      ),
-                      tooltip: isMarked ? 'Unmark' : 'Mark to Relate/Equate',
-                      onPressed: () async {
-                        if ((await checkSignedIn(context, trustGraph: widget.model.trustGraph)) ==
-                            true) {
-                          widget.onMark!(widget.aggregation.token);
-                        }
-                      },
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Link icon — subtle
+          if (widget.onMark != null)
+            ValueListenableBuilder<ContentKey?>(
+              valueListenable: widget.markedSubjectToken ?? ValueNotifier(null),
+              builder: (context, marked, _) {
+                final isMarked = marked == widget.aggregation.token;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 4.0),
+                  child: IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: Icon(
+                      Icons.link,
+                      color: isMarked ? Colors.orange : Colors.grey[500],
+                      size: 22,
                     ),
-                  );
-                },
-              ),
-            IconButton(
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: Icon(icon, color: color, size: 24),
-              tooltip: tooltip,
-              onPressed: _react,
+                    tooltip: isMarked ? 'Unmark' : 'Mark to Relate/Equate',
+                    onPressed: () async {
+                      if ((await checkSignedIn(context, trustGraph: widget.model.trustGraph)) ==
+                          true) {
+                        widget.onMark!(widget.aggregation.token);
+                      }
+                    },
+                  ),
+                );
+              },
             ),
-            if (!isSmall.value)
-              DisToggle(notifier: _disNotifier, callback: _onDisToggle),
-          ],
-        ),
+          // Dismiss/snooze toggle — both views
+          DisToggle(notifier: _disNotifier, callback: _onDisToggle),
+          const SizedBox(width: 2),
+          // React button — filled, inviting, rightmost
+          Tooltip(
+            message: tooltip,
+            child: GestureDetector(
+              onTap: _react,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: hasPrior ? linkColorAlready : Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(icon, color: Colors.white, size: 18),
+              ),
+            ),
+          ),
+        ],
       ),
     );
+
   }
 
   Future<void> _react() async {

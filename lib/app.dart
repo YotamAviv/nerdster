@@ -194,6 +194,7 @@ class _AppHomeState extends State<_AppHome> {
           if (smallNow != isSmall.value) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               isSmall.value = smallNow;
+              if (smallNow) Setting.get<bool>(SettingType.lgtm).value = false;
             });
           }
 

@@ -7,8 +7,9 @@ class MyCheckbox extends StatefulWidget {
   final String? title;
   final bool opposite;
   final bool alwaysShowTitle;
+  final bool enabled;
   const MyCheckbox(this.valueNotifier, this.title,
-      {super.key, this.opposite = false, this.alwaysShowTitle = false});
+      {super.key, this.opposite = false, this.alwaysShowTitle = false, this.enabled = true});
 
   @override
   State<StatefulWidget> createState() {
@@ -17,8 +18,6 @@ class MyCheckbox extends StatefulWidget {
 }
 
 class _MyCheckboxState extends State<MyCheckbox> {
-  _MyCheckboxState();
-
   @override
   void initState() {
     super.initState();
@@ -39,8 +38,10 @@ class _MyCheckboxState extends State<MyCheckbox> {
   Widget build(BuildContext context) {
     Widget checkbox = Checkbox(
       value: widget.opposite ? !widget.valueNotifier.value : widget.valueNotifier.value,
-      onChanged: (bool? value) =>
-          setState(() => widget.valueNotifier.value = widget.opposite ? !value! : value!),
+      onChanged: widget.enabled
+          ? (bool? value) =>
+              setState(() => widget.valueNotifier.value = widget.opposite ? !value! : value!)
+          : null,
     );
 
     if (widget.title != null) {
