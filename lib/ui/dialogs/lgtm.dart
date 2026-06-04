@@ -1,33 +1,21 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/config.dart';
 import 'package:nerdster_common/ui/json_interpreter.dart';
 import 'package:nerdster/logic/labeler.dart';
 
 import 'package:nerdster/settings/prefs.dart';
 import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
-import 'package:nerdster/ui/util/linky.dart';
-import 'package:nerdster/ui/util/my_checkbox.dart';
-import 'package:nerdster/ui/util/ok_cancel.dart';
 import 'package:nerdster/ui/util_ui.dart';
 import 'package:oneofus_common/ui/json_display.dart';
 
 class Lgtm {
-  /// Shows the FYI dialog. When [overlayState] is provided, the dialog is
-  /// inserted as an overlay entry (painted above everything already in that
-  /// overlay) so it doesn't fight with manually-managed overlay panels.
   static Future<bool?> check(Json json, BuildContext context,
       {required Labeler labeler, OverlayState? overlayState}) async {
-    if (isSmall.value || !Setting.get<bool>(SettingType.lgtm).value) return true;
+    if (!Setting.get<bool>(SettingType.lgtm).value) return true;
 
     assert(signInState.delegate != null);
-
-    final spec = signInState.delegate!;
-    final Uri uri = Uri.parse(FirebaseConfig.contentUrl)
-        .replace(queryParameters: {'spec': jsonEncode(spec)});
 
     if (overlayState != null) {
       final completer = Completer<bool?>();
@@ -41,9 +29,9 @@ class Lgtm {
       entry = OverlayEntry(builder: (_) {
         return Material(
           type: MaterialType.transparency,
-          child: Center(
-            child: _LgtmContent(
-              uri: uri,
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: _LgtmSheet(
               json: json,
               labeler: labeler,
               onConfirm: () => close(true),
@@ -53,60 +41,32 @@ class Lgtm {
         );
       });
 
-      overlayState.insert(entry); // inserts at the top — above all existing entries
+      overlayState.insert(entry);
       return completer.future;
     }
 
-    return showDialog<bool?>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-            child: Padding(
-                padding: kPadding,
-                child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 700,
-                      maxHeight: 500,
-                    ),
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        Linky(
-                            '''FYI: To be signed using the nerdster.org delegate key (which you signed using your identity key) and published at: ${uri.toString()}\n'''),
-                        SizedBox(
-                            height: 300,
-                            child: JsonDisplay(json,
-                                interpret: ValueNotifier(true),
-                                interpreter: JsonInterpreter(labeler))),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            const Spacer(),
-                            OkCancel(() {
-                              Navigator.pop(context, true);
-                            }, 'Looks Good To Me'),
-                            Expanded(
-                                child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: MyCheckbox(Setting.get<bool>(SettingType.lgtm).notifier,
-                                        '''Don't show again'''))),
-                          ],
-                        ),
-                      ],
-                    )))));
+    return showModalBottomSheet<bool?>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black45,
+      builder: (context) => _LgtmSheet(
+        json: json,
+        labeler: labeler,
+        onConfirm: () => Navigator.pop(context, true),
+        onCancel: () => Navigator.pop(context, null),
+      ),
+    );
   }
 }
 
-class _LgtmContent extends StatelessWidget {
-  final Uri uri;
+class _LgtmSheet extends StatelessWidget {
   final Json json;
   final Labeler labeler;
   final VoidCallback onConfirm;
   final VoidCallback onCancel;
 
-  const _LgtmContent({
-    required this.uri,
+  const _LgtmSheet({
     required this.json,
     required this.labeler,
     required this.onConfirm,
@@ -115,39 +75,58 @@ class _LgtmContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-      child: Padding(
-        padding: kPadding,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 700, maxHeight: 500),
-          child: ListView(
-            shrinkWrap: true,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // drag handle
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const Text(
+            'FYI: To be signed and published using the nerdster.org delegate key (which you signed using your identity key)',
+            style: TextStyle(fontSize: 13, color: Colors.black87),
+          ),
+          const SizedBox(height: 12),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: isSmall.value ? 220 : 300),
+            child: ClipRRect(
+              borderRadius: kBorderRadius,
+              child: Container(
+                color: Colors.grey[50],
+                child: JsonDisplay(json,
+                    interpret: ValueNotifier(true),
+                    interpreter: JsonInterpreter(labeler)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Linky(
-                  '''FYI: To be signed using the nerdster.org delegate key (which you signed using your identity key) and published at: ${uri.toString()}\n'''),
-              SizedBox(
-                  height: 300,
-                  child: JsonDisplay(json,
-                      interpret: ValueNotifier(true),
-                      interpreter: JsonInterpreter(labeler))),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Spacer(),
-                  OutlinedButton(onPressed: onConfirm, child: const Text('Looks Good To Me')),
-                  const SizedBox(width: 8),
-                  OutlinedButton(onPressed: onCancel, child: const Text('Cancel')),
-                  Expanded(
-                      child: Align(
-                          alignment: Alignment.centerRight,
-                          child: MyCheckbox(
-                              Setting.get<bool>(SettingType.lgtm).notifier, "Don't show again"))),
-                ],
+              TextButton(onPressed: onCancel, child: const Text('Cancel')),
+              const SizedBox(width: 8),
+              FilledButton(
+                onPressed: onConfirm,
+                child: const Text('Okay'),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

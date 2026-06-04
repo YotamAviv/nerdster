@@ -529,14 +529,9 @@ class _ContentViewState extends State<ContentView> {
               MyCheckbox(Setting.get<bool>(SettingType.showCrypto).notifier,
                   'Show Crypto',
                   alwaysShowTitle: true),
-              ValueListenableBuilder<bool>(
-                valueListenable: isSmall,
-                builder: (context, small, _) => MyCheckbox(
+              MyCheckbox(
                   Setting.get<bool>(SettingType.lgtm).notifier, 'Show FYI',
-                  alwaysShowTitle: true,
-                  enabled: !small,
-                ),
-              ),
+                  alwaysShowTitle: true),
               const Divider(),
               MenuItemButton(
                 leadingIcon: const Icon(Icons.border_color),
