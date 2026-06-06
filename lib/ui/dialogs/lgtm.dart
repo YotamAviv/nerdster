@@ -104,19 +104,14 @@ class _LinkRow extends StatelessWidget {
       valueListenable: interpret,
       builder: (context, interpreted, _) {
         final spec = uri.queryParameters['spec'] ?? '';
-        final label = labeler.getLabel(spec);
-        final baseUrl = uri.replace(queryParameters: {}).toString().replaceAll('?', '');
-        final linkStyle = const TextStyle(fontSize: 11, color: Colors.blue, decoration: TextDecoration.underline);
+        final label = interpreted ? (labeler.getLabel(spec)) : spec;
+        final displayUri = uri.replace(queryParameters: {'spec': label});
+        final linkStyle = const TextStyle(
+            fontSize: 11, color: Colors.blue, decoration: TextDecoration.underline);
         return GestureDetector(
           onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
-          child: interpreted
-              ? Text(label, style: linkStyle, maxLines: 1, overflow: TextOverflow.ellipsis)
-              : RichText(
-                  text: TextSpan(style: linkStyle, children: [
-                    TextSpan(text: '$baseUrl?spec=\n'),
-                    TextSpan(text: spec),
-                  ]),
-                ),
+          child: Text(Uri.decodeFull(displayUri.toString()),
+              style: linkStyle, maxLines: 2, overflow: TextOverflow.ellipsis),
         );
       },
     );

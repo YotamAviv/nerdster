@@ -7,12 +7,8 @@ AI NOTE: This is my (the human) file with my own notes.
 
 # Misc...
 
-http://localhost:8765/?fire=emulator&identity={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22WXf0AG-EMWH8mZLXOnVY2n37jxIGNIKhpRkYs0Wfyto%22%20}
-
-
 ?fire=emulator&showCrypto=true&lgtm=true
 
-# Notifications gallery
 ?fire=fake&demo=notificationsGallery
 
 ?fire=emulator&demo=loner
