@@ -29,15 +29,9 @@ Prefer using the bang operator (`!`) over explicit null checks and exceptions fo
 Do not implement "fallback".
 
 ### 3. Strict Data Integrity
-*   Data sources (like Firestore) must return valid data.
-*   Consumers of that data (like pipelines or logic functions) should **assert** validity, not fix it.
+*   Consumers of that data (like pipelines or logic functions) should **assert** validity, not use fallbacks.
+Do not implement "fallback".
 
-
-### 5. Comments
-Explain *why*, not *what*. Document assumptions about data integrity.
-Avoid long-winded explanations of protocol mechanics or implementation details that can be inferred from the code or the concise description of the data mapping.
-*   **Bad:** A paragraph explaining the history and purpose of a concept.
-*   **Good:** "Maps identities keys to delegate keys and vice versa."
 
 ### 6. Merge, don't sort!
 All our **statements lists** are **sorted** and ensure **singular disposition**

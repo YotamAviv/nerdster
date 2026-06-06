@@ -133,7 +133,10 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
         return;
       }
     }
-    await _commitDis();
+    final signedJson = await _commitDis();
+    if (signedJson != null && mounted) {
+      await Lgtm.showPublished(signedJson, context, labeler: widget.model.labeler);
+    }
   }
 
   Future<void> _onDisToggle() async {
@@ -157,18 +160,21 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
     }
   }
 
-  Future<void> _commitDis() async {
-    if (_pendingDis == _committedDis) return;
+  Future<Json?> _commitDis() async {
+    if (_pendingDis == _committedDis) return null;
     final iJson = signInState.delegatePublicKeyJson;
     final signer = signInState.signer;
-    if (iJson == null || signer == null) return;
+    if (iJson == null || signer == null) return null;
     final String canonical = widget.aggregation.canonical.value;
     final Json json = DismissStatement.make(iJson, canonical, _pendingDis);
     try {
-      await widget.controller.disSource.push(json, signer);
+      final published = await widget.controller.disSource.push(json, signer);
       _committedDis = _pendingDis;
       await widget.controller.notify();
-    } catch (_) {}
+      return published.json;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _fetchMetadata() async {

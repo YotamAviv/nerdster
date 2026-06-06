@@ -26,6 +26,7 @@ class JsonDisplay extends StatefulWidget {
   final Interpreter? interpreterParam;
   final StackFit fit;
   final TextStyle? textStyle;
+  final Map<String, Color>? keyColors;
 
   // Use 'interpreter' as parameter name to match legacy usage in Nerdster
   JsonDisplay(this.subject,
@@ -34,6 +35,7 @@ class JsonDisplay extends StatefulWidget {
       Interpreter? interpreter,
       this.fit = StackFit.loose,
       this.textStyle,
+      this.keyColors,
       super.key})
       : interpret = interpret ?? ValueNotifier<bool>(true),
         interpreterParam = interpreter;
@@ -110,7 +112,9 @@ class _State extends State<JsonDisplay> {
     );
 
     List<TextSpan> spans =
-        highlightJsonKeys(display, baseStyle, keysToHighlight: JsonDisplay.highlightKeys);
+        highlightJsonKeys(display, baseStyle,
+            keysToHighlight: JsonDisplay.highlightKeys,
+            keyColors: widget.keyColors);
 
     final (IconData icon, String tooltip) = switch (_mode) {
       _DisplayMode.interpreted => (Icons.transform, 'Interpreted → Raw'),

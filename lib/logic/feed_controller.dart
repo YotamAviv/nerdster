@@ -54,7 +54,11 @@ class FeedController extends ValueNotifier<FeedModel?> {
     try {
       final ContentStatement statement = await contentSource.push(json, signer,
           optimisticConcurrencyFailed: _optimisticConcurrencyFunc);
-      // 3. Update UI (Partial Refresh)
+      // 3. Show published FYI card
+      if (context.mounted) {
+        await Lgtm.showPublished(statement.jsonish.json, context, labeler: model.labeler);
+      }
+      // 4. Update UI (Partial Refresh)
       notify();
       return statement;
     } catch (e) {

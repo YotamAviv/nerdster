@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 List<TextSpan> highlightJsonKeys(String display, TextStyle baseStyle,
-    {Color highlightColor = Colors.blue, required Set<String> keysToHighlight}) {
+    {Color highlightColor = Colors.blue, required Set<String> keysToHighlight,
+     Map<String, Color>? keyColors}) {
   List<TextSpan> spans = [];
   final RegExp keyPattern = RegExp(r'"[^"]+":');
   int lastMatchEnd = 0;
@@ -15,11 +16,12 @@ List<TextSpan> highlightJsonKeys(String display, TextStyle baseStyle,
     }
 
     String key = display.substring(match.start + 1, match.end - 2);
-    bool isJsonishKey = keysToHighlight.contains(key);
+    final Color? color = keyColors?[key] ??
+        (keysToHighlight.contains(key) ? highlightColor : null);
 
     spans.add(TextSpan(
       text: display.substring(match.start, match.end),
-      style: baseStyle.copyWith(color: isJsonishKey ? highlightColor : null),
+      style: baseStyle.copyWith(color: color),
     ));
 
     lastMatchEnd = match.end;

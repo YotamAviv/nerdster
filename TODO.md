@@ -10,7 +10,6 @@ instead of hardcoding it. The key generation scripts already produce `lib/dev/si
 in hablotengo — a similar file could be added to nerdster, or the test could read from
 `web/common/data/demoData.js` which is already generated.
 
-## Merge don't sort - check everywhere!
 
 ## Improve SimpsonsDemo tag equate/dontEquate
 Wait for context equate/dontEquate.
