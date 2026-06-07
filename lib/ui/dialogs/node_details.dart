@@ -167,7 +167,7 @@ class _NodeDetailsState extends State<NodeDetails> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeader(labeler, canonicalIdentity),
+          _buildHeader(labeler, canonicalIdentity, delegates),
           const SizedBox(height: 12),
           Flexible(
             child: SingleChildScrollView(
@@ -274,7 +274,7 @@ class _NodeDetailsState extends State<NodeDetails> {
     );
   }
 
-  Widget _buildHeader(Labeler labeler, IdentityKey identity) {
+  Widget _buildHeader(Labeler labeler, IdentityKey identity, List<String> delegates) {
     final identityStr = identity.value;
     final primaryLabel = labeler.getLabel(identityStr);
     final allLabels = labeler.getAllLabels(identity);
@@ -347,38 +347,68 @@ class _NodeDetailsState extends State<NodeDetails> {
                 ],
               ),
             ),
-            if (!isPov) ...[
+            if (!isPov || delegates.any((d) =>
+                labeler.delegateResolver?.getDomainForDelegate(DelegateKey(d)) == 'hablotengo.com')) ...[
               const SizedBox(width: 8),
-              GestureDetector(
-                onTap: () async {
-                  if (_hasChanges) {
-                    await showDialog<void>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Unpublished Changes'),
-                        content: const Text('Save your follow changes before setting this as PoV.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('OK'),
-                          ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!isPov)
+                    GestureDetector(
+                      onTap: () async {
+                        if (_hasChanges) {
+                          await showDialog<void>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Unpublished Changes'),
+                              content: const Text('Save your follow changes before setting this as PoV.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                          return;
+                        }
+                        if (context.mounted) Navigator.pop(context);
+                        signInState.pov = widget.identity.value;
+                        await widget.controller.refresh();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blue),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text('Set as PoV', style: TextStyle(fontSize: 11, color: Colors.blue)),
+                      ),
+                    ),
+                  if (delegates.any((d) =>
+                      labeler.delegateResolver?.getDomainForDelegate(DelegateKey(d)) == 'hablotengo.com')) ...[
+                    if (!isPov) const SizedBox(height: 6),
+                    GestureDetector(
+                      onTap: () {
+                        final bool emulator = fireChoice == FireChoice.emulator;
+                        final base = emulator ? 'http://localhost:8770/' : 'https://hablotengo.com/app';
+                        final uri = Uri.parse(base).replace(queryParameters: {
+                          if (emulator) 'fire': 'emulator',
+                          'target': widget.identity.value,
+                        });
+                        launchUrl(uri, mode: LaunchMode.externalApplication);
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.contact_page, size: 13, color: Colors.blue),
+                          Text('HabloTengo', style: TextStyle(fontSize: 11, color: Colors.blue)),
                         ],
                       ),
-                    );
-                    return;
-                  }
-                  if (context.mounted) Navigator.pop(context);
-                  signInState.pov = widget.identity.value;
-                  await widget.controller.refresh();
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text('Set as PoV', style: TextStyle(fontSize: 11, color: Colors.blue)),
-                ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ],
@@ -660,25 +690,6 @@ class _NodeDetailsState extends State<NodeDetails> {
                 );
               });
             }),
-            if (delegates.any((d) =>
-                labeler.delegateResolver?.getDomainForDelegate(DelegateKey(d)) == 'hablotengo.com'))
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  icon: const Icon(Icons.contact_page, size: 16),
-                  label: const Text('Contact info on HabloTengo'),
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                  onPressed: () {
-                    final bool emulator = fireChoice == FireChoice.emulator;
-                    final base = emulator ? 'http://localhost:8770/' : 'https://hablotengo.com/app';
-                    final uri = Uri.parse(base).replace(queryParameters: {
-                      if (emulator) 'fire': 'emulator',
-                      'target': widget.identity.value,
-                    });
-                    launchUrl(uri, mode: LaunchMode.externalApplication);
-                  },
-                ),
-              ),
           ],
         ],
         const SizedBox(height: 10),
