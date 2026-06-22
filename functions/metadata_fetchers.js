@@ -10,6 +10,72 @@ const cheerio = require('cheerio');
 const { decode } = require('html-entities');
 const { logger } = require("firebase-functions");
 
+// Wikimedia asks bots for a descriptive User-Agent with contact info; generic
+// agents (e.g. "NerdsterBot/1.0") get throttled more aggressively.
+// https://meta.wikimedia.org/wiki/User-Agent_policy
+const WIKIPEDIA_USER_AGENT =
+  'NerdsterBot/1.0 (https://nerdster.org; contact: yotam.aviv@gmail.com)';
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Computes a backoff delay (ms) honoring a Retry-After header when present,
+ * otherwise exponential backoff with jitter: ~250ms, ~500ms, ~1000ms.
+ */
+function backoffDelay(attempt, retryAfterHeader) {
+  if (retryAfterHeader) {
+    const secs = parseInt(retryAfterHeader, 10);
+    if (!Number.isNaN(secs)) return Math.min(secs * 1000, 5000);
+  }
+  return 250 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 250);
+}
+
+/**
+ * Fetches JSON with retry/backoff that treats throttling honestly.
+ *
+ * The core bug this addresses: when a service (notably Wikipedia under
+ * concurrent load) is rate-limiting, it can reply HTTP 200 with a non-JSON
+ * body like "You are making too many requests". A bare `response.json()` then
+ * throws, the caller swallows it, and the result is indistinguishable from
+ * "no image exists". Here we detect that case (and explicit 429/503) and retry
+ * with backoff; only a persistent failure throws — with a clear message.
+ *
+ * @throws {Error} when all attempts fail (caller may still catch and return []).
+ */
+async function fetchJson(url, options = {}, label = "fetch") {
+  const maxAttempts = 3;
+  let lastErr;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let response;
+    try {
+      response = await fetch(url, options);
+    } catch (e) {
+      lastErr = e;
+      if (attempt < maxAttempts) await sleep(backoffDelay(attempt, null));
+      continue;
+    }
+
+    if (response.status === 429 || response.status === 503) {
+      lastErr = new Error(`${label} throttled: HTTP ${response.status}`);
+      logger.warn(`${label} throttled (HTTP ${response.status}); attempt ${attempt}/${maxAttempts}`);
+      if (attempt < maxAttempts) await sleep(backoffDelay(attempt, response.headers.get('retry-after')));
+      continue;
+    }
+
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      // Non-JSON body — usually a soft throttle page served with HTTP 200.
+      lastErr = new Error(`${label} non-JSON response (HTTP ${response.status}): ${text.slice(0, 80)}`);
+      logger.warn(`${label} non-JSON response (HTTP ${response.status}); likely throttled; attempt ${attempt}/${maxAttempts}`);
+      if (attempt < maxAttempts) await sleep(backoffDelay(attempt, response.headers.get('retry-after')));
+      continue;
+    }
+  }
+  throw lastErr;
+}
+
 /**
  * Searches OpenLibrary for a book cover.
  */
@@ -28,8 +94,7 @@ async function fetchFromOpenLibrary(title, author = "", url = "") {
     }
 
     if (searchUrl) {
-      const response = await fetch(searchUrl, { timeout: 5000 });
-      const data = await response.json();
+      const data = await fetchJson(searchUrl, { timeout: 5000 }, '[OpenLibrary]');
       if (data.covers && data.covers.length > 0) {
         return [{ url: `https://covers.openlibrary.org/b/id/${data.covers[0]}-L.jpg`, source: 'openlibrary' }];
       }
@@ -39,9 +104,8 @@ async function fetchFromOpenLibrary(title, author = "", url = "") {
     if (title) {
       searchUrl = `https://openlibrary.org/search.json?title=${encodeURIComponent(title)}&limit=1`;
       if (author) searchUrl += `&author=${encodeURIComponent(author)}`;
-      
-      const response = await fetch(searchUrl, { timeout: 5000 });
-      const data = await response.json();
+
+      const data = await fetchJson(searchUrl, { timeout: 5000 }, '[OpenLibrary]');
       if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
         return [{ url: `https://covers.openlibrary.org/b/id/${data.docs[0].cover_i}-L.jpg`, source: 'openlibrary' }];
       }
@@ -80,11 +144,10 @@ async function fetchFromWikipedia(title, url = "", contentType = "", year = "") 
         // Search for the best page title if we don't have a direct URL
         if (!url || term !== bestTitle) {
           const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&format=json&origin=*`;
-          const response = await fetch(searchUrl, {
-            headers: { 'User-Agent': 'NerdsterBot/1.0' },
+          const data = await fetchJson(searchUrl, {
+            headers: { 'User-Agent': WIKIPEDIA_USER_AGENT },
             timeout: 5000
-          });
-          const data = await response.json();
+          }, '[Wikipedia]');
           if (data.query?.search?.length > 0) {
             currentTitle = data.query.search[0].title;
           } else {
@@ -94,11 +157,10 @@ async function fetchFromWikipedia(title, url = "", contentType = "", year = "") 
         
         // 1. Try PageImages API (High quality thumbnails)
         const imageUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(currentTitle)}&prop=pageimages&format=json&pithumbsize=1000&origin=*`;
-        const response = await fetch(imageUrl, {
-          headers: { 'User-Agent': 'NerdsterBot/1.0' },
+        const data = await fetchJson(imageUrl, {
+          headers: { 'User-Agent': WIKIPEDIA_USER_AGENT },
           timeout: 5000
-        });
-        const data = await response.json();
+        }, '[Wikipedia]');
         const pages = data.query.pages;
         const pageId = Object.keys(pages)[0];
         if (pageId !== "-1" && pages[pageId].thumbnail) {
@@ -108,7 +170,7 @@ async function fetchFromWikipedia(title, url = "", contentType = "", year = "") 
         // 2. Fallback: Scrape the infobox image
         const pageUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(currentTitle.replace(/ /g, '_'))}`;
         const pageResponse = await fetch(pageUrl, {
-          headers: { 'User-Agent': 'NerdsterBot/1.0' },
+          headers: { 'User-Agent': WIKIPEDIA_USER_AGENT },
           timeout: 5000
         });
         if (pageResponse.ok) {
@@ -240,10 +302,9 @@ async function fetchFromOMDb(title, year = "") {
   try {
     let url = `http://www.omdbapi.com/?apikey=${apiKey}&t=${encodeURIComponent(title)}`;
     if (year) url += `&y=${year}`;
-    
-    const response = await fetch(url, { timeout: 5000 });
-    const data = await response.json();
-    
+
+    const data = await fetchJson(url, { timeout: 5000 }, '[OMDb]');
+
     if (data.Response === "True" && data.Poster && data.Poster !== "N/A") {
       return [{ url: data.Poster, source: 'omdb' }];
     }
@@ -265,10 +326,9 @@ async function fetchFromTMDB(title, year = "") {
   try {
     let url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}`;
     if (year) url += `&year=${year}`;
-    
-    const response = await fetch(url, { timeout: 5000 });
-    const data = await response.json();
-    
+
+    const data = await fetchJson(url, { timeout: 5000 }, '[TMDB]');
+
     if (data.results && data.results.length > 0 && data.results[0].poster_path) {
       const posterUrl = `https://image.tmdb.org/t/p/w1280${data.results[0].poster_path}`;
       return [{ url: posterUrl, source: 'tmdb' }];

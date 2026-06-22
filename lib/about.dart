@@ -45,6 +45,9 @@ class About extends StatelessWidget {
             Linky('Privacy Policy: https://nerdster.org/policy.html'),
             Linky('Terms of Service: https://nerdster.org/terms.html'),
             Linky('Safety & Content Policy: https://nerdster.org/safety.html'),
+            const SizedBox(height: 8),
+            Linky(
+                'Movie posters and data from TMDB (https://www.themoviedb.org). This product uses the TMDB API but is not endorsed or certified by TMDB.'),
             const SizedBox(height: 10),
             GestureDetector(
               onTap: () {
