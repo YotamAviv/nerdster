@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:nerdster/ui/util_ui.dart';
 import 'package:nerdster/utils/tag.dart';
 
 // Author: Grok
@@ -29,8 +30,8 @@ class CommentWidget extends StatelessWidget {
         style: style,
         maxLines: maxLines,
         overflow: TextOverflow.ellipsis,
-        linkifiers: [_HashtagLinkifier()],
-        onOpen: (LinkableElement link) => onHashtagTap?.call(link.url, context),
+        linkifiers: _linkifiers,
+        onOpen: (link) => _onOpen(link, context),
         linkStyle: const TextStyle(
           color: Colors.blue,
           decoration: TextDecoration.underline,
@@ -41,13 +42,24 @@ class CommentWidget extends StatelessWidget {
     return SelectableLinkify(
       text: text,
       style: style,
-      linkifiers: [_HashtagLinkifier()],
-      onOpen: (LinkableElement link) => onHashtagTap?.call(link.url, context),
+      linkifiers: _linkifiers,
+      onOpen: (link) => _onOpen(link, context),
       linkStyle: const TextStyle(
         color: Colors.blue,
         decoration: TextDecoration.underline,
       ),
     );
+  }
+
+  // Hashtags first, then URLs on whatever text remains.
+  static final List<Linkifier> _linkifiers = [_HashtagLinkifier(), UrlLinkifier()];
+
+  void _onOpen(LinkableElement link, BuildContext context) {
+    if (link is UrlElement) {
+      myLaunchUrl(link.url);
+    } else {
+      onHashtagTap?.call(link.url, context);
+    }
   }
 }
 
