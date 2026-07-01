@@ -42,6 +42,8 @@ async function parseUrlMetadata(url, html) {
         return {
           contentType: 'video',
           title: data.title || null,
+          titleSource: data.title ? 'oembed' : null,
+          titleConfidence: computeTitleConfidence(data.title, 'oembed', url),
           canonicalUrl: url,
         };
       }
@@ -89,6 +91,7 @@ async function parseUrlMetadata(url, html) {
   const metadata = {
     contentType: null, // 'movie', 'book', 'article', etc.
     title: null,
+    titleSource: null, // 'jsonld' | 'opengraph' | 'oembed' | 'htmlTitle' — drives titleConfidence.
     year: null,
     author: null,
     image: null,
@@ -110,9 +113,27 @@ async function parseUrlMetadata(url, html) {
   } catch (e) {
     logger.warn(`[MagicPaste] JSON-LD error: ${e.message}`);
   }
+  // JSON-LD is the only source that can have set the title by this point.
+  if (metadata.title) metadata.titleSource = 'jsonld';
 
-  // 2. Fallback: OpenGraph / Meta Tags
-  if (!metadata.title) metadata.title = extractTitle($, html);
+  // 2. Fallback: OpenGraph / Twitter title (publisher's intended share title),
+  //    then the scraped <title> tag. Resolve here (not only at the final fallback)
+  //    so downstream steps like year-from-title extraction have a title to work with.
+  if (!metadata.title) {
+    const ogTitle = $('meta[property="og:title"]').attr('content') ||
+      $('meta[name="twitter:title"]').attr('content');
+    if (ogTitle) {
+      metadata.title = decode(ogTitle).trim();
+      metadata.titleSource = 'opengraph';
+    }
+  }
+  if (!metadata.title) {
+    const scraped = extractTitle($, html); // og/twitter already handled above; this yields <title>
+    if (scraped) {
+      metadata.title = scraped;
+      metadata.titleSource = 'htmlTitle';
+    }
+  }
 
   // Google Books Specific Cleanup (Must run before general OpenGraph checks so we don't overwrite if not found)
   if (url.includes('google.com/books') || url.includes('books.google.')) {
@@ -174,16 +195,46 @@ async function parseUrlMetadata(url, html) {
   }
 
   // Final Safety Fallback:
-  // If we still have no title, use the simple HTML scraper (same robust logic as the old fetchTitle)
+  // If we still have no title, use the simple HTML scraper (scraped <title> tag).
   if (!metadata.title) {
     metadata.title = extractTitle($, html);
+    if (metadata.title) metadata.titleSource = 'htmlTitle';
   }
   // If we have a title but no content type, default to 'article' so it's usable
   if (metadata.title && !metadata.contentType) {
     metadata.contentType = 'article';
   }
 
+  metadata.titleConfidence = computeTitleConfidence(metadata.title, metadata.titleSource, url);
+
   return metadata;
+}
+
+/**
+ * Derives how much we trust the fetched title, so the client can decide whether
+ * to lock the title field. High-confidence titles come from structured sources
+ * (JSON-LD, OpenGraph, oEmbed); a scraped <title> is low; an empty title or one
+ * that is merely the site's hostname (e.g. "nytimes.com" — a failed fetch) is none.
+ */
+function computeTitleConfidence(title, source, url) {
+  if (!title || !title.trim()) return 'none';
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, '').toLowerCase();
+    const t = title.trim().toLowerCase();
+    if (t === host || t === host.replace(/\.[a-z]+$/, '')) return 'none';
+  } catch (e) {
+    // Not a parseable URL — ignore the hostname heuristic.
+  }
+  switch (source) {
+    case 'jsonld':
+    case 'opengraph':
+    case 'oembed':
+      return 'high';
+    case 'htmlTitle':
+      return 'low';
+    default:
+      return 'low';
+  }
 }
 
 /**

@@ -83,6 +83,26 @@ FirebaseFunctions get _functions => FirebaseFunctions.instance;
 // Simple in-memory cache to prevent redundant fetches on scroll
 final Map<String, MetadataResult> _metadataCache = {};
 
+// Markers of bot-challenge / error pages that some sites serve to the phone's
+// direct HTTP fetch. When the native title matches one of these, treat it as no
+// title and fall back to the cloud function (better IP reputation).
+// High-signal phrases only: these essentially never appear as a real subject
+// title, so a false positive (needless cloud-function fallback) is very unlikely.
+// Deliberately avoids broad tokens like "forbidden", "not found", or bare HTTP
+// codes, which collide with legitimate titles (e.g. "(500) Days of Summer").
+final List<RegExp> _errorPageTitlePatterns = [
+  RegExp(r'unexpected error', caseSensitive: false), // Goodreads
+  RegExp(r'just a moment', caseSensitive: false), // Cloudflare
+  RegExp(r'attention required', caseSensitive: false), // Cloudflare
+  RegExp(r'access denied', caseSensitive: false),
+  RegExp(r'are you (a )?(human|robot)', caseSensitive: false),
+  RegExp(r'verify(ing)? (that )?you are (a )?human', caseSensitive: false),
+  RegExp(r'please enable (js|javascript|cookies)', caseSensitive: false),
+];
+
+bool _looksLikeErrorPage(String title) =>
+    _errorPageTitlePatterns.any((re) => re.hasMatch(title));
+
 /// Use Case 2: Magic Paste
 /// Fetches metadata from a URL to auto-populate the Establish Subject form.
 /// On web, calls the Firebase cloud function (required to avoid CORS).
@@ -92,12 +112,16 @@ Future<Map<String, dynamic>?> magicPaste(String url) async {
 
   if (!kIsWeb) {
     // Try direct HTTP first (faster, no cloud function cold start).
-    // If the title is empty — e.g. the site returned a bot-challenge page — fall through
-    // to the cloud function, which fetches from a GCP IP with better site reputation.
+    // If the title is empty OR looks like a bot-challenge / error page (e.g. Goodreads'
+    // "unexpected error", Cloudflare's "Just a moment..."), fall through to the cloud
+    // function, which fetches from a GCP IP with better site reputation.
     final direct = await _magicPasteDirect(url);
-    final hasTitle = direct != null && (direct['title'] as String?)?.isNotEmpty == true;
-    if (hasTitle) return direct;
-    debugPrint('magicPasteDirect returned no title, falling back to cloud function');
+    final directTitle = direct?['title'] as String?;
+    final hasTitle = directTitle != null && directTitle.isNotEmpty;
+    if (hasTitle && !_looksLikeErrorPage(directTitle)) return direct;
+    debugPrint('magicPasteDirect returned no usable title'
+        '${hasTitle ? ' (looked like an error page: "$directTitle")' : ''}'
+        ', falling back to cloud function');
   }
 
   // Web: use cloud function (CORS requires server-side fetch).
@@ -361,7 +385,13 @@ Future<Map<String, dynamic>?> _magicPasteDirect(String url) async {
         final r = await http.get(Uri.parse(oembedUrl)).timeout(const Duration(seconds: 10));
         if (r.statusCode == 200) {
           final data = jsonDecode(r.body) as Map<String, dynamic>;
-          return {'contentType': 'video', 'title': data['title'], 'canonicalUrl': url};
+          return {
+            'contentType': 'video',
+            'title': data['title'],
+            'titleSource': data['title'] != null ? 'oembed' : null,
+            'titleConfidence': _computeTitleConfidence(data['title'], 'oembed', url),
+            'canonicalUrl': url,
+          };
         }
       } catch (_) {}
     }
@@ -378,6 +408,7 @@ Future<Map<String, dynamic>?> _magicPasteDirect(String url) async {
     final metadata = <String, dynamic>{
       'contentType': null,
       'title': null,
+      'titleSource': null,
       'year': null,
       'author': null,
       'image': null,
@@ -395,8 +426,24 @@ Future<Map<String, dynamic>?> _magicPasteDirect(String url) async {
       } catch (_) {}
     }
 
-    // 2. OpenGraph fallbacks.
-    metadata['title'] ??= _extractMeta(html, 'og:title') ?? _extractHtmlTitle(html);
+    // JSON-LD is the only source that can have set the title by this point.
+    if (metadata['title'] != null) metadata['titleSource'] = 'jsonld';
+
+    // 2. OpenGraph title (publisher's intended share title), then scraped <title>.
+    if (metadata['title'] == null) {
+      final ogTitle = _extractMeta(html, 'og:title');
+      if (ogTitle != null) {
+        metadata['title'] = ogTitle;
+        metadata['titleSource'] = 'opengraph';
+      }
+    }
+    if (metadata['title'] == null) {
+      final htmlTitle = _extractHtmlTitle(html);
+      if (htmlTitle != null) {
+        metadata['title'] = htmlTitle;
+        metadata['titleSource'] = 'htmlTitle';
+      }
+    }
     metadata['image'] ??= _extractMeta(html, 'og:image');
 
     // 3. Infer content type.
@@ -416,10 +463,34 @@ Future<Map<String, dynamic>?> _magicPasteDirect(String url) async {
     if (metadata['title'] != null && metadata['contentType'] == null) {
       metadata['contentType'] = 'article';
     }
+    metadata['titleConfidence'] =
+        _computeTitleConfidence(metadata['title'] as String?, metadata['titleSource'] as String?, url);
     return metadata;
   } catch (e) {
     debugPrint('magicPasteDirect error: $e');
     return null;
+  }
+}
+
+/// Derives how much we trust the fetched title, so the dialog can decide whether
+/// to lock the title field. Keep in sync with computeTitleConfidence() in
+/// functions/url_metadata_parser.js.
+String _computeTitleConfidence(String? title, String? source, String url) {
+  if (title == null || title.trim().isEmpty) return 'none';
+  final host = Uri.tryParse(url)?.host.replaceFirst(RegExp(r'^www\.'), '').toLowerCase();
+  if (host != null && host.isNotEmpty) {
+    final t = title.trim().toLowerCase();
+    if (t == host || t == host.replaceFirst(RegExp(r'\.[a-z]+$'), '')) return 'none';
+  }
+  switch (source) {
+    case 'jsonld':
+    case 'opengraph':
+    case 'oembed':
+      return 'high';
+    case 'htmlTitle':
+      return 'low';
+    default:
+      return 'low';
   }
 }
 

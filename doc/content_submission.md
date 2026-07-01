@@ -187,3 +187,116 @@ We expect the following sites to support **Schema.org (JSON-LD)** or robust **Op
 The parsing logic resides in the **Cloud Function**, not the client. This ensures:
 1.  **Agility:** We can fix parsers when sites change their layout without updating the app.
 2.  **Privacy:** User cookies/session data are NOT sent. The cloud function fetches the *public* version of the page.
+
+## 10. Issue: Editable Title Abuse vs. Unreliable Fetch
+
+### The Problem
+The title field in `EstablishSubjectDialog` is freely editable. This causes two
+distinct failure modes, pulling in opposite directions:
+
+1.  **Eager over-editing / sabotage (want the field *locked*).**
+    A user pastes a URL, gets a correctly fetched title, and immediately rewrites
+    it — turning the *subject identifier* into what should have been a *comment*.
+    - Example: An article fetches the headline "Victor Willis, Village People lead
+      singer, dies at 74". The user edits the title to "Job opens up for Will
+      Scruggs". The subject is now polluted for everyone: it no longer collapses
+      with the same article submitted by others, and it misrepresents the source.
+    - Motivation is mixed and hard to distinguish automatically:
+        - **Misunderstanding:** the user doesn't grasp that a "Logical Subject" is a
+          shared, canonical identity — not their personal take. Comments are the
+          place for commentary.
+        - **Deliberate sabotage:** the user knows, and edits the title as a joke or
+          to degrade the shared record.
+
+2.  **Failed / low-quality fetch (want the field *editable*).**
+    Fetching is unreliable, so sometimes the title must be corrected by hand.
+    - Example: An NYT article URL fetches a title of just "nytimes.com" (a site-name
+      fallback, not the headline). The user *must* be able to fix this or the
+      subject is useless.
+
+We cannot simply make the title read-only (the desired fix for case 1) because
+case 2 is common. The two cases require opposite affordances on the *same field*.
+
+### Key Insight: The Backend Already Knows Its Confidence
+Title extraction is already tiered by source (see §9 and
+`functions/url_metadata_parser.js`), and the source *is* a confidence signal:
+
+| Source | Confidence | Interpretation |
+| :--- | :--- | :--- |
+| JSON-LD `@type` + `name` (Schema.org) | **High** | Canonical, publisher-declared. |
+| OpenGraph `og:title` / oEmbed `title` | **High/Medium** | Intended share title. |
+| Scraped `<title>` tag | **Low** | Often includes site name / cruft. |
+| Site-name fallback (e.g. "nytimes.com"), or empty | **None** | Fetch effectively failed. |
+
+Today this signal is discarded — the client only receives the final `title`
+string and can't tell "Victor Willis…" (High) from "nytimes.com" (None). Surfacing
+it is the enabler for most options below.
+
+### Options
+
+**A. Return a confidence/source code from the backend; gate editing on it.**
+Have `magicPaste` return `{ title, titleSource, confidence }` alongside the title.
+Then in the dialog:
+- **High confidence** → title locked by default (prevents case 1), with a small
+  "Edit anyway" / "Wrong title?" escape hatch (preserves case 2 for the rare
+  high-confidence-but-wrong result).
+- **Low / no confidence** → title editable as today, ideally flagged ("Couldn't
+  confirm this title — please check it").
+- *Pro:* Directly targets the abuse while keeping the safety valve. Cheap — the
+  signal already exists internally.
+- *Con:* "Edit anyway" still lets a determined saboteur through; confidence tiers
+  need tuning per source.
+
+**B. Improve the UI to teach what a Logical Subject is (and where comments go).**
+- Rename/reinforce: the dialog already says "Establish **Logical Subject**" with a
+  "Logical Subject?" help link — make that explanation more prominent on first use.
+- Show an inline **"Add a comment"** affordance *inside* the establish flow, so an
+  eager commenter has the correct outlet at the moment of temptation instead of
+  editing the title.
+- Micro-copy near the title: "This is the shared name for this subject. Save your
+  own take for a comment."
+- *Pro:* Addresses the root cause (misunderstanding) and reduces friction for the
+  honest majority. *Con:* Does nothing against deliberate sabotage.
+
+**C. Constrain editing instead of free text (esp. Abstract subjects).**
+For Movies/Books/Albums, offer *candidate* titles (from the metadata provider) to
+pick from rather than a free text box, reserving free text for true misses. For
+Resource subjects (Articles/Videos) the fetched title *is* the canonical identity,
+so lean toward locking on a good fetch.
+- *Pro:* Structurally prevents both cases for abstract subjects. *Con:* More UI;
+  depends on provider search (see §5/§6A).
+
+**D. Lean on the trust layer for sabotage.**
+A polluted subject is still a signed `ContentStatement` attributable to its author
+and filtered by the Trust Algorithm. Deliberate sabotage from a low-trust identity
+is naturally down-ranked/hidden from most PoVs. This doesn't *prevent* pollution
+but bounds its blast radius — worth stating so we don't over-engineer prevention.
+
+### Decision
+Implement **A only**. The backend (`magicPaste` / `parseUrlMetadata`) returns
+`titleSource` and a derived `titleConfidence` ('high' | 'low' | 'none'). In
+`EstablishSubjectDialog`:
+- **high** → title field locked (read-only) with an "Edit anyway" escape hatch.
+- **low / none** → title editable as today.
+
+Options B (teaching UI / inline comment affordance), C (candidate-title picker),
+and D (rely on trust filtering) are **not** being implemented; they are retained
+above for the record.
+
+Confidence is derived from the extraction source:
+
+| titleSource | titleConfidence |
+| :--- | :--- |
+| `jsonld`, `opengraph`, `oembed` | `high` |
+| `htmlTitle` | `low` |
+| empty, or title equals the site hostname (e.g. "nytimes.com") | `none` |
+
+### Related robustness fix: native fallback on error pages
+Independent of Option A: on native (phone), `magicPaste` fetches the URL directly
+and only falls back to the cloud function (better IP reputation) when the direct
+fetch yields *no* title. Some sites serve a bot-challenge/error page with a
+non-empty title (e.g. Goodreads' "unexpected error", Cloudflare's "Just a
+moment..."), which defeated that fallback. `magicPaste` now also falls back when
+the native title matches a small denylist of high-signal error-page phrases
+(`_looksLikeErrorPage`), deliberately avoiding broad tokens that collide with real
+titles (e.g. "(500) Days of Summer").

@@ -46,6 +46,14 @@ class _SubjectFieldsState extends State<SubjectFields> {
   // fetchingUrlWidget removed as auto-fetch is deprecated
   final ValueNotifier<bool> okEnabled = ValueNotifier(false);
   final ValueNotifier<bool> isMagicPasting = ValueNotifier(false);
+  // When magicPaste returns a high-confidence title, lock the field so users don't
+  // rewrite the canonical subject identity into what should be a comment (Option A,
+  // see doc/content_submission.md §10). Tapping the lock icon re-enables editing.
+  bool _titleLocked = false;
+  // Debounce url-field edits so a paste (or a finished-typing URL) triggers a
+  // fetch, and remember the last url fetched to avoid refetching the same one.
+  Timer? _urlDebounce;
+  String? _lastFetchedUrl;
   List<TextField> fields = [];
 
   @override
@@ -56,6 +64,7 @@ class _SubjectFieldsState extends State<SubjectFields> {
 
   @override
   void dispose() {
+    _urlDebounce?.cancel();
     for (final controller in key2controller.values) {
       controller.dispose();
     }
@@ -85,20 +94,16 @@ class _SubjectFieldsState extends State<SubjectFields> {
   }
 
   void _initControllers() {
+    // A manual type change (or fresh init) invalidates any locked fetched title
+    // and clears all fields (fields are re-created empty below).
+    _titleLocked = false;
     // 1. Create new controllers first
     final LinkedHashMap<String, TextEditingController> newControllers =
         LinkedHashMap.of({}); // Correctly init map
 
     contentType.type2field2type.forEach((key, type) {
+      // Start empty: changing type clears all fields.
       final controller = TextEditingController();
-      // If we had a value for this key before (e.g. switching types but keeping 'title'), copy it over?
-      // For now, let's keep it clean as different types might mean different things for 'title'.
-      // But preserving 'title' is usually nice.
-      if (key2controller.containsKey(key)) {
-        try {
-          controller.text = key2controller[key]!.text;
-        } catch (e) {/* ignore if old controller is somehow dead */}
-      }
       newControllers[key] = controller;
       controller.addListener(_validate);
     });
@@ -133,12 +138,30 @@ class _SubjectFieldsState extends State<SubjectFields> {
   }
 
   void _rebuildFields() {
+    // While a fetch is in flight, all fields are read-only until the response arrives.
+    final bool fetching = isMagicPasting.value;
     fields = key2controller.entries.map((entry) {
+      final bool locked = entry.key == 'title' && _titleLocked;
       return TextField(
         controller: entry.value,
+        readOnly: locked || fetching,
+        onChanged: entry.key == 'url' ? _onUrlChanged : null,
         decoration: InputDecoration(
           labelText: entry.key,
           border: const OutlineInputBorder(),
+          filled: locked,
+          fillColor: locked ? Colors.grey.shade100 : null,
+          // Compact escape hatch (fits limited phone width): tap the lock to edit anyway.
+          suffixIcon: locked
+              ? IconButton(
+                  icon: const Icon(Icons.lock_outline, size: 20),
+                  tooltip: 'Title fetched. Tap to edit anyway.',
+                  onPressed: () => setState(() {
+                    _titleLocked = false;
+                    _rebuildFields();
+                  }),
+                )
+              : null,
         ),
       );
     }).toList();
@@ -155,30 +178,52 @@ class _SubjectFieldsState extends State<SubjectFields> {
     Navigator.pop(context, subject);
   }
 
+  /// Magic-paste icon: read a URL from the clipboard and fetch its metadata.
   Future<void> _handleMagicPaste() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = data?.text?.trim();
+
+    if (text == null || text.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Clipboard is empty.')));
+      }
+      return;
+    }
+
+    final uri = Uri.tryParse(text);
+    if (uri == null || !['http', 'https'].contains(uri.scheme)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Clipboard does not contain a valid URL.')));
+      }
+      return;
+    }
+
+    await _fetchAndPopulate(text);
+  }
+
+  /// Called as the user edits the url field. Debounced so a paste (or a URL the
+  /// user finished typing) triggers a fetch, just like the magic-paste icon does.
+  void _onUrlChanged(String value) {
+    _urlDebounce?.cancel();
+    final trimmed = value.trim();
+    final uri = Uri.tryParse(trimmed);
+    final bool isUrl =
+        uri != null && ['http', 'https'].contains(uri.scheme) && uri.host.contains('.');
+    if (!isUrl || trimmed == _lastFetchedUrl) return;
+    _urlDebounce = Timer(const Duration(milliseconds: 600), () => _fetchAndPopulate(trimmed));
+  }
+
+  /// Shared fetch + populate used by both the magic-paste icon and a url paste.
+  /// Locks all fields while the request is in flight (the spinner keeps showing).
+  Future<void> _fetchAndPopulate(String url) async {
+    if (isMagicPasting.value) return; // a fetch is already in flight
     isMagicPasting.value = true;
+    setState(_rebuildFields); // make fields read-only while fetching
+
     try {
-      final data = await Clipboard.getData(Clipboard.kTextPlain);
-      final text = data?.text?.trim();
-
-      if (text == null || text.isEmpty) {
-        if (mounted)
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('Clipboard is empty.')));
-        return;
-      }
-
-      // Basic URL Check
-      final uri = Uri.tryParse(text);
-      if (uri == null || !['http', 'https'].contains(uri.scheme)) {
-        if (mounted)
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Clipboard does not contain a valid URL.')));
-        return;
-      }
-
-      // Call Cloud Function
-      final metadata = await magicPaste(text);
+      final metadata = await magicPaste(url);
 
       if (!mounted) return;
 
@@ -194,57 +239,56 @@ class _SubjectFieldsState extends State<SubjectFields> {
         debugPrint('MagicPaste backend error: $errHelper');
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Metadata Fetch Failed: $errHelper')));
-        // Still populate partial data if available (e.g. timeout might return partial?)
-        // But usually we stop.
         if (metadata['title'] == null || metadata['title'] == 'Error') {
           return;
         }
       }
 
+      _lastFetchedUrl = url;
+
       setState(() {
-        // 1. Switch Content Type if detected and different
+        // 1. Switch Content Type if detected and different (clears fields for the new type).
         if (metadata['contentType'] != null) {
           try {
             final newType = ContentType.values.byName(metadata['contentType']);
             if (newType != contentType) {
               contentType = newType;
-              // Re-init controllers for new type
               _initControllers();
             }
           } catch (e) {
-            // Initial Content Type guess failed or not in our enum
             debugPrint('Unknown detected content type: ${metadata['contentType']}');
           }
         }
 
         // 2. Populate Fields - with safety checks for controllers existing
-        // URL
         if (key2controller.containsKey('url')) {
-          key2controller['url']!.text = metadata['canonicalUrl'] ?? text;
+          final resolvedUrl = (metadata['canonicalUrl'] ?? url) as String;
+          key2controller['url']!.text = resolvedUrl;
         }
 
-        // Title
         if (key2controller.containsKey('title') && metadata['title'] != null) {
           key2controller['title']!.text = metadata['title'];
         }
 
-        // Year
         if (key2controller.containsKey('year') && metadata['year'] != null) {
           key2controller['year']!.text = metadata['year'].toString();
         }
 
-        // Author
         if (key2controller.containsKey('author') && metadata['author'] != null) {
           key2controller['author']!.text = metadata['author'];
         }
 
-        // Validate form
+        // Lock the title when the backend is confident it's the canonical title
+        // (Option A, doc/content_submission.md §10). Low/none stays editable.
+        _titleLocked = metadata['titleConfidence'] == 'high';
         _validate();
       });
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     } finally {
       isMagicPasting.value = false;
+      // Re-enable editing (except a locked title) now that the response is in.
+      if (mounted) setState(_rebuildFields);
     }
   }
 
