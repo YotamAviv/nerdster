@@ -377,9 +377,7 @@ class _ContentViewState extends State<ContentView> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 8),
                         child: _controller.typeFilter == null
-                            ? const Text('*',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold))
+                            ? const Icon(Icons.apps, size: 20)
                             : Icon(
                                 ContentType.values
                                     .firstWhere(
@@ -398,12 +396,9 @@ class _ContentViewState extends State<ContentView> {
                           PopupMenuItem<String>(
                             value: 'all',
                             child: Row(children: [
-                              Text('*',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color:
-                                          current == 'all' ? primary : null)),
+                              Icon(Icons.apps,
+                                  size: 20,
+                                  color: current == 'all' ? primary : null),
                               const SizedBox(width: 8),
                               Text('All',
                                   style: TextStyle(
