@@ -20,22 +20,28 @@
       document.getElementById('load-aviv').addEventListener('click', function (ev) {
         ev.preventDefault();
         const AVIV = { crv: 'Ed25519', kty: 'OKP', x: 'Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo' };
-        iframe.contentWindow.postMessage({ identity: AVIV }, '*');
+        iframe.contentWindow.postMessage({ identity: AVIV, fcontext: '<nerdster>', omitMe: false }, '*');
       });
 
       document.getElementById('load-lisa').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identity: demoData.lisa, identityPathsReq: 'standard' }, '*');
+        iframe.contentWindow.postMessage({ identity: demoData.lisa, identityPathsReq: 'standard', fcontext: '<nerdster>', omitMe: false }, '*');
       });
 
       document.getElementById('load-bart').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identity: demoData.bart, identityPathsReq: 'standard' }, '*');
+        iframe.contentWindow.postMessage({ identity: demoData.bart, identityPathsReq: 'standard', fcontext: '<nerdster>', omitMe: false }, '*');
       });
 
       document.getElementById('load-milhouse').addEventListener('click', function (ev) {
         ev.preventDefault();
-        iframe.contentWindow.postMessage({ identity: demoData.milhouse, identityPathsReq: 'permissive' }, '*');
+        iframe.contentWindow.postMessage({ identity: demoData.milhouse, identityPathsReq: 'permissive', fcontext: '<nerdster>', omitMe: false }, '*');
+      });
+
+      // Homer's view of the "woman" follow context, with Homer himself excluded (omitMe).
+      document.getElementById('load-homer-woman').addEventListener('click', function (ev) {
+        ev.preventDefault();
+        iframe.contentWindow.postMessage({ identity: demoData.homer2, fcontext: 'woman', omitMe: true }, '*');
       });
       
       document.getElementById('censor-on').addEventListener('click', function (ev) {

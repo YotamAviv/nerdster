@@ -6,7 +6,11 @@ echo "=== Generating Simpsons Demo Data (PRODUCTION) ==="
 echo "Writes real trust/content statements to production Nerdster and OneOfUs."
 echo ""
 
-OUTPUT=$(python3 bin/chrome_widget_runner.py --headless -t lib/dev/simpsons_demo_generator_prod.dart 2>&1)
+# grep -v '^stty: ' strips a spurious "stty: 'standard input': Inappropriate ioctl
+# for device" warning that the headless widget runner can emit; if left in, it lands
+# inside the captured PRIVATE_KEYS_JSON and corrupts ../simpsonsPrivateKeys.json.
+# (createSimpsonsDemoData.sh does the same for the emulator flow.)
+OUTPUT=$(python3 bin/chrome_widget_runner.py --headless -t lib/dev/simpsons_demo_generator_prod.dart 2>&1 | grep -v '^stty: ')
 echo "$OUTPUT"
 
 PUBLIC_KEYS_JSON=$(echo "$OUTPUT" | awk '/===PUBLIC_KEYS_JSON_START===/{flag=1; next} /===PUBLIC_KEYS_JSON_END===/{flag=0} flag')

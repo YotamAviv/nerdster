@@ -147,6 +147,7 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   DemoDelegateKey smithersN = await smithers.makeDelegate();
   DemoDelegateKey margeN = await marge.makeDelegate(export: 'marge-delegate');
 
+  DemoDelegateKey luannN = await luann.makeDelegate();
   DemoDelegateKey sideshowN = await sideshow.makeDelegate();
   DemoDelegateKey melN = await mel.makeDelegate();
   DemoDelegateKey amandaN = await amanda.makeDelegate();
@@ -173,6 +174,8 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   const Json shakes = {'contentType': 'movie', 'title': "Shakes the Clown", 'year': '1991'};
   const Json joker = {'contentType': 'movie', 'title': "Joker", 'year': '2019'};
   const Json beerWars = {'contentType': 'movie', 'title': "Beer Wars", 'year': '2009'};
+  const Json littleWomen = {'contentType': 'movie', 'title': "Little Women", 'year': '2019'};
+  const Json thelma = {'contentType': 'movie', 'title': "Thelma & Louise", 'year': '1991'};
 
   await homerD.doRate(subject: beerWars, recommend: true, comment: '#beer #donuts');
   await smithersN.doRate(subject: brokeback, recommend: true);
@@ -208,25 +211,45 @@ Future<(DemoIdentityKey, DemoDelegateKey?)> simpsonsDemo() async {
   await seymoreN.doRate(subject: joker, recommend: true, comment: 'instant #classic');
   await seymoreN.doRate(subject: shakes, recommend: true, comment: 'instant #classic');
 
+  // "woman" context content: the Simpson women recommend women-led films
+  await lisaN.doRate(subject: littleWomen, recommend: true, comment: '#inspiring #sisters');
+  await margeN.doRate(subject: littleWomen, recommend: true, comment: '#wholesome #heartwarming');
+  await luannN.doRate(subject: littleWomen, recommend: true, comment: '#classic');
+  await lisaN.doRate(subject: thelma, recommend: true, comment: '#empowering #roadtrip');
+  await luannN.doRate(subject: thelma, recommend: true, comment: '#empowering');
+
   // <nerdster>: bart blocks lisa, marge
   // <nerdster>: burns blocks multiple..
   // social: bart trusts milhouse, blocks lisa
   // nerd: bart trusts Milhouse, milhouse trusts lisa and bart.
   // family. lisa follows all family; there are other paths.
   await bartN.doFollow(milhouse, {'social': 1}, export: 'bart-follow-milhouse-social');
-  await bartN.doFollow(lisa, {'family': 1, 'social': -1, kFollowContextNerdster: -1});
+  await bartN.doFollow(lisa, {'family': 1, 'social': -1, kFollowContextNerdster: -1, 'woman': 1});
   await bartN.doFollow(homer, {'family': 1});
-  await bartN.doFollow(marge, {kFollowContextNerdster: -1});
+  await bartN.doFollow(marge, {kFollowContextNerdster: -1, 'woman': 1});
   await milhouseN.doFollow(bart, {'social': 1});
-  await milhouseN.doFollow(lisa, {'social': 1});
+  await milhouseN.doFollow(lisa, {'social': 1, 'woman': 1});
   await lisaN.doFollow(bart, {'social': 1, 'family': 1});
   // await lisaN.doFollow(milhouse, {'social': 1, 'nerd': 1});
   await lisaN.doFollow(maggie, {'family': 1});
   await lisaN.doFollow(homer, {'family': 1});
-  await lisaN.doFollow(marge, {'family': 1});
+  await lisaN.doFollow(marge, {'family': 1, 'woman': 1});
   // await homer2N.doFollow(marge, {'family': 1});
-  await margeN.doFollow(lisa, {'family': 1});
+  await margeN.doFollow(lisa, {'family': 1, 'woman': 1});
   await margeN.doFollow(maggie, {'family': 1});
+
+  // "woman" follow context: the Simpson women follow each other; Homer, Bart,
+  // and Milhouse follow the women too. Used for the "woman" content view.
+  await bartN.doFollow(luann, {'woman': 1});
+  await milhouseN.doFollow(luann, {'woman': 1});
+  await milhouseN.doFollow(marge, {'woman': 1});
+  await lisaN.doFollow(luann, {'woman': 1});
+  await margeN.doFollow(luann, {'woman': 1});
+  await luannN.doFollow(lisa, {'woman': 1});
+  await luannN.doFollow(marge, {'woman': 1});
+  await homer2N.doFollow(lisa, {'woman': 1});
+  await homer2N.doFollow(marge, {'woman': 1});
+  await homer2N.doFollow(luann, {'woman': 1});
   await burnsN.doFollow(lisa, {kFollowContextNerdster: -1});
   await burnsN.doFollow(bart, {kFollowContextNerdster: -1});
   await burnsN.doFollow(marge, {kFollowContextNerdster: -1});
