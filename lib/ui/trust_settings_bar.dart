@@ -104,7 +104,7 @@ class TrustSettingsBar extends StatelessWidget {
                 child: Tooltip(
                   message: '''- <identity>: anyone who is someone
 - <nerdster>: same as above with exceptions: follow/block to improve this network
-- music, news, local, family, etc...: Use these if you have them, or create them''',
+- Other follow contexts (eg. music, news, family, ...): Use these if you have them, or create them''',
                   child: ValueListenableBuilder<String>(
                     valueListenable: Setting.get<String>(SettingType.fcontext).notifier,
                     builder: (context, fcontext, _) {
@@ -187,6 +187,10 @@ class TrustSettingsBar extends StatelessWidget {
 /// Compact popover controlling how many degrees of separation from the point of
 /// view to include in the follow network: 1 = only the PoV, 2 = the PoV and
 /// those they follow directly, etc. See [SettingType.degrees].
+///
+/// The button is an outlined ring holding the current degree number. The ring
+/// is drawn in the normal foreground colour when the PoV is included in the
+/// network and greyed out when the PoV has been omitted ([SettingType.omitMe]).
 class _DegreesControl extends StatefulWidget {
   const _DegreesControl();
 
@@ -204,70 +208,114 @@ class _DegreesControlState extends State<_DegreesControl> {
 
   @override
   Widget build(BuildContext context) {
-    final Setting<int> setting = Setting.get<int>(SettingType.degrees);
+    final Setting<int> degreesSetting = Setting.get<int>(SettingType.degrees);
+    final Setting<bool> omitMeSetting = Setting.get<bool>(SettingType.omitMe);
     return ValueListenableBuilder<int>(
-      valueListenable: setting.notifier,
+      valueListenable: degreesSetting.notifier,
       builder: (context, degrees, _) {
-        final int shown = _dragValue ?? degrees;
-        return MenuAnchor(
-          controller: _menuController,
-          menuChildren: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: SizedBox(
-                width: 260,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Degrees of separation: $shown',
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Slider(
-                      value: shown.toDouble(),
-                      min: 1,
-                      max: 6,
-                      divisions: 5,
-                      label: '$shown',
-                      onChanged: (v) => setState(() => _dragValue = v.round()),
-                      onChangeEnd: (v) {
-                        setState(() => _dragValue = null);
-                        setting.value = v.round();
-                      },
+        return ValueListenableBuilder<bool>(
+          valueListenable: omitMeSetting.notifier,
+          builder: (context, omitMe, __) {
+            final bool includeMe = !omitMe;
+            final int shown = _dragValue ?? degrees;
+            return MenuAnchor(
+              controller: _menuController,
+              menuChildren: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: SizedBox(
+                    width: 280,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Degrees of separation: $shown',
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Slider(
+                          value: shown.toDouble(),
+                          min: 1,
+                          max: 6,
+                          divisions: 5,
+                          label: '$shown',
+                          onChanged: (v) => setState(() => _dragValue = v.round()),
+                          onChangeEnd: (v) {
+                            setState(() => _dragValue = null);
+                            degreesSetting.value = v.round();
+                          },
+                        ),
+                        Text(
+                          shown == 1
+                              ? 'Only the point of view'
+                              : 'The point of view and up to ${shown - 1} '
+                                  'follow-hop${shown - 1 == 1 ? '' : 's'} away',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const Divider(height: 16),
+                        // Keeps the menu open (unlike MenuItemButton) so degrees
+                        // and inclusion can be adjusted together.
+                        InkWell(
+                          onTap: () => omitMeSetting.value = !omitMeSetting.value,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  omitMe
+                                      ? Icons.check_box
+                                      : Icons.check_box_outline_blank,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                const Flexible(
+                                  child: Text('Hide my own contributions'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      shown == 1
-                          ? 'Only the point of view'
-                          : 'The point of view and up to ${shown - 1} '
-                              'follow-hop${shown - 1 == 1 ? '' : 's'} away',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-          builder: (context, controller, _) {
-            return Tooltip(
-              message: 'Degrees of separation from the point of view '
-                  '(1 = only the PoV, 2 = the PoV and those they follow directly, ...)',
-              child: InkWell(
-                borderRadius: BorderRadius.circular(4),
-                onTap: () =>
-                    controller.isOpen ? controller.close() : controller.open(),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.hub_outlined, size: 18),
-                      const SizedBox(width: 2),
-                      Text('$degrees',
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ],
                   ),
                 ),
-              ),
+              ],
+              builder: (context, controller, _) {
+                final Color color = includeMe
+                    ? Theme.of(context).colorScheme.onSurface
+                    : Theme.of(context).disabledColor;
+                return Tooltip(
+                  message: includeMe
+                      ? 'Follow network: $shown degree(s) from the point of view'
+                      : 'Follow network: $shown degree(s) from the point of view, '
+                          'excluding you',
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () => controller.isOpen
+                        ? controller.close()
+                        : controller.open(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: color, width: 1.5),
+                        ),
+                        child: Text(
+                          '$shown',
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            height: 1.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             );
           },
         );

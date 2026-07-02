@@ -24,6 +24,7 @@ FollowNetwork reduceFollowNetwork(
   ContentResult contentResult,
   String fcontext, {
   int degrees = 6,
+  bool includePov = true,
 }) {
   Statement.validateOrderTypess(contentResult.delegateContent.values);
 
@@ -32,6 +33,11 @@ FollowNetwork reduceFollowNetwork(
   // BFS assigns the PoV distance 0 and its direct follows distance 1, so the
   // maximum follow distance to include is degrees - 1.
   final int maxDistance = degrees - 1;
+
+  // When includePov is false, the PoV still roots the traversal (we follow who
+  // they follow) but their own identity is dropped from the resulting network so
+  // their reactions aren't aggregated into the feed.
+  final IdentityKey povCanonical = trustGraph.resolveIdentity(trustGraph.pov);
 
   final List<IdentityKey> identities = [];
   final List<TrustNotification> notifications = [];
@@ -46,6 +52,7 @@ FollowNetwork reduceFollowNetwork(
       final int? distance = trustGraph.distances[token];
       if (distance != null && distance > maxDistance) continue;
       final IdentityKey canonical = trustGraph.resolveIdentity(token);
+      if (!includePov && canonical == povCanonical) continue;
       if (identities.contains(canonical)) continue;
       identities.add(canonical);
       // For <identity> context, we can pull paths from the trustGraph
@@ -161,8 +168,11 @@ FollowNetwork reduceFollowNetwork(
     layer = nextLayer;
   }
 
-  final List<IdentityKey> filteredIdentities =
-      orderedIdentities.where((IdentityKey id) => !blocked.contains(id)).toList();
+  final List<IdentityKey> filteredIdentities = orderedIdentities
+      .where((IdentityKey id) => !blocked.contains(id))
+      .where((IdentityKey id) =>
+          includePov || trustGraph.resolveIdentity(id) != povCanonical)
+      .toList();
 
   return FollowNetwork(
     fcontext: fcontext,

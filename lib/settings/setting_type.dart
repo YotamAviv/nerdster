@@ -5,6 +5,7 @@ enum SettingType {
   identityPathsReq(String, 'permissive'),
   fcontext(String, kFollowContextNerdster, aliases: ['follow']),
   degrees(int, 6),
+  omitMe(bool, false),
 
   censor(bool, true),
   dis(String, 'my'),

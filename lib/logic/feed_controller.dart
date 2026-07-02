@@ -108,6 +108,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
     signInState.addListener(_onSignInStateChanged);
     Setting.get(SettingType.fcontext).notifier.addListener(_onSettingChanged);
     Setting.get(SettingType.degrees).notifier.addListener(_onSettingChanged);
+    Setting.get(SettingType.omitMe).notifier.addListener(_onSettingChanged);
 
     Setting.get(SettingType.sort).notifier.addListener(_onDisplaySettingChanged);
     Setting.get(SettingType.dis).notifier.addListener(_onDisplaySettingChanged);
@@ -161,6 +162,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
     signInState.removeListener(_onSignInStateChanged);
     Setting.get(SettingType.fcontext).notifier.removeListener(_onSettingChanged);
     Setting.get(SettingType.degrees).notifier.removeListener(_onSettingChanged);
+    Setting.get(SettingType.omitMe).notifier.removeListener(_onSettingChanged);
 
     Setting.get(SettingType.sort).notifier.removeListener(_onDisplaySettingChanged);
     Setting.get(SettingType.dis).notifier.removeListener(_onDisplaySettingChanged);
@@ -486,6 +488,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
 
         final fcontext = Setting.get<String>(SettingType.fcontext).value;
         final degrees = Setting.get<int>(SettingType.degrees).value;
+        final omitMe = Setting.get<bool>(SettingType.omitMe).value;
 
         // 1. Trust Pipeline
         loadingMessage.value = 'Loading signed content from one-of-us.net (Trust)';
@@ -607,20 +610,6 @@ class FeedController extends ValueNotifier<FeedModel?> {
               : Future.value(const <String, List<EquivalenceStatement>>{}),
         ]).then((r) => {...r[0], ...r[1]});
 
-        // Log content-fetch cache state before fetching. A degrees or fcontext
-        // change should be a pure recompute — all hits, no misses — since the
-        // follow-network radius doesn't change which content has been fetched.
-        {
-          int hits = 0, misses = 0;
-          for (final k in myDelegateKeySet) {
-            contentSource.isCached(k.value) ? hits++ : misses++;
-          }
-          for (final k in peerDelegateKeys) {
-            _peerContentChannel.isCached(k.value) ? hits++ : misses++;
-          }
-          debugPrint('[load] content cache: hits=$hits misses=$misses');
-        }
-
         final swDelegate = Stopwatch()..start();
         final delegateContent = await contentPipeline.fetchDelegateContent(
           myDelegateKeySet,
@@ -656,6 +645,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           contentResult,
           fcontext,
           degrees: degrees,
+          includePov: !omitMe,
         );
 
         progress.value = 0.8;
@@ -724,7 +714,9 @@ class FeedController extends ValueNotifier<FeedModel?> {
             final bool isVisible =
                 followNetwork.identities.any((k) => k.value == currentPov!.value);
 
-            if (!isVisible) {
+            // Skip when omitMe is set: the PoV is intentionally excluded, so
+            // being absent from the network is expected, not a problem.
+            if (!isVisible && !omitMe) {
               systemNotifications.add(SystemNotification(
                 title: "You're invisible",
                 description: "You're not in the network you're viewing.",

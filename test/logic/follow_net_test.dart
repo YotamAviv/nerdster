@@ -60,6 +60,46 @@ void main() {
     expect(followNet.identities.indexOf(trustGraph.resolveIdentity(homer.id)), greaterThan(0));
   });
 
+  test('Follow Network: degrees and omit-PoV', () async {
+    await simpsons();
+    final DemoIdentityKey bart = DemoIdentityKey.findByName('bart')!;
+    final DemoIdentityKey homer = DemoIdentityKey.findByName('homer')!;
+
+    final Map<IdentityKey, List<TrustStatement>> allTrustStatements = {};
+    for (final DemoIdentityKey dk in DemoIdentityKey.all) {
+      allTrustStatements[dk.id] = dk.trustStatements;
+    }
+    final TrustGraph trustGraph =
+        reduceTrustGraph(TrustGraph(pov: bart.id), allTrustStatements);
+    final DelegateResolver delegateResolver = DelegateResolver(trustGraph);
+    final ContentResult content = buildContentResult(DemoDelegateKey.all);
+
+    final IdentityKey homerCanonical = trustGraph.resolveIdentity(homer.id);
+
+    // degrees=1: only the PoV, no follows.
+    final FollowNetwork degree1 = reduceFollowNetwork(
+        trustGraph, delegateResolver, content, kFollowContextNerdster,
+        degrees: 1);
+    expect(degree1.contains(bart.id), true);
+    expect(degree1.contains(homerCanonical), false);
+    expect(degree1.identities.length, 1);
+
+    // Default degrees reaches Homer (a direct follow of Bart).
+    final FollowNetwork full = reduceFollowNetwork(
+        trustGraph, delegateResolver, content, kFollowContextNerdster);
+    expect(full.contains(bart.id), true);
+    expect(full.contains(homerCanonical), true);
+
+    // includePov=false drops the PoV but keeps the rest of the reachable network.
+    final FollowNetwork noMe = reduceFollowNetwork(
+        trustGraph, delegateResolver, content, kFollowContextNerdster,
+        includePov: false);
+    expect(noMe.contains(bart.id), false);
+    expect(noMe.contains(homerCanonical), true);
+    // povIdentity still records who the PoV is, even when excluded.
+    expect(noMe.povIdentity, bart.id);
+  });
+
   test('Simpsons Demo: Multi-POV Content Verification', () async {
     await simpsons();
 
