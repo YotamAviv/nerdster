@@ -23,9 +23,15 @@ FollowNetwork reduceFollowNetwork(
   DelegateResolver delegateResolver,
   ContentResult contentResult,
   String fcontext, {
-  int maxDegrees = 6,
+  int degrees = 6,
 }) {
   Statement.validateOrderTypess(contentResult.delegateContent.values);
+
+  // 'degrees' is the user-facing point-of-view radius: degrees=1 includes only
+  // the PoV, degrees=2 adds those the PoV follows directly, and so on. The follow
+  // BFS assigns the PoV distance 0 and its direct follows distance 1, so the
+  // maximum follow distance to include is degrees - 1.
+  final int maxDistance = degrees - 1;
 
   final List<IdentityKey> identities = [];
   final List<TrustNotification> notifications = [];
@@ -37,6 +43,8 @@ FollowNetwork reduceFollowNetwork(
   // 1. Handle <one-of-us> context (Identity Layer only)
   if (fcontext == kFollowContextIdentity) {
     for (final IdentityKey token in trustGraph.orderedKeys) {
+      final int? distance = trustGraph.distances[token];
+      if (distance != null && distance > maxDistance) continue;
       final IdentityKey canonical = trustGraph.resolveIdentity(token);
       if (identities.contains(canonical)) continue;
       identities.add(canonical);
@@ -63,7 +71,7 @@ FollowNetwork reduceFollowNetwork(
   final Set<IdentityKey> initialLayer = {trustGraph.pov};
 
   Set<IdentityKey> layer = initialLayer;
-  for (int dist = 0; dist < maxDegrees && layer.isNotEmpty; dist++) {
+  for (int dist = 0; dist < maxDistance && layer.isNotEmpty; dist++) {
     final Set<IdentityKey> nextLayer = <IdentityKey>{};
 
     for (final IdentityKey issuerIdentity in layer) {

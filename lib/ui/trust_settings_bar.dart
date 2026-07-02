@@ -172,6 +172,8 @@ class TrustSettingsBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
+              const _DegreesControl(),
+              const SizedBox(width: 4),
               const Flexible(
                 flex: 0,
                 child: SignInWidget(),
@@ -179,5 +181,97 @@ class TrustSettingsBar extends StatelessWidget {
             ],
           );
         });
+  }
+}
+
+/// Compact popover controlling how many degrees of separation from the point of
+/// view to include in the follow network: 1 = only the PoV, 2 = the PoV and
+/// those they follow directly, etc. See [SettingType.degrees].
+class _DegreesControl extends StatefulWidget {
+  const _DegreesControl();
+
+  @override
+  State<_DegreesControl> createState() => _DegreesControlState();
+}
+
+class _DegreesControlState extends State<_DegreesControl> {
+  final MenuController _menuController = MenuController();
+
+  // Live value while dragging the slider. We only commit to the setting (which
+  // triggers a feed reload) on drag end, so dragging 6->1 causes one reload,
+  // not one per intermediate value.
+  int? _dragValue;
+
+  @override
+  Widget build(BuildContext context) {
+    final Setting<int> setting = Setting.get<int>(SettingType.degrees);
+    return ValueListenableBuilder<int>(
+      valueListenable: setting.notifier,
+      builder: (context, degrees, _) {
+        final int shown = _dragValue ?? degrees;
+        return MenuAnchor(
+          controller: _menuController,
+          menuChildren: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: SizedBox(
+                width: 260,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Degrees of separation: $shown',
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Slider(
+                      value: shown.toDouble(),
+                      min: 1,
+                      max: 6,
+                      divisions: 5,
+                      label: '$shown',
+                      onChanged: (v) => setState(() => _dragValue = v.round()),
+                      onChangeEnd: (v) {
+                        setState(() => _dragValue = null);
+                        setting.value = v.round();
+                      },
+                    ),
+                    Text(
+                      shown == 1
+                          ? 'Only the point of view'
+                          : 'The point of view and up to ${shown - 1} '
+                              'follow-hop${shown - 1 == 1 ? '' : 's'} away',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          builder: (context, controller, _) {
+            return Tooltip(
+              message: 'Degrees of separation from the point of view '
+                  '(1 = only the PoV, 2 = the PoV and those they follow directly, ...)',
+              child: InkWell(
+                borderRadius: BorderRadius.circular(4),
+                onTap: () =>
+                    controller.isOpen ? controller.close() : controller.open(),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.hub_outlined, size: 18),
+                      const SizedBox(width: 2),
+                      Text('$degrees',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

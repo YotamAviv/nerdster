@@ -107,6 +107,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
     Setting.get(SettingType.identityPathsReq).notifier.addListener(_onSettingChanged);
     signInState.addListener(_onSignInStateChanged);
     Setting.get(SettingType.fcontext).notifier.addListener(_onSettingChanged);
+    Setting.get(SettingType.degrees).notifier.addListener(_onSettingChanged);
 
     Setting.get(SettingType.sort).notifier.addListener(_onDisplaySettingChanged);
     Setting.get(SettingType.dis).notifier.addListener(_onDisplaySettingChanged);
@@ -159,6 +160,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
     Setting.get(SettingType.identityPathsReq).notifier.removeListener(_onSettingChanged);
     signInState.removeListener(_onSignInStateChanged);
     Setting.get(SettingType.fcontext).notifier.removeListener(_onSettingChanged);
+    Setting.get(SettingType.degrees).notifier.removeListener(_onSettingChanged);
 
     Setting.get(SettingType.sort).notifier.removeListener(_onDisplaySettingChanged);
     Setting.get(SettingType.dis).notifier.removeListener(_onDisplaySettingChanged);
@@ -483,6 +485,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
         if (showLoading) notifyListeners();
 
         final fcontext = Setting.get<String>(SettingType.fcontext).value;
+        final degrees = Setting.get<int>(SettingType.degrees).value;
 
         // 1. Trust Pipeline
         loadingMessage.value = 'Loading signed content from one-of-us.net (Trust)';
@@ -604,6 +607,20 @@ class FeedController extends ValueNotifier<FeedModel?> {
               : Future.value(const <String, List<EquivalenceStatement>>{}),
         ]).then((r) => {...r[0], ...r[1]});
 
+        // Log content-fetch cache state before fetching. A degrees or fcontext
+        // change should be a pure recompute — all hits, no misses — since the
+        // follow-network radius doesn't change which content has been fetched.
+        {
+          int hits = 0, misses = 0;
+          for (final k in myDelegateKeySet) {
+            contentSource.isCached(k.value) ? hits++ : misses++;
+          }
+          for (final k in peerDelegateKeys) {
+            _peerContentChannel.isCached(k.value) ? hits++ : misses++;
+          }
+          debugPrint('[load] content cache: hits=$hits misses=$misses');
+        }
+
         final swDelegate = Stopwatch()..start();
         final delegateContent = await contentPipeline.fetchDelegateContent(
           myDelegateKeySet,
@@ -638,6 +655,7 @@ class FeedController extends ValueNotifier<FeedModel?> {
           delegateResolver,
           contentResult,
           fcontext,
+          degrees: degrees,
         );
 
         progress.value = 0.8;

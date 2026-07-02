@@ -4,6 +4,7 @@ enum SettingType {
   lgtm(bool, false),
   identityPathsReq(String, 'permissive'),
   fcontext(String, kFollowContextNerdster, aliases: ['follow']),
+  degrees(int, 6),
 
   censor(bool, true),
   dis(String, 'my'),
