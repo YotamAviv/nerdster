@@ -16,6 +16,7 @@ AI NOTE: This is my (the human) file with my own notes.
 # yotam
 https://nerdster.org/app?pov={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}
 
+http://localhost:8765/?fire=emulator&pov={%20%22crv%22:%20%22Ed25519%22,%20%22kty%22:%20%22OKP%22,%20%22x%22:%20%22Fenc6ziXKt69EWZY-5wPxbJNX9rk3CDRVSAEnA8kJVo%22%20}
 
 ```
 Push to PROD:
