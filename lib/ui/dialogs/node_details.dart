@@ -157,13 +157,14 @@ class _NodeDetailsState extends State<NodeDetails> {
         ? (model.myTrustStatements[canonicalIdentity] ?? model.myTrustStatements[widget.identity])
         : null;
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
-      ),
-      padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
-      child: Column(
+    return Material(
+      color: Colors.white,
+      elevation: 0,
+      clipBehavior: Clip.antiAlias,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -270,6 +271,7 @@ class _NodeDetailsState extends State<NodeDetails> {
             ],
           ),
         ],
+        ),
       ),
     );
   }
