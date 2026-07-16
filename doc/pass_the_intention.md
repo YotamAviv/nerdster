@@ -105,6 +105,30 @@ recorded and persisted truthfully.
 
 ---
 
+## TODO / known limitations — desktop (qrScan) block & clear
+
+Two related gaps, both rooted in the desktop QR carrying only the key, not the action:
+
+1. **Blocking a specific key from the desktop is hard to transmit to the phone.** The QR holds
+   only the target key JSON. The ONE-OF-US in-app scanner takes the *verb* from which button
+   the user taps (Block / Vouch / …), not from the QR — so the desktop can't say "block THIS
+   key" precisely; the user scans the key and blocks it manually in the app.
+
+2. **Clearing a block from the desktop can't be guided by name.** Blocked keys have no moniker
+   in the identity app — they render as "Unknown" (only vouches, on the People screen, are
+   named). So the clear dialog's "Find your block for '<name>'…" names a key the phone shows
+   as "Unknown". (Clearing a *vouch* by name works, and is left as-is.) Users can't easily see
+   their blocked keys anyway, so this is left as-is for now.
+
+**Fix for both — put the intention (verb) in the QR.** A camera-scannable action-URL QR
+(`https://one-of-us.net/block#<key>` / `/clear#<key>`) would carry key AND action; the phone's
+OS routes the universal link to the app's handler (`_handleIncomingLink` → `_handleKeyFragment`
+in oneofus), landing on the exact key — no manual scan, no name needed. This works via the
+phone **camera** (universal-link routing), NOT the app's in-app scanner (which only parses
+JSON), so the instruction would read "scan with your phone camera." Deferred.
+
+---
+
 ## Related docs
 
 - `block_identity.md` — semantics of blocking (when/why), not this handoff mechanism.

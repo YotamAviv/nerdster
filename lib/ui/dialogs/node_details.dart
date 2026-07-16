@@ -1147,6 +1147,11 @@ class _NodeDetailsState extends State<NodeDetails> {
   }
 }
 
+// TODO: Desktop block/clear can only put the KEY in the QR, not the action — the in-app
+// scanner takes the verb from its own button, and blocked keys have no name (shown as
+// "Unknown"), so clearing a block can't be guided by name. Fix by putting the intention in a
+// camera-scannable action-URL QR (https://one-of-us.net/block#<key> / /clear#<key>). See the
+// "TODO / known limitations" section in doc/pass_the_intention.md.
 /// Desktop (qrScan sign-in) handoff for block/clear:
 ///  - block: show the target key QR so the user can pull the key into their identity app and
 ///    block it there (the in-app scanner takes the verb from its own button, so the QR carries
