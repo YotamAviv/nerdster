@@ -16,11 +16,14 @@ class About extends StatelessWidget {
         barrierDismissible: true,
         builder: (BuildContext context) {
           final mediaSize = MediaQuery.of(context).size;
+          // Phones are too narrow for width/2 (text wraps taller and clips the version at the
+          // bottom). Use most of the width on small screens, and cap height + scroll so content
+          // always fits.
+          final double width = mediaSize.width < 600 ? mediaSize.width * 0.9 : mediaSize.width / 2;
           return Dialog(
               shape: RoundedRectangleBorder(borderRadius: kBorderRadius),
-              child: SizedBox(
-                  width: mediaSize.width / 2,
-                  height: (MediaQuery.of(context).size).height / 2,
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: width, maxHeight: mediaSize.height * 0.8),
                   child: singleton));
         });
   }
@@ -33,6 +36,7 @@ class About extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: kPadding,
+        child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -64,6 +68,7 @@ class About extends StatelessWidget {
               child: const Text('Version: $kAppVersion'),
             ),
           ],
+        ),
         ),
       ),
     );

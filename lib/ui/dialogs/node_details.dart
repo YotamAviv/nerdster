@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:math';
 import 'dart:convert';
 import 'package:nerdster/config.dart';
@@ -209,6 +208,17 @@ class _NodeDetailsState extends State<NodeDetails> {
                     final String clearTip = !canAct ? 'Must be signed in as a different identity'
                                           : (!canClear ? 'No statement exists to clear' : 'Clear your trust/block for this identity');
 
+                    // Block/clear hand the intention off to the identity app, so they're only
+                    // shown when we know a transport to reuse (i.e. how the user signed in).
+                    // A null/paste method means no known handoff → hide them. Trust is not
+                    // gated: it transmits nothing. See doc/pass_the_intention.md.
+                    final bool hasHandoff = switch (signInState.signInMethod) {
+                      SignInMethod.oneOfUsNet ||
+                      SignInMethod.keymeid ||
+                      SignInMethod.qrScan => true,
+                      _ => false,
+                    };
+
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -227,38 +237,40 @@ class _NodeDetailsState extends State<NodeDetails> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        Tooltip(
-                          message: blockTip,
-                          child: InkWell(
-                            onTap: canBlock ? () => _passIntention(context, 'block', widget.identity) : null,
-                            borderRadius: BorderRadius.circular(4),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Icon(
-                                myTrustStatement?.verb == TrustVerb.block ? Icons.delete : Icons.delete_outline,
-                                color: Colors.red,
-                                size: 22,
+                        if (hasHandoff) ...[
+                          const SizedBox(width: 4),
+                          Tooltip(
+                            message: blockTip,
+                            child: InkWell(
+                              onTap: canBlock ? () => _passIntention(context, 'block', widget.identity) : null,
+                              borderRadius: BorderRadius.circular(4),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(
+                                  myTrustStatement?.verb == TrustVerb.block ? Icons.delete : Icons.delete_outline,
+                                  color: Colors.red,
+                                  size: 22,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        Tooltip(
-                          message: clearTip,
-                          child: InkWell(
-                            onTap: canClear ? () => _passIntention(context, 'clear', widget.identity) : null,
-                            borderRadius: BorderRadius.circular(4),
-                            child: Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Icon(
-                                canClear ? Icons.cancel_outlined : Icons.cancel,
-                                color: canClear ? Colors.black : Colors.grey,
-                                size: 22,
+                          const SizedBox(width: 4),
+                          Tooltip(
+                            message: clearTip,
+                            child: InkWell(
+                              onTap: canClear ? () => _passIntention(context, 'clear', widget.identity) : null,
+                              borderRadius: BorderRadius.circular(4),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(
+                                  canClear ? Icons.cancel_outlined : Icons.cancel,
+                                  color: canClear ? Colors.black : Colors.grey,
+                                  size: 22,
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     );
                   }),
@@ -465,7 +477,6 @@ class _NodeDetailsState extends State<NodeDetails> {
       if (proceed != true) return;
     }
 
-    final String key = identity.value;
     final Json? identityJson = FedKey.find(identity)?.pubKeyJson;
     if (identityJson == null) {
       if (context.mounted) {
@@ -473,14 +484,33 @@ class _NodeDetailsState extends State<NodeDetails> {
       }
       return;
     }
+
+    // Hand the intention off to the identity app, reusing the transport the user signed in
+    // with. The payload is the target key JSON (base64url in the fragment); the verb
+    // ('block'/'clear') is the path, so the identity app knows the action. See
+    // doc/pass_the_intention.md.
+    final String fragment = base64Url.encode(utf8.encode(jsonEncode(identityJson)));
+
+    if (signInState.signInMethod == SignInMethod.oneOfUsNet ||
+        signInState.signInMethod == SignInMethod.keymeid) {
+      // Same-device: launch the magic link directly. No intermediate one-option dialog.
+      final Uri uri = signInState.signInMethod == SignInMethod.keymeid
+          ? Uri.parse('keymeid://$verb#$fragment')
+          : Uri.parse('https://one-of-us.net/$verb#$fragment');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      return;
+    }
+
+    // qrScan: the identity app is on a different device. Show a QR of the target key. The
+    // ONE-OF-US in-app scanner accepts a key payload and takes the verb from the block/clear
+    // button the user taps there — it can't parse a scanned action URL, so we cannot put the
+    // verb in the QR. See doc/pass_the_intention.md.
     if (!context.mounted) return;
     await showDialog<void>(
       context: context,
       builder: (ctx) => _PassIntentionDialog(
         verb: verb,
-        identityKey: key,
         identityJson: identityJson,
-        method: signInState.signInMethod,
       ),
     );
   }
@@ -1101,58 +1131,31 @@ class _NodeDetailsState extends State<NodeDetails> {
   }
 }
 
+/// Shows a QR of the target key for the identity app on ANOTHER device (qrScan sign-in). The
+/// ONE-OF-US in-app scanner accepts a key payload and takes the verb from the block/clear
+/// button tapped there, so the QR carries the key only, not the action. Same-device handoff
+/// (a tappable magic link) is launched directly in _passIntention without any dialog. See
+/// doc/pass_the_intention.md.
 class _PassIntentionDialog extends StatelessWidget {
   final String verb;
-  final String identityKey;
   final Json identityJson;
-  final SignInMethod? method;
 
-  const _PassIntentionDialog({required this.verb, required this.identityKey, required this.identityJson, this.method});
-
-  String _fragment() {
-    final jsonStr = jsonEncode(identityJson);
-    return base64Url.encode(utf8.encode(jsonStr));
-  }
+  const _PassIntentionDialog({required this.verb, required this.identityJson});
 
   @override
   Widget build(BuildContext context) {
     final Size availableSize = MediaQuery.of(context).size;
     final double width = min(availableSize.width * 0.9, 400);
 
-    final bool isIOS = defaultTargetPlatform == TargetPlatform.iOS;
-    final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
-    final bool isMobileDevice = isIOS || isAndroid;
-
-    Widget content;
     final String title = '${verb[0].toUpperCase()}${verb.substring(1)} identity';
-    final String fragment = _fragment();
-
-    if (method == SignInMethod.oneOfUsNet || (method == null && isMobileDevice)) {
-       final Uri uri = Uri.parse('https://one-of-us.net/$verb#$fragment');
-       content = ListTile(
-         leading: const Icon(Icons.link),
-         title: const Text('https://one-of-us.net/...'),
-         subtitle: const Text('Use your identity app'),
-         onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
-       );
-    } else if (method == SignInMethod.keymeid) {
-       final Uri uri = Uri.parse('keymeid://$verb#$fragment');
-       content = ListTile(
-         leading: const Icon(Icons.link),
-         title: const Text('keymeid://...'),
-         subtitle: const Text('Use your identity app'),
-         onTap: () => launchUrl(uri, mode: LaunchMode.externalApplication),
-       );
-    } else {
-       content = Column(
-         mainAxisSize: MainAxisSize.min,
-         children: [
-            const Text('Scan this code with your identity app.', textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            JsonQrDisplay(identityJson, interpret: ValueNotifier(false)),
-         ]
-       );
-    }
+    final Widget content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('Scan this code with your identity app.', textAlign: TextAlign.center),
+        const SizedBox(height: 16),
+        JsonQrDisplay(identityJson, interpret: ValueNotifier(false)),
+      ],
+    );
 
     return Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# NOTE: The Flutter sections below call bare `flutter`, so they use whichever SDK is first on
+# PATH. This project targets ~/bin/flutter (3.44.6). If a Flutter section fails with
+# "Can't load Kernel binary: Invalid kernel binary format version", it's a stale native-assets
+# cache from a mixed-SDK run, not a code regression — see doc/flutter_test_environment.md.
+
 # Track failures
 FAILED_TESTS=()
 PASSED_TESTS=()

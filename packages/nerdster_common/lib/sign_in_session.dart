@@ -5,6 +5,19 @@ import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
 import 'package:oneofus_common/jsonish.dart';
 
+/// How the user signed in — which transport they used to hand data to the identity app.
+/// Persisted by the app, then reused to hand block/clear intentions to the same app ("pass
+/// the intention"): the sign-in dialog emits this, block/clear reads it back. A null
+/// SignInMethod (this is always used as `SignInMethod?`) means we don't know if or how the
+/// user signed in, so block/clear cannot be offered. See doc/pass_the_intention.md
+/// (nerdster repo).
+enum SignInMethod {
+  keymeid,    // keymeid:// custom scheme (same device); the app-neutral scheme
+  oneOfUsNet, // https://one-of-us.net/... universal link (same device); the default
+  qrScan,     // QR code scanned by the identity app on a different device
+  paste,      // JSON credentials pasted; hidden debug-only path, dialog never emits it
+}
+
 class SignInSession {
   final PkeKeyPair pkeKeyPair;
   final OouKeyPair serviceKeyPair;

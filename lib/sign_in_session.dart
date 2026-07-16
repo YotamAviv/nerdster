@@ -22,7 +22,9 @@ Future<SignInSession> createNerdsterSignInSession() {
 }
 
 Future<void> nerdsterOnSessionData(Json data, PkeKeyPair pkeKeyPair, OouKeyPair serviceKeyPair,
-    {SignInMethod method = SignInMethod.qrScan}) async {
+    SignInMethod method) async {
+  // `method` is how the user signed in; it's persisted so block/clear can reuse the same
+  // transport to hand the intention to the identity app. See doc/pass_the_intention.md.
   final String identityKey = data.containsKey('identity') ? 'identity' : kOneofusDomain;
   final Json identityPayload = data[identityKey]!;
   final FedKey fedKey = FedKey.fromPayload(identityPayload) ?? FedKey(identityPayload);
