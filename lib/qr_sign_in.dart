@@ -29,7 +29,7 @@ Future<void> qrSignIn(BuildContext context) async {
   // ignore: unawaited_futures
   session.listen(
     firestore: channelFactory.firestoreFor(kNerdsterExportUrl)!,
-    onData: nerdsterOnSessionData,
+    onData: (data, pke, svc) => nerdsterOnSessionData(data, pke, svc, SignInMethod.qrScan),
     onDone: () {
       if (!completer.isCompleted) {
         if (context.mounted) Navigator.of(context).pop();

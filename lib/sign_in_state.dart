@@ -1,9 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:nerdster/singletons.dart';
+import 'package:nerdster_common/sign_in_session.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/keys.dart' show FedKey, IdentityKey, kNativeEndpoint;
 import 'package:oneofus_common/oou_signer.dart';
+
+// SignInMethod is defined in nerdster_common (shared with the sign-in dialog); re-export it
+// so the many `import 'sign_in_state.dart'` call sites keep seeing it. See sign_in_session.dart.
+export 'package:nerdster_common/sign_in_session.dart' show SignInMethod;
 
 /// This class tracks the sign-in state of the user using 3 main variables:
 /// - identity (an identity key token)
@@ -59,16 +64,6 @@ import 'package:oneofus_common/oou_signer.dart';
 /// I'd like to allow a page (nerdster.org/home.html, aviv.net) let you change settings, and it'd be
 /// nice to have Progress. One way to achieve that would be to have the UI watch those notifiers in
 /// StatefulWidgets.
-
-/// How the user signed into Nerdster. Determines the "pass the intention" handoff
-/// strategy for identity-layer actions (trust/block/clear).
-enum SignInMethod {
-  keymeid,    // keymeid:// button in the sign-in widget
-  oneOfUsNet, // https://one-of-us.net button in the sign-in widget
-  qrScan,     // QR code scanned by the ONE-OF-US phone app
-  paste,      // JSON credentials pasted
-  url,        // Sign in via ?identity=... URL parameter
-}
 
 Future<void> signInUiHelper(
     OouPublicKey oneofusPublicKey, OouKeyPair? nerdsterKeyPair,

@@ -18,7 +18,10 @@ class SignInConfig {
   // Core auth
   final Future<SignInSession> Function() sessionFactory;
   final FirebaseFirestore firestore;
-  final Future<void> Function(Json data, PkeKeyPair pke, OouKeyPair serviceKeyPair) onData;
+  // The [method] tells the app which transport the user signed in with, so it can persist it
+  // and reuse the same transport for block/clear. See doc/pass_the_intention.md.
+  final Future<void> Function(Json data, PkeKeyPair pke, OouKeyPair serviceKeyPair,
+      SignInMethod method) onData;
 
   // Reactive state
   final ChangeNotifier stateNotifier;
@@ -139,6 +142,10 @@ class _SignInDialogState extends State<SignInDialog> {
     final bool isAndroid = defaultTargetPlatform == TargetPlatform.android;
     final bool isMobile = _c.forceIphone || (!kIsWeb && (isIOS || isAndroid));
 
+    // The three transports below (universal link / keymeid / QR) are the ways to hand data
+    // to the identity app. Which one the user picks must be recorded as a SignInMethod and
+    // persisted, so that block/clear can later reuse the same transport. See
+    // doc/pass_the_intention.md (in the nerdster repo).
     Widget buildUniversalBtn() {
       return FutureBuilder<SignInSession>(
         future: _sessionFuture,
@@ -469,7 +476,7 @@ class _SignInDialogState extends State<SignInDialog> {
     // ignore: unawaited_futures
     session.listen(
       firestore: _c.firestore,
-      onData: _c.onData,
+      onData: (data, pke, svc) => _c.onData(data, pke, svc, SignInMethod.qrScan),
       onDone: () {
         if (!completer.isCompleted) {
           if (context.mounted) Navigator.of(context).pop();
@@ -555,7 +562,8 @@ class QrSignInDialog extends StatelessWidget {
 class MagicLinkDialog extends StatefulWidget {
   final Future<SignInSession> sessionFuture;
   final FirebaseFirestore firestore;
-  final Future<void> Function(Json data, PkeKeyPair pke, OouKeyPair serviceKeyPair) onData;
+  final Future<void> Function(Json data, PkeKeyPair pke, OouKeyPair serviceKeyPair,
+      SignInMethod method) onData;
   final VoidCallback onCancel;
   final VoidCallback onSuccess;
   final VoidCallback? onTimeout;
@@ -610,9 +618,12 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
         await launchUrl(Uri.parse(link), mode: LaunchMode.externalApplication);
       }
 
+      final method = widget.useUniversalLink
+          ? SignInMethod.oneOfUsNet
+          : SignInMethod.keymeid;
       unawaited(session.listen(
         firestore: widget.firestore,
-        onData: widget.onData,
+        onData: (data, pke, svc) => widget.onData(data, pke, svc, method),
         onDone: widget.onSuccess,
       ));
     } catch (e) {

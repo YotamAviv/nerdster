@@ -90,7 +90,8 @@ class _SignInMenuState extends State<SignInMenu> {
                 // ignore: unawaited_futures
                 session.listen(
                   firestore: channelFactory.firestoreFor(kNerdsterExportUrl)!,
-                  onData: nerdsterOnSessionData,
+                  onData: (data, pke, svc) =>
+                      nerdsterOnSessionData(data, pke, svc, SignInMethod.keymeid),
                   timeout: const Duration(minutes: 10),
                   onDone: () {
                     print('Magic sign-in session ended');

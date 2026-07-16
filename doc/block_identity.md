@@ -113,9 +113,14 @@ The 4 icons on the bottom left of NodeDetails are:
   - if enabled, then show the appropriate UI to clear
   - otherwise, just a tooltip
 
-The appropriate UI to block or clear is to show a dialog
-Depending on how we signed in, show a link https://one-of-us.net/<block or clear>, or a keymeid:// link, or a QR code to scan. 
-If we don't know how we signed in then for mobile devices default to https://one-of-us.net/, otherwise the QR code.
+The appropriate UI to block or clear is to show a dialog that hands the intention off to
+the identity app. The transport (https://one-of-us.net/ link, keymeid:// link, or QR code)
+is determined by *how the user signed in* — we reuse the same transport, we do not guess.
+If we don't know how the user signed in (SignInMethod == null), we cannot construct the
+handoff, so the block/clear buttons are not shown at all.
+
+See **`pass_the_intention.md`** for the full handoff mechanism — this doc covers the
+*semantics* of blocking (when/why), not the *mechanics* of transmitting to the identity app.
 
 The appropriate UI for trust (already implemented) is to explain that we won't.
 
@@ -142,8 +147,8 @@ At the bottom left of NodeDetails to the right of the shied icon, add these:
 Clicking block or clear (when filled in and enabled) "pass the intention" to to the ONE-OF-US.NET app.
 Clicking trust (when filled in and enabled) should show an alert dialog explaing that you vouch in person or through another means of secure communication, not because you believe that it's them on the Nerdster.
 * pass the intention
-If signed in by scanning QR or paste, then show the key in a dialog and explain what to do.
-If signed in using keymeid://, https://one-of-us.net then create the new link discussed for the user to click on.
+The transport used to pass the intention to the identity app mirrors how the user signed in,
+and block/clear are only offered when a transport is known. See `pass_the_intention.md`.
 
 
 
