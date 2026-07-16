@@ -27,8 +27,20 @@ picks one at sign-in time (see the sign-in dialog: `nerdster_common/lib/ui/sign_
 | **Custom scheme** | `keymeid://<verb>#<payload>` | Identity app is on **this same device**. Kept deliberately (see "keymeid" below). |
 | **QR code** | QR encodes the payload | Identity app is on a **different device** and scans it (e.g. desktop Nerdster ↔ phone app). |
 
-For sign-in the `<payload>` is the session parameters; for block/clear it is the target
-identity's public-key JSON (base64url in the URL fragment, or the raw JSON in the QR).
+For sign-in the `<payload>` is the session parameters; for block/clear the link payload is the
+target identity's public-key JSON, base64url-encoded in the `#fragment`.
+
+For block/clear specifically:
+- **Same-device (universalLink / keymeid):** the magic link is launched **directly** — no
+  intermediate dialog. The user already confirmed the harshness warning; a one-option dialog
+  on top of that is just friction.
+- **Different-device (qrScan):** the QR carries the **target key only**, not the action. The
+  ONE-OF-US in-app scanner validates a scanned payload as JSON (a key), and takes the verb
+  from the block/clear button the user taps in that app — it does **not** parse a scanned
+  action URL. (A `https://one-of-us.net/block#…` universal link *is* handled by the app when
+  **tapped or opened via the native camera**, but not by the app's own in-app scanner, so we
+  don't put the verb in the QR. Carrying the action in the QR would need an app-side change to
+  the in-app scanner.)
 
 ### keymeid
 
