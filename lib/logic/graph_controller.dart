@@ -197,6 +197,14 @@ class GraphController {
     for (final IdentityKey issuerIdentity in fn.edges.keys) {
       final String resolvedIssuer = feedModel.trustGraph.resolveIdentity(issuerIdentity).value;
       for (final ContentStatement s in fn.edges[issuerIdentity]!) {
+        // fn.edges holds accepted follow AND block statements (see FollowNetwork.edges).
+        // Only an actual follow (positive weight for this context) is a network edge; a block
+        // (-1) or neutral (0) is not, and drawing it would show a path to a node the network
+        // excluded. Use the same weight semantics as reduceFollowNetwork.
+        final dynamic wRaw = (s.contexts ?? const {})[fn.fcontext];
+        final int w = wRaw is int ? wRaw : (wRaw is num ? wRaw.toInt() : int.tryParse('$wRaw') ?? 0);
+        if (w <= 0) continue;
+
         // Subjects in follow network can be delegates. Resolve them.
         IdentityKey subjectKey = IdentityKey(s.subjectToken);
         final IdentityKey? delegateMatch =
@@ -221,7 +229,9 @@ class GraphController {
       final tg = feedModel.trustGraph;
       for (final IdentityKey issuer in tg.edges.keys) {
         final IdentityKey issuerIdentityKey = feedModel.trustGraph.resolveIdentity(issuer);
-        if (!fn.contains(issuerIdentityKey)) continue;
+        // The network graph always includes its root: "hide me" (includePov: false) drops the
+        // PoV from `identities` for the feed, but PoV-rooted paths/edges must still render.
+        if (!fn.contains(issuerIdentityKey) && issuerIdentityKey != fn.povIdentity) continue;
 
         final String issuerIdentity = issuerIdentityKey.value;
 
@@ -230,7 +240,7 @@ class GraphController {
           final IdentityKey subjectKey = IdentityKey(s.subjectToken);
           final IdentityKey subjectIdentityKey = feedModel.trustGraph.resolveIdentity(subjectKey);
 
-          if (!fn.contains(subjectIdentityKey)) continue;
+          if (!fn.contains(subjectIdentityKey) && subjectIdentityKey != fn.povIdentity) continue;
 
           final String subjectIdentity = subjectIdentityKey.value;
 

@@ -928,6 +928,15 @@ class _NodeDetailsState extends State<NodeDetails> {
     );
   }
 
+  /// True if a follow statement is an actual follow (positive weight) in [fcontext].
+  /// fn.edges also carries block (-1) and neutral (0) statements, which contain the context
+  /// key too — so testing containsKey would list a block as a follow. Require weight > 0.
+  static bool _isFollowInContext(ContentStatement s, String fcontext) {
+    final dynamic wRaw = s.contexts?[fcontext];
+    final int w = wRaw is int ? wRaw : (wRaw is num ? wRaw.toInt() : int.tryParse('$wRaw') ?? 0);
+    return w > 0;
+  }
+
   Widget _buildIncomingContent(IdentityKey identity, FeedModel model, String fcontext) {
     if (fcontext == kFollowContextIdentity) {
       final List<TrustStatement> statements = model.trustGraph.edges.values
@@ -950,7 +959,7 @@ class _NodeDetailsState extends State<NodeDetails> {
       final List<ContentStatement> explicitStatements = fn.edges.values
           .expand((l) => l)
           .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
-          .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
+          .where((s) => _isFollowInContext(s, kFollowContextNerdster))
           .toList();
 
       final explicitIssuers =
@@ -987,7 +996,7 @@ class _NodeDetailsState extends State<NodeDetails> {
       final List<ContentStatement> statements = model.followNetwork.edges.values
           .expand((l) => l)
           .where((s) => _resolveIdentity(IdentityKey(s.subjectToken), model) == identity)
-          .where((s) => s.contexts?.containsKey(fcontext) == true)
+          .where((s) => _isFollowInContext(s, fcontext))
           .toList();
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1019,7 +1028,7 @@ class _NodeDetailsState extends State<NodeDetails> {
       final List<ContentStatement> explicitStatements = fn.edges.values
           .expand((l) => l)
           .where((s) => _resolveIdentity(IdentityKey(s.iKey.value), model) == identity)
-          .where((s) => s.contexts?.containsKey(kFollowContextNerdster) == true)
+          .where((s) => _isFollowInContext(s, kFollowContextNerdster))
           .toList();
 
       final explicitSubjects =
@@ -1053,7 +1062,7 @@ class _NodeDetailsState extends State<NodeDetails> {
       final List<ContentStatement> statements = model.followNetwork.edges.values
           .expand((l) => l)
           .where((s) => _resolveIdentity(IdentityKey(s.iKey.value), model) == identity)
-          .where((s) => s.contexts?.containsKey(fcontext) == true)
+          .where((s) => _isFollowInContext(s, fcontext))
           .toList();
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
