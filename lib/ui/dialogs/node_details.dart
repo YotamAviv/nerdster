@@ -432,11 +432,12 @@ class _NodeDetailsState extends State<NodeDetails> {
   }
 
   Future<void> _passIntention(BuildContext context, String verb, IdentityKey identity) async {
+    final IdentityKey canonical = _resolveIdentity(identity, model);
+    final TrustStatement? myStatement = signInState.hasIdentity
+        ? (model.myTrustStatements[canonical] ?? model.myTrustStatements[identity])
+        : null;
+
     if (verb == 'block') {
-      final IdentityKey canonical = _resolveIdentity(identity, model);
-      final TrustStatement? myStatement = signInState.hasIdentity
-          ? (model.myTrustStatements[canonical] ?? model.myTrustStatements[identity])
-          : null;
       final bool alreadyVouched = myStatement?.verb == TrustVerb.trust;
 
       if (!context.mounted) return;
@@ -505,11 +506,17 @@ class _NodeDetailsState extends State<NodeDetails> {
     // ONE-OF-US in-app scanner accepts a key payload and takes the verb from the block/clear
     // button the user taps there — it can't parse a scanned action URL, so we cannot put the
     // verb in the QR. See doc/pass_the_intention.md.
+    // Clear's instruction must name what the user actually has to find and clear: a block
+    // reads "block", anything else (a trust) reads "vouch".
+    final String clearWhat = myStatement?.verb == TrustVerb.block ? 'block' : 'vouch';
+
     if (!context.mounted) return;
     await showDialog<void>(
       context: context,
       builder: (ctx) => _PassIntentionDialog(
         verb: verb,
+        name: model.labeler.getLabel(identity.value),
+        clearWhat: clearWhat,
         identityJson: identityJson,
       ),
     );
@@ -1140,16 +1147,22 @@ class _NodeDetailsState extends State<NodeDetails> {
   }
 }
 
-/// Shows a QR of the target key for the identity app on ANOTHER device (qrScan sign-in). The
-/// ONE-OF-US in-app scanner accepts a key payload and takes the verb from the block/clear
-/// button tapped there, so the QR carries the key only, not the action. Same-device handoff
-/// (a tappable magic link) is launched directly in _passIntention without any dialog. See
-/// doc/pass_the_intention.md.
+/// Desktop (qrScan sign-in) handoff for block/clear:
+///  - block: show the target key QR so the user can pull the key into their identity app and
+///    block it there (the in-app scanner takes the verb from its own button, so the QR carries
+///    the key only, not the action).
+///  - clear: no QR — the user already has the statement, so just tell them to find it in their
+///    identity app and clear it.
+/// Same-device handoff (a tappable magic link) is launched directly in _passIntention without
+/// any dialog. See doc/pass_the_intention.md.
 class _PassIntentionDialog extends StatelessWidget {
   final String verb;
+  final String name;
+  final String clearWhat; // 'vouch' or 'block' — what the user clears in their identity app
   final Json identityJson;
 
-  const _PassIntentionDialog({required this.verb, required this.identityJson});
+  const _PassIntentionDialog(
+      {required this.verb, required this.name, required this.clearWhat, required this.identityJson});
 
   @override
   Widget build(BuildContext context) {
@@ -1157,14 +1170,17 @@ class _PassIntentionDialog extends StatelessWidget {
     final double width = min(availableSize.width * 0.9, 400);
 
     final String title = '${verb[0].toUpperCase()}${verb.substring(1)} identity';
-    final Widget content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text('Scan this code with your identity app.', textAlign: TextAlign.center),
-        const SizedBox(height: 16),
-        JsonQrDisplay(identityJson, interpret: ValueNotifier(false)),
-      ],
-    );
+    final Widget content = verb == 'clear'
+        ? Text('Find your $clearWhat for "$name" in your identity app and clear it.',
+            textAlign: TextAlign.center)
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Use your identity app to block this key', textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              JsonQrDisplay(identityJson, interpret: ValueNotifier(false)),
+            ],
+          );
 
     return Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
