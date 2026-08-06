@@ -196,9 +196,15 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
               children: [
                 TrustSettingsBar.forModel(model),
                 Expanded(
-                  child: empty
-                      ? const Center(child: Text('No nodes to display in this context.'))
-                      : _buildGraph(),
+                  child: Stack(
+                    children: [
+                      empty
+                          ? const Center(
+                              child: Text('No nodes to display in this context.'))
+                          : _buildGraph(),
+                      if (widget.controller.loading) _buildProgressOverlay(),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -229,6 +235,43 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       ),
     );
   }
+
+  /// Load progress, floating over the top of the canvas. The content view
+  /// makes room for its copy in the column; here it overlays, so neither the
+  /// graph nor the control pills shift as it comes and goes.
+  Widget _buildProgressOverlay() => Positioned(
+        top: 0,
+        left: 0,
+        right: 0,
+        child: IgnorePointer(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ValueListenableBuilder<double>(
+                valueListenable: widget.controller.progress,
+                builder: (context, p, _) => LinearProgressIndicator(value: p),
+              ),
+              ValueListenableBuilder<String?>(
+                valueListenable: widget.controller.loadingMessage,
+                builder: (context, msg, _) => msg == null
+                    ? const SizedBox.shrink()
+                    : Container(
+                        color: Theme.of(context).canvasColor.withOpacity(0.8),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        child: Text(
+                          msg,
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.copyWith(fontSize: 10),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      );
 
   /// Translucent rounded backing for controls floating over the canvas.
   Widget _pill(BuildContext context, List<Widget> children) => Container(
