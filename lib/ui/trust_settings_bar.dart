@@ -7,6 +7,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/logic/follow_logic.dart'
     show kFollowContextIdentity, kFollowContextNerdster;
 import 'package:nerdster/logic/labeler.dart';
+import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/sign_in_widget.dart';
 
 class TrustSettingsBar extends StatelessWidget {
@@ -22,6 +23,18 @@ class TrustSettingsBar extends StatelessWidget {
     required this.activeContexts,
     required this.labeler,
   });
+
+  /// The bar as every view wants it: fed from [model] (null until first load),
+  /// padded to sit at the top of the page.
+  static Widget forModel(FeedModel? model) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: TrustSettingsBar(
+          availableIdentities: model?.trustGraph.orderedKeys ?? [],
+          availableContexts: model?.availableContexts ?? [],
+          activeContexts: model?.activeContexts ?? {},
+          labeler: model?.labeler ?? Labeler(TrustGraph(pov: IdentityKey(''))),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {

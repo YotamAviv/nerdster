@@ -7,9 +7,9 @@ import 'package:nerdster/logic/fan_algorithm.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 
 import 'package:nerdster/logic/follow_logic.dart';
+import 'package:nerdster/ui/feed_menu.dart';
 import 'package:nerdster/ui/trust_settings_bar.dart';
 import 'package:nerdster/ui/dialogs/node_details.dart';
-import 'package:nerdster/logic/labeler.dart';
 
 class NerdyGraphView extends StatefulWidget {
   final FeedController controller;
@@ -93,7 +93,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
     // FanAlgorithm expects the key of the root node.
     _algorithm = FanAlgorithm(
       rootId: rootId,
-      levelSeparation: 200,
+      levelSeparation: 160,
       pinnedNodes: _pinnedNodes,
     );
   }
@@ -186,41 +186,7 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
   @override
   Widget build(BuildContext context) {
     final FeedModel? model = widget.controller.value;
-    if (model == null || _data == null || _data!.nodes.isEmpty) {
-      return Scaffold(
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  _buildTrustSettingsBar(model),
-                  const Expanded(
-                    child: Center(child: Text('No nodes to display in this context.')),
-                  ),
-                ],
-              ),
-              Positioned(
-                top: 54,
-                left: 4,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).canvasColor.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.arrow_back, color: Colors.blue),
-                    onPressed: () => Navigator.of(context).pop(),
-                    tooltip: 'Back',
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    final bool empty = model == null || _data == null || _data!.nodes.isEmpty;
 
     return Scaffold(
       body: SafeArea(
@@ -228,69 +194,72 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
           children: [
             Column(
               children: [
-                _buildTrustSettingsBar(model),
+                TrustSettingsBar.forModel(model),
                 Expanded(
-                  child: InteractiveViewer(
-                    key: ValueKey(_graphController!.povIdentity.value + _layoutVersion.toString()),
-                    transformationController: _transformationController,
-                    constrained: false,
-                    boundaryMargin: const EdgeInsets.all(500),
-                    minScale: 0.01,
-                    maxScale: 5.6,
-                    child: GraphView(
-                      key: ValueKey(_graphController!.povIdentity.value + _layoutVersion.toString()),
-                      graph: _graph,
-                      algorithm: _algorithm,
-                      paint: Paint()
-                        ..color = Colors.black
-                        ..strokeWidth = 1
-                        ..style = PaintingStyle.stroke,
-                      builder: (Node node) => _buildNodeWidget(node),
-                    ),
-                  ),
+                  child: empty
+                      ? const Center(child: Text('No nodes to display in this context.'))
+                      : _buildGraph(),
                 ),
               ],
             ),
+            // Floating rather than a toolbar row, to leave the canvas whole.
             Positioned(
               top: 54,
               left: 4,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).canvasColor.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: IconButton(
+              child: _pill(context, [
+                IconButton(
                   padding: EdgeInsets.zero,
                   visualDensity: VisualDensity.compact,
                   icon: const Icon(Icons.arrow_back, color: Colors.blue),
                   onPressed: () => Navigator.of(context).pop(),
                   tooltip: 'Back',
                 ),
-              ),
+              ]),
+            ),
+            Positioned(
+              top: 54,
+              right: 4,
+              child: _pill(context, [
+                FeedRefreshButton(widget.controller),
+                FeedMenuButton(widget.controller, contentEnabled: false),
+              ]),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.center_focus_strong),
-        onPressed: () {
-          setState(() {
-            _transformationController.value = Matrix4.identity();
-            _refreshGraph();
-          });
-        },
-      ),
     );
   }
 
-  Widget _buildTrustSettingsBar(FeedModel? model) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
-      child: TrustSettingsBar(
-        availableIdentities: model?.trustGraph.orderedKeys ?? [],
-        availableContexts: model?.availableContexts ?? [],
-        activeContexts: model?.activeContexts ?? {},
-        labeler: model?.labeler ?? Labeler(TrustGraph(pov: IdentityKey(''))),
+  /// Translucent rounded backing for controls floating over the canvas.
+  Widget _pill(BuildContext context, List<Widget> children) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).canvasColor.withOpacity(0.8),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: children),
+      );
+
+  Widget _buildGraph() {
+    final String viewKey = _graphController!.povIdentity.value + _layoutVersion.toString();
+    return InteractiveViewer(
+      key: ValueKey(viewKey),
+      transformationController: _transformationController,
+      constrained: false,
+      boundaryMargin: const EdgeInsets.all(500),
+      minScale: 0.01,
+      maxScale: 5.6,
+      child: GraphView(
+        key: ValueKey(viewKey),
+        graph: _graph,
+        algorithm: _algorithm,
+        // Nodes paint at their laid-out position. Animated, they lerp toward it
+        // and drags trail the cursor.
+        animated: false,
+        paint: Paint()
+          ..color = Colors.black
+          ..strokeWidth = 1
+          ..style = PaintingStyle.stroke,
+        builder: (Node node) => _buildNodeWidget(node),
       ),
     );
   }
@@ -345,13 +314,17 @@ class _NerdyGraphViewState extends State<NerdyGraphView> {
       behavior: HitTestBehavior.translucent,
       onPanUpdate: (details) {
         if (identity.value.startsWith('...')) return;
-        final Matrix4 transform = _transformationController.value;
-        final double scale = transform.getMaxScaleOnAxis();
 
-        // Update the specific node's position in the pinned set
-        final currentPos = Offset(node.x, node.y);
-        final newPos = currentPos + details.delta / scale;
-        _pinnedNodes[identity.value] = newPos;
+        // Accumulate onto the pin, not onto node.x/node.y: the laid-out
+        // position only catches up once per frame, so pointer events arriving
+        // within the same frame would each read the same stale position and
+        // overwrite one another, dropping all but the last delta.
+        //
+        // details.delta is already in the local (scene) space of this detector,
+        // which sits inside the InteractiveViewer's transform — no scaling here.
+        final Offset from =
+            _pinnedNodes[identity.value] ?? Offset(node.x, node.y);
+        _pinnedNodes[identity.value] = from + details.delta;
 
         setState(() {
           // Update algorithm to respect new pin

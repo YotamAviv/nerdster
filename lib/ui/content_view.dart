@@ -1,9 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nerdster/about.dart';
 import 'package:nerdster/app.dart';
-import 'package:nerdster/dev/just_sign.dart';
 import 'package:nerdster/dev/nerdster_menu.dart';
 import 'package:nerdster/models/content_types.dart';
 import 'package:nerdster/nerdster_link.dart';
@@ -12,10 +10,10 @@ import 'package:nerdster/settings/setting_type.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/content_card.dart';
 import 'package:nerdster/ui/tag_dropdown.dart';
-import 'package:nerdster/ui/util/my_checkbox.dart';
+import 'package:nerdster/ui/feed_menu.dart';
+import 'package:nerdster/ui/util_ui.dart';
 import 'package:nerdster/logic/feed_controller.dart';
 import 'package:nerdster/ui/graph_view.dart';
-import 'package:nerdster/logic/labeler.dart';
 import 'package:nerdster/models/model.dart';
 import 'package:nerdster/ui/notifications_menu.dart';
 import 'package:nerdster/ui/dialogs/relate_dialog.dart';
@@ -209,7 +207,7 @@ class _ContentViewState extends State<ContentView> {
                   )
                 else
                   const SizedBox.shrink(),
-                _buildTrustSettingsBar(model),
+                TrustSettingsBar.forModel(model),
                 ValueListenableBuilder<bool>(
                   valueListenable: _headerVisible,
                   builder: (context, visible, _) {
@@ -249,7 +247,7 @@ class _ContentViewState extends State<ContentView> {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Row(
         children: [
-          // === LEFT: notifications, submit, share, refresh ===
+          // === LEFT: notifications, submit, share ===
           if (NotificationsMenu.shouldShow(model))
             MenuBar(
               style: const MenuStyle(
@@ -297,14 +295,6 @@ class _ContentViewState extends State<ContentView> {
                   }
                 }
               },
-            ),
-          ),
-          Tooltip(
-            message: 'Refresh',
-            child: IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.blue),
-              visualDensity: VisualDensity.compact,
-              onPressed: () => _controller.refresh(),
             ),
           ),
           Expanded(
@@ -450,137 +440,10 @@ class _ContentViewState extends State<ContentView> {
             ),
           ),
 
-          // === RIGHT: hamburger menu ===
-          MenuAnchor(
-            builder: (context, menuController, _) => IconButton(
-              icon: const Icon(Icons.menu),
-              visualDensity: VisualDensity.compact,
-              tooltip: 'Menu',
-              onPressed: () => menuController.isOpen
-                  ? menuController.close()
-                  : menuController.open(),
-            ),
-            menuChildren: [
-              MenuItemButton(
-                leadingIcon: Icon(
-                  _controller.filterMode == DisFilterMode.my
-                      ? Icons.check_box
-                      : Icons.check_box_outline_blank,
-                  color: Colors.brown,
-                  size: 20,
-                ),
-                child: const Text("Hide dismissed"),
-                onPressed: () {
-                  _controller.filterMode =
-                      _controller.filterMode == DisFilterMode.my
-                          ? DisFilterMode.ignore
-                          : DisFilterMode.my;
-                },
-              ),
-              MenuItemButton(
-                leadingIcon: Icon(
-                  _controller.enableCensorship
-                      ? Icons.check_box
-                      : Icons.check_box_outline_blank,
-                  color: Colors.red,
-                  size: 20,
-                ),
-                child: const Text("Filter censored"),
-                onPressed: () => _controller.enableCensorship =
-                    !_controller.enableCensorship,
-              ),
-              const Divider(),
-              ValueListenableBuilder<String>(
-                valueListenable:
-                    Setting.get<String>(SettingType.identityPathsReq).notifier,
-                builder: (context, current, _) {
-                  final (IconData icon, Color color) = switch (current) {
-                    'permissive' => (Icons.shield_outlined, Colors.green),
-                    'strict' => (Icons.security, Colors.red),
-                    _ => (Icons.shield_sharp, Colors.blue),
-                  };
-                  return SubmenuButton(
-                    menuChildren:
-                        ['permissive', 'standard', 'strict'].map((val) {
-                      return MenuItemButton(
-                        closeOnActivate: false,
-                        onPressed: () =>
-                            Setting.get<String>(SettingType.identityPathsReq)
-                                .value = val,
-                        trailingIcon:
-                            current == val ? const Icon(Icons.check) : null,
-                        child: Text(val),
-                      );
-                    }).toList(),
-                    child: Row(children: [
-                      Icon(icon, color: color),
-                      const SizedBox(width: 8),
-                      const Text('Identity strictness'),
-                    ]),
-                  );
-                },
-              ),
-              const Divider(),
-              MyCheckbox(Setting.get<bool>(SettingType.showCrypto).notifier,
-                  'Show Crypto',
-                  alwaysShowTitle: true),
-              MyCheckbox(
-                  Setting.get<bool>(SettingType.lgtm).notifier, 'Show FYI',
-                  alwaysShowTitle: true),
-              const Divider(),
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.border_color),
-                child: const Text('Just Sign'),
-                onPressed: () => JustSign.sign(context),
-              ),
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.verified_user),
-                child: const Text('Just Verify'),
-                onPressed: () async {
-                  await showDialog(
-                    context: context,
-                    builder: (context) => Dialog(
-                      child: Navigator(
-                        onGenerateRoute: (settings) =>
-                            MaterialPageRoute(builder: (_) => Verify()),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const Divider(),
-              MenuItemButton(
-                leadingIcon: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: Image.asset('assets/images/nerd.png'),
-                ),
-                child: const Text('About'),
-                onPressed: () => About.show(context),
-              ),
-              if (Setting.get<bool>(SettingType.dev).value) ...[
-                const Divider(),
-                MenuItemButton(
-                  leadingIcon: const Icon(Icons.timer_outlined),
-                  child: const Text('Benchmark seeding'),
-                  onPressed: () => _controller.runBenchmark(context),
-                ),
-              ],
-            ],
-          ),
+          // === RIGHT: refresh, hamburger menu ===
+          FeedRefreshButton(_controller),
+          FeedMenuButton(_controller),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTrustSettingsBar(FeedModel? model) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 0.0),
-      child: TrustSettingsBar(
-        availableIdentities: model?.trustGraph.orderedKeys ?? [],
-        availableContexts: model?.availableContexts ?? [],
-        activeContexts: model?.activeContexts ?? {},
-        labeler: model?.labeler ?? Labeler(TrustGraph(pov: IdentityKey(''))),
       ),
     );
   }
@@ -704,10 +567,19 @@ void _showShareDialog(BuildContext context, String link) {
                 ),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                child: SelectableText(
-                  link,
-                  style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-                  maxLines: 4,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: SelectableText(
+                    link,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                      color: linkColor,
+                      decoration: TextDecoration.underline,
+                    ),
+                    maxLines: 4,
+                    onTap: () => myLaunchUrl(link),
+                  ),
                 ),
               ),
             ],

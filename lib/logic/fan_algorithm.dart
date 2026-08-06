@@ -9,7 +9,7 @@ class FanAlgorithm extends Algorithm {
 
   FanAlgorithm({
     required this.rootId,
-    this.levelSeparation = 200,
+    this.levelSeparation = 160,
     this.pinnedNodes,
     EdgeRenderer? edgeRenderer,
   }) {
@@ -61,12 +61,24 @@ class FanAlgorithm extends Algorithm {
     _layoutFan(rootNode, adjacency, positions, visited, nodeDepths, 0, pi / 2, shiftX, shiftY);
 
     // Assign positions to nodes and calculate bounding box
-    double minX = double.infinity;
-    double minY = double.infinity;
     double maxX = double.negativeInfinity;
     double maxY = double.negativeInfinity;
 
-    const double margin = 100.0;
+    // The fan only ever grows right and down from the root (angles 0..pi/2),
+    // so the root sits hard against the left edge, just clear of the floating
+    // back button. Dead space above and left of it is space a phone can't
+    // spare.
+    const double originX = 8.0;
+    const double originY = 52.0;
+    const double trailingMargin = 100.0;
+
+    // Unreachable nodes go in a column below the fan — nothing may sit left of
+    // the root now that it's flush with the edge.
+    double unreachableY = 0;
+    for (final pos in positions.values) {
+      unreachableY = max(unreachableY, pos.dy);
+    }
+    unreachableY += 100;
     int unreachableCount = 0;
 
     for (final node in graph.nodes) {
@@ -74,8 +86,6 @@ class FanAlgorithm extends Algorithm {
         final pinned = pinnedNodes![node.key!.value.toString()]!;
         node.x = pinned.dx;
         node.y = pinned.dy;
-        minX = min(minX, node.x);
-        minY = min(minY, node.y);
         maxX = max(maxX, node.x);
         maxY = max(maxY, node.y);
         continue;
@@ -85,20 +95,17 @@ class FanAlgorithm extends Algorithm {
       if (positions.containsKey(node)) {
         pos = positions[node]!;
       } else {
-        // Place unreachable nodes in a vertical line to the left or right
-        pos = Offset(shiftX - 150, shiftY + (unreachableCount + 1) * 100);
+        pos = Offset(shiftX, unreachableY + unreachableCount * 100);
         unreachableCount++;
       }
 
-      node.x = pos.dx + margin;
-      node.y = pos.dy + margin;
-      minX = min(minX, node.x);
-      minY = min(minY, node.y);
+      node.x = pos.dx + originX;
+      node.y = pos.dy + originY;
       maxX = max(maxX, node.x);
       maxY = max(maxY, node.y);
     }
 
-    return Size(maxX + margin, maxY + margin);
+    return Size(maxX + trailingMargin, maxY + trailingMargin);
   }
 
   void _layoutFan(
