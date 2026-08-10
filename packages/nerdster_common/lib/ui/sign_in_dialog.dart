@@ -595,7 +595,9 @@ class _MagicLinkDialogState extends State<MagicLinkDialog> {
   void initState() {
     super.initState();
     _initSession();
-    _timer = Timer(const Duration(seconds: 10), () {
+    // Cosmetic only: swaps the spinner for the troubleshooting explanation. The Firestore
+    // listener keeps running; a slow (cold start) identity app still completes sign-in.
+    _timer = Timer(const Duration(seconds: 25), () {
       if (!mounted) return;
       setState(() => _showExplanation = true);
       widget.onTimeout?.call();
