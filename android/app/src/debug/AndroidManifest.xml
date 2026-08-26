@@ -4,4 +4,10 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Integration tests talk to the local Firebase emulators over plain HTTP
+         (http://10.0.2.2:5001 for functions). Android 9+ blocks cleartext by
+         default, which surfaces as [firebase_functions/unavailable] rather than
+         anything mentioning TLS. Debug-only: the release manifest is unaffected. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
