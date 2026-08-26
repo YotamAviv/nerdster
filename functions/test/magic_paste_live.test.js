@@ -4,6 +4,26 @@ const fs = require('fs');
 const path = require('path');
 const { parseUrlMetadata } = require('../url_metadata_parser');
 
+// Firebase loads functions/.env automatically at runtime, but `node --test` does
+// not, and dotenv isn't a dependency. The IMDb case resolves through TMDB and
+// needs TMDB_API_KEY, so load .env here by hand. Missing file is not fatal —
+// the IMDb test will report the missing key rather than a confusing parse failure.
+(function loadDotEnv() {
+  try {
+    const envPath = path.join(__dirname, '..', '.env');
+    for (const line of fs.readFileSync(envPath, 'utf8').split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eq = trimmed.indexOf('=');
+      if (eq <= 0) continue;
+      const key = trimmed.slice(0, eq).trim();
+      if (!(key in process.env)) process.env[key] = trimmed.slice(eq + 1).trim();
+    }
+  } catch (e) {
+    // No .env — see MOVIE_API_KEYS.md for how to recreate it.
+  }
+})();
+
 describe('Magic Paste Live Network Integrations', () => {
 
   // Load the shared test cases JSON

@@ -4,16 +4,16 @@
     "expectedContentType": "movie",
     "expectedTitle": "The Matrix",
     "expectedYear": "1999",
-    "expectSuccess": false,
-    "note": "IMDb blocks direct HTTP and cloud function fetches (bot detection) — unreliable"
+    "expectSuccess": true,
+    "note": "IMDb blocks scraping (HTTP 202 bot interstitial); resolved via TMDB find-by-imdb_id. Needs TMDB_API_KEY in functions/.env."
   },
   {
     "url": "https://www.goodreads.com/book/show/131791.The_Deer_Park",
     "expectedContentType": "book",
     "expectedTitle": "The Deer Park",
     "expectedAuthor": "Norman Mailer",
-    "expectSuccess": true,
-    "note": "Goodreads book page"
+    "expectSuccess": false,
+    "note": "Goodreads book page. FLAKY: Goodreads rate-limits scrapers and then serves a bot challenge (HTTP 202, empty body), so title/author come back empty. contentType still resolves to \"book\" from the URL. Demoted to optional for the same reason as NYT and Stack Overflow."
   },
   {
     "url": "https://www.nytimes.com/2026/02/17/us/politics/trump-congress-budget-cuts.html",
