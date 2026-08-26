@@ -1,23 +1,31 @@
 const cheerio = require('cheerio');
 const { decode } = require('html-entities');
-const { extractTitle, extractImages } = require('./metadata_fetchers');
+const { extractTitle, extractImages, fetchTMDBByImdbId } = require('./metadata_fetchers');
 const { logger } = require("firebase-functions");
 
 // ---------------------------------------------------------------------------
-// DUAL IMPLEMENTATION WARNING
+// SECOND IMPLEMENTATION (no longer kept in lockstep)
 // This file implements URL metadata parsing (magicPaste) for the cloud function.
-// The same logic is implemented a second time in Dart for the native phone app:
+// It is THE live implementation: the web app at nerdster.org/app cannot fetch
+// arbitrary URLs directly (CORS), so the cloud function fetches server-side.
+//
+// A second, older implementation exists in Dart:
 //   lib/logic/metadata_service.dart  (_magicPasteDirect and helpers)
+// It was written for the native Android/iOS apps, which could fetch directly (no
+// CORS) and so skipped the cloud function for speed and cost.
 //
-// Why two implementations?
-//   - Web: CORS prevents the browser from fetching arbitrary URLs directly, so
-//     the cloud function fetches server-side and returns the parsed metadata.
-//   - Native (Android/iOS): No CORS restriction; the phone fetches directly via
-//     HTTP, bypassing the cloud function for speed and cost.
+// Those native apps have been abandoned — Apple won't approve the app (user
+// generated content), and there are no users to serve. The Dart copy is kept
+// (it still works, and the native path may come back), but it is no longer the
+// primary and it is expected to lag this file.
 //
-// If you change the parsing logic here (JSON-LD handling, OpenGraph fallbacks,
-// content-type inference, year extraction, etc.), update the Dart counterpart
-// too, and vice versa.
+// The two are now intentionally asymmetric, not merely out of sync. The IMDb
+// path below resolves titles through TMDB using TMDB_API_KEY, a server-side
+// secret from functions/.env. That cannot be mirrored client-side without
+// shipping the key in the app, so the Dart copy cannot have this feature.
+//
+// If you change parsing logic here, porting to Dart is optional — but say so in
+// a comment when you skip it, so the divergence stays deliberate.
 // ---------------------------------------------------------------------------
 
 /**
@@ -50,6 +58,29 @@ async function parseUrlMetadata(url, html) {
     } catch (e) {
       logger.warn(`[parseUrlMetadata] YouTube oEmbed failed: ${e.message}`);
     }
+  }
+
+  // IMDb: resolve via TMDB's find-by-external-id instead of scraping.
+  // imdb.com serves a bot-challenge interstitial to server-side fetches (HTTP 202,
+  // empty <title>, no JSON-LD), so the HTML path below can never recover a title
+  // for these URLs. The tt-id in the path is a primary key on TMDB.
+  const imdbMatch = url.match(/imdb\.com\/title\/(tt\d+)/i);
+  if (imdbMatch) {
+    const found = await fetchTMDBByImdbId(imdbMatch[1]);
+    if (found && found.title) {
+      return {
+        // No 'show' in ContentType; a tt id may be TV, but 'movie' is the safe default
+        // (same assumption inferContentType() already makes for imdb.com/title/).
+        contentType: 'movie',
+        title: found.title,
+        titleSource: 'tmdb',
+        titleConfidence: computeTitleConfidence(found.title, 'tmdb', url),
+        year: found.year,
+        image: found.image,
+        canonicalUrl: url,
+      };
+    }
+    logger.warn(`[parseUrlMetadata] TMDB lookup failed for ${url}; falling through to HTML.`);
   }
 
   if (!html) {
@@ -229,6 +260,7 @@ function computeTitleConfidence(title, source, url) {
     case 'jsonld':
     case 'opengraph':
     case 'oembed':
+    case 'tmdb':
       return 'high';
     case 'htmlTitle':
       return 'low';
@@ -334,6 +366,16 @@ function processJsonLdItem(item, metadata) {
 }
 
 /**
+ * True when parseUrlMetadata resolves this URL from an API rather than the page
+ * HTML (YouTube via oEmbed, IMDb via TMDB). Callers can skip fetching the page
+ * entirely — which also avoids a pointless request to a host that blocks us.
+ */
+function resolvesWithoutHtml(url) {
+  return /imdb\.com\/title\/tt\d+/i.test(url) ||
+    url.includes('youtube.com') || url.includes('youtu.be');
+}
+
+/**
  * Infers content type from URL or OpenGraph if JSON-LD failed specifically.
  */
 function inferContentType(url, metadata) {
@@ -350,4 +392,4 @@ function inferContentType(url, metadata) {
   return 'article'; // Fallback
 }
 
-module.exports = { parseUrlMetadata };
+module.exports = { parseUrlMetadata, inferContentType, resolvesWithoutHtml };

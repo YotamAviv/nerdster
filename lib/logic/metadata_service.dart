@@ -359,19 +359,29 @@ Future<String?> _fetchFromWikipedia(String title, String contentType) async {
 // ---------------------------------------------------------------------------
 // magicPaste helpers — direct HTTP implementation for non-web platforms.
 //
-// DUAL IMPLEMENTATION WARNING
+// DORMANT SECOND IMPLEMENTATION — the JS copy is authoritative.
 // This is the Dart port of the cloud function logic in:
 //   functions/url_metadata_parser.js  (parseUrlMetadata and helpers)
 //
-// Why two implementations?
-//   - Web: CORS prevents the browser from fetching arbitrary URLs directly, so
-//     the cloud function fetches server-side and returns the parsed metadata.
-//   - Native (Android/iOS): No CORS restriction; the phone fetches directly via
-//     HTTP, bypassing the cloud function for speed and cost.
+// It exists because the native Android/iOS apps had no CORS restriction and
+// could fetch URLs directly, skipping the cloud function for speed and cost.
+// Web has to use the cloud function (CORS), so that copy runs for every user.
 //
-// If you change the parsing logic here (JSON-LD handling, OpenGraph fallbacks,
-// content-type inference, year extraction, etc.), update the JS counterpart
-// too, and vice versa.
+// The native apps have been abandoned — Apple won't approve the app (user
+// generated content), and there are no users to serve. This code is kept
+// deliberately: it still works, and the native path may come back. But it is
+// no longer the primary, and it is expected to lag the JS copy.
+//
+// The two are now intentionally asymmetric, not merely out of sync. The JS copy
+// resolves imdb.com/title/ URLs through TMDB (imdb.com serves a bot-challenge
+// interstitial to server-side fetches, so scraping it yields nothing). That
+// lookup needs TMDB_API_KEY, a server-side secret — it must not be shipped in a
+// client, so this file cannot have that feature. Native currently falls back to
+// the cloud function whenever the direct fetch returns an empty or error-looking
+// title, which is exactly what IMDb produces, so native still gets the right
+// answer via that path.
+//
+// Before porting anything here, check whether it is worth it at all.
 // ---------------------------------------------------------------------------
 
 /// Fetches URL metadata directly via HTTP (no cloud function).

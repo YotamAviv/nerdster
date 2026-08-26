@@ -339,12 +339,55 @@ async function fetchFromTMDB(title, year = "") {
   return [];
 }
 
+/**
+ * Looks a title up on TMDB by its IMDb id (e.g. "tt0053604").
+ *
+ * IMDb serves a bot-challenge interstitial to server-side fetches (HTTP 202, no
+ * <title>, no JSON-LD), so scraping an imdb.com/title/ URL yields nothing. The
+ * IMDb id in the URL is a primary key on TMDB, so we can resolve title/year/poster
+ * without touching imdb.com at all.
+ *
+ * Returns { title, year, image } or null (no key, no match, or request failed).
+ */
+async function fetchTMDBByImdbId(imdbId) {
+  const apiKey = process.env.TMDB_API_KEY;
+  if (!apiKey || !imdbId) return null;
+
+  logger.info(`[TMDB] Resolving IMDb id: ${imdbId}`);
+  try {
+    const url = `https://api.themoviedb.org/3/find/${encodeURIComponent(imdbId)}` +
+      `?api_key=${apiKey}&external_source=imdb_id`;
+    const data = await fetchJson(url, { timeout: 5000 }, '[TMDB]');
+
+    // A tt id may resolve to a film or to a TV title; prefer whichever came back.
+    const movie = (data.movie_results || [])[0];
+    const tv = (data.tv_results || [])[0];
+    const hit = movie || tv;
+    if (!hit) {
+      logger.info(`[TMDB] No result for IMDb id ${imdbId}`);
+      return null;
+    }
+
+    const date = hit.release_date || hit.first_air_date || '';
+    return {
+      title: hit.title || hit.name || null,
+      year: date.slice(0, 4) || null,
+      image: hit.poster_path ? `https://image.tmdb.org/t/p/w1280${hit.poster_path}` : null,
+      isTv: !movie && !!tv,
+    };
+  } catch (e) {
+    logger.error(`[TMDB] IMDb-id lookup error: ${e.message}`);
+  }
+  return null;
+}
+
 module.exports = {
   fetchFromOpenLibrary,
   fetchFromWikipedia,
   fetchFromYouTube,
   fetchFromOMDb,
   fetchFromTMDB,
+  fetchTMDBByImdbId,
   extractTitle,
   extractImages
 };

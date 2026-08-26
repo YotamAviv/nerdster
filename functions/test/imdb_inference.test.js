@@ -4,17 +4,27 @@ const { parseUrlMetadata } = require('../url_metadata_parser');
 
 describe('IMDb Inference', () => {
     test('Should infer "movie" from IMDb URL even without JSON-LD', async () => {
+        // This test pins the HTML-scraping fallback, so it must run with the TMDB
+        // lookup disabled. parseUrlMetadata resolves imdb.com/title/ URLs through
+        // TMDB when TMDB_API_KEY is set, which would return "The Matrix" rather
+        // than the scraped "The Matrix (1999) - IMDb" asserted below.
+        const savedKey = process.env.TMDB_API_KEY;
+        delete process.env.TMDB_API_KEY;
+        try {
         // Minimal HTML with just a title, NO JSON-LD
         const html = `<html><head><title>The Matrix (1999) - IMDb</title></head></html>`;
         const url = 'https://www.imdb.com/title/tt0133093/';
-        
+
         const metadata = await parseUrlMetadata(url, html);
-        
+
         assert.strictEqual(metadata.contentType, 'movie');
         // It might extract year from title if the logic is there?
         // Let's check if my previous read of url_metadata_parser.js showed year extraction from title.
         // Yes: "Fallback Year extraction from Title (e.g. "The Matrix (1999)")"
         assert.strictEqual(metadata.year, '1999');
         assert.strictEqual(metadata.title, 'The Matrix (1999) - IMDb');
+        } finally {
+            if (savedKey !== undefined) process.env.TMDB_API_KEY = savedKey;
+        }
     });
 });
