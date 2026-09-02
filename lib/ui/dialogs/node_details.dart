@@ -683,49 +683,68 @@ class _NodeDetailsState extends State<NodeDetails> {
                   labeler.delegateResolver?.getConstraintForDelegate(DelegateKey(d)) != null;
               final status = isRevoked ? KeyStatus.revoked : KeyStatus.active;
 
+              // The statement in which this identity delegated this key. It is
+              // what the shield shows, and it is the link that makes the chain
+              // complete: Tom vouched for the identity, the identity signed this
+              // delegation, and this delegate signed the content.
+              final delegateStatement =
+                  labeler.delegateResolver?.getStatementForDelegate(DelegateKey(d));
+
               return Builder(builder: (context) {
                 TapDownDetails? tapDetails;
-                return Align(
-                  alignment: Alignment.centerLeft,
-                  child: InkWell(
-                    onTapDown: (details) => tapDetails = details,
-                    onTap: () {
-                      final domain = labeler.delegateResolver
-                          ?.getDomainForDelegate(DelegateKey(d));
-                      final isHablo = domain == 'hablotengo.com';
-                      final baseUrl = isHablo
-                          ? FirebaseConfig.resolveUrl('https://export.hablotengo.com')
-                          : FirebaseConfig.contentUrl;
-                      final specOverride =
-                          isHablo ? '${d}_${widget.identity.value}' : null;
-                      KeyInfoView.show(context, d, baseUrl,
-                          details: tapDetails,
-                          source: widget.controller.contentSource,
-                          labeler: labeler,
-                          specOverride: specOverride,
-                          constraints: const BoxConstraints(maxWidth: 600));
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          KeyIcon(
-                            type: KeyType.delegate,
-                            status: status,
-                            presence: isMyDelegate ? KeyPresence.owned : KeyPresence.known,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(delegateLabel,
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: isRevoked ? Colors.grey : Colors.blue,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: Colors.blue)),
-                        ],
+                // The shield is a sibling of the InkWell, not inside it: nested,
+                // every tap on the shield would also open KeyInfoView behind it.
+                // The Spacer right-justifies it, as on the vouch and follow rows.
+                // Those use an Expanded around their text; here the content is a
+                // tap target, and expanding it would make the whole row width
+                // open KeyInfoView.
+                return Row(
+                  children: [
+                    InkWell(
+                      onTapDown: (details) => tapDetails = details,
+                      onTap: () {
+                        final domain = labeler.delegateResolver
+                            ?.getDomainForDelegate(DelegateKey(d));
+                        final isHablo = domain == 'hablotengo.com';
+                        final baseUrl = isHablo
+                            ? FirebaseConfig.resolveUrl('https://export.hablotengo.com')
+                            : FirebaseConfig.contentUrl;
+                        final specOverride =
+                            isHablo ? '${d}_${widget.identity.value}' : null;
+                        KeyInfoView.show(context, d, baseUrl,
+                            details: tapDetails,
+                            source: widget.controller.contentSource,
+                            labeler: labeler,
+                            specOverride: specOverride,
+                            constraints: const BoxConstraints(maxWidth: 600));
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            KeyIcon(
+                              type: KeyType.delegate,
+                              status: status,
+                              presence: isMyDelegate ? KeyPresence.owned : KeyPresence.known,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(delegateLabel,
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: isRevoked ? Colors.grey : Colors.blue,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: Colors.blue)),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                    const Spacer(),
+                    CryptoShieldButton(
+                        json: delegateStatement?.json,
+                        labeler: labeler,
+                        label: 'Delegation statement'),
+                  ],
                 );
               });
             }),

@@ -12,6 +12,11 @@ class DelegateResolver {
   final Map<DelegateKey, String> _delegateToDomain = {};
   final Map<IdentityKey, List<DelegateKey>> _identityToDelegates = {};
   final Map<DelegateKey, String> _delegateConstraints = {}; // delegateKey -> revokeAtToken
+  /// The delegate statement that won each key -- the signed statement in which an
+  /// identity key delegated it. Kept, rather than reduced to the facts above, so
+  /// the UI can show the delegation itself: it is the link in the signature chain
+  /// between an identity and the statements its delegate signed.
+  final Map<DelegateKey, TrustStatement> _delegateStatements = {};
   /// Tracks which identities have had their delegates resolved from the TrustGraph.
   /// Note that _identityToDelegates contains only those identities that actually have delegates.
   /// If an identity has no delegates, it will be in this set but not in _identityToDelegates.
@@ -56,6 +61,7 @@ class DelegateResolver {
       if (!_delegateToIdentity.containsKey(delegateKey)) {
         _delegateToIdentity[delegateKey] = identity;
         _delegateToDomain[delegateKey] = s.domain ?? 'unknown';
+        _delegateStatements[delegateKey] = s;
         _identityToDelegates.putIfAbsent(identity, () => []).add(delegateKey);
       } else if (_delegateToIdentity[delegateKey] != identity) {
         notifications.add(TrustNotification(
@@ -83,6 +89,14 @@ class DelegateResolver {
   /// Returns the revocation constraint (revokeAt token) for a given delegate key.
   String? getConstraintForDelegate(DelegateKey token) {
     return _delegateConstraints[token];
+  }
+
+  /// Returns the signed statement in which an identity key delegated this key.
+  /// Null if the token is not a recognized delegate, or if its identity has not
+  /// been resolved yet -- resolution is lazy, so callers that have a delegate
+  /// list in hand have already triggered it.
+  TrustStatement? getStatementForDelegate(DelegateKey token) {
+    return _delegateStatements[token];
   }
 
   /// Returns all delegate keys authorized by the given canonical identity.

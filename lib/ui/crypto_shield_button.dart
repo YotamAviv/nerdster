@@ -9,11 +9,23 @@ import 'package:nerdster/settings/setting_type.dart';
 
 /// Shield icon that shows a JsonDisplay popup on tap and a JsonQrDisplay popup
 /// on double-tap. Hidden when showCrypto is false.
+///
+/// [label] names what the shield will show. It is a Tooltip, so it is both the
+/// long-press hint and the button's only accessible name -- the button is
+/// otherwise a bare Icon, which reaches the semantics tree unnamed and so cannot
+/// be found by anything driving the app from outside, screen readers and the
+/// intro-video shoot scripts alike. Pass something specific where several
+/// shields sit on one screen; the default suits a lone one.
 class CryptoShieldButton extends StatelessWidget {
   final Json? json;
   final Labeler labeler;
+  final String label;
 
-  const CryptoShieldButton({super.key, required this.json, required this.labeler});
+  const CryptoShieldButton(
+      {super.key,
+      required this.json,
+      required this.labeler,
+      this.label = 'Signed statement'});
 
   @override
   Widget build(BuildContext context) {
@@ -107,9 +119,13 @@ class CryptoShieldButton extends StatelessWidget {
                 ),
               );
             },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4.0),
-              child: Icon(Icons.verified_user_outlined, size: 16, color: Colors.blue),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Tooltip(
+                message: label,
+                child: const Icon(Icons.verified_user_outlined,
+                    size: 16, color: Colors.blue),
+              ),
             ),
           );
         });

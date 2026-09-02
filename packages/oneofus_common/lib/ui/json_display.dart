@@ -8,7 +8,9 @@ abstract class Interpreter {
   dynamic interpret(dynamic d);
 }
 
-// Cycle order: interpreted → raw → token → interpreted
+// The button toggles between interpreted and raw only -- see _cycle(). `token`
+// is a mode the display can be BUILT in, but nothing cycles into it, and landing
+// on it from either of the others returns to interpreted.
 enum _DisplayMode { interpreted, raw, token }
 
 class JsonDisplay extends StatefulWidget {
