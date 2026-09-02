@@ -191,7 +191,12 @@ class _NodeDetailsState extends State<NodeDetails> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  CryptoShieldButton(json: myTrustStatement?.json, labeler: labeler),
+                  // Named: this screen can show several shields at once (each
+                  // follow row has one), and they are told apart by label.
+                  CryptoShieldButton(
+                      json: myTrustStatement?.json,
+                      labeler: labeler,
+                      label: 'Vouch statement'),
                   const SizedBox(width: 4),
                   Builder(builder: (context) {
                     final bool canAct = signInState.hasIdentity && signInState.identity.value != widget.identity.value;
