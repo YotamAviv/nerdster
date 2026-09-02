@@ -48,17 +48,26 @@ class KeyInfoView extends StatelessWidget {
     if (fireChoice != FireChoice.fake) {
       final params = <String, String>{'spec': specOverride ?? jsonEncode(jsonish.token)};
       final Uri uri = Uri.parse(baseUrl).replace(queryParameters: params);
-      return InkWell(
-        onTap: () => launchUrl(uri),
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            'Signed, Published Statements',
-            style: const TextStyle(
-              color: Colors.blue,
-              decoration: TextDecoration.underline,
+      // Named explicitly. An InkWell round a Text reaches Flutter's semantics
+      // tree with nothing findable on it, so this link could only be reached by
+      // guessing where it sits -- which breaks the moment the JSON above it is
+      // short enough to change the layout. It is a link, and it says so.
+      return Semantics(
+        link: true,
+        button: true,
+        label: 'Signed, Published Statements',
+        child: InkWell(
+          onTap: () => launchUrl(uri),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Signed, Published Statements',
+              style: const TextStyle(
+                color: Colors.blue,
+                decoration: TextDecoration.underline,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
         ),
       );
