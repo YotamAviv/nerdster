@@ -55,6 +55,14 @@ class KeyInfoView extends StatelessWidget {
       return Semantics(
         link: true,
         button: true,
+        // container: its OWN node, not merged into the parent's. Without this
+        // the label reaches the tree only as part of the whole dialog, whose
+        // centre is the middle of the QR code -- so anything driving the app by
+        // name finds it and taps the wrong place. excludeSemantics stops the
+        // child Text contributing the same string a second time, which had a
+        // screen reader saying it twice.
+        container: true,
+        excludeSemantics: true,
         label: 'Signed, Published Statements',
         child: InkWell(
           onTap: () => launchUrl(uri),
