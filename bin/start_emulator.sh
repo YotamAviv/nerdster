@@ -23,7 +23,7 @@ if [ "$EXPORT" = true ]; then
     firebase use nerdster
     gcloud config set project nerdster
     gcloud firestore export gs://nerdster/nerdster-$NOW
-    gsutil -m cp -r gs://nerdster/nerdster-$NOW exports/
+    gcloud storage cp -r gs://nerdster/nerdster-$NOW exports/
     IMPORT="exports/nerdster-$NOW"
 elif [ "$EMPTY" = true ]; then
     IMPORT=""

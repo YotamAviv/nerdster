@@ -10,6 +10,6 @@ echo "=== Exporting nerdster ==="
 firebase use nerdster
 gcloud config set project nerdster
 gcloud firestore export gs://nerdster/nerdster-$NOW
-gsutil -m cp -r gs://nerdster/nerdster-$NOW exports/
+gcloud storage cp -r gs://nerdster/nerdster-$NOW exports/
 
 echo "Export complete: exports/nerdster-$NOW"
