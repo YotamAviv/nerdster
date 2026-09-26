@@ -4,16 +4,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:oneofus_common/channel_factory.dart';
 import 'package:oneofus_common/crypto/crypto25519.dart';
+import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/oou_signer.dart';
 import 'package:oneofus_common/statement.dart';
 import 'package:oneofus_common/statement_source.dart';
 import 'package:oneofus_common/trust_statement.dart';
 
-/// A writer that blocks until [release] is called. Used to prove that push()
-/// completes (via local inject) before the network write finishes.
+/// A writer that blocks until [release] is called. Used to prove when push() completes
+/// relative to the network write.
 class _BlockingWriter implements StatementWriter<Statement> {
+  /// When false, [release] lets the write succeed instead of failing.
+  final bool failAfterRelease;
   final _gate = Completer<void>();
   bool callStarted = false;
+
+  _BlockingWriter({this.failAfterRelease = true});
 
   void release() => _gate.complete();
 
@@ -22,7 +27,10 @@ class _BlockingWriter implements StatementWriter<Statement> {
       {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed}) async {
     callStarted = true;
     await _gate.future;
-    throw StateError('_BlockingWriter: released but no real write');
+    if (failAfterRelease) throw StateError('_BlockingWriter: released but no real write');
+    final Json j = Map<String, dynamic>.from(json);
+    if (previous?.token != null) j['previous'] = previous!.token!;
+    return Statement.make(await Jsonish.makeSign(j, signer));
   }
 }
 
@@ -65,6 +73,60 @@ void main() {
     json['time'] = time.toUtc().toIso8601String();
     return channel.push(json, issuerSigner);
   }
+
+  group('optimisticWrites: false', () {
+    /// Rebuilds the factory with optimistic writes off. Mirrors the identity app, which
+    /// must tell the user whether each deliberate statement landed.
+    void useSynchronousFactory({required StatementWriter<Statement> writer}) {
+      channelFactory = ChannelFactory(FireChoice.fake, optimisticWrites: false);
+      channelFactory.register('example.com', firestore: firestore);
+      channelFactory.testWriterOverride = writer;
+    }
+
+    test('push() does not complete until the write lands', () async {
+      final writer = _BlockingWriter(failAfterRelease: false);
+      useSynchronousFactory(writer: writer);
+
+      final channel = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+      await channel.fetch({issuerToken: null});
+
+      bool done = false;
+      final Future<TrustStatement> future =
+          push(channel, subjectAKeyJson, verb: TrustVerb.delegate, time: DateTime(2024, 1, 1))
+              .then((s) {
+        done = true;
+        return s;
+      });
+
+      await pumpEventQueue();
+      expect(writer.callStarted, isTrue, reason: 'writer.push must have been called');
+      expect(done, isFalse, reason: 'push must not complete while the write is in-flight');
+
+      writer.release();
+      expect((await future).iToken, equals(issuerToken));
+    });
+
+    test('push() reports a failed write to the caller', () async {
+      final writer = _BlockingWriter(); // throws once released
+      useSynchronousFactory(writer: writer);
+      bool handlerCalled = false;
+      channelFactory.onWriteError = (_, __) async {
+        handlerCalled = true;
+      };
+
+      final channel = channelFactory.getChannel<TrustStatement>(_kExportUrl, 'statements');
+      await channel.fetch({issuerToken: null});
+
+      final Future<TrustStatement> future =
+          push(channel, subjectAKeyJson, verb: TrustVerb.delegate, time: DateTime(2024, 1, 1));
+
+      await pumpEventQueue();
+      writer.release();
+
+      await expectLater(future, throwsA(isA<StateError>()));
+      expect(handlerCalled, isTrue, reason: 'onWriteError still runs: sibling caches need cleanup');
+    });
+  });
 
   group('optimistic write semantics', () {
     test('push() completes after inject but before network write', () async {

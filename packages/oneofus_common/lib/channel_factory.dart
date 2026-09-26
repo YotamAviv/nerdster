@@ -51,11 +51,29 @@ class _Registration {
 /// same stream so the statement is immediately visible in all channels regardless of
 /// excludeTypes. Fanout is skipped for a sibling that has not yet fetched the issuer
 /// (no fetch-to-satisfy) and for statement types that are excluded by the sibling.
+///
+/// ## Optimistic writes
+///
+/// By default [push] returns as soon as the statement is signed and injected locally, and
+/// the network write finishes in the background — a UI that must stay responsive under
+/// rapid repeated writes (dismiss, snooze, dismiss, snooze) needs this. Pass
+/// [optimisticWrites] = false and [push] instead returns only once the write has landed,
+/// completing with an error if it failed. An identity app, where every statement is a
+/// deliberate act whose success the user must be told about, wants that.
+///
+/// That mode is a deliberate exception to "the caller never waits for the network" —
+/// see "Waiting for write completion" in nerdster/doc/channel_architecture.md before
+/// removing it or adding a test that forbids awaiting a write.
 late ChannelFactory channelFactory;
 
 class ChannelFactory {
   final FireChoice fireChoice;
   final ValueListenable<bool>? skipVerify;
+
+  /// False makes every [push] wait for the network write and report its failure to the
+  /// caller. See "Optimistic writes" above.
+  final bool optimisticWrites;
+
   final Map<String, _Registration> _registrations = {};
 
   /// One root per unique (exportUrl, streamKey, excludeTypes, distinct) combination.
@@ -70,9 +88,13 @@ class ChannelFactory {
   @visibleForTesting
   StatementWriter<Statement>? testWriterOverride;
 
-  /// Called when a background network write fails. The infrastructure has already cleared
+  /// Called when a network write fails. The infrastructure has already cleared
   /// its own caches before calling this; the app must clean up its own state
   /// (e.g. statement caches, Jsonish cache, sign-in state) and prompt the user to reload.
+  ///
+  /// Runs even when [optimisticWrites] is false and the caller is told about the failure
+  /// too: the local inject has already fanned out to sibling roots, and only this handler
+  /// clears those.
   ///
   /// Must be [Future<void>] — the infrastructure awaits it so the UI can finish recovery
   /// before any further operations proceed.
@@ -80,7 +102,8 @@ class ChannelFactory {
   /// If null and a write fails, [FlutterError.reportError] is called (crashes in debug).
   Future<void> Function(Object, StackTrace)? onWriteError;
 
-  ChannelFactory(this.fireChoice, {this.skipVerify, this.onWriteError});
+  ChannelFactory(this.fireChoice,
+      {this.skipVerify, this.onWriteError, this.optimisticWrites = true});
 
   final Map<String, String> _redirects = {};
 
@@ -181,7 +204,7 @@ class ChannelFactory {
       final writer = testWriterOverride ??
           DirectFirestoreWriter<Statement>(reg.firestore!, streamId: streamKey);
       root = _CachedSource<Statement>(source, writer, () => onWriteError, () => siblings,
-          excludeTypes: excludeTypes, distinct: distinct);
+          excludeTypes: excludeTypes, distinct: distinct, optimisticWrites: optimisticWrites);
     } else {
       final domain = reg?.domain ?? _domainOf(exportUrl);
       final source = _CloudFunctionsSource<Statement>(
@@ -202,7 +225,7 @@ class ChannelFactory {
             authHook: reg?.writeAuthHook,
           );
       root = _CachedSource<Statement>(source, writer, () => onWriteError, () => siblings,
-          excludeTypes: excludeTypes, distinct: distinct);
+          excludeTypes: excludeTypes, distinct: distinct, optimisticWrites: optimisticWrites);
     }
     siblings.add(root);
     return root;
@@ -265,6 +288,7 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
 
   final VoidCallback? optimisticConcurrencyFunc;
   final bool _distinct;
+  final bool _optimisticWrites;
 
   final Map<String, List<T>> _fullCache = {};
   final Map<String, (String, List<T>)> _partialCache = {};
@@ -275,7 +299,10 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
     List<String> excludeTypes = const [],
     this.optimisticConcurrencyFunc,
     bool distinct = true,
-  }) : _excludeTypes = excludeTypes, _distinct = distinct;
+    bool optimisticWrites = true,
+  }) : _excludeTypes = excludeTypes,
+       _distinct = distinct,
+       _optimisticWrites = optimisticWrites;
 
   @override
   List<SourceError> get errors => List.unmodifiable(_errorCache.values);
@@ -310,6 +337,12 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
       {ExpectedPrevious? previous, VoidCallback? optimisticConcurrencyFailed}) {
     if (_writer == null) throw UnimplementedError('No writer');
     if (previous != null) throw StateError('CachedSource.push, no previous parameter');
+    // The writer's optimistic-concurrency path returns before the write lands, which is
+    // the one thing optimisticWrites: false promises will not happen.
+    assert(
+        _optimisticWrites ||
+            (optimisticConcurrencyFailed == null && optimisticConcurrencyFunc == null),
+        'optimisticConcurrencyFailed on a channel created with optimisticWrites: false');
 
     final String issuerId = getToken(json['I']);
     final completer = Completer<T>();
@@ -328,7 +361,7 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
         final Jsonish jsonish = await Jsonish.makeSign(jsonWithPrevious, signer);
         final T statement = Statement.make(jsonish) as T;
         _inject(statement);
-        completer.complete(statement);
+        if (_optimisticWrites) completer.complete(statement);
 
         // Await the network write — the queue chain stays here until the write
         // completes so that the next push reads the correct head from Firestore.
@@ -336,6 +369,7 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
           await _writer.push(json, signer,
               previous: head,
               optimisticConcurrencyFailed: optimisticConcurrencyFailed ?? optimisticConcurrencyFunc);
+          if (!_optimisticWrites) completer.complete(statement);
         } catch (e, stack) {
           // Clear own state before calling the handler so clearCache() called
           // from within the handler doesn't deadlock on these push queues.
@@ -343,6 +377,7 @@ class _CachedSource<T extends Statement> implements StatementChannel<T> {
           _partialCache.clear();
           _errorCache.clear();
           _pushQueues.clear();
+          if (!_optimisticWrites && !completer.isCompleted) completer.completeError(e, stack);
           final handler = _getOnWriteError();
           if (handler != null) {
             await handler(e, stack);

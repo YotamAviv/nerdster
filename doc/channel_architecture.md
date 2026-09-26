@@ -157,3 +157,108 @@ Tests must verify not just correct results but that the infrastructure achieves 
 ### Notes
 
 - **Tests that bypass channels must say so**: some tests legitimately write directly to storage — to inject bad data, test error recovery, or simulate corruption. That's fine, but the test must document that it is intentionally bypassing the channel API and why.
+
+---
+
+## Waiting for write completion
+
+### The exception to principle 3
+
+`ChannelFactory(fireChoice, optimisticWrites: false)` makes `push()` return only once the
+network write has landed, and complete with an error if it failed. This is a deliberate,
+documented exception to design principle 3 above ("the caller never waits for the
+network"). **Do not "fix" it, and do not add a test asserting that no caller ever awaits
+write completion without excluding this mode.**
+
+Who uses it: the ONE-OF-US.NET identity app, and only it. Nerdster and hablotengo keep
+the default (`true`) — they take rapid repeated writes (dismiss, snooze, dismiss, snooze)
+and cannot block the UI on each one.
+
+Why the identity app needs it: every statement there is a deliberate act the user must be
+told the outcome of, and one caller has a hard ordering requirement.
+`SignInService.signIn` publishes a `delegate` statement and then hands the service the
+delegate key pair; the service looks that statement up the moment it signs the user in.
+If the write is still in flight, the service reports "Delegate key not associated". See
+`oneofus/doc/write_completion.md`.
+
+`ChannelFactory.onWriteError` still fires in this mode, in addition to the caller learning
+of the failure. The optimistic `_inject` has already fanned out to sibling roots by the
+time a write fails, and only that handler clears them.
+
+### The layers underneath
+
+Read side:
+
+| | cached | transport | visibility |
+|---|---|---|---|
+| `_CloudFunctionsSource` | no | GET `export.[domain]`; verifies signatures, handles `revokeAt`, seed bag | private (`rawSourceForTesting` is a token-gated escape hatch) |
+| `DirectFirestoreSource` | no | Firestore direct | public, `FireChoice.fake` only |
+| `_CachedSource` | yes | wraps either | private, reached via `getChannel` |
+
+Write side:
+
+| | transport | who supplies `previous` | visibility |
+|---|---|---|---|
+| `_CloudFunctionsWriter` | POST `write.[domain]` | caller must | private |
+| `DirectFirestoreWriter` | Firestore transaction | self-discovers (`orderBy('time','desc').limit(1)`) | public, fake/emulator only |
+
+`_CloudFunctionsWriter` with no `optimisticConcurrencyFailed` callback is already a
+minimal synchronous writer: sign, POST, throw on failure. It is private, and unlike the
+source there is no accessor for it.
+
+`_CachedSource` is in the identity app's write path for one reason: head tracking.
+`functions/write.js` rejects a `previous` that does not equal the server head, so the
+cloud writer's caller must know the head. `_CachedSource` knows it as
+`_fullCache[issuer].first.token` — the cache is a side effect of that job, not the point.
+
+### Considered and deferred: a cache-free writer for the identity app
+
+A layer built for background commits and optimistic concurrency, with a flag to switch
+that off, is not the simplest thing the identity app could use. The shape that would
+remove the exception:
+
+1. `channelFactory.getWriter<T>(exportUrl, streamKey)` returning the bare cloud writer.
+   An accessor, not a public class — the factory owns the emulator redirect for
+   `write.one-of-us.net` and any `writeAuthHook`.
+2. No head discovery in the writer. `previous` stays optional on the `StatementWriter`
+   interface (`DirectFirestoreWriter`'s self-discovery is used by
+   `oneofus/integration_test/bidirectional_trust_test.dart` and is fine there) but the
+   cloud writer asserts it was supplied. A writer that *can* read is a writer that a later
+   change will make read on every write, with nothing at the call site to show it.
+3. Reads stay on `getChannel`: it already handles federated endpoints, `revokeAt`, and
+   verification, and a read cache is harmless.
+4. An app-owned holder of {writer, head} — no cache, inject, fanout, queues, or optimism —
+   so the identity app's three push sites keep their current shape:
+   `app_shell._executePush`, `SignInService.signIn`, and the `replace_flow` loop that
+   re-publishes N statements each chaining onto the last.
+5. `optimisticWrites` disappears. The REP INVARIANT in `oneofus/lib/ui/app_shell.dart`
+   loses its cache clauses. The user-facing failure path stays — a write can still fail
+   (two phones, a CF error) and the user must still be told to reload everything — but it
+   moves into `_executePush`'s catch instead of a library callback. Today a failed write
+   there shows *two* dialogs, the snackbar from `_executePush` and the modal from
+   `oneofusWriteErrorFunc`; consolidating would give one.
+
+Deferred because the bug needed one behavior changed, while this changes the identity
+app's data flow, three push sites, and a package shared by three repos. The remaining
+benefit is simplicity, not correctness.
+
+### Traps for whoever picks it up
+
+- The head must come from the **raw** fetch result, not from `myStatements`.
+  `_loadAllData` strips `clear` statements before storing it, so if the newest statement is
+  a `clear`, `myStatements.first` is the wrong token and the next write is rejected.
+  Server-side `distinct` is safe: it deduplicates by verb+subject keeping the most recent,
+  so the raw fetch's first element is the head.
+- A head is only valid for an *unfiltered* fetch. A channel created with `excludeTypes` may
+  not return the stream's head at all — which is why the Nerdster's peer content channel is
+  a separate root with its own cache.
+- `statement_fetcher.js` returns statements time-descending, so `first` is the head.
+  `orderStatements` in the export params is about JSON *key* order, not statement order.
+- The core invariant section above allows publishing during another publish; the channel
+  serializes per issuer and chains the injects. Sequential awaited pushes off a head holder
+  chain fine, but two genuinely overlapping un-awaited pushes would read the same head and
+  one would be rejected. Preserving today's behavior needs a per-issuer future chain in the
+  holder.
+- `Tester` (`oneofus/lib/demotest`, demo and video data) pushes through the channel and is
+  typed `StatementWriter?`. It pushes as identities whose history was never fetched, which
+  is in tension with `_CachedSource.push`'s `assert(_fullCache.containsKey(issuerId))`.

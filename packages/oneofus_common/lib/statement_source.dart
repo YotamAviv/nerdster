@@ -54,6 +54,11 @@ abstract class StatementWriter<T extends Statement> {
 /// the network write completes in the background. Write failures are delivered to
 /// [ChannelFactory.onWriteError]. The app layer is responsible for registering a handler
 /// and cleaning up its own state (e.g. statement caches, sign-in state) when called.
+///
+/// On a channel from a [ChannelFactory] built with optimisticWrites: false, [push]
+/// instead returns only once the write has landed, and completes with an error if it
+/// failed — so `await push(...)` means the statement is readable from the store.
+/// [ChannelFactory.onWriteError] still fires as well.
 abstract class StatementChannel<T extends Statement>
     implements StatementSource<T>, StatementWriter<T> {
   /// Drains any pending background writes, then clears all cached state so the
