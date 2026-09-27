@@ -33,6 +33,11 @@ class SignInConfig {
   final VoidCallback onSignOut;
   final VoidCallback onForgetIdentity;
 
+  // How the signed-in explanation reads. [readCapability] completes
+  // "<appName> has your identity public key: it can ___, but not state anything as you."
+  final String appName;
+  final String readCapability;
+
   // Optional features (null = hidden)
   final Future<void> Function(BuildContext)? onPasteSignIn;
   final bool showPasteInitially; // show paste without 7-tap easter egg
@@ -57,6 +62,8 @@ class SignInConfig {
     required this.delegatePublicKeyJson,
     required this.onSignOut,
     required this.onForgetIdentity,
+    required this.appName,
+    required this.readCapability,
     this.onPasteSignIn,
     this.showPasteInitially = false,
     this.devSignInLabel,
@@ -197,14 +204,17 @@ class _SignInDialogState extends State<SignInDialog> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop && canDismiss) Navigator.of(context).pop();
       },
-      child: Container(
+      // Material, not a plain Container: the host wraps this in a transparent Dialog, so
+      // without elevation the sheet reads as part of the page rather than as a card you
+      // can tap outside of.
+      child: Material(
+        color: Colors.white,
+        elevation: 8,
         clipBehavior: Clip.hardEdge,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-        ),
-        padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 12),
-        child: ConstrainedBox(
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 12),
+          child: ConstrainedBox(
           constraints: BoxConstraints(
             maxWidth: 400,
             maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -215,51 +225,45 @@ class _SignInDialogState extends State<SignInDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 8),
-                  child: Text.rich(TextSpan(
-                    style: TextStyle(fontSize: 16, color: Colors.black87),
-                    children: [
-                      TextSpan(text: 'Sign in',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: ' using your '),
-                      TextSpan(text: 'Identity App',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      TextSpan(text: ' (e.g. ONE-OF-US.NET)'),
-                    ],
-                  )),
-                ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 4),
-                  child: GestureDetector(
-                    onTap: () => setState(() {
-                      _headingTapCount++;
-                      if (_headingTapCount >= 7) _showPaste = true;
-                    }),
-                    child: Text('Identity app on this device',
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _buildHeading(hasIdentity, hasDelegate),
+                ),
+                // Every way in is hidden once there is a delegate key: there is nothing
+                // left to sign in with, and the buttons read as "still working".
+                if (!hasDelegate) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 4),
+                    child: GestureDetector(
+                      onTap: () => setState(() {
+                        _headingTapCount++;
+                        if (_headingTapCount >= 7) _showPaste = true;
+                      }),
+                      child: Text('Identity app on this device',
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.blueGrey[700],
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  buildUniversalBtn(),
+                  if (_expanded) const SizedBox(height: 6),
+                  if (_expanded) buildCustomBtn(),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 4),
+                    child: Text('Identity app on different device',
                         style: TextStyle(
                             fontSize: 14,
                             color: Colors.blueGrey[700],
                             fontWeight: FontWeight.bold)),
                   ),
-                ),
-                buildUniversalBtn(),
-                if (_expanded) const SizedBox(height: 6),
-                if (_expanded) buildCustomBtn(),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 4),
-                  child: Text('Identity app on different device',
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.blueGrey[700],
-                          fontWeight: FontWeight.bold)),
-                ),
-                buildQrBtn(),
+                  buildQrBtn(),
+                ],
 
                 // "No identity app" section — for mobile app store review requirements.
                 // See comment in SignInConfig.devSignInLabel for details.
-                if (isMobile && !hasIdentity && _c.devSignInLabel != null &&
+                if (isMobile && !hasIdentity && !hasDelegate && _c.devSignInLabel != null &&
                     _c.onDevSignIn != null) ...[
                   const SizedBox(height: 8),
                   Padding(
@@ -279,7 +283,7 @@ class _SignInDialogState extends State<SignInDialog> {
                   ),
                 ],
 
-                if (_c.onPasteSignIn != null && showPaste) ...[
+                if (_c.onPasteSignIn != null && showPaste && !hasDelegate) ...[
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.only(left: 4, bottom: 4),
@@ -298,7 +302,7 @@ class _SignInDialogState extends State<SignInDialog> {
                 ],
 
                 const SizedBox(height: 8),
-                if (!kIsWeb && (_c.termsUrl != null || _c.safetyUrl != null))
+                if (!hasDelegate && !kIsWeb && (_c.termsUrl != null || _c.safetyUrl != null))
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: RichText(
@@ -348,11 +352,16 @@ class _SignInDialogState extends State<SignInDialog> {
                 OverflowBar(
                   alignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      tooltip: _expanded ? 'Fewer options' : 'More options',
-                      icon: Icon(_expanded ? Icons.remove : Icons.add, size: 18),
-                      onPressed: () => setState(() => _expanded = !_expanded),
-                    ),
+                    // Only reveals another sign-in transport; the shrink keeps Sign out
+                    // right-aligned under spaceBetween.
+                    if (hasDelegate)
+                      const SizedBox.shrink()
+                    else
+                      IconButton(
+                        tooltip: _expanded ? 'Fewer options' : 'More options',
+                        icon: Icon(_expanded ? Icons.remove : Icons.add, size: 18),
+                        onPressed: () => setState(() => _expanded = !_expanded),
+                      ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -378,8 +387,51 @@ class _SignInDialogState extends State<SignInDialog> {
               ],
             ),
           ),
+          ),
         ),
       ),
+    );
+  }
+
+  /// Not signed in: how to. Signed in: what that got you, and what it did not.
+  /// The two signed-in sentences differ only after the colon, so reading one right after
+  /// the other -- which is what happens when a delegate key arrives -- shows what changed.
+  Widget _buildHeading(bool hasIdentity, bool hasDelegate) {
+    const TextStyle noteStyle = TextStyle(fontSize: 12, color: Colors.black54);
+
+    if (!hasIdentity) {
+      return const Text.rich(TextSpan(
+        style: TextStyle(fontSize: 16, color: Colors.black87),
+        children: [
+          TextSpan(text: 'Sign in', style: TextStyle(fontWeight: FontWeight.bold)),
+          TextSpan(text: ' using your '),
+          TextSpan(text: 'Identity App', style: TextStyle(fontWeight: FontWeight.bold)),
+          TextSpan(text: ' (e.g. ONE-OF-US.NET)'),
+        ],
+      ));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(hasDelegate ? 'Signed in' : 'Signed in — identity only',
+            style: const TextStyle(
+                fontSize: 16, color: Colors.black87, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(
+          hasDelegate
+              ? '${_c.appName} has your identity public key and a delegate private key: '
+                  'it can ${_c.readCapability} and state things as you.'
+              : '${_c.appName} has your identity public key: it can ${_c.readCapability}, '
+                  'but not state anything as you.',
+          style: noteStyle,
+        ),
+        if (hasDelegate) ...[
+          const SizedBox(height: 2),
+          const Text('Your identity private key stays in your app.', style: noteStyle),
+        ],
+      ],
     );
   }
 
@@ -418,7 +470,12 @@ class _SignInDialogState extends State<SignInDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                Text(hasKey ? 'present' : 'not present',
+                Text(
+                    switch (presence) {
+                      KeyPresence.known => 'public key',
+                      KeyPresence.owned => 'private key',
+                      KeyPresence.absent => 'not present',
+                    },
                     style: TextStyle(fontSize: 11, color: hasKey ? color : Colors.grey)),
               ],
             ),

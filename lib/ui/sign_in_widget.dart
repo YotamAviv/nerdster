@@ -74,6 +74,8 @@ SignInConfig buildNerdsterSignInConfig() {
     hasPov: () => signInState.hasPov,
     identityJson: () => signInState.hasIdentity ? signInState.identityJson : null,
     delegatePublicKeyJson: () => signInState.delegatePublicKeyJson,
+    appName: 'Nerdster',
+    readCapability: 'show your point of view',
     onSignOut: () => signInState.signOut(clearIdentity: false),
     onForgetIdentity: () => signInState.signOut(clearIdentity: true),
     onPasteSignIn: pasteSignIn,
