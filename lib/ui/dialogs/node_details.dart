@@ -778,8 +778,6 @@ class _NodeDetailsState extends State<NodeDetails> {
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
       initiallyExpanded: true,
       children: [
-        _buildAddContextRow(),
-        const SizedBox(height: 8),
         if (_pendingContexts.isEmpty)
           const Padding(
             padding: EdgeInsets.only(bottom: 8.0),
@@ -787,6 +785,8 @@ class _NodeDetailsState extends State<NodeDetails> {
                 style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey, fontSize: 12)),
           ),
         ..._pendingContexts.entries.map((e) => _buildContextRow(e.key, e.value)),
+        const SizedBox(height: 8),
+        _buildAddContextRow(),
         const SizedBox(height: 8),
       ],
     );
@@ -803,15 +803,15 @@ class _NodeDetailsState extends State<NodeDetails> {
           SegmentedButton<int>(
             segments: const [
               ButtonSegment(value: -1, label: Text('Block'), icon: Icon(Icons.block, size: 14)),
-              ButtonSegment(value: 0, label: Text('Neutral'), icon: Icon(Icons.remove, size: 14)),
               ButtonSegment(value: 1, label: Text('Follow'), icon: Icon(Icons.check, size: 14)),
             ],
-            selected: {value == 0 ? 0 : (value > 0 ? 1 : -1)},
+            selected: {if (value != 0) value > 0 ? 1 : -1},
+            emptySelectionAllowed: true,
             onSelectionChanged: (Set<int> newSelection) async {
+              if (newSelection.isEmpty) return;
               if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
               setState(() {
-                final val = newSelection.first;
-                _pendingContexts[contextName] = val;
+                _pendingContexts[contextName] = newSelection.first;
               });
             },
             style: ButtonStyle(
@@ -821,6 +821,15 @@ class _NodeDetailsState extends State<NodeDetails> {
               padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 4)),
             ),
             showSelectedIcon: false,
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 16),
+            tooltip: 'Remove',
+            visualDensity: VisualDensity.compact,
+            onPressed: () async {
+              if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
+              setState(() => _pendingContexts.remove(contextName));
+            },
           ),
         ],
       ),
@@ -835,7 +844,7 @@ class _NodeDetailsState extends State<NodeDetails> {
       ...model.availableContexts,
     }.where((c) => !_pendingContexts.containsKey(c)).toList();
 
-    return Autocomplete<String>(
+    final autocomplete = Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text == '') {
           return suggestions;
@@ -847,7 +856,7 @@ class _NodeDetailsState extends State<NodeDetails> {
       onSelected: (String selection) async {
         if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
         setState(() {
-          _pendingContexts[selection] = 0;
+          _pendingContexts[selection] = 1;
           _autocompleteController?.clear();
         });
       },
@@ -860,7 +869,6 @@ class _NodeDetailsState extends State<NodeDetails> {
             focusNode: focusNode,
             style: const TextStyle(fontSize: 12),
             decoration: const InputDecoration(
-              hintText: 'Add context (e.g. nerd)',
               isDense: true,
               contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               border: OutlineInputBorder(),
@@ -869,7 +877,7 @@ class _NodeDetailsState extends State<NodeDetails> {
               if (value.isNotEmpty) {
                 if ((await checkSignedIn(context, trustGraph: model.trustGraph)) != true) return;
                 setState(() {
-                  _pendingContexts[value] = 0;
+                  _pendingContexts[value] = 1;
                   controller.clear();
                 });
               }
@@ -877,6 +885,14 @@ class _NodeDetailsState extends State<NodeDetails> {
           ),
         );
       },
+    );
+
+    return Row(
+      children: [
+        const Text('Add context (e.g. nerd)', style: TextStyle(fontSize: 12)),
+        const SizedBox(width: 8),
+        SizedBox(width: 140, child: autocomplete),
+      ],
     );
   }
 
