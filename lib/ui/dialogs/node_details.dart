@@ -828,14 +828,12 @@ class _NodeDetailsState extends State<NodeDetails> {
   }
 
   Widget _buildAddContextRow() {
-    final List<String> suggestions = [
+    final List<String> suggestions = {
       kFollowContextNerdster,
       'social',
       'family',
-      'news',
-      'music',
-      'tech'
-    ].where((c) => !_pendingContexts.containsKey(c)).toList();
+      ...model.availableContexts,
+    }.where((c) => !_pendingContexts.containsKey(c)).toList();
 
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
