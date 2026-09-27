@@ -227,7 +227,25 @@ class _SignInDialogState extends State<SignInDialog> {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: _buildHeading(hasIdentity, hasDelegate),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: _buildHeading(hasIdentity, hasDelegate)),
+                      // Only when leaving is allowed, so its absence is itself the signal
+                      // that there is nothing here yet. Navigator.pop, not maybePop: the
+                      // PopScope above would block a maybePop the same way it blocks the
+                      // system back gesture.
+                      if (canDismiss)
+                        IconButton(
+                          tooltip: 'Close',
+                          icon: const Icon(Icons.close, size: 20),
+                          color: Colors.black54,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                    ],
+                  ),
                 ),
                 // Every way in is hidden once there is a delegate key: there is nothing
                 // left to sign in with, and the buttons read as "still working".
@@ -423,13 +441,14 @@ class _SignInDialogState extends State<SignInDialog> {
           hasDelegate
               ? '${_c.appName} has your identity public key and a delegate private key: '
                   'it can ${_c.readCapability} and state things as you.'
-              : '${_c.appName} has your identity public key: it can ${_c.readCapability}, '
-                  'but not state anything as you.',
+              : '${_c.appName} has your identity public key: it can ${_c.readCapability} '
+                  "but can't state anything as you.",
           style: noteStyle,
         ),
         if (hasDelegate) ...[
           const SizedBox(height: 2),
-          const Text('Your identity private key stays in your app.', style: noteStyle),
+          const Text('Your identity private key never leaves your identity app.',
+              style: noteStyle),
         ],
       ],
     );
