@@ -49,6 +49,7 @@ class SignInConfig {
   final String? termsUrl;
   final String? safetyUrl;
   final bool forceIphone; // simulate iOS UI on non-iOS (for testing)
+  final bool Function() showCrypto; // QR sign-in shows the Sign-in Parameters JSON under the code
 
   const SignInConfig({
     required this.sessionFactory,
@@ -74,6 +75,7 @@ class SignInConfig {
     this.termsUrl,
     this.safetyUrl,
     this.forceIphone = false,
+    this.showCrypto = _alwaysFalse,
   });
 }
 
@@ -194,7 +196,7 @@ class _SignInDialogState extends State<SignInDialog> {
           icon: Icons.qr_code,
           label: 'QR Code',
           subtitle: 'Scan with your identity app',
-          onPressed: () => _qrSignIn(context),
+          onPressed: () => qrSignIn(context, _c),
         );
 
     final bool showPaste = _c.showPasteInitially || _showPaste;
@@ -545,33 +547,6 @@ class _SignInDialogState extends State<SignInDialog> {
     );
   }
 
-  Future<void> _qrSignIn(BuildContext context) async {
-    final completer = Completer<void>();
-    final session = await _c.sessionFactory();
-    if (!context.mounted) return;
-    // ignore: unawaited_futures
-    session.listen(
-      firestore: _c.firestore,
-      onData: (data, pke, svc) => _c.onData(data, pke, svc, SignInMethod.qrScan),
-      onDone: () {
-        if (!completer.isCompleted) {
-          if (context.mounted) Navigator.of(context).pop();
-          completer.complete();
-        }
-      },
-    );
-    await showDialog(
-      context: context,
-      builder: (_) => QrSignInDialog(forPhone: session.forPhone),
-    ).then((_) {
-      if (!completer.isCompleted) {
-        session.cancel();
-        completer.complete();
-      }
-    });
-    await completer.future;
-  }
-
   Future<void> _magicLinkSignIn(BuildContext context,
       {bool useUniversalLink = false,
       Future<SignInSession>? precreatedSessionFuture,
@@ -598,9 +573,37 @@ class _SignInDialogState extends State<SignInDialog> {
   }
 }
 
+Future<void> qrSignIn(BuildContext context, SignInConfig c) async {
+  final completer = Completer<void>();
+  final session = await c.sessionFactory();
+  if (!context.mounted) return;
+  // ignore: unawaited_futures
+  session.listen(
+    firestore: c.firestore,
+    onData: (data, pke, svc) => c.onData(data, pke, svc, SignInMethod.qrScan),
+    onDone: () {
+      if (!completer.isCompleted) {
+        if (context.mounted) Navigator.of(context).pop();
+        completer.complete();
+      }
+    },
+  );
+  await showDialog(
+    context: context,
+    builder: (_) => QrSignInDialog(forPhone: session.forPhone, showJson: c.showCrypto()),
+  ).then((_) {
+    if (!completer.isCompleted) {
+      session.cancel();
+      completer.complete();
+    }
+  });
+  await completer.future;
+}
+
 class QrSignInDialog extends StatelessWidget {
   final Json forPhone;
-  const QrSignInDialog({required this.forPhone, super.key});
+  final bool showJson;
+  const QrSignInDialog({required this.forPhone, this.showJson = false, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -620,7 +623,7 @@ class QrSignInDialog extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                     textAlign: TextAlign.center),
                 const SizedBox(height: 16),
-                JsonQrDisplay(forPhone, interpret: ValueNotifier(false)),
+                JsonQrDisplay(forPhone, interpret: ValueNotifier(false), showJson: showJson),
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),

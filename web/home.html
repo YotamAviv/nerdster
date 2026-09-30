@@ -36,7 +36,7 @@ Reference implementation for the ONE-OF-US.NET paradigm
             </div>
           </div>
           <aside class="app-links" aria-label="Get the Nerdster app">
-            <a href="https://nerdster.org/app" class="web-app-link">Launch Nerdster Web App</a>
+            <a href="/app" id="launch-app" class="web-app-link">Launch Nerdster Web App</a>
           </aside>
         </div>
       </div>
@@ -415,6 +415,8 @@ Reference implementation for the ONE-OF-US.NET paradigm
   <script src="common/verify_helper.js" defer></script>
   <script src="index.js" defer></script>
   <script>
+    // Carries ?fire=emulator through to the app.
+    document.getElementById('launch-app').search = location.search;
     document.getElementById('memoir-link').addEventListener('click', (e) => {
       e.preventDefault();
       const modal = document.getElementById('modal');

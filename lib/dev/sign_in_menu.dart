@@ -8,7 +8,8 @@ import 'package:nerdster/fire_choice.dart';
 import 'package:nerdster/key_store.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:nerdster/paste_sign_in.dart';
-import 'package:nerdster/qr_sign_in.dart';
+import 'package:nerdster/ui/sign_in_widget.dart';
+import 'package:nerdster_common/ui/sign_in_dialog.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/sign_in_session.dart';
 import 'package:nerdster/singletons.dart';
@@ -76,7 +77,7 @@ class _SignInMenuState extends State<SignInMenu> {
         return SplitMenuButton(
           label: 'QR Sign in',
           icon: const Icon(Icons.qr_code),
-          onPrimary: fireChoice != FireChoice.fake ? () => qrSignIn(context) : null,
+          onPrimary: fireChoice != FireChoice.fake ? () => qrSignIn(context, buildNerdsterSignInConfig()) : null,
           menuChildren: [
             MenuItemButton(
               leadingIcon: const Icon(Icons.copy),

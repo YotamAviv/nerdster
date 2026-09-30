@@ -107,6 +107,7 @@ SignInConfig buildNerdsterSignInConfig() {
     termsUrl: 'https://nerdster.org/terms.html',
     safetyUrl: 'https://nerdster.org/safety.html',
     forceIphone: forceIphone,
+    showCrypto: () => Setting.get<bool>(SettingType.showCrypto).value,
   );
 }
 

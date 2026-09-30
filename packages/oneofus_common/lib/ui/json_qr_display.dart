@@ -10,8 +10,10 @@ class JsonQrDisplay extends StatelessWidget {
   final dynamic subject; // String (ex. token), Json (ex. key, statement), or null
   final ValueNotifier<bool>? interpret;
   final Interpreter? interpreter;
+  final bool showJson;
 
-  const JsonQrDisplay(this.subject, {super.key, this.interpret, this.interpreter});
+  const JsonQrDisplay(this.subject,
+      {super.key, this.interpret, this.interpreter, this.showJson = true});
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +37,14 @@ class JsonQrDisplay extends StatelessWidget {
                   // padding: kPadding,
                   // also tried putting the thing in my own Padding(child: ...)
                 )),
-            SizedBox(
-                width: qrSize,
-                height: qrSize / 2,
-                child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: JsonDisplay(subject,
-                        interpret: interpret ?? ValueNotifier(false), interpreter: interpreter))),
+            if (showJson)
+              SizedBox(
+                  width: qrSize,
+                  height: qrSize / 2,
+                  child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: JsonDisplay(subject,
+                          interpret: interpret ?? ValueNotifier(false), interpreter: interpreter))),
           ],
         );
       } else {

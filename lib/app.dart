@@ -6,7 +6,7 @@ import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/content_view.dart';
 import 'package:nerdster/ui/sign_in_widget.dart';
 import 'package:nerdster/verify.dart';
-import 'package:nerdster/qr_sign_in.dart';
+import 'package:nerdster_common/ui/sign_in_dialog.dart';
 import 'package:nerdster/models/content_statement.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:oneofus_common/trust_statement.dart';
@@ -123,7 +123,7 @@ class NerdsterApp extends StatelessWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final context = navigatorKey.currentContext;
         if (context != null) {
-          qrSignIn(context);
+          qrSignIn(context, buildNerdsterSignInConfig());
         }
       });
     }
