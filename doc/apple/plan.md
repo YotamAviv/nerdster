@@ -1,5 +1,12 @@
 # Apple Review — Plan
 
+> **Status (2026-09-29): the Nerdster phone app is abandoned for now.** It reached testing on
+> both platforms (`org.nerdster.app`), then the Apple App Store rejected it over content
+> moderation (see `doc/apple/`). The webapp is the product. The phone-app code and config
+> (`ios/`, `android/`, `kIsWeb` / `defaultTargetPlatform` guards, nerdster.org deep links and
+> association files) are left in place because it may be revived: a native app does a better job
+> than the webapp with paywalls and with fetching titles.
+
 ## History files
 The dated correspondence files in this folder are for reference only. Do not modify them.
 
