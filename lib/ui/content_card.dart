@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:nerdster/app.dart';
 import 'package:nerdster/models/content_statement.dart';
+import 'package:nerdster/models/content_types.dart';
 import 'package:nerdster/models/dismiss_statement.dart';
 import 'package:nerdster/singletons.dart';
 import 'package:nerdster/ui/dialogs/check_signed_in.dart';
@@ -242,6 +243,14 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
           final subject = widget.aggregation.subject;
           final String title = subject['title']!;
           final String type = subject['contentType']!;
+          final String byline = ContentType.values
+              .byName(type)
+              .type2field2type
+              .keys
+              .where((k) => k != 'url' && k != 'title')
+              .map((k) => subject[k])
+              .where((v) => v != null && v.toString().isNotEmpty)
+              .join(' · ');
 
           String? metaImage = _metadata?.image;
           if (metaImage != null && metaImage.isEmpty) metaImage = null;
@@ -367,6 +376,16 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                                       ),
                                 ),
                               ),
+                              if (byline.isNotEmpty)
+                                Text(
+                                  byline,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleSmall
+                                      ?.copyWith(color: Colors.white),
+                                ),
                               Row(
                                 children: [
                                   Text(
@@ -492,6 +511,8 @@ class _ContentCardState extends State<ContentCard> with TickerProviderStateMixin
                                           ),
                                     ),
                                   ),
+                                  if (byline.isNotEmpty)
+                                    Text(byline, style: Theme.of(context).textTheme.titleSmall),
                                   Row(
                                     children: [
                                       Text(type.toUpperCase(),
