@@ -11,6 +11,7 @@ import 'package:nerdster_common/ui/key_icon.dart';
 import 'package:oneofus_common/crypto/crypto.dart';
 import 'package:oneofus_common/jsonish.dart';
 import 'package:oneofus_common/ui/json_qr_display.dart';
+import 'package:oneofus_common/ui/qr_help.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// All project-specific sign-in dependencies, passed to [SignInDialog].
@@ -619,9 +620,17 @@ class QrSignInDialog extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Scan with the ONE-OF-US.NET app',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                    textAlign: TextAlign.center),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Flexible(
+                      child: Text('Scan with your identity app',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          textAlign: TextAlign.center),
+                    ),
+                    QrHelpButton(what: 'This sign-in code', holds: 'sign in parameters'),
+                  ],
+                ),
                 const SizedBox(height: 16),
                 JsonQrDisplay(forPhone, interpret: ValueNotifier(false), showJson: showJson),
                 const SizedBox(height: 8),
